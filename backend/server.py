@@ -70,7 +70,7 @@ async def root():
 
 
 @api_router.post("/upload-csv")
-async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store"):
+async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store", shop_url: str = ""):
     """
     Upload Shopify orders CSV export and extract customer data
     """
@@ -79,17 +79,31 @@ async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "De
         content = await file.read()
         csv_text = content.decode('utf-8')
         
+        logger.info(f"Received CSV file: {file.filename}, size: {len(csv_text)} bytes")
+        
         # Parse CSV
         customers_list = parse_shopify_orders_csv(csv_text)
+        
+        logger.info(f"Parsed {len(customers_list)} customers from CSV")
         
         # Add store name to each customer
         for customer in customers_list:
             customer['store_name'] = store_name
         
-        logger.info(f"Parsed {len(customers_list)} customers from CSV for store: {store_name}")
+        # Create or update store record
+        existing_store = await db.stores.find_one({"store_name": store_name})
+        if not existing_store:
+            store_obj = Store(
+                store_name=store_name,
+                shop_url=shop_url or f"{store_name.lower().replace(' ', '-')}.myshopify.com"
+            )
+            await db.stores.insert_one(store_obj.model_dump())
+            logger.info(f"Created store record: {store_name}")
         
         # Remove existing customers from this store, then insert new data
-        await db.customers.delete_many({"store_name": store_name})
+        deleted = await db.customers.delete_many({"store_name": store_name})
+        logger.info(f"Deleted {deleted.deleted_count} existing customers from {store_name}")
+        
         if customers_list:
             result = await db.customers.insert_many(customers_list)
             logger.info(f"Inserted {len(result.inserted_ids)} customers into database")
