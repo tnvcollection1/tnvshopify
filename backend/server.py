@@ -448,6 +448,38 @@ class WhatsAppRequest(BaseModel):
     phone: str
     country_code: Optional[str] = None
 
+@api_router.post("/upload-csv")
+async def upload_shopify_csv(file: UploadFile = File(...)):
+    """
+    Upload Shopify orders CSV export and extract customer data
+    """
+    try:
+        # Read CSV content
+        content = await file.read()
+        csv_text = content.decode('utf-8')
+        
+        # Parse CSV
+        customers_list = parse_shopify_orders_csv(csv_text)
+        
+        logger.info(f"Parsed {len(customers_list)} customers from CSV")
+        
+        # Clear existing customers and insert new data
+        await db.customers.delete_many({})
+        if customers_list:
+            result = await db.customers.insert_many(customers_list)
+            logger.info(f"Inserted {len(result.inserted_ids)} customers into database")
+        
+        return {
+            "success": True,
+            "message": f"Successfully imported {len(customers_list)} customers from CSV",
+            "customers_imported": len(customers_list)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading CSV: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process CSV: {str(e)}")
+
+
 @api_router.post("/whatsapp-link")
 async def generate_whatsapp_link(request: WhatsAppRequest):
     """
