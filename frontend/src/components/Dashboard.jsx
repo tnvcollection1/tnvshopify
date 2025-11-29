@@ -521,10 +521,21 @@ const Dashboard = () => {
         {/* Customers Table */}
         <Card className="border-none shadow-lg bg-white">
           <CardHeader>
-            <CardTitle className="text-2xl" style={{ fontFamily: 'Space Grotesk' }}>Customers</CardTitle>
-            <CardDescription>
-              {loading ? 'Loading customers...' : `Showing ${filteredCustomers.length} customer(s)`}
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-2xl flex items-center gap-2" style={{ fontFamily: 'Space Grotesk' }}>
+                  Customers
+                  {selectedStore !== "all" && (
+                    <Badge className="bg-indigo-100 text-indigo-700 text-sm font-normal">
+                      {selectedStore}
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  {loading ? 'Loading customers...' : `Showing ${filteredCustomers.length} customer(s) on this page`}
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
