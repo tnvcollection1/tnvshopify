@@ -9,8 +9,6 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, timezone
-import shopify
-import urllib.parse
 from fastapi import File, UploadFile
 from csv_upload import parse_shopify_orders_csv
 
