@@ -44,6 +44,20 @@ class Customer(BaseModel):
     store_name: Optional[str] = None
 
 
+class Store(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    store_name: str
+    shop_url: str
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class StoreCreate(BaseModel):
+    store_name: str
+    shop_url: str
+
+
 class WhatsAppRequest(BaseModel):
     phone: str
     country_code: Optional[str] = None
