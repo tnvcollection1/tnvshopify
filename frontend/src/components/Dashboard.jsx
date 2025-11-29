@@ -170,10 +170,27 @@ const Dashboard = () => {
     }
   };
 
-  const fetchCustomers = async (size = null) => {
+  const fetchCustomersCount = async () => {
+    try {
+      let url = `${API}/customers/count?`;
+      if (selectedSize && selectedSize !== "all") {
+        url += `shoe_size=${selectedSize}&`;
+      }
+      if (selectedStore && selectedStore !== "all") {
+        url += `store_name=${selectedStore}`;
+      }
+      const response = await axios.get(url);
+      setTotalCount(response.data.total);
+      setStats(prev => ({ ...prev, totalCustomers: response.data.total }));
+    } catch (error) {
+      console.error("Fetch count error:", error);
+    }
+  };
+
+  const fetchCustomers = async (size = null, page = currentPage) => {
     setLoading(true);
     try {
-      let url = `${API}/customers?`;
+      let url = `${API}/customers?page=${page}&limit=${customersPerPage}&`;
       if (size && size !== "all") {
         url += `shoe_size=${size}&`;
       }
@@ -182,7 +199,7 @@ const Dashboard = () => {
       }
       const response = await axios.get(url);
       setCustomers(response.data);
-      setStats(prev => ({ ...prev, totalCustomers: response.data.length }));
+      await fetchCustomersCount();
     } catch (error) {
       console.error("Fetch customers error:", error);
       toast.error("Failed to fetch customers");
