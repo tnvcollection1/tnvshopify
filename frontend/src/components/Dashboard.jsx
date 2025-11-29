@@ -104,10 +104,25 @@ const Dashboard = () => {
     }
   };
 
+  const fetchStores = async () => {
+    try {
+      const response = await axios.get(`${API}/stores`);
+      setStores(response.data);
+    } catch (error) {
+      console.error("Fetch stores error:", error);
+    }
+  };
+
   const fetchCustomers = async (size = null) => {
     setLoading(true);
     try {
-      const url = size && size !== "all" ? `${API}/customers?shoe_size=${size}` : `${API}/customers`;
+      let url = `${API}/customers?`;
+      if (size && size !== "all") {
+        url += `shoe_size=${size}&`;
+      }
+      if (selectedStore && selectedStore !== "all") {
+        url += `store_name=${selectedStore}`;
+      }
       const response = await axios.get(url);
       setCustomers(response.data);
       setStats(prev => ({ ...prev, totalCustomers: response.data.length }));
