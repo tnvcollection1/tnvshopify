@@ -225,7 +225,7 @@ async def generate_whatsapp_link(request: WhatsAppRequest):
             'US': '1', 'IN': '91', 'GB': '44', 'AE': '971', 'SA': '966',
             'CA': '1', 'AU': '61', 'PK': '92', 'BD': '880'
         }
-        dial_code = country_dial_codes.get(country_code, '')
+        dial_code = country_dial_codes.get(request.country_code, '')
         if dial_code:
             cleaned_phone = dial_code + cleaned_phone
     
