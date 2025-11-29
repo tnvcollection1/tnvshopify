@@ -172,9 +172,14 @@ async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "De
 
 
 @api_router.get("/customers", response_model=List[Customer])
-async def get_customers(shoe_size: Optional[str] = None, store_name: Optional[str] = None):
+async def get_customers(
+    shoe_size: Optional[str] = None, 
+    store_name: Optional[str] = None,
+    page: int = 1,
+    limit: int = 100
+):
     """
-    Get all customers, optionally filtered by shoe size and store
+    Get customers with pagination, optionally filtered by shoe size and store
     """
     query = {}
     if shoe_size and shoe_size != "all":
@@ -182,8 +187,30 @@ async def get_customers(shoe_size: Optional[str] = None, store_name: Optional[st
     if store_name and store_name != "all":
         query['store_name'] = store_name
     
-    customers = await db.customers.find(query, {"_id": 0}).to_list(10000)
+    # Calculate skip value for pagination
+    skip = (page - 1) * limit
+    
+    # Get customers with pagination
+    customers = await db.customers.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
     return customers
+
+
+@api_router.get("/customers/count")
+async def get_customers_count(
+    shoe_size: Optional[str] = None,
+    store_name: Optional[str] = None
+):
+    """
+    Get total count of customers matching filters
+    """
+    query = {}
+    if shoe_size and shoe_size != "all":
+        query['shoe_sizes'] = shoe_size
+    if store_name and store_name != "all":
+        query['store_name'] = store_name
+    
+    count = await db.customers.count_documents(query)
+    return {"total": count}
 
 
 @api_router.get("/shoe-sizes")
