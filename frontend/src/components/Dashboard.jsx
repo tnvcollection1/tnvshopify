@@ -65,7 +65,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     filterCustomers();
-  }, [customers, selectedSize, searchQuery]);
+  }, [customers, searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchCustomers(selectedSize, 1);
+  }, [selectedSize]);
 
   const syncShopifyData = async () => {
     setSyncing(true);
