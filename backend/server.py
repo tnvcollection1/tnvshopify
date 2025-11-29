@@ -168,27 +168,31 @@ async def sync_all_customers(config: ShopifyConfig):
             }
         
         # Fetch orders to get product variants/sizes
-        logger.info("Fetching orders to extract sizes...")
+        logger.info("Fetching orders to extract sizes and phone numbers...")
         all_orders = []
         since_id = 0
         batch_count = 0
         
         while True:
             batch_count += 1
+            logger.info(f"Fetching orders batch {batch_count} (since_id: {since_id})...")
+            
             if since_id == 0:
                 orders = shopify.Order.find(limit=250, status="any")
             else:
                 orders = shopify.Order.find(limit=250, status="any", since_id=since_id)
             
-            if not orders:
+            if not orders or len(orders) == 0:
+                logger.info("No more orders to fetch")
                 break
                 
             all_orders.extend(orders)
+            logger.info(f"Fetched {len(orders)} orders in batch {batch_count}. Total so far: {len(all_orders)}")
             
-            if len(orders) < 250:
-                break
-            
+            # Update since_id to last order's ID for next batch
             since_id = int(orders[-1].id)
+            
+            # Continue fetching even if less than 250, only stop if we get 0 orders
         
         logger.info(f"Processing {len(all_orders)} orders for size extraction...")
         
