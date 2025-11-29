@@ -231,14 +231,7 @@ const Dashboard = () => {
   const filterCustomers = () => {
     let filtered = customers;
 
-    // Filter by shoe size
-    if (selectedSize && selectedSize !== "all") {
-      filtered = filtered.filter(customer => 
-        customer.shoe_sizes.includes(selectedSize)
-      );
-    }
-
-    // Filter by search query
+    // Only apply client-side search filter (size filter is server-side now)
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(customer => {
@@ -250,7 +243,7 @@ const Dashboard = () => {
     }
 
     setFilteredCustomers(filtered);
-    setStats(prev => ({ ...prev, filteredCount: filtered.length }));
+    setStats(prev => ({ ...prev, filteredCount: searchQuery ? filtered.length : totalCount }));
   };
 
   const openWhatsApp = (phone, countryCode) => {
