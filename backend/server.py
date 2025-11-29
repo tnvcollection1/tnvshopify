@@ -110,7 +110,7 @@ async def sync_shopify_data(config: ShopifyConfig):
         
         # Process orders
         for order in orders:
-            if not order.customer:
+            if not hasattr(order, 'customer') or not order.customer:
                 continue
                 
             customer_id = str(order.customer.id)
@@ -119,17 +119,27 @@ async def sync_shopify_data(config: ShopifyConfig):
             if customer_id not in customer_data:
                 # Extract country code from shipping or billing address
                 country_code = None
-                if order.shipping_address and hasattr(order.shipping_address, 'country_code'):
+                if hasattr(order, 'shipping_address') and order.shipping_address and hasattr(order.shipping_address, 'country_code'):
                     country_code = order.shipping_address.country_code
-                elif order.billing_address and hasattr(order.billing_address, 'country_code'):
+                elif hasattr(order, 'billing_address') and order.billing_address and hasattr(order.billing_address, 'country_code'):
                     country_code = order.billing_address.country_code
+                
+                # Safely extract customer attributes
+                first_name = getattr(order.customer, 'first_name', '') or ''
+                last_name = getattr(order.customer, 'last_name', '') or ''
+                email = getattr(order.customer, 'email', None)
+                phone = getattr(order.customer, 'phone', None)
+                
+                # Try to get phone from default address if not available
+                if not phone and hasattr(order.customer, 'default_address') and order.customer.default_address:
+                    phone = getattr(order.customer.default_address, 'phone', None)
                 
                 customer_data[customer_id] = {
                     'customer_id': customer_id,
-                    'first_name': order.customer.first_name or '',
-                    'last_name': order.customer.last_name or '',
-                    'email': order.customer.email,
-                    'phone': order.customer.phone or order.customer.default_address.phone if hasattr(order.customer, 'default_address') and order.customer.default_address else None,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'email': email,
+                    'phone': phone,
                     'country_code': country_code,
                     'shoe_sizes': set(),
                     'order_count': 0,
