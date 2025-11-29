@@ -206,8 +206,12 @@ async def get_shoe_sizes():
     return {"shoe_sizes": sorted(list(all_sizes))}
 
 
+class WhatsAppRequest(BaseModel):
+    phone: str
+    country_code: Optional[str] = None
+
 @api_router.post("/whatsapp-link")
-async def generate_whatsapp_link(phone: str, country_code: Optional[str] = None):
+async def generate_whatsapp_link(request: WhatsAppRequest):
     """
     Generate WhatsApp link for a phone number
     """
