@@ -100,13 +100,58 @@ async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "De
             await db.stores.insert_one(store_obj.model_dump())
             logger.info(f"Created store record: {store_name}")
         
-        # Remove existing customers from this store, then insert new data
-        deleted = await db.customers.delete_many({"store_name": store_name})
-        logger.info(f"Deleted {deleted.deleted_count} existing customers from {store_name}")
+        # Merge strategy: Update existing customers or insert new ones
+        updated_count = 0
+        inserted_count = 0
         
-        if customers_list:
-            result = await db.customers.insert_many(customers_list)
-            logger.info(f"Inserted {len(result.inserted_ids)} customers into database")
+        for customer in customers_list:
+            # Try to find existing customer by customer_id or phone (if phone exists)
+            query = {"store_name": store_name}
+            if customer.get('phone'):
+                # Use phone as unique identifier if available
+                query["phone"] = customer['phone']
+            else:
+                # Use customer_id as fallback
+                query["customer_id"] = customer['customer_id']
+            
+            existing = await db.customers.find_one(query)
+            
+            if existing:
+                # Update existing customer - merge sizes and update other fields
+                existing_sizes = set(existing.get('shoe_sizes', []))
+                new_sizes = set(customer.get('shoe_sizes', []))
+                merged_sizes = list(existing_sizes.union(new_sizes))
+                
+                # Remove "Unknown" if we have real sizes
+                if len(merged_sizes) > 1 and "Unknown" in merged_sizes:
+                    merged_sizes.remove("Unknown")
+                
+                update_data = {
+                    "first_name": customer.get('first_name') or existing.get('first_name'),
+                    "last_name": customer.get('last_name') or existing.get('last_name'),
+                    "email": customer.get('email') or existing.get('email'),
+                    "phone": customer.get('phone') or existing.get('phone'),
+                    "country_code": customer.get('country_code') or existing.get('country_code'),
+                    "shoe_sizes": merged_sizes,
+                    "order_count": existing.get('order_count', 0) + customer.get('order_count', 0),
+                    "total_spent": existing.get('total_spent', 0) + customer.get('total_spent', 0),
+                    "last_order_date": max(
+                        customer.get('last_order_date') or '',
+                        existing.get('last_order_date') or ''
+                    ) or None
+                }
+                
+                await db.customers.update_one(
+                    {"_id": existing["_id"]},
+                    {"$set": update_data}
+                )
+                updated_count += 1
+            else:
+                # Insert new customer
+                await db.customers.insert_one(customer)
+                inserted_count += 1
+        
+        logger.info(f"Updated {updated_count} existing customers, inserted {inserted_count} new customers")
         
         return {
             "success": True,
