@@ -463,8 +463,47 @@ class WhatsAppRequest(BaseModel):
     phone: str
     country_code: Optional[str] = None
 
+@api_router.post("/stores", response_model=Store)
+async def create_store(store: StoreCreate):
+    """
+    Add a new Shopify store
+    """
+    try:
+        store_obj = Store(**store.model_dump())
+        doc = store_obj.model_dump()
+        await db.stores.insert_one(doc)
+        return store_obj
+    except Exception as e:
+        logger.error(f"Error creating store: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create store: {str(e)}")
+
+
+@api_router.get("/stores", response_model=List[Store])
+async def get_stores():
+    """
+    Get all stores
+    """
+    stores = await db.stores.find({}, {"_id": 0}).to_list(100)
+    return stores
+
+
+@api_router.delete("/stores/{store_id}")
+async def delete_store(store_id: str):
+    """
+    Delete a store
+    """
+    result = await db.stores.delete_one({"id": store_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Store not found")
+    return {"success": True, "message": "Store deleted"}
+
+
+class CSVUploadRequest(BaseModel):
+    store_name: Optional[str] = None
+
+
 @api_router.post("/upload-csv")
-async def upload_shopify_csv(file: UploadFile = File(...)):
+async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store"):
     """
     Upload Shopify orders CSV export and extract customer data
     """
@@ -476,18 +515,23 @@ async def upload_shopify_csv(file: UploadFile = File(...)):
         # Parse CSV
         customers_list = parse_shopify_orders_csv(csv_text)
         
-        logger.info(f"Parsed {len(customers_list)} customers from CSV")
+        # Add store name to each customer
+        for customer in customers_list:
+            customer['store_name'] = store_name
         
-        # Clear existing customers and insert new data
-        await db.customers.delete_many({})
+        logger.info(f"Parsed {len(customers_list)} customers from CSV for store: {store_name}")
+        
+        # Remove existing customers from this store, then insert new data
+        await db.customers.delete_many({"store_name": store_name})
         if customers_list:
             result = await db.customers.insert_many(customers_list)
             logger.info(f"Inserted {len(result.inserted_ids)} customers into database")
         
         return {
             "success": True,
-            "message": f"Successfully imported {len(customers_list)} customers from CSV",
-            "customers_imported": len(customers_list)
+            "message": f"Successfully imported {len(customers_list)} customers from {store_name}",
+            "customers_imported": len(customers_list),
+            "store_name": store_name
         }
         
     except Exception as e:
