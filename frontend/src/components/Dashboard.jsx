@@ -51,12 +51,14 @@ const Dashboard = () => {
   const syncShopifyData = async () => {
     setSyncing(true);
     try {
-      const response = await axios.post(`${API}/shopify/sync`, {
+      toast.info("Syncing all customers... This may take a minute", { duration: 5000 });
+      
+      const response = await axios.post(`${API}/shopify/sync-all`, {
         shop_url: "ashmiaa.myshopify.com",
         access_token: "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"
       });
       
-      toast.success(`Synced ${response.data.customers_synced} customers successfully!`);
+      toast.success(response.data.message);
       await fetchCustomers();
       await fetchShoeSizes();
     } catch (error) {
