@@ -68,17 +68,6 @@ class StoreCreate(BaseModel):
     shop_url: str
     access_token: str
 
-class ShopifyConfig(BaseModel):
-    shop_url: str
-    access_token: str
-
-class SyncResponse(BaseModel):
-    success: bool
-    message: str
-    customers_synced: int
-    timestamp: str
-
-
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
