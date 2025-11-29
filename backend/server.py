@@ -216,10 +216,10 @@ async def generate_whatsapp_link(request: WhatsAppRequest):
     Generate WhatsApp link for a phone number
     """
     # Clean phone number
-    cleaned_phone = ''.join(filter(str.isdigit, phone))
+    cleaned_phone = ''.join(filter(str.isdigit, request.phone))
     
     # If no country code and phone doesn't start with +, you might need to add it
-    if country_code and not cleaned_phone.startswith(country_code.replace('+', '')):
+    if request.country_code and not cleaned_phone.startswith(request.country_code.replace('+', '')):
         # Get country dial code mapping
         country_dial_codes = {
             'US': '1', 'IN': '91', 'GB': '44', 'AE': '971', 'SA': '966',
