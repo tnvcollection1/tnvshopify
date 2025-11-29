@@ -34,6 +34,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [syncing, setSyncing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [stats, setStats] = useState({
     totalCustomers: 0,
     uniqueSizes: 0,
