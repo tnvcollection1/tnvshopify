@@ -35,6 +35,8 @@ const Dashboard = () => {
   const [syncing, setSyncing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [stores, setStores] = useState([]);
+  const [selectedStore, setSelectedStore] = useState("all");
   const [stats, setStats] = useState({
     totalCustomers: 0,
     uniqueSizes: 0,
