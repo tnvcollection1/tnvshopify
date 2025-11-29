@@ -32,7 +32,6 @@ const Dashboard = () => {
   const [shoeSizes, setShoeSizes] = useState([]);
   const [selectedSize, setSelectedSize] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [syncing, setSyncing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [stores, setStores] = useState([]);
