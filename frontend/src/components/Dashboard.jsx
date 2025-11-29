@@ -71,6 +71,32 @@ const Dashboard = () => {
     }
   };
 
+  const handleCSVUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      toast.info("Uploading CSV...", { duration: 3000 });
+      const response = await axios.post(`${API}/upload-csv`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      toast.success(`✅ ${response.data.message}`);
+      await fetchCustomers();
+      await fetchShoeSizes();
+    } catch (error) {
+      console.error("CSV upload error:", error);
+      toast.error("Failed to upload CSV. Please check the file format.");
+    } finally {
+      setUploading(false);
+      event.target.value = ''; // Reset file input
+    }
+  };
+
   const fetchCustomers = async (size = null) => {
     setLoading(true);
     try {
