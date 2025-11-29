@@ -39,6 +39,9 @@ const Dashboard = () => {
   const [showAddStore, setShowAddStore] = useState(false);
   const [newStoreName, setNewStoreName] = useState("");
   const [newStoreUrl, setNewStoreUrl] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const customersPerPage = 100;
   const [stats, setStats] = useState({
     totalCustomers: 0,
     uniqueSizes: 0,
