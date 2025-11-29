@@ -82,17 +82,25 @@ const Dashboard = () => {
     const file = event.target.files[0];
     if (!file) return;
 
+    // Ask for store name
+    const storeName = prompt("Enter store name for this data:", selectedStore !== "all" ? selectedStore : "Store 1");
+    if (!storeName) {
+      event.target.value = '';
+      return;
+    }
+
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
 
     try {
       toast.info("Uploading CSV...", { duration: 3000 });
-      const response = await axios.post(`${API}/upload-csv`, formData, {
+      const response = await axios.post(`${API}/upload-csv?store_name=${encodeURIComponent(storeName)}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
       toast.success(`✅ ${response.data.message}`);
+      await fetchStores();
       await fetchCustomers();
       await fetchShoeSizes();
     } catch (error) {
