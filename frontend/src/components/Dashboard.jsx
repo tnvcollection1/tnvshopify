@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { RefreshCw, Search, MessageCircle, Users, Filter, ExternalLink } from "lucide-react";
+import { RefreshCw, Search, MessageCircle, Users, Filter, ExternalLink, Plus, Trash2, Store as StoreIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
