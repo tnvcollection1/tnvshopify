@@ -149,19 +149,24 @@ async def sync_shopify_data(config: ShopifyConfig):
             
             # Update customer data
             customer_data[customer_id]['order_count'] += 1
-            customer_data[customer_id]['total_spent'] += float(order.total_price or 0)
+            
+            # Safely get total price
+            total_price = getattr(order, 'total_price', 0) or 0
+            customer_data[customer_id]['total_spent'] += float(total_price)
             
             # Update last order date
-            order_date = str(order.created_at)
-            if not customer_data[customer_id]['last_order_date'] or order_date > customer_data[customer_id]['last_order_date']:
-                customer_data[customer_id]['last_order_date'] = order_date
+            if hasattr(order, 'created_at') and order.created_at:
+                order_date = str(order.created_at)
+                if not customer_data[customer_id]['last_order_date'] or order_date > customer_data[customer_id]['last_order_date']:
+                    customer_data[customer_id]['last_order_date'] = order_date
             
             # Extract shoe sizes from line items
-            for item in order.line_items:
-                if item.variant_title:
-                    # Extract size from variant title
-                    variant_title = item.variant_title.strip()
-                    customer_data[customer_id]['shoe_sizes'].add(variant_title)
+            if hasattr(order, 'line_items') and order.line_items:
+                for item in order.line_items:
+                    if hasattr(item, 'variant_title') and item.variant_title:
+                        # Extract size from variant title
+                        variant_title = str(item.variant_title).strip()
+                        customer_data[customer_id]['shoe_sizes'].add(variant_title)
         
         # Convert sets to lists and save to database
         customers_list = []
