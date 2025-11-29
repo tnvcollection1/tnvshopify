@@ -220,7 +220,11 @@ const Dashboard = () => {
 
   const fetchShoeSizes = async () => {
     try {
-      const response = await axios.get(`${API}/shoe-sizes`);
+      let url = `${API}/shoe-sizes?`;
+      if (selectedStore && selectedStore !== "all") {
+        url += `store_name=${selectedStore}`;
+      }
+      const response = await axios.get(url);
       setShoeSizes(response.data.shoe_sizes);
       setStats(prev => ({ ...prev, uniqueSizes: response.data.shoe_sizes.length }));
     } catch (error) {
