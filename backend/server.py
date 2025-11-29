@@ -352,19 +352,36 @@ async def sync_shopify_data(config: ShopifyConfig):
             total_price = getattr(order, 'total_price', 0) or 0
             customer_data[customer_id]['total_spent'] += float(total_price)
             
+            # Update phone from order addresses if not available
+            if not customer_data[customer_id]['phone']:
+                if hasattr(order, 'shipping_address') and order.shipping_address:
+                    phone = getattr(order.shipping_address, 'phone', None)
+                    if phone:
+                        customer_data[customer_id]['phone'] = phone
+                        if not customer_data[customer_id]['country_code']:
+                            customer_data[customer_id]['country_code'] = getattr(order.shipping_address, 'country_code', None)
+                
+                if not customer_data[customer_id]['phone'] and hasattr(order, 'billing_address') and order.billing_address:
+                    phone = getattr(order.billing_address, 'phone', None)
+                    if phone:
+                        customer_data[customer_id]['phone'] = phone
+                        if not customer_data[customer_id]['country_code']:
+                            customer_data[customer_id]['country_code'] = getattr(order.billing_address, 'country_code', None)
+            
             # Update last order date
             if hasattr(order, 'created_at') and order.created_at:
                 order_date = str(order.created_at)
                 if not customer_data[customer_id]['last_order_date'] or order_date > customer_data[customer_id]['last_order_date']:
                     customer_data[customer_id]['last_order_date'] = order_date
             
-            # Extract shoe sizes from line items
+            # Extract clothing sizes from line items
             if hasattr(order, 'line_items') and order.line_items:
                 for item in order.line_items:
                     if hasattr(item, 'variant_title') and item.variant_title:
                         # Extract size from variant title
                         variant_title = str(item.variant_title).strip()
-                        customer_data[customer_id]['shoe_sizes'].add(variant_title)
+                        if variant_title and variant_title.lower() != 'default title':
+                            customer_data[customer_id]['shoe_sizes'].add(variant_title)
         
         # Convert sets to lists and save to database
         customers_list = []
