@@ -91,10 +91,159 @@ async def get_status_checks():
     return status_checks
 
 
+@api_router.post("/shopify/sync-all")
+async def sync_all_customers(config: ShopifyConfig):
+    """
+    Sync ALL customers directly from Shopify (faster for large datasets)
+    """
+    try:
+        # Setup Shopify session
+        shop_url = config.shop_url.replace('http://', '').replace('https://', '')
+        shopify.ShopifyResource.set_site(f"https://{shop_url}/admin/api/2024-10")
+        shopify.ShopifyResource.headers = {"X-Shopify-Access-Token": config.access_token}
+        
+        # Fetch all customers with pagination
+        all_customers = []
+        since_id = 0
+        batch_count = 0
+        
+        while True:
+            batch_count += 1
+            logger.info(f"Fetching customers batch {batch_count} (since_id: {since_id})...")
+            
+            if since_id == 0:
+                customers = shopify.Customer.find(limit=250)
+            else:
+                customers = shopify.Customer.find(limit=250, since_id=since_id)
+            
+            if not customers:
+                logger.info("No more customers to fetch")
+                break
+                
+            all_customers.extend(customers)
+            logger.info(f"Fetched {len(customers)} customers in batch {batch_count}. Total so far: {len(all_customers)}")
+            
+            if len(customers) < 250:
+                logger.info("Reached last batch")
+                break
+            
+            since_id = int(customers[-1].id)
+        
+        logger.info(f"Total customers fetched: {len(all_customers)}")
+        
+        # Now fetch orders for each customer to get sizes
+        customer_data = {}
+        logger.info("Fetching order data for customers...")
+        
+        for idx, customer in enumerate(all_customers):
+            if (idx + 1) % 50 == 0:
+                logger.info(f"Processing customer {idx + 1}/{len(all_customers)}")
+            
+            customer_id = str(customer.id)
+            
+            # Get customer basic info
+            first_name = getattr(customer, 'first_name', '') or ''
+            last_name = getattr(customer, 'last_name', '') or ''
+            email = getattr(customer, 'email', None)
+            phone = getattr(customer, 'phone', None)
+            
+            # Get country from default address
+            country_code = None
+            if hasattr(customer, 'default_address') and customer.default_address:
+                country_code = getattr(customer.default_address, 'country_code', None)
+                if not phone:
+                    phone = getattr(customer.default_address, 'phone', None)
+            
+            customer_data[customer_id] = {
+                'customer_id': customer_id,
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': email,
+                'phone': phone,
+                'country_code': country_code,
+                'shoe_sizes': set(),
+                'order_count': getattr(customer, 'orders_count', 0),
+                'last_order_date': None,
+                'total_spent': float(getattr(customer, 'total_spent', 0) or 0)
+            }
+        
+        # Fetch orders to get product variants/sizes
+        logger.info("Fetching orders to extract sizes...")
+        all_orders = []
+        since_id = 0
+        batch_count = 0
+        
+        while True:
+            batch_count += 1
+            if since_id == 0:
+                orders = shopify.Order.find(limit=250, status="any")
+            else:
+                orders = shopify.Order.find(limit=250, status="any", since_id=since_id)
+            
+            if not orders:
+                break
+                
+            all_orders.extend(orders)
+            
+            if len(orders) < 250:
+                break
+            
+            since_id = int(orders[-1].id)
+        
+        logger.info(f"Processing {len(all_orders)} orders for size extraction...")
+        
+        # Extract sizes from orders
+        for order in all_orders:
+            if not hasattr(order, 'customer') or not order.customer:
+                continue
+            
+            customer_id = str(order.customer.id)
+            
+            if customer_id not in customer_data:
+                continue
+            
+            # Update last order date
+            if hasattr(order, 'created_at') and order.created_at:
+                order_date = str(order.created_at)
+                if not customer_data[customer_id]['last_order_date'] or order_date > customer_data[customer_id]['last_order_date']:
+                    customer_data[customer_id]['last_order_date'] = order_date
+            
+            # Extract sizes from line items
+            if hasattr(order, 'line_items') and order.line_items:
+                for item in order.line_items:
+                    if hasattr(item, 'variant_title') and item.variant_title:
+                        variant_title = str(item.variant_title).strip()
+                        customer_data[customer_id]['shoe_sizes'].add(variant_title)
+        
+        # Convert sets to lists and save to database
+        customers_list = []
+        for cust_id, cust_data in customer_data.items():
+            cust_data['shoe_sizes'] = list(cust_data['shoe_sizes'])
+            if not cust_data['shoe_sizes']:
+                cust_data['shoe_sizes'] = ['Unknown']
+            customers_list.append(cust_data)
+        
+        # Clear existing customers and insert new data
+        await db.customers.delete_many({})
+        if customers_list:
+            await db.customers.insert_many(customers_list)
+        
+        return SyncResponse(
+            success=True,
+            message=f"Successfully synced {len(customers_list)} customers from {len(all_orders)} orders",
+            customers_synced=len(customers_list),
+            timestamp=datetime.now(timezone.utc).isoformat()
+        )
+        
+    except Exception as e:
+        logger.error(f"Error syncing all customers: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to sync customers: {str(e)}")
+
+
 @api_router.post("/shopify/sync", response_model=SyncResponse)
 async def sync_shopify_data(config: ShopifyConfig):
     """
-    Sync customer data from Shopify
+    Sync customer data from Shopify (orders-based method)
     """
     try:
         # Setup Shopify session
