@@ -223,10 +223,13 @@ async def sync_all_customers(config: ShopifyConfig):
                 cust_data['shoe_sizes'] = ['Unknown']
             customers_list.append(cust_data)
         
+        logger.info(f"Prepared {len(customers_list)} customers for database insertion")
+        
         # Clear existing customers and insert new data
         await db.customers.delete_many({})
         if customers_list:
-            await db.customers.insert_many(customers_list)
+            result = await db.customers.insert_many(customers_list)
+            logger.info(f"Inserted {len(result.inserted_ids)} customers into database")
         
         return SyncResponse(
             success=True,
@@ -354,10 +357,13 @@ async def sync_shopify_data(config: ShopifyConfig):
                 cust_data['shoe_sizes'] = ['Unknown']
             customers_list.append(cust_data)
         
+        logger.info(f"Prepared {len(customers_list)} customers for database insertion")
+        
         # Clear existing customers and insert new data
         await db.customers.delete_many({})
         if customers_list:
-            await db.customers.insert_many(customers_list)
+            result = await db.customers.insert_many(customers_list)
+            logger.info(f"Inserted {len(result.inserted_ids)} customers into database")
         
         return SyncResponse(
             success=True,
