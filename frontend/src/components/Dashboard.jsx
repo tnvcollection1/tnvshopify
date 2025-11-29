@@ -406,11 +406,10 @@ const Dashboard = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
-                      <TableHead>Country</TableHead>
                       <TableHead>Sizes</TableHead>
                       <TableHead>Orders</TableHead>
+                      <TableHead>Store</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
