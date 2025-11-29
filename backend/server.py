@@ -290,20 +290,19 @@ async def sync_shopify_data(config: ShopifyConfig):
             else:
                 orders = shopify.Order.find(limit=250, status="any", since_id=since_id)
             
-            if not orders:
+            if not orders or len(orders) == 0:
                 logger.info("No more orders to fetch")
                 break
                 
             all_orders.extend(orders)
             logger.info(f"Fetched {len(orders)} orders in batch {batch_count}. Total so far: {len(all_orders)}")
             
-            # If we got less than 250 orders, we're done
-            if len(orders) < 250:
-                logger.info("Reached last batch")
-                break
-            
-            # Update since_id to the ID of the last order
+            # Update since_id to the ID of the last order for next iteration
             since_id = int(orders[-1].id)
+            
+            # Log progress every 10 batches
+            if batch_count % 10 == 0:
+                logger.info(f"Progress: {len(all_orders)} orders fetched so far...")
         
         logger.info(f"Total orders fetched: {len(all_orders)}")
         
