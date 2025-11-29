@@ -240,6 +240,17 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-6 py-8">
+        {/* Alert for missing data */}
+        {stats.totalCustomers > 0 && filteredCustomers.filter(c => c.phone).length === 0 && (
+          <Alert className="mb-6 bg-yellow-50 border-yellow-200">
+            <AlertDescription className="text-yellow-800">
+              <strong>⚠️ No Phone Numbers Found!</strong> Your Shopify store isn't collecting customer phone numbers.
+              <br />
+              <strong>Solution:</strong> Export orders from Shopify Admin → Orders → Export (select "All orders") and upload the CSV here for complete data including phone numbers.
+            </AlertDescription>
+          </Alert>
+        )}
+        
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="border-none shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
