@@ -56,7 +56,9 @@ const Dashboard = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-    fetchCustomers(selectedSize, 1);
+    setSelectedSize("all");
+    fetchShoeSizes();
+    fetchCustomers("all", 1);
   }, [selectedStore]);
 
   useEffect(() => {
