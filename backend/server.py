@@ -122,7 +122,7 @@ async def sync_shopify_data(config: ShopifyConfig):
         customer_data = {}
         
         # Process orders
-        for order in orders:
+        for order in all_orders:
             if not hasattr(order, 'customer') or not order.customer:
                 continue
                 
