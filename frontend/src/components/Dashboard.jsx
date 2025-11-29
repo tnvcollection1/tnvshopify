@@ -301,7 +301,7 @@ const Dashboard = () => {
                       <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead>Country</TableHead>
-                      <TableHead>Shoe Sizes</TableHead>
+                      <TableHead>Sizes</TableHead>
                       <TableHead>Orders</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
