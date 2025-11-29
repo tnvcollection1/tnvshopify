@@ -591,6 +591,38 @@ const Dashboard = () => {
                 </Table>
               </div>
             )}
+
+            {/* Pagination */}
+            {!loading && filteredCustomers.length > 0 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                <div className="text-sm text-slate-600">
+                  Showing {((currentPage - 1) * customersPerPage) + 1} - {Math.min(currentPage * customersPerPage, totalCount)} of {totalCount} customers
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    data-testid="prev-page-btn"
+                  >
+                    Previous
+                  </Button>
+                  <div className="flex items-center gap-2 px-3">
+                    <span className="text-sm">Page {currentPage} of {Math.ceil(totalCount / customersPerPage)}</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    disabled={currentPage >= Math.ceil(totalCount / customersPerPage)}
+                    data-testid="next-page-btn"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
