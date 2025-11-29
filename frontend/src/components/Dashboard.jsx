@@ -366,7 +366,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="flex items-end">
+              <div className="md:col-span-2 flex items-end">
                 <Button 
                   onClick={openBulkWhatsApp}
                   disabled={filteredCustomers.length === 0}
