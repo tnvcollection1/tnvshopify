@@ -229,7 +229,7 @@ const Dashboard = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">Shoe Size</label>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Clothing Size</label>
                 <Select value={selectedSize} onValueChange={setSelectedSize}>
                   <SelectTrigger className="w-full" data-testid="shoe-size-filter">
                     <SelectValue placeholder="Select size" />
