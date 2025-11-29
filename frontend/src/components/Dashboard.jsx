@@ -80,15 +80,59 @@ const Dashboard = () => {
     }
   };
 
-  const handleCSVUpload = async (event) => {
+  const addStore = async () => {
+    if (!newStoreName.trim()) {
+      toast.error("Please enter a store name");
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/stores`, {
+        store_name: newStoreName.trim(),
+        shop_url: newStoreUrl.trim() || `${newStoreName.toLowerCase().replace(/\s+/g, '-')}.myshopify.com`
+      });
+      
+      toast.success(`✅ Store "${newStoreName}" added`);
+      setNewStoreName("");
+      setNewStoreUrl("");
+      setShowAddStore(false);
+      await fetchStores();
+    } catch (error) {
+      console.error("Add store error:", error);
+      toast.error(error.response?.data?.detail || "Failed to add store");
+    }
+  };
+
+  const deleteStore = async (storeId, storeName) => {
+    if (!confirm(`Delete store "${storeName}" and all its customers?`)) return;
+
+    try {
+      await axios.delete(`${API}/stores/${storeId}`);
+      toast.success(`✅ Deleted store "${storeName}"`);
+      await fetchStores();
+      await fetchCustomers();
+      await fetchShoeSizes();
+      if (selectedStore === storeName) {
+        setSelectedStore("all");
+      }
+    } catch (error) {
+      console.error("Delete store error:", error);
+      toast.error("Failed to delete store");
+    }
+  };
+
+  const handleCSVUpload = async (event, storeName = null) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Ask for store name
-    const storeName = prompt("Enter store name for this data:", selectedStore !== "all" ? selectedStore : "Store 1");
-    if (!storeName) {
-      event.target.value = '';
-      return;
+    // Use provided store name or ask for one
+    let uploadStoreName = storeName;
+    if (!uploadStoreName) {
+      uploadStoreName = prompt("Enter store name for this data:", selectedStore !== "all" ? selectedStore : "Store 1");
+      if (!uploadStoreName) {
+        event.target.value = '';
+        return;
+      }
     }
 
     setUploading(true);
@@ -96,8 +140,8 @@ const Dashboard = () => {
     formData.append('file', file);
 
     try {
-      toast.info("Uploading CSV...", { duration: 3000 });
-      const response = await axios.post(`${API}/upload-csv?store_name=${encodeURIComponent(storeName)}`, formData, {
+      toast.info("Uploading CSV... This may take a moment", { duration: 3000 });
+      const response = await axios.post(`${API}/upload-csv?store_name=${encodeURIComponent(uploadStoreName)}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -107,7 +151,7 @@ const Dashboard = () => {
       await fetchShoeSizes();
     } catch (error) {
       console.error("CSV upload error:", error);
-      toast.error("Failed to upload CSV. Please check the file format.");
+      toast.error(error.response?.data?.detail || "Failed to upload CSV. Please check the file format.");
     } finally {
       setUploading(false);
       event.target.value = ''; // Reset file input
