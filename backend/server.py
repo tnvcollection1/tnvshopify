@@ -102,19 +102,35 @@ async def sync_shopify_data(config: ShopifyConfig):
         shopify.ShopifyResource.set_site(f"https://{shop_url}/admin/api/2024-10")
         shopify.ShopifyResource.headers = {"X-Shopify-Access-Token": config.access_token}
         
-        # Fetch ALL orders with pagination
+        # Fetch ALL orders with cursor-based pagination
         all_orders = []
-        page = 1
+        since_id = 0
+        batch_count = 0
+        
         while True:
-            logger.info(f"Fetching orders page {page}...")
-            orders = shopify.Order.find(limit=250, status="any", page=page)
+            batch_count += 1
+            logger.info(f"Fetching orders batch {batch_count} (since_id: {since_id})...")
+            
+            # Fetch orders after the last ID
+            if since_id == 0:
+                orders = shopify.Order.find(limit=250, status="any")
+            else:
+                orders = shopify.Order.find(limit=250, status="any", since_id=since_id)
+            
             if not orders:
+                logger.info("No more orders to fetch")
                 break
+                
             all_orders.extend(orders)
-            logger.info(f"Fetched {len(orders)} orders on page {page}. Total so far: {len(all_orders)}")
-            if len(orders) < 250:  # Last page
+            logger.info(f"Fetched {len(orders)} orders in batch {batch_count}. Total so far: {len(all_orders)}")
+            
+            # If we got less than 250 orders, we're done
+            if len(orders) < 250:
+                logger.info("Reached last batch")
                 break
-            page += 1
+            
+            # Update since_id to the ID of the last order
+            since_id = int(orders[-1].id)
         
         logger.info(f"Total orders fetched: {len(all_orders)}")
         
