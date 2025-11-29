@@ -303,16 +303,103 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-6 py-8">
-        {/* Instructions */}
-        {stats.totalCustomers === 0 && (
-          <Alert className="mb-6 bg-blue-50 border-blue-200">
-            <AlertDescription className="text-blue-800">
-              <strong>📤 Get Started:</strong> Export your order data from Shopify (Admin → Orders → Export → "All orders") and upload the CSV file using the button above.
-              <br />
-              <strong>Supports:</strong> Multiple stores, customer names, phone numbers, clothing sizes, and order history.
-            </AlertDescription>
-          </Alert>
-        )}
+        {/* Store Management */}
+        <Card className="mb-8 border-none shadow-lg bg-white">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-2xl flex items-center gap-2" style={{ fontFamily: 'Space Grotesk' }}>
+                  <StoreIcon className="h-6 w-6" />
+                  Manage Stores
+                </CardTitle>
+                <CardDescription>Add your 3 Shopify stores and upload customer data for each</CardDescription>
+              </div>
+              <Button
+                onClick={() => setShowAddStore(!showAddStore)}
+                className="bg-indigo-600 hover:bg-indigo-700"
+                data-testid="add-store-btn"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Store
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {showAddStore && (
+              <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <h3 className="font-semibold mb-3">Add New Store</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <Input
+                    placeholder="Store Name (e.g., Main Store, Store 2)"
+                    value={newStoreName}
+                    onChange={(e) => setNewStoreName(e.target.value)}
+                    data-testid="store-name-input"
+                  />
+                  <Input
+                    placeholder="Shopify URL (e.g., mystore.myshopify.com)"
+                    value={newStoreUrl}
+                    onChange={(e) => setNewStoreUrl(e.target.value)}
+                    data-testid="store-url-input"
+                  />
+                  <Button onClick={addStore} className="bg-green-600 hover:bg-green-700" data-testid="save-store-btn">
+                    Save Store
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {stores.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <StoreIcon className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                <p>No stores added yet. Click "Add Store" to get started.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {stores.map((store) => (
+                  <Card key={store.id} className="border border-slate-200 hover:border-indigo-300 transition-colors">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-lg">{store.store_name}</h3>
+                          <p className="text-sm text-slate-500">{store.shop_url}</p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deleteStore(store.id, store.store_name)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          data-testid={`delete-store-${store.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <label htmlFor={`csv-upload-${store.id}`}>
+                        <Button
+                          as="span"
+                          size="sm"
+                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 cursor-pointer"
+                          data-testid={`upload-csv-${store.id}`}
+                        >
+                          <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          Upload CSV
+                        </Button>
+                      </label>
+                      <input
+                        id={`csv-upload-${store.id}`}
+                        type="file"
+                        accept=".csv"
+                        onChange={(e) => handleCSVUpload(e, store.store_name)}
+                        className="hidden"
+                      />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
         
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
