@@ -417,28 +417,33 @@ const Dashboard = () => {
                     {filteredCustomers.map((customer) => (
                       <TableRow key={customer.customer_id} data-testid={`customer-row-${customer.customer_id}`}>
                         <TableCell className="font-medium">
-                          {customer.first_name} {customer.last_name}
-                        </TableCell>
-                        <TableCell className="text-slate-600">{customer.email || 'N/A'}</TableCell>
-                        <TableCell className="text-slate-600">{customer.phone || 'N/A'}</TableCell>
-                        <TableCell>
-                          {customer.country_code ? (
-                            <Badge variant="outline">{customer.country_code}</Badge>
-                          ) : (
+                          {(customer.first_name || customer.last_name) ? 
+                            `${customer.first_name} ${customer.last_name}`.trim() : 
                             <span className="text-slate-400">N/A</span>
-                          )}
+                          }
+                        </TableCell>
+                        <TableCell className="text-slate-600 font-mono">
+                          {customer.phone || <span className="text-slate-400">No phone</span>}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
-                            {customer.shoe_sizes.map((size, idx) => (
+                            {customer.shoe_sizes.slice(0, 3).map((size, idx) => (
                               <Badge key={idx} className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
                                 {size}
                               </Badge>
                             ))}
+                            {customer.shoe_sizes.length > 3 && (
+                              <Badge variant="outline">+{customer.shoe_sizes.length - 3}</Badge>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">{customer.order_count}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="bg-slate-50">
+                            {customer.store_name || 'Default'}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
