@@ -136,20 +136,68 @@ async def get_shoe_sizes():
     return {"shoe_sizes": sorted(list(all_sizes))}
 
 
-@api_router.get("/stores")
+@api_router.post("/stores", response_model=Store)
+async def create_store(store: StoreCreate):
+    """
+    Add a new store
+    """
+    try:
+        # Check if store already exists
+        existing = await db.stores.find_one({"store_name": store.store_name})
+        if existing:
+            raise HTTPException(status_code=400, detail="Store with this name already exists")
+        
+        store_obj = Store(**store.model_dump())
+        doc = store_obj.model_dump()
+        await db.stores.insert_one(doc)
+        logger.info(f"Created store: {store.store_name}")
+        return store_obj
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating store: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create store: {str(e)}")
+
+
+@api_router.get("/stores", response_model=List[Store])
 async def get_stores():
     """
-    Get all unique stores
+    Get all stores
     """
-    customers = await db.customers.find({}, {"_id": 0, "store_name": 1}).to_list(10000)
-    
-    stores = set()
-    for customer in customers:
-        store = customer.get('store_name')
-        if store:
-            stores.add(store)
-    
-    return [{"id": idx, "store_name": s} for idx, s in enumerate(sorted(list(stores)))]
+    stores = await db.stores.find({}, {"_id": 0}).to_list(100)
+    return stores
+
+
+@api_router.delete("/stores/{store_id}")
+async def delete_store(store_id: str):
+    """
+    Delete a store and all its customers
+    """
+    try:
+        # Get store first
+        store = await db.stores.find_one({"id": store_id})
+        if not store:
+            raise HTTPException(status_code=404, detail="Store not found")
+        
+        store_name = store["store_name"]
+        
+        # Delete all customers from this store
+        customers_result = await db.customers.delete_many({"store_name": store_name})
+        
+        # Delete the store
+        await db.stores.delete_one({"id": store_id})
+        
+        logger.info(f"Deleted store '{store_name}' and {customers_result.deleted_count} customers")
+        
+        return {
+            "success": True,
+            "message": f"Deleted store '{store_name}' and {customers_result.deleted_count} customers"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting store: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete store: {str(e)}")
 
 
 @api_router.post("/whatsapp-link")
