@@ -192,7 +192,7 @@ async def sync_all_customers(config: ShopifyConfig):
         
         logger.info(f"Processing {len(all_orders)} orders for size extraction...")
         
-        # Extract sizes from orders
+        # Extract sizes and phone numbers from orders
         for order in all_orders:
             if not hasattr(order, 'customer') or not order.customer:
                 continue
@@ -202,18 +202,35 @@ async def sync_all_customers(config: ShopifyConfig):
             if customer_id not in customer_data:
                 continue
             
+            # Update phone number from shipping or billing address
+            if not customer_data[customer_id]['phone']:
+                if hasattr(order, 'shipping_address') and order.shipping_address:
+                    phone = getattr(order.shipping_address, 'phone', None)
+                    if phone:
+                        customer_data[customer_id]['phone'] = phone
+                        if not customer_data[customer_id]['country_code']:
+                            customer_data[customer_id]['country_code'] = getattr(order.shipping_address, 'country_code', None)
+                
+                if not customer_data[customer_id]['phone'] and hasattr(order, 'billing_address') and order.billing_address:
+                    phone = getattr(order.billing_address, 'phone', None)
+                    if phone:
+                        customer_data[customer_id]['phone'] = phone
+                        if not customer_data[customer_id]['country_code']:
+                            customer_data[customer_id]['country_code'] = getattr(order.billing_address, 'country_code', None)
+            
             # Update last order date
             if hasattr(order, 'created_at') and order.created_at:
                 order_date = str(order.created_at)
                 if not customer_data[customer_id]['last_order_date'] or order_date > customer_data[customer_id]['last_order_date']:
                     customer_data[customer_id]['last_order_date'] = order_date
             
-            # Extract sizes from line items
+            # Extract clothing sizes from line items
             if hasattr(order, 'line_items') and order.line_items:
                 for item in order.line_items:
                     if hasattr(item, 'variant_title') and item.variant_title:
                         variant_title = str(item.variant_title).strip()
-                        customer_data[customer_id]['shoe_sizes'].add(variant_title)
+                        if variant_title and variant_title.lower() != 'default title':
+                            customer_data[customer_id]['shoe_sizes'].add(variant_title)
         
         # Convert sets to lists and save to database
         customers_list = []
