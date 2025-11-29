@@ -153,10 +153,16 @@ async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "De
         
         logger.info(f"Updated {updated_count} existing customers, inserted {inserted_count} new customers")
         
+        # Get total count for this store
+        total_customers = await db.customers.count_documents({"store_name": store_name})
+        
         return {
             "success": True,
-            "message": f"Successfully imported {len(customers_list)} customers from {store_name}",
+            "message": f"Added {inserted_count} new, updated {updated_count} existing. Total: {total_customers} customers in {store_name}",
             "customers_imported": len(customers_list),
+            "inserted": inserted_count,
+            "updated": updated_count,
+            "total": total_customers,
             "store_name": store_name
         }
         
