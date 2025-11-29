@@ -102,8 +102,21 @@ async def sync_shopify_data(config: ShopifyConfig):
         shopify.ShopifyResource.set_site(f"https://{shop_url}/admin/api/2024-10")
         shopify.ShopifyResource.headers = {"X-Shopify-Access-Token": config.access_token}
         
-        # Fetch all orders
-        orders = shopify.Order.find(limit=250, status="any")
+        # Fetch ALL orders with pagination
+        all_orders = []
+        page = 1
+        while True:
+            logger.info(f"Fetching orders page {page}...")
+            orders = shopify.Order.find(limit=250, status="any", page=page)
+            if not orders:
+                break
+            all_orders.extend(orders)
+            logger.info(f"Fetched {len(orders)} orders on page {page}. Total so far: {len(all_orders)}")
+            if len(orders) < 250:  # Last page
+                break
+            page += 1
+        
+        logger.info(f"Total orders fetched: {len(all_orders)}")
         
         # Dictionary to store customer data
         customer_data = {}
