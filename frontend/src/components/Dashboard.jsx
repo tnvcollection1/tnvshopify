@@ -44,9 +44,14 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
+    fetchStores();
     fetchShoeSizes();
     fetchCustomers();
   }, []);
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [selectedStore]);
 
   useEffect(() => {
     filterCustomers();
