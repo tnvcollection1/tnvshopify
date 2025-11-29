@@ -432,13 +432,15 @@ async def sync_shopify_data(config: ShopifyConfig):
 
 
 @api_router.get("/customers", response_model=List[Customer])
-async def get_customers(shoe_size: Optional[str] = None):
+async def get_customers(shoe_size: Optional[str] = None, store_name: Optional[str] = None):
     """
-    Get all customers, optionally filtered by shoe size
+    Get all customers, optionally filtered by shoe size and store
     """
     query = {}
     if shoe_size and shoe_size != "all":
         query['shoe_sizes'] = shoe_size
+    if store_name and store_name != "all":
+        query['store_name'] = store_name
     
     customers = await db.customers.find(query, {"_id": 0}).to_list(10000)
     return customers
