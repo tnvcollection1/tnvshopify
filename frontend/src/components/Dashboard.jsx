@@ -202,7 +202,7 @@ const Dashboard = () => {
 
           <Card className="border-none shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
             <CardHeader className="pb-3">
-              <CardDescription className="text-purple-100">Unique Shoe Sizes</CardDescription>
+              <CardDescription className="text-purple-100">Unique Sizes</CardDescription>
               <CardTitle className="text-4xl font-bold">{stats.uniqueSizes}</CardTitle>
             </CardHeader>
             <CardContent>
