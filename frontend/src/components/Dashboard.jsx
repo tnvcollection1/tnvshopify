@@ -256,13 +256,13 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-6 py-8">
-        {/* Alert for missing data */}
-        {stats.totalCustomers > 0 && filteredCustomers.filter(c => c.phone).length === 0 && (
-          <Alert className="mb-6 bg-yellow-50 border-yellow-200">
-            <AlertDescription className="text-yellow-800">
-              <strong>⚠️ No Phone Numbers Found!</strong> Your Shopify store isn't collecting customer phone numbers.
+        {/* Instructions */}
+        {stats.totalCustomers === 0 && (
+          <Alert className="mb-6 bg-blue-50 border-blue-200">
+            <AlertDescription className="text-blue-800">
+              <strong>📤 Get Started:</strong> Export your order data from Shopify (Admin → Orders → Export → "All orders") and upload the CSV file using the button above.
               <br />
-              <strong>Solution:</strong> Export orders from Shopify Admin → Orders → Export (select "All orders") and upload the CSV here for complete data including phone numbers.
+              <strong>Supports:</strong> Multiple stores, customer names, phone numbers, clothing sizes, and order history.
             </AlertDescription>
           </Alert>
         )}
