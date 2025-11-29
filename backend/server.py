@@ -214,11 +214,15 @@ async def get_customers_count(
 
 
 @api_router.get("/shoe-sizes")
-async def get_shoe_sizes():
+async def get_shoe_sizes(store_name: Optional[str] = None):
     """
-    Get all unique shoe sizes
+    Get all unique shoe sizes, optionally filtered by store
     """
-    customers = await db.customers.find({}, {"_id": 0, "shoe_sizes": 1}).to_list(10000)
+    query = {}
+    if store_name and store_name != "all":
+        query['store_name'] = store_name
+    
+    customers = await db.customers.find(query, {"_id": 0, "shoe_sizes": 1}).to_list(20000)
     
     all_sizes = set()
     for customer in customers:
