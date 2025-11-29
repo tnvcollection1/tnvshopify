@@ -205,6 +205,7 @@ const Dashboard = () => {
   const fetchCustomers = async (size = null, page = currentPage) => {
     setLoading(true);
     try {
+      // Build URL for customers
       let url = `${API}/customers?page=${page}&limit=${customersPerPage}&`;
       if (size && size !== "all") {
         url += `shoe_size=${size}&`;
@@ -212,9 +213,25 @@ const Dashboard = () => {
       if (selectedStore && selectedStore !== "all") {
         url += `store_name=${selectedStore}`;
       }
-      const response = await axios.get(url);
-      setCustomers(response.data);
-      await fetchCustomersCount();
+      
+      // Build URL for count
+      let countUrl = `${API}/customers/count?`;
+      if (size && size !== "all") {
+        countUrl += `shoe_size=${size}&`;
+      }
+      if (selectedStore && selectedStore !== "all") {
+        countUrl += `store_name=${selectedStore}`;
+      }
+      
+      // Fetch both in parallel
+      const [customersResponse, countResponse] = await Promise.all([
+        axios.get(url),
+        axios.get(countUrl)
+      ]);
+      
+      setCustomers(customersResponse.data);
+      setTotalCount(countResponse.data.total);
+      setStats(prev => ({ ...prev, totalCustomers: countResponse.data.total }));
     } catch (error) {
       console.error("Fetch customers error:", error);
       toast.error("Failed to fetch customers");
