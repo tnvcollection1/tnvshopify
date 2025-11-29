@@ -409,7 +409,9 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="border-none shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
             <CardHeader className="pb-3">
-              <CardDescription className="text-blue-100">Total Customers</CardDescription>
+              <CardDescription className="text-blue-100">
+                {selectedStore !== "all" ? `${selectedStore} Customers` : "Total Customers"}
+              </CardDescription>
               <CardTitle className="text-4xl font-bold">{stats.totalCustomers}</CardTitle>
             </CardHeader>
             <CardContent>
@@ -419,7 +421,9 @@ const Dashboard = () => {
 
           <Card className="border-none shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
             <CardHeader className="pb-3">
-              <CardDescription className="text-purple-100">Unique Sizes</CardDescription>
+              <CardDescription className="text-purple-100">
+                {selectedStore !== "all" ? `${selectedStore} Sizes` : "Unique Sizes"}
+              </CardDescription>
               <CardTitle className="text-4xl font-bold">{stats.uniqueSizes}</CardTitle>
             </CardHeader>
             <CardContent>
@@ -429,8 +433,8 @@ const Dashboard = () => {
 
           <Card className="border-none shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
             <CardHeader className="pb-3">
-              <CardDescription className="text-green-100">Filtered Results</CardDescription>
-              <CardTitle className="text-4xl font-bold">{stats.filteredCount}</CardTitle>
+              <CardDescription className="text-green-100">Current Page</CardDescription>
+              <CardTitle className="text-4xl font-bold">{filteredCustomers.length}</CardTitle>
             </CardHeader>
             <CardContent>
               <Search className="h-8 w-8 opacity-80" />
