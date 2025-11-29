@@ -36,6 +36,9 @@ const Dashboard = () => {
   const [uploading, setUploading] = useState(false);
   const [stores, setStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState("all");
+  const [showAddStore, setShowAddStore] = useState(false);
+  const [newStoreName, setNewStoreName] = useState("");
+  const [newStoreUrl, setNewStoreUrl] = useState("");
   const [stats, setStats] = useState({
     totalCustomers: 0,
     uniqueSizes: 0,
