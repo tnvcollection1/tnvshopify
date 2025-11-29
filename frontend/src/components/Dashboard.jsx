@@ -357,19 +357,6 @@ const Dashboard = () => {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                      <label htmlFor={`csv-upload-${store.id}`}>
-                        <Button
-                          as="span"
-                          size="sm"
-                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 cursor-pointer"
-                          data-testid={`upload-csv-${store.id}`}
-                        >
-                          <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                          </svg>
-                          Upload CSV
-                        </Button>
-                      </label>
                       <input
                         id={`csv-upload-${store.id}`}
                         type="file"
@@ -377,6 +364,16 @@ const Dashboard = () => {
                         onChange={(e) => handleCSVUpload(e, store.store_name)}
                         className="hidden"
                       />
+                      <label 
+                        htmlFor={`csv-upload-${store.id}`}
+                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white cursor-pointer"
+                        data-testid={`upload-csv-${store.id}`}
+                      >
+                        <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        Upload CSV
+                      </label>
                     </CardContent>
                   </Card>
                 ))}
