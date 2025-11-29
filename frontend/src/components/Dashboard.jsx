@@ -55,8 +55,13 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    fetchCustomers();
+    setCurrentPage(1);
+    fetchCustomers(selectedSize, 1);
   }, [selectedStore]);
+
+  useEffect(() => {
+    fetchCustomers(selectedSize, currentPage);
+  }, [currentPage]);
 
   useEffect(() => {
     filterCustomers();
