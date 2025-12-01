@@ -590,12 +590,12 @@ const Dashboard = () => {
               <div className="md:col-span-2 flex items-end">
                 <Button 
                   onClick={openBulkWhatsApp}
-                  disabled={filteredCustomers.length === 0}
+                  disabled={filteredCustomers.length === 0 || sendingMessages}
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-medium shadow-lg shadow-green-200 transition-all hover:shadow-xl"
                   data-testid="bulk-whatsapp-btn"
                 >
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  Message {filteredCustomers.length} Customers
+                  {sendingMessages ? 'Sending Messages...' : `Message ${filteredCustomers.length} Customers (8s delay)`}
                 </Button>
               </div>
             </div>
