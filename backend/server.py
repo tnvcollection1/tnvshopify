@@ -907,6 +907,128 @@ async def sync_all_tcs_deliveries():
                 "message": "No tracking numbers to update",
                 "updated": 0
             }
+
+
+@api_router.post("/tcs/sync-cod-payments")
+async def sync_cod_payments():
+    """
+    Sync COD payment status for all orders with tracking numbers
+    Updates: cod_payment_status, cod_amount, cod_collection_date, cod_remittance_date
+    """
+    try:
+        # Get TCS credentials
+        config = await db.tcs_config.find_one({"service": "tcs_pakistan"}, {"_id": 0})
+        
+        if not config:
+            raise HTTPException(status_code=400, detail="TCS not configured")
+        
+        # Initialize TCS Payment API
+        from tcs_payment import TCSPaymentAPI
+        
+        if config.get('auth_type') == 'bearer':
+            payment_api = TCSPaymentAPI(bearer_token=config.get('bearer_token'))
+        else:
+            raise HTTPException(status_code=400, detail="Bearer token required for payment API")
+        
+        # Get customers with tracking numbers and COD orders (limit 500 per sync)
+        customers = await db.customers.find({
+            "tracking_number": {"$ne": None, "$exists": True, "$ne": ""},
+            "$or": [
+                {"cod_payment_status": {"$exists": False}},
+                {"cod_payment_status": "PENDING"},
+                {"cod_payment_status": "COLLECTED"}
+            ]
+        }, {"_id": 0, "customer_id": 1, "store_name": 1, "tracking_number": 1}).limit(500).to_list(500)
+        
+        if not customers:
+            return {
+                "success": True,
+                "message": "No COD payments to sync",
+                "updated": 0
+            }
+        
+        logger.info(f"Syncing COD payment status for {len(customers)} orders...")
+        
+        updated_count = 0
+        
+        for customer in customers:
+            try:
+                tracking_number = customer['tracking_number']
+                payment_data = payment_api.get_payment_status(tracking_number)
+                
+                if payment_data.get('success'):
+                    # Update customer with COD payment info
+                    await db.customers.update_one(
+                        {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                        {"$set": {
+                            "cod_payment_status": payment_data.get('normalized_status', 'UNKNOWN'),
+                            "cod_amount": payment_data.get('cod_amount', 0.0),
+                            "cod_collection_date": payment_data.get('collection_date'),
+                            "cod_remittance_date": payment_data.get('remittance_date'),
+                            "cod_remittance_amount": payment_data.get('remittance_amount', 0.0),
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    updated_count += 1
+                    
+            except Exception as e:
+                logger.error(f"Error syncing payment for {customer.get('tracking_number')}: {str(e)}")
+                continue
+        
+        logger.info(f"COD payment sync completed: {updated_count} payments updated")
+        
+        return {
+            "success": True,
+            "message": f"Synced {updated_count} COD payments",
+            "updated": updated_count,
+            "processed": len(customers)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing COD payments: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/tcs/payment-status/{tracking_number}")
+async def get_cod_payment_status(tracking_number: str):
+    """
+    Get COD payment status for a specific tracking number
+    """
+    try:
+        # Get TCS credentials
+        config = await db.tcs_config.find_one({"service": "tcs_pakistan"}, {"_id": 0})
+        
+        if not config:
+            raise HTTPException(status_code=400, detail="TCS not configured")
+        
+        # Initialize TCS Payment API
+        from tcs_payment import TCSPaymentAPI
+        
+        if config.get('auth_type') == 'bearer':
+            payment_api = TCSPaymentAPI(bearer_token=config.get('bearer_token'))
+        else:
+            raise HTTPException(status_code=400, detail="Bearer token required for payment API")
+        
+        # Get payment status
+        payment_data = payment_api.get_payment_status(tracking_number)
+        
+        if payment_data.get('success'):
+            return {
+                "success": True,
+                "tracking_number": tracking_number,
+                "payment_data": payment_data
+            }
+        else:
+            return {
+                "success": False,
+                "tracking_number": tracking_number,
+                "error": payment_data.get('error', 'Unknown error')
+            }
+        
+    except Exception as e:
+        logger.error(f"Error getting COD payment status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
         
         # Track all consignments
         if config.get('auth_type') == 'bearer':
