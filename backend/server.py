@@ -1002,11 +1002,12 @@ async def get_customers(
     stock_availability: Optional[str] = None,  # "in_stock", "out_of_stock", "partial"
     fulfillment_status: Optional[str] = None,  # "fulfilled", "unfulfilled", "partially_fulfilled"
     delivery_status: Optional[str] = None,  # "DELIVERED", "IN_TRANSIT", "OUT_FOR_DELIVERY", etc.
+    payment_status: Optional[str] = None,  # "paid", "pending", "refunded", "partially_refunded", "voided"
     page: int = 1,
     limit: int = 100
 ):
     """
-    Get customers with pagination, filtered by size, store, messaged status, country, agent, stock availability, fulfillment, and delivery status
+    Get customers with pagination, filtered by size, store, messaged status, country, agent, stock availability, fulfillment, delivery, and payment status
     """
     query = {}
     if shoe_size and shoe_size != "all":
@@ -1025,6 +1026,8 @@ async def get_customers(
         query['fulfillment_status'] = fulfillment_status
     if delivery_status and delivery_status != "all":
         query['delivery_status'] = delivery_status
+    if payment_status and payment_status != "all":
+        query['payment_status'] = payment_status
     
     # Calculate skip value for pagination
     skip = (page - 1) * limit
