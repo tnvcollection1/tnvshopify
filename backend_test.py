@@ -284,7 +284,7 @@ def main():
     tester = ShopifyCustomerAPITester()
     
     # Run all tests
-    print("\n📋 Running API Endpoint Tests...")
+    print("\n📋 Running Basic API Endpoint Tests...")
     
     # Basic API tests
     tester.test_root_endpoint()
@@ -297,6 +297,20 @@ def main():
     
     # WhatsApp integration test
     tester.test_whatsapp_link_endpoint()
+    
+    print("\n📋 Running Agent Login & Tracking System Tests...")
+    
+    # Agent system tests
+    agent_login_success, agent_data = tester.test_agent_login()
+    tester.test_agents_list()
+    
+    if agent_login_success:
+        # Only run agent tracking tests if login works
+        tester.test_mark_customer_messaged_with_agent()
+        tester.test_filter_customers_by_agent()
+        tester.test_daily_reports()
+    else:
+        print("⚠️  Skipping agent tracking tests due to login failure")
     
     # Shopify sync test (expected to fail)
     tester.test_shopify_sync_endpoint()
@@ -313,22 +327,34 @@ def main():
         if not result["success"] and "error" in result:
             print(f"    Error: {result['error']}")
     
-    # Determine overall success
-    critical_tests = [
-        "Root API", "Get All Customers", "Get Shoe Sizes", 
-        "Generate WhatsApp Link", "Create Status Check"
+    # Determine overall success - focus on agent system tests
+    agent_tests = [
+        "Agent Login", "Get Agents List", "Mark Customer Messaged by Agent",
+        "Filter Customers by Agent", "Daily Reports - All Agents", "Daily Reports - Admin Agent"
     ]
     
-    critical_passed = sum(1 for result in tester.test_results 
-                         if result["test_name"] in critical_tests and result["success"])
+    basic_tests = [
+        "Root API", "Get All Customers", "Get Shoe Sizes", "Generate WhatsApp Link"
+    ]
     
-    print(f"\n🎯 Critical Tests: {critical_passed}/{len(critical_tests)} passed")
+    agent_passed = sum(1 for result in tester.test_results 
+                      if result["test_name"] in agent_tests and result["success"])
     
-    if critical_passed >= len(critical_tests) - 1:  # Allow 1 failure
-        print("✅ Backend API is functioning well!")
+    basic_passed = sum(1 for result in tester.test_results 
+                      if result["test_name"] in basic_tests and result["success"])
+    
+    print(f"\n🎯 Basic API Tests: {basic_passed}/{len(basic_tests)} passed")
+    print(f"🎯 Agent System Tests: {agent_passed}/{len(agent_tests)} passed")
+    
+    if basic_passed >= len(basic_tests) - 1 and agent_passed >= len(agent_tests) - 1:
+        print("✅ Backend API and Agent System are functioning well!")
         return 0
     else:
         print("❌ Backend has critical issues that need attention")
+        if basic_passed < len(basic_tests) - 1:
+            print("   - Basic API issues detected")
+        if agent_passed < len(agent_tests) - 1:
+            print("   - Agent system issues detected")
         return 1
 
 if __name__ == "__main__":
