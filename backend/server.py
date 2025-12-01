@@ -399,6 +399,7 @@ async def sync_shopify_orders(store_name: str, days_back: int = 30, full_sync: b
                         "country_code": order_data['country_code'] or existing.get('country_code'),
                         "order_skus": merged_skus,
                         "shoe_sizes": merged_sizes,
+                        "order_number": str(order_data['order_number']),
                         "last_order_date": order_data['order_date'],
                         "fulfillment_status": order_data['fulfillment_status'],
                         "tracking_number": order_data['tracking_info']['tracking_number'] if order_data['tracking_info'] else None,
