@@ -29,6 +29,8 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const Dashboard = () => {
+  const { agent, logout } = useAuth();
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [shoeSizes, setShoeSizes] = useState([]);
@@ -55,6 +57,11 @@ const Dashboard = () => {
     uniqueSizes: 0,
     filteredCount: 0
   });
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     fetchStores();
