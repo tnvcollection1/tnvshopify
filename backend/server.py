@@ -2039,6 +2039,26 @@ async def get_customers_count(
         query['delivery_status'] = delivery_status
     if payment_status and payment_status != "all":
         query['payment_status'] = payment_status
+    if confirmation_status and confirmation_status != "all":
+        query['confirmation_status'] = confirmation_status
+    if purchase_status and purchase_status != "all":
+        query['purchase_status'] = purchase_status
+    if china_tracking == "true":
+        query['tracking_number'] = {"$regex": "^X", "$options": "i"}
+    if tcs_only == "true":
+        query['tracking_number'] = {"$not": {"$regex": "^X", "$options": "i"}}
+    
+    # Search across multiple fields
+    if search:
+        search_regex = {"$regex": search, "$options": "i"}
+        query['$or'] = [
+            {'first_name': search_regex},
+            {'last_name': search_regex},
+            {'email': search_regex},
+            {'phone': search_regex},
+            {'order_number': search_regex},
+            {'tracking_number': search_regex}
+        ]
     
     # If stock_availability filter is specified, we need to fetch and filter
     if stock_availability and store_name and store_name != "all":
