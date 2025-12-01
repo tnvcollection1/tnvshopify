@@ -642,6 +642,7 @@ const Dashboard = () => {
                       <TableHead>Sizes</TableHead>
                       <TableHead>Orders</TableHead>
                       <TableHead>Store</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
