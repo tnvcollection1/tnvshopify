@@ -271,7 +271,12 @@ const Dashboard = () => {
       
       setCustomers(customersResponse.data);
       setTotalCount(countResponse.data.total);
-      setStats(prev => ({ ...prev, totalCustomers: countResponse.data.total }));
+      console.log('👥 Customer count response:', countResponse.data.total);
+      setStats(prev => {
+        const newStats = { ...prev, totalCustomers: countResponse.data.total };
+        console.log('👥 Updating stats.totalCustomers:', newStats.totalCustomers);
+        return newStats;
+      });
     } catch (error) {
       console.error("Fetch customers error:", error);
       toast.error("Failed to fetch customers");
