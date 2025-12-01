@@ -676,8 +676,17 @@ const Dashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedCustomers.length === filteredCustomers.filter(c => c.phone).length && filteredCustomers.filter(c => c.phone).length > 0}
+                          onChange={toggleSelectAll}
+                          className="w-4 h-4 rounded border-slate-300"
+                          data-testid="select-all-checkbox"
+                        />
+                      </TableHead>
                       <TableHead>Name</TableHead>
-                      <TableHead>Phone</TableHead>
+                      <TableHead>Phone / Email</TableHead>
                       <TableHead>Sizes</TableHead>
                       <TableHead>Orders</TableHead>
                       <TableHead>Store</TableHead>
