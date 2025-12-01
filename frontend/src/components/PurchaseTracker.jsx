@@ -141,7 +141,7 @@ const PurchaseTracker = () => {
     try {
       await axios.put(`${API}/customers/${editingOrder.customer_id}`, {
         purchase_status: editingOrder.purchase_status,
-        china_tracking_number: editingOrder.china_tracking_number,
+        tracking_number: editingOrder.tracking_number,
         purchase_cost_pkr: parseFloat(editingOrder.purchase_cost_pkr) || 0,
         shipping_cost_pkr: parseFloat(editingOrder.shipping_cost_pkr) || 0,
         customs_duty_pkr: parseFloat(editingOrder.customs_duty_pkr) || 0,
