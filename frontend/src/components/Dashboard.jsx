@@ -92,6 +92,12 @@ const Dashboard = () => {
     fetchCustomers(selectedSize, 1);
   }, [messagedFilter]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedCustomers([]);
+    fetchCustomers(selectedSize, 1);
+  }, [selectedCountry]);
+
   const syncShopifyData = async () => {
     setSyncing(true);
     try {
