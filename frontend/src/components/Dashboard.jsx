@@ -821,6 +821,7 @@ const Dashboard = () => {
                     <SelectItem value="in_stock">✅ In Stock</SelectItem>
                     <SelectItem value="out_of_stock">❌ Out of Stock</SelectItem>
                     <SelectItem value="partial">⚠️ Partial Stock</SelectItem>
+                    <SelectItem value="unknown">❓ Unknown (No SKU Data)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
