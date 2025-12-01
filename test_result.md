@@ -268,10 +268,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Agent login and authentication flow (login, logout, protected routes)"
-    - "Agent tracking when messaging customers via WhatsApp button"
-    - "Agent filter functionality to filter customers by agent"
-    - "Agent column displays correctly in customer table"
+    - "Frontend agent system integration testing (login flow, agent column, agent filter dropdown)"
+    - "End-to-end WhatsApp messaging with agent tracking"
+    - "Frontend-backend integration for agent features"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
