@@ -416,6 +416,42 @@ class AutoSyncScheduler:
                                     )
                                     logger.info(f"✅ Auto-deducted stock for order {customer.get('order_number')}")
                         
+                        # RESTORE STOCK WHEN ORDER IS RETURNED
+                        if new_status == 'RETURNED' and old_status != 'RETURNED':
+                            # Check if stock was previously deducted
+                            if customer.get('stock_deducted'):
+                                from inventory_manager import InventoryManager
+                                inv_manager = InventoryManager(db)
+                                
+                                # Restore stock by adding back the quantities
+                                order_skus = customer.get('order_skus', [])
+                                store_name = customer.get('store_name')
+                                
+                                if order_skus and store_name:
+                                    for sku_data in order_skus:
+                                        sku = sku_data.get('sku')
+                                        quantity = sku_data.get('quantity', 1)
+                                        
+                                        if sku:
+                                            # Add back to inventory
+                                            await db.inventory_items.update_one(
+                                                {"sku": sku.upper(), "store_name": store_name},
+                                                {"$inc": {"quantity": quantity}},
+                                                upsert=False
+                                            )
+                                    
+                                    # Mark stock as restored
+                                    await db.customers.update_one(
+                                        {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                                        {"$set": {
+                                            "stock_deducted": False,
+                                            "stock_restored": True,
+                                            "stock_restored_at": datetime.now(timezone.utc).isoformat(),
+                                            "payment_status": "refunded"
+                                        }}
+                                    )
+                                    logger.info(f"✅ Auto-restored stock for returned order {customer.get('order_number')}")
+                        
                 except Exception as e:
                     logger.error(f"Error tracking {customer.get('tracking_number')}: {str(e)}")
                     continue
