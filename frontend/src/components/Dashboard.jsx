@@ -281,7 +281,24 @@ const Dashboard = () => {
     setStats(prev => ({ ...prev, filteredCount: searchQuery ? filtered.length : totalCount }));
   };
 
-  const openWhatsApp = (phone, countryCode) => {
+  const getRandomGreeting = async () => {
+    try {
+      const response = await axios.get(`${API}/message-greetings`);
+      return response.data.greeting;
+    } catch (error) {
+      return "Hello"; // Fallback
+    }
+  };
+
+  const markCustomerMessaged = async (customerId) => {
+    try {
+      await axios.post(`${API}/customers/${customerId}/mark-messaged`);
+    } catch (error) {
+      console.error("Error marking customer:", error);
+    }
+  };
+
+  const openWhatsApp = async (phone, countryCode, customerId, customerName) => {
     if (!phone) {
       toast.error("No phone number available");
       return;
@@ -293,7 +310,7 @@ const Dashboard = () => {
     const countryDialCodes = {
       'US': '1', 'IN': '91', 'GB': '44', 'AE': '971', 'SA': '966',
       'CA': '1', 'AU': '61', 'PK': '92', 'BD': '880', 'DE': '49',
-      'FR': '33', 'IT': '39', 'ES': '34', 'BR': '55', 'MX': '52'
+      'FR': '33', 'IT': '39', 'ES': '34', 'BR': '55', 'MX': '52', 'PK': '92'
     };
     
     if (countryCode && !cleanedPhone.startsWith(countryDialCodes[countryCode] || '')) {
@@ -303,7 +320,17 @@ const Dashboard = () => {
       }
     }
     
-    window.open(`https://wa.me/${cleanedPhone}`, '_blank');
+    // Get random greeting
+    const greeting = await getRandomGreeting();
+    const message = encodeURIComponent(`${greeting} ${customerName}!`);
+    
+    window.open(`https://wa.me/${cleanedPhone}?text=${message}`, '_blank');
+    
+    // Mark as messaged
+    await markCustomerMessaged(customerId);
+    
+    // Refresh customers to update status
+    setTimeout(() => fetchCustomers(selectedSize, currentPage), 2000);
   };
 
   const openBulkWhatsApp = () => {
