@@ -678,12 +678,23 @@ const Dashboard = () => {
                             {customer.store_name || 'Default'}
                           </Badge>
                         </TableCell>
+                        <TableCell>
+                          {customer.messaged ? (
+                            <Badge className="bg-green-100 text-green-700">
+                              ✓ Messaged {customer.message_count && `(${customer.message_count}x)`}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-slate-500">
+                              Not Messaged
+                            </Badge>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => openWhatsApp(customer.phone, customer.country_code)}
-                            disabled={!customer.phone}
+                            onClick={() => openWhatsApp(customer.phone, customer.country_code, customer.customer_id, `${customer.first_name} ${customer.last_name}`.trim())}
+                            disabled={!customer.phone || sendingMessages}
                             className="hover:bg-green-50 hover:text-green-700"
                             data-testid={`whatsapp-btn-${customer.customer_id}`}
                           >
