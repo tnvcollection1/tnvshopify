@@ -66,6 +66,8 @@ const Dashboard = () => {
   const [deliveryFilter, setDeliveryFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [codPaymentFilter, setCodPaymentFilter] = useState("all");
+  const [yearFilter, setYearFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("date_desc");
   const [syncing, setSyncing] = useState(false);
   const [schedulerStatus, setSchedulerStatus] = useState(null);
   
