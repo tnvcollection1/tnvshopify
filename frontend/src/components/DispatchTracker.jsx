@@ -80,7 +80,8 @@ const DispatchTracker = () => {
   const fetchStores = async () => {
     try {
       const response = await axios.get(`${API}/stores`);
-      setStores(response.data.stores || []);
+      // API returns array directly
+      setStores(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching stores:", error);
     }
@@ -381,8 +382,8 @@ const DispatchTracker = () => {
             <SelectContent>
               <SelectItem value="all">All Stores</SelectItem>
               {stores.map((store) => (
-                <SelectItem key={store.name} value={store.name}>
-                  {store.name}
+                <SelectItem key={store.id} value={store.store_name}>
+                  {store.store_name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -438,14 +439,14 @@ const DispatchTracker = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={12} className="text-center py-8 text-gray-500">
                         Loading orders...
                       </TableCell>
                     </TableRow>
                   ) : orders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
-                        No orders found
+                      <TableCell colSpan={12} className="text-center py-8 text-gray-500">
+                        No fulfilled orders found
                       </TableCell>
                     </TableRow>
                   ) : (

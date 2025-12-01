@@ -70,12 +70,13 @@ const ConfirmationTracker = () => {
   useEffect(() => {
     fetchOrders();
     fetchStores();
-  }, [currentPage, filters]);
+  }, [currentPage, filters, searchQuery]);
 
   const fetchStores = async () => {
     try {
       const response = await axios.get(`${API}/stores`);
-      setStores(response.data.stores || []);
+      // API returns array directly
+      setStores(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching stores:", error);
     }
@@ -253,7 +254,6 @@ const ConfirmationTracker = () => {
               placeholder="Search by order #, customer name, phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && fetchOrders()}
               className="pl-10 border-gray-300"
             />
           </div>
@@ -264,8 +264,8 @@ const ConfirmationTracker = () => {
             <SelectContent>
               <SelectItem value="all">All Stores</SelectItem>
               {stores.map((store) => (
-                <SelectItem key={store.name} value={store.name}>
-                  {store.name}
+                <SelectItem key={store.id} value={store.store_name}>
+                  {store.store_name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -396,31 +396,33 @@ const ConfirmationTracker = () => {
         </Card>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-6">
-          <p className="text-sm text-gray-500">
-            Showing page {currentPage} of {totalPages}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="border-gray-300"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="border-gray-300"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+        {orders.length > 0 && (
+          <div className="flex items-center justify-between mt-6">
+            <p className="text-sm text-gray-500">
+              Showing page {currentPage} of {totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="border-gray-300"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="border-gray-300"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Edit Dialog */}

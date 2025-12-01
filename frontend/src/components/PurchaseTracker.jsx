@@ -69,12 +69,13 @@ const PurchaseTracker = () => {
   useEffect(() => {
     fetchOrders();
     fetchStores();
-  }, [currentPage, filters]);
+  }, [currentPage, filters, searchQuery]);
 
   const fetchStores = async () => {
     try {
       const response = await axios.get(`${API}/stores`);
-      setStores(response.data.stores || []);
+      // API returns array directly
+      setStores(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching stores:", error);
     }
@@ -84,8 +85,7 @@ const PurchaseTracker = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // Show fulfilled orders with china tracking (starts with X)
-      params.append("fulfillment_status", "fulfilled");
+      // Show ALL orders (fulfilled and unfulfilled) with tracking numbers starting with X
       params.append("china_tracking", "true");
       
       if (filters.purchase_status !== "all") params.append("purchase_status", filters.purchase_status);
@@ -97,10 +97,11 @@ const PurchaseTracker = () => {
       const response = await axios.get(`${API}/customers?${params.toString()}`);
       const allOrders = Array.isArray(response.data) ? response.data : response.data.customers || [];
       
-      // Filter client-side for tracking numbers starting with X
-      const chinaOrders = allOrders.filter(order => 
-        order.china_tracking_number && order.china_tracking_number.startsWith('X')
-      );
+      // Additional client-side filter to ensure tracking numbers start with X
+      const chinaOrders = allOrders.filter(order => {
+        const trackingNum = order.china_tracking_number || order.tracking_number || "";
+        return trackingNum.toUpperCase().startsWith('X');
+      });
       
       setOrders(chinaOrders);
       
@@ -127,7 +128,7 @@ const PurchaseTracker = () => {
     setEditingOrder({
       ...order,
       purchase_status: order.purchase_status || "ORDERED",
-      china_tracking_number: order.china_tracking_number || "",
+      china_tracking_number: order.china_tracking_number || order.tracking_number || "",
       purchase_cost_pkr: order.purchase_cost_pkr || 0,
       shipping_cost_pkr: order.shipping_cost_pkr || 0,
       customs_duty_pkr: order.customs_duty_pkr || 0,
@@ -173,7 +174,7 @@ const PurchaseTracker = () => {
       ARRIVED_PAKISTAN: "Arrived Pakistan",
       DELIVERED_WAREHOUSE: "At Warehouse",
     };
-    return <Badge variant="outline" className={`${variant} font-medium text-xs`}>{labels[status] || status}</Badge>;
+    return <Badge variant="outline" className={`${variant} font-medium text-xs`}>{labels[status] || status || "ORDERED"}</Badge>;
   };
 
   return (
@@ -183,7 +184,7 @@ const PurchaseTracker = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Purchase Tracker (China → Pakistan)</h1>
-            <p className="text-sm text-gray-500 mt-1">Track items purchased from China and shipped to Pakistan</p>
+            <p className="text-sm text-gray-500 mt-1">Track items purchased from China with tracking numbers starting with 'X'</p>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -260,7 +261,6 @@ const PurchaseTracker = () => {
               placeholder="Search by order #, customer name, tracking #..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && fetchOrders()}
               className="pl-10 border-gray-300"
             />
           </div>
@@ -271,8 +271,8 @@ const PurchaseTracker = () => {
             <SelectContent>
               <SelectItem value="all">All Stores</SelectItem>
               {stores.map((store) => (
-                <SelectItem key={store.name} value={store.name}>
-                  {store.name}
+                <SelectItem key={store.id} value={store.store_name}>
+                  {store.store_name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -324,12 +324,16 @@ const PurchaseTracker = () => {
                   ) : orders.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={11} className="text-center py-8 text-gray-500">
-                        No China purchase orders found
+                        <div>
+                          <p className="text-lg font-medium">No China purchase orders found</p>
+                          <p className="text-sm mt-2">Orders with tracking numbers starting with 'X' will appear here</p>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ) : (
                     orders.map((order) => {
                       const totalCost = (order.purchase_cost_pkr || 0) + (order.shipping_cost_pkr || 0) + (order.customs_duty_pkr || 0);
+                      const trackingNum = order.china_tracking_number || order.tracking_number || "—";
                       return (
                         <TableRow key={order.customer_id} className="hover:bg-gray-50">
                           <TableCell className="text-sm text-gray-600">
@@ -354,10 +358,10 @@ const PurchaseTracker = () => {
                             </div>
                           </TableCell>
                           <TableCell className="text-sm font-mono text-gray-600">
-                            {order.china_tracking_number ? (
+                            {trackingNum !== "—" ? (
                               <div className="flex items-center gap-1">
                                 <Globe className="w-3 h-3 text-blue-500" />
-                                {order.china_tracking_number}
+                                {trackingNum}
                               </div>
                             ) : (
                               "—"
@@ -399,31 +403,33 @@ const PurchaseTracker = () => {
         </Card>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-6">
-          <p className="text-sm text-gray-500">
-            Showing page {currentPage} of {totalPages}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="border-gray-300"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="border-gray-300"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+        {orders.length > 0 && (
+          <div className="flex items-center justify-between mt-6">
+            <p className="text-sm text-gray-500">
+              Showing page {currentPage} of {totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="border-gray-300"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="border-gray-300"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Edit Dialog */}
