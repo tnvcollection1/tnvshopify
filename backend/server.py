@@ -45,6 +45,7 @@ class Customer(BaseModel):
     shoe_sizes: List[str] = []
     order_skus: List[str] = []  # SKUs from customer orders
     order_count: int = 0
+    order_number: Optional[str] = None  # Shopify order number
     last_order_date: Optional[str] = None
     total_spent: float = 0.0
     store_name: Optional[str] = None
@@ -63,6 +64,8 @@ class Customer(BaseModel):
     delivery_status: Optional[str] = None  # TCS delivery status: DELIVERED, OUT_FOR_DELIVERY, IN_TRANSIT, etc.
     delivery_location: Optional[str] = None  # Current TCS facility location
     delivery_updated_at: Optional[str] = None  # Last TCS status update time
+    abandoned_checkout: Optional[bool] = None  # Whether customer has abandoned checkouts
+    abandoned_checkout_value: Optional[float] = None  # Value of abandoned items
 
 
 class Agent(BaseModel):
