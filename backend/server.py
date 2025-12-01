@@ -1054,6 +1054,25 @@ async def get_cod_payment_status(tracking_number: str):
         else:
             raise HTTPException(status_code=400, detail="Bearer token required for payment API")
         
+        # Get payment status
+        payment_data = payment_api.get_payment_status(tracking_number)
+        
+        if payment_data.get('success'):
+            return {
+                "success": True,
+                "tracking_number": tracking_number,
+                "payment_data": payment_data
+            }
+        else:
+            return {
+                "success": False,
+                "tracking_number": tracking_number,
+                "error": payment_data.get('error', 'Unknown error')
+            }
+        
+    except Exception as e:
+        logger.error(f"Error getting COD payment status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ========================================
