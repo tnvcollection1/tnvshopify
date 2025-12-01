@@ -301,6 +301,9 @@ const Dashboard = () => {
       if (selectedAgent && selectedAgent !== "all") {
         url += `agent_username=${selectedAgent}&`;
       }
+      if (stockFilter && stockFilter !== "all") {
+        url += `stock_availability=${stockFilter}&`;
+      }
       
       // Build URL for count
       let countUrl = `${API}/customers/count?`;
@@ -318,6 +321,9 @@ const Dashboard = () => {
       }
       if (selectedAgent && selectedAgent !== "all") {
         countUrl += `agent_username=${selectedAgent}&`;
+      }
+      if (stockFilter && stockFilter !== "all") {
+        countUrl += `stock_availability=${stockFilter}&`;
       }
       
       // Fetch both in parallel
