@@ -82,6 +82,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/confirmation" 
+        element={
+          <ProtectedRoute>
+            <ConfirmationTracker />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory" 
         element={
           <ProtectedRoute>
