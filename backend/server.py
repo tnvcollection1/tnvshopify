@@ -60,6 +60,9 @@ class Customer(BaseModel):
     tracking_number: Optional[str] = None
     tracking_company: Optional[str] = None
     tracking_url: Optional[str] = None
+    delivery_status: Optional[str] = None  # TCS delivery status: DELIVERED, OUT_FOR_DELIVERY, IN_TRANSIT, etc.
+    delivery_location: Optional[str] = None  # Current TCS facility location
+    delivery_updated_at: Optional[str] = None  # Last TCS status update time
 
 
 class Agent(BaseModel):
