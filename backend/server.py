@@ -438,6 +438,143 @@ async def sync_shopify_orders(store_name: str, days_back: int = 30):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/tcs/configure")
+async def configure_tcs_credentials(username: str, password: str):
+    """
+    Configure TCS Pakistan API credentials
+    """
+    try:
+        # Test authentication
+        tracker = TCSTracker(username, password)
+        if not tracker.authenticate():
+            raise HTTPException(status_code=400, detail="Invalid TCS credentials")
+        
+        # Store credentials in database (encrypted in production)
+        await db.tcs_config.update_one(
+            {"service": "tcs_pakistan"},
+            {"$set": {
+                "username": username,
+                "password": password,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }},
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": "TCS credentials configured successfully"
+        }
+    except Exception as e:
+        logger.error(f"Error configuring TCS: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/tcs/track/{tracking_number}")
+async def track_tcs_consignment(tracking_number: str):
+    """
+    Track a single TCS consignment and update customer delivery status
+    """
+    try:
+        # Get TCS credentials
+        config = await db.tcs_config.find_one({"service": "tcs_pakistan"}, {"_id": 0})
+        if not config:
+            raise HTTPException(status_code=400, detail="TCS not configured. Please configure credentials first.")
+        
+        # Track with TCS
+        tracker = TCSTracker(config['username'], config['password'])
+        tracking_data = tracker.track_consignment(tracking_number)
+        
+        if not tracking_data:
+            raise HTTPException(status_code=500, detail="Failed to fetch tracking data from TCS")
+        
+        # Update customer with delivery status
+        if tracking_data.get('normalized_status') != 'NOT_FOUND':
+            await db.customers.update_one(
+                {"tracking_number": tracking_number},
+                {"$set": {
+                    "delivery_status": tracking_data.get('normalized_status'),
+                    "delivery_location": tracking_data.get('current_location'),
+                    "delivery_updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        
+        return {
+            "success": True,
+            "tracking_data": tracking_data
+        }
+    except Exception as e:
+        logger.error(f"Error tracking TCS consignment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/tcs/sync-all")
+async def sync_all_tcs_deliveries():
+    """
+    Update delivery status for all customers with TCS tracking numbers
+    Only updates unfulfilled and in-transit orders (skips delivered)
+    """
+    try:
+        # Get TCS credentials
+        config = await db.tcs_config.find_one({"service": "tcs_pakistan"}, {"_id": 0})
+        if not config:
+            raise HTTPException(status_code=400, detail="TCS not configured")
+        
+        # Get customers with tracking numbers (not yet delivered)
+        customers = await db.customers.find({
+            "tracking_number": {"$ne": None, "$exists": True},
+            "$or": [
+                {"delivery_status": {"$ne": "DELIVERED"}},
+                {"delivery_status": {"$exists": False}}
+            ]
+        }, {"_id": 0, "tracking_number": 1, "customer_id": 1}).to_list(1000)
+        
+        if not customers:
+            return {
+                "success": True,
+                "message": "No tracking numbers to update",
+                "updated": 0
+            }
+        
+        # Track all consignments
+        tracker = TCSTracker(config['username'], config['password'])
+        tracking_numbers = [c['tracking_number'] for c in customers]
+        
+        logger.info(f"Tracking {len(tracking_numbers)} TCS consignments...")
+        
+        updated_count = 0
+        delivered_count = 0
+        
+        for tracking_number in tracking_numbers:
+            tracking_data = tracker.track_consignment(tracking_number)
+            
+            if tracking_data and tracking_data.get('normalized_status') != 'NOT_FOUND':
+                result = await db.customers.update_many(
+                    {"tracking_number": tracking_number},
+                    {"$set": {
+                        "delivery_status": tracking_data.get('normalized_status'),
+                        "delivery_location": tracking_data.get('current_location'),
+                        "delivery_updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                
+                updated_count += result.modified_count
+                
+                if tracking_data.get('is_delivered'):
+                    delivered_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Updated {updated_count} customers",
+            "tracked_count": len(tracking_numbers),
+            "updated_count": updated_count,
+            "delivered_count": delivered_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing TCS deliveries: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/upload-csv")
 async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store", shop_url: str = ""):
     """
