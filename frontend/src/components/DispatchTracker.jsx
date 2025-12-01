@@ -77,7 +77,14 @@ const DispatchTracker = () => {
   useEffect(() => {
     fetchOrders();
     fetchStores();
-  }, [currentPage, filters.delivery, filters.payment, filters.store, filters.year, filters.sortBy]);
+  }, [currentPage, filters]);
+
+  // Reset to page 1 when filters change (but not on initial load)
+  useEffect(() => {
+    if (currentPage > 1) {
+      setCurrentPage(1);
+    }
+  }, [filters.delivery, filters.payment, filters.store, filters.year, filters.sortBy]);
 
   const fetchStores = async () => {
     try {
