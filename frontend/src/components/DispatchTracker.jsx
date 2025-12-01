@@ -73,9 +73,21 @@ const DispatchTracker = () => {
   const [stores, setStores] = useState([]);
   const [editingOrder, setEditingOrder] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
+  const prevFiltersRef = useRef(filters);
 
   useEffect(() => {
-    fetchOrders();
+    // Check if filters changed (excluding page change)
+    const filtersChanged = JSON.stringify(prevFiltersRef.current) !== JSON.stringify(filters);
+    
+    if (filtersChanged && currentPage !== 1) {
+      // Filters changed and we're not on page 1, reset to page 1
+      setCurrentPage(1);
+      prevFiltersRef.current = filters;
+    } else {
+      // Normal fetch
+      fetchOrders();
+      prevFiltersRef.current = filters;
+    }
   }, [currentPage, filters]);
 
   useEffect(() => {
