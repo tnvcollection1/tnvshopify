@@ -77,6 +77,7 @@ def parse_shopify_orders_csv(csv_content: str) -> List[Dict]:
                 'phone': phone if phone else None,
                 'country_code': country_code if country_code else None,
                 'shoe_sizes': set(),
+                'order_skus': set(),  # Track SKUs from orders
                 'order_count': 0,
                 'last_order_date': None,
                 'total_spent': 0.0
