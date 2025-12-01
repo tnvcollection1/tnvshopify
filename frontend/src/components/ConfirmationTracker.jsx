@@ -69,27 +69,18 @@ const ConfirmationTracker = () => {
   const [stores, setStores] = useState([]);
   const [editingOrder, setEditingOrder] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
-  const prevFiltersRef = useRef(filters);
-  const prevSearchRef = useRef(searchQuery);
 
   useEffect(() => {
-    const filtersChanged = JSON.stringify(prevFiltersRef.current) !== JSON.stringify(filters);
-    const searchChanged = prevSearchRef.current !== searchQuery;
-    
-    if ((filtersChanged || searchChanged) && currentPage !== 1) {
-      setCurrentPage(1);
-      prevFiltersRef.current = filters;
-      prevSearchRef.current = searchQuery;
-    } else {
-      fetchOrders();
-      prevFiltersRef.current = filters;
-      prevSearchRef.current = searchQuery;
-    }
+    fetchOrders();
+    fetchStores();
   }, [currentPage, filters, searchQuery]);
 
+  // Reset to page 1 when filters or search change
   useEffect(() => {
-    fetchStores();
-  }, []);
+    if (currentPage > 1) {
+      setCurrentPage(1);
+    }
+  }, [filters.calling_status, filters.confirmation_status, filters.store, filters.year, filters.sortBy, searchQuery]);
 
   const fetchStores = async () => {
     try {
