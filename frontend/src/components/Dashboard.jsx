@@ -413,6 +413,9 @@ const Dashboard = () => {
       if (deliveryFilter && deliveryFilter !== "all") {
         url += `delivery_status=${deliveryFilter}&`;
       }
+      if (paymentFilter && paymentFilter !== "all") {
+        url += `payment_status=${paymentFilter}&`;
+      }
       
       // Build URL for count (only fetch on first load)
       let countUrl = `${API}/customers/count?`;
