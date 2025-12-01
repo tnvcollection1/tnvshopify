@@ -292,11 +292,12 @@ async def get_customers(
     store_name: Optional[str] = None,
     messaged: Optional[str] = None,
     country_code: Optional[str] = None,
+    agent_username: Optional[str] = None,
     page: int = 1,
     limit: int = 100
 ):
     """
-    Get customers with pagination, optionally filtered by shoe size, store, messaged status, and country
+    Get customers with pagination, filtered by size, store, messaged status, country, and agent
     """
     query = {}
     if shoe_size and shoe_size != "all":
@@ -309,6 +310,8 @@ async def get_customers(
         query['messaged'] = {"$ne": True}
     if country_code and country_code != "all":
         query['country_code'] = country_code
+    if agent_username and agent_username != "all":
+        query['messaged_by'] = agent_username
     
     # Calculate skip value for pagination
     skip = (page - 1) * limit
