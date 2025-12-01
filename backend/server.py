@@ -1286,6 +1286,64 @@ async def get_inventory_items(store_name: Optional[str] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.put("/customers/{customer_id}")
+async def update_customer_order(customer_id: str, update_data: dict):
+    """
+    Update customer order details (calling status, return reason, remarks, financial data)
+    """
+    try:
+        # Find customer
+        customer = await db.customers.find_one({"customer_id": customer_id}, {"_id": 0})
+        
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        # Prepare update fields
+        update_fields = {}
+        
+        if "calling_status" in update_data:
+            update_fields["calling_status"] = update_data["calling_status"]
+        
+        if "return_reason" in update_data:
+            update_fields["return_reason"] = update_data["return_reason"]
+        
+        if "remarks" in update_data:
+            update_fields["remarks"] = update_data["remarks"]
+        
+        if "retail_amount" in update_data:
+            update_fields["retail_amount"] = float(update_data["retail_amount"])
+        
+        if "cost" in update_data:
+            update_fields["cost"] = float(update_data["cost"])
+        
+        if "tcs_charges" in update_data:
+            update_fields["tcs_charges"] = float(update_data["tcs_charges"])
+        
+        # Calculate profit
+        retail = update_fields.get("retail_amount", customer.get("retail_amount", customer.get("total_spent", 0)))
+        cost = update_fields.get("cost", customer.get("cost", 0))
+        tcs = update_fields.get("tcs_charges", customer.get("tcs_charges", 0))
+        update_fields["profit"] = retail - cost - tcs
+        
+        update_fields["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        # Update customer
+        await db.customers.update_one(
+            {"customer_id": customer_id},
+            {"$set": update_fields}
+        )
+        
+        return {
+            "success": True,
+            "message": "Customer order updated successfully",
+            "updated_fields": update_fields
+        }
+        
+    except Exception as e:
+        logger.error(f"Error updating customer: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/tcs/upload-payment")
 async def upload_tcs_payment_data(file: UploadFile = File(...)):
     """
