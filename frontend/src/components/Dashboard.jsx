@@ -339,37 +339,60 @@ const Dashboard = () => {
     setTimeout(() => fetchCustomers(selectedSize, currentPage), 2000);
   };
 
+  const toggleSelectCustomer = (customerId) => {
+    setSelectedCustomers(prev => {
+      if (prev.includes(customerId)) {
+        return prev.filter(id => id !== customerId);
+      } else {
+        return [...prev, customerId];
+      }
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const customersWithPhone = filteredCustomers.filter(c => c.phone);
+    if (selectedCustomers.length === customersWithPhone.length) {
+      setSelectedCustomers([]);
+    } else {
+      setSelectedCustomers(customersWithPhone.map(c => c.customer_id));
+    }
+  };
+
   const openBulkWhatsApp = async () => {
-    const validPhones = filteredCustomers.filter(c => c.phone);
+    // Get selected customers with phone numbers
+    const selectedWithPhones = filteredCustomers.filter(c => 
+      selectedCustomers.includes(c.customer_id) && c.phone
+    );
     
-    if (validPhones.length === 0) {
-      toast.error("No customers with phone numbers in this selection");
+    if (selectedWithPhones.length === 0) {
+      toast.error("Please select customers with phone numbers");
       return;
     }
 
-    if (!confirm(`Send WhatsApp messages to ${validPhones.length} customers? Messages will be sent with 8-second delays to avoid blocking.`)) {
+    if (!confirm(`Send WhatsApp messages to ${selectedWithPhones.length} selected customers? Messages will be sent with 8-second delays to avoid blocking.`)) {
       return;
     }
 
     setSendingMessages(true);
-    toast.info(`Starting message queue for ${validPhones.length} customers...`);
+    toast.info(`Starting message queue for ${selectedWithPhones.length} customers...`);
     
-    for (let i = 0; i < validPhones.length; i++) {
-      const customer = validPhones[i];
+    for (let i = 0; i < selectedWithPhones.length; i++) {
+      const customer = selectedWithPhones[i];
       const customerName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Customer';
       
-      toast.info(`Sending message ${i + 1}/${validPhones.length} to ${customerName}...`);
+      toast.info(`Sending message ${i + 1}/${selectedWithPhones.length} to ${customerName}...`);
       
       await openWhatsApp(customer.phone, customer.country_code, customer.customer_id, customerName);
       
       // Wait 8 seconds between messages to avoid WhatsApp ban
-      if (i < validPhones.length - 1) {
+      if (i < selectedWithPhones.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 8000));
       }
     }
     
     setSendingMessages(false);
-    toast.success(`✅ Completed sending messages to ${validPhones.length} customers!`);
+    setSelectedCustomers([]);
+    toast.success(`✅ Completed sending messages to ${selectedWithPhones.length} customers!`);
     fetchCustomers(selectedSize, currentPage);
   };
 
