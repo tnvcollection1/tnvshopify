@@ -1020,6 +1020,198 @@ async def get_cod_payment_status(tracking_number: str):
         else:
             raise HTTPException(status_code=400, detail="Bearer token required for payment API")
         
+
+
+# ========================================
+# INVENTORY MANAGEMENT ENDPOINTS
+# ========================================
+
+from inventory_manager import InventoryManager
+
+inventory_manager = InventoryManager(db)
+
+
+@api_router.get("/inventory")
+async def get_inventory():
+    """
+    Get all inventory items with stats
+    """
+    try:
+        inventory_items = await db.inventory.find({}, {"_id": 0}).sort("sku", 1).to_list(10000)
+        stats = await inventory_manager.get_inventory_stats()
+        
+        return {
+            "success": True,
+            "inventory": inventory_items,
+            "stats": stats
+        }
+    except Exception as e:
+        logger.error(f"Error fetching inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/inventory/upload")
+async def upload_inventory_excel(file: UploadFile = File(...)):
+    """
+    Upload Excel file with inventory (SKU, Product Name, Opening Stock, Reorder Level)
+    """
+    try:
+        import openpyxl
+        from io import BytesIO
+        
+        contents = await file.read()
+        wb = openpyxl.load_workbook(BytesIO(contents))
+        sheet = wb.active
+        
+        items_added = 0
+        errors = []
+        
+        for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+            try:
+                if not row[0]:  # Skip if SKU is empty
+                    continue
+                
+                sku = str(row[0]).strip()
+                product_name = str(row[1]).strip() if row[1] else "Unknown Product"
+                opening_stock = int(row[2]) if row[2] else 0
+                reorder_level = int(row[3]) if row[3] else 5
+                
+                result = await inventory_manager.set_opening_stock(sku, product_name, opening_stock, reorder_level)
+                
+                if result['success']:
+                    items_added += 1
+                else:
+                    errors.append(f"Row {row_idx}: {result.get('error')}")
+                    
+            except Exception as e:
+                errors.append(f"Row {row_idx}: {str(e)}")
+                continue
+        
+        return {
+            "success": True,
+            "message": f"Processed {items_added} inventory items",
+            "items_added": items_added,
+            "errors": errors if errors else None
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/inventory/add")
+async def add_inventory_item(
+    sku: str,
+    product_name: str,
+    opening_stock: int = 0,
+    reorder_level: int = 5
+):
+    """
+    Add single inventory item manually
+    """
+    try:
+        result = await inventory_manager.set_opening_stock(sku, product_name, opening_stock, reorder_level)
+        
+        if result['success']:
+            return result
+        else:
+            raise HTTPException(status_code=400, detail=result.get('error'))
+            
+    except Exception as e:
+        logger.error(f"Error adding inventory item: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/inventory/adjust")
+async def adjust_inventory(
+    sku: str,
+    adjustment: int,
+    reason: str = "Manual adjustment",
+    user: str = "admin"
+):
+    """
+    Manually adjust stock quantity
+    """
+    try:
+        result = await inventory_manager.adjust_stock(sku, adjustment, reason, user)
+        
+        if result['success']:
+            return result
+        else:
+            raise HTTPException(status_code=400, detail=result.get('error'))
+            
+    except Exception as e:
+        logger.error(f"Error adjusting inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/inventory/history/{sku}")
+async def get_inventory_history(sku: str, limit: int = 50):
+    """
+    Get stock transaction history for a SKU
+    """
+    try:
+        history = await inventory_manager.get_stock_history(sku, limit)
+        
+        return {
+            "success": True,
+            "sku": sku,
+            "history": history
+        }
+    except Exception as e:
+        logger.error(f"Error getting inventory history: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/inventory/deduct-on-delivery")
+async def manual_stock_deduction(
+    customer_id: str,
+    store_name: str
+):
+    """
+    Manually trigger stock deduction for a delivered order
+    Used for testing or corrections
+    """
+    try:
+        # Get customer order
+        customer = await db.customers.find_one(
+            {"customer_id": customer_id, "store_name": store_name},
+            {"_id": 0}
+        )
+        
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        if customer.get('delivery_status') != 'DELIVERED':
+            raise HTTPException(status_code=400, detail="Order not yet delivered")
+        
+        # Check if already deducted
+        if customer.get('stock_deducted'):
+            return {
+                "success": False,
+                "message": "Stock already deducted for this order"
+            }
+        
+        # Deduct stock
+        result = await inventory_manager.deduct_stock_on_delivery(
+            customer.get('order_skus', []),
+            customer_id,
+            customer.get('order_number', 'N/A')
+        )
+        
+        # Mark as deducted
+        if result['success']:
+            await db.customers.update_one(
+                {"customer_id": customer_id, "store_name": store_name},
+                {"$set": {"stock_deducted": True, "stock_deducted_at": datetime.now(timezone.utc).isoformat()}}
+            )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in manual stock deduction: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
         # Get payment status
         payment_data = payment_api.get_payment_status(tracking_number)
         
