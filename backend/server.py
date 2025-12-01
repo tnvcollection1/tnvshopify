@@ -907,6 +907,17 @@ async def sync_all_tcs_deliveries():
                 "message": "No tracking numbers to update",
                 "updated": 0
             }
+        
+        # Note: This endpoint just returns info, actual sync happens via scheduler
+        return {
+            "success": True,
+            "message": f"Found {len(customers)} tracking numbers to sync (sync running in background)",
+            "pending_sync": len(customers)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in TCS sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.post("/tcs/sync-cod-payments")
