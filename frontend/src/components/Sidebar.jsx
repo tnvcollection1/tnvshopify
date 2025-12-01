@@ -19,15 +19,40 @@ const Sidebar = () => {
   const location = useLocation();
   const { logout } = useAuth();
 
-  const menuItems = [
-    { icon: Home, label: 'Dashboard', path: '/dashboard' },
-    { icon: Users, label: 'Customers', path: '/customers' },
-    { icon: ClipboardList, label: 'Dispatch Tracker', path: '/tracker' },
-    { icon: ShoppingCart, label: 'Orders', path: '/orders' },
-    { icon: Package, label: 'Inventory', path: '/inventory' },
-    { icon: BarChart3, label: 'Reports', path: '/reports' },
-    { icon: TrendingUp, label: 'Analytics', path: '/analytics' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+  const menuSections = [
+    {
+      title: 'MAIN',
+      items: [
+        { icon: Home, label: 'Dashboard', path: '/dashboard' },
+      ]
+    },
+    {
+      title: 'OPERATIONS',
+      items: [
+        { icon: Truck, label: 'Dispatch Tracker', path: '/tracker', highlighted: true },
+        { icon: ShoppingCart, label: 'Orders', path: '/orders' },
+        { icon: Users, label: 'Customers', path: '/customers' },
+      ]
+    },
+    {
+      title: 'MANAGEMENT',
+      items: [
+        { icon: Package, label: 'Inventory', path: '/inventory' },
+      ]
+    },
+    {
+      title: 'INSIGHTS',
+      items: [
+        { icon: BarChart3, label: 'Reports', path: '/reports' },
+        { icon: TrendingUp, label: 'Analytics', path: '/analytics' },
+      ]
+    },
+    {
+      title: 'SYSTEM',
+      items: [
+        { icon: Settings, label: 'Settings', path: '/settings' },
+      ]
+    }
   ];
 
   const handleLogout = () => {
@@ -45,35 +70,53 @@ const Sidebar = () => {
           </div>
           TNC Collection
         </h1>
-        <p className="text-xs text-gray-400 mt-1">Customer Management</p>
+        <p className="text-xs text-gray-400 mt-1">Dispatch Management</p>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <div className="space-y-1">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-lg
-                  transition-all duration-200 text-left
-                  ${isActive 
-                    ? 'bg-green-600 text-white shadow-lg shadow-green-900/50' 
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                  }
-                `}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
+      <nav className="flex-1 p-4 overflow-y-auto">
+        {menuSections.map((section, sectionIndex) => (
+          <div key={section.title} className={sectionIndex > 0 ? 'mt-6' : ''}>
+            <div className="px-4 mb-2">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                {section.title}
+              </span>
+            </div>
+            <div className="space-y-1">
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    className={`
+                      w-full flex items-center gap-3 px-4 py-3 rounded-lg
+                      transition-all duration-200 text-left relative
+                      ${isActive 
+                        ? 'bg-green-600 text-white shadow-lg shadow-green-900/50' 
+                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                      }
+                      ${item.highlighted && !isActive ? 'border border-green-600/30' : ''}
+                    `}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
+                    {item.highlighted && !isActive && (
+                      <span className="ml-auto">
+                        <span className="flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* User Profile & Logout */}
