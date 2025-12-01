@@ -256,7 +256,22 @@ class AutoSyncScheduler:
                         "last_order_date": order_data['order_date'],
                         "total_spent": order_data['total_price'],
                         "fulfillment_status": order_data['fulfillment_status'],
-
+                        "payment_status": order_data.get('payment_status'),
+                        "payment_method": order_data.get('payment_method'),
+                        "tracking_number": order_data['tracking_info']['tracking_number'] if order_data['tracking_info'] else None,
+                        "tracking_company": order_data['tracking_info']['tracking_company'] if order_data['tracking_info'] else 'TCS Pakistan',
+                        "tracking_url": order_data['tracking_info']['tracking_url'] if order_data['tracking_info'] else None,
+                        "messaged": False,
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    await db.customers.insert_one(new_customer)
+                    customers_updated += 1
+                    
+            except Exception as e:
+                logger.error(f"Error processing order {order_data.get('order_number')}: {str(e)}")
+                continue
+        
+        return customers_updated
     
     def sync_cod_payments(self):
         """
