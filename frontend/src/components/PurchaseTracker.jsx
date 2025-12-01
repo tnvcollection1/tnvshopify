@@ -128,7 +128,7 @@ const PurchaseTracker = () => {
     setEditingOrder({
       ...order,
       purchase_status: order.purchase_status || "ORDERED",
-      china_tracking_number: order.china_tracking_number || order.tracking_number || "",
+      tracking_number: order.tracking_number || "",
       purchase_cost_pkr: order.purchase_cost_pkr || 0,
       shipping_cost_pkr: order.shipping_cost_pkr || 0,
       customs_duty_pkr: order.customs_duty_pkr || 0,
