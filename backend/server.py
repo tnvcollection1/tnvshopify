@@ -446,10 +446,11 @@ async def get_customers_count(
     store_name: Optional[str] = None,
     messaged: Optional[str] = None,
     country_code: Optional[str] = None,
-    agent_username: Optional[str] = None
+    agent_username: Optional[str] = None,
+    stock_availability: Optional[str] = None
 ):
     """
-    Get total count of customers matching filters
+    Get total count of customers matching filters including stock availability
     """
     query = {}
     if shoe_size and shoe_size != "all":
@@ -464,6 +465,36 @@ async def get_customers_count(
         query['country_code'] = country_code
     if agent_username and agent_username != "all":
         query['messaged_by'] = agent_username
+    
+    # If stock_availability filter is specified, we need to fetch and filter
+    if stock_availability and store_name and store_name != "all":
+        customers = await db.customers.find(query, {"_id": 0, "order_skus": 1}).to_list(50000)
+        
+        # Get stock for the store
+        stock_items = await db.stock.find({"store_name": store_name}, {"_id": 0, "sku": 1}).to_list(10000)
+        stock_skus = set(item["sku"].upper() for item in stock_items)
+        
+        # Count customers matching stock status
+        matching_count = 0
+        for customer in customers:
+            order_skus = [sku.upper() for sku in customer.get('order_skus', [])]
+            
+            if not order_skus:
+                stock_status = "unknown"
+            else:
+                in_stock = sum(1 for sku in order_skus if sku in stock_skus)
+                
+                if in_stock == len(order_skus):
+                    stock_status = "in_stock"
+                elif in_stock == 0:
+                    stock_status = "out_of_stock"
+                else:
+                    stock_status = "partial"
+            
+            if stock_status == stock_availability:
+                matching_count += 1
+        
+        return {"total": matching_count}
     
     count = await db.customers.count_documents(query)
     return {"total": count}
