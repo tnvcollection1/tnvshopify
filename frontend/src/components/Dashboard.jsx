@@ -1160,6 +1160,7 @@ const Dashboard = () => {
                       <TableHead>Payment</TableHead>
                       <TableHead>Tracking #</TableHead>
                       <TableHead>Delivery Status</TableHead>
+                      <TableHead>COD Payment</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Agent</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
