@@ -1071,6 +1071,41 @@ const Dashboard = () => {
                           )}
                         </TableCell>
                         <TableCell>
+                          {customer.fulfillment_status === "fulfilled" && (
+                            <Badge className="bg-green-100 text-green-700">
+                              ✓ Fulfilled
+                            </Badge>
+                          )}
+                          {customer.fulfillment_status === "unfulfilled" && (
+                            <Badge className="bg-orange-100 text-orange-700">
+                              ⏳ Pending
+                            </Badge>
+                          )}
+                          {customer.fulfillment_status === "partially_fulfilled" && (
+                            <Badge className="bg-yellow-100 text-yellow-700">
+                              ⚠ Partial
+                            </Badge>
+                          )}
+                          {!customer.fulfillment_status && (
+                            <span className="text-slate-400 text-sm">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {customer.tracking_number ? (
+                            <a 
+                              href={customer.tracking_url || `https://www.tcsexpress.com/track-shipment?tracking_id=${customer.tracking_number}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              <span>{customer.tracking_number.substring(0, 12)}...</span>
+                            </a>
+                          ) : (
+                            <span className="text-slate-400 text-sm">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {customer.messaged ? (
                             <Badge className="bg-green-100 text-green-700">
                               ✓ Messaged {customer.message_count && `(${customer.message_count}x)`}
