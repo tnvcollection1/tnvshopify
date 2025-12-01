@@ -527,7 +527,7 @@ const Dashboard = () => {
             <CardTitle className="text-2xl" style={{ fontFamily: 'Space Grotesk' }}>Filter Customers</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-2 block">Store</label>
                 <Select value={selectedStore} onValueChange={setSelectedStore}>
@@ -554,6 +554,20 @@ const Dashboard = () => {
                     {shoeSizes.map((size) => (
                       <SelectItem key={size} value={size}>{size}</SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Message Status</label>
+                <Select value={messagedFilter} onValueChange={setMessagedFilter}>
+                  <SelectTrigger className="w-full" data-testid="messaged-filter">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Customers</SelectItem>
+                    <SelectItem value="no">Not Messaged</SelectItem>
+                    <SelectItem value="yes">Messaged</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
