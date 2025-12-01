@@ -444,8 +444,8 @@ const PurchaseTracker = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-700">China Tracking Number</label>
                   <Input
-                    value={editingOrder.china_tracking_number}
-                    onChange={(e) => setEditingOrder({ ...editingOrder, china_tracking_number: e.target.value })}
+                    value={editingOrder.tracking_number}
+                    onChange={(e) => setEditingOrder({ ...editingOrder, tracking_number: e.target.value })}
                     placeholder="e.g., XM5XFD031540"
                     className="mt-1"
                   />
