@@ -216,7 +216,8 @@ async def get_customers(
 async def get_customers_count(
     shoe_size: Optional[str] = None,
     store_name: Optional[str] = None,
-    messaged: Optional[str] = None
+    messaged: Optional[str] = None,
+    country_code: Optional[str] = None
 ):
     """
     Get total count of customers matching filters
@@ -230,6 +231,8 @@ async def get_customers_count(
         query['messaged'] = True
     elif messaged == "no":
         query['messaged'] = {"$ne": True}
+    if country_code and country_code != "all":
+        query['country_code'] = country_code
     
     count = await db.customers.count_documents(query)
     return {"total": count}
