@@ -57,6 +57,7 @@ const Dashboard = () => {
   useEffect(() => {
     fetchStores();
     fetchShoeSizes();
+    fetchCountries();
     fetchCustomers();
   }, []);
 
