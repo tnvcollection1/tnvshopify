@@ -162,15 +162,18 @@ backend:
 
   - task: "Agents list endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Endpoint /api/agents returns list of all agents without passwords. Used to populate agent filter dropdown."
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Agents list endpoint working perfectly. GET /api/agents returns array with 1 agent (admin user). Response excludes password field as expected. Agent object contains id, username='admin', full_name='Administrator', role='admin', created_at timestamp."
 
 frontend:
   - task: "Agent login page with protected routes"
