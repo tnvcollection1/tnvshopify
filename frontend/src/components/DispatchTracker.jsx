@@ -91,7 +91,7 @@ const DispatchTracker = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // ONLY show fulfilled orders in Dispatch Tracker
+      // ONLY show fulfilled orders in Dispatch Tracker (includes TCS and X tracking numbers)
       params.append("fulfillment_status", "fulfilled");
       
       if (filters.delivery !== "all") params.append("delivery_status", filters.delivery);
@@ -101,11 +101,18 @@ const DispatchTracker = () => {
       params.append("page", currentPage);
       params.append("limit", "100");
 
-      const response = await axios.get(`${API}/customers?${params.toString()}`);
-      const allOrders = Array.isArray(response.data) ? response.data : response.data.customers || [];
+      // Fetch both orders and count
+      const [ordersResponse, countResponse] = await Promise.all([
+        axios.get(`${API}/customers?${params.toString()}`),
+        axios.get(`${API}/customers/count?${params.toString()}`)
+      ]);
+      
+      const allOrders = Array.isArray(ordersResponse.data) ? ordersResponse.data : ordersResponse.data.customers || [];
+      const total = countResponse.data.total || 0;
+      
       setOrders(allOrders);
       
-      // Calculate stats for fulfilled orders
+      // Calculate stats - use actual total from database
       const delivered = allOrders.filter(c => c.delivery_status === "DELIVERED").length;
       const inTransit = allOrders.filter(c => c.delivery_status === "IN_TRANSIT" || c.delivery_status === "OUT_FOR_DELIVERY").length;
       const pending = allOrders.filter(c => !c.delivery_status || c.delivery_status === "PENDING" || c.delivery_status === "UNKNOWN").length;
@@ -114,7 +121,7 @@ const DispatchTracker = () => {
       const paymentPending = allOrders.filter(c => c.cod_payment_status === "PENDING" || c.payment_status === "pending" || !c.cod_payment_status).length;
       
       setStats({
-        total: allOrders.length,
+        total: total,  // Show actual total from database
         delivered,
         inTransit,
         pending,
@@ -123,7 +130,7 @@ const DispatchTracker = () => {
         paymentPending,
       });
       
-      setTotalPages(Math.ceil(allOrders.length / 50));
+      setTotalPages(Math.ceil(total / 100));
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
