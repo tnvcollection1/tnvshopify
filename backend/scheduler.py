@@ -60,6 +60,17 @@ class AutoSyncScheduler:
             coalesce=True
         )
         
+        # Schedule TCS COD payment sync every 4 hours
+        self.scheduler.add_job(
+            func=self.sync_cod_payments,
+            trigger=IntervalTrigger(hours=4),
+            id='cod_payment_sync',
+            name='TCS COD Payment Sync (Every 4 Hours)',
+            replace_existing=True,
+            max_instances=1,
+            coalesce=True
+        )
+        
         # Start scheduler
         self.scheduler.start()
         self.is_running = True
