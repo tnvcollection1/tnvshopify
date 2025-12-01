@@ -1931,9 +1931,8 @@ async def get_customers(
     if purchase_status and purchase_status != "all":
         query['purchase_status'] = purchase_status
     if china_tracking == "true":
-        # Purchase tracker - for orders that need to be purchased from suppliers
-        # This is a placeholder - define criteria for "purchase orders"
-        pass
+        # Purchase tracker - orders with tracking numbers starting with 'X' (China Post)
+        query['tracking_number'] = {"$regex": "^X", "$options": "i"}
     
     # Search across multiple fields
     if search:
