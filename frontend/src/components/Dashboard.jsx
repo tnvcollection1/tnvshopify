@@ -751,6 +751,19 @@ const Dashboard = () => {
                           <Badge variant="secondary">{customer.order_count}</Badge>
                         </TableCell>
                         <TableCell>
+                          {customer.last_order_date ? (
+                            <div className="text-sm text-slate-600">
+                              {new Date(customer.last_order_date).toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric' 
+                              })}
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 text-sm">N/A</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <Badge variant="outline" className="bg-slate-50">
                             {customer.store_name || 'Default'}
                           </Badge>
