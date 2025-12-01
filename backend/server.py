@@ -438,13 +438,14 @@ async def sync_shopify_orders(store_name: str, days_back: int = 30):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@api_router.post("/tcs/configure")
-async def configure_tcs_credentials(
-    bearer_token: Optional[str] = None,
-    token_expiry: Optional[str] = None,
-    username: Optional[str] = None,
+class TCSConfigRequest(BaseModel):
+    bearer_token: Optional[str] = None
+    token_expiry: Optional[str] = None
+    username: Optional[str] = None
     password: Optional[str] = None
-):
+
+@api_router.post("/tcs/configure")
+async def configure_tcs_credentials(config: TCSConfigRequest):
     """
     Configure TCS Pakistan API credentials
     Supports both Bearer Token (preferred) and Username/Password
