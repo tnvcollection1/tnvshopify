@@ -34,6 +34,25 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 
+# Startup and shutdown events for scheduler
+@app.on_event("startup")
+async def startup_event():
+    """Start background scheduler on server startup"""
+    logger.info("🚀 Starting server...")
+    scheduler = get_scheduler()
+    scheduler.start()
+    logger.info("✅ Background scheduler initialized")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Stop background scheduler on server shutdown"""
+    logger.info("🛑 Shutting down server...")
+    scheduler = get_scheduler()
+    scheduler.stop()
+    logger.info("✅ Background scheduler stopped")
+
+
 # Define Models
 class Customer(BaseModel):
     model_config = ConfigDict(extra="ignore")
