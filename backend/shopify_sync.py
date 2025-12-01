@@ -42,14 +42,15 @@ class ShopifyOrderSync:
             shopify.ShopifyResource.clear_session()
             logger.info(f"Disconnected from Shopify store: {self.shop_url}")
     
-    def fetch_orders(self, limit: int = 250, status: str = "any", created_after: Optional[str] = None) -> List[Dict]:
+    def fetch_orders(self, limit: int = 250, status: str = "any", created_after: Optional[str] = None, fetch_all: bool = False) -> List[Dict]:
         """
-        Fetch orders from Shopify
+        Fetch orders from Shopify with pagination support
         
         Args:
             limit: Number of orders to fetch per page (max 250)
             status: Order status filter (any, open, closed, cancelled)
             created_after: Fetch orders created after this date (ISO format)
+            fetch_all: If True, fetches ALL orders using pagination (ignores limit)
             
         Returns:
             List of parsed order dictionaries
@@ -58,24 +59,48 @@ class ShopifyOrderSync:
             return []
         
         try:
-            params = {
-                'limit': min(limit, 250),
-                'status': status
-            }
+            all_parsed_orders = []
+            page = 1
+            per_page = 250  # Shopify max limit
             
-            if created_after:
-                params['created_at_min'] = created_after
+            while True:
+                params = {
+                    'limit': per_page,
+                    'status': status,
+                    'page': page
+                }
+                
+                if created_after:
+                    params['created_at_min'] = created_after
+                
+                logger.info(f"Fetching page {page} (up to {per_page} orders)...")
+                orders = shopify.Order.find(**params)
+                
+                if not orders:
+                    logger.info(f"No more orders found. Total fetched: {len(all_parsed_orders)}")
+                    break
+                
+                # Parse orders from this page
+                for order in orders:
+                    parsed_order = self._parse_order(order)
+                    if parsed_order:
+                        all_parsed_orders.append(parsed_order)
+                
+                logger.info(f"Page {page}: Parsed {len(orders)} orders. Total so far: {len(all_parsed_orders)}")
+                
+                # If not fetching all, stop after first page
+                if not fetch_all:
+                    break
+                
+                # If we got fewer orders than the limit, we've reached the end
+                if len(orders) < per_page:
+                    logger.info(f"Reached last page. Total orders fetched: {len(all_parsed_orders)}")
+                    break
+                
+                page += 1
             
-            orders = shopify.Order.find(**params)
-            parsed_orders = []
-            
-            for order in orders:
-                parsed_order = self._parse_order(order)
-                if parsed_order:
-                    parsed_orders.append(parsed_order)
-            
-            logger.info(f"Fetched {len(parsed_orders)} orders from Shopify")
-            return parsed_orders
+            logger.info(f"Completed: Fetched {len(all_parsed_orders)} total orders from Shopify")
+            return all_parsed_orders
             
         except Exception as e:
             logger.error(f"Error fetching orders: {str(e)}")
