@@ -238,7 +238,7 @@ const DispatchTracker = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Dispatch Tracker</h1>
-            <p className="text-sm text-gray-500 mt-1">Track all orders, deliveries, and payments</p>
+            <p className="text-sm text-gray-500 mt-1">Track fulfilled orders - Monitor delivery and payment status</p>
           </div>
           <div className="flex items-center gap-3">
             <Button
