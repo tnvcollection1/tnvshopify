@@ -42,6 +42,9 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const customersPerPage = 100;
+  const [messagedFilter, setMessagedFilter] = useState("all");
+  const [sendingMessages, setSendingMessages] = useState(false);
+  const [messageQueue, setMessageQueue] = useState([]);
   const [stats, setStats] = useState({
     totalCustomers: 0,
     uniqueSizes: 0,
