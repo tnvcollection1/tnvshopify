@@ -44,7 +44,7 @@ class ShopifyOrderSync:
     
     def fetch_orders(self, limit: int = 250, status: str = "any", created_after: Optional[str] = None, fetch_all: bool = False) -> List[Dict]:
         """
-        Fetch orders from Shopify with pagination support
+        Fetch orders from Shopify with cursor-based pagination support
         
         Args:
             limit: Number of orders to fetch per page (max 250)
@@ -60,44 +60,58 @@ class ShopifyOrderSync:
         
         try:
             all_parsed_orders = []
-            page = 1
             per_page = 250  # Shopify max limit
+            page_count = 0
+            
+            # Initial parameters
+            params = {
+                'limit': per_page,
+                'status': status
+            }
+            
+            if created_after:
+                params['created_at_min'] = created_after
             
             while True:
-                params = {
-                    'limit': per_page,
-                    'status': status,
-                    'page': page
-                }
+                page_count += 1
+                logger.info(f"Fetching batch {page_count} (up to {per_page} orders)...")
                 
-                if created_after:
-                    params['created_at_min'] = created_after
-                
-                logger.info(f"Fetching page {page} (up to {per_page} orders)...")
                 orders = shopify.Order.find(**params)
                 
                 if not orders:
                     logger.info(f"No more orders found. Total fetched: {len(all_parsed_orders)}")
                     break
                 
-                # Parse orders from this page
+                # Parse orders from this batch
                 for order in orders:
                     parsed_order = self._parse_order(order)
                     if parsed_order:
                         all_parsed_orders.append(parsed_order)
                 
-                logger.info(f"Page {page}: Parsed {len(orders)} orders. Total so far: {len(all_parsed_orders)}")
+                logger.info(f"Batch {page_count}: Parsed {len(orders)} orders. Total so far: {len(all_parsed_orders)}")
                 
-                # If not fetching all, stop after first page
+                # If not fetching all, stop after first batch
                 if not fetch_all:
                     break
                 
-                # If we got fewer orders than the limit, we've reached the end
-                if len(orders) < per_page:
-                    logger.info(f"Reached last page. Total orders fetched: {len(all_parsed_orders)}")
+                # Check if there are more pages using Link header (cursor-based pagination)
+                # Shopify returns pagination info in response headers
+                if hasattr(orders, 'has_next_page') and orders.has_next_page():
+                    # Get next page using cursor
+                    params = orders.next_page_params()
+                    logger.info(f"More orders available, fetching next batch...")
+                elif len(orders) < per_page:
+                    # If we got fewer orders than the limit, we've reached the end
+                    logger.info(f"Reached last batch (got {len(orders)} < {per_page}). Total orders: {len(all_parsed_orders)}")
                     break
-                
-                page += 1
+                else:
+                    # Try to get the last order's ID and use it for pagination
+                    if orders:
+                        last_order_id = orders[-1].id
+                        params['since_id'] = last_order_id
+                        logger.info(f"Using since_id pagination from order {last_order_id}")
+                    else:
+                        break
             
             logger.info(f"Completed: Fetched {len(all_parsed_orders)} total orders from Shopify")
             return all_parsed_orders
