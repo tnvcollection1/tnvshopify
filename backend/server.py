@@ -2010,7 +2010,12 @@ async def get_customers_count(
     stock_availability: Optional[str] = None,
     fulfillment_status: Optional[str] = None,
     delivery_status: Optional[str] = None,
-    payment_status: Optional[str] = None
+    payment_status: Optional[str] = None,
+    confirmation_status: Optional[str] = None,
+    purchase_status: Optional[str] = None,
+    china_tracking: Optional[str] = None,
+    tcs_only: Optional[str] = None,
+    search: Optional[str] = None
 ):
     """
     Get total count of customers matching filters including stock availability, fulfillment, delivery, and payment status
