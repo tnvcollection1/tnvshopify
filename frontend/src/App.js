@@ -8,6 +8,7 @@ import Inventory from "@/components/Inventory";
 import Orders from "@/components/Orders";
 import DispatchTracker from "@/components/DispatchTracker";
 import ConfirmationTracker from "@/components/ConfirmationTracker";
+import PurchaseTracker from "@/components/PurchaseTracker";
 import Reports from "@/components/Reports";
 import Analytics from "@/components/Analytics";
 import Settings from "@/components/Settings";
