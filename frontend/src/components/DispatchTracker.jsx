@@ -53,10 +53,8 @@ const DispatchTracker = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
-    fulfillment: "all",
     delivery: "all",
     payment: "all",
-    calling_status: "all",
     store: "all",
   });
   const [currentPage, setCurrentPage] = useState(1);
