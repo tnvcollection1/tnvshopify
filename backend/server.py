@@ -48,6 +48,7 @@ class Customer(BaseModel):
     messaged_by: Optional[str] = None
     converted: Optional[bool] = None
     conversion_notes: Optional[str] = None
+    sale_amount: Optional[float] = None
 
 
 class Agent(BaseModel):
