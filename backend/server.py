@@ -40,6 +40,7 @@ class Customer(BaseModel):
     phone: Optional[str] = None
     country_code: Optional[str] = None
     shoe_sizes: List[str] = []
+    order_skus: List[str] = []  # SKUs from customer orders
     order_count: int = 0
     last_order_date: Optional[str] = None
     total_spent: float = 0.0
@@ -51,6 +52,7 @@ class Customer(BaseModel):
     converted: Optional[bool] = None
     conversion_notes: Optional[str] = None
     sale_amount: Optional[float] = None
+    stock_status: Optional[str] = None  # "in_stock", "out_of_stock", "partial"
 
 
 class Agent(BaseModel):
