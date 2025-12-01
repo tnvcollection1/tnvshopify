@@ -95,6 +95,8 @@ const ConfirmationTracker = () => {
       if (filters.calling_status !== "all") params.append("calling_status", filters.calling_status);
       if (filters.confirmation_status !== "all") params.append("confirmation_status", filters.confirmation_status);
       if (filters.store !== "all") params.append("store_name", filters.store);
+      if (filters.year !== "all") params.append("year", filters.year);
+      if (filters.sortBy) params.append("sort_by", filters.sortBy);
       if (searchQuery) params.append("search", searchQuery);
       params.append("page", currentPage);
       params.append("limit", "100");
