@@ -1152,6 +1152,225 @@ async def upload_inventory_excel(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/inventory/upload/{store_name}")
+async def upload_inventory_for_store(store_name: str, file: UploadFile = File(...)):
+    """
+    Upload Excel file with inventory for a specific store
+    Expected columns: SKU, Size, color, cost, BOX NO
+    Each row counts as 1 unit of quantity
+    """
+    try:
+        import openpyxl
+        from io import BytesIO
+        
+        contents = await file.read()
+        wb = openpyxl.load_workbook(BytesIO(contents))
+        sheet = wb.active
+        
+        items_added = 0
+        items_updated = 0
+        errors = []
+        
+        # Track SKU counts (each row = 1 unit)
+        sku_counts = {}
+        sku_details = {}
+        
+        for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+            try:
+                # Expected columns: BOX NO, SKU, Size, color, cost
+                if not row or len(row) < 2:
+                    continue
+                
+                box_no = str(row[0]).strip() if row[0] else ""
+                sku = str(row[1]).strip() if row[1] else ""
+                size = str(row[2]).strip() if row[2] and len(row) > 2 else ""
+                color = str(row[3]).strip() if row[3] and len(row) > 3 else ""
+                cost = str(row[4]).strip() if row[4] and len(row) > 4 else ""
+                
+                if not sku:
+                    continue
+                
+                sku_upper = sku.upper()
+                
+                # Count occurrences
+                if sku_upper not in sku_counts:
+                    sku_counts[sku_upper] = 0
+                    sku_details[sku_upper] = {
+                        "size": size,
+                        "color": color,
+                        "cost": cost,
+                        "box_no": box_no
+                    }
+                
+                sku_counts[sku_upper] += 1
+                    
+            except Exception as e:
+                errors.append(f"Row {row_idx}: {str(e)}")
+                continue
+        
+        # Now save to database
+        for sku_upper, quantity in sku_counts.items():
+            try:
+                details = sku_details[sku_upper]
+                
+                existing = await db.inventory_items.find_one(
+                    {"sku": sku_upper, "store_name": store_name},
+                    {"_id": 0}
+                )
+                
+                if existing:
+                    # Update existing
+                    await db.inventory_items.update_one(
+                        {"sku": sku_upper, "store_name": store_name},
+                        {"$inc": {"quantity": quantity},
+                         "$set": {
+                            "size": details["size"],
+                            "color": details["color"],
+                            "cost": details["cost"],
+                            "box_no": details["box_no"],
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                         }}
+                    )
+                    items_updated += 1
+                else:
+                    # Create new
+                    inventory_item = {
+                        "sku": sku_upper,
+                        "store_name": store_name,
+                        "quantity": quantity,
+                        "size": details["size"],
+                        "color": details["color"],
+                        "cost": details["cost"],
+                        "box_no": details["box_no"],
+                        "created_at": datetime.now(timezone.utc).isoformat(),
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    await db.inventory_items.insert_one(inventory_item)
+                    items_added += 1
+                    
+            except Exception as e:
+                errors.append(f"SKU {sku_upper}: {str(e)}")
+                continue
+        
+        return {
+            "success": True,
+            "message": f"Processed {items_added + items_updated} items for {store_name}",
+            "items_added": items_added,
+            "items_updated": items_updated,
+            "errors": errors if errors else None
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/inventory/items")
+async def get_inventory_items(store_name: Optional[str] = None):
+    """
+    Get inventory items, optionally filtered by store
+    """
+    try:
+        query = {}
+        if store_name:
+            query["store_name"] = store_name
+        
+        items = await db.inventory_items.find(query, {"_id": 0}).sort("sku", 1).to_list(10000)
+        
+        return {
+            "success": True,
+            "items": items
+        }
+    except Exception as e:
+        logger.error(f"Error fetching inventory items: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/tcs/upload-payment")
+async def upload_tcs_payment_data(file: UploadFile = File(...)):
+    """
+    Upload TCS COD payment Excel file
+    Expected columns: Consignment Number, Customer Reference, Delivery Status, COD Amount, BALANCE_PAYABLE, etc.
+    Matches by tracking number and updates payment status
+    """
+    try:
+        import openpyxl
+        from io import BytesIO
+        
+        contents = await file.read()
+        wb = openpyxl.load_workbook(BytesIO(contents))
+        sheet = wb.active
+        
+        matched = 0
+        not_found = 0
+        errors = []
+        
+        for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+            try:
+                if not row or len(row) < 3:
+                    continue
+                
+                # Expected columns based on the file analysis:
+                # Sr#, Consignment Number, Customer Reference, Booking Date, Consignee, Origin, Destination, 
+                # Weight, Payment Period, Delivery Status, COD Amount, Shipping Chg, WHGST, WHIT, ADDWHIT, 
+                # ADVANCE_PAYMENT_DATE, BALANCE_PAYABLE
+                
+                consignment_number = str(row[0]).strip() if row[0] else ""
+                customer_reference = str(row[1]).strip() if row[1] and len(row) > 1 else ""
+                delivery_status = str(row[9]).strip() if row[9] and len(row) > 9 else ""
+                balance_payable = row[16] if len(row) > 16 else None
+                
+                if not consignment_number:
+                    continue
+                
+                # Try to match by consignment number (tracking number)
+                customer = await db.customers.find_one(
+                    {"tracking_number": consignment_number},
+                    {"_id": 0}
+                )
+                
+                if customer:
+                    # Determine payment status based on BALANCE_PAYABLE
+                    payment_received = False
+                    if balance_payable is not None:
+                        try:
+                            balance = float(balance_payable)
+                            # If balance is 0 or negative, payment is received
+                            payment_received = balance <= 0
+                        except (ValueError, TypeError):
+                            pass
+                    
+                    # Update customer with payment status
+                    await db.customers.update_one(
+                        {"customer_id": customer["customer_id"]},
+                        {"$set": {
+                            "cod_payment_status": "RECEIVED" if payment_received else "PENDING",
+                            "cod_payment_balance": balance_payable,
+                            "payment_period": str(row[8]) if len(row) > 8 and row[8] else None,
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    matched += 1
+                else:
+                    not_found += 1
+                    
+            except Exception as e:
+                errors.append(f"Row {row_idx}: {str(e)}")
+                continue
+        
+        return {
+            "success": True,
+            "message": f"Processed TCS payment data: {matched} matched, {not_found} not found",
+            "matched": matched,
+            "not_found": not_found,
+            "errors": errors if errors else None
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading TCS payment data: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/inventory/add")
 async def add_inventory_item(
     sku: str,
