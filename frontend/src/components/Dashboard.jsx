@@ -973,6 +973,8 @@ const Dashboard = () => {
                       <TableHead>Last Order</TableHead>
                       <TableHead>Store</TableHead>
                       <TableHead>Stock</TableHead>
+                      <TableHead>Fulfillment</TableHead>
+                      <TableHead>Tracking</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Agent</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
