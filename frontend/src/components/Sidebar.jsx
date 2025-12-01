@@ -30,6 +30,7 @@ const Sidebar = () => {
     {
       title: 'OPERATIONS',
       items: [
+        { icon: PhoneCall, label: 'Confirmation Tracker', path: '/confirmation' },
         { icon: Truck, label: 'Dispatch Tracker', path: '/tracker', highlighted: true },
         { icon: ShoppingCart, label: 'Orders', path: '/orders' },
         { icon: Users, label: 'Customers', path: '/customers' },
