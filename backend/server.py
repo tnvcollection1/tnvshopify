@@ -2039,6 +2039,7 @@ async def get_customers_count(
     purchase_status: Optional[str] = None,
     china_tracking: Optional[str] = None,
     tcs_only: Optional[str] = None,
+    year: Optional[str] = None,
     search: Optional[str] = None
 ):
     """
