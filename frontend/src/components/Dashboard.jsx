@@ -961,6 +961,26 @@ const Dashboard = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          {customer.stock_status === "in_stock" && (
+                            <Badge className="bg-green-100 text-green-700">
+                              ✅ In Stock
+                            </Badge>
+                          )}
+                          {customer.stock_status === "out_of_stock" && (
+                            <Badge className="bg-red-100 text-red-700">
+                              ❌ Out of Stock
+                            </Badge>
+                          )}
+                          {customer.stock_status === "partial" && (
+                            <Badge className="bg-yellow-100 text-yellow-700">
+                              ⚠️ Partial
+                            </Badge>
+                          )}
+                          {(!customer.stock_status || customer.stock_status === "unknown") && (
+                            <span className="text-slate-400 text-sm">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {customer.messaged ? (
                             <Badge className="bg-green-100 text-green-700">
                               ✓ Messaged {customer.message_count && `(${customer.message_count}x)`}
