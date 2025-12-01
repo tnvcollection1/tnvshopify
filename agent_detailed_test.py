@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://shopify-order-hub-1.preview.emergentagent.com/api'
+base_url = 'https://retail-command-24.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 

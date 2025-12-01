@@ -1,86 +1,93 @@
-<analysis>**original_problem_statement**: The user runs a clothing business with multiple Shopify stores and wants a tool to manage customers imported from CSV files.
+<analysis>**original_problem_statement**: The user, who runs a clothing business with multiple Shopify stores, wanted a tool to manage customers, orders, and stock. The initial request evolved from a CSV-based system to a fully Shopify-integrated platform.
 
 PRODUCT REQUIREMENTS:
-- **Multi-Store Management**: Ability to add and manage multiple stores (user mentioned having three).
-- **CSV Data Import**: The primary way to get data into the system is by uploading a CSV file for each store. The system should merge new data with existing data, adding new customers and updating existing ones.
-- **Customer Segmentation & Filtering**:
-    - Filter customers by Store, Country, Clothing Size, and Message Status (Messaged/Not Messaged).
-    - A search bar to find customers by name, email, or phone.
-- **WhatsApp Messaging**:
-    - Generate WhatsApp chat links for individual customers.
-    - A bulk messaging system for selected customers with randomized greetings (Hello, Hi) and delays to prevent blocking.
-    - Customers without a phone number should not be selectable for messaging.
-- **Agent and Reporting System**:
-    - An agent login system (/ created).
-    - Track which agent messages which customer, including a timestamp.
-    - Filter customers based on the agent who messaged them.
-    - Track conversions (Yes/No) and the Sale Amount for successful conversions.
-    - Day-wise reporting on agent performance (messages sent, conversions).
-- **UI & Data Display**:
-    - The UI must handle large datasets (>25,000 customers) efficiently using pagination.
-    - The customer table should display: Checkbox selectors, Customer Name, Phone (with icon) or Email (with icon), Last Order Date, a list of Sizes, Message Status, and the agent who messaged them.
-    - Stats cards should show total customers and unique sizes, updating based on selected filters.
-    - The Emergent branding badge must be removed.
+- **Shopify Integration**: Sync orders, customers, fulfillment status, order number, and payment status from multiple Shopify stores.
+- **Abandoned Checkout Sync**: Import abandoned checkouts from Shopify.
+- **Advanced Inventory Management**:
+    - Upload opening stock levels via Excel.
+    - Automatically deduct stock for an order only when its delivery status becomes DELIVERED.
+- **Delivery & Payment Tracking (TCS Courier)**:
+    - Integrate with TCS to get real-time delivery status for orders.
+    - Integrate with the TCS COD (Cash on Delivery) API to track payment status.
+- **Customer Management UI**:
+    - A main dashboard to view all customers with sorting to show the most recent orders first.
+    - Table should display: Order #, Customer Info, Fulfillment Status, Payment Status, Delivery Status, and COD Payment Status.
+    - Advanced filtering by all key metrics.
+- **Automatic Background Syncing**: All data (Shopify orders, TCS delivery) should sync automatically in the background.
+- **UI/UX Redesign**: The user requested a UI overhaul to be inspired by Shopify's modern, professional, and clean design, including sidebar navigation.
+- **Agent & Reporting System**: An agent login system and a reporting page to track agent performance (conversion tracking, sales).
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with a React frontend and FastAPI backend. The system supports multi-store management via CSV uploads. Customer data is displayed in a paginated table and can be filtered by store, country, size, and message status. It includes a WhatsApp messaging queue with message tracking. A backend for an agent login and reporting system has been created, including API endpoints and a default  user. A basic  component exists but is not integrated.
+The application is a full-stack solution (React/FastAPI/MongoDB) that integrates with a single Shopify store (). It successfully fetches and displays orders, customers, fulfillment status, Shopify payment status, and order numbers. The UI includes advanced filtering for these fields, and the data is sorted to show the most recent orders first.
+
+A robust background job system using  is active, automatically syncing Shopify orders (every hour) and TCS delivery statuses (every 2 hours).
+
+The agent has started a major UI overhaul to match Shopify's design. This includes creating a new  for navigation, a main  component, and placeholder pages for , , and . The backend foundation for a new inventory management system has also been created ().
 
 **Last working item**:
--   **Last item agent was working**: Implementing the backend for a comprehensive agent login system. This included creating database models for agents, adding authentication endpoints, creating a reporting endpoint, and updating customer models to track message history, conversions, and sale amounts. A default  user was also created.
+-   **Last item agent was working**: The agent was implementing the user's request for a complete UI redesign to mimic Shopify. It had just created the new file structure for a modern layout (, , placeholder pages), updated the main routing in  to use this new layout, and started refactoring  to remove the old header and fit within the new structure.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: Frontend testing agent
+-   **Which testing method agent to use?**: Frontend testing agent. The agent should be instructed to test the new Shopify-style layout, verify that navigation between pages (Dashboard, Inventory, etc.) works correctly via the new sidebar, and confirm that all existing functionality on the dashboard (filtering, sorting, data display) remains intact after the refactoring.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Stats cards do not update when a store is selected. (P0)
+-   **Issue 1**: TCS COD Payment API Integration is Blocked (P1)
 
 **Issues Detail**:
 -   **Issue 1**:
-    -   **Attempted fixes**: The agent modified the  hooks in  to refetch counts when the  changes. The backend API correctly returns the filtered count, but the frontend state fails to update the display, suggesting a state update or re-rendering issue in React.
-    -   **Next debug checklist**:
-        1.  In , investigate the  hooks that depend on .
-        2.  Confirm that  is called with the correct parameters and that its  call is successfully updating the component's state.
-        3.  Use  to trace the state of , , and the API responses within the render cycle to identify where the update is failing.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will provide users with accurate, real-time statistics for each individual store, which is critical for store-wise management.
-    -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: None
+    -   **Attempted fixes**: The agent fully implemented a module (), backend endpoints, and scheduler jobs to sync Cash on Delivery payment status from the TCS API. However, all API calls to the  endpoint resulted in a  error. This blocked the entire server due to synchronous error handling. The agent has since disabled the COD sync job in the scheduler to restore application functionality.
+    -   **Next debug checklist**: This issue is blocked on user action. The user needs to contact TCS support to confirm the correct API endpoint for COD payment status and verify if the existing bearer token is authorized for that endpoint or if separate credentials are required.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will complete a key user requirement to track which COD orders have been paid for, providing a full financial picture.
+    -   **Status**: BLOCKED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both. Backend to test the API call, frontend to verify the COD Payment column and filter work correctly.
+    -   **Blocked on other issue**: None. Blocked on external dependency (user/TCS).
 
 **In progress Task List**:
--   **Task 1**: Implement Frontend for Agent Login and Reporting. (P0)
+-   **Task 1**: Complete Frontend Integration and UI Refinement for Shopify-style Redesign (P0)
 
 **Task Detail**:
 -   **Task 1**:
     -   **Where to resume**:
-        1.  Integrate the  component into  using React Router to create a protected route for the dashboard.
-        2.  Implement global state management (e.g., React Context) for the authentication token.
-        3.  Update all API requests in  to include the  header.
-        4.  Add a new Agent dropdown to the filters section, populated by calling the  endpoint.
-        5.  Create a new UI component for the reporting page to display data from the  endpoint.
-        6.  Implement a UI mechanism (e.g., a modal on the customer row) to allow agents to mark a conversion as Yes and input the sale amount.
-    -   **What will be achieved with this?**: This will complete the agent management feature, enabling secure access, user-specific action tracking, and performance reporting.
+        1.  Flesh out the UI of  with navigation links (Dashboard, Orders, Inventory, Analytics, Settings).
+        2.  Complete the UI for , including the Excel upload button and a table to display stock levels.
+        3.  Ensure the  component renders correctly within the new .
+        4.  Connect the UI elements on the  page to the backend endpoints in .
+    -   **What will be achieved with this?**: This will deliver the Shopify-inspired UI and the advanced inventory management system requested by the user.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on something**: None
+    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Blocked on something**: None.
 
-**Upcoming and Future Tasks**:
--   None specified beyond the current in-progress tasks.
+**Upcoming and Future Tasks**
+-   **P1: Implement Advanced Inventory Logic**:
+    -   Modify the TCS delivery sync job in  to call the new inventory deduction endpoint from  whenever an order's  is updated to .
+-   **P2: Build UI for Agent Reporting**:
+    -   Create a new route and component (e.g.,  or ).
+    -   Fetch data from the  endpoint and display agent performance in charts or tables.
+-   **P3: Build UI for Conversion Tracking**:
+    -   Add a button/modal to the customer row in  for agents to mark a conversion (Yes/No) and input a Sale Amount.
+    -   Create a new backend endpoint to save this data.
+-   **Future: Integrate Additional Shopify Stores**:
+    -   Create a UI in the Settings page for the user to add credentials for their other stores (, ).
+-   **Future: Code Refactoring**:
+    -   Split the large  file into multiple router files (e.g., , ).
 
 **Completed work in this session**
--   **CSV-based Data Management**: Replaced the initial Shopify integration with a CSV upload system for multi-store customer data import and merging.
--   **Performance Optimization**: Implemented server-side pagination to handle large datasets efficiently.
--   **Advanced Filtering**: Added filters for store, country, size, and message status.
--   **WhatsApp Campaign Tools**: Built a message queue system with random greetings, delays, and tracking of messaged customers.
--   **UI Enhancements**: Added columns for Last Order Date, conditional Phone/Email display, and customer selection via checkboxes.
--   **Branding Removal**: Successfully removed the Made with Emergent badge from the UI.
--   **Agent System Backend**: Created backend models, authentication, and API endpoints for agents and reporting.
+-   **Feature**: Displayed Shopify , , and  in the UI.
+-   **Feature**: Added UI filters for Fulfillment Status, Delivery Status, and Payment Status.
+-   **Feature**: Implemented a full historical Shopify order sync using robust  pagination to fetch over 24,000 orders.
+-   **Feature**: Implemented an automatic background syncing system using  for both Shopify orders and TCS delivery statuses.
+-   **Feature**: Added a Delivery Status column to the UI to display the text status (e.g., DELIVERED).
+-   **Feature**: Began implementation of a major UI redesign and an advanced inventory management system.
+-   **Bug Fix**: Fixed a critical bug where recent Shopify orders were not showing first by adding  sorting to the backend query.
+-   **Bug Fix**: Correctly configured the TCS API bearer token provided by the user, enabling delivery status sync.
+-   **Bug Fix**: Resolved multiple bugs within the  implementation, including timezone-awareness and event loop conflicts.
 
 **Earlier issues found/mentioned but not fixed**
--   None.
+-   The TCS COD Payment API returning 404 is the only major unfixed issue, which is already listed as the primary blocker in **All Pending/In progress Issue list**.
 
 **Known issue recurrence from previous fork**
 -   None.
@@ -89,70 +96,76 @@ A full-stack application with a React frontend and FastAPI backend. The system s
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI, Motor (async MongoDB driver)
+-   **Backend**: FastAPI, Motor (async MongoDB), Pydantic, APScheduler (for background jobs)
 -   **Frontend**: React, Tailwind CSS, shadcn/ui
 -   **Database**: MongoDB
--   **Key Feature**: Server-side pagination for handling large datasets.
+-   **Integrations**: Shopify Admin API (REST), TCS Courier API
 
 **key DB schema**
 -   **customers**: 
 -   **stores**: 
--   **agents**: 
+-   **config**:  (Used for storing TCS credentials)
+-   **inventory_items**:  (New, for inventory management)
 
 **changes in tech stack**
--   None.
+-    was added for background task scheduling.
 
 **All files**
--   **Created/Modified**:
-    -   : Core application logic. Contains endpoints for customers, stores, CSV uploads, agent auth, and reporting.
-    -   : Logic for parsing and processing uploaded CSV files.
-    -   : The primary UI component, containing state management, data fetching, filtering, and table rendering.
-    -   : New component for the agent login form (not yet integrated).
-    -   : Modified to remove the Emergent badge.
+-   **New Files Created**:
+    -   : Manages all automated background sync jobs.
+    -   : Contains backend logic for the new inventory system.
+    -   : Logic for the (currently blocked) TCS COD payment API.
+    -   : New main layout wrapper with sidebar.
+    -   : New Shopify-style navigation component.
+    -   : New page component for inventory.
+    -   , , : Placeholder pages.
+-   **Key Files Modified**:
+    -   : Heavily modified to add new endpoints, filters, background job integration, and inventory routes.
+    -   : Heavily modified to add new columns, filters, and is currently being refactored for the new layout.
+    -   : Updated to use the new  and routes.
+    -   : Updated with robust  pagination logic.
+    -   : Fixed a timezone-related bug.
 
 **Areas that need refactoring**:
--    is becoming overly complex. The state management and data-fetching logic could be extracted into custom React hooks (e.g., , ) to improve modularity and readability.
+-   : Has become very large. Routes should be split into a  directory.
+-   : Still very large, although the UI redesign process has started to break parts of its functionality (like the header) into the new  and  components.
 
 **key api endpoints**
--   : Agent login.
--   : Upload CSV for a store.
--   : Get paginated and filtered list of customers.
--   : Get filtered customer count.
--   , : Manage stores.
--   : Track sent messages.
--   : Get agent performance reports.
+-   : Main endpoint to fetch customers, now with filters for , ,  and sorted by .
+-   : Triggers a full historical sync.
+-   : Triggers a bulk sync of TCS delivery statuses.
+-   : Checks the status of background jobs.
+-   : New endpoint for uploading inventory sheets.
+-   : New endpoint for COD sync, **but the underlying API returns 404**. The scheduler job calling this is **disabled**.
 
 **Critical Info for New Agent**
--   The project has pivoted from a Shopify integration to a CSV-only system.
--   The application is designed for large datasets, so maintaining performance with server-side operations is crucial.
--   A default agent  with password  exists for testing the login flow.
--   The two highest-priority tasks are fixing the stats card update bug and implementing the frontend for the agent system.
+-   A major UI redesign and inventory management system implementation is **in progress**. Your immediate priority is to complete the frontend integration for this feature.
+-   The **TCS COD Payment API is blocked** (returns 404). The sync job for it has been intentionally disabled in  and  to prevent it from crashing the server. Do not re-enable it until the user provides working credentials/endpoint.
+-   The application now relies on  for all background data synchronization. Check  for job definitions and  for logs.
 
 **documents created in this job**
--   
--   
--   
+-   None.
 
 **Last 5 User Messages and any pending user messages**
-1.  ****: Requested agent login, reporting, and conversion tracking. (In Progress)
-2.  ****: Added requirements for agent filtering, timestamps, and sale amount tracking. (In Progress)
-3.  ****: Requested customer selection checkboxes and email fallback. (Completed)
-4.  ****: Requested an order date column. (Completed)
-5.  ****: Requested removal of the Emergent branding. (Completed)
+1.  ****: User reported that recent Shopify orders were not visible. (Completed - fixed by adding sorting).
+2.  ****: User requested integration of Shopify payment status and enhanced TCS delivery status. (Completed).
+3.  ****: User reported TCS sync was not working. (Completed - configured bearer token and fixed bugs).
+4.  ****: User requested a major UI redesign and a new inventory system where stock is deducted upon delivery. (In Progress).
+5.  ****: User clarified the priority is to complete the frontend for the new UI and inventory system. (Acknowledged - Last working item).
 
 **Project Health Check:**
--   **Broken**: The dashboard's main statistics cards do not update when a store filter is applied.
--   **Mocked**: None.
+-   **Broken**: None. The application is stable and functional.
+-   **Mocked**: The COD Payment feature is mocked. The UI elements exist, but the background sync is disabled due to the  API error.
 
 **Testing status**
 -   **Testing agent used after significant changes**: NO
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: []
--   **Known regressions**: []
+-   **Known regressions**: None.
 
 **Credentials to test flow:**
 -   **Agent Username**: 
 -   **Agent Password**: 
 
 **What agent forgot to execute**
--   The agent created the backend and a placeholder component for the agent login system but did not complete the frontend integration. This includes implementing protected routes, managing auth state, and building the UI for reporting and conversion tracking, which were explicitly requested by the user.</analysis>
+-   The agent has correctly followed user priorities. The original tasks for **Agent Reporting** and **Conversion Tracking** are still pending but have been superseded by the user's more recent, larger requests for UI redesign and inventory management. They should be treated as upcoming tasks.</analysis>
