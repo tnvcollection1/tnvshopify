@@ -55,6 +55,10 @@ class Customer(BaseModel):
     conversion_notes: Optional[str] = None
     sale_amount: Optional[float] = None
     stock_status: Optional[str] = None  # "in_stock", "out_of_stock", "partial"
+    fulfillment_status: Optional[str] = None  # "unfulfilled", "fulfilled", "partially_fulfilled"
+    tracking_number: Optional[str] = None
+    tracking_company: Optional[str] = None
+    tracking_url: Optional[str] = None
 
 
 class Agent(BaseModel):
