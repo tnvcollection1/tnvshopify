@@ -616,16 +616,26 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="md:col-span-2 flex items-end">
+              <div className="md:col-span-2 flex items-end gap-2">
                 <Button 
                   onClick={openBulkWhatsApp}
-                  disabled={filteredCustomers.length === 0 || sendingMessages}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium shadow-lg shadow-green-200 transition-all hover:shadow-xl"
+                  disabled={selectedCustomers.length === 0 || sendingMessages}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium shadow-lg shadow-green-200 transition-all hover:shadow-xl"
                   data-testid="bulk-whatsapp-btn"
                 >
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  {sendingMessages ? 'Sending Messages...' : `Message ${filteredCustomers.length} Customers (8s delay)`}
+                  {sendingMessages ? 'Sending Messages...' : selectedCustomers.length > 0 ? `Message ${selectedCustomers.length} Selected (8s delay)` : 'Select customers to message'}
                 </Button>
+                {selectedCustomers.length > 0 && (
+                  <Button 
+                    onClick={() => setSelectedCustomers([])}
+                    variant="outline"
+                    size="sm"
+                    className="text-slate-600"
+                  >
+                    Clear
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
