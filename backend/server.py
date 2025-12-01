@@ -1662,6 +1662,7 @@ async def get_customers(
     fulfillment_status: Optional[str] = None,  # "fulfilled", "unfulfilled", "partially_fulfilled"
     delivery_status: Optional[str] = None,  # "DELIVERED", "IN_TRANSIT", "OUT_FOR_DELIVERY", etc.
     payment_status: Optional[str] = None,  # "paid", "pending", "refunded", "partially_refunded", "voided"
+    search: Optional[str] = None,  # Search across multiple fields
     page: int = 1,
     limit: int = 100
 ):
@@ -1687,6 +1688,18 @@ async def get_customers(
         query['delivery_status'] = delivery_status
     if payment_status and payment_status != "all":
         query['payment_status'] = payment_status
+    
+    # Search across multiple fields
+    if search:
+        search_regex = {"$regex": search, "$options": "i"}
+        query['$or'] = [
+            {"order_number": search_regex},
+            {"first_name": search_regex},
+            {"last_name": search_regex},
+            {"email": search_regex},
+            {"phone": search_regex},
+            {"tracking_number": search_regex}
+        ]
     
     # Calculate skip value for pagination
     skip = (page - 1) * limit
