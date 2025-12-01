@@ -120,7 +120,17 @@ const Dashboard = () => {
     fetchCountries();
     fetchAgents();
     fetchCustomers();
+    fetchSchedulerStatus();
   }, []);
+
+  const fetchSchedulerStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/scheduler/status`);
+      setSchedulerStatus(response.data);
+    } catch (error) {
+      console.error("Error fetching scheduler status:", error);
+    }
+  };
   
   // Infinite scroll - load more when reaching bottom
   useEffect(() => {
