@@ -78,6 +78,7 @@ class AutoSyncScheduler:
         logger.info("✅ Background scheduler started")
         logger.info("📅 Shopify sync: Every 1 hour (incremental)")
         logger.info("📅 TCS delivery sync: Every 2 hours")
+        logger.info("📅 TCS COD payment sync: Every 4 hours")
         
         # Run initial sync after 2 minutes (give server time to start)
         self.scheduler.add_job(
