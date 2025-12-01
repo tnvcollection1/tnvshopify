@@ -760,24 +760,43 @@ const Dashboard = () => {
                       
                       {/* Shopify Sync for tnvcollectionpk */}
                       {store.store_name === 'tnvcollectionpk' && (
-                        <Button
-                          onClick={() => handleShopifySync(store.store_name)}
-                          disabled={syncing}
-                          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                          data-testid={`shopify-sync-${store.id}`}
-                        >
-                          {syncing ? (
-                            <>
-                              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                              Syncing...
-                            </>
-                          ) : (
-                            <>
-                              <RefreshCw className="mr-2 h-4 w-4" />
-                              Sync Shopify Orders
-                            </>
-                          )}
-                        </Button>
+                        <>
+                          <Button
+                            onClick={() => handleShopifySync(store.store_name)}
+                            disabled={syncing}
+                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 mb-2"
+                            data-testid={`shopify-sync-${store.id}`}
+                          >
+                            {syncing ? (
+                              <>
+                                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                                Syncing...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Sync Shopify Orders
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={() => handleAbandonedCheckoutSync(store.store_name)}
+                            disabled={syncing}
+                            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                            data-testid={`abandoned-checkout-sync-${store.id}`}
+                          >
+                            {syncing ? (
+                              <>
+                                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                                Syncing...
+                              </>
+                            ) : (
+                              <>
+                                🛒 Sync Abandoned Checkouts
+                              </>
+                            )}
+                          </Button>
+                        </>
                       )}
                     </CardContent>
                   </Card>
