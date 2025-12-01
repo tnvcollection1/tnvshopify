@@ -697,6 +697,19 @@ const Dashboard = () => {
                   <TableBody>
                     {filteredCustomers.map((customer) => (
                       <TableRow key={customer.customer_id} data-testid={`customer-row-${customer.customer_id}`}>
+                        <TableCell>
+                          {customer.phone ? (
+                            <input
+                              type="checkbox"
+                              checked={selectedCustomers.includes(customer.customer_id)}
+                              onChange={() => toggleSelectCustomer(customer.customer_id)}
+                              className="w-4 h-4 rounded border-slate-300"
+                              data-testid={`select-customer-${customer.customer_id}`}
+                            />
+                          ) : (
+                            <span className="text-slate-300 text-xs">—</span>
+                          )}
+                        </TableCell>
                         <TableCell className="font-medium">
                           {(customer.first_name || customer.last_name) ? 
                             `${customer.first_name} ${customer.last_name}`.trim() : 
@@ -704,7 +717,19 @@ const Dashboard = () => {
                           }
                         </TableCell>
                         <TableCell className="text-slate-600 font-mono">
-                          {customer.phone || <span className="text-slate-400">No phone</span>}
+                          {customer.phone ? (
+                            <div className="flex items-center gap-1">
+                              <span className="text-green-600">📱</span>
+                              <span>{customer.phone}</span>
+                            </div>
+                          ) : customer.email ? (
+                            <div className="flex items-center gap-1">
+                              <span className="text-blue-600">✉️</span>
+                              <span className="text-sm">{customer.email}</span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 text-sm">No contact</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
