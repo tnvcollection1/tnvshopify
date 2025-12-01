@@ -124,6 +124,12 @@ const Dashboard = () => {
     fetchCustomers(selectedSize, 1);
   }, [selectedCountry]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedCustomers([]);
+    fetchCustomers(selectedSize, 1);
+  }, [selectedAgent]);
+
   const syncShopifyData = async () => {
     setSyncing(true);
     try {
