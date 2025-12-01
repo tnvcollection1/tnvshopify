@@ -204,6 +204,20 @@ const DispatchTracker = () => {
     }
   };
 
+  const handleSyncPayment = async () => {
+    try {
+      toast.info("Syncing TCS payment status...");
+      const response = await axios.post(`${API}/tcs/sync-payment-status`);
+      if (response.data.success) {
+        toast.success(`✅ ${response.data.message}\n${response.data.checked} orders checked, ${response.data.paid} payments verified`);
+        await fetchOrders();
+      }
+    } catch (error) {
+      console.error("TCS payment sync error:", error);
+      toast.error(error.response?.data?.detail || "Failed to sync payment status");
+    }
+  };
+
   const getStatusBadge = (status, type) => {
     const variants = {
       fulfillment: {
