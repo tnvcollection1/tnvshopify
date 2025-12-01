@@ -1,0 +1,103 @@
+import { useState } from "react";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+const Login = ({ onLoginSuccess }) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    
+    if (!username || !password) {
+      toast.error("Please enter username and password");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/agents/login`, {
+        username,
+        password
+      });
+      
+      if (response.data.success) {
+        const agent = response.data.agent;
+        localStorage.setItem("agent", JSON.stringify(agent));
+        toast.success(`Welcome back, ${agent.full_name}!`);
+        onLoginSuccess(agent);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error(error.response?.data?.detail || "Invalid username or password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-6">
+      <Card className="w-full max-w-md border-none shadow-2xl">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
+            Ashmiaa Customer Manager
+          </CardTitle>
+          <CardDescription className="text-lg mt-2">
+            Agent Login
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-slate-700 block mb-2">Username</label>
+              <Input
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={loading}
+                className="w-full"
+                data-testid="username-input"
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium text-slate-700 block mb-2">Password</label>
+              <Input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                className="w-full"
+                data-testid="password-input"
+              />
+            </div>
+            
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-6 text-lg"
+              data-testid="login-btn"
+            >
+              {loading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+          
+          <div className="mt-6 text-center text-sm text-slate-500">
+            <p>Default credentials: admin / admin123</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Login;
