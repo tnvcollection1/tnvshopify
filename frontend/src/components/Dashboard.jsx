@@ -110,18 +110,15 @@ const Dashboard = () => {
       setSelectedCustomers([]);
       setSelectedCountry("all");
       setMessagedFilter("all");
+      setHasMore(true);
       await Promise.all([
         fetchShoeSizes(),
         fetchCountries(),
-        fetchCustomers("all", 1)
+        fetchCustomers("all", 1, false)
       ]);
     };
     updateStoreData();
   }, [selectedStore]);
-
-  useEffect(() => {
-    fetchCustomers(selectedSize, currentPage);
-  }, [currentPage]);
 
   useEffect(() => {
     filterCustomers();
@@ -130,31 +127,36 @@ const Dashboard = () => {
   useEffect(() => {
     setCurrentPage(1);
     setSelectedCustomers([]);
-    fetchCustomers(selectedSize, 1);
+    setHasMore(true);
+    fetchCustomers(selectedSize, 1, false);
   }, [selectedSize]);
 
   useEffect(() => {
     setCurrentPage(1);
     setSelectedCustomers([]);
-    fetchCustomers(selectedSize, 1);
+    setHasMore(true);
+    fetchCustomers(selectedSize, 1, false);
   }, [messagedFilter]);
 
   useEffect(() => {
     setCurrentPage(1);
     setSelectedCustomers([]);
-    fetchCustomers(selectedSize, 1);
+    setHasMore(true);
+    fetchCustomers(selectedSize, 1, false);
   }, [selectedCountry]);
 
   useEffect(() => {
     setCurrentPage(1);
     setSelectedCustomers([]);
-    fetchCustomers(selectedSize, 1);
+    setHasMore(true);
+    fetchCustomers(selectedSize, 1, false);
   }, [selectedAgent]);
 
   useEffect(() => {
     setCurrentPage(1);
     setSelectedCustomers([]);
-    fetchCustomers(selectedSize, 1);
+    setHasMore(true);
+    fetchCustomers(selectedSize, 1, false);
   }, [stockFilter]);
 
   const syncShopifyData = async () => {
