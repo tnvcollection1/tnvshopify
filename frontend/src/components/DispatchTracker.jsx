@@ -257,6 +257,15 @@ const DispatchTracker = () => {
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
               Sync TCS Status
             </Button>
+            <Button
+              variant="outline"
+              onClick={handleSyncPayment}
+              disabled={loading}
+              className="border-gray-300 hover:bg-gray-50"
+            >
+              <DollarSign className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Sync Payment Status
+            </Button>
             <label htmlFor="tcs-payment-upload">
               <Button
                 variant="outline"
