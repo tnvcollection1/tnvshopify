@@ -93,6 +93,24 @@ const Dashboard = () => {
       setSyncing(false);
     }
   };
+  
+  const handleAbandonedCheckoutSync = async (storeName) => {
+    setSyncing(true);
+    try {
+      toast.info(`Syncing abandoned checkouts from Shopify for ${storeName}...`, { duration: 3000 });
+      const response = await axios.post(`${API}/shopify/sync-abandoned-checkouts/${storeName}?days_back=30`);
+      
+      if (response.data.success) {
+        toast.success(`✅ ${response.data.message}\n${response.data.new_customers} new, ${response.data.existing_updated} updated`);
+        await fetchCustomers(); // Refresh customer list
+      }
+    } catch (error) {
+      console.error("Abandoned checkout sync error:", error);
+      toast.error("Failed to sync abandoned checkouts from Shopify");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   useEffect(() => {
     fetchStores();
