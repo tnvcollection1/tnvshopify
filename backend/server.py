@@ -14,6 +14,7 @@ import pandas as pd
 import io
 from shopify_sync import ShopifyOrderSync
 from datetime import datetime, timedelta
+from tcs_tracking import TCSTracker
 
 
 ROOT_DIR = Path(__file__).parent
