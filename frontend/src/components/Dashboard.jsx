@@ -62,10 +62,10 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    setCurrentPage(1);
-    setSelectedSize("all");
-    setSelectedCustomers([]);
     const updateStoreData = async () => {
+      setCurrentPage(1);
+      setSelectedSize("all");
+      setSelectedCustomers([]);
       await fetchShoeSizes();
       await fetchCustomers("all", 1);
     };
