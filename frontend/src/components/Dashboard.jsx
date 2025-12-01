@@ -137,6 +137,8 @@ const Dashboard = () => {
       setSelectedCountry("all");
       setMessagedFilter("all");
       setStockFilter("all"); // Reset stock filter when changing stores
+      setFulfillmentFilter("all");
+      setDeliveryFilter("all");
       setHasMore(true);
       await Promise.all([
         fetchShoeSizes(),
