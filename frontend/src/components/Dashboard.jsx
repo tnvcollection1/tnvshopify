@@ -1317,6 +1317,46 @@ const Dashboard = () => {
                           )}
                         </TableCell>
                         <TableCell>
+                          {customer.delivery_status === "DELIVERED" && (
+                            <Badge className="bg-green-100 text-green-700">
+                              ✅ Delivered
+                            </Badge>
+                          )}
+                          {customer.delivery_status === "OUT_FOR_DELIVERY" && (
+                            <Badge className="bg-blue-100 text-blue-700">
+                              🚚 Out for Delivery
+                            </Badge>
+                          )}
+                          {customer.delivery_status === "IN_TRANSIT" && (
+                            <Badge className="bg-yellow-100 text-yellow-700">
+                              📦 In Transit
+                            </Badge>
+                          )}
+                          {customer.delivery_status === "PICKED_UP" && (
+                            <Badge className="bg-indigo-100 text-indigo-700">
+                              📋 Picked Up
+                            </Badge>
+                          )}
+                          {customer.delivery_status === "PENDING" && (
+                            <Badge className="bg-orange-100 text-orange-700">
+                              ⏳ Pending
+                            </Badge>
+                          )}
+                          {customer.delivery_status === "UNKNOWN" && (
+                            <Badge className="bg-gray-100 text-gray-700">
+                              ❓ Unknown
+                            </Badge>
+                          )}
+                          {!customer.delivery_status && customer.tracking_number && (
+                            <Badge className="bg-slate-100 text-slate-600">
+                              🔄 Syncing...
+                            </Badge>
+                          )}
+                          {!customer.delivery_status && !customer.tracking_number && (
+                            <span className="text-slate-400 text-sm">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {customer.messaged ? (
                             <Badge className="bg-green-100 text-green-700">
                               ✓ Messaged {customer.message_count && `(${customer.message_count}x)`}
