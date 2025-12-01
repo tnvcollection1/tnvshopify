@@ -1928,6 +1928,10 @@ async def get_customers(
         query['payment_status'] = payment_status
     if confirmation_status and confirmation_status != "all":
         query['confirmation_status'] = confirmation_status
+    if purchase_status and purchase_status != "all":
+        query['purchase_status'] = purchase_status
+    if china_tracking == "true":
+        query['china_tracking_number'] = {"$exists": True, "$ne": None}
     
     # Search across multiple fields
     if search:
