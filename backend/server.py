@@ -1901,6 +1901,8 @@ async def get_customers(
     purchase_status: Optional[str] = None,  # "ORDERED", "SHIPPED", "IN_TRANSIT", "ARRIVED_PAKISTAN", "DELIVERED_WAREHOUSE"
     china_tracking: Optional[str] = None,  # "true" to filter orders with China tracking numbers (X-prefix)
     tcs_only: Optional[str] = None,  # "true" to exclude China tracking, show only TCS tracking
+    year: Optional[str] = None,  # Filter by year (e.g., "2024", "2023")
+    sort_by: Optional[str] = None,  # Sort options: "date_desc", "date_asc"
     search: Optional[str] = None,  # Search across multiple fields
     page: int = 1,
     limit: int = 100
