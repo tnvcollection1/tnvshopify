@@ -66,6 +66,7 @@ const Dashboard = () => {
   const [deliveryFilter, setDeliveryFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [syncing, setSyncing] = useState(false);
+  const [schedulerStatus, setSchedulerStatus] = useState(null);
   
   const handleLogout = () => {
     logout();
