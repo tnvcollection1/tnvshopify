@@ -260,6 +260,11 @@ class TCSTracker:
             return 'DELIVERED'
         elif 'OUT FOR DELIVERY' in status_upper:
             return 'OUT_FOR_DELIVERY'
+        # Delivery attempt failures (still out for delivery)
+        elif ('PREMISES CLOSED' in status_upper or 'CLOSED' in status_upper or 
+              'NO ANSWER' in status_upper or 'NOT AVAILABLE' in status_upper or
+              'ATTEMPT' in status_upper or 'RECIPIENT' in status_upper):
+            return 'OUT_FOR_DELIVERY'
         # "Shipment Picked Up", "Arrived at TCS Facility", "Departed From TCS Facility" = IN_TRANSIT
         elif ('PICKED UP' in status_upper or 'PICKED' in status_upper or 
               'IN TRANSIT' in status_upper or 'ARRIVED' in status_upper or 
