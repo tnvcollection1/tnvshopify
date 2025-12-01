@@ -158,6 +158,7 @@ const Dashboard = () => {
       setStockFilter("all"); // Reset stock filter when changing stores
       setFulfillmentFilter("all");
       setDeliveryFilter("all");
+      setPaymentFilter("all");
       setHasMore(true);
       await Promise.all([
         fetchShoeSizes(),
