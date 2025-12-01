@@ -309,7 +309,7 @@ async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "De
             existing = await db.customers.find_one(query)
             
             if existing:
-                # Update existing customer - merge sizes and update other fields
+                # Update existing customer - merge sizes and SKUs
                 existing_sizes = set(existing.get('shoe_sizes', []))
                 new_sizes = set(customer.get('shoe_sizes', []))
                 merged_sizes = list(existing_sizes.union(new_sizes))
@@ -318,6 +318,11 @@ async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "De
                 if len(merged_sizes) > 1 and "Unknown" in merged_sizes:
                     merged_sizes.remove("Unknown")
                 
+                # Merge SKUs
+                existing_skus = set(existing.get('order_skus', []))
+                new_skus = set(customer.get('order_skus', []))
+                merged_skus = list(existing_skus.union(new_skus))
+                
                 update_data = {
                     "first_name": customer.get('first_name') or existing.get('first_name'),
                     "last_name": customer.get('last_name') or existing.get('last_name'),
@@ -325,6 +330,7 @@ async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "De
                     "phone": customer.get('phone') or existing.get('phone'),
                     "country_code": customer.get('country_code') or existing.get('country_code'),
                     "shoe_sizes": merged_sizes,
+                    "order_skus": merged_skus,
                     "order_count": existing.get('order_count', 0) + customer.get('order_count', 0),
                     "total_spent": existing.get('total_spent', 0) + customer.get('total_spent', 0),
                     "last_order_date": max(
