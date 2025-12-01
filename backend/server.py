@@ -362,6 +362,45 @@ async def get_shoe_sizes(store_name: Optional[str] = None):
     return {"shoe_sizes": sorted(list(all_sizes))}
 
 
+@api_router.get("/reports/agents")
+async def get_agent_reports():
+    """
+    Get agent performance report
+    """
+    try:
+        # Get all agents
+        agents = await db.agents.find({}, {"_id": 0, "password": 0}).to_list(100)
+        
+        reports = []
+        for agent in agents:
+            username = agent["username"]
+            
+            # Count customers messaged by this agent
+            messaged_count = await db.customers.count_documents({"messaged_by": username})
+            
+            # Count conversions
+            converted_count = await db.customers.count_documents({
+                "messaged_by": username,
+                "converted": True
+            })
+            
+            # Conversion rate
+            conversion_rate = (converted_count / messaged_count * 100) if messaged_count > 0 else 0
+            
+            reports.append({
+                "agent_username": username,
+                "agent_name": agent["full_name"],
+                "messages_sent": messaged_count,
+                "conversions": converted_count,
+                "conversion_rate": round(conversion_rate, 2)
+            })
+        
+        return {"reports": reports}
+    except Exception as e:
+        logger.error(f"Error generating reports: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate reports")
+
+
 @api_router.get("/countries")
 async def get_countries(store_name: Optional[str] = None):
     """
