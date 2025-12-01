@@ -65,6 +65,8 @@ class Customer(BaseModel):
     delivery_status: Optional[str] = None  # TCS delivery status: DELIVERED, OUT_FOR_DELIVERY, IN_TRANSIT, etc.
     delivery_location: Optional[str] = None  # Current TCS facility location
     delivery_updated_at: Optional[str] = None  # Last TCS status update time
+    payment_status: Optional[str] = None  # Shopify payment status: paid, pending, refunded, partially_refunded, voided
+    payment_method: Optional[str] = None  # Payment method used
     abandoned_checkout: Optional[bool] = None  # Whether customer has abandoned checkouts
     abandoned_checkout_value: Optional[float] = None  # Value of abandoned items
 
