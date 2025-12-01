@@ -811,8 +811,14 @@ const Dashboard = () => {
               </div>
               
               <div>
-                <label className="text-sm font-medium text-slate-700 mb-2 block">Stock Status</label>
-                <Select value={stockFilter} onValueChange={setStockFilter}>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  Stock Status {selectedStore === "all" && <span className="text-xs text-orange-600">(Select a store first)</span>}
+                </label>
+                <Select 
+                  value={stockFilter} 
+                  onValueChange={setStockFilter}
+                  disabled={selectedStore === "all"}
+                >
                   <SelectTrigger className="w-full" data-testid="stock-filter">
                     <SelectValue placeholder="Select stock status" />
                   </SelectTrigger>
