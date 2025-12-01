@@ -51,6 +51,8 @@ const PurchaseTracker = () => {
   const [filters, setFilters] = useState({
     purchase_status: "all",
     store: "all",
+    year: "all",
+    sortBy: "date_desc",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
