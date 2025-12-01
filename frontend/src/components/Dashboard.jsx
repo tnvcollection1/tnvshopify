@@ -595,7 +595,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-2 block">Store</label>
-                <Select value={selectedStore} onValueChange={(value) => { console.log('🎯 Select onValueChange called with:', value); setSelectedStore(value); }}>
+                <Select value={selectedStore} onValueChange={setSelectedStore}>
                   <SelectTrigger className="w-full" data-testid="store-filter">
                     <SelectValue placeholder="Select store" />
                   </SelectTrigger>
