@@ -147,6 +147,8 @@ class ShopifyOrderSync:
                 'order_date': order.created_at,
                 'total_price': float(order.total_price) if order.total_price else 0.0,
                 'financial_status': order.financial_status,
+                'payment_status': order.financial_status,  # paid, pending, refunded, partially_refunded, voided, authorized
+                'payment_method': order.gateway if hasattr(order, 'gateway') else None,
                 'fulfillment_status': order.fulfillment_status or 'unfulfilled',
                 'line_items': [],
                 'fulfillments': [],
