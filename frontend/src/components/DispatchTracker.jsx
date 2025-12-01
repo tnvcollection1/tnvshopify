@@ -75,16 +75,17 @@ const DispatchTracker = () => {
   const [editDialog, setEditDialog] = useState(false);
 
   useEffect(() => {
-    fetchStores();
-  }, []);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
-
-  useEffect(() => {
     fetchOrders();
-  }, [currentPage, filters]);
+    fetchStores();
+  }, [currentPage]);
+
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    } else {
+      fetchOrders();
+    }
+  }, [filters]);
 
   const fetchStores = async () => {
     try {
