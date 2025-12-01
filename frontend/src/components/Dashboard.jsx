@@ -343,7 +343,9 @@ const Dashboard = () => {
 
   const markCustomerMessaged = async (customerId) => {
     try {
-      await axios.post(`${API}/customers/${customerId}/mark-messaged`);
+      await axios.post(`${API}/customers/${customerId}/mark-messaged`, null, {
+        params: { agent_username: agent?.username }
+      });
     } catch (error) {
       console.error("Error marking customer:", error);
     }
