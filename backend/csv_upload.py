@@ -86,6 +86,11 @@ def parse_shopify_orders_csv(csv_content: str) -> List[Dict]:
         # Update order count
         customer_data[customer_key]['order_count'] += 1
         
+        # Extract SKU from Lineitem sku column
+        lineitem_sku = row.get('Lineitem sku', '').strip()
+        if lineitem_sku:
+            customer_data[customer_key]['order_skus'].add(lineitem_sku.upper())  # Normalize to uppercase
+        
         # Extract size from lineitem name
         lineitem_name = row.get('Lineitem name', '')
         if lineitem_name:
