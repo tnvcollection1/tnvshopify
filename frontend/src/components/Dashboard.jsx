@@ -76,6 +76,24 @@ const Dashboard = () => {
     fetchCustomers();
   }, []);
   
+  // Infinite scroll - load more when reaching bottom
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check if user scrolled near bottom (within 200px)
+      const scrolledToBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200;
+      
+      if (scrolledToBottom && !isLoadingMore && !loading && hasMore) {
+        // Load next page
+        const nextPage = currentPage + 1;
+        setCurrentPage(nextPage);
+        fetchCustomers(selectedSize, nextPage, true);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [currentPage, isLoadingMore, loading, hasMore, selectedSize]);
+  
   const fetchAgents = async () => {
     try {
       const response = await axios.get(`${API}/agents`);
