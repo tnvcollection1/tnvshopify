@@ -46,6 +46,8 @@ const Dashboard = () => {
   const [sendingMessages, setSendingMessages] = useState(false);
   const [messageQueue, setMessageQueue] = useState([]);
   const [selectedCustomers, setSelectedCustomers] = useState([]);
+  const [countries, setCountries] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState("all");
   const [stats, setStats] = useState({
     totalCustomers: 0,
     uniqueSizes: 0,
