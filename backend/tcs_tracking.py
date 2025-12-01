@@ -343,11 +343,11 @@ class TCSTracker:
             return None
         
         try:
-            # According to documentation, Payment Detail API endpoint
+            # Payment Detail API endpoint - might use GET or POST
             payment_url = self.auth_url.replace('/ecom/api/authentication/token', '/ecom/api/payment/detail')
             
-            payload = {
-                "accesstoken": self.access_token,
+            # Try with GET parameters first (consistent with payment status API)
+            params = {
                 "customerno": customer_no,
                 "fromdate": from_date,
                 "todate": to_date
@@ -358,14 +358,25 @@ class TCSTracker:
                 "Content-Type": "application/json"
             }
             
-            response = requests.post(payment_url, json=payload, headers=headers, timeout=10)
+            # Try GET method first
+            response = requests.get(payment_url, params=params, headers=headers, timeout=10)
+            
+            # If GET doesn't work (405), try POST
+            if response.status_code == 405:
+                payload = {
+                    "accesstoken": self.access_token,
+                    "customerno": customer_no,
+                    "fromdate": from_date,
+                    "todate": to_date
+                }
+                response = requests.post(payment_url, json=payload, headers=headers, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
                 if data.get('message') == 'SUCCESS':
                     return data.get('detail', [])
                 else:
-                    logger.warning(f"TCS payment details failed: {data.get('message')}")
+                    logger.warning(f"TCS payment details response: {data.get('message')}")
                     return []
             else:
                 logger.error(f"TCS payment detail API error: {response.status_code} - {response.text}")
