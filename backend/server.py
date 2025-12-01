@@ -136,6 +136,9 @@ class WhatsAppRequest(BaseModel):
 
 
 class BulkMessageRequest(BaseModel):
+    customer_ids: List[str]
+    message_template: Optional[str] = None
+    delay_seconds: int = 5  # Delay between messages to avoid ban
 
 
 @api_router.get("/scheduler/status")
