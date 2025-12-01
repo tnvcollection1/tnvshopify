@@ -443,6 +443,9 @@ const Dashboard = () => {
       if (deliveryFilter && deliveryFilter !== "all") {
         countUrl += `delivery_status=${deliveryFilter}&`;
       }
+      if (paymentFilter && paymentFilter !== "all") {
+        countUrl += `payment_status=${paymentFilter}&`;
+      }
       
       // Fetch customers and count (count only on first page)
       const customersResponse = await axios.get(url);
