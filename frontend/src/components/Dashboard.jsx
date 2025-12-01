@@ -229,6 +229,31 @@ const Dashboard = () => {
     }
   };
 
+  const handleStockUpload = async (event, storeName) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      toast.info("Uploading stock file... Processing SKUs", { duration: 3000 });
+      const response = await axios.post(`${API}/upload-stock?store_name=${encodeURIComponent(storeName)}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      toast.success(`✅ ${response.data.message}\n${response.data.unique_skus} unique SKUs stored`);
+      await fetchCustomers(); // Refresh to show stock status
+    } catch (error) {
+      console.error("Stock upload error:", error);
+      toast.error(error.response?.data?.detail || "Failed to upload stock file. Please check the file format (Excel required).");
+    } finally {
+      setUploading(false);
+      event.target.value = ''; // Reset file input
+    }
+  };
+
   const fetchStores = async () => {
     try {
       const response = await axios.get(`${API}/stores`);
