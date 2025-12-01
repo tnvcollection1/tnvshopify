@@ -605,13 +605,6 @@ const Dashboard = () => {
             <CardTitle className="text-2xl" style={{ fontFamily: 'Space Grotesk' }}>Filter Customers</CardTitle>
           </CardHeader>
           <CardContent>
-            {/* DEBUG TEST BUTTONS */}
-            <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded flex gap-2">
-              <Button onClick={() => { console.log('TEST: Setting store to asmia'); setSelectedStore("asmia"); }} size="sm" variant="outline">Test: Set asmia</Button>
-              <Button onClick={() => { console.log('TEST: Setting store to all'); setSelectedStore("all"); }} size="sm" variant="outline">Test: Set All</Button>
-              <span className="text-sm flex items-center">Current: {selectedStore}</span>
-            </div>
-            
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-2 block">Store</label>
