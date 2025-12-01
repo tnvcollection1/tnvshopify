@@ -251,6 +251,26 @@ async def get_shoe_sizes(store_name: Optional[str] = None):
     return {"shoe_sizes": sorted(list(all_sizes))}
 
 
+@api_router.get("/countries")
+async def get_countries(store_name: Optional[str] = None):
+    """
+    Get all unique countries, optionally filtered by store
+    """
+    query = {}
+    if store_name and store_name != "all":
+        query['store_name'] = store_name
+    
+    customers = await db.customers.find(query, {"_id": 0, "country_code": 1}).to_list(20000)
+    
+    countries = set()
+    for customer in customers:
+        country = customer.get('country_code')
+        if country:
+            countries.add(country)
+    
+    return {"countries": sorted(list(countries))}
+
+
 @api_router.post("/stores", response_model=Store)
 async def create_store(store: StoreCreate):
     """
