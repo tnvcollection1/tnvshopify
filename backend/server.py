@@ -789,7 +789,8 @@ async def get_tcs_credentials():
                 "auth_type": config.get("auth_type", "bearer"),
                 "bearer_token": config.get("bearer_token", "")[:20] + "..." if config.get("bearer_token") else None,
                 "token_expiry": config.get("token_expiry"),
-                "username": config.get("username", "")[:5] + "..." if config.get("username") else None
+                "username": config.get("username", "")[:5] + "..." if config.get("username") else None,
+                "customer_no": config.get("customer_no", "NOT SET")
             }
         else:
             return {"configured": False}
