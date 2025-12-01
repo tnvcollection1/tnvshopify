@@ -333,7 +333,7 @@ const Dashboard = () => {
     setTimeout(() => fetchCustomers(selectedSize, currentPage), 2000);
   };
 
-  const openBulkWhatsApp = () => {
+  const openBulkWhatsApp = async () => {
     const validPhones = filteredCustomers.filter(c => c.phone);
     
     if (validPhones.length === 0) {
@@ -341,13 +341,30 @@ const Dashboard = () => {
       return;
     }
 
-    toast.success(`Opening WhatsApp for ${validPhones.length} customers`);
+    if (!confirm(`Send WhatsApp messages to ${validPhones.length} customers? Messages will be sent with 8-second delays to avoid blocking.`)) {
+      return;
+    }
+
+    setSendingMessages(true);
+    toast.info(`Starting message queue for ${validPhones.length} customers...`);
     
-    validPhones.forEach((customer, index) => {
-      setTimeout(() => {
-        openWhatsApp(customer.phone, customer.country_code);
-      }, index * 1000); // Delay to avoid blocking
-    });
+    for (let i = 0; i < validPhones.length; i++) {
+      const customer = validPhones[i];
+      const customerName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Customer';
+      
+      toast.info(`Sending message ${i + 1}/${validPhones.length} to ${customerName}...`);
+      
+      await openWhatsApp(customer.phone, customer.country_code, customer.customer_id, customerName);
+      
+      // Wait 8 seconds between messages to avoid WhatsApp ban
+      if (i < validPhones.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 8000));
+      }
+    }
+    
+    setSendingMessages(false);
+    toast.success(`✅ Completed sending messages to ${validPhones.length} customers!`);
+    fetchCustomers(selectedSize, currentPage);
   };
 
   return (
