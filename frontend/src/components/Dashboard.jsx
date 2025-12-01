@@ -80,6 +80,11 @@ const Dashboard = () => {
     fetchCustomers(selectedSize, 1);
   }, [selectedSize]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchCustomers(selectedSize, 1);
+  }, [messagedFilter]);
+
   const syncShopifyData = async () => {
     setSyncing(true);
     try {
