@@ -426,12 +426,17 @@ const DispatchTracker = () => {
                             ? new Date(order.last_order_date).toLocaleDateString()
                             : "N/A"}
                         </TableCell>
-                        <TableCell className="font-medium text-gray-900">
-                          {order.order_number || "N/A"}
+                        <TableCell className="font-medium text-blue-600">
+                          #{order.order_number || "N/A"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="bg-slate-50">
+                            {order.store_name || "N/A"}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-gray-900 text-sm">
                               {order.first_name} {order.last_name}
                             </p>
                             <p className="text-xs text-gray-500">{order.email}</p>
@@ -441,13 +446,13 @@ const DispatchTracker = () => {
                           {order.phone || "N/A"}
                         </TableCell>
                         <TableCell className="text-sm font-mono text-gray-600">
-                          {order.tracking_number || "N/A"}
+                          {order.tracking_number || "—"}
                         </TableCell>
                         <TableCell>
                           {getStatusBadge(order.calling_status || "NOT_CALLED", "calling")}
                         </TableCell>
-                        <TableCell>{getStatusBadge(order.delivery_status, "delivery")}</TableCell>
-                        <TableCell>{getStatusBadge(order.payment_status, "payment")}</TableCell>
+                        <TableCell>{getStatusBadge(order.delivery_status || "PENDING", "delivery")}</TableCell>
+                        <TableCell>{getStatusBadge(order.payment_status || "pending", "payment")}</TableCell>
                         <TableCell>
                           {getStatusBadge(order.cod_payment_status || "PENDING", "payment")}
                         </TableCell>
@@ -459,7 +464,7 @@ const DispatchTracker = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditOrder(order)}
-                            className="border-gray-300"
+                            className="border-gray-300 hover:bg-blue-50"
                           >
                             <Edit className="w-3 h-3" />
                           </Button>
