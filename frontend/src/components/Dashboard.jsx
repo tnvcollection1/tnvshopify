@@ -701,7 +701,7 @@ const Dashboard = () => {
             <CardTitle className="text-2xl" style={{ fontFamily: 'Space Grotesk' }}>Filter Customers</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-2 block">Store</label>
                 <Select value={selectedStore} onValueChange={setSelectedStore}>
