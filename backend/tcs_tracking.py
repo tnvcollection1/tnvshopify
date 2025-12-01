@@ -289,12 +289,13 @@ class TCSTracker:
             return None
         
         try:
-            # According to documentation, Payment Status API endpoint
+            # Payment Status API endpoint - uses GET method
             payment_url = self.auth_url.replace('/ecom/api/authentication/token', '/ecom/api/payment/status')
             
-            payload = {
+            # Correct parameter names: customerno and cnno (not consignmentno)
+            params = {
                 "customerno": customer_no,
-                "consignmentno": consignment_no
+                "cnno": consignment_no  # Use 'cnno' as per TCS API requirements
             }
             
             headers = {
@@ -302,11 +303,21 @@ class TCSTracker:
                 "Content-Type": "application/json"
             }
             
-            response = requests.post(payment_url, json=payload, headers=headers, timeout=10)
+            # Use GET method (not POST)
+            response = requests.get(payment_url, params=params, headers=headers, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
-                return self._parse_payment_response(data, consignment_no)
+                # Check if it's a valid response with payment data
+                if data.get('message') == 'SUCCESS' and data.get('detail'):
+                    return self._parse_payment_response(data, consignment_no)
+                elif data.get('message') == 'Invalid CN':
+                    # No payment data available for this CN (might be prepaid or not settled)
+                    logger.info(f"No COD payment data for {consignment_no} - might be prepaid or not settled")
+                    return None
+                else:
+                    logger.warning(f"TCS payment API response: {data.get('message')}")
+                    return None
             else:
                 logger.error(f"TCS payment status API error: {response.status_code} - {response.text}")
                 return None
