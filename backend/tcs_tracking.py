@@ -11,13 +11,15 @@ logger = logging.getLogger(__name__)
 
 
 class TCSTracker:
-    def __init__(self, username: str, password: str, use_production: bool = True):
+    def __init__(self, username: str = None, password: str = None, bearer_token: str = None, token_expiry: str = None, use_production: bool = True):
         """
         Initialize TCS Tracker
         
         Args:
-            username: TCS account username
-            password: TCS account password
+            username: TCS account username (if using username/password auth)
+            password: TCS account password (if using username/password auth)
+            bearer_token: Pre-authenticated bearer token (preferred method)
+            token_expiry: Token expiry date (ISO format or date string)
             use_production: Use production API (True) or sandbox (False)
         """
         self.username = username
@@ -30,8 +32,28 @@ class TCSTracker:
             self.auth_url = "https://devconnect.tcscourier.com/ecom/api/authentication/token"
             self.tracking_url = "https://devconnect.tcscourier.com/tracking/api/Tracking/GetDynamicTrackDetail"
         
-        self.access_token = None
-        self.token_expiry = None
+        # If bearer token provided, use it directly
+        if bearer_token:
+            self.access_token = bearer_token
+            # Parse expiry date
+            if token_expiry:
+                try:
+                    # Try parsing DD-MM-YYYY format
+                    self.token_expiry = datetime.strptime(token_expiry, "%d-%m-%Y").replace(tzinfo=timezone.utc)
+                except:
+                    try:
+                        # Try ISO format
+                        self.token_expiry = datetime.fromisoformat(token_expiry.replace('Z', '+00:00'))
+                    except:
+                        # Default to 1 year from now
+                        self.token_expiry = datetime.now(timezone.utc) + timedelta(days=365)
+            else:
+                # No expiry provided, assume valid for 1 year
+                self.token_expiry = datetime.now(timezone.utc) + timedelta(days=365)
+            logger.info(f"TCS tracker initialized with bearer token. Expires: {self.token_expiry}")
+        else:
+            self.access_token = None
+            self.token_expiry = None
     
     def authenticate(self) -> bool:
         """
