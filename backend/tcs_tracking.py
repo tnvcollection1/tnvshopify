@@ -132,17 +132,16 @@ class TCSTracker:
             return None
         
         try:
-            # TCS API expects POST with consignee in body
-            payload = {
+            # TCS API expects GET with query parameter
+            params = {
                 "consignee": tracking_number
             }
             
             headers = {
-                "Authorization": f"Bearer {self.access_token}",
-                "Content-Type": "application/json"
+                "Authorization": f"Bearer {self.access_token}"
             }
             
-            response = requests.post(self.tracking_url, json=payload, headers=headers, timeout=10)
+            response = requests.get(self.tracking_url, params=params, headers=headers, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
