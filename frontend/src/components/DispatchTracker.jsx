@@ -76,16 +76,11 @@ const DispatchTracker = () => {
 
   useEffect(() => {
     fetchOrders();
-    fetchStores();
-  }, [currentPage]);
+  }, [currentPage, filters]);
 
   useEffect(() => {
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-    } else {
-      fetchOrders();
-    }
-  }, [filters]);
+    fetchStores();
+  }, []);
 
   const fetchStores = async () => {
     try {
