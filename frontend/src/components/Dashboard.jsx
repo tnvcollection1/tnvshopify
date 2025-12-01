@@ -662,6 +662,11 @@ const Dashboard = () => {
               <Badge variant="outline" className="text-base px-3 py-1">
                 {stores.length} / 3 Stores
               </Badge>
+              {schedulerStatus?.running && (
+                <Badge className="bg-green-100 text-green-700 text-xs px-2 py-1">
+                  🔄 Auto-Sync Active
+                </Badge>
+              )}
               <Button 
                 onClick={handleLogout}
                 variant="ghost"
