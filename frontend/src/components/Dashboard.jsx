@@ -1043,6 +1043,23 @@ const Dashboard = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">COD Payment</label>
+                <Select value={codPaymentFilter} onValueChange={setCodPaymentFilter}>
+                  <SelectTrigger className="w-full" data-testid="cod-payment-filter">
+                    <SelectValue placeholder="Select COD status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All COD Orders</SelectItem>
+                    <SelectItem value="PENDING">⏳ Pending Collection</SelectItem>
+                    <SelectItem value="COLLECTED">💰 Collected</SelectItem>
+                    <SelectItem value="REMITTED">✅ Remitted</SelectItem>
+                    <SelectItem value="HELD">⚠️ Held</SelectItem>
+                    <SelectItem value="REVERSED">🔄 Reversed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
