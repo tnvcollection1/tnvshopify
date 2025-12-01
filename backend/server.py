@@ -13,6 +13,7 @@ from csv_upload import parse_shopify_orders_csv
 import pandas as pd
 import io
 from shopify_sync import ShopifyOrderSync
+from shopify_sync_async import ShopifyAsyncSync
 from datetime import datetime, timedelta
 from tcs_tracking import TCSTracker
 
