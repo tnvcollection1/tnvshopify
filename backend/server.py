@@ -939,7 +939,7 @@ async def track_tcs_consignment(tracking_number: str):
 async def sync_all_tcs_deliveries():
     """
     Update delivery status for all customers with TCS tracking numbers
-    Only updates unfulfilled and in-transit orders (skips delivered)
+    Immediately syncs with TCS API and updates delivery status
     """
     try:
         # Get TCS credentials
@@ -947,27 +947,115 @@ async def sync_all_tcs_deliveries():
         if not config:
             raise HTTPException(status_code=400, detail="TCS not configured")
         
-        # Get customers with tracking numbers (not yet delivered)
+        # Get customers with tracking numbers (including all statuses to update)
         customers = await db.customers.find({
-            "tracking_number": {"$ne": None, "$exists": True},
-            "$or": [
-                {"delivery_status": {"$ne": "DELIVERED"}},
-                {"delivery_status": {"$exists": False}}
-            ]
-        }, {"_id": 0, "tracking_number": 1, "customer_id": 1}).to_list(1000)
+            "tracking_number": {"$ne": None, "$exists": True}
+        }, {"_id": 0, "tracking_number": 1, "customer_id": 1, "store_name": 1, "delivery_status": 1, "order_skus": 1, "order_number": 1, "stock_deducted": 1}).to_list(1000)
         
         if not customers:
             return {
                 "success": True,
                 "message": "No tracking numbers to update",
-                "updated": 0
+                "synced_count": 0
             }
         
-        # Note: This endpoint just returns info, actual sync happens via scheduler
+        # Initialize TCS tracker
+        from tcs_tracking import TCSTracker
+        if config.get('auth_type') == 'bearer':
+            tracker = TCSTracker(bearer_token=config.get('bearer_token'), token_expiry=config.get('token_expiry'))
+        else:
+            tracker = TCSTracker(username=config.get('username'), password=config.get('password'))
+        
+        synced_count = 0
+        updated_count = 0
+        errors = []
+        
+        # Sync in batches to avoid timeouts
+        for customer in customers[:100]:  # Limit to 100 per request
+            try:
+                tracking_number = customer['tracking_number']
+                tracking_data = tracker.track_consignment(tracking_number)
+                
+                if tracking_data and tracking_data.get('normalized_status') not in ['NOT_FOUND', None]:
+                    new_status = tracking_data.get('normalized_status')
+                    old_status = customer.get('delivery_status')
+                    
+                    # Update delivery status
+                    await db.customers.update_one(
+                        {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                        {"$set": {
+                            "delivery_status": new_status,
+                            "delivery_location": tracking_data.get('current_location'),
+                            "delivery_updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    synced_count += 1
+                    
+                    # AUTO-DEDUCT STOCK WHEN STATUS CHANGES TO DELIVERED
+                    if new_status == 'DELIVERED' and old_status != 'DELIVERED':
+                        if not customer.get('stock_deducted'):
+                            from inventory_manager import InventoryManager
+                            inv_manager = InventoryManager(db)
+                            
+                            deduct_result = await inv_manager.deduct_stock_on_delivery(
+                                customer.get('order_skus', []),
+                                customer['customer_id'],
+                                customer.get('order_number', 'N/A')
+                            )
+                            
+                            if deduct_result['success']:
+                                await db.customers.update_one(
+                                    {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                                    {"$set": {
+                                        "stock_deducted": True,
+                                        "stock_deducted_at": datetime.now(timezone.utc).isoformat(),
+                                        "payment_status": "DUE"
+                                    }}
+                                )
+                                logger.info(f"✅ Auto-deducted stock for order {customer.get('order_number')}")
+                                updated_count += 1
+                    
+                    # RESTORE STOCK WHEN ORDER IS RETURNED
+                    elif new_status == 'RETURNED' and old_status != 'RETURNED':
+                        if customer.get('stock_deducted'):
+                            order_skus = customer.get('order_skus', [])
+                            store_name = customer.get('store_name')
+                            
+                            if order_skus and store_name:
+                                for sku_data in order_skus:
+                                    sku = sku_data.get('sku')
+                                    quantity = sku_data.get('quantity', 1)
+                                    
+                                    if sku:
+                                        await db.inventory_items.update_one(
+                                            {"sku": sku.upper(), "store_name": store_name},
+                                            {"$inc": {"quantity": quantity}},
+                                            upsert=False
+                                        )
+                                
+                                await db.customers.update_one(
+                                    {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                                    {"$set": {
+                                        "stock_deducted": False,
+                                        "stock_restored": True,
+                                        "stock_restored_at": datetime.now(timezone.utc).isoformat(),
+                                        "payment_status": "refunded"
+                                    }}
+                                )
+                                logger.info(f"✅ Auto-restored stock for returned order {customer.get('order_number')}")
+                                updated_count += 1
+                        
+            except Exception as e:
+                errors.append(f"{tracking_number}: {str(e)}")
+                logger.error(f"Error tracking {tracking_number}: {str(e)}")
+                continue
+        
         return {
             "success": True,
-            "message": f"Found {len(customers)} tracking numbers to sync (sync running in background)",
-            "pending_sync": len(customers)
+            "message": f"TCS sync completed: {synced_count} orders synced, {updated_count} stock updates",
+            "synced_count": synced_count,
+            "stock_updates": updated_count,
+            "errors": errors if errors else None
         }
         
     except Exception as e:
