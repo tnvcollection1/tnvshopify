@@ -73,6 +73,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/tracker" 
+        element={
+          <ProtectedRoute>
+            <DispatchTracker />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory" 
         element={
           <ProtectedRoute>
