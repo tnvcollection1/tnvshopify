@@ -510,18 +510,26 @@ async def mark_customer_messaged(customer_id: str, agent_username: Optional[str]
 
 
 @api_router.post("/customers/{customer_id}/update-conversion")
-async def update_customer_conversion(customer_id: str, converted: bool, notes: Optional[str] = None):
+async def update_customer_conversion(
+    customer_id: str, 
+    converted: bool, 
+    notes: Optional[str] = None,
+    sale_amount: Optional[float] = None
+):
     """
-    Update customer conversion status
+    Update customer conversion status with sale amount
     """
+    update_data = {
+        "converted": converted,
+        "conversion_notes": notes
+    }
+    
+    if converted and sale_amount:
+        update_data["sale_amount"] = sale_amount
+    
     result = await db.customers.update_one(
         {"customer_id": customer_id},
-        {
-            "$set": {
-                "converted": converted,
-                "conversion_notes": notes
-            }
-        }
+        {"$set": update_data}
     )
     
     if result.modified_count == 0:
