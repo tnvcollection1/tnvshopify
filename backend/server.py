@@ -42,6 +42,9 @@ class Customer(BaseModel):
     last_order_date: Optional[str] = None
     total_spent: float = 0.0
     store_name: Optional[str] = None
+    messaged: bool = False
+    last_messaged_at: Optional[str] = None
+    message_count: int = 0
 
 
 class Store(BaseModel):
