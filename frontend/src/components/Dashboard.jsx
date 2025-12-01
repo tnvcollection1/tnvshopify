@@ -1140,7 +1140,8 @@ const Dashboard = () => {
                       <TableHead>Stock</TableHead>
                       <TableHead>Fulfillment</TableHead>
                       <TableHead>Payment</TableHead>
-                      <TableHead>Tracking</TableHead>
+                      <TableHead>Tracking #</TableHead>
+                      <TableHead>Delivery Status</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Agent</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
