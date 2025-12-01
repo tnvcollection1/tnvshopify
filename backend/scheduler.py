@@ -262,27 +262,28 @@ class AutoSyncScheduler:
         try:
             logger.info("🔄 [AUTO] Starting TCS delivery status sync...")
             
-            # Create new event loop for this thread
+            # Use ThreadPoolExecutor to avoid event loop conflicts
+            import concurrent.futures
+            import requests
+            
+            # Call the sync endpoint via HTTP (simpler than managing event loops)
             try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # If loop is running, create a new one for this thread
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-            except RuntimeError:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-            
-            # Run async sync
-            result = loop.run_until_complete(self._async_tcs_sync())
-            
-            if not loop.is_running():
-                loop.close()
-            
-            if result['success']:
-                logger.info(f"✅ [AUTO] TCS sync completed: {result['updated']} deliveries updated")
-            else:
-                logger.error(f"❌ [AUTO] TCS sync failed: {result.get('error')}")
+                response = requests.post(
+                    "http://localhost:8001/api/tcs/sync-all",
+                    timeout=300  # 5 minutes timeout
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('success'):
+                        logger.info(f"✅ [AUTO] TCS sync completed: {data.get('updated', 0)} deliveries updated")
+                    else:
+                        logger.error(f"❌ [AUTO] TCS sync failed: {data.get('message', 'Unknown error')}")
+                else:
+                    logger.error(f"❌ [AUTO] TCS sync HTTP error: {response.status_code}")
+            except requests.exceptions.Timeout:
+                logger.warning("⚠️ [AUTO] TCS sync timeout (still running in background)")
+            except Exception as req_error:
+                logger.error(f"❌ [AUTO] TCS sync request error: {str(req_error)}")
                 
         except Exception as e:
             logger.error(f"❌ [AUTO] TCS sync error: {str(e)}")
