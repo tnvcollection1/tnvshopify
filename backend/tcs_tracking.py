@@ -245,21 +245,30 @@ class TCSTracker:
         """
         status_upper = tcs_status.upper()
         
-        # Return statuses (check first as they contain "DELIVERED" keyword)
-        if 'RETURN DELIVERED' in status_upper or 'RETURNED TO ORIGIN' in status_upper or 'RTO DELIVERED' in status_upper:
+        # Return statuses (check first as they may contain keywords from other statuses)
+        # "Shipment Returned To Shipper" = RETURNED (item received back)
+        if 'RETURNED TO SHIPPER' in status_upper or 'RETURN DELIVERED' in status_upper or 'RTO DELIVERED' in status_upper:
             return 'RETURNED'
-        elif 'RETURN TO ORIGIN' in status_upper or 'RETURN IN PROCESS' in status_upper or 'RTO' in status_upper or 'RETURN' in status_upper:
+        # "Shipment Returned To Origin" = RETURN_IN_PROCESS (returning but not yet received)
+        elif 'RETURNED TO ORIGIN' in status_upper or 'RETURN TO ORIGIN' in status_upper or 'RETURN IN PROCESS' in status_upper:
+            return 'RETURN_IN_PROCESS'
+        # General return keyword (fallback)
+        elif 'RTO' in status_upper or ('RETURN' in status_upper and 'DELIVERED' not in status_upper):
             return 'RETURN_IN_PROCESS'
         # Normal delivery statuses
         elif 'DELIVERED' in status_upper:
             return 'DELIVERED'
         elif 'OUT FOR DELIVERY' in status_upper:
             return 'OUT_FOR_DELIVERY'
-        elif 'IN TRANSIT' in status_upper or 'ARRIVED' in status_upper or 'FACILITY' in status_upper or 'ON THE WAY' in status_upper:
+        # "Shipment Picked Up", "Arrived at TCS Facility", "Departed From TCS Facility" = IN_TRANSIT
+        elif ('PICKED UP' in status_upper or 'PICKED' in status_upper or 
+              'IN TRANSIT' in status_upper or 'ARRIVED' in status_upper or 
+              'DEPARTED' in status_upper or 'FACILITY' in status_upper or 
+              'ON THE WAY' in status_upper):
             return 'IN_TRANSIT'
         elif 'AWAITING' in status_upper or 'COLLECTION' in status_upper:
             return 'AWAITING_COLLECTION'
-        elif 'BOOKED' in status_upper or 'RECEIVED' in status_upper or 'PICKED' in status_upper:
+        elif 'BOOKED' in status_upper or 'RECEIVED' in status_upper:
             return 'PENDING'
         else:
             return 'UNKNOWN'
