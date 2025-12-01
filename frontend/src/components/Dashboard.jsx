@@ -1376,6 +1376,41 @@ const Dashboard = () => {
                           )}
                         </TableCell>
                         <TableCell>
+                          {customer.cod_payment_status === "REMITTED" && (
+                            <Badge className="bg-green-100 text-green-700">
+                              ✅ Remitted
+                            </Badge>
+                          )}
+                          {customer.cod_payment_status === "COLLECTED" && (
+                            <Badge className="bg-blue-100 text-blue-700">
+                              💰 Collected
+                            </Badge>
+                          )}
+                          {customer.cod_payment_status === "PENDING" && (
+                            <Badge className="bg-yellow-100 text-yellow-700">
+                              ⏳ Pending
+                            </Badge>
+                          )}
+                          {customer.cod_payment_status === "HELD" && (
+                            <Badge className="bg-orange-100 text-orange-700">
+                              ⚠️ Held
+                            </Badge>
+                          )}
+                          {customer.cod_payment_status === "REVERSED" && (
+                            <Badge className="bg-red-100 text-red-700">
+                              🔄 Reversed
+                            </Badge>
+                          )}
+                          {!customer.cod_payment_status && customer.tracking_number && (
+                            <Badge className="bg-slate-100 text-slate-600">
+                              🔄 Syncing...
+                            </Badge>
+                          )}
+                          {!customer.cod_payment_status && !customer.tracking_number && (
+                            <span className="text-slate-400 text-sm">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {customer.messaged ? (
                             <Badge className="bg-green-100 text-green-700">
                               ✓ Messaged {customer.message_count && `(${customer.message_count}x)`}
