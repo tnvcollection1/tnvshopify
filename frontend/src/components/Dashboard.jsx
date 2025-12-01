@@ -64,6 +64,7 @@ const Dashboard = () => {
   const [stockFilter, setStockFilter] = useState("all");
   const [fulfillmentFilter, setFulfillmentFilter] = useState("all");
   const [deliveryFilter, setDeliveryFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
   const [syncing, setSyncing] = useState(false);
   
   const handleLogout = () => {
