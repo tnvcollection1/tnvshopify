@@ -1898,6 +1898,8 @@ async def get_customers(
     delivery_status: Optional[str] = None,  # "DELIVERED", "IN_TRANSIT", "OUT_FOR_DELIVERY", etc.
     payment_status: Optional[str] = None,  # "paid", "pending", "refunded", "partially_refunded", "voided"
     confirmation_status: Optional[str] = None,  # "PENDING", "PURCHASED", "NOT_PURCHASED", "CANCELED"
+    purchase_status: Optional[str] = None,  # "ORDERED", "SHIPPED", "IN_TRANSIT", "ARRIVED_PAKISTAN", "DELIVERED_WAREHOUSE"
+    china_tracking: Optional[str] = None,  # "true" to filter orders with China tracking numbers
     search: Optional[str] = None,  # Search across multiple fields
     page: int = 1,
     limit: int = 100
