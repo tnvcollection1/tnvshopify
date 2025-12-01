@@ -184,17 +184,22 @@ async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "De
 async def get_customers(
     shoe_size: Optional[str] = None, 
     store_name: Optional[str] = None,
+    messaged: Optional[str] = None,
     page: int = 1,
     limit: int = 100
 ):
     """
-    Get customers with pagination, optionally filtered by shoe size and store
+    Get customers with pagination, optionally filtered by shoe size, store, and messaged status
     """
     query = {}
     if shoe_size and shoe_size != "all":
         query['shoe_sizes'] = shoe_size
     if store_name and store_name != "all":
         query['store_name'] = store_name
+    if messaged == "yes":
+        query['messaged'] = True
+    elif messaged == "no":
+        query['messaged'] = {"$ne": True}
     
     # Calculate skip value for pagination
     skip = (page - 1) * limit
