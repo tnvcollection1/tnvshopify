@@ -128,6 +128,139 @@ class ShopifyCustomerAPITester:
             data={"phone": "1234567890", "country_code": "US"}
         )
 
+    def test_agent_login(self):
+        """Test agent login with admin credentials"""
+        success, response = self.run_test(
+            "Agent Login",
+            "POST",
+            "agents/login",
+            200,
+            data={"username": "admin", "password": "admin123"}
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "agent" in response:
+                agent = response["agent"]
+                if "username" in agent and agent["username"] == "admin":
+                    print(f"   ✅ Login successful for agent: {agent.get('full_name', 'Unknown')}")
+                    return True, agent
+                else:
+                    print(f"   ❌ Invalid agent data in response")
+            else:
+                print(f"   ❌ Invalid response structure")
+        
+        return False, {}
+
+    def test_agents_list(self):
+        """Test getting list of agents"""
+        success, response = self.run_test("Get Agents List", "GET", "agents", 200)
+        
+        if success and isinstance(response, list):
+            print(f"   Found {len(response)} agents")
+            admin_found = any(agent.get("username") == "admin" for agent in response)
+            if admin_found:
+                print(f"   ✅ Admin agent found in list")
+            else:
+                print(f"   ❌ Admin agent not found in list")
+            return success and admin_found
+        
+        return False
+
+    def test_mark_customer_messaged_with_agent(self):
+        """Test marking customer as messaged with agent tracking"""
+        # First get a customer
+        success, customers = self.run_test("Get Customer for Agent Test", "GET", "customers?page=1&limit=1", 200)
+        
+        if not success or not customers or len(customers) == 0:
+            print("   ❌ No customers found to test with")
+            return False
+        
+        customer = customers[0]
+        customer_id = customer.get("customer_id")
+        
+        if not customer_id:
+            print("   ❌ Customer has no customer_id")
+            return False
+        
+        print(f"   Testing with customer: {customer.get('first_name', 'Unknown')} {customer.get('last_name', '')}")
+        
+        # Mark customer as messaged by admin agent
+        success, response = self.run_test(
+            "Mark Customer Messaged by Agent",
+            "POST",
+            f"customers/{customer_id}/mark-messaged?agent_username=admin",
+            200
+        )
+        
+        if success:
+            # Verify the customer was updated
+            verify_success, updated_customers = self.run_test(
+                "Verify Customer Agent Tracking",
+                "GET",
+                f"customers?page=1&limit=100",
+                200
+            )
+            
+            if verify_success:
+                # Find the updated customer
+                updated_customer = next((c for c in updated_customers if c.get("customer_id") == customer_id), None)
+                if updated_customer and updated_customer.get("messaged_by") == "admin":
+                    print(f"   ✅ Customer successfully marked as messaged by admin")
+                    return True
+                else:
+                    print(f"   ❌ Customer not properly updated with agent info")
+        
+        return False
+
+    def test_filter_customers_by_agent(self):
+        """Test filtering customers by agent username"""
+        success, response = self.run_test(
+            "Filter Customers by Agent",
+            "GET",
+            "customers?agent_username=admin",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   Found {len(response)} customers messaged by admin")
+            
+            # Verify all returned customers have messaged_by = "admin"
+            all_correct = all(customer.get("messaged_by") == "admin" for customer in response)
+            if all_correct:
+                print(f"   ✅ All returned customers correctly filtered by admin agent")
+                return True
+            else:
+                print(f"   ❌ Some customers in results not messaged by admin")
+        
+        return False
+
+    def test_daily_reports(self):
+        """Test daily reporting endpoints"""
+        # Test general daily reports
+        success1, response1 = self.run_test("Daily Reports - All Agents", "GET", "reports/daily", 200)
+        
+        # Test agent-specific daily reports
+        success2, response2 = self.run_test(
+            "Daily Reports - Admin Agent",
+            "GET",
+            "reports/daily?agent_username=admin",
+            200
+        )
+        
+        if success1 and success2:
+            if isinstance(response1, dict) and "daily_reports" in response1:
+                print(f"   ✅ Daily reports structure correct")
+                reports1 = response1["daily_reports"]
+                reports2 = response2["daily_reports"]
+                print(f"   All agents reports: {len(reports1)} days")
+                print(f"   Admin agent reports: {len(reports2)} days")
+                return True
+            else:
+                print(f"   ❌ Invalid daily reports structure")
+        
+        return False
+
     def test_shopify_sync_endpoint(self):
         """Test Shopify sync endpoint (expected to fail due to permissions)"""
         print("\n⚠️  Note: This test is expected to fail due to Shopify API permissions")
