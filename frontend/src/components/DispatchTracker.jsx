@@ -104,15 +104,22 @@ const DispatchTracker = () => {
       const allOrders = Array.isArray(response.data) ? response.data : response.data.customers || [];
       setOrders(allOrders);
       
-      // Calculate stats
+      // Calculate stats for fulfilled orders
+      const delivered = allOrders.filter(c => c.delivery_status === "DELIVERED").length;
+      const inTransit = allOrders.filter(c => c.delivery_status === "IN_TRANSIT" || c.delivery_status === "OUT_FOR_DELIVERY").length;
+      const pending = allOrders.filter(c => !c.delivery_status || c.delivery_status === "PENDING" || c.delivery_status === "UNKNOWN").length;
+      const returned = allOrders.filter(c => c.delivery_status === "RETURNED").length;
+      const paymentReceived = allOrders.filter(c => c.cod_payment_status === "RECEIVED" || c.payment_status === "paid").length;
+      const paymentPending = allOrders.filter(c => c.cod_payment_status === "PENDING" || c.payment_status === "pending" || !c.cod_payment_status).length;
+      
       setStats({
         total: allOrders.length,
-        delivered: allOrders.filter(c => c.delivery_status === "DELIVERED").length,
-        inTransit: allOrders.filter(c => c.delivery_status === "IN_TRANSIT" || c.delivery_status === "OUT_FOR_DELIVERY").length,
-        pending: allOrders.filter(c => !c.delivery_status || c.delivery_status === "PENDING").length,
-        returned: allOrders.filter(c => c.delivery_status === "RETURNED").length,
-        paymentReceived: allOrders.filter(c => c.cod_payment_status === "RECEIVED" || c.payment_status === "paid").length,
-        paymentPending: allOrders.filter(c => (c.cod_payment_status !== "RECEIVED" && c.payment_status !== "paid") || (!c.cod_payment_status && !c.payment_status)).length,
+        delivered,
+        inTransit,
+        pending,
+        returned,
+        paymentReceived,
+        paymentPending,
       });
       
       setTotalPages(Math.ceil(allOrders.length / 50));
