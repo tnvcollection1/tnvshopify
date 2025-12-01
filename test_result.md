@@ -100,4 +100,198 @@
 
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
-#====================================================================================================
+#====================================================================================================user_problem_statement: Customer management tool for multi-store Shopify clothing business with CSV import, WhatsApp messaging queue, and agent login/reporting system
+
+backend:
+  - task: "Stats cards update when store filter is changed (BUG FIX)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Dashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "FIXED - Added proper data-testid attributes to shadcn Select components and SelectItems. Stats now correctly update when store changes (All:29187→asmia:2665→tnvcollection:23062). Issue was Playwright couldn't interact with Radix UI portals without proper test IDs."
+
+  - task: "Agent login backend endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Endpoint /api/agents/login exists with SHA256 password hashing. Default admin/admin123 credentials work. Returns agent object with id, username, full_name, role."
+
+  - task: "Track which agent messages each customer"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Backend /api/customers/{id}/mark-messaged accepts optional agent_username parameter. Stores in messaged_by field and updates last_messaged_at timestamp."
+
+  - task: "Agent reporting endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Endpoint /api/reports/daily provides day-wise agent performance (messages sent, conversions, conversion rate, total sales). Filters by agent_username."
+
+  - task: "Agents list endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Endpoint /api/agents returns list of all agents without passwords. Used to populate agent filter dropdown."
+
+frontend:
+  - task: "Agent login page with protected routes"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js, /app/frontend/src/components/Login.jsx, /app/frontend/src/contexts/AuthContext.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Login page created using React Router. AuthContext manages auth state with localStorage persistence. Protected routes redirect to /login if not authenticated. Successfully tested: admin/admin123 login redirects to dashboard."
+
+  - task: "Dashboard header shows agent info and logout button"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Dashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Header displays logged-in agent's full name and role badge. Logout button clears auth and redirects to login. Visible in screenshot."
+
+  - task: "Agent filter dropdown"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Dashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Agent filter dropdown added to filters section (5th filter). Fetches agents from /api/agents. Filters customers by selected agent's username. Has proper data-testid attributes."
+
+  - task: "Agent column in customer table"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Dashboard.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "New 'Agent' column shows which agent messaged each customer. Displays messaged_by username with user icon. Shows '—' if customer not messaged."
+
+  - task: "Send agent username when marking customer as messaged"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Dashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated markCustomerMessaged() to send agent.username as query parameter when WhatsApp button clicked. Needs e2e test."
+
+  - task: "Conversion tracking UI"
+    implemented: false
+    working: "NA"
+    file: "Not created"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "TODO: Need modal/inline UI on customer rows to mark conversion (Yes/No) and enter sale amount. Backend supports converted and sale_amount fields."
+
+  - task: "Reporting page UI"
+    implemented: false
+    working: "NA"
+    file: "Not created"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "TODO: Create separate page/component to display /api/reports/daily data in table format with date, messages sent, conversions, conversion rate, total sales columns."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Agent login and authentication flow (login, logout, protected routes)"
+    - "Agent tracking when messaging customers via WhatsApp button"
+    - "Agent filter functionality to filter customers by agent"
+    - "Agent column displays correctly in customer table"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: |
+        Completed Priority 1: Stats bug FIXED! 
+        Completed most of Priority 2: Agent system mostly implemented.
+        
+        DONE:
+        - Stats cards now update when store filter changes (TESTED & WORKING)
+        - Login system with protected routes (TESTED & WORKING)  
+        - Agent info in header with logout (TESTED & WORKING)
+        - Agent filter dropdown (implemented, NOT TESTED)
+        - Agent column in table (implemented, NOT TESTED)
+        - Agent tracking on WhatsApp messages (implemented, NOT TESTED)
+        
+        NEEDS TESTING:
+        - Agent filter - does it correctly filter customers by agent?
+        - WhatsApp messaging - does it correctly track agent.username?
+        - Agent column - does it show the correct agent after messaging?
+        - Agents list endpoint - does it return data?
+        
+        REMAINING WORK:
+        - Conversion tracking UI (modal to mark Yes/No + enter sale amount)
+        - Reporting page UI (day-wise agent performance table)
+        
+        TEST CREDENTIALS: admin / admin123
+        
+        Testing agent should focus on the agent system flows:
+        1. Login → Dashboard loads with agent info
+        2. Click WhatsApp button → Customer marked as messaged by current agent
+        3. Agent filter → Shows only customers messaged by selected agent
+        4. Logout → Redirects to login page
