@@ -910,6 +910,40 @@ const Dashboard = () => {
               </div>
             </div>
             
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Fulfillment Status</label>
+                <Select value={fulfillmentFilter} onValueChange={setFulfillmentFilter}>
+                  <SelectTrigger className="w-full" data-testid="fulfillment-filter">
+                    <SelectValue placeholder="Select fulfillment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Orders</SelectItem>
+                    <SelectItem value="fulfilled">✅ Fulfilled</SelectItem>
+                    <SelectItem value="unfulfilled">⏳ Unfulfilled</SelectItem>
+                    <SelectItem value="partially_fulfilled">⚠️ Partially Fulfilled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Delivery Status</label>
+                <Select value={deliveryFilter} onValueChange={setDeliveryFilter}>
+                  <SelectTrigger className="w-full" data-testid="delivery-filter">
+                    <SelectValue placeholder="Select delivery status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Orders</SelectItem>
+                    <SelectItem value="DELIVERED">✅ Delivered</SelectItem>
+                    <SelectItem value="OUT_FOR_DELIVERY">🚚 Out for Delivery</SelectItem>
+                    <SelectItem value="IN_TRANSIT">📦 In Transit</SelectItem>
+                    <SelectItem value="PICKED_UP">📋 Picked Up</SelectItem>
+                    <SelectItem value="PENDING">⏳ Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
               <div>
