@@ -87,25 +87,32 @@ class AutoSyncScheduler:
     def sync_shopify_orders(self):
         """
         Sync Shopify orders for all configured stores
-        Runs in separate thread, uses asyncio for async operations
+        Runs in separate thread, calls API endpoint to avoid event loop conflicts
         """
         try:
             logger.info("🔄 [AUTO] Starting Shopify orders sync...")
             
-            # Create new event loop for this thread
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+            import requests
             
-            # Run async sync
-            result = loop.run_until_complete(self._async_shopify_sync())
-            
-            loop.close()
-            
-            if result['success']:
-                logger.info(f"✅ [AUTO] Shopify sync completed: {result['total_orders']} orders, "
-                          f"{result['stores_synced']} stores synced")
-            else:
-                logger.error(f"❌ [AUTO] Shopify sync failed: {result.get('error')}")
+            # Call the fast sync endpoint via HTTP
+            try:
+                response = requests.post(
+                    "http://localhost:8001/api/shopify/sync-fast/tnvcollectionpk?days_back=7",
+                    timeout=180  # 3 minutes timeout
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('success'):
+                        logger.info(f"✅ [AUTO] Shopify sync completed: {data.get('orders_synced', 0)} orders, "
+                                  f"{data.get('customers_updated', 0)} customers updated")
+                    else:
+                        logger.error(f"❌ [AUTO] Shopify sync failed: {data.get('message', 'Unknown error')}")
+                else:
+                    logger.error(f"❌ [AUTO] Shopify sync HTTP error: {response.status_code}")
+            except requests.exceptions.Timeout:
+                logger.warning("⚠️ [AUTO] Shopify sync timeout (still running in background)")
+            except Exception as req_error:
+                logger.error(f"❌ [AUTO] Shopify sync request error: {str(req_error)}")
                 
         except Exception as e:
             logger.error(f"❌ [AUTO] Shopify sync error: {str(e)}")
