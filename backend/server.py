@@ -1265,26 +1265,6 @@ async def manual_stock_deduction(
         logger.error(f"Error in manual stock deduction: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-        # Get payment status
-        payment_data = payment_api.get_payment_status(tracking_number)
-        
-        if payment_data.get('success'):
-            return {
-                "success": True,
-                "tracking_number": tracking_number,
-                "payment_data": payment_data
-            }
-        else:
-            return {
-                "success": False,
-                "tracking_number": tracking_number,
-                "error": payment_data.get('error', 'Unknown error')
-            }
-        
-    except Exception as e:
-        logger.error(f"Error getting COD payment status: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 
 @api_router.post("/upload-csv")
 async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store", shop_url: str = ""):
