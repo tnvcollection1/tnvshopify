@@ -61,15 +61,17 @@ class AutoSyncScheduler:
         )
         
         # Schedule TCS COD payment sync every 4 hours
-        self.scheduler.add_job(
-            func=self.sync_cod_payments,
-            trigger=IntervalTrigger(hours=4),
-            id='cod_payment_sync',
-            name='TCS COD Payment Sync (Every 4 Hours)',
-            replace_existing=True,
-            max_instances=1,
-            coalesce=True
-        )
+        # TEMPORARILY DISABLED: COD Payment API returning 404 - needs different credentials
+        # Uncomment when proper API access is obtained from TCS
+        # self.scheduler.add_job(
+        #     func=self.sync_cod_payments,
+        #     trigger=IntervalTrigger(hours=4),
+        #     id='cod_payment_sync',
+        #     name='TCS COD Payment Sync (Every 4 Hours)',
+        #     replace_existing=True,
+        #     max_instances=1,
+        #     coalesce=True
+        # )
         
         # Start scheduler
         self.scheduler.start()
