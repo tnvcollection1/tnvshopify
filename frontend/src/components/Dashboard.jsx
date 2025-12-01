@@ -1250,6 +1250,41 @@ const Dashboard = () => {
                           )}
                         </TableCell>
                         <TableCell>
+                          {customer.payment_status === "paid" && (
+                            <Badge className="bg-green-100 text-green-700">
+                              💰 Paid
+                            </Badge>
+                          )}
+                          {customer.payment_status === "pending" && (
+                            <Badge className="bg-yellow-100 text-yellow-700">
+                              ⏳ Pending
+                            </Badge>
+                          )}
+                          {customer.payment_status === "authorized" && (
+                            <Badge className="bg-blue-100 text-blue-700">
+                              🔐 Authorized
+                            </Badge>
+                          )}
+                          {customer.payment_status === "refunded" && (
+                            <Badge className="bg-red-100 text-red-700">
+                              🔄 Refunded
+                            </Badge>
+                          )}
+                          {customer.payment_status === "partially_refunded" && (
+                            <Badge className="bg-orange-100 text-orange-700">
+                              ↩️ Partial Refund
+                            </Badge>
+                          )}
+                          {customer.payment_status === "voided" && (
+                            <Badge className="bg-gray-100 text-gray-700">
+                              ❌ Voided
+                            </Badge>
+                          )}
+                          {!customer.payment_status && (
+                            <span className="text-slate-400 text-sm">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {customer.tracking_number ? (
                             <a 
                               href={customer.tracking_url || `https://www.tcsexpress.com/track-shipment?tracking_id=${customer.tracking_number}`}
