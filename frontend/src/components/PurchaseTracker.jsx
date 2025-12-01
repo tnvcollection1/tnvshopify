@@ -294,6 +294,27 @@ const PurchaseTracker = () => {
               <SelectItem value="DELIVERED_WAREHOUSE">At Warehouse</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={filters.year} onValueChange={(v) => setFilters({ ...filters, year: v })}>
+            <SelectTrigger className="w-32 border-gray-300">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Years</SelectItem>
+              <SelectItem value="2025">2025</SelectItem>
+              <SelectItem value="2024">2024</SelectItem>
+              <SelectItem value="2023">2023</SelectItem>
+              <SelectItem value="2022">2022</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filters.sortBy} onValueChange={(v) => setFilters({ ...filters, sortBy: v })}>
+            <SelectTrigger className="w-40 border-gray-300">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date_desc">Newest First</SelectItem>
+              <SelectItem value="date_asc">Oldest First</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
