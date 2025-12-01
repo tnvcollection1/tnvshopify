@@ -274,6 +274,19 @@ const Dashboard = () => {
     }
   };
 
+  const fetchCountries = async () => {
+    try {
+      let url = `${API}/countries?`;
+      if (selectedStore && selectedStore !== "all") {
+        url += `store_name=${selectedStore}`;
+      }
+      const response = await axios.get(url);
+      setCountries(response.data.countries);
+    } catch (error) {
+      console.error("Fetch countries error:", error);
+    }
+  };
+
   const filterCustomers = () => {
     let filtered = customers;
 
