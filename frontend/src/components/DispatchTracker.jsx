@@ -91,8 +91,9 @@ const DispatchTracker = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // ONLY show fulfilled orders in Dispatch Tracker (includes TCS and X tracking numbers)
+      // ONLY show fulfilled orders with TCS tracking (exclude X-prefix China tracking)
       params.append("fulfillment_status", "fulfilled");
+      params.append("tcs_only", "true");
       
       if (filters.delivery !== "all") params.append("delivery_status", filters.delivery);
       if (filters.payment !== "all") params.append("payment_status", filters.payment);
