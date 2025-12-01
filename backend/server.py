@@ -758,11 +758,13 @@ async def get_customers(
     country_code: Optional[str] = None,
     agent_username: Optional[str] = None,
     stock_availability: Optional[str] = None,  # "in_stock", "out_of_stock", "partial"
+    fulfillment_status: Optional[str] = None,  # "fulfilled", "unfulfilled", "partially_fulfilled"
+    delivery_status: Optional[str] = None,  # "DELIVERED", "IN_TRANSIT", "OUT_FOR_DELIVERY", etc.
     page: int = 1,
     limit: int = 100
 ):
     """
-    Get customers with pagination, filtered by size, store, messaged status, country, agent, and stock availability
+    Get customers with pagination, filtered by size, store, messaged status, country, agent, stock availability, fulfillment, and delivery status
     """
     query = {}
     if shoe_size and shoe_size != "all":
@@ -777,6 +779,10 @@ async def get_customers(
         query['country_code'] = country_code
     if agent_username and agent_username != "all":
         query['messaged_by'] = agent_username
+    if fulfillment_status and fulfillment_status != "all":
+        query['fulfillment_status'] = fulfillment_status
+    if delivery_status and delivery_status != "all":
+        query['delivery_status'] = delivery_status
     
     # Calculate skip value for pagination
     skip = (page - 1) * limit
@@ -834,10 +840,12 @@ async def get_customers_count(
     messaged: Optional[str] = None,
     country_code: Optional[str] = None,
     agent_username: Optional[str] = None,
-    stock_availability: Optional[str] = None
+    stock_availability: Optional[str] = None,
+    fulfillment_status: Optional[str] = None,
+    delivery_status: Optional[str] = None
 ):
     """
-    Get total count of customers matching filters including stock availability
+    Get total count of customers matching filters including stock availability, fulfillment, and delivery status
     """
     query = {}
     if shoe_size and shoe_size != "all":
@@ -852,6 +860,10 @@ async def get_customers_count(
         query['country_code'] = country_code
     if agent_username and agent_username != "all":
         query['messaged_by'] = agent_username
+    if fulfillment_status and fulfillment_status != "all":
+        query['fulfillment_status'] = fulfillment_status
+    if delivery_status and delivery_status != "all":
+        query['delivery_status'] = delivery_status
     
     # If stock_availability filter is specified, we need to fetch and filter
     if stock_availability and store_name and store_name != "all":
