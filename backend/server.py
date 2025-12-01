@@ -45,6 +45,31 @@ class Customer(BaseModel):
     messaged: bool = False
     last_messaged_at: Optional[str] = None
     message_count: int = 0
+    messaged_by: Optional[str] = None
+    converted: Optional[bool] = None
+    conversion_notes: Optional[str] = None
+
+
+class Agent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    username: str
+    password: str
+    full_name: str
+    role: str = "agent"
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class AgentLogin(BaseModel):
+    username: str
+    password: str
+
+
+class AgentCreate(BaseModel):
+    username: str
+    password: str
+    full_name: str
 
 
 class Store(BaseModel):
