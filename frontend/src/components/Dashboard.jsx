@@ -289,8 +289,13 @@ const Dashboard = () => {
     }
   };
 
-  const fetchCustomers = async (size = null, page = currentPage) => {
-    setLoading(true);
+  const fetchCustomers = async (size = null, page = currentPage, append = false) => {
+    if (append) {
+      setIsLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
       // Build URL for customers
       let url = `${API}/customers?page=${page}&limit=${customersPerPage}&`;
@@ -313,7 +318,7 @@ const Dashboard = () => {
         url += `stock_availability=${stockFilter}&`;
       }
       
-      // Build URL for count
+      // Build URL for count (only fetch on first load)
       let countUrl = `${API}/customers/count?`;
       if (size && size !== "all") {
         countUrl += `shoe_size=${size}&`;
@@ -334,20 +339,30 @@ const Dashboard = () => {
         countUrl += `stock_availability=${stockFilter}&`;
       }
       
-      // Fetch both in parallel
-      const [customersResponse, countResponse] = await Promise.all([
-        axios.get(url),
-        axios.get(countUrl)
-      ]);
+      // Fetch customers and count (count only on first page)
+      const customersResponse = await axios.get(url);
+      const newCustomers = customersResponse.data;
       
-      setCustomers(customersResponse.data);
-      setTotalCount(countResponse.data.total);
-      setStats(prev => ({ ...prev, totalCustomers: countResponse.data.total }));
+      if (append) {
+        // Append to existing customers
+        setCustomers(prev => [...prev, ...newCustomers]);
+        setHasMore(newCustomers.length === customersPerPage);
+      } else {
+        // Replace customers
+        setCustomers(newCustomers);
+        setHasMore(newCustomers.length === customersPerPage);
+        
+        // Fetch count on first load
+        const countResponse = await axios.get(countUrl);
+        setTotalCount(countResponse.data.total);
+        setStats(prev => ({ ...prev, totalCustomers: countResponse.data.total }));
+      }
     } catch (error) {
       console.error("Fetch customers error:", error);
       toast.error("Failed to fetch customers");
     } finally {
       setLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
