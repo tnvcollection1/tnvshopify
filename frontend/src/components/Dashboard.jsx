@@ -430,6 +430,12 @@ const Dashboard = () => {
       if (paymentFilter && paymentFilter !== "all") {
         url += `payment_status=${paymentFilter}&`;
       }
+      if (yearFilter && yearFilter !== "all") {
+        url += `year=${yearFilter}&`;
+      }
+      if (sortBy) {
+        url += `sort_by=${sortBy}&`;
+      }
       
       // Build URL for count (only fetch on first load)
       let countUrl = `${API}/customers/count?`;
