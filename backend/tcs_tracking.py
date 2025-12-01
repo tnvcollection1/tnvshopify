@@ -132,8 +132,9 @@ class TCSTracker:
             return None
         
         try:
-            payload = {
-                "consignee": [tracking_number]
+            # TCS API expects tracking number as query parameter
+            params = {
+                "consignmentno": tracking_number
             }
             
             headers = {
@@ -141,7 +142,7 @@ class TCSTracker:
                 "Content-Type": "application/json"
             }
             
-            response = requests.get(self.tracking_url, json=payload, headers=headers, timeout=10)
+            response = requests.get(self.tracking_url, params=params, headers=headers, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
