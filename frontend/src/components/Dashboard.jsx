@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { RefreshCw, Search, MessageCircle, Users, Filter, ExternalLink, Plus, Trash2, Store as StoreIcon } from "lucide-react";
+import { RefreshCw, Search, MessageCircle, Users, Filter, ExternalLink, Plus, Trash2, Store as StoreIcon, LogOut, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -22,6 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
