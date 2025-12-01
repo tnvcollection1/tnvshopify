@@ -775,6 +775,21 @@ const Dashboard = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Stock Status</label>
+                <Select value={stockFilter} onValueChange={setStockFilter}>
+                  <SelectTrigger className="w-full" data-testid="stock-filter">
+                    <SelectValue placeholder="Select stock status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Orders</SelectItem>
+                    <SelectItem value="in_stock">✅ In Stock</SelectItem>
+                    <SelectItem value="out_of_stock">❌ Out of Stock</SelectItem>
+                    <SelectItem value="partial">⚠️ Partial Stock</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
