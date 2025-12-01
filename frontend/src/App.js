@@ -3,6 +3,12 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "@/components/Dashboard";
 import Login from "@/components/Login";
+import Layout from "@/components/Layout";
+import Inventory from "@/components/Inventory";
+import Orders from "@/components/Orders";
+import Reports from "@/components/Reports";
+import Analytics from "@/components/Analytics";
+import Settings from "@/components/Settings";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
@@ -22,7 +28,7 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
   
-  return children;
+  return <Layout>{children}</Layout>;
 }
 
 // Login Route wrapper
@@ -30,7 +36,7 @@ function LoginRoute() {
   const { agent, login } = useAuth();
   
   if (agent) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   
   return <Login onLoginSuccess={login} />;
@@ -40,11 +46,60 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginRoute />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route 
-        path="/" 
+        path="/dashboard" 
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/customers" 
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/orders" 
+        element={
+          <ProtectedRoute>
+            <Orders />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/inventory" 
+        element={
+          <ProtectedRoute>
+            <Inventory />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/reports" 
+        element={
+          <ProtectedRoute>
+            <Reports />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/analytics" 
+        element={
+          <ProtectedRoute>
+            <Analytics />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         } 
       />
