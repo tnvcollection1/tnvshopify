@@ -263,13 +263,21 @@ class AutoSyncScheduler:
             logger.info("🔄 [AUTO] Starting TCS delivery status sync...")
             
             # Create new event loop for this thread
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # If loop is running, create a new one for this thread
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
             
             # Run async sync
             result = loop.run_until_complete(self._async_tcs_sync())
             
-            loop.close()
+            if not loop.is_running():
+                loop.close()
             
             if result['success']:
                 logger.info(f"✅ [AUTO] TCS sync completed: {result['updated']} deliveries updated")
