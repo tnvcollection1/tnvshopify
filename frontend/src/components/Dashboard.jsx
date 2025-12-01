@@ -1008,6 +1008,24 @@ const Dashboard = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Payment Status</label>
+                <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                  <SelectTrigger className="w-full" data-testid="payment-filter">
+                    <SelectValue placeholder="Select payment status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Orders</SelectItem>
+                    <SelectItem value="paid">💰 Paid</SelectItem>
+                    <SelectItem value="pending">⏳ Pending</SelectItem>
+                    <SelectItem value="authorized">🔐 Authorized</SelectItem>
+                    <SelectItem value="partially_refunded">↩️ Partially Refunded</SelectItem>
+                    <SelectItem value="refunded">🔄 Refunded</SelectItem>
+                    <SelectItem value="voided">❌ Voided</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
