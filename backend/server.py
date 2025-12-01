@@ -1934,6 +1934,9 @@ async def get_customers(
     if china_tracking == "true":
         # Purchase tracker - orders with tracking numbers starting with 'X' (China Post)
         query['tracking_number'] = {"$regex": "^X", "$options": "i"}
+    if tcs_only == "true":
+        # Dispatch tracker - exclude orders with X-prefix tracking (China Post)
+        query['tracking_number'] = {"$not": {"$regex": "^X", "$options": "i"}}
     
     # Search across multiple fields
     if search:
