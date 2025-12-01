@@ -79,11 +79,13 @@ const Dashboard = () => {
 
   useEffect(() => {
     setCurrentPage(1);
+    setSelectedCustomers([]);
     fetchCustomers(selectedSize, 1);
   }, [selectedSize]);
 
   useEffect(() => {
     setCurrentPage(1);
+    setSelectedCustomers([]);
     fetchCustomers(selectedSize, 1);
   }, [messagedFilter]);
 
