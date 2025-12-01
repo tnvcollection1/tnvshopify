@@ -62,10 +62,34 @@ const Dashboard = () => {
   const [agents, setAgents] = useState([]);
   const [selectedAgent, setSelectedAgent] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
+  const [syncing, setSyncing] = useState(false);
   
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+  
+  const handleShopifySync = async (storeName) => {
+    setSyncing(true);
+    try {
+      toast.info(`Syncing orders from Shopify for ${storeName}...`, { duration: 3000 });
+      const response = await axios.post(`${API}/shopify/sync/${storeName}?days_back=30`);
+      
+      if (response.data.success) {
+        toast.success(`✅ ${response.data.message}\n${response.data.customers_created} new, ${response.data.customers_updated} updated`);
+        await fetchCustomers(); // Refresh customer list
+        await fetchShoeSizes();
+      }
+    } catch (error) {
+      console.error("Shopify sync error:", error);
+      if (error.response?.status === 400) {
+        toast.error("Shopify not configured for this store. Please configure credentials first.");
+      } else {
+        toast.error("Failed to sync orders from Shopify");
+      }
+    } finally {
+      setSyncing(false);
+    }
   };
 
   useEffect(() => {
