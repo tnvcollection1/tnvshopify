@@ -643,46 +643,30 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-4xl font-bold text-slate-900" style={{ fontFamily: 'Space Grotesk' }}>
-                Ashmiaa Customer Manager
-              </h1>
-              <p className="text-slate-600 mt-1">Manage your shoe customers and WhatsApp messaging</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 rounded-lg">
-                <User className="h-4 w-4 text-slate-600" />
-                <span className="text-sm font-medium text-slate-700">{agent?.full_name}</span>
-                <Badge variant="secondary" className="text-xs">{agent?.role}</Badge>
-              </div>
-              <Badge variant="outline" className="text-base px-3 py-1">
-                {stores.length} / 3 Stores
+    <div className="flex-1 bg-gray-50">
+      {/* Page Header */}
+      <div className="bg-white border-b border-gray-200 px-8 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Customer Dashboard</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Manage customers, orders, and WhatsApp messaging
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {schedulerStatus?.running && (
+              <Badge className="bg-green-100 text-green-700 text-xs px-3 py-1">
+                🔄 Auto-Sync Active
               </Badge>
-              {schedulerStatus?.running && (
-                <Badge className="bg-green-100 text-green-700 text-xs px-2 py-1">
-                  🔄 Auto-Sync Active
-                </Badge>
-              )}
-              <Button 
-                onClick={handleLogout}
-                variant="ghost"
-                size="sm"
-                className="text-slate-600 hover:text-red-600 hover:bg-red-50"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
+            )}
+            <Badge variant="outline" className="text-sm px-3 py-1">
+              {stores.length} / 3 Stores
+            </Badge>
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="p-8">
         {/* Store Management */}
         <Card className="mb-8 border-none shadow-lg bg-white">
           <CardHeader>
