@@ -136,6 +136,51 @@ class WhatsAppRequest(BaseModel):
 
 
 class BulkMessageRequest(BaseModel):
+
+
+@api_router.get("/scheduler/status")
+async def get_scheduler_status():
+    """
+    Get background scheduler status and next run times
+    """
+    scheduler = get_scheduler()
+    status = scheduler.get_status()
+    return status
+
+
+@api_router.post("/scheduler/trigger-shopify-sync")
+async def trigger_manual_shopify_sync():
+    """
+    Manually trigger Shopify sync (in addition to automatic hourly sync)
+    """
+    try:
+        scheduler = get_scheduler()
+        scheduler.sync_shopify_orders()
+        return {
+            "success": True,
+            "message": "Shopify sync triggered manually (running in background)"
+        }
+    except Exception as e:
+        logger.error(f"Error triggering manual sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/scheduler/trigger-tcs-sync")
+async def trigger_manual_tcs_sync():
+    """
+    Manually trigger TCS delivery status sync
+    """
+    try:
+        scheduler = get_scheduler()
+        scheduler.sync_tcs_deliveries()
+        return {
+            "success": True,
+            "message": "TCS delivery sync triggered manually (running in background)"
+        }
+    except Exception as e:
+        logger.error(f"Error triggering manual TCS sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
     customer_ids: List[str]
     message_template: Optional[str] = None
     delay_seconds: int = 5  # Delay between messages to avoid ban
