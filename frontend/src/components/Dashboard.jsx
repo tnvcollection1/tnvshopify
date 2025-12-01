@@ -895,6 +895,16 @@ const Dashboard = () => {
                             </Badge>
                           )}
                         </TableCell>
+                        <TableCell>
+                          {customer.messaged_by ? (
+                            <div className="text-sm text-slate-600 flex items-center gap-1">
+                              <User className="h-3 w-3" />
+                              <span>{customer.messaged_by}</span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 text-sm">—</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           <Button
                             size="sm"
