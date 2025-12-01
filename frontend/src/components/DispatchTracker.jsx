@@ -393,13 +393,14 @@ const DispatchTracker = () => {
                   <TableRow className="bg-gray-50">
                     <TableHead className="font-semibold text-gray-700">Date</TableHead>
                     <TableHead className="font-semibold text-gray-700">Order #</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Store</TableHead>
                     <TableHead className="font-semibold text-gray-700">Customer</TableHead>
                     <TableHead className="font-semibold text-gray-700">Phone</TableHead>
                     <TableHead className="font-semibold text-gray-700">Tracking #</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Calling</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Delivery</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Payment</TableHead>
-                    <TableHead className="font-semibold text-gray-700">COD Status</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Calling Status</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Delivery Status</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Shopify Payment</TableHead>
+                    <TableHead className="font-semibold text-gray-700">COD Payment</TableHead>
                     <TableHead className="font-semibold text-gray-700">Amount</TableHead>
                     <TableHead className="font-semibold text-gray-700">Actions</TableHead>
                   </TableRow>
