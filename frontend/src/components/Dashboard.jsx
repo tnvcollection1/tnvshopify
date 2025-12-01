@@ -289,15 +289,9 @@ const Dashboard = () => {
       if (selectedStore && selectedStore !== "all") {
         url += `store_name=${selectedStore}`;
       }
-      console.log('📊 Fetching sizes with URL:', url);
       const response = await axios.get(url);
-      console.log('📊 Sizes response:', response.data.shoe_sizes.length, 'sizes');
       setShoeSizes(response.data.shoe_sizes);
-      setStats(prev => {
-        const newStats = { ...prev, uniqueSizes: response.data.shoe_sizes.length };
-        console.log('📊 Updating stats.uniqueSizes:', newStats.uniqueSizes);
-        return newStats;
-      });
+      setStats(prev => ({ ...prev, uniqueSizes: response.data.shoe_sizes.length }));
     } catch (error) {
       console.error("Fetch sizes error:", error);
     }
