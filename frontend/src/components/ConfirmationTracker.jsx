@@ -54,6 +54,7 @@ const ConfirmationTracker = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [stats, setStats] = useState({
     total: 0,
     notCalled: 0,
@@ -96,13 +97,21 @@ const ConfirmationTracker = () => {
       params.append("page", currentPage);
       params.append("limit", "100");
 
-      const response = await axios.get(`${API}/customers?${params.toString()}`);
-      const allOrders = Array.isArray(response.data) ? response.data : response.data.customers || [];
-      setOrders(allOrders);
+      // Fetch both orders and count
+      const [ordersResponse, countResponse] = await Promise.all([
+        axios.get(`${API}/customers?${params.toString()}`),
+        axios.get(`${API}/customers/count?${params.toString()}`)
+      ]);
       
-      // Calculate stats
+      const allOrders = Array.isArray(ordersResponse.data) ? ordersResponse.data : ordersResponse.data.customers || [];
+      const total = countResponse.data.total || 0;
+      
+      setOrders(allOrders);
+      setTotalCount(total);
+      
+      // Calculate stats from current page only (for display purposes)
       setStats({
-        total: allOrders.length,
+        total: total,  // Show actual total from database
         notCalled: allOrders.filter(c => !c.calling_status || c.calling_status === "NOT_CALLED").length,
         called: allOrders.filter(c => c.calling_status === "CALLED" || c.calling_status === "CONFIRMED").length,
         purchased: allOrders.filter(c => c.confirmation_status === "PURCHASED").length,
@@ -111,7 +120,7 @@ const ConfirmationTracker = () => {
         inTransit: allOrders.filter(c => c.dubai_tracking_number).length,
       });
       
-      setTotalPages(Math.ceil(allOrders.length / 100));
+      setTotalPages(Math.ceil(total / 100));
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
@@ -180,7 +189,7 @@ const ConfirmationTracker = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Confirmation Tracker</h1>
-            <p className="text-sm text-gray-500 mt-1">Call customers and confirm orders before dispatch</p>
+            <p className="text-sm text-gray-500 mt-1">Call customers and confirm unfulfilled orders before dispatch</p>
           </div>
         </div>
 
@@ -399,7 +408,7 @@ const ConfirmationTracker = () => {
         {orders.length > 0 && (
           <div className="flex items-center justify-between mt-6">
             <p className="text-sm text-gray-500">
-              Showing page {currentPage} of {totalPages}
+              Showing {Math.min((currentPage - 1) * 100 + 1, totalCount)} to {Math.min(currentPage * 100, totalCount)} of {totalCount} orders
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -411,6 +420,7 @@ const ConfirmationTracker = () => {
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
+              <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
               <Button
                 variant="outline"
                 size="sm"
