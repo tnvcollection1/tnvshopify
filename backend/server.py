@@ -573,8 +573,11 @@ async def get_customers(
     # Calculate skip value for pagination
     skip = (page - 1) * limit
     
+    # If filtering by stock, we need to fetch more to account for filtering
+    fetch_limit = limit * 10 if stock_availability else limit
+    
     # Get customers with pagination
-    customers = await db.customers.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
+    customers = await db.customers.find(query, {"_id": 0}).skip(skip).limit(fetch_limit).to_list(fetch_limit)
     
     # If filtering by stock availability or if we want to show stock status, calculate it
     if stock_availability or store_name:
