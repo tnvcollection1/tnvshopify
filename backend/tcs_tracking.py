@@ -42,11 +42,15 @@ class TCSTracker:
                     self.token_expiry = datetime.strptime(token_expiry, "%d-%m-%Y").replace(tzinfo=timezone.utc)
                 except:
                     try:
-                        # Try ISO format
-                        self.token_expiry = datetime.fromisoformat(token_expiry.replace('Z', '+00:00'))
+                        # Try YYYY-MM-DD format
+                        self.token_expiry = datetime.strptime(token_expiry, "%Y-%m-%d").replace(tzinfo=timezone.utc)
                     except:
-                        # Default to 1 year from now
-                        self.token_expiry = datetime.now(timezone.utc) + timedelta(days=365)
+                        try:
+                            # Try ISO format
+                            self.token_expiry = datetime.fromisoformat(token_expiry.replace('Z', '+00:00'))
+                        except:
+                            # Default to 1 year from now
+                            self.token_expiry = datetime.now(timezone.utc) + timedelta(days=365)
             else:
                 # No expiry provided, assume valid for 1 year
                 self.token_expiry = datetime.now(timezone.utc) + timedelta(days=365)
