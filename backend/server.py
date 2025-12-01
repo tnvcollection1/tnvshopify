@@ -244,6 +244,21 @@ async def upload_stock_file(file: UploadFile = File(...), store_name: str = "tnv
         raise HTTPException(status_code=500, detail=f"Failed to process stock file: {str(e)}")
 
 
+@api_router.get("/stock/{store_name}")
+async def get_store_stock(store_name: str):
+    """
+    Get all stock SKUs for a specific store
+    """
+    stock_items = await db.stock.find({"store_name": store_name}, {"_id": 0}).to_list(10000)
+    skus = [item["sku"] for item in stock_items]
+    return {
+        "store_name": store_name,
+        "total_skus": len(skus),
+        "unique_skus": len(set(skus)),
+        "skus": list(set(skus))  # Return unique SKUs
+    }
+
+
 @api_router.post("/upload-csv")
 async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store", shop_url: str = ""):
     """
