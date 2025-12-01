@@ -581,7 +581,7 @@ const Dashboard = () => {
             <CardTitle className="text-2xl" style={{ fontFamily: 'Space Grotesk' }}>Filter Customers</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-2 block">Store</label>
                 <Select value={selectedStore} onValueChange={setSelectedStore}>
@@ -592,6 +592,21 @@ const Dashboard = () => {
                     <SelectItem value="all">All Stores</SelectItem>
                     {stores.map((store) => (
                       <SelectItem key={store.id} value={store.store_name}>{store.store_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Country</label>
+                <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                  <SelectTrigger className="w-full" data-testid="country-filter">
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Countries</SelectItem>
+                    {countries.map((country) => (
+                      <SelectItem key={country} value={country}>{country}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
