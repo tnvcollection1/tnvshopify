@@ -32,6 +32,7 @@ const Sidebar = () => {
       items: [
         { icon: PhoneCall, label: 'Confirmation Tracker', path: '/confirmation' },
         { icon: Truck, label: 'Dispatch Tracker', path: '/tracker', highlighted: true },
+        { icon: Plane, label: 'Purchase Tracker', path: '/purchase' },
         { icon: ShoppingCart, label: 'Orders', path: '/orders' },
         { icon: Users, label: 'Customers', path: '/customers' },
       ]
