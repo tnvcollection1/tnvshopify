@@ -862,14 +862,48 @@ async def track_tcs_consignment(tracking_number: str):
         
         # Update customer with delivery status
         if tracking_data.get('normalized_status') != 'NOT_FOUND':
-            await db.customers.update_one(
+            # Get customer data first to check old status
+            customer = await db.customers.find_one(
                 {"tracking_number": tracking_number},
-                {"$set": {
-                    "delivery_status": tracking_data.get('normalized_status'),
-                    "delivery_location": tracking_data.get('current_location'),
-                    "delivery_updated_at": datetime.now(timezone.utc).isoformat()
-                }}
+                {"_id": 0, "customer_id": 1, "store_name": 1, "delivery_status": 1, "order_skus": 1, "order_number": 1, "stock_deducted": 1}
             )
+            
+            if customer:
+                new_status = tracking_data.get('normalized_status')
+                old_status = customer.get('delivery_status')
+                
+                await db.customers.update_one(
+                    {"tracking_number": tracking_number},
+                    {"$set": {
+                        "delivery_status": new_status,
+                        "delivery_location": tracking_data.get('current_location'),
+                        "delivery_updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                
+                # AUTO-DEDUCT STOCK WHEN STATUS CHANGES TO DELIVERED
+                if new_status == 'DELIVERED' and old_status != 'DELIVERED':
+                    # Check if stock not already deducted
+                    if not customer.get('stock_deducted'):
+                        from inventory_manager import InventoryManager
+                        inv_manager = InventoryManager(db)
+                        
+                        deduct_result = await inv_manager.deduct_stock_on_delivery(
+                            customer.get('order_skus', []),
+                            customer['customer_id'],
+                            customer.get('order_number', 'N/A')
+                        )
+                        
+                        if deduct_result['success']:
+                            await db.customers.update_one(
+                                {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                                {"$set": {
+                                    "stock_deducted": True,
+                                    "stock_deducted_at": datetime.now(timezone.utc).isoformat(),
+                                    "payment_status": "DUE"  # Set payment status to DUE for COD orders
+                                }}
+                            )
+                            logger.info(f"✅ Auto-deducted stock for order {customer.get('order_number')}")
         
         return {
             "success": True,
