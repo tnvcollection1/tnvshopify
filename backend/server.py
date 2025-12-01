@@ -186,6 +186,64 @@ async def get_agents():
     return agents
 
 
+@api_router.post("/upload-stock")
+async def upload_stock_file(file: UploadFile = File(...), store_name: str = "tnvcollectionpk"):
+    """
+    Upload stock Excel file and store SKUs for a specific store
+    """
+    try:
+        # Read Excel file
+        content = await file.read()
+        
+        logger.info(f"Received stock file: {file.filename}, size: {len(content)} bytes for store: {store_name}")
+        
+        # Parse Excel using pandas
+        df = pd.read_excel(io.BytesIO(content))
+        
+        logger.info(f"Excel columns: {df.columns.tolist()}")
+        
+        # Extract SKUs (assuming column is named 'SKU')
+        if 'SKU' not in df.columns:
+            raise HTTPException(status_code=400, detail="Excel file must have a 'SKU' column")
+        
+        # Get all SKUs and filter out empty values
+        skus = df['SKU'].dropna().astype(str).tolist()
+        skus = [sku.strip() for sku in skus if sku.strip()]
+        
+        logger.info(f"Extracted {len(skus)} SKUs from Excel")
+        
+        # Clear existing stock for this store
+        await db.stock.delete_many({"store_name": store_name})
+        
+        # Insert new stock items
+        stock_items = []
+        for sku in skus:
+            stock_items.append({
+                "id": str(uuid.uuid4()),
+                "sku": sku.upper(),  # Normalize to uppercase for matching
+                "store_name": store_name,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+        
+        if stock_items:
+            await db.stock.insert_many(stock_items)
+        
+        # Get unique SKU count
+        unique_skus = len(set(sku.upper() for sku in skus))
+        
+        return {
+            "success": True,
+            "message": f"Stock updated for {store_name}",
+            "total_items": len(skus),
+            "unique_skus": unique_skus,
+            "store_name": store_name
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading stock file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process stock file: {str(e)}")
+
+
 @api_router.post("/upload-csv")
 async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store", shop_url: str = ""):
     """
