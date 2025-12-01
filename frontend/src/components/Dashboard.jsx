@@ -59,6 +59,7 @@ const Dashboard = () => {
   });
   const [agents, setAgents] = useState([]);
   const [selectedAgent, setSelectedAgent] = useState("all");
+  const [stockFilter, setStockFilter] = useState("all");
   
   const handleLogout = () => {
     logout();
