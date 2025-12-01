@@ -372,7 +372,7 @@ async def get_shoe_sizes(store_name: Optional[str] = None):
 @api_router.get("/reports/agents")
 async def get_agent_reports():
     """
-    Get agent performance report
+    Get agent performance report with total sales
     """
     try:
         # Get all agents
@@ -391,6 +391,14 @@ async def get_agent_reports():
                 "converted": True
             })
             
+            # Calculate total sales
+            converted_customers = await db.customers.find({
+                "messaged_by": username,
+                "converted": True
+            }, {"_id": 0, "sale_amount": 1}).to_list(10000)
+            
+            total_sales = sum(c.get('sale_amount', 0) or 0 for c in converted_customers)
+            
             # Conversion rate
             conversion_rate = (converted_count / messaged_count * 100) if messaged_count > 0 else 0
             
@@ -399,13 +407,73 @@ async def get_agent_reports():
                 "agent_name": agent["full_name"],
                 "messages_sent": messaged_count,
                 "conversions": converted_count,
-                "conversion_rate": round(conversion_rate, 2)
+                "conversion_rate": round(conversion_rate, 2),
+                "total_sales": round(total_sales, 2)
             })
         
         return {"reports": reports}
     except Exception as e:
         logger.error(f"Error generating reports: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to generate reports")
+
+
+@api_router.get("/reports/daily")
+async def get_daily_reports(agent_username: Optional[str] = None):
+    """
+    Get day-wise reporting with messages, conversions, and sales
+    """
+    try:
+        from datetime import datetime, timedelta
+        from collections import defaultdict
+        
+        # Build query
+        query = {"messaged": True}
+        if agent_username and agent_username != "all":
+            query["messaged_by"] = agent_username
+        
+        # Get all messaged customers
+        customers = await db.customers.find(query, {
+            "_id": 0,
+            "last_messaged_at": 1,
+            "converted": 1,
+            "sale_amount": 1,
+            "messaged_by": 1
+        }).to_list(50000)
+        
+        # Group by date
+        daily_stats = defaultdict(lambda: {
+            "messages": 0,
+            "conversions": 0,
+            "sales": 0.0
+        })
+        
+        for customer in customers:
+            if customer.get('last_messaged_at'):
+                # Parse date (YYYY-MM-DD)
+                msg_date = customer['last_messaged_at'][:10]
+                
+                daily_stats[msg_date]["messages"] += 1
+                
+                if customer.get('converted'):
+                    daily_stats[msg_date]["conversions"] += 1
+                    daily_stats[msg_date]["sales"] += customer.get('sale_amount', 0) or 0
+        
+        # Convert to list and sort by date
+        reports = []
+        for date, stats in sorted(daily_stats.items(), reverse=True):
+            conversion_rate = (stats["conversions"] / stats["messages"] * 100) if stats["messages"] > 0 else 0
+            reports.append({
+                "date": date,
+                "messages_sent": stats["messages"],
+                "conversions": stats["conversions"],
+                "conversion_rate": round(conversion_rate, 2),
+                "total_sales": round(stats["sales"], 2)
+            })
+        
+        return {"daily_reports": reports}
+    except Exception as e:
+        logger.error(f"Error generating daily reports: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate daily reports")
 
 
 @api_router.get("/countries")
