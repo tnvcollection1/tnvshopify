@@ -810,6 +810,7 @@ const Dashboard = () => {
                       <TableHead>Last Order</TableHead>
                       <TableHead>Store</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Agent</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
