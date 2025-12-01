@@ -517,9 +517,10 @@ const DispatchTracker = () => {
         </Card>
 
         {/* Pagination */}
+        {orders.length > 0 && (
         <div className="flex items-center justify-between mt-6">
           <p className="text-sm text-gray-500">
-            Showing page {currentPage} of {totalPages}
+            Showing {Math.min((currentPage - 1) * 100 + 1, stats.total)} to {Math.min(currentPage * 100, stats.total)} of {stats.total} orders
           </p>
           <div className="flex items-center gap-2">
             <Button
