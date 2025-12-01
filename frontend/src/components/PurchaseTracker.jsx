@@ -94,28 +94,28 @@ const PurchaseTracker = () => {
       params.append("page", currentPage);
       params.append("limit", "100");
 
-      const response = await axios.get(`${API}/customers?${params.toString()}`);
-      const allOrders = Array.isArray(response.data) ? response.data : response.data.customers || [];
+      // Fetch both orders and count
+      const [ordersResponse, countResponse] = await Promise.all([
+        axios.get(`${API}/customers?${params.toString()}`),
+        axios.get(`${API}/customers/count?${params.toString()}`)
+      ]);
       
-      // Additional client-side filter to ensure tracking numbers start with X
-      const chinaOrders = allOrders.filter(order => {
-        const trackingNum = order.china_tracking_number || order.tracking_number || "";
-        return trackingNum.toUpperCase().startsWith('X');
-      });
+      const allOrders = Array.isArray(ordersResponse.data) ? ordersResponse.data : ordersResponse.data.customers || [];
+      const total = countResponse.data.total || 0;
       
-      setOrders(chinaOrders);
+      setOrders(allOrders);
       
-      // Calculate stats
+      // Calculate stats - use actual total from database
       setStats({
-        total: chinaOrders.length,
-        ordered: chinaOrders.filter(c => c.purchase_status === "ORDERED").length,
-        shipped: chinaOrders.filter(c => c.purchase_status === "SHIPPED").length,
-        inTransit: chinaOrders.filter(c => c.purchase_status === "IN_TRANSIT").length,
-        arrived: chinaOrders.filter(c => c.purchase_status === "ARRIVED_PAKISTAN").length,
-        delivered: chinaOrders.filter(c => c.purchase_status === "DELIVERED_WAREHOUSE").length,
+        total: total,
+        ordered: allOrders.filter(c => c.purchase_status === "ORDERED").length,
+        shipped: allOrders.filter(c => c.purchase_status === "SHIPPED").length,
+        inTransit: allOrders.filter(c => c.purchase_status === "IN_TRANSIT").length,
+        arrived: allOrders.filter(c => c.purchase_status === "ARRIVED_PAKISTAN").length,
+        delivered: allOrders.filter(c => c.purchase_status === "DELIVERED_WAREHOUSE").length,
       });
       
-      setTotalPages(Math.ceil(chinaOrders.length / 100));
+      setTotalPages(Math.ceil(total / 100));
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
