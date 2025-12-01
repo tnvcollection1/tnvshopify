@@ -46,7 +46,11 @@ class TCSTracker:
                 "password": self.password
             }
             
-            response = requests.get(self.auth_url, json=payload, timeout=10)
+            headers = {
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.post(self.auth_url, json=payload, headers=headers, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
