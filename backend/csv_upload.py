@@ -127,6 +127,7 @@ def parse_shopify_orders_csv(csv_content: str) -> List[Dict]:
         customer['shoe_sizes'] = list(customer['shoe_sizes'])
         if not customer['shoe_sizes']:
             customer['shoe_sizes'] = ['Unknown']
+        customer['order_skus'] = list(customer['order_skus'])
         customers_list.append(customer)
     
     logger.info(f"Parsed {len(customers_list)} unique customers from CSV")
