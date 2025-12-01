@@ -315,9 +315,14 @@ async def configure_shopify_store(
 
 
 @api_router.post("/shopify/sync/{store_name}")
-async def sync_shopify_orders(store_name: str, days_back: int = 30):
+async def sync_shopify_orders(store_name: str, days_back: int = 30, full_sync: bool = False):
     """
     Manually sync orders from Shopify for a specific store
+    
+    Args:
+        store_name: Store to sync
+        days_back: Number of days to look back (default 30)
+        full_sync: If True, syncs ALL orders with pagination (default False)
     """
     try:
         # Get store credentials
@@ -332,8 +337,15 @@ async def sync_shopify_orders(store_name: str, days_back: int = 30):
         # Fetch orders from Shopify
         sync = ShopifyOrderSync(store['shopify_domain'], store['shopify_token'])
         
-        # Fetch orders from last X days
-        created_after = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
+        if full_sync:
+            # Sync all orders (no date filter)
+            created_after = None
+            logger.info(f"Starting FULL sync for {store_name} - fetching ALL orders")
+        else:
+            # Fetch orders from last X days
+            created_after = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
+            logger.info(f"Syncing {store_name} orders from last {days_back} days")
+        
         orders = sync.fetch_orders(limit=250, status="any", created_after=created_after)
         
         if not orders:
