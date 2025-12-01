@@ -422,6 +422,7 @@ async def sync_shopify_orders(store_name: str, days_back: int = 30, full_sync: b
                     "order_skus": order_skus,
                     "shoe_sizes": sizes if sizes else ['Unknown'],
                     "order_count": 1,
+                    "order_number": str(order_data['order_number']),
                     "last_order_date": order_data['order_date'],
                     "total_spent": order_data['total_price'],
                     "fulfillment_status": order_data['fulfillment_status'],
