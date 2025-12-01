@@ -1056,35 +1056,31 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* Pagination */}
+            {/* Infinite Scroll Loading Indicator */}
             {!loading && filteredCustomers.length > 0 && (
-              <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                <div className="text-sm text-slate-600">
-                  Showing {((currentPage - 1) * customersPerPage) + 1} - {Math.min(currentPage * customersPerPage, totalCount)} of {totalCount} customers
+              <div className="mt-6 pt-4 border-t">
+                <div className="text-sm text-slate-600 text-center mb-4">
+                  Showing {filteredCustomers.length} of {totalCount} customers
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    data-testid="prev-page-btn"
-                  >
-                    Previous
-                  </Button>
-                  <div className="flex items-center gap-2 px-3">
-                    <span className="text-sm">Page {currentPage} of {Math.ceil(totalCount / customersPerPage)}</span>
+                
+                {isLoadingMore && (
+                  <div className="flex items-center justify-center py-4">
+                    <RefreshCw className="h-6 w-6 animate-spin text-indigo-600 mr-2" />
+                    <span className="text-slate-600">Loading more customers...</span>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(p => p + 1)}
-                    disabled={currentPage >= Math.ceil(totalCount / customersPerPage)}
-                    data-testid="next-page-btn"
-                  >
-                    Next
-                  </Button>
-                </div>
+                )}
+                
+                {!hasMore && filteredCustomers.length > 0 && (
+                  <div className="text-center py-4 text-slate-500">
+                    <span>✓ All customers loaded</span>
+                  </div>
+                )}
+                
+                {hasMore && !isLoadingMore && (
+                  <div className="text-center py-4 text-slate-400 text-sm">
+                    Scroll down to load more...
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
