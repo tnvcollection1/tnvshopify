@@ -69,8 +69,18 @@ const Dashboard = () => {
     fetchStores();
     fetchShoeSizes();
     fetchCountries();
+    fetchAgents();
     fetchCustomers();
   }, []);
+  
+  const fetchAgents = async () => {
+    try {
+      const response = await axios.get(`${API}/agents`);
+      setAgents(response.data);
+    } catch (error) {
+      console.error("Fetch agents error:", error);
+    }
+  };
 
   useEffect(() => {
     const updateStoreData = async () => {
