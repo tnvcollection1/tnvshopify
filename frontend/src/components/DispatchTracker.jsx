@@ -92,13 +92,15 @@ const DispatchTracker = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (filters.fulfillment !== "all") params.append("fulfillment_status", filters.fulfillment);
+      // ONLY show fulfilled orders in Dispatch Tracker
+      params.append("fulfillment_status", "fulfilled");
+      
       if (filters.delivery !== "all") params.append("delivery_status", filters.delivery);
       if (filters.payment !== "all") params.append("payment_status", filters.payment);
       if (filters.store !== "all") params.append("store_name", filters.store);
       if (searchQuery) params.append("search", searchQuery);
       params.append("page", currentPage);
-      params.append("limit", "50");
+      params.append("limit", "100");
 
       const response = await axios.get(`${API}/customers?${params.toString()}`);
       const allOrders = Array.isArray(response.data) ? response.data : response.data.customers || [];
