@@ -439,31 +439,63 @@ async def sync_shopify_orders(store_name: str, days_back: int = 30):
 
 
 @api_router.post("/tcs/configure")
-async def configure_tcs_credentials(username: str, password: str):
+async def configure_tcs_credentials(
+    bearer_token: Optional[str] = None,
+    token_expiry: Optional[str] = None,
+    username: Optional[str] = None,
+    password: Optional[str] = None
+):
     """
     Configure TCS Pakistan API credentials
+    Supports both Bearer Token (preferred) and Username/Password
     """
     try:
-        # Test authentication
-        tracker = TCSTracker(username, password)
-        if not tracker.authenticate():
-            raise HTTPException(status_code=400, detail="Invalid TCS credentials")
-        
-        # Store credentials in database (encrypted in production)
-        await db.tcs_config.update_one(
-            {"service": "tcs_pakistan"},
-            {"$set": {
-                "username": username,
-                "password": password,
-                "updated_at": datetime.now(timezone.utc).isoformat()
-            }},
-            upsert=True
-        )
-        
-        return {
-            "success": True,
-            "message": "TCS credentials configured successfully"
-        }
+        if bearer_token:
+            # Bearer token authentication (preferred)
+            tracker = TCSTracker(bearer_token=bearer_token, token_expiry=token_expiry)
+            
+            # Store token in database
+            await db.tcs_config.update_one(
+                {"service": "tcs_pakistan"},
+                {"$set": {
+                    "bearer_token": bearer_token,
+                    "token_expiry": token_expiry,
+                    "auth_type": "bearer",
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }},
+                upsert=True
+            )
+            
+            return {
+                "success": True,
+                "message": "TCS bearer token configured successfully",
+                "token_expiry": token_expiry
+            }
+        elif username and password:
+            # Username/Password authentication
+            tracker = TCSTracker(username=username, password=password)
+            if not tracker.authenticate():
+                raise HTTPException(status_code=400, detail="Invalid TCS credentials")
+            
+            # Store credentials
+            await db.tcs_config.update_one(
+                {"service": "tcs_pakistan"},
+                {"$set": {
+                    "username": username,
+                    "password": password,
+                    "auth_type": "credentials",
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }},
+                upsert=True
+            )
+            
+            return {
+                "success": True,
+                "message": "TCS credentials configured successfully"
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Please provide either bearer_token or username+password")
+            
     except Exception as e:
         logger.error(f"Error configuring TCS: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
