@@ -1266,55 +1266,6 @@ async def manual_stock_deduction(
         logger.error(f"Error getting COD payment status: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-        
-        # Track all consignments
-        if config.get('auth_type') == 'bearer':
-            tracker = TCSTracker(
-                bearer_token=config.get('bearer_token'),
-                token_expiry=config.get('token_expiry')
-            )
-        else:
-            tracker = TCSTracker(
-                username=config.get('username'),
-                password=config.get('password')
-            )
-        tracking_numbers = [c['tracking_number'] for c in customers]
-        
-        logger.info(f"Tracking {len(tracking_numbers)} TCS consignments...")
-        
-        updated_count = 0
-        delivered_count = 0
-        
-        for tracking_number in tracking_numbers:
-            tracking_data = tracker.track_consignment(tracking_number)
-            
-            if tracking_data and tracking_data.get('normalized_status') != 'NOT_FOUND':
-                result = await db.customers.update_many(
-                    {"tracking_number": tracking_number},
-                    {"$set": {
-                        "delivery_status": tracking_data.get('normalized_status'),
-                        "delivery_location": tracking_data.get('current_location'),
-                        "delivery_updated_at": datetime.now(timezone.utc).isoformat()
-                    }}
-                )
-                
-                updated_count += result.modified_count
-                
-                if tracking_data.get('is_delivered'):
-                    delivered_count += 1
-        
-        return {
-            "success": True,
-            "message": f"Updated {updated_count} customers",
-            "tracked_count": len(tracking_numbers),
-            "updated_count": updated_count,
-            "delivered_count": delivered_count
-        }
-        
-    except Exception as e:
-        logger.error(f"Error syncing TCS deliveries: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 
 @api_router.post("/upload-csv")
 async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store", shop_url: str = ""):
