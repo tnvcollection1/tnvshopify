@@ -231,6 +231,9 @@ const Dashboard = () => {
       if (messagedFilter && messagedFilter !== "all") {
         url += `messaged=${messagedFilter}&`;
       }
+      if (selectedCountry && selectedCountry !== "all") {
+        url += `country_code=${selectedCountry}&`;
+      }
       
       // Build URL for count
       let countUrl = `${API}/customers/count?`;
@@ -242,6 +245,9 @@ const Dashboard = () => {
       }
       if (messagedFilter && messagedFilter !== "all") {
         countUrl += `messaged=${messagedFilter}&`;
+      }
+      if (selectedCountry && selectedCountry !== "all") {
+        countUrl += `country_code=${selectedCountry}&`;
       }
       
       // Fetch both in parallel
