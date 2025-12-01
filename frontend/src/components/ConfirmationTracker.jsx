@@ -71,8 +71,15 @@ const ConfirmationTracker = () => {
   const [editDialog, setEditDialog] = useState(false);
 
   useEffect(() => {
-    fetchOrders();
     fetchStores();
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, searchQuery]);
+
+  useEffect(() => {
+    fetchOrders();
   }, [currentPage, filters, searchQuery]);
 
   const fetchStores = async () => {
