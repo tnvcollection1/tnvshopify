@@ -222,6 +222,13 @@ const Dashboard = () => {
     fetchCustomers(selectedSize, 1, false);
   }, [deliveryFilter]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedCustomers([]);
+    setHasMore(true);
+    fetchCustomers(selectedSize, 1, false);
+  }, [paymentFilter]);
+
   const syncShopifyData = async () => {
     setSyncing(true);
     try {
