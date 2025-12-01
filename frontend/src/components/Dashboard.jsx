@@ -884,6 +884,7 @@ const Dashboard = () => {
                       <TableHead>Orders</TableHead>
                       <TableHead>Last Order</TableHead>
                       <TableHead>Store</TableHead>
+                      <TableHead>Stock</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Agent</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
