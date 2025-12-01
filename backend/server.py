@@ -1525,6 +1525,16 @@ async def update_customer_order(customer_id: str, update_data: dict):
         if "tcs_charges" in update_data:
             update_fields["tcs_charges"] = float(update_data["tcs_charges"])
         
+        # Confirmation tracker fields
+        if "confirmation_status" in update_data:
+            update_fields["confirmation_status"] = update_data["confirmation_status"]
+        
+        if "dubai_tracking_number" in update_data:
+            update_fields["dubai_tracking_number"] = update_data["dubai_tracking_number"]
+        
+        if "confirmation_notes" in update_data:
+            update_fields["confirmation_notes"] = update_data["confirmation_notes"]
+        
         # Calculate profit
         retail = update_fields.get("retail_amount", customer.get("retail_amount", customer.get("total_spent", 0)))
         cost = update_fields.get("cost", customer.get("cost", 0))
