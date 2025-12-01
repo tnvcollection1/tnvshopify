@@ -212,7 +212,8 @@ async def get_customers(
 @api_router.get("/customers/count")
 async def get_customers_count(
     shoe_size: Optional[str] = None,
-    store_name: Optional[str] = None
+    store_name: Optional[str] = None,
+    messaged: Optional[str] = None
 ):
     """
     Get total count of customers matching filters
@@ -222,6 +223,10 @@ async def get_customers_count(
         query['shoe_sizes'] = shoe_size
     if store_name and store_name != "all":
         query['store_name'] = store_name
+    if messaged == "yes":
+        query['messaged'] = True
+    elif messaged == "no":
+        query['messaged'] = {"$ne": True}
     
     count = await db.customers.count_documents(query)
     return {"total": count}
