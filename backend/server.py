@@ -775,62 +775,7 @@ class TCSConfigRequest(BaseModel):
     username: Optional[str] = None
     password: Optional[str] = None
 
-@api_router.post("/tcs/configure")
-async def configure_tcs_credentials(config: TCSConfigRequest):
-    """
-    Configure TCS Pakistan API credentials
-    Supports both Bearer Token (preferred) and Username/Password
-    """
-    try:
-        if config.bearer_token:
-            # Bearer token authentication (preferred)
-            tracker = TCSTracker(bearer_token=config.bearer_token, token_expiry=config.token_expiry)
-            
-            # Store token in database
-            await db.tcs_config.update_one(
-                {"service": "tcs_pakistan"},
-                {"$set": {
-                    "bearer_token": config.bearer_token,
-                    "token_expiry": config.token_expiry,
-                    "auth_type": "bearer",
-                    "updated_at": datetime.now(timezone.utc).isoformat()
-                }},
-                upsert=True
-            )
-            
-            return {
-                "success": True,
-                "message": "TCS bearer token configured successfully",
-                "token_expiry": config.token_expiry
-            }
-        elif config.username and config.password:
-            # Username/Password authentication
-            tracker = TCSTracker(username=config.username, password=config.password)
-            if not tracker.authenticate():
-                raise HTTPException(status_code=400, detail="Invalid TCS credentials")
-            
-            # Store credentials
-            await db.tcs_config.update_one(
-                {"service": "tcs_pakistan"},
-                {"$set": {
-                    "username": config.username,
-                    "password": config.password,
-                    "auth_type": "credentials",
-                    "updated_at": datetime.now(timezone.utc).isoformat()
-                }},
-                upsert=True
-            )
-            
-            return {
-                "success": True,
-                "message": "TCS credentials configured successfully"
-            }
-        else:
-            raise HTTPException(status_code=400, detail="Please provide either bearer_token or username+password")
-            
-    except Exception as e:
-        logger.error(f"Error configuring TCS: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+# Old TCS configure endpoint removed - replaced with improved version below
 
 @api_router.get("/tcs/credentials")
 async def get_tcs_credentials():
