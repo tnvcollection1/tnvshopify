@@ -1931,7 +1931,8 @@ async def get_customers(
     if purchase_status and purchase_status != "all":
         query['purchase_status'] = purchase_status
     if china_tracking == "true":
-        query['china_tracking_number'] = {"$exists": True, "$ne": None}
+        # Check for tracking numbers starting with 'X' (China orders)
+        query['tracking_number'] = {"$regex": "^X", "$options": "i"}
     
     # Search across multiple fields
     if search:
