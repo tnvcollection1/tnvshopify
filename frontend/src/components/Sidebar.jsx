@@ -7,7 +7,9 @@ import {
   BarChart3, 
   Settings,
   LogOut,
-  TrendingUp
+  TrendingUp,
+  Truck,
+  ClipboardList
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,6 +22,7 @@ const Sidebar = () => {
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
     { icon: Users, label: 'Customers', path: '/customers' },
+    { icon: ClipboardList, label: 'Dispatch Tracker', path: '/tracker' },
     { icon: ShoppingCart, label: 'Orders', path: '/orders' },
     { icon: Package, label: 'Inventory', path: '/inventory' },
     { icon: BarChart3, label: 'Reports', path: '/reports' },
