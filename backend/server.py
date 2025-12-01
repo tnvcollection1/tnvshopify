@@ -1973,9 +1973,16 @@ async def get_customers(
     # If filtering by stock, we need to fetch more to account for filtering
     fetch_limit = limit * 10 if stock_availability else limit
     
-    # Get customers with pagination - SORT BY MOST RECENT ORDERS FIRST
-    # This ensures Shopify synced customers with order_number appear first
-    customers = await db.customers.find(query, {"_id": 0}).sort("last_order_date", -1).skip(skip).limit(fetch_limit).to_list(fetch_limit)
+    # Determine sort order
+    sort_field = "last_order_date"
+    sort_direction = -1  # Default: newest first
+    if sort_by == "date_asc":
+        sort_direction = 1  # Oldest first
+    elif sort_by == "date_desc":
+        sort_direction = -1  # Newest first
+    
+    # Get customers with pagination and sorting
+    customers = await db.customers.find(query, {"_id": 0}).sort(sort_field, sort_direction).skip(skip).limit(fetch_limit).to_list(fetch_limit)
     
     # If filtering by stock availability or if we want to show stock status, calculate it
     if stock_availability or store_name:
