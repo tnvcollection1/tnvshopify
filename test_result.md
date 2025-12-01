@@ -132,15 +132,18 @@ backend:
 
   - task: "Track which agent messages each customer"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Backend /api/customers/{id}/mark-messaged accepts optional agent_username parameter. Stores in messaged_by field and updates last_messaged_at timestamp."
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Agent tracking working perfectly. POST /api/customers/{customer_id}/mark-messaged?agent_username=admin successfully updates customer's messaged_by field to 'admin' and sets last_messaged_at timestamp. Verified customer Kritika Dhawan now shows messaged_by='admin' with message_count=3."
 
   - task: "Agent reporting endpoint"
     implemented: true
