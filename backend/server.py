@@ -376,11 +376,12 @@ async def get_customers(
     messaged: Optional[str] = None,
     country_code: Optional[str] = None,
     agent_username: Optional[str] = None,
+    stock_availability: Optional[str] = None,  # "in_stock", "out_of_stock", "partial"
     page: int = 1,
     limit: int = 100
 ):
     """
-    Get customers with pagination, filtered by size, store, messaged status, country, and agent
+    Get customers with pagination, filtered by size, store, messaged status, country, agent, and stock availability
     """
     query = {}
     if shoe_size and shoe_size != "all":
@@ -401,6 +402,41 @@ async def get_customers(
     
     # Get customers with pagination
     customers = await db.customers.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
+    
+    # If filtering by stock availability or if we want to show stock status, calculate it
+    if stock_availability or store_name:
+        # Get stock for the store
+        stock_store = store_name if store_name and store_name != "all" else None
+        if stock_store:
+            stock_items = await db.stock.find({"store_name": stock_store}, {"_id": 0, "sku": 1}).to_list(10000)
+            stock_skus = set(item["sku"].upper() for item in stock_items)
+            
+            # Calculate stock status for each customer
+            filtered_customers = []
+            for customer in customers:
+                order_skus = [sku.upper() for sku in customer.get('order_skus', [])]
+                
+                if not order_skus:
+                    customer['stock_status'] = "unknown"
+                else:
+                    in_stock = sum(1 for sku in order_skus if sku in stock_skus)
+                    
+                    if in_stock == len(order_skus):
+                        customer['stock_status'] = "in_stock"
+                    elif in_stock == 0:
+                        customer['stock_status'] = "out_of_stock"
+                    else:
+                        customer['stock_status'] = "partial"
+                
+                # Filter by stock availability if specified
+                if stock_availability:
+                    if customer['stock_status'] == stock_availability:
+                        filtered_customers.append(customer)
+                else:
+                    filtered_customers.append(customer)
+            
+            return filtered_customers
+    
     return customers
 
 
