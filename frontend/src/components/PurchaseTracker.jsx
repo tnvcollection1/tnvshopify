@@ -85,8 +85,8 @@ const PurchaseTracker = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // Show ALL orders (fulfilled and unfulfilled) with tracking numbers starting with X
-      params.append("china_tracking", "true");
+      // Show orders that have purchase_status set (orders being tracked for purchasing)
+      // Don't filter by tracking number - those go to Dispatch Tracker
       
       if (filters.purchase_status !== "all") params.append("purchase_status", filters.purchase_status);
       if (filters.store !== "all") params.append("store_name", filters.store);
@@ -103,19 +103,22 @@ const PurchaseTracker = () => {
       const allOrders = Array.isArray(ordersResponse.data) ? ordersResponse.data : ordersResponse.data.customers || [];
       const total = countResponse.data.total || 0;
       
-      setOrders(allOrders);
+      // Filter only orders with purchase_status (orders being tracked for purchasing)
+      const purchaseOrders = allOrders.filter(o => o.purchase_status);
+      
+      setOrders(purchaseOrders);
       
       // Calculate stats - use actual total from database
       setStats({
-        total: total,
-        ordered: allOrders.filter(c => c.purchase_status === "ORDERED").length,
-        shipped: allOrders.filter(c => c.purchase_status === "SHIPPED").length,
-        inTransit: allOrders.filter(c => c.purchase_status === "IN_TRANSIT").length,
-        arrived: allOrders.filter(c => c.purchase_status === "ARRIVED_PAKISTAN").length,
-        delivered: allOrders.filter(c => c.purchase_status === "DELIVERED_WAREHOUSE").length,
+        total: purchaseOrders.length,
+        ordered: purchaseOrders.filter(c => c.purchase_status === "ORDERED").length,
+        shipped: purchaseOrders.filter(c => c.purchase_status === "SHIPPED").length,
+        inTransit: purchaseOrders.filter(c => c.purchase_status === "IN_TRANSIT").length,
+        arrived: purchaseOrders.filter(c => c.purchase_status === "ARRIVED_PAKISTAN").length,
+        delivered: purchaseOrders.filter(c => c.purchase_status === "DELIVERED_WAREHOUSE").length,
       });
       
-      setTotalPages(Math.ceil(total / 100));
+      setTotalPages(Math.ceil(purchaseOrders.length / 100));
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
