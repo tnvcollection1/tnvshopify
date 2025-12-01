@@ -256,6 +256,40 @@ class AutoSyncScheduler:
                         "last_order_date": order_data['order_date'],
                         "total_spent": order_data['total_price'],
                         "fulfillment_status": order_data['fulfillment_status'],
+
+    
+    def sync_cod_payments(self):
+        """
+        Sync TCS COD payment status for all orders
+        Runs in separate thread, calls API endpoint
+        """
+        try:
+            logger.info("🔄 [AUTO] Starting TCS COD payment sync...")
+            
+            import requests
+            
+            # Call the COD payment sync endpoint via HTTP
+            try:
+                response = requests.post(
+                    "http://localhost:8001/api/tcs/sync-cod-payments",
+                    timeout=300  # 5 minutes timeout
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('success'):
+                        logger.info(f"✅ [AUTO] COD payment sync completed: {data.get('updated', 0)} payments updated")
+                    else:
+                        logger.error(f"❌ [AUTO] COD payment sync failed: {data.get('message', 'Unknown error')}")
+                else:
+                    logger.error(f"❌ [AUTO] COD payment sync HTTP error: {response.status_code}")
+            except requests.exceptions.Timeout:
+                logger.warning("⚠️ [AUTO] COD payment sync timeout (still running in background)")
+            except Exception as req_error:
+                logger.error(f"❌ [AUTO] COD payment sync request error: {str(req_error)}")
+                
+        except Exception as e:
+            logger.error(f"❌ [AUTO] COD payment sync error: {str(e)}")
+
                         "payment_status": order_data.get('payment_status'),
                         "payment_method": order_data.get('payment_method'),
                         "tracking_number": order_data['tracking_info']['tracking_number'] if order_data['tracking_info'] else None,
