@@ -241,19 +241,25 @@ class TCSTracker:
             tcs_status: Raw TCS status string
             
         Returns:
-            Normalized status: DELIVERED, OUT_FOR_DELIVERY, IN_TRANSIT, PENDING, UNKNOWN
+            Normalized status: DELIVERED, OUT_FOR_DELIVERY, IN_TRANSIT, RETURN_IN_PROCESS, RETURNED, PENDING, UNKNOWN
         """
         status_upper = tcs_status.upper()
         
-        if 'DELIVERED' in status_upper:
+        # Return statuses (check first as they contain "DELIVERED" keyword)
+        if 'RETURN DELIVERED' in status_upper or 'RETURNED TO ORIGIN' in status_upper or 'RTO DELIVERED' in status_upper:
+            return 'RETURNED'
+        elif 'RETURN TO ORIGIN' in status_upper or 'RETURN IN PROCESS' in status_upper or 'RTO' in status_upper or 'RETURN' in status_upper:
+            return 'RETURN_IN_PROCESS'
+        # Normal delivery statuses
+        elif 'DELIVERED' in status_upper:
             return 'DELIVERED'
         elif 'OUT FOR DELIVERY' in status_upper:
             return 'OUT_FOR_DELIVERY'
-        elif 'ARRIVED' in status_upper or 'FACILITY' in status_upper:
+        elif 'IN TRANSIT' in status_upper or 'ARRIVED' in status_upper or 'FACILITY' in status_upper or 'ON THE WAY' in status_upper:
             return 'IN_TRANSIT'
         elif 'AWAITING' in status_upper or 'COLLECTION' in status_upper:
             return 'AWAITING_COLLECTION'
-        elif 'BOOKED' in status_upper or 'RECEIVED' in status_upper:
+        elif 'BOOKED' in status_upper or 'RECEIVED' in status_upper or 'PICKED' in status_upper:
             return 'PENDING'
         else:
             return 'UNKNOWN'
