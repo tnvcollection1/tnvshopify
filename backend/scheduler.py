@@ -304,12 +304,6 @@ class AutoSyncScheduler:
                 
         except Exception as e:
             logger.error(f"❌ [AUTO] COD payment sync error: {str(e)}")
-                    
-            except Exception as e:
-                logger.error(f"Error processing order {order_data.get('order_number')}: {str(e)}")
-                continue
-        
-        return customers_updated
     
     def sync_tcs_deliveries(self):
         """
