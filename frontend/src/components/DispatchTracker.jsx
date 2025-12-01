@@ -101,21 +101,21 @@ const DispatchTracker = () => {
       params.append("limit", "50");
 
       const response = await axios.get(`${API}/customers?${params.toString()}`);
-      setOrders(response.data.customers || []);
+      const allOrders = Array.isArray(response.data) ? response.data : response.data.customers || [];
+      setOrders(allOrders);
       
       // Calculate stats
-      const allOrders = response.data.customers || [];
       setStats({
-        total: response.data.total_count || 0,
+        total: allOrders.length,
         delivered: allOrders.filter(c => c.delivery_status === "DELIVERED").length,
         inTransit: allOrders.filter(c => c.delivery_status === "IN_TRANSIT" || c.delivery_status === "OUT_FOR_DELIVERY").length,
         pending: allOrders.filter(c => !c.delivery_status || c.delivery_status === "PENDING").length,
         returned: allOrders.filter(c => c.delivery_status === "RETURNED").length,
-        paymentReceived: allOrders.filter(c => c.cod_payment_status === "RECEIVED").length,
-        paymentPending: allOrders.filter(c => c.cod_payment_status === "PENDING" || !c.cod_payment_status).length,
+        paymentReceived: allOrders.filter(c => c.cod_payment_status === "RECEIVED" || c.payment_status === "paid").length,
+        paymentPending: allOrders.filter(c => (c.cod_payment_status !== "RECEIVED" && c.payment_status !== "paid") || (!c.cod_payment_status && !c.payment_status)).length,
       });
       
-      setTotalPages(Math.ceil((response.data.total_count || 0) / 50));
+      setTotalPages(Math.ceil(allOrders.length / 50));
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
