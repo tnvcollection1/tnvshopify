@@ -121,11 +121,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
           comment: "Endpoint /api/agents/login exists with SHA256 password hashing. Default admin/admin123 credentials work. Returns agent object with id, username, full_name, role."
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Agent login working perfectly. POST /api/agents/login with admin/admin123 returns success:true and agent object with username='admin', full_name='Administrator', role='admin'. Response structure correct."
 
   - task: "Track which agent messages each customer"
     implemented: true
