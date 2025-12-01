@@ -356,7 +356,7 @@ class AutoSyncScheduler:
                     {"delivery_status": {"$ne": "DELIVERED"}},
                     {"delivery_status": {"$exists": False}}
                 ]
-            }, {"_id": 0, "tracking_number": 1, "customer_id": 1, "store_name": 1}).to_list(500)
+            }, {"_id": 0, "tracking_number": 1, "customer_id": 1, "store_name": 1, "delivery_status": 1, "order_skus": 1, "order_number": 1, "stock_deducted": 1}).to_list(500)
             
             if not customers:
                 return {"success": True, "updated": 0, "message": "No tracking numbers to update"}
