@@ -692,6 +692,7 @@ const Dashboard = () => {
                       <TableHead>Phone / Email</TableHead>
                       <TableHead>Sizes</TableHead>
                       <TableHead>Orders</TableHead>
+                      <TableHead>Last Order</TableHead>
                       <TableHead>Store</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
