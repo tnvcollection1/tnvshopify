@@ -1878,12 +1878,13 @@ async def get_customers(
     fulfillment_status: Optional[str] = None,  # "fulfilled", "unfulfilled", "partially_fulfilled"
     delivery_status: Optional[str] = None,  # "DELIVERED", "IN_TRANSIT", "OUT_FOR_DELIVERY", etc.
     payment_status: Optional[str] = None,  # "paid", "pending", "refunded", "partially_refunded", "voided"
+    confirmation_status: Optional[str] = None,  # "PENDING", "PURCHASED", "NOT_PURCHASED", "CANCELED"
     search: Optional[str] = None,  # Search across multiple fields
     page: int = 1,
     limit: int = 100
 ):
     """
-    Get customers with pagination, filtered by size, store, messaged status, country, agent, stock availability, fulfillment, delivery, and payment status
+    Get customers with pagination, filtered by size, store, messaged status, country, agent, stock availability, fulfillment, delivery, payment status, and confirmation status
     """
     query = {}
     if shoe_size and shoe_size != "all":
@@ -1904,6 +1905,8 @@ async def get_customers(
         query['delivery_status'] = delivery_status
     if payment_status and payment_status != "all":
         query['payment_status'] = payment_status
+    if confirmation_status and confirmation_status != "all":
+        query['confirmation_status'] = confirmation_status
     
     # Search across multiple fields
     if search:
