@@ -66,8 +66,13 @@ const Dashboard = () => {
       setCurrentPage(1);
       setSelectedSize("all");
       setSelectedCustomers([]);
-      await fetchShoeSizes();
-      await fetchCustomers("all", 1);
+      setSelectedCountry("all");
+      setMessagedFilter("all");
+      await Promise.all([
+        fetchShoeSizes(),
+        fetchCountries(),
+        fetchCustomers("all", 1)
+      ]);
     };
     updateStoreData();
   }, [selectedStore]);
