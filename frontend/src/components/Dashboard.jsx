@@ -1123,6 +1123,7 @@ const Dashboard = () => {
                       <TableHead>Store</TableHead>
                       <TableHead>Stock</TableHead>
                       <TableHead>Fulfillment</TableHead>
+                      <TableHead>Payment</TableHead>
                       <TableHead>Tracking</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Agent</TableHead>
