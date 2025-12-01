@@ -341,15 +341,15 @@ async def sync_shopify_orders(store_name: str, days_back: int = 30, full_sync: b
         sync = ShopifyOrderSync(store['shopify_domain'], store['shopify_token'])
         
         if full_sync:
-            # Sync all orders (no date filter)
+            # Sync all orders (no date filter, with pagination)
             created_after = None
-            logger.info(f"Starting FULL sync for {store_name} - fetching ALL orders")
+            logger.info(f"Starting FULL sync for {store_name} - fetching ALL orders with pagination")
+            orders = sync.fetch_orders(limit=250, status="any", created_after=created_after, fetch_all=True)
         else:
             # Fetch orders from last X days
             created_after = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
             logger.info(f"Syncing {store_name} orders from last {days_back} days")
-        
-        orders = sync.fetch_orders(limit=250, status="any", created_after=created_after)
+            orders = sync.fetch_orders(limit=250, status="any", created_after=created_after, fetch_all=False)
         
         if not orders:
             return {
