@@ -979,6 +979,20 @@ const Dashboard = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Cart Status</label>
+                <Select value={messagedFilter} onValueChange={setMessagedFilter}>
+                  <SelectTrigger className="w-full" data-testid="cart-status-filter">
+                    <SelectValue placeholder="Select cart status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Customers</SelectItem>
+                    <SelectItem value="abandoned">🛒 Abandoned Checkouts</SelectItem>
+                    <SelectItem value="completed">✅ Completed Orders</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
