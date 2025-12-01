@@ -577,7 +577,16 @@ async def sync_all_tcs_deliveries():
             }
         
         # Track all consignments
-        tracker = TCSTracker(config['username'], config['password'])
+        if config.get('auth_type') == 'bearer':
+            tracker = TCSTracker(
+                bearer_token=config.get('bearer_token'),
+                token_expiry=config.get('token_expiry')
+            )
+        else:
+            tracker = TCSTracker(
+                username=config.get('username'),
+                password=config.get('password')
+            )
         tracking_numbers = [c['tracking_number'] for c in customers]
         
         logger.info(f"Tracking {len(tracking_numbers)} TCS consignments...")
