@@ -701,7 +701,7 @@ const Dashboard = () => {
                       />
                       <label 
                         htmlFor={`stock-upload-${store.id}`}
-                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white cursor-pointer"
+                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white cursor-pointer mb-2"
                         data-testid={`upload-stock-${store.id}`}
                       >
                         <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -709,6 +709,28 @@ const Dashboard = () => {
                         </svg>
                         Upload Stock Excel
                       </label>
+                      
+                      {/* Shopify Sync for tnvcollectionpk */}
+                      {store.store_name === 'tnvcollectionpk' && (
+                        <Button
+                          onClick={() => handleShopifySync(store.store_name)}
+                          disabled={syncing}
+                          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                          data-testid={`shopify-sync-${store.id}`}
+                        >
+                          {syncing ? (
+                            <>
+                              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                              Syncing...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Sync Shopify Orders
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
