@@ -272,3 +272,134 @@ class TCSTracker:
             return 'PENDING'
         else:
             return 'UNKNOWN'
+    
+    def get_payment_status(self, customer_no: str, consignment_no: str) -> Optional[Dict]:
+        """
+        Get COD payment status for a specific consignment
+        
+        Args:
+            customer_no: TCS customer account number
+            consignment_no: TCS consignment/tracking number
+            
+        Returns:
+            Payment status data or None if failed
+        """
+        if not self.ensure_authenticated():
+            logger.error("Cannot get payment status: Authentication failed")
+            return None
+        
+        try:
+            # According to documentation, Payment Status API endpoint
+            payment_url = self.auth_url.replace('/ecom/api/authentication/token', '/ecom/api/payment/status')
+            
+            payload = {
+                "customerno": customer_no,
+                "consignmentno": consignment_no
+            }
+            
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.post(payment_url, json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                return self._parse_payment_response(data, consignment_no)
+            else:
+                logger.error(f"TCS payment status API error: {response.status_code} - {response.text}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"TCS payment status error for {consignment_no}: {str(e)}")
+            return None
+    
+    def get_payment_details(self, customer_no: str, from_date: str, to_date: str) -> Optional[List[Dict]]:
+        """
+        Get detailed COD payment information for a date range
+        
+        Args:
+            customer_no: TCS customer account number
+            from_date: Start date (format: YYYY-MM-DD or timestamp)
+            to_date: End date (format: YYYY-MM-DD or timestamp)
+            
+        Returns:
+            List of payment detail records or None if failed
+        """
+        if not self.ensure_authenticated():
+            logger.error("Cannot get payment details: Authentication failed")
+            return None
+        
+        try:
+            # According to documentation, Payment Detail API endpoint
+            payment_url = self.auth_url.replace('/ecom/api/authentication/token', '/ecom/api/payment/detail')
+            
+            payload = {
+                "accesstoken": self.access_token,
+                "customerno": customer_no,
+                "fromdate": from_date,
+                "todate": to_date
+            }
+            
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.post(payment_url, json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('message') == 'SUCCESS':
+                    return data.get('detail', [])
+                else:
+                    logger.warning(f"TCS payment details failed: {data.get('message')}")
+                    return []
+            else:
+                logger.error(f"TCS payment detail API error: {response.status_code} - {response.text}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"TCS payment details error: {str(e)}")
+            return None
+    
+    def _parse_payment_response(self, data: Dict, consignment_no: str) -> Dict:
+        """
+        Parse TCS payment status response
+        
+        Args:
+            data: Raw TCS payment API response
+            consignment_no: Consignment number
+            
+        Returns:
+            Parsed payment data
+        """
+        # Parse based on documentation structure
+        payment_info = {
+            'consignment_no': consignment_no,
+            'payment_status': 'UNKNOWN',
+            'cod_amount': 0,
+            'paid_amount': 0,
+            'balance': 0,
+            'payment_date': None,
+            'raw_data': data
+        }
+        
+        # Extract payment information from response
+        if data.get('message') == 'SUCCESS':
+            detail = data.get('detail', {})
+            payment_info['cod_amount'] = detail.get('codamount', 0)
+            payment_info['paid_amount'] = detail.get('paidamount', 0)
+            payment_info['balance'] = detail.get('balance', 0)
+            payment_info['payment_date'] = detail.get('paymentdate')
+            
+            # Determine payment status
+            if payment_info['balance'] <= 0:
+                payment_info['payment_status'] = 'PAID'
+            elif payment_info['paid_amount'] > 0:
+                payment_info['payment_status'] = 'PARTIAL'
+            else:
+                payment_info['payment_status'] = 'PENDING'
+        
+        return payment_info
