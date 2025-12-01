@@ -1034,6 +1034,7 @@ const Dashboard = () => {
                       <TableHead>Phone / Email</TableHead>
                       <TableHead>Sizes</TableHead>
                       <TableHead>Orders</TableHead>
+                      <TableHead>Order #</TableHead>
                       <TableHead>Last Order</TableHead>
                       <TableHead>Store</TableHead>
                       <TableHead>Stock</TableHead>
