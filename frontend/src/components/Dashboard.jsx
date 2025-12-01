@@ -45,6 +45,7 @@ const Dashboard = () => {
   const [messagedFilter, setMessagedFilter] = useState("all");
   const [sendingMessages, setSendingMessages] = useState(false);
   const [messageQueue, setMessageQueue] = useState([]);
+  const [selectedCustomers, setSelectedCustomers] = useState([]);
   const [stats, setStats] = useState({
     totalCustomers: 0,
     uniqueSizes: 0,
