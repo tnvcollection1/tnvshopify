@@ -91,6 +91,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/purchase" 
+        element={
+          <ProtectedRoute>
+            <PurchaseTracker />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory" 
         element={
           <ProtectedRoute>
