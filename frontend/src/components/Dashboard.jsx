@@ -214,7 +214,10 @@ const Dashboard = () => {
         url += `shoe_size=${size}&`;
       }
       if (selectedStore && selectedStore !== "all") {
-        url += `store_name=${selectedStore}`;
+        url += `store_name=${selectedStore}&`;
+      }
+      if (messagedFilter && messagedFilter !== "all") {
+        url += `messaged=${messagedFilter}&`;
       }
       
       // Build URL for count
@@ -223,7 +226,10 @@ const Dashboard = () => {
         countUrl += `shoe_size=${size}&`;
       }
       if (selectedStore && selectedStore !== "all") {
-        countUrl += `store_name=${selectedStore}`;
+        countUrl += `store_name=${selectedStore}&`;
+      }
+      if (messagedFilter && messagedFilter !== "all") {
+        countUrl += `messaged=${messagedFilter}&`;
       }
       
       // Fetch both in parallel
