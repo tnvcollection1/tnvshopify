@@ -243,6 +243,20 @@ const Dashboard = () => {
     fetchCustomers(selectedSize, 1, false);
   }, [paymentFilter]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedCustomers([]);
+    setHasMore(true);
+    fetchCustomers(selectedSize, 1, false);
+  }, [yearFilter]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedCustomers([]);
+    setHasMore(true);
+    fetchCustomers(selectedSize, 1, false);
+  }, [sortBy]);
+
   const syncShopifyData = async () => {
     setSyncing(true);
     try {
