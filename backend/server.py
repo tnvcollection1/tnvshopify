@@ -1899,7 +1899,8 @@ async def get_customers(
     payment_status: Optional[str] = None,  # "paid", "pending", "refunded", "partially_refunded", "voided"
     confirmation_status: Optional[str] = None,  # "PENDING", "PURCHASED", "NOT_PURCHASED", "CANCELED"
     purchase_status: Optional[str] = None,  # "ORDERED", "SHIPPED", "IN_TRANSIT", "ARRIVED_PAKISTAN", "DELIVERED_WAREHOUSE"
-    china_tracking: Optional[str] = None,  # "true" to filter orders with China tracking numbers
+    china_tracking: Optional[str] = None,  # "true" to filter orders with China tracking numbers (X-prefix)
+    tcs_only: Optional[str] = None,  # "true" to exclude China tracking, show only TCS tracking
     search: Optional[str] = None,  # Search across multiple fields
     page: int = 1,
     limit: int = 100
