@@ -266,6 +266,170 @@ async def get_store_stock(store_name: str):
     }
 
 
+@api_router.post("/shopify/configure")
+async def configure_shopify_store(
+    store_name: str,
+    shopify_domain: str,
+    shopify_token: str
+):
+    """
+    Configure Shopify credentials for a store
+    """
+    try:
+        # Update store with Shopify credentials
+        result = await db.stores.update_one(
+            {"store_name": store_name},
+            {"$set": {
+                "shopify_domain": shopify_domain,
+                "shopify_token": shopify_token,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Store not found")
+        
+        # Test connection
+        sync = ShopifyOrderSync(shopify_domain, shopify_token)
+        shop_info = sync.get_shop_info()
+        
+        if not shop_info:
+            raise HTTPException(status_code=400, detail="Failed to connect to Shopify. Please check credentials.")
+        
+        return {
+            "success": True,
+            "message": f"Shopify configured for {store_name}",
+            "shop_info": shop_info
+        }
+    except Exception as e:
+        logger.error(f"Error configuring Shopify: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/shopify/sync/{store_name}")
+async def sync_shopify_orders(store_name: str, days_back: int = 30):
+    """
+    Manually sync orders from Shopify for a specific store
+    """
+    try:
+        # Get store credentials
+        store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
+        
+        if not store:
+            raise HTTPException(status_code=404, detail="Store not found")
+        
+        if not store.get('shopify_domain') or not store.get('shopify_token'):
+            raise HTTPException(status_code=400, detail="Shopify not configured for this store")
+        
+        # Fetch orders from Shopify
+        sync = ShopifyOrderSync(store['shopify_domain'], store['shopify_token'])
+        
+        # Fetch orders from last X days
+        created_after = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
+        orders = sync.fetch_orders(limit=250, status="any", created_after=created_after)
+        
+        if not orders:
+            return {
+                "success": True,
+                "message": "No new orders to sync",
+                "orders_synced": 0
+            }
+        
+        # Process and merge orders into customers
+        customers_updated = 0
+        customers_created = 0
+        
+        for order_data in orders:
+            customer_id = order_data['customer_id']
+            
+            # Check if customer exists
+            existing = await db.customers.find_one({"customer_id": customer_id, "store_name": store_name}, {"_id": 0})
+            
+            # Extract SKUs from line items
+            order_skus = [item['sku'].upper() for item in order_data['line_items'] if item['sku']]
+            
+            # Extract sizes from line item names
+            sizes = []
+            for item in order_data['line_items']:
+                # Try to extract size from product name
+                name = item['name']
+                if '/' in name:
+                    parts = name.split('/')
+                    size = parts[-1].strip() if len(parts) > 1 else 'Unknown'
+                    sizes.append(size)
+            
+            if existing:
+                # Merge with existing customer
+                existing_skus = set(existing.get('order_skus', []))
+                merged_skus = list(existing_skus.union(set(order_skus)))
+                
+                existing_sizes = set(existing.get('shoe_sizes', []))
+                merged_sizes = list(existing_sizes.union(set(sizes)))
+                
+                await db.customers.update_one(
+                    {"customer_id": customer_id, "store_name": store_name},
+                    {"$set": {
+                        "first_name": order_data['first_name'] or existing.get('first_name'),
+                        "last_name": order_data['last_name'] or existing.get('last_name'),
+                        "email": order_data['email'] or existing.get('email'),
+                        "phone": order_data['phone'] or existing.get('phone'),
+                        "country_code": order_data['country_code'] or existing.get('country_code'),
+                        "order_skus": merged_skus,
+                        "shoe_sizes": merged_sizes,
+                        "last_order_date": order_data['order_date'],
+                        "fulfillment_status": order_data['fulfillment_status'],
+                        "tracking_number": order_data['tracking_info']['tracking_number'] if order_data['tracking_info'] else None,
+                        "tracking_company": order_data['tracking_info']['tracking_company'] if order_data['tracking_info'] else 'TCS Pakistan',
+                        "tracking_url": order_data['tracking_info']['tracking_url'] if order_data['tracking_info'] else None,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                customers_updated += 1
+            else:
+                # Create new customer
+                new_customer = {
+                    "id": str(uuid.uuid4()),
+                    "customer_id": customer_id,
+                    "first_name": order_data['first_name'],
+                    "last_name": order_data['last_name'],
+                    "email": order_data['email'],
+                    "phone": order_data['phone'],
+                    "country_code": order_data['country_code'],
+                    "store_name": store_name,
+                    "order_skus": order_skus,
+                    "shoe_sizes": sizes if sizes else ['Unknown'],
+                    "order_count": 1,
+                    "last_order_date": order_data['order_date'],
+                    "total_spent": order_data['total_price'],
+                    "fulfillment_status": order_data['fulfillment_status'],
+                    "tracking_number": order_data['tracking_info']['tracking_number'] if order_data['tracking_info'] else None,
+                    "tracking_company": order_data['tracking_info']['tracking_company'] if order_data['tracking_info'] else 'TCS Pakistan',
+                    "tracking_url": order_data['tracking_info']['tracking_url'] if order_data['tracking_info'] else None,
+                    "messaged": False,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.customers.insert_one(new_customer)
+                customers_created += 1
+        
+        # Update last sync time
+        await db.stores.update_one(
+            {"store_name": store_name},
+            {"$set": {"last_synced_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {
+            "success": True,
+            "message": f"Synced {len(orders)} orders from Shopify",
+            "orders_synced": len(orders),
+            "customers_created": customers_created,
+            "customers_updated": customers_updated
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing Shopify orders: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/upload-csv")
 async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store", shop_url: str = ""):
     """
