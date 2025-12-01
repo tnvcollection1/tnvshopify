@@ -266,6 +266,9 @@ const Dashboard = () => {
       if (selectedCountry && selectedCountry !== "all") {
         url += `country_code=${selectedCountry}&`;
       }
+      if (selectedAgent && selectedAgent !== "all") {
+        url += `agent_username=${selectedAgent}&`;
+      }
       
       // Build URL for count
       let countUrl = `${API}/customers/count?`;
@@ -280,6 +283,9 @@ const Dashboard = () => {
       }
       if (selectedCountry && selectedCountry !== "all") {
         countUrl += `country_code=${selectedCountry}&`;
+      }
+      if (selectedAgent && selectedAgent !== "all") {
+        countUrl += `agent_username=${selectedAgent}&`;
       }
       
       // Fetch both in parallel
