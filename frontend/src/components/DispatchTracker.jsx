@@ -100,6 +100,8 @@ const DispatchTracker = () => {
       if (filters.delivery !== "all") params.append("delivery_status", filters.delivery);
       if (filters.payment !== "all") params.append("payment_status", filters.payment);
       if (filters.store !== "all") params.append("store_name", filters.store);
+      if (filters.year !== "all") params.append("year", filters.year);
+      if (filters.sortBy) params.append("sort_by", filters.sortBy);
       if (searchQuery) params.append("search", searchQuery);
       params.append("page", currentPage);
       params.append("limit", "100");
