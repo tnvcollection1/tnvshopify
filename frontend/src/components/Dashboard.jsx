@@ -453,10 +453,24 @@ const Dashboard = () => {
               </h1>
               <p className="text-slate-600 mt-1">Manage your shoe customers and WhatsApp messaging</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 rounded-lg">
+                <User className="h-4 w-4 text-slate-600" />
+                <span className="text-sm font-medium text-slate-700">{agent?.full_name}</span>
+                <Badge variant="secondary" className="text-xs">{agent?.role}</Badge>
+              </div>
               <Badge variant="outline" className="text-base px-3 py-1">
                 {stores.length} / 3 Stores
               </Badge>
+              <Button 
+                onClick={handleLogout}
+                variant="ghost"
+                size="sm"
+                className="text-slate-600 hover:text-red-600 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
             </div>
           </div>
         </div>
