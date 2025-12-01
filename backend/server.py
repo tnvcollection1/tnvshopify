@@ -451,16 +451,16 @@ async def configure_tcs_credentials(config: TCSConfigRequest):
     Supports both Bearer Token (preferred) and Username/Password
     """
     try:
-        if bearer_token:
+        if config.bearer_token:
             # Bearer token authentication (preferred)
-            tracker = TCSTracker(bearer_token=bearer_token, token_expiry=token_expiry)
+            tracker = TCSTracker(bearer_token=config.bearer_token, token_expiry=config.token_expiry)
             
             # Store token in database
             await db.tcs_config.update_one(
                 {"service": "tcs_pakistan"},
                 {"$set": {
-                    "bearer_token": bearer_token,
-                    "token_expiry": token_expiry,
+                    "bearer_token": config.bearer_token,
+                    "token_expiry": config.token_expiry,
                     "auth_type": "bearer",
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }},
@@ -470,11 +470,11 @@ async def configure_tcs_credentials(config: TCSConfigRequest):
             return {
                 "success": True,
                 "message": "TCS bearer token configured successfully",
-                "token_expiry": token_expiry
+                "token_expiry": config.token_expiry
             }
-        elif username and password:
+        elif config.username and config.password:
             # Username/Password authentication
-            tracker = TCSTracker(username=username, password=password)
+            tracker = TCSTracker(username=config.username, password=config.password)
             if not tracker.authenticate():
                 raise HTTPException(status_code=400, detail="Invalid TCS credentials")
             
@@ -482,8 +482,8 @@ async def configure_tcs_credentials(config: TCSConfigRequest):
             await db.tcs_config.update_one(
                 {"service": "tcs_pakistan"},
                 {"$set": {
-                    "username": username,
-                    "password": password,
+                    "username": config.username,
+                    "password": config.password,
                     "auth_type": "credentials",
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }},
