@@ -103,6 +103,86 @@ async def root():
     return {"message": "Customer Manager API"}
 
 
+@api_router.post("/agents/register")
+async def register_agent(agent: AgentCreate):
+    """
+    Register a new agent
+    """
+    try:
+        # Check if username exists
+        existing = await db.agents.find_one({"username": agent.username})
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already exists")
+        
+        # Create agent with hashed password (simple hash for demo)
+        import hashlib
+        hashed_password = hashlib.sha256(agent.password.encode()).hexdigest()
+        
+        agent_obj = Agent(
+            username=agent.username,
+            password=hashed_password,
+            full_name=agent.full_name
+        )
+        
+        doc = agent_obj.model_dump()
+        await db.agents.insert_one(doc)
+        
+        # Return without password
+        return {
+            "id": agent_obj.id,
+            "username": agent_obj.username,
+            "full_name": agent_obj.full_name,
+            "role": agent_obj.role
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error registering agent: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to register agent: {str(e)}")
+
+
+@api_router.post("/agents/login")
+async def login_agent(credentials: AgentLogin):
+    """
+    Agent login
+    """
+    try:
+        import hashlib
+        hashed_password = hashlib.sha256(credentials.password.encode()).hexdigest()
+        
+        agent = await db.agents.find_one({
+            "username": credentials.username,
+            "password": hashed_password
+        })
+        
+        if not agent:
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+        
+        return {
+            "success": True,
+            "agent": {
+                "id": agent["id"],
+                "username": agent["username"],
+                "full_name": agent["full_name"],
+                "role": agent["role"]
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error logging in: {str(e)}")
+        raise HTTPException(status_code=500, detail="Login failed")
+
+
+@api_router.get("/agents")
+async def get_agents():
+    """
+    Get all agents
+    """
+    agents = await db.agents.find({}, {"_id": 0, "password": 0}).to_list(100)
+    return agents
+
+
 @api_router.post("/upload-csv")
 async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store", shop_url: str = ""):
     """
