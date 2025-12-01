@@ -305,6 +305,56 @@ async def delete_store(store_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to delete store: {str(e)}")
 
 
+@api_router.post("/customers/{customer_id}/mark-messaged")
+async def mark_customer_messaged(customer_id: str):
+    """
+    Mark a customer as messaged
+    """
+    result = await db.customers.update_one(
+        {"customer_id": customer_id},
+        {
+            "$set": {
+                "messaged": True,
+                "last_messaged_at": datetime.now(timezone.utc).isoformat()
+            },
+            "$inc": {"message_count": 1}
+        }
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    return {"success": True, "message": "Customer marked as messaged"}
+
+
+@api_router.get("/message-greetings")
+async def get_random_greeting():
+    """
+    Get a random greeting message to avoid repetition
+    """
+    greetings = [
+        "Hello",
+        "Hi",
+        "Hey",
+        "Hello there",
+        "Hi there",
+        "Hey there",
+        "Greetings",
+        "Good day",
+        "Hello!",
+        "Hi!",
+        "Hey!",
+        "Salaam",
+        "Assalam o Alaikum",
+        "Hope you're doing well",
+        "How are you",
+        "Dear Customer"
+    ]
+    
+    import random
+    return {"greeting": random.choice(greetings)}
+
+
 @api_router.post("/whatsapp-link")
 async def generate_whatsapp_link(request: WhatsAppRequest):
     """
