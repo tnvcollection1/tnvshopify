@@ -45,7 +45,9 @@ const Dashboard = () => {
   const [newStoreUrl, setNewStoreUrl] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const customersPerPage = 100;
+  const customersPerPage = 50; // Load 50 at a time for faster initial load
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [messagedFilter, setMessagedFilter] = useState("all");
   const [sendingMessages, setSendingMessages] = useState(false);
   const [messageQueue, setMessageQueue] = useState([]);
