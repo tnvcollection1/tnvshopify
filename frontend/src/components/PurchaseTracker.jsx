@@ -325,8 +325,8 @@ const PurchaseTracker = () => {
                     <TableRow>
                       <TableCell colSpan={11} className="text-center py-8 text-gray-500">
                         <div>
-                          <p className="text-lg font-medium">No purchase orders found</p>
-                          <p className="text-sm mt-2">Orders marked with purchase status will appear here. Use this to track items being sourced from suppliers.</p>
+                          <p className="text-lg font-medium">No China purchase orders found</p>
+                          <p className="text-sm mt-2">Orders with China Post tracking numbers (starting with 'X') will appear here</p>
                         </div>
                       </TableCell>
                     </TableRow>
