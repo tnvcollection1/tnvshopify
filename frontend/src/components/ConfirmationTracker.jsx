@@ -69,19 +69,27 @@ const ConfirmationTracker = () => {
   const [stores, setStores] = useState([]);
   const [editingOrder, setEditingOrder] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
+  const prevFiltersRef = useRef(filters);
+  const prevSearchRef = useRef(searchQuery);
 
   useEffect(() => {
-    fetchOrders();
-    fetchStores();
-  }, [currentPage]);
-
-  useEffect(() => {
-    if (currentPage !== 1) {
+    const filtersChanged = JSON.stringify(prevFiltersRef.current) !== JSON.stringify(filters);
+    const searchChanged = prevSearchRef.current !== searchQuery;
+    
+    if ((filtersChanged || searchChanged) && currentPage !== 1) {
       setCurrentPage(1);
+      prevFiltersRef.current = filters;
+      prevSearchRef.current = searchQuery;
     } else {
       fetchOrders();
+      prevFiltersRef.current = filters;
+      prevSearchRef.current = searchQuery;
     }
-  }, [filters, searchQuery]);
+  }, [currentPage, filters, searchQuery]);
+
+  useEffect(() => {
+    fetchStores();
+  }, []);
 
   const fetchStores = async () => {
     try {
