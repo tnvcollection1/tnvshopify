@@ -69,16 +69,17 @@ const PurchaseTracker = () => {
   const [editDialog, setEditDialog] = useState(false);
 
   useEffect(() => {
-    fetchStores();
-  }, []);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters, searchQuery]);
-
-  useEffect(() => {
     fetchOrders();
-  }, [currentPage, filters, searchQuery]);
+    fetchStores();
+  }, [currentPage]);
+
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    } else {
+      fetchOrders();
+    }
+  }, [filters, searchQuery]);
 
   const fetchStores = async () => {
     try {
