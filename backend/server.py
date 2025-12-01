@@ -1535,6 +1535,25 @@ async def update_customer_order(customer_id: str, update_data: dict):
         if "confirmation_notes" in update_data:
             update_fields["confirmation_notes"] = update_data["confirmation_notes"]
         
+        # Purchase tracker fields (China imports)
+        if "purchase_status" in update_data:
+            update_fields["purchase_status"] = update_data["purchase_status"]
+        
+        if "china_tracking_number" in update_data:
+            update_fields["china_tracking_number"] = update_data["china_tracking_number"]
+        
+        if "purchase_cost_pkr" in update_data:
+            update_fields["purchase_cost_pkr"] = float(update_data["purchase_cost_pkr"])
+        
+        if "shipping_cost_pkr" in update_data:
+            update_fields["shipping_cost_pkr"] = float(update_data["shipping_cost_pkr"])
+        
+        if "customs_duty_pkr" in update_data:
+            update_fields["customs_duty_pkr"] = float(update_data["customs_duty_pkr"])
+        
+        if "purchase_notes" in update_data:
+            update_fields["purchase_notes"] = update_data["purchase_notes"]
+        
         # Calculate profit
         retail = update_fields.get("retail_amount", customer.get("retail_amount", customer.get("total_spent", 0)))
         cost = update_fields.get("cost", customer.get("cost", 0))
