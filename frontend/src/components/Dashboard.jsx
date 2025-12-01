@@ -63,7 +63,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     const updateStoreData = async () => {
-      console.log('🔄 Store changed to:', selectedStore);
       setCurrentPage(1);
       setSelectedSize("all");
       setSelectedCustomers([]);
@@ -74,7 +73,6 @@ const Dashboard = () => {
         fetchCountries(),
         fetchCustomers("all", 1)
       ]);
-      console.log('✅ Store data updated');
     };
     updateStoreData();
   }, [selectedStore]);
