@@ -57,6 +57,8 @@ const Dashboard = () => {
     uniqueSizes: 0,
     filteredCount: 0
   });
+  const [agents, setAgents] = useState([]);
+  const [selectedAgent, setSelectedAgent] = useState("all");
   
   const handleLogout = () => {
     logout();
