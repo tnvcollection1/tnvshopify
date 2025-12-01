@@ -1088,10 +1088,11 @@ async def get_customers_count(
     agent_username: Optional[str] = None,
     stock_availability: Optional[str] = None,
     fulfillment_status: Optional[str] = None,
-    delivery_status: Optional[str] = None
+    delivery_status: Optional[str] = None,
+    payment_status: Optional[str] = None
 ):
     """
-    Get total count of customers matching filters including stock availability, fulfillment, and delivery status
+    Get total count of customers matching filters including stock availability, fulfillment, delivery, and payment status
     """
     query = {}
     if shoe_size and shoe_size != "all":
@@ -1110,6 +1111,8 @@ async def get_customers_count(
         query['fulfillment_status'] = fulfillment_status
     if delivery_status and delivery_status != "all":
         query['delivery_status'] = delivery_status
+    if payment_status and payment_status != "all":
+        query['payment_status'] = payment_status
     
     # If stock_availability filter is specified, we need to fetch and filter
     if stock_availability and store_name and store_name != "all":
