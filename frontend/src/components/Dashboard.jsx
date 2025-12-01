@@ -380,6 +380,12 @@ const Dashboard = () => {
       if (stockFilter && stockFilter !== "all") {
         url += `stock_availability=${stockFilter}&`;
       }
+      if (fulfillmentFilter && fulfillmentFilter !== "all") {
+        url += `fulfillment_status=${fulfillmentFilter}&`;
+      }
+      if (deliveryFilter && deliveryFilter !== "all") {
+        url += `delivery_status=${deliveryFilter}&`;
+      }
       
       // Build URL for count (only fetch on first load)
       let countUrl = `${API}/customers/count?`;
@@ -400,6 +406,12 @@ const Dashboard = () => {
       }
       if (stockFilter && stockFilter !== "all") {
         countUrl += `stock_availability=${stockFilter}&`;
+      }
+      if (fulfillmentFilter && fulfillmentFilter !== "all") {
+        countUrl += `fulfillment_status=${fulfillmentFilter}&`;
+      }
+      if (deliveryFilter && deliveryFilter !== "all") {
+        countUrl += `delivery_status=${deliveryFilter}&`;
       }
       
       // Fetch customers and count (count only on first page)
