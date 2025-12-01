@@ -608,10 +608,13 @@ async def get_customers(
                 if stock_availability:
                     if customer['stock_status'] == stock_availability:
                         filtered_customers.append(customer)
+                        # Stop once we have enough for this page
+                        if len(filtered_customers) >= limit:
+                            break
                 else:
                     filtered_customers.append(customer)
             
-            return filtered_customers
+            return filtered_customers[:limit]
     
     return customers
 
