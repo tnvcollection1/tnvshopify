@@ -513,7 +513,16 @@ async def track_tcs_consignment(tracking_number: str):
             raise HTTPException(status_code=400, detail="TCS not configured. Please configure credentials first.")
         
         # Track with TCS
-        tracker = TCSTracker(config['username'], config['password'])
+        if config.get('auth_type') == 'bearer':
+            tracker = TCSTracker(
+                bearer_token=config.get('bearer_token'),
+                token_expiry=config.get('token_expiry')
+            )
+        else:
+            tracker = TCSTracker(
+                username=config.get('username'),
+                password=config.get('password')
+            )
         tracking_data = tracker.track_consignment(tracking_number)
         
         if not tracking_data:
