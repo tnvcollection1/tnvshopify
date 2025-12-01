@@ -333,7 +333,7 @@ const PurchaseTracker = () => {
                   ) : (
                     orders.map((order) => {
                       const totalCost = (order.purchase_cost_pkr || 0) + (order.shipping_cost_pkr || 0) + (order.customs_duty_pkr || 0);
-                      const trackingNum = order.china_tracking_number || order.tracking_number || "—";
+                      const trackingNum = order.tracking_number || "—";
                       return (
                         <TableRow key={order.customer_id} className="hover:bg-gray-50">
                           <TableCell className="text-sm text-gray-600">
