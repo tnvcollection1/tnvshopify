@@ -147,15 +147,18 @@ backend:
 
   - task: "Agent reporting endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Endpoint /api/reports/daily provides day-wise agent performance (messages sent, conversions, conversion rate, total sales). Filters by agent_username."
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Daily reporting working correctly. GET /api/reports/daily returns daily_reports array with date, messages_sent, conversions, conversion_rate, total_sales. Agent-specific filtering with ?agent_username=admin works. Current data shows 1 day with admin having 1 message sent, 0 conversions, 0% conversion rate, $0 sales."
 
   - task: "Agents list endpoint"
     implemented: true
