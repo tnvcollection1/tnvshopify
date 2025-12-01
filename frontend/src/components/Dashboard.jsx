@@ -615,14 +615,14 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-2 block">Store</label>
-                <Select value={selectedStore} onValueChange={setSelectedStore}>
+                <Select value={selectedStore} onValueChange={(value) => { console.log('🎯 Select onValueChange called with:', value); setSelectedStore(value); }}>
                   <SelectTrigger className="w-full" data-testid="store-filter">
                     <SelectValue placeholder="Select store" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Stores</SelectItem>
+                  <SelectContent data-testid="store-filter-content">
+                    <SelectItem value="all" data-testid="store-option-all">All Stores</SelectItem>
                     {stores.map((store) => (
-                      <SelectItem key={store.id} value={store.store_name}>{store.store_name}</SelectItem>
+                      <SelectItem key={store.id} value={store.store_name} data-testid={`store-option-${store.store_name}`}>{store.store_name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
