@@ -131,6 +131,12 @@ const Dashboard = () => {
     fetchCustomers(selectedSize, 1);
   }, [selectedAgent]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedCustomers([]);
+    fetchCustomers(selectedSize, 1);
+  }, [stockFilter]);
+
   const syncShopifyData = async () => {
     setSyncing(true);
     try {
