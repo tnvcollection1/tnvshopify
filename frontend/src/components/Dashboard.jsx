@@ -1098,6 +1098,15 @@ const Dashboard = () => {
                           <Badge variant="secondary">{customer.order_count}</Badge>
                         </TableCell>
                         <TableCell>
+                          {customer.order_number ? (
+                            <div className="text-sm font-mono text-blue-600">
+                              #{customer.order_number}
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 text-sm">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {customer.last_order_date ? (
                             <div className="text-sm text-slate-600">
                               {new Date(customer.last_order_date).toLocaleDateString('en-US', { 
