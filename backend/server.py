@@ -2073,6 +2073,20 @@ async def get_customers_count(
     if tcs_only == "true":
         query['tracking_number'] = {"$not": {"$regex": "^X", "$options": "i"}}
     
+    # Year filter
+    if year and year != "all":
+        try:
+            year_int = int(year)
+            from datetime import datetime
+            start_date = datetime(year_int, 1, 1)
+            end_date = datetime(year_int, 12, 31, 23, 59, 59)
+            query['last_order_date'] = {
+                "$gte": start_date.isoformat(),
+                "$lte": end_date.isoformat()
+            }
+        except ValueError:
+            pass
+    
     # Search across multiple fields
     if search:
         search_regex = {"$regex": search, "$options": "i"}
