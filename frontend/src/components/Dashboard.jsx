@@ -155,7 +155,7 @@ const Dashboard = () => {
     
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [currentPage, isLoadingMore, loading, hasMore, selectedSize]);
+  }, [currentPage, isLoadingMore, loading, hasMore, selectedSize, isResetting]);
   
   const fetchAgents = async () => {
     try {
