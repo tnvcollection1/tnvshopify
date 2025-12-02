@@ -393,29 +393,44 @@ async def import_from_customers(
             # Clean phone number
             phone_clean = phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
             
-            # Extract sizes from order SKUs (ignore colors)
+            # Extract sizes - prioritize shoe_sizes field first
             sizes = []
-            order_skus = customer.get("order_skus", [])
             
-            for sku in order_skus:
-                if not sku:
-                    continue
-                # Extract size from SKU (typically after dash, e.g., "FG328-40" -> "40")
-                # Also handle formats like "FG328-40-Brown" -> "40"
-                parts = str(sku).split("-")
-                if len(parts) >= 2:
-                    size = str(parts[1]).strip()
-                    # Check if it's a numeric size
-                    if size and size.replace(".", "").isdigit():
-                        if size not in sizes:
-                            sizes.append(size)
-            
-            # Also check shoe_sizes field
+            # First, check shoe_sizes field (most reliable)
             if customer.get("shoe_sizes"):
                 for size in customer.get("shoe_sizes", []):
                     size_str = str(size).strip()
                     if size_str and size_str not in sizes:
                         sizes.append(size_str)
+            
+            # If no shoe_sizes, try extracting from order SKUs
+            if not sizes:
+                order_skus = customer.get("order_skus", [])
+                
+                for sku in order_skus:
+                    if not sku:
+                        continue
+                    
+                    sku_str = str(sku)
+                    
+                    # Try different patterns:
+                    # Pattern 1: "FG328B-BROWN-40" -> look for last part
+                    # Pattern 2: "JN1523US-D826 BLACK-43" -> look for last part after dash
+                    # Pattern 3: "78-BITE STEP OFF BLSJ-BLACK BLACK BACKGROUND-39" -> last part
+                    
+                    parts = sku_str.split("-")
+                    
+                    # Check each part from end to beginning for a size (numeric value between 35-50)
+                    for part in reversed(parts):
+                        part_clean = part.strip()
+                        # Check if it's a numeric size (shoe sizes are typically 35-50)
+                        if part_clean.replace(".", "").isdigit():
+                            size_num = float(part_clean) if "." in part_clean else int(part_clean)
+                            # Validate it's a reasonable shoe size
+                            if 20 <= size_num <= 60:  # Wider range to catch all sizes
+                                if part_clean not in sizes:
+                                    sizes.append(part_clean)
+                                break  # Found size for this SKU, move to next
             
             contact_id = f"wa_{phone_clean}"
             existing = await db.whatsapp_contacts.find_one({"id": contact_id})
