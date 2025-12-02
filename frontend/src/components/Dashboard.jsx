@@ -289,7 +289,7 @@ const Dashboard = () => {
       await axios.delete(`${API}/stores/${storeId}`);
       toast.success(`✅ Deleted store "${storeName}"`);
       await fetchStores();
-      await fetchCustomers();
+      await fetchCustomers(selectedSize, currentPage);
       await fetchShoeSizes();
       if (selectedStore === storeName) {
         setSelectedStore("all");
