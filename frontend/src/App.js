@@ -133,6 +133,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/whatsapp" 
+        element={
+          <ProtectedRoute>
+            <WhatsAppMessaging />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
