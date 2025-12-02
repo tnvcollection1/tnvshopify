@@ -84,7 +84,7 @@ const Dashboard = () => {
       
       if (response.data.success) {
         toast.success(`✅ ${response.data.message}\n${response.data.customers_created} new, ${response.data.customers_updated} updated`);
-        await fetchCustomers(); // Refresh customer list
+        await fetchCustomers(selectedSize, currentPage); // Refresh customer list
         await fetchShoeSizes();
       }
     } catch (error) {
