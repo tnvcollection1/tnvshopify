@@ -427,7 +427,13 @@ async def sync_shopify_orders(store_name: str, days_back: int = 3650, full_sync:
             logger.info(f"Syncing {store_name} orders from last {days_back} days")
             # Use fetch_all=True when syncing more than 30 days to get all historical orders
             fetch_all_orders = days_back > 30
+            # Fetch all statuses including cancelled orders
             orders = sync.fetch_orders(limit=250, status="any", created_after=created_after, fetch_all=fetch_all_orders)
+            
+            # Also fetch cancelled orders separately (Shopify API quirk - "any" doesn't always include cancelled)
+            cancelled_orders = sync.fetch_orders(limit=250, status="cancelled", created_after=created_after, fetch_all=fetch_all_orders)
+            logger.info(f"Fetched {len(cancelled_orders)} cancelled orders separately")
+            orders.extend(cancelled_orders)
         
         if not orders:
             return {
