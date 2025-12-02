@@ -157,11 +157,10 @@ const Dashboard = () => {
       setFulfillmentFilter("all");
       setDeliveryFilter("all");
       setPaymentFilter("all");
-      setHasMore(true);
       await Promise.all([
         fetchShoeSizes(),
         fetchCountries(),
-        fetchCustomers("all", 1, false)
+        fetchCustomers("all", 1)
       ]);
     };
     updateStoreData();
