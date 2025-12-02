@@ -89,15 +89,16 @@ const Orders = () => {
       params.append("limit", "50");
 
       const response = await axios.get(`${API}/customers?${params.toString()}`);
-      setOrders(response.data.customers || []);
+      const customersData = response.data || [];
+      setOrders(customersData);
       setStats({
-        total: response.data.total_count || 0,
-        delivered: response.data.customers?.filter(c => c.delivery_status === "DELIVERED").length || 0,
-        inTransit: response.data.customers?.filter(c => c.delivery_status === "IN_TRANSIT").length || 0,
-        pending: response.data.customers?.filter(c => !c.delivery_status || c.delivery_status === "PENDING").length || 0,
-        returned: response.data.customers?.filter(c => c.delivery_status === "RETURNED").length || 0,
+        total: customersData.length,
+        delivered: customersData.filter(c => c.delivery_status === "DELIVERED").length || 0,
+        inTransit: customersData.filter(c => c.delivery_status === "IN_TRANSIT").length || 0,
+        pending: customersData.filter(c => !c.delivery_status || c.delivery_status === "PENDING").length || 0,
+        returned: customersData.filter(c => c.delivery_status === "RETURNED").length || 0,
       });
-      setTotalPages(Math.ceil((response.data.total_count || 0) / 50));
+      setTotalPages(Math.ceil(customersData.length / 50));
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
