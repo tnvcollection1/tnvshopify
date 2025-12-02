@@ -16,6 +16,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
+import LoadingSpinner from "@/components/LoadingSpinner";
+
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
   const { agent, loading } = useAuth();
@@ -23,7 +25,7 @@ function ProtectedRoute({ children }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-slate-600">Loading...</div>
+        <LoadingSpinner text="Loading application..." size="large" />
       </div>
     );
   }
