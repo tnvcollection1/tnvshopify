@@ -271,6 +271,53 @@ async def login_agent(credentials: AgentLogin):
         raise HTTPException(status_code=500, detail="Login failed")
 
 
+@api_router.post("/init-admin")
+async def initialize_admin():
+    """
+    One-time initialization endpoint to create default admin user
+    Only works if no admin exists yet
+    """
+    try:
+        import hashlib
+        
+        # Check if any admin already exists
+        existing_admin = await db.agents.find_one({"username": "admin"})
+        if existing_admin:
+            return {
+                "success": False,
+                "message": "Admin user already exists"
+            }
+        
+        # Create default admin
+        admin_password = "admin123"
+        hashed_password = hashlib.sha256(admin_password.encode()).hexdigest()
+        
+        admin_user = {
+            "id": "admin-default-user",
+            "username": "admin",
+            "password": hashed_password,
+            "full_name": "Administrator",
+            "role": "admin",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.agents.insert_one(admin_user)
+        
+        logger.info("✅ Default admin user initialized")
+        
+        return {
+            "success": True,
+            "message": "Admin user created successfully",
+            "credentials": {
+                "username": "admin",
+                "password": "admin123"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error initializing admin: {str(e)}")
+        raise HTTPException(status_code=500, detail="Admin initialization failed")
+
+
 @api_router.post("/agents/signup")
 async def signup_agent(agent_data: AgentCreate):
     """
