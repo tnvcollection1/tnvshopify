@@ -2692,9 +2692,9 @@ async def generate_whatsapp_link(request: WhatsAppRequest):
 try:
     from routes.whatsapp import router as whatsapp_router
     api_router.include_router(whatsapp_router)
-    logger.info("✅ WhatsApp routes loaded")
+    print("✅ WhatsApp routes loaded")
 except Exception as e:
-    logger.warning(f"⚠️ Could not load WhatsApp routes: {str(e)}")
+    print(f"⚠️ Could not load WhatsApp routes: {str(e)}")
 
 # Include the router in the main app
 app.include_router(api_router)
