@@ -9,8 +9,10 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const Login = ({ onLoginSuccess }) => {
+  const [isSignup, setIsSignup] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
@@ -40,6 +42,48 @@ const Login = ({ onLoginSuccess }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    
+    if (!username || !password || !fullName) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/agents/signup`, {
+        username,
+        password,
+        full_name: fullName
+      });
+      
+      if (response.data.success) {
+        const agent = response.data.agent;
+        localStorage.setItem("agent", JSON.stringify(agent));
+        toast.success(`Welcome, ${agent.full_name}! Your account has been created.`);
+        onLoginSuccess(agent);
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast.error(error.response?.data?.detail || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleMode = () => {
+    setIsSignup(!isSignup);
+    setUsername("");
+    setPassword("");
+    setFullName("");
   };
 
   return (
