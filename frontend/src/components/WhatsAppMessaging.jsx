@@ -82,6 +82,28 @@ const WhatsAppMessaging = () => {
       const myMessages = contactsData.filter(c => c.whatsapp_messaged_by === agent?.username).length;
       
       setStats({ total, messaged, notMessaged, myMessages });
+      
+      // Extract unique sizes for filter
+      const sizesSet = new Set();
+      contactsData.forEach(contact => {
+        if (contact.sizes && Array.isArray(contact.sizes)) {
+          contact.sizes.forEach(size => {
+            if (size && size.trim()) {
+              sizesSet.add(size.trim());
+            }
+          });
+        }
+      });
+      const uniqueSizes = Array.from(sizesSet).sort((a, b) => {
+        // Sort numerically if both are numbers
+        const aNum = parseFloat(a);
+        const bNum = parseFloat(b);
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+          return aNum - bNum;
+        }
+        return a.localeCompare(b);
+      });
+      setAvailableSizes(uniqueSizes);
     } catch (error) {
       console.error('Error fetching contacts:', error);
       toast.error('Failed to fetch contacts');
