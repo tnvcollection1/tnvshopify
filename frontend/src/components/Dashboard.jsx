@@ -326,7 +326,7 @@ const Dashboard = () => {
       
       toast.success(`✅ ${response.data.message}`);
       await fetchStores();
-      await fetchCustomers();
+      await fetchCustomers(selectedSize, currentPage);
       await fetchShoeSizes();
     } catch (error) {
       console.error("CSV upload error:", error);
