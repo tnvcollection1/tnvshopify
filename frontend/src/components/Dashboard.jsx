@@ -122,7 +122,7 @@ const Dashboard = () => {
     fetchShoeSizes();
     fetchCountries();
     fetchAgents();
-    fetchCustomers();
+    fetchCustomers("all", 1);
     fetchSchedulerStatus();
   }, []);
 
