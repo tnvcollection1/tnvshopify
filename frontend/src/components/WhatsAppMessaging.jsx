@@ -351,10 +351,11 @@ const WhatsAppMessaging = () => {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Phone</TableHead>
-                      <TableHead>Email</TableHead>
+                      <TableHead>Order #</TableHead>
+                      <TableHead>Sizes</TableHead>
+                      <TableHead>Store</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Messaged By</TableHead>
-                      <TableHead>Last Messaged</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
