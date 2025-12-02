@@ -12,6 +12,7 @@ import PurchaseTracker from "@/components/PurchaseTracker";
 import Reports from "@/components/Reports";
 import Analytics from "@/components/Analytics";
 import Settings from "@/components/Settings";
+import WhatsAppMessaging from "@/components/WhatsAppMessaging";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
