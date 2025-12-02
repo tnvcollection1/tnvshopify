@@ -249,7 +249,7 @@ const Dashboard = () => {
       });
       
       toast.success(response.data.message);
-      await fetchCustomers();
+      await fetchCustomers(selectedSize, currentPage);
       await fetchShoeSizes();
     } catch (error) {
       console.error("Sync error:", error);
