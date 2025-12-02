@@ -107,9 +107,9 @@ class ShopifyOrderSync:
                     logger.info(f"Reached end (batch had {len(orders)} < {per_page} orders). Total: {len(all_parsed_orders)}")
                     break
                 
-                # Safety limit: stop after 100 batches (25,000 orders) to prevent infinite loops
-                if batch_count >= 100:
-                    logger.warning(f"Reached safety limit of 100 batches. Total orders fetched: {len(all_parsed_orders)}")
+                # Safety limit: stop after 200 batches (50,000 orders) to prevent infinite loops
+                if batch_count >= 200:
+                    logger.warning(f"Reached safety limit of 200 batches. Total orders fetched: {len(all_parsed_orders)}")
                     break
             
             logger.info(f"✅ Sync completed: Fetched {len(all_parsed_orders)} total orders from Shopify in {batch_count} batches")
