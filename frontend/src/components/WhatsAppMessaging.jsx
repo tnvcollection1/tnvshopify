@@ -148,6 +148,13 @@ const WhatsAppMessaging = () => {
       filtered = filtered.filter(c => c.source === filters.source);
     }
 
+    // Size filter
+    if (filters.size !== 'all') {
+      filtered = filtered.filter(c => 
+        c.sizes && Array.isArray(c.sizes) && c.sizes.includes(filters.size)
+      );
+    }
+
     setFilteredContacts(filtered);
   };
 
