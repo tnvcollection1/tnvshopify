@@ -576,8 +576,13 @@ async def sync_shopify_orders_fast(store_name: str, days_back: int = 3650):
         created_after = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
         logger.info(f"🚀 Starting FAST sync for {store_name} (last {days_back} days, concurrent)")
         
-        # Fetch orders concurrently
+        # Fetch orders concurrently (including cancelled)
         orders = await sync.fetch_orders_concurrent(created_after=created_after, status="any", max_batches=20)
+        
+        # Also fetch cancelled orders separately
+        cancelled_orders = await sync.fetch_orders_concurrent(created_after=created_after, status="cancelled", max_batches=20)
+        logger.info(f"Fast sync: Fetched {len(cancelled_orders)} cancelled orders separately")
+        orders.extend(cancelled_orders)
         
         sync.close()
         
