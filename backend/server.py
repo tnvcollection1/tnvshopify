@@ -2166,8 +2166,13 @@ async def get_customers(
         # Purchase tracker - orders with tracking numbers starting with 'X' (China Post)
         query['tracking_number'] = {"$regex": "^X", "$options": "i"}
     if tcs_only == "true":
-        # Dispatch tracker - exclude orders with X-prefix tracking (China Post)
-        query['tracking_number'] = {"$not": {"$regex": "^X", "$options": "i"}}
+        # Dispatch tracker - ONLY orders with valid TCS tracking numbers (exclude China Post and null/empty)
+        query['tracking_number'] = {
+            "$exists": True,
+            "$ne": None,
+            "$ne": "",
+            "$not": {"$regex": "^X", "$options": "i"}
+        }
     
     # Year filter
     if year and year != "all":
