@@ -113,7 +113,34 @@ const WhatsAppMessaging = () => {
       filtered = filtered.filter(c => c.whatsapp_messaged_by === filters.agent);
     }
 
+    // Store filter
+    if (filters.store !== 'all') {
+      filtered = filtered.filter(c => c.store_name === filters.store);
+    }
+
     setFilteredContacts(filtered);
+  };
+
+  const handleImportFromCustomers = async () => {
+    setImporting(true);
+    try {
+      const response = await axios.post(`${API}/whatsapp/import-from-customers`, null, {
+        params: {
+          store_name: filters.store !== 'all' ? filters.store : null,
+          limit: 5000
+        }
+      });
+
+      toast.success(
+        `Imported ${response.data.imported + response.data.updated} contacts from dashboard`
+      );
+      fetchContacts();
+    } catch (error) {
+      console.error('Error importing customers:', error);
+      toast.error(error.response?.data?.detail || 'Failed to import customers');
+    } finally {
+      setImporting(false);
+    }
   };
 
   const handleFileChange = (e) => {
