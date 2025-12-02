@@ -26,8 +26,10 @@ const WhatsAppMessaging = () => {
     status: 'all',
     agent: 'all',
     store: 'all',
-    source: 'all'
+    source: 'all',
+    size: 'all'
   });
+  const [availableSizes, setAvailableSizes] = useState([]);
   const [stores, setStores] = useState([]);
   const [importing, setImporting] = useState(false);
   const [stats, setStats] = useState({
