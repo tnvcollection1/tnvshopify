@@ -156,8 +156,8 @@ const Inventory = () => {
               <SelectContent>
                 <SelectItem value="all">All Stores</SelectItem>
                 {stores.map((store) => (
-                  <SelectItem key={store.name} value={store.name}>
-                    {store.name}
+                  <SelectItem key={store.id} value={store.store_name}>
+                    {store.store_name}
                   </SelectItem>
                 ))}
               </SelectContent>
