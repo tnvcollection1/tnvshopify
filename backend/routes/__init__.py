@@ -1,4 +1,4 @@
 # Import all route modules here for easy access
-from . import auth
+from . import auth, whatsapp
 
-__all__ = ["auth"]
+__all__ = ["auth", "whatsapp"]
