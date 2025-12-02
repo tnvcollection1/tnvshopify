@@ -384,6 +384,7 @@ const WhatsAppMessaging = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Source</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead>Order #</TableHead>
