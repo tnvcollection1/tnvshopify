@@ -70,6 +70,7 @@ const Dashboard = () => {
   const [sortBy, setSortBy] = useState("date_desc");
   const [syncing, setSyncing] = useState(false);
   const [schedulerStatus, setSchedulerStatus] = useState(null);
+  const [isResetting, setIsResetting] = useState(false);
   
   const handleLogout = () => {
     logout();
