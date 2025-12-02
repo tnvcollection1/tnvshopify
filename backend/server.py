@@ -421,6 +421,11 @@ async def sync_shopify_orders(store_name: str, days_back: int = 3650, full_sync:
             created_after = None
             logger.info(f"Starting FULL sync for {store_name} - fetching ALL orders with pagination")
             orders = sync.fetch_orders(limit=250, status="any", created_after=created_after, fetch_all=True)
+            
+            # Also fetch cancelled orders separately
+            cancelled_orders = sync.fetch_orders(limit=250, status="cancelled", created_after=created_after, fetch_all=True)
+            logger.info(f"Fetched {len(cancelled_orders)} cancelled orders separately")
+            orders.extend(cancelled_orders)
         else:
             # Fetch orders from last X days
             created_after = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
