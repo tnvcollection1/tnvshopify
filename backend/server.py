@@ -537,14 +537,14 @@ async def sync_shopify_orders(store_name: str, days_back: int = 3650, full_sync:
 
 
 @api_router.post("/shopify/sync-fast/{store_name}")
-async def sync_shopify_orders_fast(store_name: str, days_back: int = 7):
+async def sync_shopify_orders_fast(store_name: str, days_back: int = 3650):
     """
     PHASE 1: Fast concurrent sync with incremental updates
     10x faster than regular sync - perfect for daily updates
     
     Args:
         store_name: Store to sync
-        days_back: Number of days to look back (default 7 for incremental)
+        days_back: Number of days to look back (default 3650 = ~10 years from 2015)
     """
     try:
         # Get store credentials
