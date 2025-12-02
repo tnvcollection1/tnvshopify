@@ -224,8 +224,7 @@ const Dashboard = () => {
     setCurrentPage(1);
     setCustomers([]);  // Clear existing customers
     setSelectedCustomers([]);
-    setHasMore(true);
-    fetchCustomers(selectedSize, 1, false).finally(() => {
+    fetchCustomers(selectedSize, 1).finally(() => {
       setTimeout(() => setIsResetting(false), 500);
     });
   }, [yearFilter]);
