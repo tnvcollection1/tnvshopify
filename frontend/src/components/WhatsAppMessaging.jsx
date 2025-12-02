@@ -25,7 +25,8 @@ const WhatsAppMessaging = () => {
   const [filters, setFilters] = useState({
     status: 'all',
     agent: 'all',
-    store: 'all'
+    store: 'all',
+    source: 'all'
   });
   const [stores, setStores] = useState([]);
   const [importing, setImporting] = useState(false);
