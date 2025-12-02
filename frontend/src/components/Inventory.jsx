@@ -54,7 +54,7 @@ const Inventory = () => {
   const fetchStores = async () => {
     try {
       const response = await axios.get(`${API}/stores`);
-      setStores(response.data.stores || []);
+      setStores(response.data || []);
     } catch (error) {
       console.error("Error fetching stores:", error);
     }
