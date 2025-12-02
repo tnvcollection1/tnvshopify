@@ -1461,31 +1461,48 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* Infinite Scroll Loading Indicator */}
-            {!loading && filteredCustomers.length > 0 && (
+            {/* Pagination Controls */}
+            {!loading && totalCount > 0 && (
               <div className="mt-6 pt-4 border-t">
-                <div className="text-sm text-slate-600 text-center mb-4">
-                  Showing {filteredCustomers.length} of {totalCount} customers
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-slate-600">
+                    Showing {((currentPage - 1) * customersPerPage) + 1} to {Math.min(currentPage * customersPerPage, totalCount)} of {totalCount} customers
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newPage = currentPage - 1;
+                        setCurrentPage(newPage);
+                        fetchCustomers(selectedSize, newPage);
+                      }}
+                      disabled={currentPage <= 1}
+                      className="flex items-center gap-1"
+                    >
+                      ← Previous
+                    </Button>
+                    
+                    <div className="flex items-center gap-1 px-3 py-1 bg-slate-100 rounded text-sm">
+                      Page {currentPage} of {totalPages}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newPage = currentPage + 1;
+                        setCurrentPage(newPage);
+                        fetchCustomers(selectedSize, newPage);
+                      }}
+                      disabled={currentPage >= totalPages}
+                      className="flex items-center gap-1"
+                    >
+                      Next →
+                    </Button>
+                  </div>
                 </div>
-                
-                {isLoadingMore && (
-                  <div className="flex items-center justify-center py-4">
-                    <RefreshCw className="h-6 w-6 animate-spin text-indigo-600 mr-2" />
-                    <span className="text-slate-600">Loading more customers...</span>
-                  </div>
-                )}
-                
-                {!hasMore && filteredCustomers.length > 0 && (
-                  <div className="text-center py-4 text-slate-500">
-                    <span>✓ All customers loaded</span>
-                  </div>
-                )}
-                
-                {hasMore && !isLoadingMore && (
-                  <div className="text-center py-4 text-slate-400 text-sm">
-                    Scroll down to load more...
-                  </div>
-                )}
               </div>
             )}
           </CardContent>
