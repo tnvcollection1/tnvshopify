@@ -11,7 +11,8 @@ import {
   Truck,
   ClipboardList,
   PhoneCall,
-  Plane
+  Plane,
+  MessageCircle
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
