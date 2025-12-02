@@ -400,7 +400,8 @@ async def import_from_customers(
             if customer.get("shoe_sizes"):
                 for size in customer.get("shoe_sizes", []):
                     size_str = str(size).strip()
-                    if size_str and size_str not in sizes:
+                    # Skip invalid/unknown sizes
+                    if size_str and size_str not in sizes and size_str.lower() not in ['unknown', 'n/a', 'na', '']:
                         sizes.append(size_str)
             
             # If no shoe_sizes, try extracting from order SKUs
