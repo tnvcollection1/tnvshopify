@@ -362,14 +362,14 @@ const WhatsAppMessaging = () => {
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8">
+                        <TableCell colSpan={8} className="text-center py-8">
                           Loading contacts...
                         </TableCell>
                       </TableRow>
                     ) : filteredContacts.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8">
-                          No contacts found. Upload an Excel file to get started.
+                        <TableCell colSpan={8} className="text-center py-8">
+                          No contacts found. Import from dashboard or upload an Excel file.
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -377,7 +377,27 @@ const WhatsAppMessaging = () => {
                         <TableRow key={contact.id}>
                           <TableCell className="font-medium">{contact.name || 'N/A'}</TableCell>
                           <TableCell>{contact.phone || 'N/A'}</TableCell>
-                          <TableCell>{contact.email || 'N/A'}</TableCell>
+                          <TableCell>
+                            {contact.order_number ? (
+                              <span className="text-xs font-mono">#{contact.order_number}</span>
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {contact.sizes && contact.sizes.length > 0 ? (
+                              <div className="flex gap-1 flex-wrap">
+                                {contact.sizes.map((size, idx) => (
+                                  <Badge key={idx} variant="outline" className="text-xs">
+                                    {size}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs">{contact.store_name || '-'}</TableCell>
                           <TableCell>
                             {contact.whatsapp_messaged ? (
                               <Badge variant="success">Messaged</Badge>
@@ -385,12 +405,7 @@ const WhatsAppMessaging = () => {
                               <Badge variant="secondary">Not Messaged</Badge>
                             )}
                           </TableCell>
-                          <TableCell>{contact.whatsapp_messaged_by || '-'}</TableCell>
-                          <TableCell>
-                            {contact.whatsapp_last_messaged_at
-                              ? new Date(contact.whatsapp_last_messaged_at).toLocaleString()
-                              : '-'}
-                          </TableCell>
+                          <TableCell className="text-xs">{contact.whatsapp_messaged_by || '-'}</TableCell>
                           <TableCell>
                             <Button
                               size="sm"
