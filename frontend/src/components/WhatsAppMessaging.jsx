@@ -24,8 +24,11 @@ const WhatsAppMessaging = () => {
   const [uploading, setUploading] = useState(false);
   const [filters, setFilters] = useState({
     status: 'all',
-    agent: 'all'
+    agent: 'all',
+    store: 'all'
   });
+  const [stores, setStores] = useState([]);
+  const [importing, setImporting] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     messaged: 0,
