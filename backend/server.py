@@ -271,6 +271,53 @@ async def login_agent(credentials: AgentLogin):
         raise HTTPException(status_code=500, detail="Login failed")
 
 
+@api_router.post("/agents/signup")
+async def signup_agent(agent_data: AgentCreate):
+    """
+    Agent registration/signup
+    """
+    try:
+        import hashlib
+        
+        # Check if username already exists
+        existing_agent = await db.agents.find_one({"username": agent_data.username})
+        if existing_agent:
+            raise HTTPException(status_code=400, detail="Username already exists")
+        
+        # Hash password
+        hashed_password = hashlib.sha256(agent_data.password.encode()).hexdigest()
+        
+        # Create new agent
+        new_agent = {
+            "id": str(uuid.uuid4()),
+            "username": agent_data.username,
+            "password": hashed_password,
+            "full_name": agent_data.full_name,
+            "role": "agent",  # Default role
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.agents.insert_one(new_agent)
+        
+        logger.info(f"✅ New agent registered: {agent_data.username}")
+        
+        return {
+            "success": True,
+            "message": "Agent registered successfully",
+            "agent": {
+                "id": new_agent["id"],
+                "username": new_agent["username"],
+                "full_name": new_agent["full_name"],
+                "role": new_agent["role"]
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error registering agent: {str(e)}")
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+
 @api_router.get("/agents")
 async def get_agents():
     """
