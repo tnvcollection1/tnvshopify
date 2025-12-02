@@ -711,7 +711,7 @@ const Dashboard = () => {
             {stores.length === 0 ? (
               <div className="text-center py-8 text-slate-500">
                 <StoreIcon className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p>No stores added yet. Click "Add Store" to get started.</p>
+                <p>No stores added yet. Click &quot;Add Store&quot; to get started.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
