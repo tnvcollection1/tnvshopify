@@ -422,10 +422,11 @@ async def import_from_customers(
             
             contact_data = {
                 "id": contact_id,
-                "name": f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip(),
+                "name": existing.get("name") if (existing and existing.get("source") == "csv_upload") else f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip(),  # Preserve CSV name
                 "phone": phone_clean,
-                "email": customer.get("email", ""),
+                "email": existing.get("email") if (existing and existing.get("source") == "csv_upload") else customer.get("email", ""),  # Preserve CSV email
                 "country_code": customer.get("country_code", "PK"),
+                "source": existing.get("source", "dashboard_import"),  # Preserve original source
                 "order_number": customer.get("order_number", ""),
                 "sizes": sizes,  # Array of sizes (no colors)
                 "store_name": customer.get("store_name", ""),
