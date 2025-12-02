@@ -4,7 +4,7 @@ from core import settings, logger
 from scheduler import get_scheduler
 
 # Import route modules
-from routes import auth
+from routes import auth, whatsapp
 
 # Create the main app
 app = FastAPI(
