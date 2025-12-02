@@ -394,13 +394,13 @@ async def configure_shopify_store(
 
 
 @api_router.post("/shopify/sync/{store_name}")
-async def sync_shopify_orders(store_name: str, days_back: int = 30, full_sync: bool = False):
+async def sync_shopify_orders(store_name: str, days_back: int = 3650, full_sync: bool = False):
     """
     Manually sync orders from Shopify for a specific store
     
     Args:
         store_name: Store to sync
-        days_back: Number of days to look back (default 30)
+        days_back: Number of days to look back (default 3650 = ~10 years from 2015)
         full_sync: If True, syncs ALL orders with pagination (default False)
     """
     try:
