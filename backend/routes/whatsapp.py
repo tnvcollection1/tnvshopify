@@ -347,3 +347,106 @@ async def delete_all_contacts():
     except Exception as e:
         logger.error(f"Error deleting all contacts: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/import-from-customers")
+async def import_from_customers(
+    store_name: Optional[str] = None,
+    fulfillment_status: Optional[str] = None,
+    limit: int = 1000
+):
+    """
+    Import customers from dashboard/orders with order numbers and sizes
+    Does NOT import colors, only sizes
+    """
+    try:
+        # Build query
+        query = {}
+        
+        if store_name and store_name != "all":
+            query["store_name"] = store_name
+        
+        if fulfillment_status and fulfillment_status != "all":
+            query["fulfillment_status"] = fulfillment_status
+        
+        # Get customers from database
+        customers = await db.customers.find(query, {"_id": 0}).limit(limit).to_list(limit)
+        
+        imported_count = 0
+        updated_count = 0
+        skipped_count = 0
+        
+        for customer in customers:
+            phone = customer.get("phone", "").strip()
+            
+            if not phone:
+                skipped_count += 1
+                continue
+            
+            # Clean phone number
+            phone_clean = phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+            
+            # Extract sizes from order SKUs (ignore colors)
+            sizes = []
+            order_skus = customer.get("order_skus", [])
+            
+            for sku in order_skus:
+                # Extract size from SKU (typically after dash, e.g., "FG328-40" -> "40")
+                # Also handle formats like "FG328-40-Brown" -> "40"
+                parts = str(sku).split("-")
+                if len(parts) >= 2:
+                    size = parts[1].strip()
+                    # Check if it's a numeric size
+                    if size.replace(".", "").isdigit():
+                        if size not in sizes:
+                            sizes.append(size)
+            
+            # Also check shoe_sizes field
+            if customer.get("shoe_sizes"):
+                for size in customer.get("shoe_sizes", []):
+                    size_str = str(size).strip()
+                    if size_str and size_str not in sizes:
+                        sizes.append(size_str)
+            
+            contact_id = f"wa_{phone_clean}"
+            existing = await db.whatsapp_contacts.find_one({"id": contact_id})
+            
+            contact_data = {
+                "id": contact_id,
+                "name": f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip(),
+                "phone": phone_clean,
+                "email": customer.get("email", ""),
+                "country_code": customer.get("country_code", "PK"),
+                "order_number": customer.get("order_number", ""),
+                "sizes": sizes,  # Array of sizes (no colors)
+                "store_name": customer.get("store_name", ""),
+                "whatsapp_messaged": existing.get("whatsapp_messaged", False) if existing else False,
+                "whatsapp_messaged_by": existing.get("whatsapp_messaged_by") if existing else None,
+                "whatsapp_last_messaged_at": existing.get("whatsapp_last_messaged_at") if existing else None,
+                "whatsapp_message_count": existing.get("whatsapp_message_count", 0) if existing else 0,
+                "created_at": existing.get("created_at") if existing else datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            if existing:
+                await db.whatsapp_contacts.update_one(
+                    {"id": contact_id},
+                    {"$set": contact_data}
+                )
+                updated_count += 1
+            else:
+                await db.whatsapp_contacts.insert_one(contact_data)
+                imported_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Imported {imported_count + updated_count} contacts from customers",
+            "imported": imported_count,
+            "updated": updated_count,
+            "skipped": skipped_count,
+            "total_processed": len(customers)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error importing from customers: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
