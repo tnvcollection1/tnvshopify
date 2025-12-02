@@ -94,11 +94,26 @@ const Login = ({ onLoginSuccess }) => {
             Ashmiaa Customer Manager
           </CardTitle>
           <CardDescription className="text-lg mt-2">
-            Agent Login
+            {isSignup ? "Create Agent Account" : "Agent Login"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
+            {isSignup && (
+              <div>
+                <label className="text-sm font-medium text-slate-700 block mb-2">Full Name</label>
+                <Input
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  disabled={loading}
+                  className="w-full"
+                  data-testid="fullname-input"
+                />
+              </div>
+            )}
+            
             <div>
               <label className="text-sm font-medium text-slate-700 block mb-2">Username</label>
               <Input
@@ -116,7 +131,7 @@ const Login = ({ onLoginSuccess }) => {
               <label className="text-sm font-medium text-slate-700 block mb-2">Password</label>
               <Input
                 type="password"
-                placeholder="Enter your password"
+                placeholder={isSignup ? "Create a password (min 6 characters)" : "Enter your password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
@@ -129,15 +144,27 @@ const Login = ({ onLoginSuccess }) => {
               type="submit"
               disabled={loading}
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-6 text-lg"
-              data-testid="login-btn"
+              data-testid={isSignup ? "signup-btn" : "login-btn"}
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading ? (isSignup ? "Creating Account..." : "Logging in...") : (isSignup ? "Sign Up" : "Login")}
             </Button>
           </form>
           
-          <div className="mt-6 text-center text-sm text-slate-500">
-            <p>Default credentials: admin / admin123</p>
+          <div className="mt-6 text-center">
+            <button
+              onClick={toggleMode}
+              disabled={loading}
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              {isSignup ? "Already have an account? Login" : "Don't have an account? Sign Up"}
+            </button>
           </div>
+          
+          {!isSignup && (
+            <div className="mt-4 text-center text-sm text-slate-500">
+              <p>Default credentials: admin / admin123</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
