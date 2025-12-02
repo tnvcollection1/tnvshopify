@@ -119,6 +119,11 @@ const WhatsAppMessaging = () => {
       filtered = filtered.filter(c => c.store_name === filters.store);
     }
 
+    // Source filter
+    if (filters.source !== 'all') {
+      filtered = filtered.filter(c => c.source === filters.source);
+    }
+
     setFilteredContacts(filtered);
   };
 
