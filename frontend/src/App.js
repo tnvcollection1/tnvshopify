@@ -137,14 +137,16 @@ function AppRoutes() {
 
 function App() {
   return (
-    <div className="App">
-      <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-        <Toaster position="top-right" />
-      </AuthProvider>
-    </div>
+    <ErrorBoundary>
+      <div className="App">
+        <AuthProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+          <Toaster position="top-right" />
+        </AuthProvider>
+      </div>
+    </ErrorBoundary>
   );
 }
 
