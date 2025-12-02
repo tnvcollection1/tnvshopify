@@ -126,8 +126,11 @@ async def upload_whatsapp_contacts(file: UploadFile = File(...)):
 
 @router.post("/generate-link")
 async def generate_whatsapp_link(request: WhatsAppLinkRequest):
-    """Generate WhatsApp link for a phone number"""
+    """Generate WhatsApp link for a phone number with random greeting"""
     try:
+        import random
+        import urllib.parse
+        
         phone = request.phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
         
         # Remove leading zeros and add country code if needed
@@ -148,12 +151,36 @@ async def generate_whatsapp_link(request: WhatsAppLinkRequest):
             if not phone.startswith(country_prefix):
                 phone = f"{country_prefix}{phone}"
         
-        whatsapp_url = f"https://wa.me/{phone}"
+        # Random greeting templates (to avoid spam detection)
+        greetings = [
+            "Hi! Hope you're doing well.",
+            "Hello! How are you today?",
+            "Hey there! Hope you're having a great day.",
+            "Hi! Trust you're doing great.",
+            "Hello! Hope this message finds you well.",
+            "Hey! How's everything going?",
+            "Hi there! Hope you're doing fine.",
+            "Hello! Greetings from our team.",
+            "Hey! Hope you're having a wonderful day.",
+            "Hi! Just wanted to reach out.",
+            "Hello! Hope you're doing amazing.",
+            "Hey there! How have you been?",
+            "Hi! Hope all is well with you.",
+            "Hello! Sending you warm greetings.",
+            "Hey! Hope your day is going great."
+        ]
+        
+        # Select random greeting
+        greeting = random.choice(greetings)
+        encoded_message = urllib.parse.quote(greeting)
+        
+        whatsapp_url = f"https://wa.me/{phone}?text={encoded_message}"
         
         return {
             "success": True,
             "whatsapp_url": whatsapp_url,
-            "phone": phone
+            "phone": phone,
+            "greeting": greeting
         }
     except Exception as e:
         logger.error(f"Error generating WhatsApp link: {str(e)}")
