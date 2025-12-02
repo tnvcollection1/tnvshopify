@@ -14,6 +14,7 @@ import Analytics from "@/components/Analytics";
 import Settings from "@/components/Settings";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
