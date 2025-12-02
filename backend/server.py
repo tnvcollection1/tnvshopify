@@ -1796,10 +1796,68 @@ async def manual_stock_deduction(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/upload-orders-csv")
+async def upload_shopify_orders_csv(file: UploadFile = File(...), store_name: str = "tnvcollectionpk"):
+    """
+    Upload Shopify orders CSV export - COMPLETE ORDER DATA including cancelled orders
+    This properly imports: order_number, fulfillment_status, tracking_number, cancelled_at
+    """
+    try:
+        from csv_orders_import import parse_shopify_orders_csv_full
+        
+        # Read CSV content
+        content = await file.read()
+        csv_text = content.decode('utf-8')
+        
+        logger.info(f"📄 Received orders CSV: {file.filename}, size: {len(csv_text)} bytes")
+        
+        # Parse CSV with full order details
+        orders_list = parse_shopify_orders_csv_full(csv_text, store_name)
+        
+        logger.info(f"✅ Parsed {len(orders_list)} orders from CSV")
+        
+        # Upsert orders into database
+        updated_count = 0
+        inserted_count = 0
+        
+        for order in orders_list:
+            # Find existing order by order_number
+            existing = await db.customers.find_one({
+                "order_number": order['order_number'],
+                "store_name": store_name
+            })
+            
+            if existing:
+                # Update existing order
+                await db.customers.update_one(
+                    {"_id": existing["_id"]},
+                    {"$set": order}
+                )
+                updated_count += 1
+            else:
+                # Insert new order
+                await db.customers.insert_one(order)
+                inserted_count += 1
+        
+        logger.info(f"✅ CSV Import: {inserted_count} new, {updated_count} updated")
+        
+        return {
+            "success": True,
+            "message": "Orders imported successfully",
+            "inserted": inserted_count,
+            "updated": updated_count,
+            "total": len(orders_list)
+        }
+    
+    except Exception as e:
+        logger.error(f"❌ CSV upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/upload-csv")
 async def upload_shopify_csv(file: UploadFile = File(...), store_name: str = "Default Store", shop_url: str = ""):
     """
-    Upload Shopify orders CSV export and extract customer data
+    Upload Shopify orders CSV export and extract customer data (OLD - customer-level only)
     """
     try:
         # Read CSV content
