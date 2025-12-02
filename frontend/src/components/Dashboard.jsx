@@ -198,8 +198,7 @@ const Dashboard = () => {
   useEffect(() => {
     setCurrentPage(1);
     setSelectedCustomers([]);
-    setHasMore(true);
-    fetchCustomers(selectedSize, 1, false);
+    fetchCustomers(selectedSize, 1);
   }, [stockFilter]);
 
   useEffect(() => {
