@@ -243,10 +243,16 @@ const WhatsAppMessaging = () => {
           <h1 className="text-3xl font-bold">WhatsApp Messaging</h1>
           <p className="text-gray-500 mt-1">Upload contacts and send WhatsApp messages</p>
         </div>
-        <Button onClick={exportReport} variant="outline">
-          <Download className="h-4 w-4 mr-2" />
-          Export Report
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleImportFromCustomers} disabled={importing} variant="default">
+            <Users className="h-4 w-4 mr-2" />
+            {importing ? 'Importing...' : 'Import from Dashboard'}
+          </Button>
+          <Button onClick={exportReport} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
