@@ -2305,7 +2305,13 @@ async def get_customers_count(
     if china_tracking == "true":
         query['tracking_number'] = {"$regex": "^X", "$options": "i"}
     if tcs_only == "true":
-        query['tracking_number'] = {"$not": {"$regex": "^X", "$options": "i"}}
+        # ONLY orders with valid TCS tracking numbers (exclude China Post, null, and empty)
+        query['$and'] = [
+            {"tracking_number": {"$exists": True}},
+            {"tracking_number": {"$ne": None}},
+            {"tracking_number": {"$ne": ""}},
+            {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}}
+        ]
     
     # Year filter
     if year and year != "all":
