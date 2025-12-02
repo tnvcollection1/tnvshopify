@@ -40,6 +40,7 @@ const WhatsAppMessaging = () => {
   useEffect(() => {
     fetchContacts();
     fetchAgents();
+    fetchStores();
   }, []);
 
   useEffect(() => {
