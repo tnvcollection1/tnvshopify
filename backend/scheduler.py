@@ -111,8 +111,8 @@ class AutoSyncScheduler:
             # Call the fast sync endpoint via HTTP
             try:
                 response = requests.post(
-                    "http://localhost:8001/api/shopify/sync-fast/tnvcollectionpk?days_back=7",
-                    timeout=180  # 3 minutes timeout
+                    "http://localhost:8001/api/shopify/sync-fast/tnvcollectionpk?days_back=3650",
+                    timeout=300  # 5 minutes timeout for historical data
                 )
                 if response.status_code == 200:
                     data = response.json()
