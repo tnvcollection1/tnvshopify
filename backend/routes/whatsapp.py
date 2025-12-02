@@ -92,6 +92,10 @@ async def upload_whatsapp_contacts(file: UploadFile = File(...)):
                     "phone": phone_clean,
                     "email": email,
                     "country_code": country_code,
+                    "source": "csv_upload",  # Mark source
+                    "order_number": existing.get("order_number") if existing else None,  # Preserve order# from dashboard import
+                    "sizes": existing.get("sizes", []) if existing else [],  # Preserve sizes from dashboard import
+                    "store_name": existing.get("store_name") if existing else None,  # Preserve store from dashboard import
                     "whatsapp_messaged": existing.get("whatsapp_messaged", False) if existing else False,
                     "whatsapp_messaged_by": existing.get("whatsapp_messaged_by") if existing else None,
                     "whatsapp_last_messaged_at": existing.get("whatsapp_last_messaged_at") if existing else None,
