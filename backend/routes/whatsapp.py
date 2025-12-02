@@ -14,6 +14,9 @@ class WhatsAppContact(BaseModel):
     phone: str
     email: Optional[str] = None
     country_code: Optional[str] = "PK"
+    order_number: Optional[str] = None
+    sizes: Optional[List[str]] = []
+    store_name: Optional[str] = None
     whatsapp_messaged: bool = False
     whatsapp_messaged_by: Optional[str] = None
     whatsapp_last_messaged_at: Optional[str] = None
