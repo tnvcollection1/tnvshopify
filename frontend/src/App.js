@@ -15,6 +15,7 @@ import Settings from "@/components/Settings";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 import LoadingSpinner from "@/components/LoadingSpinner";
 
