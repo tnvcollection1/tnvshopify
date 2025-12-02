@@ -107,7 +107,7 @@ const Dashboard = () => {
       
       if (response.data.success) {
         toast.success(`✅ ${response.data.message}\n${response.data.new_customers} new, ${response.data.existing_updated} updated`);
-        await fetchCustomers(); // Refresh customer list
+        await fetchCustomers(selectedSize, currentPage); // Refresh customer list
       }
     } catch (error) {
       console.error("Abandoned checkout sync error:", error);
