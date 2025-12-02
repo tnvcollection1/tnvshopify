@@ -352,7 +352,7 @@ const Dashboard = () => {
       });
       
       toast.success(`✅ ${response.data.message}\n${response.data.unique_skus} unique SKUs stored`);
-      await fetchCustomers(); // Refresh to show stock status
+      await fetchCustomers(selectedSize, currentPage); // Refresh to show stock status
     } catch (error) {
       console.error("Stock upload error:", error);
       toast.error(error.response?.data?.detail || "Failed to upload stock file. Please check the file format (Excel required).");
