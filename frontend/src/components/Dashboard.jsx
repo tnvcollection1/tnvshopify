@@ -135,26 +135,7 @@ const Dashboard = () => {
     }
   };
   
-  // Infinite scroll - load more when reaching bottom
-  useEffect(() => {
-    const handleScroll = () => {
-      // Don't trigger pagination during filter reset
-      if (isResetting) return;
-      
-      // Check if user scrolled near bottom (within 200px)
-      const scrolledToBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200;
-      
-      if (scrolledToBottom && !isLoadingMore && !loading && hasMore) {
-        // Load next page
-        const nextPage = currentPage + 1;
-        setCurrentPage(nextPage);
-        fetchCustomers(selectedSize, nextPage, true);
-      }
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [currentPage, isLoadingMore, loading, hasMore, selectedSize, isResetting]);
+  // Page-based pagination - no infinite scroll needed
   
   const fetchAgents = async () => {
     try {
