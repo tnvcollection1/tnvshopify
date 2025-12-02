@@ -17,8 +17,6 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
-import LoadingSpinner from "@/components/LoadingSpinner";
-
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
   const { agent, loading } = useAuth();
