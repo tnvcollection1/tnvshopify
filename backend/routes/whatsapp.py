@@ -394,13 +394,15 @@ async def import_from_customers(
             order_skus = customer.get("order_skus", [])
             
             for sku in order_skus:
+                if not sku:
+                    continue
                 # Extract size from SKU (typically after dash, e.g., "FG328-40" -> "40")
                 # Also handle formats like "FG328-40-Brown" -> "40"
                 parts = str(sku).split("-")
                 if len(parts) >= 2:
-                    size = parts[1].strip()
+                    size = str(parts[1]).strip()
                     # Check if it's a numeric size
-                    if size.replace(".", "").isdigit():
+                    if size and size.replace(".", "").isdigit():
                         if size not in sizes:
                             sizes.append(size)
             
