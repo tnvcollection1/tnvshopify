@@ -245,19 +245,25 @@ const Dashboard = () => {
   }, [paymentFilter]);
 
   useEffect(() => {
+    setIsResetting(true);
     setCurrentPage(1);
     setCustomers([]);  // Clear existing customers
     setSelectedCustomers([]);
     setHasMore(true);
-    fetchCustomers(selectedSize, 1, false);
+    fetchCustomers(selectedSize, 1, false).finally(() => {
+      setTimeout(() => setIsResetting(false), 500);
+    });
   }, [yearFilter]);
 
   useEffect(() => {
+    setIsResetting(true);
     setCurrentPage(1);
     setCustomers([]);  // Clear existing customers
     setSelectedCustomers([]);
     setHasMore(true);
-    fetchCustomers(selectedSize, 1, false);
+    fetchCustomers(selectedSize, 1, false).finally(() => {
+      setTimeout(() => setIsResetting(false), 500);
+    });
   }, [sortBy]);
 
   const syncShopifyData = async () => {
