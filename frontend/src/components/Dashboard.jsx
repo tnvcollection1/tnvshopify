@@ -887,8 +887,8 @@ const Dashboard = () => {
 
           <Card className="border-none shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
             <CardHeader className="pb-3">
-              <CardDescription className="text-green-100">Current Page</CardDescription>
-              <CardTitle className="text-4xl font-bold">{filteredCustomers.length}</CardTitle>
+              <CardDescription className="text-green-100">Loaded Customers</CardDescription>
+              <CardTitle className="text-4xl font-bold">{customers.length}</CardTitle>
             </CardHeader>
             <CardContent>
               <Search className="h-8 w-8 opacity-80" />
