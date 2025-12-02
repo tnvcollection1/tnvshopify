@@ -271,6 +271,65 @@ async def login_agent(credentials: AgentLogin):
         raise HTTPException(status_code=500, detail="Login failed")
 
 
+@api_router.post("/migrate-preview-data")
+async def migrate_preview_data():
+    """
+    One-time migration endpoint to copy data from preview to production
+    This should only be called once after initial deployment
+    """
+    try:
+        # Check if data already exists (to prevent accidental re-migration)
+        existing_customers = await db.customers.count_documents({})
+        if existing_customers > 100:
+            return {
+                "success": False,
+                "message": f"Database already has {existing_customers} customers. Migration already completed or not needed."
+            }
+        
+        logger.info("🔄 Starting database migration from preview to production...")
+        
+        # Connect to preview database (localhost MongoDB)
+        preview_client = AsyncIOMotorClient("mongodb://localhost:27017")
+        preview_db = preview_client.shopify_customers_db
+        
+        # Collections to migrate
+        collections_to_migrate = ["agents", "customers", "stores", "stock", "tcs_config", "status_checks"]
+        
+        migration_results = {}
+        
+        for collection_name in collections_to_migrate:
+            try:
+                # Get all documents from preview
+                preview_docs = await preview_db[collection_name].find({}, {"_id": 0}).to_list(None)
+                
+                if preview_docs:
+                    # Insert into production database
+                    await db[collection_name].insert_many(preview_docs)
+                    migration_results[collection_name] = len(preview_docs)
+                    logger.info(f"✅ Migrated {len(preview_docs)} documents to {collection_name}")
+                else:
+                    migration_results[collection_name] = 0
+                    logger.info(f"⚠️  No documents to migrate for {collection_name}")
+                    
+            except Exception as e:
+                logger.error(f"❌ Error migrating {collection_name}: {str(e)}")
+                migration_results[collection_name] = f"Error: {str(e)}"
+        
+        preview_client.close()
+        
+        logger.info("✅ Database migration completed!")
+        
+        return {
+            "success": True,
+            "message": "Database migration completed successfully",
+            "migrated": migration_results
+        }
+        
+    except Exception as e:
+        logger.error(f"Error during migration: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
+
 @api_router.post("/init-admin")
 async def initialize_admin():
     """
