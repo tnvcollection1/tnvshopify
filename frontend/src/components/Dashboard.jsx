@@ -317,14 +317,22 @@ const Dashboard = () => {
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('store_name', uploadStoreName);
 
     try {
-      toast.info("Uploading CSV... This may take a moment", { duration: 3000 });
-      const response = await axios.post(`${API}/upload-csv?store_name=${encodeURIComponent(uploadStoreName)}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      toast.info("📤 Uploading Shopify orders CSV... This will merge with existing data", { duration: 5000 });
+      
+      // Use new orders CSV endpoint that properly imports order_number, fulfillment_status, etc.
+      const response = await axios.post(`${API}/upload-orders-csv`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 300000 // 5 minutes for large CSV files
       });
       
-      toast.success(`✅ ${response.data.message}`);
+      const { inserted, updated, total } = response.data;
+      toast.success(`✅ CSV Import Complete!\n📥 New orders: ${inserted}\n🔄 Updated orders: ${updated}\n📊 Total processed: ${total}`, {
+        duration: 10000
+      });
+      
       await fetchStores();
       await fetchCustomers(selectedSize, currentPage);
       await fetchShoeSizes();
