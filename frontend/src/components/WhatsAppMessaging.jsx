@@ -398,19 +398,26 @@ const WhatsAppMessaging = () => {
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8">
+                        <TableCell colSpan={9} className="text-center py-8">
                           Loading contacts...
                         </TableCell>
                       </TableRow>
                     ) : filteredContacts.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8">
+                        <TableCell colSpan={9} className="text-center py-8">
                           No contacts found. Import from dashboard or upload an Excel file.
                         </TableCell>
                       </TableRow>
                     ) : (
                       filteredContacts.map((contact) => (
                         <TableRow key={contact.id}>
+                          <TableCell>
+                            {contact.source === 'csv_upload' ? (
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700">CSV</Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-green-50 text-green-700">Dashboard</Badge>
+                            )}
+                          </TableCell>
                           <TableCell className="font-medium">{contact.name || 'N/A'}</TableCell>
                           <TableCell>{contact.phone || 'N/A'}</TableCell>
                           <TableCell>
