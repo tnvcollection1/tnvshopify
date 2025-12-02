@@ -425,7 +425,9 @@ async def sync_shopify_orders(store_name: str, days_back: int = 3650, full_sync:
             # Fetch orders from last X days
             created_after = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
             logger.info(f"Syncing {store_name} orders from last {days_back} days")
-            orders = sync.fetch_orders(limit=250, status="any", created_after=created_after, fetch_all=False)
+            # Use fetch_all=True when syncing more than 30 days to get all historical orders
+            fetch_all_orders = days_back > 30
+            orders = sync.fetch_orders(limit=250, status="any", created_after=created_after, fetch_all=fetch_all_orders)
         
         if not orders:
             return {
