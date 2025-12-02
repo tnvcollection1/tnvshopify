@@ -407,6 +407,19 @@ const WhatsAppMessaging = () => {
                       <SelectItem value="dashboard_import">Dashboard Import</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Select value={filters.size} onValueChange={(v) => setFilters({ ...filters, size: v })}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Sizes</SelectItem>
+                      {availableSizes.map((size) => (
+                        <SelectItem key={size} value={size}>
+                          Size {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </CardHeader>
