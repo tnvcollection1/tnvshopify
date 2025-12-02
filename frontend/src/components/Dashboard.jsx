@@ -245,6 +245,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     setCurrentPage(1);
+    setCustomers([]);  // Clear existing customers
     setSelectedCustomers([]);
     setHasMore(true);
     fetchCustomers(selectedSize, 1, false);
@@ -252,6 +253,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     setCurrentPage(1);
+    setCustomers([]);  // Clear existing customers
     setSelectedCustomers([]);
     setHasMore(true);
     fetchCustomers(selectedSize, 1, false);
