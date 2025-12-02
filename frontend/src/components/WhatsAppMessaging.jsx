@@ -347,6 +347,19 @@ const WhatsAppMessaging = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  <Select value={filters.store} onValueChange={(v) => setFilters({ ...filters, store: v })}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Store" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Stores</SelectItem>
+                      {stores.map((s) => (
+                        <SelectItem key={s.id} value={s.store_name}>
+                          {s.store_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </CardHeader>
