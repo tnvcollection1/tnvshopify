@@ -139,6 +139,9 @@ const Dashboard = () => {
   // Infinite scroll - load more when reaching bottom
   useEffect(() => {
     const handleScroll = () => {
+      // Don't trigger pagination during filter reset
+      if (isResetting) return;
+      
       // Check if user scrolled near bottom (within 200px)
       const scrolledToBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200;
       
