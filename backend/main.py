@@ -26,6 +26,7 @@ api_router = APIRouter(prefix="/api")
 
 # Include all route modules
 api_router.include_router(auth.router)
+api_router.include_router(whatsapp.router)
 
 # Include the api_router in the app
 app.include_router(api_router)
