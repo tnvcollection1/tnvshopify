@@ -558,7 +558,7 @@ const Dashboard = () => {
     const countryDialCodes = {
       'US': '1', 'IN': '91', 'GB': '44', 'AE': '971', 'SA': '966',
       'CA': '1', 'AU': '61', 'PK': '92', 'BD': '880', 'DE': '49',
-      'FR': '33', 'IT': '39', 'ES': '34', 'BR': '55', 'MX': '52', 'PK': '92'
+      'FR': '33', 'IT': '39', 'ES': '34', 'BR': '55', 'MX': '52'
     };
     
     if (countryCode && !cleanedPhone.startsWith(countryDialCodes[countryCode] || '')) {
