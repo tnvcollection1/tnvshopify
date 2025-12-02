@@ -366,6 +366,16 @@ const WhatsAppMessaging = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  <Select value={filters.source} onValueChange={(v) => setFilters({ ...filters, source: v })}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Sources</SelectItem>
+                      <SelectItem value="csv_upload">CSV Upload</SelectItem>
+                      <SelectItem value="dashboard_import">Dashboard Import</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </CardHeader>
