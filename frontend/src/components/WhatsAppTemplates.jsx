@@ -558,6 +558,77 @@ TNV Collection`,
         </CardContent>
       </Card>
 
+
+      {/* Marketing Templates */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            🎯 Marketing Templates (Promotional Campaigns)
+            <Badge className="bg-purple-500">AI-Optimized</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-gray-700 mb-2">
+              <strong>Marketing Messages Lite API Features:</strong>
+            </p>
+            <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+              <li>✨ <strong>AI-optimized delivery</strong> - Up to 9% higher delivery rates</li>
+              <li>🎯 <strong>Smart targeting</strong> - Prioritizes engaged users</li>
+              <li>💰 <strong>Cost-efficient</strong> - Pay only for delivered messages</li>
+              <li>📊 <strong>Performance tracking</strong> - Detailed analytics in Meta Ads Manager</li>
+              <li>⚡ <strong>Dynamic limits</strong> - Expands reach for high-performing content</li>
+            </ul>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">
+            <strong>For:</strong> Promotional campaigns, product launches, flash sales, seasonal offers.
+            <br />
+            <strong>Approval:</strong> May take 1-3 business days. Ensure content complies with WhatsApp policies.
+          </p>
+          <div className="space-y-4">
+            {marketingTemplates.map((template, index) => (
+              <div key={index} className="border border-purple-200 rounded-lg p-4 bg-purple-50">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-800">{template.name}</h3>
+                    <p className="text-sm text-gray-600">{template.description}</p>
+                    <div className="flex gap-1 mt-1">
+                      <Badge variant="outline" className="text-xs">{template.category}</Badge>
+                      <Badge className="text-xs bg-purple-600">{template.type}</Badge>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(template.body);
+                      toast.success("Template copied! Paste in Meta Business Manager");
+                    }}
+                  >
+                    <Copy className="w-4 h-4 mr-1" />
+                    Copy
+                  </Button>
+                </div>
+                <div className="bg-white p-3 rounded text-sm text-gray-700 whitespace-pre-wrap mt-2">
+                  {template.body}
+                </div>
+                <div className="mt-2">
+                  <p className="text-xs font-medium text-gray-600">Variables:</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {template.variables.map((v, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs">
+                        {`{{${i + 1}}}`} = {v}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+
       {/* Test Template Dialog */}
       <Dialog open={testDialog} onOpenChange={setTestDialog}>
         <DialogContent>
