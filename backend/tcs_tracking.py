@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class TCSTracker:
-    def __init__(self, username: str = None, password: str = None, bearer_token: str = None, token_expiry: str = None, use_production: bool = True):
+    def __init__(self, username: str = None, password: str = None, bearer_token: str = None, token_expiry: str = None, customer_no: str = None, use_production: bool = True):
         """
         Initialize TCS Tracker
         
@@ -20,10 +20,12 @@ class TCSTracker:
             password: TCS account password (if using username/password auth)
             bearer_token: Pre-authenticated bearer token (preferred method)
             token_expiry: Token expiry date (ISO format or date string)
+            customer_no: TCS customer number for COD payment status
             use_production: Use production API (True) or sandbox (False)
         """
         self.username = username
         self.password = password
+        self.customer_no = customer_no or "046809"  # Default customer number
         
         if use_production:
             self.auth_url = "https://ociconnect.tcscourier.com/ecom/api/authentication/token"
