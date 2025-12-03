@@ -454,18 +454,27 @@ class TCSTracker:
         
         # Extract payment information from response
         if data.get('message') == 'SUCCESS':
-            detail = data.get('detail', {})
-            payment_info['cod_amount'] = detail.get('codamount', 0)
-            payment_info['paid_amount'] = detail.get('paidamount', 0)
-            payment_info['balance'] = detail.get('balance', 0)
-            payment_info['payment_date'] = detail.get('paymentdate')
+            detail = data.get('detail', [])
+            
+            # Detail can be a list or dict
+            if isinstance(detail, list) and len(detail) > 0:
+                detail = detail[0]  # Get first item from list
+            elif not isinstance(detail, dict):
+                detail = {}
+            
+            payment_info['cod_amount'] = detail.get('codamount', 0) if isinstance(detail, dict) else 0
+            payment_info['paid_amount'] = detail.get('paidamount', 0) if isinstance(detail, dict) else 0
+            payment_info['balance'] = detail.get('balance', 0) if isinstance(detail, dict) else 0
+            payment_info['payment_date'] = detail.get('paymentdate') if isinstance(detail, dict) else None
             
             # Determine payment status
-            if payment_info['balance'] <= 0:
+            if payment_info['balance'] <= 0 and payment_info['cod_amount'] > 0:
                 payment_info['payment_status'] = 'PAID'
             elif payment_info['paid_amount'] > 0:
                 payment_info['payment_status'] = 'PARTIAL'
-            else:
+            elif payment_info['cod_amount'] > 0:
                 payment_info['payment_status'] = 'PENDING'
+            else:
+                payment_info['payment_status'] = 'N/A'
         
         return payment_info
