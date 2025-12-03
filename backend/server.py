@@ -1342,34 +1342,34 @@ async def sync_all_tcs_deliveries():
                         )
                         synced_count += 1
                     
-                    # AUTO-DEDUCT STOCK WHEN STATUS CHANGES TO DELIVERED
-                    if new_status == 'DELIVERED' and old_status != 'DELIVERED':
-                        if not customer.get('stock_deducted'):
-                            from inventory_manager import InventoryManager
-                            inv_manager = InventoryManager(db)
-                            
-                            deduct_result = await inv_manager.deduct_stock_on_delivery(
-                                customer.get('order_skus', []),
-                                customer['customer_id'],
-                                customer.get('order_number', 'N/A')
-                            )
-                            
-                            if deduct_result['success']:
-                                await db.customers.update_one(
-                                    {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
-                                    {"$set": {
-                                        "stock_deducted": True,
-                                        "stock_deducted_at": datetime.now(timezone.utc).isoformat(),
-                                        "payment_status": "DUE"
-                                    }}
+                        # AUTO-DEDUCT STOCK WHEN STATUS CHANGES TO DELIVERED
+                        if new_status == 'DELIVERED' and old_status != 'DELIVERED':
+                            if not customer.get('stock_deducted'):
+                                from inventory_manager import InventoryManager
+                                inv_manager = InventoryManager(db)
+                                
+                                deduct_result = await inv_manager.deduct_stock_on_delivery(
+                                    customer.get('order_skus', []),
+                                    customer['customer_id'],
+                                    customer.get('order_number', 'N/A')
                                 )
-                                logger.info(f"✅ Auto-deducted stock for order {customer.get('order_number')}")
-                                updated_count += 1
-                    
-                    # RESTORE STOCK WHEN ORDER IS RETURNED
-                    elif new_status == 'RETURNED' and old_status != 'RETURNED':
-                        if customer.get('stock_deducted'):
-                            order_skus = customer.get('order_skus', [])
+                                
+                                if deduct_result['success']:
+                                    await db.customers.update_one(
+                                        {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                                        {"$set": {
+                                            "stock_deducted": True,
+                                            "stock_deducted_at": datetime.now(timezone.utc).isoformat(),
+                                            "payment_status": "DUE"
+                                        }}
+                                    )
+                                    logger.info(f"✅ Auto-deducted stock for order {customer.get('order_number')}")
+                                    updated_count += 1
+                        
+                        # RESTORE STOCK WHEN ORDER IS RETURNED
+                        elif new_status == 'RETURNED' and old_status != 'RETURNED':
+                            if customer.get('stock_deducted'):
+                                order_skus = customer.get('order_skus', [])
                             store_name = customer.get('store_name')
                             
                             if order_skus and store_name:
