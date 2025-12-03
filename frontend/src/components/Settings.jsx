@@ -115,6 +115,70 @@ const Settings = () => {
     }
   };
 
+  const handleTcsConfigChange = (field, value) => {
+    setTcsConfig(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveTcsConfig = async () => {
+    if (tcsConfig.auth_type === 'bearer') {
+      if (!tcsConfig.bearer_token) {
+        toast.error('Bearer token is required');
+        return;
+      }
+    } else {
+      if (!tcsConfig.username || !tcsConfig.password) {
+        toast.error('Username and password are required');
+        return;
+      }
+    }
+
+    setSavingTcs(true);
+
+    try {
+      const payload = {
+        auth_type: tcsConfig.auth_type
+      };
+
+      if (tcsConfig.auth_type === 'bearer') {
+        payload.bearer_token = tcsConfig.bearer_token;
+        payload.token_expiry = tcsConfig.token_expiry;
+      } else {
+        payload.username = tcsConfig.username;
+        payload.password = tcsConfig.password;
+      }
+
+      if (tcsConfig.customer_no) {
+        payload.customer_no = tcsConfig.customer_no;
+      }
+
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/tcs/configure`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to configure TCS API');
+      }
+
+      toast.success('TCS API configured successfully!');
+      setTcsConfigured(true);
+      await fetchTcsConfig();
+    } catch (error) {
+      console.error('Error configuring TCS:', error);
+      toast.error(error.message || 'Failed to configure TCS API');
+    } finally {
+      setSavingTcs(false);
+    }
+  };
+
   const getStoreStatus = (store) => {
     if (store.shopify_domain && store.shopify_token) {
       return {
