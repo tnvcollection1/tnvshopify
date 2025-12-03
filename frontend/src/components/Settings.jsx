@@ -52,6 +52,25 @@ const Settings = () => {
     }
   };
 
+  const fetchTcsConfig = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tcs/credentials`);
+      if (!response.ok) throw new Error('Failed to fetch TCS config');
+      const data = await response.json();
+      
+      if (data.configured) {
+        setTcsConfigured(true);
+        setTcsConfig(prev => ({
+          ...prev,
+          auth_type: data.auth_type || 'bearer',
+          customer_no: data.customer_no || ''
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching TCS config:', error);
+    }
+  };
+
   const handleInputChange = (storeName, field, value) => {
     setFormData(prev => ({
       ...prev,
