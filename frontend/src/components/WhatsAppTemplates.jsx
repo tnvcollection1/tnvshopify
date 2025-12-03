@@ -603,7 +603,7 @@ TNV Collection`,
                   <div className="flex gap-2">
                     <Button
                       size="sm"
-                      onClick={() => useRecommendedTemplate(template)}
+                      onClick={() => selectRecommendedTemplate(template)}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Plus className="w-3 h-3 mr-1" />
@@ -683,7 +683,7 @@ TNV Collection`,
                   <div className="flex gap-2">
                     <Button
                       size="sm"
-                      onClick={() => useRecommendedTemplate(template)}
+                      onClick={() => selectRecommendedTemplate(template)}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Plus className="w-3 h-3 mr-1" />
