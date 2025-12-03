@@ -66,6 +66,19 @@ class AutoTCSSync:
                         if not customer.get('stock_deducted'):
                             logger.info(f"🎯 Auto-deducting stock for order {customer['order_number']}")
                             # Stock deduction logic would go here
+                    
+                    # Auto-add to return inventory if return in process
+                    if new_status == 'RETURN_IN_PROCESS' and old_status != 'RETURN_IN_PROCESS':
+                        logger.info(f"📦 Adding returned items to inventory for order {customer['order_number']}")
+                        # Mark as return in process
+                        await self.db.customers.update_one(
+                            {'customer_id': customer['customer_id'], 'store_name': customer['store_name']},
+                            {'$set': {
+                                'return_status': 'in_transit',
+                                'return_received': False,
+                                'return_updated_at': datetime.now(timezone.utc).isoformat()
+                            }}
+                        )
                 
                 return True
             else:
