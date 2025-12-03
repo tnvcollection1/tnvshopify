@@ -135,6 +135,60 @@ await axios.post('${API}/whatsapp/send-template', {
     toast.success("Code copied to clipboard!");
   };
 
+  const handleCreateTemplate = async () => {
+    if (!newTemplate.name || !newTemplate.body) {
+      toast.error("Template name and body are required");
+      return;
+    }
+
+    // Validate name format
+    const nameRegex = /^[a-z][a-z0-9_]*$/;
+    if (!nameRegex.test(newTemplate.name)) {
+      toast.error("Template name must be lowercase with underscores only (e.g., order_update)");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const response = await axios.post(`${API}/whatsapp/templates/create`, newTemplate);
+      
+      if (response.data.success) {
+        toast.success(`✅ Template "${newTemplate.name}" submitted for approval!`);
+        toast.info("Approval typically takes 15 mins - 24 hours for UTILITY, 1-3 days for MARKETING");
+        setCreateDialog(false);
+        setNewTemplate({
+          name: "",
+          category: "UTILITY",
+          language: "en",
+          body: "",
+          header: "",
+          footer: ""
+        });
+        // Refresh templates
+        setTimeout(() => fetchTemplates(), 2000);
+      } else {
+        toast.error(`Failed: ${response.data.error}`);
+      }
+    } catch (error) {
+      console.error("Template creation error:", error);
+      toast.error(error.response?.data?.detail || "Failed to create template");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const useRecommendedTemplate = (template) => {
+    setNewTemplate({
+      name: template.name,
+      category: template.category,
+      language: "en",
+      body: template.body,
+      header: "",
+      footer: ""
+    });
+    setCreateDialog(true);
+  };
+
   const utilityTemplates = [
     {
       name: "order_confirmation",
