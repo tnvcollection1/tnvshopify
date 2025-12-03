@@ -197,6 +197,7 @@ TNV Collection`,
     {
       name: "order_delivered",
       category: "UTILITY",
+      type: "Transactional",
       description: "Confirm successful delivery",
       body: `Hi {{1}},
 
