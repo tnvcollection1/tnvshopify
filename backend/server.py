@@ -271,6 +271,61 @@ async def login_agent(credentials: AgentLogin):
         raise HTTPException(status_code=500, detail="Login failed")
 
 
+class PasswordChange(BaseModel):
+    username: str
+    current_password: str
+    new_password: str
+
+
+@api_router.post("/agents/change-password")
+async def change_agent_password(password_data: PasswordChange):
+    """
+    Change agent password
+    """
+    try:
+        import hashlib
+        
+        # Verify current password
+        current_hashed = hashlib.sha256(password_data.current_password.encode()).hexdigest()
+        agent = await db.agents.find_one({
+            "username": password_data.username,
+            "password": current_hashed
+        })
+        
+        if not agent:
+            raise HTTPException(status_code=401, detail="Current password is incorrect")
+        
+        # Validate new password
+        if len(password_data.new_password) < 6:
+            raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+        
+        # Update password
+        new_hashed = hashlib.sha256(password_data.new_password.encode()).hexdigest()
+        result = await db.agents.update_one(
+            {"username": password_data.username},
+            {"$set": {
+                "password": new_hashed,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Agent not found")
+        
+        logger.info(f"Password changed for agent: {password_data.username}")
+        
+        return {
+            "success": True,
+            "message": "Password changed successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error changing password: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to change password")
+
+
 @api_router.post("/migrate-preview-data")
 async def migrate_preview_data():
     """
