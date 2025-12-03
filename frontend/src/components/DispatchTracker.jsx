@@ -1317,6 +1317,77 @@ const DispatchTracker = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* WhatsApp Message Dialog */}
+      <Dialog open={whatsappDialog} onOpenChange={setWhatsappDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <MessageCircle className="w-5 h-5" />
+              Send WhatsApp Message
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedWhatsappOrder && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-sm font-medium text-gray-700">
+                  Customer: {selectedWhatsappOrder.first_name} {selectedWhatsappOrder.last_name}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Phone: {selectedWhatsappOrder.phone}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Order: #{selectedWhatsappOrder.order_number}
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Message
+                </label>
+                <Textarea
+                  value={whatsappMessage}
+                  onChange={(e) => setWhatsappMessage(e.target.value)}
+                  placeholder="Type your message..."
+                  rows={6}
+                  className="resize-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {whatsappMessage.length} characters
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setWhatsappDialog(false)}
+              disabled={sendingWhatsapp}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendWhatsApp}
+              disabled={sendingWhatsapp || !whatsappMessage.trim()}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {sendingWhatsapp ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Send WhatsApp
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
