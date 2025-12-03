@@ -335,6 +335,8 @@ test_plan:
     - "Inventory Management System V2"
   test_all: false
   test_priority: "high_first"
+  completed_this_session:
+    - "Password change feature and default credentials removal - FULLY TESTED AND WORKING"
 
 agent_communication:
     - agent: "main"
