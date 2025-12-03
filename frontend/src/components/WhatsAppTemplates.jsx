@@ -507,17 +507,19 @@ TNV Collection`,
         </CardContent>
       </Card>
 
-      {/* Recommended Templates */}
-      <Card>
+      {/* Utility Templates */}
+      <Card className="mb-6">
         <CardHeader>
-          <CardTitle>💡 Recommended Templates for Your Business</CardTitle>
+          <CardTitle>📋 Utility Templates (Transactional Messages)</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600 mb-4">
-            Copy these templates and create them in Meta Business Manager. They're optimized for e-commerce order management.
+            <strong>For:</strong> Order updates, shipping notifications, customer service messages.
+            <br />
+            <strong>Approval:</strong> Usually approved within 15 minutes to 24 hours.
           </p>
           <div className="space-y-4">
-            {recommendedTemplates.map((template, index) => (
+            {utilityTemplates.map((template, index) => (
               <div key={index} className="border border-blue-200 rounded-lg p-4 bg-blue-50">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
