@@ -161,7 +161,18 @@ class TCSTracker:
                 data = response.json()
                 
                 if data.get('message') == 'SUCCESS':
-                    return self._parse_tracking_response(data, tracking_number)
+                    tracking_data = self._parse_tracking_response(data, tracking_number)
+                    
+                    # Also fetch COD payment status if tracking is successful
+                    try:
+                        payment_info = self.get_cod_payment_status(tracking_number)
+                        if payment_info and payment_info.get('payment_status'):
+                            tracking_data['payment_info'] = payment_info
+                    except Exception as e:
+                        logger.warning(f"Failed to fetch payment status for {tracking_number}: {str(e)}")
+                        tracking_data['payment_info'] = None
+                    
+                    return tracking_data
                 else:
                     logger.warning(f"TCS tracking failed for {tracking_number}: {data.get('shipmentsummary')}")
                     return {
