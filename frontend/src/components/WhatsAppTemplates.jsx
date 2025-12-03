@@ -179,6 +179,7 @@ TNV Collection`,
     {
       name: "payment_reminder",
       category: "UTILITY",
+      type: "Transactional",
       description: "Remind customers about COD payment",
       body: `Hello {{1}},
 
