@@ -189,6 +189,57 @@ const Settings = () => {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (!passwordForm.current_password || !passwordForm.new_password || !passwordForm.confirm_password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (passwordForm.new_password.length < 6) {
+      toast.error('New password must be at least 6 characters');
+      return;
+    }
+
+    if (passwordForm.new_password !== passwordForm.confirm_password) {
+      toast.error('New passwords do not match');
+      return;
+    }
+
+    setChangingPassword(true);
+
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/agents/change-password`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: agent?.username,
+            current_password: passwordForm.current_password,
+            new_password: passwordForm.new_password
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to change password');
+      }
+
+      toast.success('Password changed successfully!');
+      setPasswordForm({
+        current_password: '',
+        new_password: '',
+        confirm_password: ''
+      });
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error(error.message || 'Failed to change password');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   const getStoreStatus = (store) => {
     if (store.shopify_domain && store.shopify_token) {
       return {
