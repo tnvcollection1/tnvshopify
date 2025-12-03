@@ -301,9 +301,20 @@ const DispatchTracker = () => {
               onClick={handleSyncTCS}
               disabled={loading}
               className="border-gray-300 hover:bg-gray-50"
+              title="Fast batch sync (100 orders)"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              Sync TCS Status
+              Sync TCS (Batch)
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleSyncTCSOneByOne}
+              disabled={loading}
+              className="border-blue-300 hover:bg-blue-50 text-blue-700"
+              title="Slower but more reliable - syncs one by one with 2s delay"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Sync TCS (One-by-One)
             </Button>
             <Button
               variant="outline"
