@@ -1,11 +1,16 @@
 """
 TCS Pakistan Courier Tracking Integration
 Handles authentication and real-time delivery status tracking
+Updated to use TCS public API endpoint
 """
 import requests
 import logging
+import urllib3
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional
+
+# Disable SSL warnings for TCS API
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger(__name__)
 
