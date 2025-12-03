@@ -600,17 +600,27 @@ TNV Collection`,
                     <p className="text-sm text-gray-600">{template.description}</p>
                     <Badge variant="outline" className="mt-1">{template.category}</Badge>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      navigator.clipboard.writeText(template.body);
-                      toast.success("Template copied! Paste in Meta Business Manager");
-                    }}
-                  >
-                    <Copy className="w-4 h-4 mr-1" />
-                    Copy
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => useRecommendedTemplate(template)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Use Template
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        navigator.clipboard.writeText(template.body);
+                        toast.success("Template copied to clipboard!");
+                      }}
+                    >
+                      <Copy className="w-4 h-4 mr-1" />
+                      Copy
+                    </Button>
+                  </div>
                 </div>
                 <div className="bg-white p-3 rounded text-sm text-gray-700 whitespace-pre-wrap mt-2">
                   {template.body}
@@ -670,17 +680,27 @@ TNV Collection`,
                       <Badge className="text-xs bg-purple-600">{template.type}</Badge>
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      navigator.clipboard.writeText(template.body);
-                      toast.success("Template copied! Paste in Meta Business Manager");
-                    }}
-                  >
-                    <Copy className="w-4 h-4 mr-1" />
-                    Copy
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => useRecommendedTemplate(template)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Use Template
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        navigator.clipboard.writeText(template.body);
+                        toast.success("Template copied to clipboard!");
+                      }}
+                    >
+                      <Copy className="w-4 h-4 mr-1" />
+                      Copy
+                    </Button>
+                  </div>
                 </div>
                 <div className="bg-white p-3 rounded text-sm text-gray-700 whitespace-pre-wrap mt-2">
                   {template.body}
