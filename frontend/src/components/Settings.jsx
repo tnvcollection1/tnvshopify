@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Store, CheckCircle, XCircle, Loader2, AlertCircle, Truck, Package } from 'lucide-react';
+import { Store, CheckCircle, XCircle, Loader2, AlertCircle, Truck, Package, Key } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Settings = () => {
+  const { agent } = useAuth();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
@@ -22,6 +24,14 @@ const Settings = () => {
   });
   const [tcsConfigured, setTcsConfigured] = useState(false);
   const [savingTcs, setSavingTcs] = useState(false);
+  
+  // Password change state
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     fetchStores();
