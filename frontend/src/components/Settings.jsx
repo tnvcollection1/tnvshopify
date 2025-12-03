@@ -583,6 +583,107 @@ const Settings = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Security/Password Change Tab */}
+          <TabsContent value="security" className="space-y-6">
+            {/* Info Banner */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-amber-900 mb-1">Account Security</h3>
+                <p className="text-sm text-amber-700">
+                  Change your password to keep your account secure. Use a strong password with at least 6 characters.
+                </p>
+              </div>
+            </div>
+
+            {/* Password Change Card */}
+            <Card className="border-2">
+              <CardHeader className="bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <Key className="w-6 h-6 text-gray-700" />
+                  <div>
+                    <CardTitle className="text-xl">Change Password</CardTitle>
+                    <CardDescription className="text-sm mt-1">
+                      Update your account password
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="pt-6 space-y-4">
+                {agent && (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-900">
+                      <span className="font-semibold">Current User:</span> {agent.username} ({agent.full_name})
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="current_password">Current Password</Label>
+                    <Input
+                      id="current_password"
+                      type="password"
+                      placeholder="Enter your current password"
+                      value={passwordForm.current_password}
+                      onChange={(e) => setPasswordForm({...passwordForm, current_password: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="new_password">New Password</Label>
+                    <Input
+                      id="new_password"
+                      type="password"
+                      placeholder="Enter new password (min 6 characters)"
+                      value={passwordForm.new_password}
+                      onChange={(e) => setPasswordForm({...passwordForm, new_password: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm_password">Confirm New Password</Label>
+                    <Input
+                      id="confirm_password"
+                      type="password"
+                      placeholder="Re-enter new password"
+                      value={passwordForm.confirm_password}
+                      onChange={(e) => setPasswordForm({...passwordForm, confirm_password: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="pt-2">
+                    <Button
+                      onClick={handleChangePassword}
+                      disabled={changingPassword}
+                      className="w-full sm:w-auto"
+                    >
+                      {changingPassword ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Changing Password...
+                        </>
+                      ) : (
+                        'Change Password'
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <h4 className="font-semibold text-sm mb-2">Password Requirements:</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• Minimum 6 characters</li>
+                      <li>• Use a combination of letters, numbers, and symbols</li>
+                      <li>• Avoid common words or patterns</li>
+                      <li>• Don't reuse old passwords</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
