@@ -68,7 +68,13 @@ async def manual_tcs_sync(limit=20):
                 print(f'  📍 Location: {location}')
                 print(f'  🔄 Normalized: {new_status}')
                 
-                # Update database
+                # SKIP UNKNOWN/NOT_FOUND - don't update database
+                if new_status in ['UNKNOWN', 'NOT_FOUND']:
+                    print(f'  ⏭️  SKIPPED: Status is {new_status} (old/invalid tracking number)')
+                    error_count += 1
+                    continue
+                
+                # Update database with VALID status only
                 result = await db.customers.update_one(
                     {'customer_id': customer['customer_id'], 'store_name': customer['store_name']},
                     {'$set': {
