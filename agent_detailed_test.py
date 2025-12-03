@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://shopmanager-31.preview.emergentagent.com/api'
+base_url = 'https://cod-payment-sync.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
