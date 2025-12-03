@@ -249,7 +249,7 @@ const DispatchTracker = () => {
   };
 
   const handleSyncTCSOneByOne = async () => {
-    try:
+    try {
       toast.info("Syncing TCS one-by-one (slower but more reliable)...", { duration: 5000 });
       const response = await axios.post(`${API}/tcs/sync-one-by-one?limit=50&delay=2`);
       if (response.data.success) {
