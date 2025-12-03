@@ -1272,9 +1272,9 @@ async def sync_all_tcs_deliveries():
         
         # Get customers with TCS tracking numbers only
         customers = await db.customers.find({
-            "tracking_number": {"$ne": None, "$ne": "", "$exists": True},
+            "tracking_number": {"$exists": True, "$nin": [None, ""]},
             "tracking_company": {"$regex": "TCS", "$options": "i"}
-        }, {"_id": 0, "tracking_number": 1, "customer_id": 1, "store_name": 1, "delivery_status": 1, "order_skus": 1, "order_number": 1, "stock_deducted": 1}).to_list(1000)
+        }, {"_id": 0, "tracking_number": 1, "customer_id": 1, "store_name": 1, "delivery_status": 1, "order_skus": 1, "order_number": 1, "stock_deducted": 1}).to_list(100)
         
         if not customers:
             # Count total customers with non-TCS tracking
