@@ -46,15 +46,31 @@ class AutoTCSSync:
                     )
                     return False
                 
-                # Update database with VALID status
+                # Prepare update data
+                update_data = {
+                    'delivery_status': new_status,
+                    'delivery_location': location,
+                    'delivery_updated_at': datetime.now(timezone.utc).isoformat(),
+                    'last_auto_sync': datetime.now(timezone.utc).isoformat()
+                }
+                
+                # Add payment information if available
+                if tracking_data.get('payment_info'):
+                    payment = tracking_data['payment_info']
+                    update_data['payment_status'] = payment.get('payment_status', 'N/A')
+                    update_data['cod_amount'] = payment.get('cod_amount', 0)
+                    update_data['amount_paid'] = payment.get('paid_amount', 0)
+                    update_data['payment_balance'] = payment.get('balance', 0)
+                    update_data['payment_date'] = payment.get('payment_date')
+                    update_data['delivery_charges'] = payment.get('delivery_charges', 0)
+                    update_data['parcel_weight'] = payment.get('parcel_weight', 0)
+                    update_data['booking_date'] = payment.get('booking_date')
+                    update_data['cn_status'] = payment.get('cn_status', 'OK')
+                
+                # Update database with VALID status and payment data
                 await self.db.customers.update_one(
                     {'customer_id': customer['customer_id'], 'store_name': customer['store_name']},
-                    {'$set': {
-                        'delivery_status': new_status,
-                        'delivery_location': location,
-                        'delivery_updated_at': datetime.now(timezone.utc).isoformat(),
-                        'last_auto_sync': datetime.now(timezone.utc).isoformat()
-                    }}
+                    {'$set': update_data}
                 )
                 
                 if old_status != new_status:
