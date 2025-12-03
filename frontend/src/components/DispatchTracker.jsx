@@ -102,6 +102,17 @@ const DispatchTracker = () => {
     }
   };
 
+  const fetchAutoSyncStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/tcs/auto-sync-status`);
+      if (response.data.success) {
+        setAutoSyncStatus(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching auto-sync status:", error);
+    }
+  };
+
   const fetchOrders = async () => {
     setLoading(true);
     try {
