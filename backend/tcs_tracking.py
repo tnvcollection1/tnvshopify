@@ -224,15 +224,18 @@ class TCSTracker:
         Parse TCS tracking response into standardized format
         
         Args:
-            data: Raw TCS API response
+            data: Raw TCS API response from the new apibridge endpoint
             tracking_number: Tracking number
             
         Returns:
             Parsed tracking data
         """
-        delivery_info = data.get('deliveryinfo', [])
-        checkpoints = data.get('checkpoints', [])
-        summary = data.get('shipmentsummary', '')
+        # Extract data from new API structure
+        response_data = data.get('responseData', {})
+        delivery_info = response_data.get('deliveryinfo', [])
+        checkpoints = response_data.get('checkpoints', [])
+        shipment_info = response_data.get('shipmentinfo', [])
+        summary = response_data.get('shipmentsummary', '')
         
         # Get current status from latest delivery info
         current_status = 'UNKNOWN'
@@ -252,6 +255,19 @@ class TCSTracker:
         # Map TCS status to our system status
         normalized_status = self._normalize_status(current_status)
         
+        # Get shipment details
+        shipment_details = {}
+        if shipment_info and len(shipment_info) > 0:
+            shipment = shipment_info[0]
+            shipment_details = {
+                'consignment_no': shipment.get('consignmentno'),
+                'origin': shipment.get('origin'),
+                'destination': shipment.get('destination'),
+                'booking_date': shipment.get('bookingdate'),
+                'shipper': shipment.get('shipper'),
+                'consignee': shipment.get('consignee')
+            }
+        
         return {
             'tracking_number': tracking_number,
             'status': current_status,
@@ -263,6 +279,7 @@ class TCSTracker:
             'summary': summary,
             'checkpoints': checkpoints,
             'delivery_info': delivery_info,
+            'shipment_info': shipment_details,
             'is_delivered': normalized_status == 'DELIVERED'
         }
     
