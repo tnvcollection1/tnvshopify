@@ -91,7 +91,123 @@ class TCSPaymentAPI:
                 'consignment_no': consignment_no
             }
     
-    def _parse_payment_data(self, data: Dict, consignment_no: str) -> Dict:
+    def _parse_payment_data_new(self, data: Dict, consignment_no: str, shopify_total: float, shopify_payment_status: str) -> Dict:
+        """
+        Parse TCS payment response with Shopify-first approach
+        
+        Args:
+            data: Raw TCS payment API response
+            consignment_no: Consignment number
+            shopify_total: Order total from Shopify
+            shopify_payment_status: Shopify payment status
+            
+        Returns:
+            Parsed payment information based on Shopify + TCS delivery charges
+        """
+        detail = data.get('detail', {})
+        
+        # Handle both list and dict formats
+        if isinstance(detail, list) and len(detail) > 0:
+            detail = detail[0]
+        elif not isinstance(detail, dict):
+            detail = {}
+        
+        # Get delivery charges from TCS (this is reliable)
+        delivery_charges = float(detail.get('delivery charges', 0))
+        parcel_weight = detail.get('parcel weight', 0)
+        booking_date = detail.get('booking date')
+        delivery_date = detail.get('delivery date')
+        payment_date = detail.get('payment date')
+        city = detail.get('city')
+        
+        # Use Shopify payment status as primary source
+        if shopify_payment_status == 'paid':
+            # Customer already paid online
+            normalized_status = 'PAID'
+            cod_amount = 0.0
+            paid_amount = shopify_total
+            balance = 0.0
+        elif shopify_payment_status == 'pending':
+            # Customer needs to pay (COD or pending online payment)
+            normalized_status = 'PENDING'
+            cod_amount = shopify_total
+            paid_amount = 0.0
+            balance = shopify_total
+        else:
+            # Unknown status
+            normalized_status = 'UNKNOWN'
+            cod_amount = shopify_total
+            paid_amount = 0.0
+            balance = shopify_total
+        
+        return {
+            'success': True,
+            'consignment_no': consignment_no,
+            'cod_amount': cod_amount,
+            'paid_amount': paid_amount,
+            'balance': balance,
+            'delivery_charges': delivery_charges,
+            'payment_date': payment_date,
+            'booking_date': booking_date,
+            'delivery_date': delivery_date,
+            'collection_date': payment_date,
+            'remittance_date': payment_date,
+            'remittance_amount': paid_amount,
+            'normalized_status': normalized_status,
+            'payment_status': normalized_status,
+            'city': city,
+            'parcel_weight': parcel_weight,
+            'source': 'shopify_primary_tcs_charges'
+        }
+    
+    def _create_shopify_based_payment(self, consignment_no: str, shopify_total: float, shopify_payment_status: str) -> Dict:
+        """
+        Create payment data based purely on Shopify status (when TCS API doesn't have CN)
+        
+        Args:
+            consignment_no: Consignment number
+            shopify_total: Order total from Shopify
+            shopify_payment_status: Shopify payment status
+            
+        Returns:
+            Payment information based only on Shopify data
+        """
+        # Use Shopify payment status as primary source
+        if shopify_payment_status == 'paid':
+            normalized_status = 'PAID'
+            cod_amount = 0.0
+            paid_amount = shopify_total
+            balance = 0.0
+        elif shopify_payment_status == 'pending':
+            normalized_status = 'PENDING'
+            cod_amount = shopify_total
+            paid_amount = 0.0
+            balance = shopify_total
+        else:
+            normalized_status = 'UNKNOWN'
+            cod_amount = shopify_total
+            paid_amount = 0.0
+            balance = shopify_total
+        
+        return {
+            'success': True,
+            'consignment_no': consignment_no,
+            'cod_amount': cod_amount,
+            'paid_amount': paid_amount,
+            'balance': balance,
+            'delivery_charges': 0.0,  # Unknown without TCS API
+            'payment_date': None,
+            'booking_date': None,
+            'delivery_date': None,
+            'collection_date': None,
+            'remittance_date': None,
+            'remittance_amount': paid_amount,
+            'normalized_status': normalized_status,
+            'payment_status': normalized_status,
+            'city': None,
+            'parcel_weight': 0,
+            'source': 'shopify_only'
+        }
         """
         Parse TCS payment response data
         
