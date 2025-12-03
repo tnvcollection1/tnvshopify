@@ -96,6 +96,7 @@ class Customer(BaseModel):
     parcel_weight: Optional[float] = None  # Parcel weight in kg
     booking_date: Optional[str] = None  # TCS booking date
     delivery_date: Optional[str] = None  # TCS delivery date
+    payment_date: Optional[str] = None  # COD payment date/time (when payment was collected)
     collection_date: Optional[str] = None  # COD collection date
     remittance_date: Optional[str] = None  # COD remittance date
     remittance_amount: Optional[float] = None  # Amount remitted to merchant
