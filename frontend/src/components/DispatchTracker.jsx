@@ -902,27 +902,57 @@ const DispatchTracker = () => {
               {/* Tracking Data */}
               {trackingData && !trackingData.error && !loadingTracking && (
                 <div className="space-y-4">
+                  {/* UNKNOWN Status Warning */}
+                  {trackingData.normalized_status === 'UNKNOWN' && (
+                    <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 text-amber-600">
+                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-amber-900 mb-1">Tracking Not Available</h4>
+                          <p className="text-sm text-amber-800">
+                            {trackingData.summary || 'This tracking number is not found in TCS system. It may be expired, invalid, or not yet activated.'}
+                          </p>
+                          <p className="text-xs text-amber-700 mt-2">
+                            💡 Tip: You can manually update the delivery status using the green hand icon button.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Current Status */}
-                  <div className="bg-white border-2 border-blue-300 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-lg text-gray-900">Current Status</h3>
-                      {trackingData.is_delivered && (
-                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                          ✓ Delivered
-                        </span>
+                  {trackingData.normalized_status !== 'UNKNOWN' && (
+                    <div className="bg-white border-2 border-blue-300 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-lg text-gray-900">Current Status</h3>
+                        {trackingData.is_delivered && (
+                          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
+                            ✓ Delivered
+                          </span>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Status</p>
+                          <p className="font-semibold text-gray-900">{trackingData.status || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Location</p>
+                          <p className="font-semibold text-gray-900">{trackingData.current_location || 'N/A'}</p>
+                        </div>
+                      </div>
+                      {trackingData.receiver && (
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <p className="text-sm text-gray-500">Received By</p>
+                          <p className="font-semibold text-gray-900">{trackingData.receiver}</p>
+                        </div>
                       )}
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Status</p>
-                        <p className="font-semibold text-gray-900">{trackingData.status || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Location</p>
-                        <p className="font-semibold text-gray-900">{trackingData.current_location || 'N/A'}</p>
-                      </div>
-                    </div>
-                  </div>
+                  )}
 
                   {/* Tracking Timeline */}
                   {trackingData.checkpoints && trackingData.checkpoints.length > 0 && (
