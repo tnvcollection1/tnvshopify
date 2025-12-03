@@ -211,6 +211,109 @@ Thank you for choosing TNV Collection!`,
     }
   ];
 
+  const marketingTemplates = [
+    {
+      name: "flash_sale_alert",
+      category: "MARKETING",
+      type: "Promotional",
+      description: "Alert customers about limited-time sales",
+      body: `🔥 FLASH SALE ALERT! 🔥
+
+Hi {{1}},
+
+Special {{2}} OFF on {{3}}!
+
+⏰ Hurry! Only {{4}} hours left!
+
+Shop now: {{5}}
+
+Limited stock available!
+
+TNV Collection`,
+      variables: ["Customer Name", "Discount %", "Product Category", "Hours", "Shop Link"]
+    },
+    {
+      name: "new_product_launch",
+      category: "MARKETING",
+      type: "Promotional",
+      description: "Announce new product arrivals",
+      body: `✨ NEW ARRIVALS! ✨
+
+Hello {{1}},
+
+Check out our latest {{2}} collection!
+
+🎁 Special launch offer: {{3}}
+
+Shop now: {{4}}
+
+Be the first to get yours!
+
+TNV Collection`,
+      variables: ["Customer Name", "Collection Name", "Offer", "Shop Link"]
+    },
+    {
+      name: "seasonal_promotion",
+      category: "MARKETING",
+      type: "Promotional",
+      description: "Seasonal sales and special offers",
+      body: `🎉 {{1}} SPECIAL OFFER! 🎉
+
+Hi {{2}},
+
+Get {{3}} OFF on entire store!
+
+💰 Use code: {{4}}
+
+Valid till: {{5}}
+
+Shop now: {{6}}
+
+TNV Collection`,
+      variables: ["Season", "Customer Name", "Discount", "Promo Code", "Validity", "Link"]
+    },
+    {
+      name: "cart_reminder",
+      category: "MARKETING",
+      type: "Re-engagement",
+      description: "Recover abandoned shopping carts",
+      body: `👋 Hi {{1}},
+
+You left {{2}} items in your cart!
+
+Complete your order now and get {{3}} OFF!
+
+Your cart: {{4}}
+
+Offer expires in {{5}} hours.
+
+TNV Collection`,
+      variables: ["Customer Name", "Item Count", "Discount", "Cart Link", "Hours"]
+    },
+    {
+      name: "vip_exclusive",
+      category: "MARKETING",
+      type: "Loyalty",
+      description: "VIP customer exclusive offers",
+      body: `💎 VIP EXCLUSIVE OFFER 💎
+
+Dear {{1}},
+
+As our valued customer, enjoy {{2}} OFF!
+
+Plus FREE shipping on all orders!
+
+Code: {{3}}
+
+Valid for {{4}} days only.
+
+Shop now: {{5}}
+
+TNV Collection`,
+      variables: ["Customer Name", "Discount", "VIP Code", "Days", "Shop Link"]
+    }
+  ];
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
