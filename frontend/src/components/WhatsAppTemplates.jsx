@@ -177,7 +177,7 @@ await axios.post('${API}/whatsapp/send-template', {
     }
   };
 
-  const useRecommendedTemplate = (template) => {
+  const selectRecommendedTemplate = (template) => {
     setNewTemplate({
       name: template.name,
       category: template.category,
