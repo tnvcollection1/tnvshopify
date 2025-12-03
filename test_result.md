@@ -320,6 +320,18 @@ frontend:
           agent: "testing"
           comment: "TESTED ✅ - TCS Sync functionality working perfectly. Successfully verified: 1) Login with admin/admin123, 2) Navigation to /tracker (Dispatch Tracker) successful, 3) 'Sync TCS Status' button found and clickable, 4) TCS sync API working correctly (verified via curl: 'TCS sync completed: 100 orders synced'), 5) Dispatch tracker displays 382 total orders with proper table structure, 6) Delivery status badges visible (PENDING status shown), 7) All filter dropdowns present (Store, Delivery, Payment, Year), 8) Modern UI with stats cards showing Total: 382, Delivered: 0, In Transit: 0, Pending: 100, etc. TCS integration fully functional without timezone errors as expected."
 
+  - task: "Payment Date column in Dispatch Tracker"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/DispatchTracker.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Payment Date column successfully added to Dispatch Tracker. Verified: 1) Login with admin/admin123 successful, 2) Navigation to /tracker successful, 3) Payment Date column header found at position 17 (correctly positioned after Delivery Date), 4) Complete table structure with 19 columns verified, 5) Backend API confirmed order #29248 with tracking 173007564875 has collection_date '13/11/2025 12:34 PM', 6) Frontend code correctly displays payment_date || collection_date || '—', 7) Table maintains responsive design with new column. Implementation complete and working as expected."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
