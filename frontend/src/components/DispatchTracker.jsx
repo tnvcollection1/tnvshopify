@@ -212,7 +212,7 @@ const DispatchTracker = () => {
 
   const handleSyncTCS = async () => {
     try {
-      toast.info("Syncing TCS delivery status...");
+      toast.info("Syncing TCS delivery status (batch mode)...");
       const response = await axios.post(`${API}/tcs/sync-all`);
       if (response.data.success) {
         toast.success(`✅ ${response.data.message}\n${response.data.synced_count} orders updated`);
@@ -220,6 +220,20 @@ const DispatchTracker = () => {
       }
     } catch (error) {
       console.error("TCS sync error:", error);
+      toast.error("Failed to sync TCS status");
+    }
+  };
+
+  const handleSyncTCSOneByOne = async () => {
+    try {
+      toast.info("Syncing TCS one-by-one (slower but more reliable)...", { duration: 5000 });
+      const response = await axios.post(`${API}/tcs/sync-one-by-one?limit=50&delay=2`);
+      if (response.data.success) {
+        toast.success(`✅ ${response.data.message}\n${response.data.synced_count} orders updated`);
+        await fetchOrders();
+      }
+    } catch (error) {
+      console.error("TCS one-by-one sync error:", error);
       toast.error("Failed to sync TCS status");
     }
   };
