@@ -110,15 +110,14 @@ class AutoTCSSync:
         
         while self.is_running:
             try:
-                # Get TCS orders that haven't been synced recently
-                # Priority: orders not synced today OR orders in transit/out for delivery
+                # Get TCS orders that need syncing
+                # SKIP: DELIVERED, RETURNED, RETURN_IN_PROCESS, UNKNOWN (final statuses)
+                # SYNC: IN_TRANSIT, OUT_FOR_DELIVERY, PENDING (active statuses)
                 customers = await self.db.customers.find({
                     'tracking_company': 'TCS',
                     'tracking_number': {'$ne': None, '$ne': ''},
-                    '$or': [
-                        {'last_auto_sync': {'$exists': False}},
-                        {'delivery_status': {'$in': ['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'PENDING']}}
-                    ]
+                    'delivery_status': {'$in': ['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'PENDING', None]},
+                    'delivery_status': {'$nin': ['DELIVERED', 'RETURNED', 'RETURN_IN_PROCESS', 'UNKNOWN']}
                 }, {
                     '_id': 0,
                     'order_number': 1,
