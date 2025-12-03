@@ -692,6 +692,17 @@ const DispatchTracker = () => {
                             >
                               <Hand className="w-3 h-3" />
                             </Button>
+                            {['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'RETURN_IN_PROCESS', 'DELIVERED', 'UNKNOWN'].includes(order.delivery_status) && order.tracking_number && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleShowTracking(order)}
+                                className="border-blue-300 hover:bg-blue-50 text-blue-700"
+                                title="View Real-Time Tracking"
+                              >
+                                <Truck className="w-3 h-3" />
+                              </Button>
+                            )}
                             {order.delivery_status === 'RETURN_IN_PROCESS' && !order.return_received && (
                               <Button
                                 size="sm"
