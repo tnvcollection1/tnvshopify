@@ -159,12 +159,6 @@ const Login = ({ onLoginSuccess }) => {
               {isSignup ? "Already have an account? Login" : "Don't have an account? Sign Up"}
             </button>
           </div>
-          
-          {!isSignup && (
-            <div className="mt-4 text-center text-sm text-slate-500">
-              <p>Default credentials: admin / admin123</p>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
