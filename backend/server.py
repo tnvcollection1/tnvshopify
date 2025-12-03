@@ -90,6 +90,15 @@ class Customer(BaseModel):
     payment_method: Optional[str] = None  # Payment method used
     cod_payment_status: Optional[str] = None  # TCS COD payment status: PENDING, COLLECTED, REMITTED, HELD, REVERSED
     cod_amount: Optional[float] = None  # COD amount to be collected
+    amount_paid: Optional[float] = None  # Amount paid by customer (from TCS Payment API)
+    payment_balance: Optional[float] = None  # Remaining balance after deducting delivery charges
+    delivery_charges: Optional[float] = None  # TCS delivery charges
+    parcel_weight: Optional[float] = None  # Parcel weight in kg
+    booking_date: Optional[str] = None  # TCS booking date
+    delivery_date: Optional[str] = None  # TCS delivery date
+    collection_date: Optional[str] = None  # COD collection date
+    remittance_date: Optional[str] = None  # COD remittance date
+    remittance_amount: Optional[float] = None  # Amount remitted to merchant
     cod_collection_date: Optional[str] = None  # Date when COD was collected by TCS
     cod_remittance_date: Optional[str] = None  # Date when COD was remitted to merchant
     cod_remittance_amount: Optional[float] = None  # Amount remitted to merchant
