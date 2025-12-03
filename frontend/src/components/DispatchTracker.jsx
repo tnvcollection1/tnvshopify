@@ -72,6 +72,12 @@ const DispatchTracker = () => {
   });
   const [stores, setStores] = useState([]);
   const [autoSyncStatus, setAutoSyncStatus] = useState(null);
+  const [manualStatusDialog, setManualStatusDialog] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [manualStatus, setManualStatus] = useState({
+    status: '',
+    location: ''
+  });
   const [editingOrder, setEditingOrder] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
 
