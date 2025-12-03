@@ -228,6 +228,138 @@ class WhatsAppService:
                 "success": False,
                 "error": str(e)
             }
+    
+    async def create_message_template(
+        self,
+        name: str,
+        category: str,
+        language: str,
+        body_text: str,
+        header_text: Optional[str] = None,
+        footer_text: Optional[str] = None,
+        buttons: Optional[List[Dict]] = None
+    ) -> Dict:
+        """
+        Create a new message template and submit for approval
+        
+        Args:
+            name: Template name (lowercase, underscores only)
+            category: UTILITY, MARKETING, or AUTHENTICATION
+            language: Language code (e.g., 'en', 'ur')
+            body_text: Main message text with variables {{1}}, {{2}}, etc.
+            header_text: Optional header text
+            footer_text: Optional footer text
+            buttons: Optional buttons (call-to-action or quick reply)
+            
+        Returns:
+            Response with template ID and status
+        """
+        try:
+            waba_id = os.getenv('WHATSAPP_BUSINESS_ACCOUNT_ID')
+            
+            # Build components
+            components = []
+            
+            # Header component
+            if header_text:
+                components.append({
+                    "type": "HEADER",
+                    "format": "TEXT",
+                    "text": header_text
+                })
+            
+            # Body component (required)
+            components.append({
+                "type": "BODY",
+                "text": body_text
+            })
+            
+            # Footer component
+            if footer_text:
+                components.append({
+                    "type": "FOOTER",
+                    "text": footer_text
+                })
+            
+            # Buttons component
+            if buttons:
+                components.append({
+                    "type": "BUTTONS",
+                    "buttons": buttons
+                })
+            
+            payload = {
+                "name": name,
+                "category": category,
+                "language": language,
+                "components": components
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"https://graph.facebook.com/v21.0/{waba_id}/message_templates",
+                    headers=self._get_headers(),
+                    json=payload,
+                    timeout=30.0
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    logger.info(f"Template created: {name} (ID: {result.get('id')})")
+                    return {
+                        "success": True,
+                        "template_id": result.get("id"),
+                        "status": result.get("status", "PENDING"),
+                        "message": f"Template '{name}' submitted for approval"
+                    }
+                else:
+                    error_data = response.json()
+                    logger.error(f"Template creation error: {error_data}")
+                    return {
+                        "success": False,
+                        "error": error_data.get("error", {}).get("message", "Unknown error"),
+                        "error_details": error_data
+                    }
+                    
+        except Exception as e:
+            logger.error(f"Error creating template: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
+    async def delete_message_template(self, template_name: str) -> Dict:
+        """Delete a message template"""
+        try:
+            waba_id = os.getenv('WHATSAPP_BUSINESS_ACCOUNT_ID')
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.delete(
+                    f"https://graph.facebook.com/v21.0/{waba_id}/message_templates",
+                    headers=self._get_headers(),
+                    params={"name": template_name},
+                    timeout=30.0
+                )
+                
+                if response.status_code == 200:
+                    logger.info(f"Template deleted: {template_name}")
+                    return {
+                        "success": True,
+                        "message": f"Template '{template_name}' deleted successfully"
+                    }
+                else:
+                    error_data = response.json()
+                    return {
+                        "success": False,
+                        "error": error_data.get("error", {}).get("message", "Failed to delete template")
+                    }
+                    
+        except Exception as e:
+            logger.error(f"Error deleting template: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
 
 
 # Singleton instance
