@@ -142,6 +142,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/whatsapp-history" 
+        element={
+          <ProtectedRoute>
+            <WhatsAppHistory />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
