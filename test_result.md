@@ -284,6 +284,30 @@ frontend:
           agent: "testing"
           comment: "TESTED ✅ - Enhanced Settings page with tabs fully functional. Successfully verified: 1) Login with admin/admin123 works, 2) Navigation to /settings successful, 3) Two tabs present (Shopify Integration & TCS API) with proper icons, 4) Shopify Integration tab shows all 3 stores (asmia, tnvcollection, tnvcollectionpk) with correct status indicators, 5) TCS API tab displays complete configuration form with authentication type radio buttons (Bearer Token/Username-Password), input fields for Bearer Token, Token Expiry, Username/Password, TCS Customer Number field, and Save button, 6) Tab switching works smoothly between both tabs, 7) Screenshots captured for both tabs. All review request requirements verified successfully."
 
+  - task: "Inventory Management System V2"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/InventoryV2.jsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "TESTED ❌ - Inventory Management UI working but backend API failing. Successfully verified: 1) Login with admin/admin123, 2) Navigation to /inventory successful, 3) Add Item dialog opens correctly with all form fields (SKU, Product Name, Cost, Order Number), 4) Form can be filled with test data (TEST-001, Test Product, 1000, 29443), 5) Store and Status filter dropdowns present and styled. CRITICAL ISSUE: Add Item API call fails with 500 Internal Server Error due to ObjectId serialization issue in backend (/api/inventory/v2/add). Edit and delivery status buttons not testable due to no existing items. Backend error needs fixing before full functionality can be verified."
+
+  - task: "TCS Sync in Dispatch Tracker"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/DispatchTracker.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - TCS Sync functionality working perfectly. Successfully verified: 1) Login with admin/admin123, 2) Navigation to /tracker (Dispatch Tracker) successful, 3) 'Sync TCS Status' button found and clickable, 4) TCS sync API working correctly (verified via curl: 'TCS sync completed: 100 orders synced'), 5) Dispatch tracker displays 382 total orders with proper table structure, 6) Delivery status badges visible (PENDING status shown), 7) All filter dropdowns present (Store, Delivery, Payment, Year), 8) Modern UI with stats cards showing Total: 382, Delivered: 0, In Transit: 0, Pending: 100, etc. TCS integration fully functional without timezone errors as expected."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
