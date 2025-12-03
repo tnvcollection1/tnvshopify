@@ -3420,6 +3420,77 @@ async def get_customer_whatsapp_messages(customer_id: str):
             "messages": messages
         }
     except Exception as e:
+
+
+@api_router.post("/whatsapp/templates/create")
+async def create_template(data: dict):
+    """
+    Create a new WhatsApp message template and submit for approval
+    """
+    try:
+        name = data.get("name")
+        category = data.get("category")
+        language = data.get("language", "en")
+        body_text = data.get("body")
+        header_text = data.get("header")
+        footer_text = data.get("footer")
+        buttons = data.get("buttons")
+        
+        # Validate required fields
+        if not name or not category or not body_text:
+            raise HTTPException(status_code=400, detail="Name, category, and body are required")
+        
+        # Validate template name format (lowercase, underscores only)
+        if not name.replace("_", "").isalnum() or name != name.lower():
+            raise HTTPException(
+                status_code=400, 
+                detail="Template name must be lowercase with underscores only (e.g., order_confirmation)"
+            )
+        
+        # Create template via WhatsApp API
+        result = await whatsapp_service.create_message_template(
+            name=name,
+            category=category,
+            language=language,
+            body_text=body_text,
+            header_text=header_text,
+            footer_text=footer_text,
+            buttons=buttons
+        )
+        
+        # Store template creation in database for tracking
+        if result.get("success"):
+            await db.whatsapp_template_submissions.insert_one({
+                "template_id": result.get("template_id"),
+                "name": name,
+                "category": category,
+                "language": language,
+                "status": result.get("status", "PENDING"),
+                "body": body_text,
+                "header": header_text,
+                "footer": footer_text,
+                "submitted_at": datetime.now(timezone.utc).isoformat(),
+                "submitted_by": "dashboard"
+            })
+        
+        return result
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Error creating template: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/whatsapp/templates/{template_name}")
+async def delete_template(template_name: str):
+    """Delete a WhatsApp message template"""
+    try:
+        result = await whatsapp_service.delete_message_template(template_name)
+        return result
+    except Exception as e:
+        logger.error(f"Error deleting template: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
         logger.error(f"Error fetching messages: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
