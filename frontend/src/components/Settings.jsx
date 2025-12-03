@@ -241,8 +241,8 @@ const Settings = () => {
               </div>
             </div>
 
-        {/* Store Configuration Cards */}
-        <div className="grid gap-6">
+            {/* Store Configuration Cards */}
+            <div className="grid gap-6">
           {stores.map(store => {
             const status = getStoreStatus(store);
             const StatusIcon = status.icon;
