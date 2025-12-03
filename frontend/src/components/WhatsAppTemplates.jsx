@@ -36,6 +36,18 @@ const WhatsAppTemplates = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [testPhone, setTestPhone] = useState("");
   const [templateVariables, setTemplateVariables] = useState([]);
+  
+  // Create template states
+  const [createDialog, setCreateDialog] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newTemplate, setNewTemplate] = useState({
+    name: "",
+    category: "UTILITY",
+    language: "en",
+    body: "",
+    header: "",
+    footer: ""
+  });
 
   const fetchTemplates = async () => {
     setLoading(true);
