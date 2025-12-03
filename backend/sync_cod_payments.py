@@ -61,38 +61,32 @@ async def sync_all_cod_payments():
             )
             
             if payment_data.get('success'):
-                # COD order with payment data
+                status = payment_data.get('normalized_status')
+                cod_amt = payment_data.get('cod_amount', 0)
+                delivery_charges = payment_data.get('delivery_charges', 0)
+                
+                # Update database with Shopify-based COD data
                 await db.customers.update_one(
                     {'customer_id': customer['customer_id'], 'store_name': customer['store_name']},
                     {'$set': {
-                        'cod_payment_status': payment_data.get('normalized_status', 'UNKNOWN'),
-                        'cod_amount': payment_data.get('cod_amount', 0.0),
+                        'cod_payment_status': status,
+                        'cod_amount': cod_amt,
                         'amount_paid': payment_data.get('paid_amount', 0.0),
                         'payment_balance': payment_data.get('balance', 0.0),
-                        'delivery_charges': payment_data.get('delivery_charges', 0.0),
+                        'delivery_charges': delivery_charges,
                         'parcel_weight': payment_data.get('parcel_weight', 0),
                         'booking_date': payment_data.get('booking_date'),
                         'delivery_date': payment_data.get('delivery_date')
                     }}
                 )
-                print(f"✅ COD: Rs.{payment_data.get('cod_amount', 0)}")
-                cod_orders += 1
-                updated_count += 1
                 
-            elif payment_data.get('message') == 'PREPAID':
-                # Prepaid order
-                await db.customers.update_one(
-                    {'customer_id': customer['customer_id'], 'store_name': customer['store_name']},
-                    {'$set': {
-                        'cod_payment_status': 'PREPAID',
-                        'cod_amount': 0.0,
-                        'amount_paid': 0.0,
-                        'payment_balance': 0.0,
-                        'delivery_charges': 0.0
-                    }}
-                )
-                print("💳 PREPAID")
-                prepaid_orders += 1
+                if status == 'PAID':
+                    print(f"✅ PAID: Rs.{cod_amt} (DC: Rs.{delivery_charges})")
+                    prepaid_orders += 1
+                else:
+                    print(f"💰 COD: Rs.{cod_amt} (DC: Rs.{delivery_charges})")
+                    cod_orders += 1
+                    
                 updated_count += 1
                 
             else:
