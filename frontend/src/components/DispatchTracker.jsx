@@ -20,6 +20,7 @@ import {
   Phone,
   ChevronLeft,
   ChevronRight,
+  Hand,
 } from "lucide-react";
 import {
   Table,
