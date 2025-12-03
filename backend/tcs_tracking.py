@@ -449,6 +449,13 @@ class TCSTracker:
             'paid_amount': 0,
             'balance': 0,
             'payment_date': None,
+            'booking_date': None,
+            'delivery_date': None,
+            'delivery_charges': 0,
+            'parcel_weight': 0,
+            'city': None,
+            'cn_status': 'UNKNOWN',
+            'order_no': None,
             'raw_data': data
         }
         
