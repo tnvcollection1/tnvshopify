@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Store, CheckCircle, XCircle, Loader2, AlertCircle } from 'lucide-react';
+import { Store, CheckCircle, XCircle, Loader2, AlertCircle, Truck, Package } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { toast } from 'sonner';
 
 const Settings = () => {
@@ -11,9 +12,20 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
   const [formData, setFormData] = useState({});
+  const [tcsConfig, setTcsConfig] = useState({
+    auth_type: 'bearer',
+    bearer_token: '',
+    token_expiry: '',
+    username: '',
+    password: '',
+    customer_no: ''
+  });
+  const [tcsConfigured, setTcsConfigured] = useState(false);
+  const [savingTcs, setSavingTcs] = useState(false);
 
   useEffect(() => {
     fetchStores();
+    fetchTcsConfig();
   }, []);
 
   const fetchStores = async () => {
