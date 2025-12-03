@@ -663,17 +663,7 @@ const DispatchTracker = () => {
                           {getStatusBadge(order.calling_status || "NOT_CALLED", "calling")}
                         </TableCell>
                         <TableCell>
-                          {['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'RETURN_IN_PROCESS'].includes(order.delivery_status) ? (
-                            <button
-                              onClick={() => handleShowTracking(order)}
-                              className="cursor-pointer hover:opacity-80 transition-opacity"
-                              title="Click to view real-time tracking"
-                            >
-                              {getStatusBadge(order.delivery_status || "PENDING", "delivery")}
-                            </button>
-                          ) : (
-                            getStatusBadge(order.delivery_status || "PENDING", "delivery")
-                          )}
+                          {getStatusBadge(order.delivery_status || "PENDING", "delivery")}
                         </TableCell>
                         <TableCell>{getStatusBadge(order.payment_status || "pending", "payment")}</TableCell>
                         <TableCell>
