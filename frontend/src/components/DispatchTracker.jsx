@@ -773,6 +773,15 @@ const DispatchTracker = () => {
                             >
                               <Hand className="w-3 h-3" />
                             </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleOpenWhatsApp(order)}
+                              className="border-green-500 hover:bg-green-50 text-green-600"
+                              title="Send WhatsApp"
+                            >
+                              <MessageCircle className="w-3 h-3" />
+                            </Button>
                             {['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'RETURN_IN_PROCESS', 'DELIVERED', 'UNKNOWN'].includes(order.delivery_status) && order.tracking_number && (
                               <Button
                                 size="sm"
