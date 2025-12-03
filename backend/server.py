@@ -1320,7 +1320,7 @@ async def sync_all_tcs_deliveries():
             try:
                 # Batch track all 10 tracking numbers at once
                 logger.info(f"Tracking batch {i//batch_size + 1}: {len(tracking_numbers)} tracking numbers")
-                results = tracker.track_multiple_consignments(tracking_numbers)
+                results = tracker.track_multiple(tracking_numbers)
                 
                 # Update each customer based on results
                 for customer in batch:
