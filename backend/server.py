@@ -1511,7 +1511,10 @@ async def add_inventory_item(item: InventoryItemCreate, added_by: str = None):
         item_dict = new_item.model_dump()
         await db.inventory_v2.insert_one(item_dict)
         
-        return {"success": True, "message": "Inventory item added", "item": item_dict}
+        # Fetch the inserted item without _id
+        inserted_item = await db.inventory_v2.find_one({"id": new_item.id}, {"_id": 0})
+        
+        return {"success": True, "message": "Inventory item added", "item": inserted_item}
     except Exception as e:
         logger.error(f"Error adding inventory item: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
