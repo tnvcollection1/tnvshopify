@@ -14,13 +14,15 @@ class WhatsAppService:
     """WhatsApp Business API Service for sending messages"""
     
     def __init__(self):
+        from dotenv import load_dotenv
+        load_dotenv()
+        
         self.phone_number_id = os.getenv('WHATSAPP_PHONE_NUMBER_ID')
         self.access_token = os.getenv('WHATSAPP_ACCESS_TOKEN')
         self.base_url = f"https://graph.facebook.com/v21.0/{self.phone_number_id}"
         
         if not self.phone_number_id or not self.access_token:
-            logger.error("WhatsApp credentials not configured")
-            raise ValueError("WhatsApp credentials missing in environment")
+            logger.warning("WhatsApp credentials not configured. Please set WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN")
     
     def _get_headers(self) -> Dict[str, str]:
         """Get API request headers"""
