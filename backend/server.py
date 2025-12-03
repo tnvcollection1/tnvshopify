@@ -1123,9 +1123,17 @@ async def sync_tcs_payment_status():
         # Initialize TCS tracker
         from tcs_tracking import TCSTracker
         if config.get('auth_type') == 'bearer':
-            tracker = TCSTracker(bearer_token=config.get('bearer_token'), token_expiry=config.get('token_expiry'))
+            tracker = TCSTracker(
+                bearer_token=config.get('bearer_token'), 
+                token_expiry=config.get('token_expiry'),
+                customer_no=config.get('customer_no')
+            )
         else:
-            tracker = TCSTracker(username=config.get('username'), password=config.get('password'))
+            tracker = TCSTracker(
+                username=config.get('username'), 
+                password=config.get('password'),
+                customer_no=config.get('customer_no')
+            )
         
         checked_count = 0
         paid_count = 0
@@ -1421,9 +1429,17 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
         # Initialize TCS tracker
         from tcs_tracking import TCSTracker
         if config.get('auth_type') == 'bearer':
-            tracker = TCSTracker(bearer_token=config.get('bearer_token'), token_expiry=config.get('token_expiry'))
+            tracker = TCSTracker(
+                bearer_token=config.get('bearer_token'), 
+                token_expiry=config.get('token_expiry'),
+                customer_no=config.get('customer_no')
+            )
         else:
-            tracker = TCSTracker(username=config.get('username'), password=config.get('password'))
+            tracker = TCSTracker(
+                username=config.get('username'), 
+                password=config.get('password'),
+                customer_no=config.get('customer_no')
+            )
         
         synced_count = 0
         errors = []
@@ -1520,9 +1536,17 @@ async def sync_all_tcs_deliveries():
         # Initialize TCS tracker
         from tcs_tracking import TCSTracker
         if config.get('auth_type') == 'bearer':
-            tracker = TCSTracker(bearer_token=config.get('bearer_token'), token_expiry=config.get('token_expiry'))
+            tracker = TCSTracker(
+                bearer_token=config.get('bearer_token'), 
+                token_expiry=config.get('token_expiry'),
+                customer_no=config.get('customer_no')
+            )
         else:
-            tracker = TCSTracker(username=config.get('username'), password=config.get('password'))
+            tracker = TCSTracker(
+                username=config.get('username'), 
+                password=config.get('password'),
+                customer_no=config.get('customer_no')
+            )
         
         synced_count = 0
         updated_count = 0
