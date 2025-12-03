@@ -1646,7 +1646,8 @@ async def upload_inventory_excel(file: UploadFile = File(...), store_name: str =
                         new_item.sale_price = float(customer.get("total_spent", 0))
                         new_item.profit = new_item.sale_price - new_item.cost
                 
-                await db.inventory_v2.insert_one(new_item.model_dump())
+                item_dict = new_item.model_dump()
+                await db.inventory_v2.insert_one(item_dict)
                 items_added += 1
                 
             except Exception as e:
