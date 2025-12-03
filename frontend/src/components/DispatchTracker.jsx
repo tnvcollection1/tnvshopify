@@ -312,6 +312,31 @@ const DispatchTracker = () => {
     }
   };
 
+  const handleShowTracking = async (order) => {
+    if (!order.tracking_number) {
+      toast.error("No tracking number available");
+      return;
+    }
+
+    setSelectedOrder(order);
+    setTrackingDialog(true);
+    setLoadingTracking(true);
+    setTrackingData(null);
+
+    try {
+      const response = await axios.post(`${API}/tcs/track/${order.tracking_number}`);
+      if (response.data) {
+        setTrackingData(response.data);
+      }
+    } catch (error) {
+      console.error("Tracking error:", error);
+      toast.error("Failed to fetch tracking information");
+      setTrackingData({ error: "Failed to fetch tracking data" });
+    } finally {
+      setLoadingTracking(false);
+    }
+  };
+
   const handleSyncPayment = async () => {
     try {
       toast.info("Syncing TCS payment status...");
