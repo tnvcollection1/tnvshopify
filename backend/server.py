@@ -1713,6 +1713,12 @@ async def sync_cod_payments():
                         {"$set": {
                             "cod_payment_status": payment_data.get('normalized_status', 'UNKNOWN'),
                             "cod_amount": payment_data.get('cod_amount', 0.0),
+                            "amount_paid": payment_data.get('paid_amount', 0.0),
+                            "payment_balance": payment_data.get('balance', 0.0),
+                            "delivery_charges": payment_data.get('delivery_charges', 0.0),
+                            "parcel_weight": payment_data.get('parcel_weight', 0),
+                            "booking_date": payment_data.get('booking_date'),
+                            "delivery_date": payment_data.get('delivery_date'),
                             "cod_collection_date": payment_data.get('collection_date'),
                             "cod_remittance_date": payment_data.get('remittance_date'),
                             "cod_remittance_amount": payment_data.get('remittance_amount', 0.0),
