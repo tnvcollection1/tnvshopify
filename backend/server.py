@@ -18,6 +18,8 @@ from datetime import timedelta
 from tcs_tracking import TCSTracker
 from scheduler import get_scheduler
 import asyncio
+from whatsapp_service import whatsapp_service
+from whatsapp_webhook import router as whatsapp_webhook_router
 
 
 ROOT_DIR = Path(__file__).parent
