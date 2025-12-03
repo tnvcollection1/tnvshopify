@@ -1258,6 +1258,38 @@ async def track_tcs_consignment(tracking_number: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.get("/tcs/auto-sync-status")
+async def get_auto_sync_status():
+    """Get status of automatic TCS sync"""
+    try:
+        # Get count of orders synced today
+        today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+        
+        synced_today = await db.customers.count_documents({
+            'last_auto_sync': {'$gte': today_start}
+        })
+        
+        pending_sync = await db.customers.count_documents({
+            'tracking_company': 'TCS',
+            'tracking_number': {'$ne': None, '$ne': ''},
+            '$or': [
+                {'last_auto_sync': {'$exists': False}},
+                {'delivery_status': {'$in': ['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'PENDING']}}
+            ]
+        })
+        
+        return {
+            "success": True,
+            "auto_sync_enabled": True,
+            "synced_today": synced_today,
+            "pending_sync": pending_sync,
+            "last_check": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting auto sync status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/tcs/sync-one-by-one")
 async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
     """
