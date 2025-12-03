@@ -48,10 +48,17 @@ async def sync_all_cod_payments():
     for i, customer in enumerate(customers, 1):
         try:
             tracking_number = customer['tracking_number']
-            print(f"  {i}/{len(customers)}: {tracking_number}", end=" ")
+            shopify_total = float(customer.get('total_spent', 0))
+            shopify_payment_status = customer.get('payment_status', 'pending')
             
-            # Get payment status
-            payment_data = payment_api.get_payment_status(tracking_number)
+            print(f"  {i}/{len(customers)}: {tracking_number} (Shopify: Rs.{shopify_total}, {shopify_payment_status})", end=" ")
+            
+            # Get payment status using Shopify data as primary source
+            payment_data = payment_api.get_payment_status(
+                tracking_number, 
+                shopify_total=shopify_total, 
+                shopify_payment_status=shopify_payment_status
+            )
             
             if payment_data.get('success'):
                 # COD order with payment data
