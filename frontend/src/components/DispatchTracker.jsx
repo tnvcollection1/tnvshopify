@@ -376,6 +376,7 @@ const DispatchTracker = () => {
         PREPAID: "bg-blue-100 text-blue-800 border-blue-200",
         PAID: "bg-green-100 text-green-800 border-green-200", 
         PARTIAL: "bg-orange-100 text-orange-800 border-orange-200",
+        COLLECTED: "bg-purple-100 text-purple-800 border-purple-200",
       },
       calling: {
         CALLED: "bg-green-100 text-green-800 border-green-200",
