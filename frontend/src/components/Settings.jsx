@@ -278,7 +278,7 @@ const Settings = () => {
       
       <div className="p-8">
         <Tabs defaultValue="shopify" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-3xl grid-cols-3">
             <TabsTrigger value="shopify" className="flex items-center gap-2">
               <Store className="w-4 h-4" />
               Shopify Integration
@@ -286,6 +286,10 @@ const Settings = () => {
             <TabsTrigger value="tcs" className="flex items-center gap-2">
               <Truck className="w-4 h-4" />
               TCS API
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-2">
+              <Key className="w-4 h-4" />
+              Security
             </TabsTrigger>
           </TabsList>
 
