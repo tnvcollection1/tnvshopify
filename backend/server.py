@@ -3420,7 +3420,8 @@ async def get_customer_whatsapp_messages(customer_id: str):
             "messages": messages
         }
     except Exception as e:
-
+        logger.error(f"Error fetching all messages: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/whatsapp/templates/create")
 async def create_template(data: dict):
