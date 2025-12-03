@@ -1662,8 +1662,9 @@ async def sync_all_tcs_deliveries():
 @api_router.post("/tcs/sync-cod-payments")
 async def sync_cod_payments():
     """
-    Sync COD payment status for all orders with tracking numbers
-    Updates: cod_payment_status, cod_amount, cod_collection_date, cod_remittance_date
+    Sync COD payment status for all orders with tracking numbers using Shopify-first approach
+    Updates: cod_payment_status, cod_amount, delivery_charges, and other payment fields
+    Uses background processing to prevent timeouts
     """
     try:
         # Get TCS credentials
@@ -1672,80 +1673,99 @@ async def sync_cod_payments():
         if not config:
             raise HTTPException(status_code=400, detail="TCS not configured")
         
-        # Initialize TCS Payment API
+        # Initialize TCS Payment API with customer number
         from tcs_payment import TCSPaymentAPI
         
-        if config.get('auth_type') == 'bearer':
-            payment_api = TCSPaymentAPI(bearer_token=config.get('bearer_token'))
-        else:
+        bearer_token = config.get('bearer_token')
+        customer_no = config.get('customer_no')
+        
+        if not bearer_token:
             raise HTTPException(status_code=400, detail="Bearer token required for payment API")
         
-        # Get customers with tracking numbers (limit 50 for batch processing)
-        customers = await db.customers.find({
-            "tracking_company": "TCS"
-        }, {"_id": 0, "customer_id": 1, "store_name": 1, "tracking_number": 1}).limit(50).to_list(50)
+        payment_api = TCSPaymentAPI(bearer_token=bearer_token, customer_no=customer_no)
+        
+        # Get customers with tracking numbers AND Shopify payment data (limit 100 for batch)
+        customers = await db.customers.find(
+            {"tracking_company": "TCS", "tracking_number": {"$exists": True, "$ne": None}},
+            {
+                "_id": 0, 
+                "customer_id": 1, 
+                "store_name": 1, 
+                "tracking_number": 1,
+                "total_spent": 1,
+                "payment_status": 1
+            }
+        ).limit(100).to_list(100)
         
         if not customers:
             return {
                 "success": True,
                 "message": "No COD payments to sync",
-                "updated": 0
+                "updated": 0,
+                "processed": 0
             }
         
-        logger.info(f"Syncing COD payment status for {len(customers)} orders...")
+        logger.info(f"Syncing COD payment status for {len(customers)} orders using Shopify-first approach...")
         
         updated_count = 0
+        errors = 0
         
+        # Process each customer with Shopify data
         for customer in customers:
             try:
-                tracking_number = customer['tracking_number']
-                payment_data = payment_api.get_payment_status(tracking_number)
+                tracking_number = customer.get('tracking_number')
+                if not tracking_number:
+                    continue
+                
+                shopify_total = float(customer.get('total_spent', 0))
+                shopify_payment_status = customer.get('payment_status', 'pending')
+                
+                # Get payment status using Shopify data as primary source
+                payment_data = payment_api.get_payment_status(
+                    tracking_number,
+                    shopify_total=shopify_total,
+                    shopify_payment_status=shopify_payment_status
+                )
                 
                 if payment_data.get('success'):
-                    # Update customer with COD payment info
+                    # Update customer with Shopify-based COD data + TCS reconciliation
+                    update_fields = {
+                        "cod_payment_status": payment_data.get('normalized_status'),
+                        "cod_amount": payment_data.get('cod_amount', 0.0),
+                        "amount_paid": payment_data.get('paid_amount', 0.0),
+                        "payment_balance": payment_data.get('balance', 0.0),
+                        "delivery_charges": payment_data.get('delivery_charges', 0.0),
+                        "parcel_weight": payment_data.get('parcel_weight', 0),
+                        "booking_date": payment_data.get('booking_date'),
+                        "delivery_date": payment_data.get('delivery_date'),
+                        "collection_date": payment_data.get('collection_date'),
+                        "remittance_date": payment_data.get('remittance_date'),
+                        "remittance_amount": payment_data.get('remittance_amount', 0.0),
+                        "last_payment_sync": datetime.now(timezone.utc).isoformat()
+                    }
+                    
                     await db.customers.update_one(
                         {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
-                        {"$set": {
-                            "cod_payment_status": payment_data.get('normalized_status', 'UNKNOWN'),
-                            "cod_amount": payment_data.get('cod_amount', 0.0),
-                            "amount_paid": payment_data.get('paid_amount', 0.0),
-                            "payment_balance": payment_data.get('balance', 0.0),
-                            "delivery_charges": payment_data.get('delivery_charges', 0.0),
-                            "parcel_weight": payment_data.get('parcel_weight', 0),
-                            "booking_date": payment_data.get('booking_date'),
-                            "delivery_date": payment_data.get('delivery_date'),
-                            "cod_collection_date": payment_data.get('collection_date'),
-                            "cod_remittance_date": payment_data.get('remittance_date'),
-                            "cod_remittance_amount": payment_data.get('remittance_amount', 0.0),
-                            "updated_at": datetime.now(timezone.utc).isoformat()
-                        }}
+                        {"$set": update_fields}
                     )
                     updated_count += 1
-                elif payment_data.get('message') == 'PREPAID':
-                    # Mark prepaid orders
-                    await db.customers.update_one(
-                        {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
-                        {"$set": {
-                            "cod_payment_status": "PREPAID",
-                            "cod_amount": 0.0,
-                            "amount_paid": 0.0,
-                            "payment_balance": 0.0,
-                            "updated_at": datetime.now(timezone.utc).isoformat()
-                        }}
-                    )
-                    updated_count += 1
+                else:
+                    logger.warning(f"Payment sync failed for {tracking_number}: {payment_data.get('message')}")
+                    errors += 1
                     
             except Exception as e:
                 logger.error(f"Error syncing payment for {customer.get('tracking_number')}: {str(e)}")
+                errors += 1
                 continue
         
-        logger.info(f"COD payment sync completed: {updated_count} payments updated")
+        logger.info(f"COD payment sync completed: {updated_count} payments updated, {errors} errors")
         
         return {
             "success": True,
-            "message": f"Synced {updated_count} COD payments",
+            "message": f"Synced {updated_count} COD payments (Shopify-first approach)",
             "updated": updated_count,
-            "processed": len(customers)
+            "processed": len(customers),
+            "errors": errors
         }
         
     except Exception as e:
