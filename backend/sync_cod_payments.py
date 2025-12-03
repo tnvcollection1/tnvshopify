@@ -32,10 +32,10 @@ async def sync_all_cod_payments():
     # Initialize payment API
     payment_api = TCSPaymentAPI(bearer_token=token, customer_no=customer_no)
     
-    # Get ALL TCS customers
+    # Get ALL TCS customers with Shopify payment data
     customers = await db.customers.find(
         {'tracking_company': 'TCS'},
-        {'_id': 0, 'customer_id': 1, 'store_name': 1, 'tracking_number': 1, 'cod_payment_status': 1}
+        {'_id': 0, 'customer_id': 1, 'store_name': 1, 'tracking_number': 1, 'cod_payment_status': 1, 'total_spent': 1, 'payment_status': 1}
     ).to_list(1000)
     
     print(f"🔄 Syncing COD payment data for {len(customers)} TCS customers...")
