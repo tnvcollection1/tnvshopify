@@ -248,7 +248,7 @@ const DispatchTracker = () => {
   };
 
   const handleSyncTCSOneByOne = async () => {
-    try {
+    try:
       toast.info("Syncing TCS one-by-one (slower but more reliable)...", { duration: 5000 });
       const response = await axios.post(`${API}/tcs/sync-one-by-one?limit=50&delay=2`);
       if (response.data.success) {
@@ -258,6 +258,53 @@ const DispatchTracker = () => {
     } catch (error) {
       console.error("TCS one-by-one sync error:", error);
       toast.error("Failed to sync TCS status");
+    }
+  };
+
+  const handleOpenManualStatusUpdate = (order) => {
+    setSelectedOrder(order);
+    setManualStatus({
+      status: order.delivery_status || '',
+      location: order.delivery_location || ''
+    });
+    setManualStatusDialog(true);
+  };
+
+  const handleManualStatusUpdate = async () => {
+    if (!manualStatus.status) {
+      toast.error("Please select a delivery status");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${API}/orders/${selectedOrder.order_number}/manual-delivery-status?status=${manualStatus.status}&location=${encodeURIComponent(manualStatus.location || '')}&updated_by=admin`
+      );
+      
+      if (response.data.success) {
+        toast.success(`✅ Delivery status updated to ${manualStatus.status}`);
+        setManualStatusDialog(false);
+        await fetchOrders();
+      }
+    } catch (error) {
+      console.error("Manual status update error:", error);
+      toast.error(error.response?.data?.detail || "Failed to update status");
+    }
+  };
+
+  const handleMarkReturnReceived = async (order, received) => {
+    try {
+      const response = await axios.post(
+        `${API}/orders/${order.order_number}/mark-return-received?received=${received}&received_by=admin`
+      );
+      
+      if (response.data.success) {
+        toast.success(`✅ Return marked as ${received ? 'received' : 'not received'}`);
+        await fetchOrders();
+      }
+    } catch (error) {
+      console.error("Mark return error:", error);
+      toast.error("Failed to update return status");
     }
   };
 
