@@ -1680,10 +1680,10 @@ async def sync_cod_payments():
         else:
             raise HTTPException(status_code=400, detail="Bearer token required for payment API")
         
-        # Get customers with tracking numbers (limit 10 per sync for testing)
+        # Get customers with tracking numbers (limit 50 for batch processing)
         customers = await db.customers.find({
             "tracking_company": "TCS"
-        }, {"_id": 0, "customer_id": 1, "store_name": 1, "tracking_number": 1}).limit(10).to_list(10)
+        }, {"_id": 0, "customer_id": 1, "store_name": 1, "tracking_number": 1}).limit(50).to_list(50)
         
         if not customers:
             return {
