@@ -20,6 +20,7 @@ from scheduler import get_scheduler
 import asyncio
 from whatsapp_service import whatsapp_service
 from whatsapp_webhook import router as whatsapp_webhook_router
+from whatsapp_marketing import whatsapp_marketing, MARKETING_TEMPLATES
 
 
 ROOT_DIR = Path(__file__).parent
