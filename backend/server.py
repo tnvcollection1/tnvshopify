@@ -1259,6 +1259,106 @@ async def track_tcs_consignment(tracking_number: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/orders/{order_id}/manual-delivery-status")
+async def update_manual_delivery_status(order_id: str, status: str, location: str = None, updated_by: str = None):
+    """
+    Manually update delivery status by employee
+    """
+    try:
+        valid_statuses = ['PENDING', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'RETURN_IN_PROCESS', 'RETURNED', 'UNKNOWN']
+        
+        if status not in valid_statuses:
+            raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
+        
+        # Find customer
+        customer = await db.customers.find_one({'order_number': order_id}, {'_id': 0})
+        
+        if not customer:
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        # Update delivery status
+        update_data = {
+            'delivery_status': status,
+            'delivery_updated_at': datetime.now(timezone.utc).isoformat(),
+            'manually_updated': True,
+            'manually_updated_by': updated_by or 'admin',
+            'manually_updated_at': datetime.now(timezone.utc).isoformat()
+        }
+        
+        if location:
+            update_data['delivery_location'] = location
+        
+        # If status is RETURN_IN_PROCESS, add return fields
+        if status == 'RETURN_IN_PROCESS':
+            update_data['return_status'] = 'in_transit'
+            update_data['return_received'] = False
+            update_data['return_updated_at'] = datetime.now(timezone.utc).isoformat()
+        
+        # If status is RETURNED, mark as received
+        if status == 'RETURNED':
+            update_data['return_status'] = 'received'
+            update_data['return_received'] = True
+            update_data['return_updated_at'] = datetime.now(timezone.utc).isoformat()
+        
+        result = await db.customers.update_one(
+            {'customer_id': customer['customer_id'], 'store_name': customer['store_name']},
+            {'$set': update_data}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to update order")
+        
+        logger.info(f"Manual status update by {updated_by}: Order {order_id} → {status}")
+        
+        return {
+            "success": True,
+            "message": f"Delivery status updated to {status}",
+            "order_number": order_id,
+            "new_status": status
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating manual delivery status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/orders/{order_id}/mark-return-received")
+async def mark_return_received(order_id: str, received: bool = True, received_by: str = None):
+    """
+    Mark return as received or not received
+    """
+    try:
+        customer = await db.customers.find_one({'order_number': order_id}, {'_id': 0})
+        
+        if not customer:
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        result = await db.customers.update_one(
+            {'customer_id': customer['customer_id'], 'store_name': customer['store_name']},
+            {'$set': {
+                'return_received': received,
+                'return_received_by': received_by or 'admin',
+                'return_received_at': datetime.now(timezone.utc).isoformat() if received else None,
+                'return_status': 'received' if received else 'in_transit',
+                'delivery_status': 'RETURNED' if received else 'RETURN_IN_PROCESS'
+            }}
+        )
+        
+        logger.info(f"Return marked as {'received' if received else 'not received'} for order {order_id}")
+        
+        return {
+            "success": True,
+            "message": f"Return marked as {'received' if received else 'not received'}",
+            "order_number": order_id
+        }
+        
+    except Exception as e:
+        logger.error(f"Error marking return: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.get("/tcs/auto-sync-status")
 async def get_auto_sync_status():
     """Get status of automatic TCS sync"""
