@@ -89,10 +89,10 @@ const WhatsAppInbox = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
               <MessageCircle className="w-8 h-8 text-green-600" />
-              WhatsApp Message History
+              WhatsApp Inbox
             </h1>
             <p className="text-gray-600 mt-1">
-              View all WhatsApp conversations and messages
+              Send and receive WhatsApp messages with customers
             </p>
           </div>
           <Button
