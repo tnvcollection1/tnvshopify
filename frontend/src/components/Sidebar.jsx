@@ -39,6 +39,13 @@ const Sidebar = () => {
         { icon: Plane, label: 'Purchase Tracker', path: '/purchase' },
         { icon: ShoppingCart, label: 'Orders', path: '/orders' },
         { icon: Users, label: 'Customers', path: '/customers' },
+      ]
+    },
+    {
+      title: 'WHATSAPP',
+      items: [
+        { icon: Inbox, label: 'WhatsApp Inbox', path: '/whatsapp-inbox' },
+        { icon: FileText, label: 'Message Templates', path: '/whatsapp-templates' },
         { icon: MessageCircle, label: 'WhatsApp Messaging', path: '/whatsapp' },
       ]
     },
