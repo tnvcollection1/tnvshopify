@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 
 class ShopifyCustomerAPITester:
-    def __init__(self, base_url="https://inventory-sync-41.preview.emergentagent.com"):
+    def __init__(self, base_url="https://retail-pulse-26.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0

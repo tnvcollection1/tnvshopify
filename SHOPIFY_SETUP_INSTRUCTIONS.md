@@ -36,7 +36,7 @@ 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
 
 ### 7. Test the Sync
 Once permissions are updated:
-1. Open your dashboard: https://inventory-sync-41.preview.emergentagent.com
+1. Open your dashboard: https://retail-pulse-26.preview.emergentagent.com
 2. Click the **"Sync Shopify Data"** button
 3. Wait for the sync to complete
 4. You should see your 20,000+ customers loaded!
