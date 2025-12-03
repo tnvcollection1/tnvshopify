@@ -850,6 +850,146 @@ const DispatchTracker = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Real-Time Tracking Dialog */}
+      <Dialog open={trackingDialog} onOpenChange={setTrackingDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Truck className="w-5 h-5 text-blue-600" />
+              Real-Time Tracking
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedOrder && (
+            <div className="space-y-4">
+              {/* Order Info */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="font-semibold text-blue-900">Order:</span>
+                    <span className="ml-2 text-blue-800">#{selectedOrder.order_number}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-blue-900">Tracking:</span>
+                    <span className="ml-2 text-blue-800 font-mono">{selectedOrder.tracking_number}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-blue-900">Customer:</span>
+                    <span className="ml-2 text-blue-800">{selectedOrder.first_name} {selectedOrder.last_name}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-blue-900">Phone:</span>
+                    <span className="ml-2 text-blue-800">{selectedOrder.phone}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Loading State */}
+              {loadingTracking && (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+                  <p className="text-gray-600">Fetching real-time tracking data from TCS...</p>
+                </div>
+              )}
+
+              {/* Error State */}
+              {trackingData?.error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                  <p className="text-red-800">{trackingData.error}</p>
+                </div>
+              )}
+
+              {/* Tracking Data */}
+              {trackingData && !trackingData.error && !loadingTracking && (
+                <div className="space-y-4">
+                  {/* Current Status */}
+                  <div className="bg-white border-2 border-blue-300 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-lg text-gray-900">Current Status</h3>
+                      {trackingData.is_delivered && (
+                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
+                          ✓ Delivered
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">Status</p>
+                        <p className="font-semibold text-gray-900">{trackingData.status || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Location</p>
+                        <p className="font-semibold text-gray-900">{trackingData.current_location || 'N/A'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tracking Timeline */}
+                  {trackingData.checkpoints && trackingData.checkpoints.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-lg text-gray-900 mb-3">Tracking Timeline</h3>
+                      <div className="relative">
+                        {/* Vertical Line */}
+                        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300"></div>
+                        
+                        {/* Checkpoints */}
+                        <div className="space-y-4">
+                          {trackingData.checkpoints.map((checkpoint, index) => (
+                            <div key={index} className="relative pl-12">
+                              {/* Dot */}
+                              <div className={`absolute left-2 w-4 h-4 rounded-full border-2 ${
+                                index === 0 
+                                  ? 'bg-blue-600 border-blue-600' 
+                                  : 'bg-white border-gray-400'
+                              }`}></div>
+                              
+                              {/* Content */}
+                              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <p className="font-semibold text-gray-900">{checkpoint.status}</p>
+                                    {checkpoint.location && (
+                                      <p className="text-sm text-gray-600 mt-1">📍 {checkpoint.location}</p>
+                                    )}
+                                  </div>
+                                  <div className="text-right ml-4">
+                                    <p className="text-sm text-gray-600">{checkpoint.date}</p>
+                                    {checkpoint.time && (
+                                      <p className="text-xs text-gray-500">{checkpoint.time}</p>
+                                    )}
+                                  </div>
+                                </div>
+                                {checkpoint.remarks && (
+                                  <p className="text-sm text-gray-500 mt-2 italic">{checkpoint.remarks}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No Checkpoints */}
+                  {(!trackingData.checkpoints || trackingData.checkpoints.length === 0) && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                      <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-600">No tracking checkpoints available</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTrackingDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Manual Delivery Status Update Dialog */}
       <Dialog open={manualStatusDialog} onOpenChange={setManualStatusDialog}>
         <DialogContent className="max-w-md">
