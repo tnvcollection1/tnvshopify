@@ -1457,9 +1457,214 @@ async def get_cod_payment_status(tracking_number: str):
 # ========================================
 
 from inventory_manager import InventoryManager
+from models.inventory_item import InventoryItem, InventoryItemCreate, InventoryItemUpdate, DeliveryStatusUpdate, DeliveryStatusEntry
 
 inventory_manager = InventoryManager(db)
 
+
+# ========================================
+# NEW INVENTORY MANAGEMENT API
+# ========================================
+
+@api_router.get("/inventory/v2")
+async def get_all_inventory_items(store_name: str = None, status: str = None):
+    """Get all inventory items with filtering"""
+    try:
+        query = {}
+        if store_name and store_name != "all":
+            query["store_name"] = store_name
+        if status and status != "all":
+            query["status"] = status
+        
+        items = await db.inventory_v2.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+        return {"success": True, "items": items, "total": len(items)}
+    except Exception as e:
+        logger.error(f"Error fetching inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/inventory/v2/add")
+async def add_inventory_item(item: InventoryItemCreate, added_by: str = None):
+    """Add new inventory item with optional Shopify order linking"""
+    try:
+        # Create inventory item
+        new_item = InventoryItem(
+            sku=item.sku,
+            product_name=item.product_name,
+            order_number=item.order_number,
+            cost=item.cost,
+            store_name=item.store_name,
+            added_by=added_by
+        )
+        
+        # If order number provided, fetch sale price from Shopify/customer data
+        if item.order_number:
+            customer = await db.customers.find_one(
+                {"order_number": str(item.order_number)},
+                {"_id": 0, "total_spent": 1}
+            )
+            if customer:
+                new_item.sale_price = float(customer.get("total_spent", 0))
+                new_item.profit = new_item.sale_price - new_item.cost
+        
+        # Insert into database
+        item_dict = new_item.model_dump()
+        await db.inventory_v2.insert_one(item_dict)
+        
+        return {"success": True, "message": "Inventory item added", "item": item_dict}
+    except Exception as e:
+        logger.error(f"Error adding inventory item: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/inventory/v2/{item_id}")
+async def update_inventory_item(item_id: str, update: InventoryItemUpdate):
+    """Update inventory item"""
+    try:
+        update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+        update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        # Recalculate profit if cost or sale_price updated
+        item = await db.inventory_v2.find_one({"id": item_id}, {"_id": 0})
+        if item:
+            cost = update_data.get("cost", item.get("cost", 0))
+            sale_price = update_data.get("sale_price", item.get("sale_price", 0))
+            
+            # If order number is being updated, fetch sale price
+            if "order_number" in update_data and update_data["order_number"]:
+                customer = await db.customers.find_one(
+                    {"order_number": str(update_data["order_number"])},
+                    {"_id": 0, "total_spent": 1}
+                )
+                if customer:
+                    sale_price = float(customer.get("total_spent", 0))
+                    update_data["sale_price"] = sale_price
+            
+            update_data["profit"] = sale_price - cost
+        
+        result = await db.inventory_v2.update_one(
+            {"id": item_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Inventory item not found")
+        
+        return {"success": True, "message": "Inventory item updated"}
+    except Exception as e:
+        logger.error(f"Error updating inventory item: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/inventory/v2/{item_id}/delivery-status")
+async def add_delivery_status(item_id: str, status_update: DeliveryStatusUpdate):
+    """Add manual delivery status entry to timeline"""
+    try:
+        # Create status entry
+        timestamp = status_update.timestamp or datetime.now(timezone.utc).isoformat()
+        entry = DeliveryStatusEntry(
+            timestamp=timestamp,
+            status=status_update.status
+        )
+        
+        # Add to timeline
+        result = await db.inventory_v2.update_one(
+            {"id": item_id},
+            {
+                "$push": {"delivery_timeline": entry.model_dump()},
+                "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Inventory item not found")
+        
+        return {"success": True, "message": "Delivery status added"}
+    except Exception as e:
+        logger.error(f"Error adding delivery status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/inventory/v2/{item_id}")
+async def delete_inventory_item(item_id: str):
+    """Delete inventory item"""
+    try:
+        result = await db.inventory_v2.delete_one({"id": item_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Inventory item not found")
+        
+        return {"success": True, "message": "Inventory item deleted"}
+    except Exception as e:
+        logger.error(f"Error deleting inventory item: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/inventory/v2/upload")
+async def upload_inventory_excel(file: UploadFile = File(...), store_name: str = "tnvcollectionpk"):
+    """Upload Excel file with inventory (SKU, Product Name, Cost, Order Number)"""
+    try:
+        import openpyxl
+        from io import BytesIO
+        
+        contents = await file.read()
+        wb = openpyxl.load_workbook(BytesIO(contents))
+        sheet = wb.active
+        
+        items_added = 0
+        errors = []
+        
+        for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+            try:
+                if not row[0]:  # Skip if SKU is empty
+                    continue
+                
+                sku = str(row[0]).strip()
+                product_name = str(row[1]).strip() if row[1] else "Unknown Product"
+                cost = float(row[2]) if row[2] else 0.0
+                order_number = str(row[3]).strip() if len(row) > 3 and row[3] else None
+                
+                # Create inventory item
+                new_item = InventoryItem(
+                    sku=sku,
+                    product_name=product_name,
+                    cost=cost,
+                    order_number=order_number,
+                    store_name=store_name
+                )
+                
+                # Fetch sale price if order number provided
+                if order_number:
+                    customer = await db.customers.find_one(
+                        {"order_number": order_number},
+                        {"_id": 0, "total_spent": 1}
+                    )
+                    if customer:
+                        new_item.sale_price = float(customer.get("total_spent", 0))
+                        new_item.profit = new_item.sale_price - new_item.cost
+                
+                await db.inventory_v2.insert_one(new_item.model_dump())
+                items_added += 1
+                
+            except Exception as e:
+                errors.append(f"Row {row_idx}: {str(e)}")
+                continue
+        
+        return {
+            "success": True,
+            "message": f"Processed {items_added} inventory items",
+            "items_added": items_added,
+            "errors": errors if errors else None
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ========================================
+# OLD INVENTORY ENDPOINTS (KEPT FOR BACKWARD COMPATIBILITY)
+# ========================================
 
 @api_router.get("/inventory")
 async def get_inventory():
