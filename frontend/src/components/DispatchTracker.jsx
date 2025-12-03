@@ -704,7 +704,7 @@ const DispatchTracker = () => {
                           {order.delivery_date || "—"}
                         </TableCell>
                         <TableCell className="text-sm text-gray-600">
-                          {order.payment_date || "—"}
+                          {order.payment_date || order.collection_date || "—"}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
