@@ -247,4 +247,4 @@ const WhatsAppInbox = () => {
   );
 };
 
-export default WhatsAppHistory;
+export default WhatsAppInbox;
