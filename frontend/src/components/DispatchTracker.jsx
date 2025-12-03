@@ -675,7 +675,7 @@ const DispatchTracker = () => {
                         </TableCell>
                         <TableCell>{getStatusBadge(order.payment_status || "pending", "payment")}</TableCell>
                         <TableCell>
-                          {getStatusBadge(order.payment_status || "N/A", "payment")}
+                          {getStatusBadge(order.cod_payment_status || "N/A", "payment")}
                         </TableCell>
                         <TableCell className="font-semibold text-gray-900">
                           Rs. {order.cod_amount?.toFixed(2) || "0.00"}
