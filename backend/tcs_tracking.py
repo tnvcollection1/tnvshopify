@@ -192,11 +192,12 @@ class TCSTracker:
                     
                     return tracking_data
                 else:
-                    logger.warning(f"TCS tracking failed for {tracking_number}: {data.get('shipmentsummary')}")
+                    response_data = data.get('responseData', {})
+                    logger.warning(f"TCS tracking failed for {tracking_number}: {response_data.get('shipmentsummary', 'Unknown error')}")
                     return {
                         'tracking_number': tracking_number,
                         'status': 'NOT_FOUND',
-                        'message': data.get('shipmentsummary', 'No data found')
+                        'message': response_data.get('shipmentsummary', 'No data found')
                     }
             else:
                 logger.error(f"TCS tracking API error: {response.status_code} - {response.text}")
