@@ -316,10 +316,11 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Inventory Management System V2 - Fix backend ObjectId serialization error"
+    - "Complete inventory CRUD operations testing after backend fix"
     - "Frontend agent system integration testing (login flow, agent column, agent filter dropdown)"
-    - "End-to-end WhatsApp messaging with agent tracking"
-    - "Frontend-backend integration for agent features"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Inventory Management System V2"
   test_all: false
   test_priority: "high_first"
 
