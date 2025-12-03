@@ -903,24 +903,82 @@ const DispatchTracker = () => {
               {trackingData && !trackingData.error && !loadingTracking && (
                 <div className="space-y-4">
                   {/* UNKNOWN Status Warning */}
-                  {trackingData.normalized_status === 'UNKNOWN' && (
-                    <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 text-amber-600">
-                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-amber-900 mb-1">Tracking Not Available</h4>
-                          <p className="text-sm text-amber-800">
-                            {trackingData.summary || 'This tracking number is not found in TCS system. It may be expired, invalid, or not yet activated.'}
-                          </p>
-                          <p className="text-xs text-amber-700 mt-2">
-                            💡 Tip: You can manually update the delivery status using the green hand icon button.
-                          </p>
-                        </div>
-                      </div>
+                  {trackingData.normalized_status === 'UNKNOWN' && selectedOrder && (
+                    <div>
+                      {(() => {
+                        // Calculate order age
+                        const orderDate = new Date(selectedOrder.last_order_date || selectedOrder.created_at);
+                        const now = new Date();
+                        const daysDiff = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
+                        
+                        // Last 7 days = Waiting to be picked up
+                        if (daysDiff <= 7) {
+                          return (
+                            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 text-blue-600">
+                                  <Clock className="w-6 h-6" />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-blue-900 mb-1">⏳ Waiting to be Picked Up</h4>
+                                  <p className="text-sm text-blue-800">
+                                    This order was placed {daysDiff} day{daysDiff !== 1 ? 's' : ''} ago. TCS courier has not yet picked up the shipment.
+                                  </p>
+                                  <p className="text-xs text-blue-700 mt-2">
+                                    ℹ️ Tracking will activate once TCS scans the package at pickup.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                        
+                        // 30+ days = Expired/Old
+                        if (daysDiff >= 30) {
+                          return (
+                            <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 text-red-600">
+                                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-red-900 mb-1">❌ Tracking Expired/Invalid</h4>
+                                  <p className="text-sm text-red-800">
+                                    This order is {daysDiff} days old. TCS tracking data is no longer available (expired after 30-60 days).
+                                  </p>
+                                  <p className="text-xs text-red-700 mt-2">
+                                    💡 Use the <strong>green hand icon</strong> to manually update the delivery status.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                        
+                        // 8-29 days = In between
+                        return (
+                          <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0 text-amber-600">
+                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-amber-900 mb-1">⚠️ Tracking Not Available</h4>
+                                <p className="text-sm text-amber-800">
+                                  This order is {daysDiff} days old. Tracking number not found in TCS system.
+                                </p>
+                                <p className="text-xs text-amber-700 mt-2">
+                                  💡 Use the <strong>green hand icon</strong> to manually update the delivery status.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
 
