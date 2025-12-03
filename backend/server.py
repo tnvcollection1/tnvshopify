@@ -3143,6 +3143,34 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup_auto_sync():
+    """Start automatic TCS sync on server startup"""
+    try:
+        from auto_tcs_sync import AutoTCSSync
+        
+        # Get TCS config
+        config = await db.tcs_config.find_one({'service': 'tcs_pakistan'}, {'_id': 0})
+        
+        if config:
+            logger.info("🚀 Starting automatic TCS sync service...")
+            auto_sync = AutoTCSSync(db, config)
+            
+            # Run in background
+            asyncio.create_task(auto_sync.run_continuous_sync(
+                batch_size=20,           # Process 20 orders at a time
+                delay_between_orders=3,   # 3 seconds between each order
+                delay_between_batches=60  # 1 minute between batches
+            ))
+            
+            logger.info("✅ Automatic TCS sync service started successfully")
+        else:
+            logger.warning("⚠️ TCS not configured - automatic sync disabled")
+            
+    except Exception as e:
+        logger.error(f"❌ Failed to start auto sync: {str(e)}")
+
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
