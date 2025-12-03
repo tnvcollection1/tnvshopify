@@ -625,6 +625,7 @@ const DispatchTracker = () => {
                     <TableHead className="font-semibold text-gray-700">Weight (kg)</TableHead>
                     <TableHead className="font-semibold text-gray-700">Booking Date</TableHead>
                     <TableHead className="font-semibold text-gray-700">Delivery Date</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Payment Date</TableHead>
                     <TableHead className="font-semibold text-gray-700">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
