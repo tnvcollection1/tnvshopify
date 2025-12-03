@@ -135,7 +135,7 @@ class TCSTracker:
     
     def track_consignment(self, tracking_number: str) -> Optional[Dict]:
         """
-        Track a single consignment by tracking number
+        Track a single consignment using the real TCS public API
         
         Args:
             tracking_number: TCS consignment/tracking number
@@ -143,21 +143,31 @@ class TCSTracker:
         Returns:
             Tracking data dictionary or None if failed
         """
-        if not self.ensure_authenticated():
-            logger.error("Cannot track: Authentication failed")
-            return None
-        
         try:
-            # TCS API expects GET with query parameter
-            params = {
-                "consignee": tracking_number
+            # Use the real TCS API endpoint that their website uses
+            url = 'https://www.tcsexpress.com/apibridge'
+            
+            # Convert tracking number to header format (digit by digit)
+            headers_dict = {}
+            for i, digit in enumerate(tracking_number):
+                headers_dict[str(i)] = digit
+            
+            payload = {
+                'body': {
+                    'url': 'trackapinew',
+                    'type': 'GET',
+                    'headers': headers_dict,
+                    'payload': {},
+                    'param': f'consignee={tracking_number}'
+                }
             }
             
             headers = {
-                "Authorization": f"Bearer {self.access_token}"
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
             
-            response = requests.get(self.tracking_url, params=params, headers=headers, timeout=10)
+            response = requests.post(url, json=payload, headers=headers, verify=False, timeout=15)
             
             if response.status_code == 200:
                 data = response.json()
