@@ -612,7 +612,13 @@ const DispatchTracker = () => {
                     <TableHead className="font-semibold text-gray-700">Delivery Status</TableHead>
                     <TableHead className="font-semibold text-gray-700">Shopify Payment</TableHead>
                     <TableHead className="font-semibold text-gray-700">COD Payment</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Amount</TableHead>
+                    <TableHead className="font-semibold text-gray-700">COD Amount</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Amount Paid</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Balance</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Delivery Charges</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Weight (kg)</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Booking Date</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Delivery Date</TableHead>
                     <TableHead className="font-semibold text-gray-700">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
