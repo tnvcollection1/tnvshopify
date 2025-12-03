@@ -24,12 +24,14 @@ class TCSPaymentAPI:
         self.customer_no = customer_no
         self.payment_url = "https://ociconnect.tcscourier.com/ecom/api/payment/status"
         
-    def get_payment_status(self, consignment_no: str, customer_no: str = None) -> Dict:
+    def get_payment_status(self, consignment_no: str, shopify_total: float = 0, shopify_payment_status: str = 'pending', customer_no: str = None) -> Dict:
         """
         Get COD payment status for a consignment
         
         Args:
             consignment_no: TCS tracking/consignment number
+            shopify_total: Order total from Shopify
+            shopify_payment_status: Shopify payment status (pending/paid)
             customer_no: TCS customer number (optional, uses instance default)
             
         Returns:
@@ -45,7 +47,7 @@ class TCSPaymentAPI:
                     'consignment_no': consignment_no
                 }
             
-            # Call TCS payment status API
+            # Call TCS payment status API for delivery charges
             params = {
                 'customerno': cust_no,
                 'cnno': consignment_no
@@ -62,17 +64,11 @@ class TCSPaymentAPI:
                 data = response.json()
                 
                 if data.get('message') == 'SUCCESS' and data.get('detail'):
-                    # Parse payment data
-                    return self._parse_payment_data(data, consignment_no)
+                    # Parse TCS data for delivery charges only
+                    return self._parse_payment_data_new(data, consignment_no, shopify_total, shopify_payment_status)
                 elif data.get('message') == 'Invalid CN':
-                    # Prepaid order or CN not in COD system
-                    return {
-                        'success': False,
-                        'message': 'PREPAID',
-                        'reason': 'Order is prepaid or not in COD system',
-                        'consignment_no': consignment_no,
-                        'normalized_status': 'PREPAID'
-                    }
+                    # TCS doesn't have this CN - use Shopify data only
+                    return self._create_shopify_based_payment(consignment_no, shopify_total, shopify_payment_status)
                 else:
                     return {
                         'success': False,
