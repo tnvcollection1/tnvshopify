@@ -786,6 +786,80 @@ const DispatchTracker = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Manual Delivery Status Update Dialog */}
+      <Dialog open={manualStatusDialog} onOpenChange={setManualStatusDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manual Delivery Status Update</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="space-y-4 py-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-900">
+                  <span className="font-semibold">Order:</span> #{selectedOrder.order_number}
+                </p>
+                <p className="text-sm text-blue-900">
+                  <span className="font-semibold">Customer:</span> {selectedOrder.first_name} {selectedOrder.last_name}
+                </p>
+                <p className="text-sm text-blue-900">
+                  <span className="font-semibold">Tracking:</span> {selectedOrder.tracking_number}
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-2">
+                  Delivery Status <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={manualStatus.status}
+                  onChange={(e) => setManualStatus({...manualStatus, status: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Status</option>
+                  <option value="PENDING">PENDING</option>
+                  <option value="IN_TRANSIT">IN TRANSIT</option>
+                  <option value="OUT_FOR_DELIVERY">OUT FOR DELIVERY</option>
+                  <option value="DELIVERED">DELIVERED</option>
+                  <option value="RETURN_IN_PROCESS">RETURN IN PROCESS</option>
+                  <option value="RETURNED">RETURNED (Received)</option>
+                  <option value="UNKNOWN">UNKNOWN</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-2">
+                  Location (Optional)
+                </label>
+                <Input
+                  value={manualStatus.location}
+                  onChange={(e) => setManualStatus({...manualStatus, location: e.target.value})}
+                  placeholder="Enter city or location"
+                />
+              </div>
+
+              {(manualStatus.status === 'RETURN_IN_PROCESS' || manualStatus.status === 'RETURNED') && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <p className="text-sm text-amber-900 font-semibold mb-2">Return Information:</p>
+                  <p className="text-xs text-amber-800">
+                    • RETURN_IN_PROCESS: Item is in transit back to you<br/>
+                    • RETURNED: Item has been received at your location
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setManualStatusDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleManualStatusUpdate} className="bg-blue-600 hover:bg-blue-700">
+              <Save className="w-4 h-4 mr-2" />
+              Update Status
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
