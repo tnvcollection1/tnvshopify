@@ -404,11 +404,18 @@ TNV Collection`,
               {showGuide ? "Hide Guide" : "Show Guide"}
             </Button>
             <Button
-              onClick={() => window.open("https://business.facebook.com/wa/manage/message-templates/", "_blank")}
-              className="bg-green-600 hover:bg-green-700"
+              onClick={() => setCreateDialog(true)}
+              className="bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Create in Meta
+              Create Template
+            </Button>
+            <Button
+              onClick={() => window.open("https://business.facebook.com/wa/manage/message-templates/", "_blank")}
+              variant="outline"
+              className="border-green-500 text-green-600 hover:bg-green-50"
+            >
+              Open Meta Manager
               <ExternalLink className="w-3 h-3 ml-2" />
             </Button>
           </div>
