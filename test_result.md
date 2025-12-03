@@ -455,6 +455,47 @@ agent_communication:
         - Page state management working correctly
         
         **VALIDATION COMPLETE**: Settings page handles Shopify configuration exactly as expected, including proper error handling for invalid credentials. The UI is professional, functional, and user-friendly.
+    - agent: "testing"
+      message: |
+        🎯 ENHANCED SETTINGS PAGE WITH TABS TESTING COMPLETE ✅
+        
+        **TEST SCENARIO EXECUTED**: Comprehensive validation of enhanced Settings page with tabs functionality
+        
+        **✅ ALL REVIEW REQUEST REQUIREMENTS MET**:
+        1. **Login**: Successfully authenticated with admin/admin123 credentials
+        2. **Navigation**: Successfully navigated to /settings page
+        3. **Tab Structure**: Verified 2 tabs present with proper icons:
+           - "Shopify Integration" tab (Store icon)
+           - "TCS API" tab (Truck icon)
+        4. **Shopify Integration Tab**: Verified all 3 stores displayed:
+           - asmia (ashmiaa.mystore.com) - Status: Configured ✅
+           - tnvcollection (tnvcollection.myshopify.com) - Status: Not Configured ❌
+           - tnvcollectionpk (tnvcollectionpk.myshopify.com) - Status: Not Configured ❌
+        5. **TCS API Tab**: Verified complete configuration form with:
+           - Authentication Type radio buttons: "Bearer Token" & "Username/Password" ✅
+           - Bearer Token input field (visible by default) ✅
+           - Token Expiry input field (datetime-local) ✅
+           - Username/Password input fields (visible when selected) ✅
+           - TCS Customer Number field (optional) ✅
+           - "Save TCS Configuration" button ✅
+        6. **Tab Switching**: Smooth transitions between tabs verified ✅
+        7. **Screenshots**: Captured both tabs successfully ✅
+        
+        **✅ UI/UX QUALITY VERIFIED**:
+        - Professional tabbed interface with shadcn/ui Tabs component
+        - Proper color coding and status indicators
+        - Clean form layouts with appropriate field labels
+        - Responsive design maintained across tabs
+        - Consistent Shopify-style design language
+        
+        **✅ FUNCTIONAL VERIFICATION**:
+        - Tab switching works smoothly without page refresh
+        - Form fields are accessible and properly labeled
+        - Authentication type switching shows/hides appropriate fields
+        - All required form elements present and functional
+        - Professional status indicators for stores and TCS configuration
+        
+        **TESTING COMPLETE**: Enhanced Settings page with tabs meets all requirements and provides excellent user experience for managing both Shopify and TCS API integrations.
 
 ---
 
