@@ -1091,7 +1091,37 @@ const DispatchTracker = () => {
                 <p className="text-sm text-blue-900">
                   <span className="font-semibold">Tracking:</span> {selectedOrder.tracking_number}
                 </p>
+                <p className="text-sm text-blue-900">
+                  <span className="font-semibold">Current Status:</span> {selectedOrder.delivery_status || 'N/A'}
+                </p>
               </div>
+
+              {/* Special message for UNKNOWN orders */}
+              {selectedOrder.delivery_status === 'UNKNOWN' && (() => {
+                const orderDate = new Date(selectedOrder.last_order_date || selectedOrder.created_at);
+                const now = new Date();
+                const daysDiff = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
+                
+                if (daysDiff <= 7) {
+                  return (
+                    <div className="bg-blue-50 border border-blue-300 rounded-lg p-3">
+                      <p className="text-sm font-semibold text-blue-900 mb-1">⏳ Recent Order ({daysDiff} days old)</p>
+                      <p className="text-xs text-blue-800">
+                        This order is waiting to be picked up. You can update the status once you have confirmation.
+                      </p>
+                    </div>
+                  );
+                } else if (daysDiff >= 30) {
+                  return (
+                    <div className="bg-amber-50 border border-amber-300 rounded-lg p-3">
+                      <p className="text-sm font-semibold text-amber-900 mb-1">📦 Old Order ({daysDiff} days)</p>
+                      <p className="text-xs text-amber-800">
+                        This tracking is expired. Please manually confirm the delivery status with customer or records.
+                      </p>
+                    </div>
+                  );
+                }
+              })()}
 
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-2">
