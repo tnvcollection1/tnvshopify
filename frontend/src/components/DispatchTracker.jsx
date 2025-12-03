@@ -703,6 +703,9 @@ const DispatchTracker = () => {
                         <TableCell className="text-sm text-gray-600">
                           {order.delivery_date || "—"}
                         </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {order.payment_date || "—"}
+                        </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
                             <Button
