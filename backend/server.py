@@ -1370,9 +1370,9 @@ async def sync_all_tcs_deliveries():
                         elif new_status == 'RETURNED' and old_status != 'RETURNED':
                             if customer.get('stock_deducted'):
                                 order_skus = customer.get('order_skus', [])
-                            store_name = customer.get('store_name')
+                                store_name = customer.get('store_name')
                             
-                            if order_skus and store_name:
+                                if order_skus and store_name:
                                 for sku_data in order_skus:
                                     sku = sku_data.get('sku')
                                     quantity = sku_data.get('quantity', 1)
