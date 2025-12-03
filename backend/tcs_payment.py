@@ -94,6 +94,7 @@ class TCSPaymentAPI:
     def _parse_payment_data_new(self, data: Dict, consignment_no: str, shopify_total: float, shopify_payment_status: str) -> Dict:
         """
         Parse TCS payment response with Shopify-first approach
+        Updated to handle TCS payment reconciliation logic
         
         Args:
             data: Raw TCS payment API response
@@ -102,7 +103,7 @@ class TCSPaymentAPI:
             shopify_payment_status: Shopify payment status
             
         Returns:
-            Parsed payment information based on Shopify + TCS delivery charges
+            Parsed payment information based on Shopify + TCS delivery charges + reconciliation
         """
         detail = data.get('detail', {})
         
@@ -112,7 +113,7 @@ class TCSPaymentAPI:
         elif not isinstance(detail, dict):
             detail = {}
         
-        # Get delivery charges from TCS (this is reliable)
+        # Get delivery charges and TCS payment info
         delivery_charges = float(detail.get('delivery charges', 0))
         parcel_weight = detail.get('parcel weight', 0)
         booking_date = detail.get('booking date')
@@ -120,25 +121,42 @@ class TCSPaymentAPI:
         payment_date = detail.get('payment date')
         city = detail.get('city')
         
-        # Use Shopify payment status as primary source
+        # TCS payment status (if available in API response)
+        tcs_payment_status = detail.get('payment status', 'N')  # N = Not paid, Y = Paid
+        
+        # Use Shopify payment status as primary source for COD logic
         if shopify_payment_status == 'paid':
-            # Customer already paid online
+            # Customer already paid online - no COD collection
             normalized_status = 'PAID'
             cod_amount = 0.0
             paid_amount = shopify_total
             balance = 0.0
+            remittance_amount = shopify_total  # Already received
+            
         elif shopify_payment_status == 'pending':
-            # Customer needs to pay (COD or pending online payment)
-            normalized_status = 'PENDING'
-            cod_amount = shopify_total
-            paid_amount = 0.0
-            balance = shopify_total
+            # Customer needs to pay (COD)
+            if tcs_payment_status == 'Y' or payment_date:
+                # TCS has collected payment - calculate net remittance
+                normalized_status = 'COLLECTED'
+                cod_amount = shopify_total
+                paid_amount = shopify_total
+                # Balance after TCS deducts delivery charges
+                balance = max(0, shopify_total - delivery_charges)
+                remittance_amount = balance  # Net amount to merchant
+            else:
+                # Payment still pending collection
+                normalized_status = 'PENDING'
+                cod_amount = shopify_total
+                paid_amount = 0.0
+                balance = shopify_total
+                remittance_amount = 0.0
         else:
-            # Unknown status
+            # Unknown Shopify status
             normalized_status = 'UNKNOWN'
             cod_amount = shopify_total
             paid_amount = 0.0
             balance = shopify_total
+            remittance_amount = 0.0
         
         return {
             'success': True,
@@ -147,17 +165,18 @@ class TCSPaymentAPI:
             'paid_amount': paid_amount,
             'balance': balance,
             'delivery_charges': delivery_charges,
+            'remittance_amount': remittance_amount,  # Net amount after TCS deducts charges
             'payment_date': payment_date,
             'booking_date': booking_date,
             'delivery_date': delivery_date,
             'collection_date': payment_date,
             'remittance_date': payment_date,
-            'remittance_amount': paid_amount,
             'normalized_status': normalized_status,
             'payment_status': normalized_status,
             'city': city,
             'parcel_weight': parcel_weight,
-            'source': 'shopify_primary_tcs_charges'
+            'tcs_payment_status': tcs_payment_status,
+            'source': 'shopify_primary_tcs_reconciliation'
         }
     
     def _create_shopify_based_payment(self, consignment_no: str, shopify_total: float, shopify_payment_status: str) -> Dict:
