@@ -21,6 +21,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Hand,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 import {
   Table,
