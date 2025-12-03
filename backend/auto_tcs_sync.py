@@ -113,12 +113,14 @@ class AutoTCSSync:
         if self.tcs_config.get('auth_type') == 'bearer':
             tracker = TCSTracker(
                 bearer_token=self.tcs_config.get('bearer_token'),
-                token_expiry=self.tcs_config.get('token_expiry')
+                token_expiry=self.tcs_config.get('token_expiry'),
+                customer_no=self.tcs_config.get('customer_no')
             )
         else:
             tracker = TCSTracker(
                 username=self.tcs_config.get('username'),
-                password=self.tcs_config.get('password')
+                password=self.tcs_config.get('password'),
+                customer_no=self.tcs_config.get('customer_no')
             )
         
         while self.is_running:
