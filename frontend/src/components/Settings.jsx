@@ -212,20 +212,34 @@ const Settings = () => {
     <div className="flex-1 bg-gray-50">
       <div className="bg-white border-b border-gray-200 px-8 py-4">
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-500 mt-1">Configure Shopify integration for your stores</p>
+        <p className="text-sm text-gray-500 mt-1">Configure integrations and system preferences</p>
       </div>
       
-      <div className="p-8 space-y-6">
-        {/* Info Banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div>
-            <h3 className="font-semibold text-blue-900 mb-1">Shopify Configuration</h3>
-            <p className="text-sm text-blue-700">
-              Configure Shopify credentials for each store to enable order syncing, inventory management, and tracking updates.
-            </p>
-          </div>
-        </div>
+      <div className="p-8">
+        <Tabs defaultValue="shopify" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="shopify" className="flex items-center gap-2">
+              <Store className="w-4 h-4" />
+              Shopify Integration
+            </TabsTrigger>
+            <TabsTrigger value="tcs" className="flex items-center gap-2">
+              <Truck className="w-4 h-4" />
+              TCS API
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Shopify Integration Tab */}
+          <TabsContent value="shopify" className="space-y-6">
+            {/* Info Banner */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-blue-900 mb-1">Shopify Configuration</h3>
+                <p className="text-sm text-blue-700">
+                  Configure Shopify credentials for each store to enable order syncing, inventory management, and tracking updates.
+                </p>
+              </div>
+            </div>
 
         {/* Store Configuration Cards */}
         <div className="grid gap-6">
