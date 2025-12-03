@@ -3423,6 +3423,97 @@ async def get_customer_whatsapp_messages(customer_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/whatsapp/send-template")
+async def send_template_whatsapp(data: dict):
+    """Send a WhatsApp template message"""
+    try:
+        phone = data.get("phone")
+        template_name = data.get("template_name")
+        language = data.get("language", "en")
+        variables = data.get("variables", [])
+        
+        # Build components for template
+        components = []
+        if variables:
+            components.append({
+                "type": "body",
+                "parameters": [{"type": "text", "text": str(var)} for var in variables]
+            })
+        
+        result = await whatsapp_service.send_template_message(
+            to=phone,
+            template_name=template_name,
+            language_code=language,
+            components=components if components else None
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error sending template: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/whatsapp/notify-order-status")
+async def notify_order_status_change(data: dict):
+    """Send automatic WhatsApp notification when order status changes"""
+    try:
+        customer_id = data.get("customer_id")
+        store_name = data.get("store_name")
+        new_status = data.get("new_status")
+        
+        # Get customer details
+        customer = await db.customers.find_one(
+            {"customer_id": customer_id, "store_name": store_name},
+            {"_id": 0}
+        )
+        
+        if not customer or not customer.get("phone"):
+            return {"success": False, "error": "Customer not found or no phone number"}
+        
+        # Create status-specific message
+        message = generate_status_message(customer, new_status)
+        
+        # Send WhatsApp
+        result = await whatsapp_service.send_text_message(customer["phone"], message)
+        
+        # Log notification
+        if result.get("success"):
+            await db.whatsapp_messages.insert_one({
+                "customer_id": customer_id,
+                "to": customer["phone"],
+                "message": message,
+                "message_id": result.get("message_id"),
+                "type": "status_notification",
+                "status": new_status,
+                "direction": "outgoing",
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            })
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error sending notification: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+def generate_status_message(customer: dict, status: str) -> str:
+    """Generate appropriate message based on order status"""
+    name = customer.get("first_name", "Customer")
+    order_num = customer.get("order_number", "N/A")
+    tracking = customer.get("tracking_number", "N/A")
+    
+    messages = {
+        "DELIVERED": f"Hi {name}! 🎉\n\nYour order #{order_num} has been delivered successfully!\n\nThank you for shopping with TNV Collection. We hope you love your purchase!\n\nHave questions? Feel free to reply!",
+        
+        "IN_TRANSIT": f"Hello {name}! 📦\n\nGood news! Your order #{order_num} is now in transit.\n\nTracking: {tracking}\n\nExpected delivery soon. We'll keep you updated!\n\nTNV Collection",
+        
+        "OUT_FOR_DELIVERY": f"Hi {name}! 🚚\n\nYour order #{order_num} is out for delivery today!\n\nTracking: {tracking}\n\nPlease keep your phone handy. Our delivery person will contact you shortly.\n\nTNV Collection",
+        
+        "RETURN_IN_PROCESS": f"Hello {name},\n\nYour order #{order_num} is being returned.\n\nTracking: {tracking}\n\nIf you have any concerns, please contact us.\n\nTNV Collection",
+        
+        "WAITING_TO_BE_PICKED_UP": f"Hi {name}! 📋\n\nYour order #{order_num} is ready and waiting to be picked up by our courier.\n\nTracking: {tracking}\n\nWe'll notify you once it's dispatched!\n\nTNV Collection"
+    }
+    
+    return messages.get(status, f"Hi {name},\n\nOrder #{order_num} status update:\nStatus: {status}\nTracking: {tracking}\n\nTNV Collection")
+
+
+
 # Include the router in the main app
 app.include_router(api_router)
 app.include_router(whatsapp_webhook_router)
