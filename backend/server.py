@@ -3368,6 +3368,7 @@ async def get_dashboard_stats(store_name: str = None):
 
 # Include the router in the main app
 app.include_router(api_router)
+app.include_router(whatsapp_webhook_router)
 
 app.add_middleware(
     CORSMiddleware,
