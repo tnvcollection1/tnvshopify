@@ -3366,6 +3366,63 @@ async def get_dashboard_stats(store_name: str = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+# ============= WhatsApp Business API Endpoints =============
+
+class WhatsAppMessage(BaseModel):
+    phone: str
+    message: str
+
+class BulkWhatsAppMessage(BaseModel):
+    recipients: List[Dict]
+
+@api_router.post("/whatsapp/send")
+async def send_whatsapp_message(data: WhatsAppMessage):
+    """Send a WhatsApp message to a customer"""
+    try:
+        result = await whatsapp_service.send_text_message(data.phone, data.message)
+        return result
+    except Exception as e:
+        logger.error(f"Error sending WhatsApp message: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/whatsapp/send-bulk")
+async def send_bulk_whatsapp(data: BulkWhatsAppMessage):
+    """Send WhatsApp messages to multiple recipients"""
+    try:
+        result = await whatsapp_service.send_bulk_messages(data.recipients)
+        return result
+    except Exception as e:
+        logger.error(f"Error sending bulk WhatsApp: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/whatsapp/templates")
+async def get_whatsapp_templates():
+    """Get list of approved message templates"""
+    try:
+        result = await whatsapp_service.get_message_templates()
+        return result
+    except Exception as e:
+        logger.error(f"Error fetching templates: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/whatsapp/messages/{customer_id}")
+async def get_customer_whatsapp_messages(customer_id: str):
+    """Get WhatsApp message history for a customer"""
+    try:
+        messages = await db.whatsapp_messages.find(
+            {"$or": [{"from": customer_id}, {"to": customer_id}]}
+        ).sort("timestamp", -1).limit(50).to_list(50)
+        
+        return {
+            "success": True,
+            "messages": messages
+        }
+    except Exception as e:
+        logger.error(f"Error fetching messages: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Include the router in the main app
 app.include_router(api_router)
 app.include_router(whatsapp_webhook_router)
