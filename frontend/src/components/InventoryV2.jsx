@@ -1,0 +1,614 @@
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Badge } from './ui/badge';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from './ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from './ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
+import { Textarea } from './ui/textarea';
+import { toast } from 'sonner';
+import { 
+  Plus, 
+  Upload, 
+  Edit, 
+  Trash2, 
+  Package, 
+  DollarSign,
+  TrendingUp,
+  Clock,
+  Truck,
+  CheckCircle
+} from 'lucide-react';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+const InventoryV2 = () => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [stores, setStores] = useState([]);
+  const [filters, setFilters] = useState({
+    store: 'all',
+    status: 'all'
+  });
+  
+  // Dialogs
+  const [addDialog, setAddDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
+  const [statusDialog, setStatusDialog] = useState(false);
+  const [uploadDialog, setUploadDialog] = useState(false);
+  
+  // Form states
+  const [newItem, setNewItem] = useState({
+    sku: '',
+    product_name: '',
+    cost: '',
+    order_number: '',
+    store_name: 'tnvcollectionpk'
+  });
+  const [editingItem, setEditingItem] = useState(null);
+  const [statusUpdate, setStatusUpdate] = useState({
+    status: '',
+    timestamp: new Date().toISOString().slice(0, 16)
+  });
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  useEffect(() => {
+    fetchItems();
+    fetchStores();
+  }, [filters]);
+
+  const fetchItems = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.store !== 'all') params.append('store_name', filters.store);
+      if (filters.status !== 'all') params.append('status', filters.status);
+      
+      const response = await fetch(`${API}/inventory/v2?${params}`);
+      const data = await response.json();
+      setItems(data.items || []);
+    } catch (error) {
+      console.error('Error fetching inventory:', error);
+      toast.error('Failed to load inventory');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStores = async () => {
+    try {
+      const response = await fetch(`${API}/stores`);
+      const data = await response.json();
+      setStores(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error fetching stores:', error);
+    }
+  };
+
+  const handleAddItem = async () => {
+    try {
+      const response = await fetch(`${API}/inventory/v2/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newItem,
+          cost: parseFloat(newItem.cost) || 0
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to add item');
+      
+      toast.success('Inventory item added successfully');
+      setAddDialog(false);
+      setNewItem({
+        sku: '',
+        product_name: '',
+        cost: '',
+        order_number: '',
+        store_name: 'tnvcollectionpk'
+      });
+      fetchItems();
+    } catch (error) {
+      console.error('Error adding item:', error);
+      toast.error('Failed to add inventory item');
+    }
+  };
+
+  const handleUpdateItem = async () => {
+    try {
+      const response = await fetch(`${API}/inventory/v2/${editingItem.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cost: parseFloat(editingItem.cost),
+          sale_price: parseFloat(editingItem.sale_price),
+          status: editingItem.status,
+          order_number: editingItem.order_number
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to update item');
+      
+      toast.success('Inventory item updated successfully');
+      setEditDialog(false);
+      setEditingItem(null);
+      fetchItems();
+    } catch (error) {
+      console.error('Error updating item:', error);
+      toast.error('Failed to update inventory item');
+    }
+  };
+
+  const handleAddDeliveryStatus = async () => {
+    if (!statusUpdate.status.trim()) {
+      toast.error('Please enter a status');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API}/inventory/v2/${editingItem.id}/delivery-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(statusUpdate)
+      });
+      
+      if (!response.ok) throw new Error('Failed to add status');
+      
+      toast.success('Delivery status added');
+      setStatusDialog(false);
+      setStatusUpdate({
+        status: '',
+        timestamp: new Date().toISOString().slice(0, 16)
+      });
+      fetchItems();
+    } catch (error) {
+      console.error('Error adding delivery status:', error);
+      toast.error('Failed to add delivery status');
+    }
+  };
+
+  const handleDeleteItem = async (itemId) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    
+    try {
+      const response = await fetch(`${API}/inventory/v2/${itemId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete item');
+      
+      toast.success('Inventory item deleted');
+      fetchItems();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast.error('Failed to delete inventory item');
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) {
+      toast.error('Please select a file');
+      return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    
+    try {
+      const response = await fetch(`${API}/inventory/v2/upload?store_name=${filters.store === 'all' ? 'tnvcollectionpk' : filters.store}`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.detail || 'Upload failed');
+      
+      toast.success(`${data.items_added} items uploaded successfully`);
+      if (data.errors && data.errors.length > 0) {
+        toast.warning(`${data.errors.length} errors occurred. Check console for details.`);
+        console.error('Upload errors:', data.errors);
+      }
+      
+      setUploadDialog(false);
+      setSelectedFile(null);
+      fetchItems();
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error('Failed to upload inventory file');
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const variants = {
+      in_stock: 'bg-blue-100 text-blue-800 border-blue-200',
+      in_transit: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      delivered: 'bg-green-100 text-green-800 border-green-200',
+      returned: 'bg-red-100 text-red-800 border-red-200'
+    };
+    return variants[status] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  const getStatusIcon = (status) => {
+    const icons = {
+      in_stock: Package,
+      in_transit: Truck,
+      delivered: CheckCircle,
+      returned: Trash2
+    };
+    const Icon = icons[status] || Package;
+    return <Icon className="w-4 h-4" />;
+  };
+
+  return (
+    <div className="flex-1 bg-gray-50">
+      <div className="bg-white border-b border-gray-200 px-8 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Inventory Management</h1>
+            <p className="text-sm text-gray-500 mt-1">Track products with order linking and delivery status</p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => setUploadDialog(true)} variant="outline">
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Excel
+            </Button>
+            <Button onClick={() => setAddDialog(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Item
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-8">
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex gap-4">
+              <div className="w-48">
+                <Label>Store</Label>
+                <Select value={filters.store} onValueChange={(val) => setFilters({...filters, store: val})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Stores</SelectItem>
+                    {stores.map(store => (
+                      <SelectItem key={store.store_name} value={store.store_name}>
+                        {store.store_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-48">
+                <Label>Status</Label>
+                <Select value={filters.status} onValueChange={(val) => setFilters({...filters, status: val})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="in_stock">In Stock</SelectItem>
+                    <SelectItem value="in_transit">In Transit</SelectItem>
+                    <SelectItem value="delivered">Delivered</SelectItem>
+                    <SelectItem value="returned">Returned</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Inventory Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Inventory Items ({items.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Product Name</TableHead>
+                    <TableHead>Order #</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Sale Price</TableHead>
+                    <TableHead>Profit</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                        <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        No inventory items found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    items.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-mono">{item.sku}</TableCell>
+                        <TableCell>{item.product_name}</TableCell>
+                        <TableCell className="font-mono">
+                          {item.order_number || '-'}
+                        </TableCell>
+                        <TableCell>Rs. {item.cost.toFixed(2)}</TableCell>
+                        <TableCell>Rs. {item.sale_price.toFixed(2)}</TableCell>
+                        <TableCell>
+                          <span className={item.profit >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                            Rs. {item.profit.toFixed(2)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`${getStatusBadge(item.status)} flex items-center gap-1 w-fit`}>
+                            {getStatusIcon(item.status)}
+                            {item.status.replace('_', ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                setEditingItem(item);
+                                setEditDialog(true);
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                setEditingItem(item);
+                                setStatusDialog(true);
+                              }}
+                            >
+                              <Clock className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleDeleteItem(item.id)}
+                            >
+                              <Trash2 className="w-4 h-4 text-red-600" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Add Item Dialog */}
+      <Dialog open={addDialog} onOpenChange={setAddDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Inventory Item</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>SKU</Label>
+              <Input
+                value={newItem.sku}
+                onChange={(e) => setNewItem({...newItem, sku: e.target.value})}
+                placeholder="Enter SKU"
+              />
+            </div>
+            <div>
+              <Label>Product Name</Label>
+              <Input
+                value={newItem.product_name}
+                onChange={(e) => setNewItem({...newItem, product_name: e.target.value})}
+                placeholder="Enter product name"
+              />
+            </div>
+            <div>
+              <Label>Cost</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={newItem.cost}
+                onChange={(e) => setNewItem({...newItem, cost: e.target.value})}
+                placeholder="0.00"
+              />
+            </div>
+            <div>
+              <Label>Order Number (Optional)</Label>
+              <Input
+                value={newItem.order_number}
+                onChange={(e) => setNewItem({...newItem, order_number: e.target.value})}
+                placeholder="Auto-fetch sale price from Shopify"
+              />
+              <p className="text-xs text-gray-500 mt-1">Enter Shopify order number to auto-fetch sale price</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddDialog(false)}>Cancel</Button>
+            <Button onClick={handleAddItem}>Add Item</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Item Dialog */}
+      {editingItem && (
+        <Dialog open={editDialog} onOpenChange={setEditDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Inventory Item</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label>Order Number</Label>
+                <Input
+                  value={editingItem.order_number || ''}
+                  onChange={(e) => setEditingItem({...editingItem, order_number: e.target.value})}
+                  placeholder="Link to order"
+                />
+              </div>
+              <div>
+                <Label>Cost</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editingItem.cost}
+                  onChange={(e) => setEditingItem({...editingItem, cost: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Sale Price</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editingItem.sale_price}
+                  onChange={(e) => setEditingItem({...editingItem, sale_price: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select value={editingItem.status} onValueChange={(val) => setEditingItem({...editingItem, status: val})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="in_stock">In Stock</SelectItem>
+                    <SelectItem value="in_transit">In Transit</SelectItem>
+                    <SelectItem value="delivered">Delivered</SelectItem>
+                    <SelectItem value="returned">Returned</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditDialog(false)}>Cancel</Button>
+              <Button onClick={handleUpdateItem}>Update</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Add Delivery Status Dialog */}
+      {editingItem && (
+        <Dialog open={statusDialog} onOpenChange={setStatusDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Delivery Status</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {editingItem.delivery_timeline && editingItem.delivery_timeline.length > 0 && (
+                <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold mb-2 text-sm">Current Timeline:</h4>
+                  <div className="space-y-2">
+                    {editingItem.delivery_timeline.map((entry, idx) => (
+                      <div key={idx} className="text-sm border-l-2 border-blue-500 pl-3 py-1">
+                        <div className="font-medium">{entry.status}</div>
+                        <div className="text-gray-500 text-xs">
+                          {new Date(entry.timestamp).toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div>
+                <Label>Status</Label>
+                <Select value={statusUpdate.status} onValueChange={(val) => setStatusUpdate({...statusUpdate, status: val})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Shipment Picked Up">Shipment Picked Up</SelectItem>
+                    <SelectItem value="Departed From TCS Facility">Departed From TCS Facility</SelectItem>
+                    <SelectItem value="Arrived at TCS Facility">Arrived at TCS Facility</SelectItem>
+                    <SelectItem value="Out For Delivery">Out For Delivery</SelectItem>
+                    <SelectItem value="Shipment Delivered">Shipment Delivered</SelectItem>
+                    <SelectItem value="Return In Process">Return In Process</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Timestamp</Label>
+                <Input
+                  type="datetime-local"
+                  value={statusUpdate.timestamp}
+                  onChange={(e) => setStatusUpdate({...statusUpdate, timestamp: e.target.value})}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setStatusDialog(false)}>Cancel</Button>
+              <Button onClick={handleAddDeliveryStatus}>Add Status</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Upload Dialog */}
+      <Dialog open={uploadDialog} onOpenChange={setUploadDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upload Inventory Excel</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-900 mb-2">Excel Format:</h4>
+              <div className="text-sm text-blue-700 space-y-1">
+                <div>Column 1: <span className="font-mono">SKU</span></div>
+                <div>Column 2: <span className="font-mono">Product Name</span></div>
+                <div>Column 3: <span className="font-mono">Cost</span></div>
+                <div>Column 4: <span className="font-mono">Order Number</span> (optional)</div>
+              </div>
+            </div>
+            <div>
+              <Label>Select File</Label>
+              <Input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUploadDialog(false)}>Cancel</Button>
+            <Button onClick={handleFileUpload}>Upload</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default InventoryV2;
