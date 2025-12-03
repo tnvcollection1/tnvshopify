@@ -763,6 +763,167 @@ TNV Collection`,
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Template Dialog */}
+      <Dialog open={createDialog} onOpenChange={setCreateDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              Create New Template
+            </DialogTitle>
+            <p className="text-sm text-gray-600 mt-2">
+              Submit a template for Meta approval. Templates typically get approved within 15 mins - 24 hours for UTILITY, 1-3 days for MARKETING.
+            </p>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Template Name */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Template Name <span className="text-red-500">*</span>
+              </label>
+              <Input
+                placeholder="order_confirmation (lowercase, underscores only)"
+                value={newTemplate.name}
+                onChange={(e) => setNewTemplate({...newTemplate, name: e.target.value.toLowerCase()})}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Use lowercase letters, numbers, and underscores only. Example: order_update
+              </p>
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="w-full border rounded-md p-2 text-sm"
+                value={newTemplate.category}
+                onChange={(e) => setNewTemplate({...newTemplate, category: e.target.value})}
+              >
+                <option value="UTILITY">UTILITY (Transactional - Fast approval)</option>
+                <option value="MARKETING">MARKETING (Promotional - Takes longer)</option>
+                <option value="AUTHENTICATION">AUTHENTICATION (OTP, Verification codes)</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                {newTemplate.category === "UTILITY" && "✅ For order updates, shipping notifications, customer service"}
+                {newTemplate.category === "MARKETING" && "🎯 For promotional campaigns, sales, product launches"}
+                {newTemplate.category === "AUTHENTICATION" && "🔐 For OTP codes, account verification"}
+              </p>
+            </div>
+
+            {/* Language */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Language
+              </label>
+              <select
+                className="w-full border rounded-md p-2 text-sm"
+                value={newTemplate.language}
+                onChange={(e) => setNewTemplate({...newTemplate, language: e.target.value})}
+              >
+                <option value="en">English</option>
+                <option value="ur">Urdu</option>
+                <option value="ar">Arabic</option>
+              </select>
+            </div>
+
+            {/* Header (Optional) */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Header (Optional)
+              </label>
+              <Input
+                placeholder="Order Update"
+                value={newTemplate.header}
+                onChange={(e) => setNewTemplate({...newTemplate, header: e.target.value})}
+                maxLength={60}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Optional header text (max 60 characters). Can include 1 variable: {`{{1}}`}
+              </p>
+            </div>
+
+            {/* Body */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Message Body <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                placeholder={`Hello {{1}},\n\nYour order #{{2}} has been confirmed!\n\nTotal: Rs. {{3}}\n\nThank you for shopping with us!`}
+                value={newTemplate.body}
+                onChange={(e) => setNewTemplate({...newTemplate, body: e.target.value})}
+                rows={8}
+                maxLength={1024}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Use {`{{1}}, {{2}}, {{3}}`} for variables. Max 1024 characters. Current: {newTemplate.body.length}
+              </p>
+            </div>
+
+            {/* Footer (Optional) */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Footer (Optional)
+              </label>
+              <Input
+                placeholder="TNV Collection - Thank you for shopping with us!"
+                value={newTemplate.footer}
+                onChange={(e) => setNewTemplate({...newTemplate, footer: e.target.value})}
+                maxLength={60}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Optional footer text (max 60 characters). No variables allowed in footer.
+              </p>
+            </div>
+
+            {/* Preview */}
+            {newTemplate.body && (
+              <div className="bg-gray-50 p-4 rounded-lg border">
+                <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+                <div className="bg-white p-3 rounded shadow-sm">
+                  {newTemplate.header && (
+                    <p className="font-semibold text-gray-800 mb-2">{newTemplate.header}</p>
+                  )}
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{newTemplate.body}</p>
+                  {newTemplate.footer && (
+                    <p className="text-xs text-gray-500 mt-2">{newTemplate.footer}</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreateDialog(false)}
+              disabled={creating}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateTemplate}
+              disabled={creating || !newTemplate.name || !newTemplate.body}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {creating ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Submit for Approval
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
