@@ -371,6 +371,52 @@ agent_communication:
         4. Logout → Redirects to login page
     - agent: "testing"
       message: |
+        🎯 DISPATCH TRACKER PAYMENT FIELDS TESTING COMPLETE ✅
+        
+        **TEST SCENARIO EXECUTED**: Verification of payment fields for order 173007564875 in Dispatch Tracker
+        
+        **✅ ALL REQUIREMENTS MET SUCCESSFULLY**:
+        1. **Login**: Successfully authenticated with admin/admin123 credentials
+        2. **Navigation**: Successfully navigated to Dispatch Tracker page (/tracker)
+        3. **Search Functionality**: Successfully searched for tracking number 173007564875
+        4. **Order Found**: Target order #29248 found in search results
+        5. **Payment Fields Verification**: All required columns displaying correct data:
+           - ✅ **Delivery Charges**: Rs. 448.00 (matches expected Rs. 448.00)
+           - ✅ **Weight (kg)**: 2 kg (matches expected 2 kg)
+           - ✅ **Booking Date**: 11/10/2025 (matches expected 11/10/2025)
+           - ✅ **Delivery Date**: 13/10/2025 (matches expected 13/10/2025)
+        
+        **✅ TECHNICAL VERIFICATION**:
+        - **Frontend Display**: All payment fields visible and populated in UI table
+        - **API Response**: Backend API confirmed to return correct field values:
+          ```json
+          {
+            "order_number": "29248",
+            "tracking_number": "173007564875", 
+            "delivery_charges": 448,
+            "parcel_weight": 2,
+            "booking_date": "11/10/2025",
+            "delivery_date": "13/10/2025"
+          }
+          ```
+        - **Search Functionality**: Search by tracking number working correctly
+        - **Data Consistency**: Frontend display matches backend API data exactly
+        
+        **✅ UI/UX QUALITY VERIFIED**:
+        - Clean table layout with proper column headers
+        - Payment fields clearly labeled and formatted (Rs. currency, kg units, date format)
+        - Search functionality responsive and accurate
+        - No JavaScript errors detected in browser console
+        - Professional Shopify-style design maintained
+        
+        **✅ SCREENSHOTS CAPTURED**:
+        - Initial Dispatch Tracker page
+        - Search results for tracking number 173007564875
+        - Final verification screenshot
+        
+        **TESTING COMPLETE**: Payment fields for order 173007564875 are displaying correctly with all expected values. The Dispatch Tracker functionality is working perfectly for tracking and displaying payment-related information.
+    - agent: "testing"
+      message: |
         🔐 PASSWORD CHANGE FEATURE & DEFAULT CREDENTIALS REMOVAL TESTING COMPLETE ✅
         
         **TEST SCENARIO 1 - LOGIN PAGE VERIFICATION**:
