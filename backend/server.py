@@ -1726,6 +1726,19 @@ async def sync_cod_payments():
                         }}
                     )
                     updated_count += 1
+                elif payment_data.get('message') == 'PREPAID':
+                    # Mark prepaid orders
+                    await db.customers.update_one(
+                        {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                        {"$set": {
+                            "cod_payment_status": "PREPAID",
+                            "cod_amount": 0.0,
+                            "amount_paid": 0.0,
+                            "payment_balance": 0.0,
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    updated_count += 1
                     
             except Exception as e:
                 logger.error(f"Error syncing payment for {customer.get('tracking_number')}: {str(e)}")
