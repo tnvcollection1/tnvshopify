@@ -177,7 +177,8 @@ class TCSTracker:
             if response.status_code == 200:
                 data = response.json()
                 
-                if data.get('message') == 'SUCCESS':
+                # Check for success in the new API structure
+                if data.get('isSuccess') and 'responseData' in data:
                     tracking_data = self._parse_tracking_response(data, tracking_number)
                     
                     # Also fetch COD payment status if tracking is successful
