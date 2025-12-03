@@ -643,14 +643,37 @@ const DispatchTracker = () => {
                           ${order.total_spent?.toFixed(2) || "0.00"}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditOrder(order)}
-                            className="border-gray-300 hover:bg-blue-50"
-                          >
-                            <Edit className="w-3 h-3" />
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditOrder(order)}
+                              className="border-gray-300 hover:bg-blue-50"
+                              title="Edit Order"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleOpenManualStatusUpdate(order)}
+                              className="border-green-300 hover:bg-green-50 text-green-700"
+                              title="Manual Status Update"
+                            >
+                              <Hand className="w-3 h-3" />
+                            </Button>
+                            {order.delivery_status === 'RETURN_IN_PROCESS' && !order.return_received && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleMarkReturnReceived(order, true)}
+                                className="border-purple-300 hover:bg-purple-50 text-purple-700"
+                                title="Mark Return Received"
+                              >
+                                <Package className="w-3 h-3" />
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
