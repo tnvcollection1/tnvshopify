@@ -161,6 +161,7 @@ TNV Collection`,
     {
       name: "delivery_update",
       category: "UTILITY",
+      type: "Transactional",
       description: "Send status updates during delivery",
       body: `Hello {{1}},
 
