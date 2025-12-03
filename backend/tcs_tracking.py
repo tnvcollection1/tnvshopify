@@ -244,14 +244,23 @@ class TCSTracker:
         shipment_info = response_data.get('shipmentinfo', [])
         summary = response_data.get('shipmentsummary', '')
         
-        # Get current status from latest delivery info
+        # Get current status from latest checkpoint (most recent activity)
         current_status = 'UNKNOWN'
         status_code = None
         last_update = None
         receiver = None
         location = None
         
-        if delivery_info and len(delivery_info) > 0:
+        # First try to get status from latest checkpoint
+        if checkpoints and len(checkpoints) > 0:
+            latest_checkpoint = checkpoints[0]  # First item is most recent
+            current_status = latest_checkpoint.get('status', 'UNKNOWN')
+            last_update = latest_checkpoint.get('datetime')
+            receiver = latest_checkpoint.get('recievedby')
+            location = latest_checkpoint.get('recievedby')  # Location is in recievedby field
+        
+        # Fallback to delivery info if checkpoints don't have status
+        elif delivery_info and len(delivery_info) > 0:
             latest = delivery_info[0]
             current_status = latest.get('status', 'UNKNOWN')
             status_code = latest.get('code')
