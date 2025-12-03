@@ -1013,6 +1013,47 @@ const DispatchTracker = () => {
                     </div>
                   )}
 
+                  {/* COD Payment Status */}
+                  {trackingData.payment_info && trackingData.payment_info.payment_status && (
+                    <div className="bg-white border-2 border-purple-300 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-lg text-gray-900 flex items-center gap-2">
+                          <DollarSign className="w-5 h-5 text-purple-600" />
+                          COD Payment Status
+                        </h3>
+                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                          trackingData.payment_info.payment_status === 'PAID' 
+                            ? 'bg-green-100 text-green-800' 
+                            : trackingData.payment_info.payment_status === 'PARTIAL'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {trackingData.payment_info.payment_status}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-500">COD Amount</p>
+                          <p className="font-semibold text-gray-900">Rs. {trackingData.payment_info.cod_amount?.toFixed(2) || '0.00'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Paid Amount</p>
+                          <p className="font-semibold text-green-600">Rs. {trackingData.payment_info.paid_amount?.toFixed(2) || '0.00'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Balance Due</p>
+                          <p className="font-semibold text-red-600">Rs. {trackingData.payment_info.balance?.toFixed(2) || '0.00'}</p>
+                        </div>
+                      </div>
+                      {trackingData.payment_info.payment_date && (
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <p className="text-sm text-gray-500">Payment Date</p>
+                          <p className="font-semibold text-gray-900">{trackingData.payment_info.payment_date}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Tracking Timeline */}
                   {trackingData.checkpoints && trackingData.checkpoints.length > 0 && (
                     <div>
