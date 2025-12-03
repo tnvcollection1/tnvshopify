@@ -79,6 +79,9 @@ const DispatchTracker = () => {
     status: '',
     location: ''
   });
+  const [trackingDialog, setTrackingDialog] = useState(false);
+  const [trackingData, setTrackingData] = useState(null);
+  const [loadingTracking, setLoadingTracking] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
 
