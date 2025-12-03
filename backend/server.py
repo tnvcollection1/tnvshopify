@@ -1659,19 +1659,15 @@ async def sync_all_tcs_deliveries():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@api_router.post("/tcs/sync-cod-payments")
-async def sync_cod_payments():
-    """
-    Sync COD payment status for all orders with tracking numbers using Shopify-first approach
-    Updates: cod_payment_status, cod_amount, delivery_charges, and other payment fields
-    Uses background processing to prevent timeouts
-    """
+async def _sync_cod_payments_background():
+    """Background task to sync COD payments"""
     try:
         # Get TCS credentials
         config = await db.tcs_config.find_one({"service": "tcs_pakistan"}, {"_id": 0})
         
         if not config:
-            raise HTTPException(status_code=400, detail="TCS not configured")
+            logger.error("TCS not configured for COD payment sync")
+            return
         
         # Initialize TCS Payment API with customer number
         from tcs_payment import TCSPaymentAPI
@@ -1680,11 +1676,12 @@ async def sync_cod_payments():
         customer_no = config.get('customer_no')
         
         if not bearer_token:
-            raise HTTPException(status_code=400, detail="Bearer token required for payment API")
+            logger.error("Bearer token required for payment API")
+            return
         
         payment_api = TCSPaymentAPI(bearer_token=bearer_token, customer_no=customer_no)
         
-        # Get customers with tracking numbers AND Shopify payment data (limit 100 for batch)
+        # Get ALL customers with tracking numbers AND Shopify payment data
         customers = await db.customers.find(
             {"tracking_company": "TCS", "tracking_number": {"$exists": True, "$ne": None}},
             {
@@ -1695,23 +1692,19 @@ async def sync_cod_payments():
                 "total_spent": 1,
                 "payment_status": 1
             }
-        ).limit(100).to_list(100)
+        ).to_list(1000)
         
         if not customers:
-            return {
-                "success": True,
-                "message": "No COD payments to sync",
-                "updated": 0,
-                "processed": 0
-            }
+            logger.info("No COD payments to sync")
+            return
         
-        logger.info(f"Syncing COD payment status for {len(customers)} orders using Shopify-first approach...")
+        logger.info(f"🔄 Background sync started: Processing {len(customers)} orders...")
         
         updated_count = 0
         errors = 0
         
         # Process each customer with Shopify data
-        for customer in customers:
+        for i, customer in enumerate(customers, 1):
             try:
                 tracking_number = customer.get('tracking_number')
                 if not tracking_number:
@@ -1749,8 +1742,11 @@ async def sync_cod_payments():
                         {"$set": update_fields}
                     )
                     updated_count += 1
+                    
+                    # Log progress every 10 orders
+                    if i % 10 == 0:
+                        logger.info(f"Progress: {i}/{len(customers)} processed, {updated_count} updated")
                 else:
-                    logger.warning(f"Payment sync failed for {tracking_number}: {payment_data.get('message')}")
                     errors += 1
                     
             except Exception as e:
@@ -1758,18 +1754,52 @@ async def sync_cod_payments():
                 errors += 1
                 continue
         
-        logger.info(f"COD payment sync completed: {updated_count} payments updated, {errors} errors")
+        logger.info(f"✅ Background COD payment sync completed: {updated_count}/{len(customers)} updated, {errors} errors")
+        
+    except Exception as e:
+        logger.error(f"❌ Error in background COD payment sync: {str(e)}")
+
+
+@api_router.post("/tcs/sync-cod-payments")
+async def sync_cod_payments(background_tasks: BackgroundTasks):
+    """
+    Trigger COD payment sync for all TCS orders using Shopify-first approach
+    Runs in background to prevent timeouts
+    """
+    try:
+        # Quick check if TCS is configured
+        config = await db.tcs_config.find_one({"service": "tcs_pakistan"}, {"_id": 0})
+        
+        if not config:
+            raise HTTPException(status_code=400, detail="TCS not configured")
+        
+        # Count orders to be synced
+        count = await db.customers.count_documents({
+            "tracking_company": "TCS",
+            "tracking_number": {"$exists": True, "$ne": None}
+        })
+        
+        if count == 0:
+            return {
+                "success": True,
+                "message": "No COD payments to sync",
+                "orders_to_sync": 0
+            }
+        
+        # Start background sync
+        background_tasks.add_task(_sync_cod_payments_background)
+        
+        logger.info(f"✅ COD payment sync triggered for {count} orders (running in background)")
         
         return {
             "success": True,
-            "message": f"Synced {updated_count} COD payments (Shopify-first approach)",
-            "updated": updated_count,
-            "processed": len(customers),
-            "errors": errors
+            "message": f"COD payment sync started in background for {count} orders. Check logs for progress.",
+            "orders_to_sync": count,
+            "note": "Sync is running in background. Use /api/customers endpoint to check updated payment statuses."
         }
         
     except Exception as e:
-        logger.error(f"Error syncing COD payments: {str(e)}")
+        logger.error(f"Error triggering COD payment sync: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
