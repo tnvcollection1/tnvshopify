@@ -928,11 +928,21 @@ const DispatchTracker = () => {
               {trackingData && !trackingData.error && !loadingTracking && (
                 <div className="space-y-4">
                   {/* UNKNOWN Status Warning */}
-                  {trackingData.normalized_status === 'UNKNOWN' && selectedOrder && (
+                  {trackingData && trackingData.normalized_status === 'UNKNOWN' && selectedOrder && (
                     <div>
                       {(() => {
-                        // Calculate order age
-                        const orderDate = new Date(selectedOrder.last_order_date || selectedOrder.created_at);
+                        // Calculate order age - try multiple date fields
+                        let orderDate;
+                        if (selectedOrder.last_order_date) {
+                          orderDate = new Date(selectedOrder.last_order_date);
+                        } else if (selectedOrder.created_at) {
+                          orderDate = new Date(selectedOrder.created_at);
+                        } else if (selectedOrder.order_date) {
+                          orderDate = new Date(selectedOrder.order_date);
+                        } else {
+                          orderDate = new Date(); // Default to today if no date found
+                        }
+                        
                         const now = new Date();
                         const daysDiff = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
                         
