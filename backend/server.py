@@ -3422,6 +3422,20 @@ async def get_customer_whatsapp_messages(customer_id: str):
         logger.error(f"Error fetching messages: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/whatsapp/messages/all")
+async def get_all_whatsapp_messages(limit: int = 100):
+    """Get all WhatsApp message history"""
+    try:
+        messages = await db.whatsapp_messages.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
+        
+        return {
+            "success": True,
+            "messages": messages
+        }
+    except Exception as e:
+        logger.error(f"Error fetching all messages: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @api_router.post("/whatsapp/send-template")
 async def send_template_whatsapp(data: dict):
