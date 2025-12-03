@@ -1308,26 +1308,39 @@ async def sync_all_tcs_deliveries():
         updated_count = 0
         errors = []
         
-        # Sync in batches to avoid timeouts
-        for customer in customers[:100]:  # Limit to 100 per request
+        # TCS API limit: 10 tracking numbers per request
+        # Process in batches of 10
+        batch_size = 10
+        total_to_sync = min(len(customers), 100)  # Limit to 100 per sync request
+        
+        for i in range(0, total_to_sync, batch_size):
+            batch = customers[i:i + batch_size]
+            tracking_numbers = [c['tracking_number'] for c in batch]
+            
             try:
-                tracking_number = customer['tracking_number']
-                tracking_data = tracker.track_consignment(tracking_number)
+                # Batch track all 10 tracking numbers at once
+                logger.info(f"Tracking batch {i//batch_size + 1}: {len(tracking_numbers)} tracking numbers")
+                results = tracker.track_multiple_consignments(tracking_numbers)
                 
-                if tracking_data and tracking_data.get('normalized_status') not in ['NOT_FOUND', None]:
-                    new_status = tracking_data.get('normalized_status')
-                    old_status = customer.get('delivery_status')
+                # Update each customer based on results
+                for customer in batch:
+                    tracking_number = customer['tracking_number']
+                    tracking_data = results.get(tracking_number)
                     
-                    # Update delivery status
-                    await db.customers.update_one(
-                        {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
-                        {"$set": {
-                            "delivery_status": new_status,
-                            "delivery_location": tracking_data.get('current_location'),
-                            "delivery_updated_at": datetime.now(timezone.utc).isoformat()
-                        }}
-                    )
-                    synced_count += 1
+                    if tracking_data and tracking_data.get('normalized_status') not in ['NOT_FOUND', None]:
+                        new_status = tracking_data.get('normalized_status')
+                        old_status = customer.get('delivery_status')
+                        
+                        # Update delivery status
+                        await db.customers.update_one(
+                            {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                            {"$set": {
+                                "delivery_status": new_status,
+                                "delivery_location": tracking_data.get('current_location'),
+                                "delivery_updated_at": datetime.now(timezone.utc).isoformat()
+                            }}
+                        )
+                        synced_count += 1
                     
                     # AUTO-DEDUCT STOCK WHEN STATUS CHANGES TO DELIVERED
                     if new_status == 'DELIVERED' and old_status != 'DELIVERED':
