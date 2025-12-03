@@ -78,6 +78,11 @@ const DispatchTracker = () => {
   useEffect(() => {
     fetchOrders();
     fetchStores();
+    fetchAutoSyncStatus();
+    
+    // Refresh auto-sync status every 30 seconds
+    const interval = setInterval(fetchAutoSyncStatus, 30000);
+    return () => clearInterval(interval);
   }, [currentPage, filters]);
 
   // Reset to page 1 when filters change (but not on initial load)
