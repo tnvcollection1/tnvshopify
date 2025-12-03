@@ -284,6 +284,18 @@ frontend:
           agent: "testing"
           comment: "TESTED ✅ - Enhanced Settings page with tabs fully functional. Successfully verified: 1) Login with admin/admin123 works, 2) Navigation to /settings successful, 3) Two tabs present (Shopify Integration & TCS API) with proper icons, 4) Shopify Integration tab shows all 3 stores (asmia, tnvcollection, tnvcollectionpk) with correct status indicators, 5) TCS API tab displays complete configuration form with authentication type radio buttons (Bearer Token/Username-Password), input fields for Bearer Token, Token Expiry, Username/Password, TCS Customer Number field, and Save button, 6) Tab switching works smoothly between both tabs, 7) Screenshots captured for both tabs. All review request requirements verified successfully."
 
+  - task: "Password change feature and default credentials removal"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Settings.jsx, /app/frontend/src/components/Login.jsx, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Password change feature fully functional and secure. Successfully verified: 1) Login page clean with NO default credentials text visible, 2) Security tab in Settings accessible with complete password change form, 3) All form elements present (Current User info, Current/New/Confirm password fields, requirements guide, Change Password button), 4) Comprehensive validation testing: empty fields, short passwords, mismatched passwords, wrong current password, and successful password change, 5) Backend API endpoints working with SHA256 hashing, 6) Professional UI with proper error handling and success feedback, 7) Screenshots captured for all states. Security implementation meets production standards."
+
   - task: "Inventory Management System V2"
     implemented: true
     working: false
