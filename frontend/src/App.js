@@ -144,10 +144,18 @@ function AppRoutes() {
         } 
       />
       <Route 
-        path="/whatsapp-history" 
+        path="/whatsapp-inbox" 
         element={
           <ProtectedRoute>
-            <WhatsAppHistory />
+            <WhatsAppInbox />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/whatsapp-templates" 
+        element={
+          <ProtectedRoute>
+            <WhatsAppTemplates />
           </ProtectedRoute>
         } 
       />
