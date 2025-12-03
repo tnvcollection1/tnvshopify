@@ -301,6 +301,22 @@ class TCSTracker:
         else:
             return 'UNKNOWN'
     
+    def get_cod_payment_status(self, consignment_no: str) -> Optional[Dict]:
+        """
+        Get COD payment status using the instance's customer number
+        
+        Args:
+            consignment_no: TCS consignment/tracking number
+            
+        Returns:
+            Payment status data or None if failed
+        """
+        if not self.customer_no:
+            logger.warning("No customer number configured for COD payment status")
+            return None
+        
+        return self.get_payment_status(self.customer_no, consignment_no)
+    
     def get_payment_status(self, customer_no: str, consignment_no: str) -> Optional[Dict]:
         """
         Get COD payment status for a specific consignment
