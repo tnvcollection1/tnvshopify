@@ -116,7 +116,6 @@ class AutoTCSSync:
                 customers = await self.db.customers.find({
                     'tracking_company': 'TCS',
                     'tracking_number': {'$ne': None, '$ne': ''},
-                    'delivery_status': {'$in': ['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'PENDING', None]},
                     'delivery_status': {'$nin': ['DELIVERED', 'RETURNED', 'RETURN_IN_PROCESS', 'UNKNOWN']}
                 }, {
                     '_id': 0,
