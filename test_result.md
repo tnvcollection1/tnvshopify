@@ -260,6 +260,18 @@ frontend:
           agent: "main"
           comment: "TODO: Create separate page/component to display /api/reports/daily data in table format with date, messages sent, conversions, conversion rate, total sales columns."
 
+  - task: "Settings page Shopify configuration"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Settings.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Settings page working perfectly. All 3 stores displayed correctly (asmia: Configured, tnvcollection: Not Configured, tnvcollectionpk: Configured with last synced timestamp). Form inputs functional, error handling working (invalid credentials properly rejected with toast), page remains stable after errors. Professional UI with proper status badges and responsive design."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
