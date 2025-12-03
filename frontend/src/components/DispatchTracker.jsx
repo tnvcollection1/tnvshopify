@@ -673,10 +673,28 @@ const DispatchTracker = () => {
                         </TableCell>
                         <TableCell>{getStatusBadge(order.payment_status || "pending", "payment")}</TableCell>
                         <TableCell>
-                          {getStatusBadge(order.cod_payment_status || "PENDING", "payment")}
+                          {getStatusBadge(order.payment_status || "N/A", "payment")}
                         </TableCell>
                         <TableCell className="font-semibold text-gray-900">
-                          ${order.total_spent?.toFixed(2) || "0.00"}
+                          Rs. {order.cod_amount?.toFixed(2) || "0.00"}
+                        </TableCell>
+                        <TableCell className="font-semibold text-green-600">
+                          Rs. {order.amount_paid?.toFixed(2) || "0.00"}
+                        </TableCell>
+                        <TableCell className="font-semibold text-red-600">
+                          Rs. {order.payment_balance?.toFixed(2) || "0.00"}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          Rs. {order.delivery_charges?.toFixed(2) || "0.00"}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {order.parcel_weight || "—"} kg
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {order.booking_date || "—"}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {order.delivery_date || "—"}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
