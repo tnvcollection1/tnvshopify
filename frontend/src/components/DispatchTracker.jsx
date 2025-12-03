@@ -259,6 +259,45 @@ const DispatchTracker = () => {
     }
   };
 
+  // WhatsApp Functions
+  const handleOpenWhatsApp = (order) => {
+    setSelectedWhatsappOrder(order);
+    // Pre-fill with a default message
+    const defaultMessage = `Hello ${order.first_name},\n\nYour order #${order.order_number} update:\nTracking: ${order.tracking_number}\nStatus: ${order.delivery_status}\n\nThank you for shopping with us!`;
+    setWhatsappMessage(defaultMessage);
+    setWhatsappDialog(true);
+  };
+
+  const handleSendWhatsApp = async () => {
+    if (!selectedWhatsappOrder || !whatsappMessage.trim()) {
+      toast.error("Please enter a message");
+      return;
+    }
+
+    setSendingWhatsapp(true);
+    try {
+      const response = await axios.post(`${API}/whatsapp/send`, {
+        phone: selectedWhatsappOrder.phone,
+        message: whatsappMessage
+      });
+
+      if (response.data.success) {
+        toast.success("✅ WhatsApp message sent successfully!");
+        setWhatsappDialog(false);
+        setWhatsappMessage("");
+        setSelectedWhatsappOrder(null);
+      } else {
+        toast.error(`Failed: ${response.data.error}`);
+      }
+    } catch (error) {
+      console.error("WhatsApp send error:", error);
+      toast.error("Failed to send WhatsApp message");
+    } finally {
+      setSendingWhatsapp(false);
+    }
+  };
+
+
   const handleSyncTCSOneByOne = async () => {
     try {
       toast.info("Syncing TCS one-by-one (slower but more reliable)...", { duration: 5000 });
