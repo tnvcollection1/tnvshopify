@@ -331,17 +331,194 @@ const Settings = () => {
               </Card>
             );
           })}
-        </div>
+            </div>
 
-        {stores.length === 0 && (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <Store className="w-16 h-16 text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">No Stores Found</h3>
-              <p className="text-gray-500">No stores available to configure</p>
-            </CardContent>
-          </Card>
-        )}
+            {stores.length === 0 && (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-16">
+                  <Store className="w-16 h-16 text-gray-400 mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No Stores Found</h3>
+                  <p className="text-gray-500">No stores available to configure</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* TCS API Integration Tab */}
+          <TabsContent value="tcs" className="space-y-6">
+            {/* Info Banner */}
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-purple-900 mb-1">TCS API Configuration</h3>
+                <p className="text-sm text-purple-700">
+                  Configure TCS Pakistan courier API credentials to enable delivery tracking, COD payment status, and shipment updates.
+                </p>
+              </div>
+            </div>
+
+            {/* TCS Configuration Card */}
+            <Card className={`border-2 ${tcsConfigured ? 'border-green-200' : 'border-gray-200'}`}>
+              <CardHeader className={tcsConfigured ? 'bg-green-50' : 'bg-gray-50'}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Truck className="w-6 h-6 text-gray-700" />
+                    <div>
+                      <CardTitle className="text-xl">TCS Pakistan API</CardTitle>
+                      <CardDescription className="text-sm mt-1">
+                        Delivery tracking and COD payment integration
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${
+                    tcsConfigured 
+                      ? 'bg-green-50 border-green-200' 
+                      : 'bg-red-50 border-red-200'
+                  }`}>
+                    {tcsConfigured ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-600">Configured</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-4 h-4 text-red-600" />
+                        <span className="text-sm font-medium text-red-600">Not Configured</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="pt-6 space-y-4">
+                <div className="space-y-4">
+                  {/* Authentication Type */}
+                  <div className="space-y-2">
+                    <Label>Authentication Type</Label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="auth_type"
+                          value="bearer"
+                          checked={tcsConfig.auth_type === 'bearer'}
+                          onChange={(e) => handleTcsConfigChange('auth_type', e.target.value)}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">Bearer Token</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="auth_type"
+                          value="basic"
+                          checked={tcsConfig.auth_type === 'basic'}
+                          onChange={(e) => handleTcsConfigChange('auth_type', e.target.value)}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">Username/Password</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Bearer Token Fields */}
+                  {tcsConfig.auth_type === 'bearer' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="bearer_token">Bearer Token</Label>
+                        <Input
+                          id="bearer_token"
+                          type="password"
+                          placeholder="Enter your TCS API bearer token"
+                          value={tcsConfig.bearer_token}
+                          onChange={(e) => handleTcsConfigChange('bearer_token', e.target.value)}
+                          className="font-mono text-sm"
+                        />
+                        <p className="text-xs text-gray-500">
+                          Your TCS API bearer token for authentication
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="token_expiry">Token Expiry (Optional)</Label>
+                        <Input
+                          id="token_expiry"
+                          type="datetime-local"
+                          value={tcsConfig.token_expiry}
+                          onChange={(e) => handleTcsConfigChange('token_expiry', e.target.value)}
+                          className="text-sm"
+                        />
+                        <p className="text-xs text-gray-500">
+                          When this token expires (leave empty if no expiry)
+                        </p>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Username/Password Fields */}
+                  {tcsConfig.auth_type === 'basic' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="tcs_username">Username</Label>
+                        <Input
+                          id="tcs_username"
+                          type="text"
+                          placeholder="TCS API username"
+                          value={tcsConfig.username}
+                          onChange={(e) => handleTcsConfigChange('username', e.target.value)}
+                          className="font-mono text-sm"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="tcs_password">Password</Label>
+                        <Input
+                          id="tcs_password"
+                          type="password"
+                          placeholder="TCS API password"
+                          value={tcsConfig.password}
+                          onChange={(e) => handleTcsConfigChange('password', e.target.value)}
+                          className="font-mono text-sm"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Customer Number */}
+                  <div className="space-y-2">
+                    <Label htmlFor="customer_no">TCS Customer Number (Optional)</Label>
+                    <Input
+                      id="customer_no"
+                      type="text"
+                      placeholder="046809"
+                      value={tcsConfig.customer_no}
+                      onChange={(e) => handleTcsConfigChange('customer_no', e.target.value)}
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Your TCS customer number for COD payment tracking
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={handleSaveTcsConfig}
+                    disabled={savingTcs}
+                    className="w-full sm:w-auto"
+                  >
+                    {savingTcs ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving Configuration...
+                      </>
+                    ) : (
+                      'Save TCS Configuration'
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
