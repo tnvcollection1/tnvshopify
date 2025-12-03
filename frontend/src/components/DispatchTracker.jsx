@@ -86,6 +86,12 @@ const DispatchTracker = () => {
   const [loadingTracking, setLoadingTracking] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
+  
+  // WhatsApp states
+  const [whatsappDialog, setWhatsappDialog] = useState(false);
+  const [whatsappMessage, setWhatsappMessage] = useState("");
+  const [sendingWhatsapp, setSendingWhatsapp] = useState(false);
+  const [selectedWhatsappOrder, setSelectedWhatsappOrder] = useState(null);
 
   useEffect(() => {
     fetchOrders();
