@@ -1373,32 +1373,33 @@ async def sync_all_tcs_deliveries():
                                 store_name = customer.get('store_name')
                             
                                 if order_skus and store_name:
-                                for sku_data in order_skus:
-                                    sku = sku_data.get('sku')
-                                    quantity = sku_data.get('quantity', 1)
+                                    for sku_data in order_skus:
+                                        sku = sku_data.get('sku')
+                                        quantity = sku_data.get('quantity', 1)
+                                        
+                                        if sku:
+                                            await db.inventory_items.update_one(
+                                                {"sku": sku.upper(), "store_name": store_name},
+                                                {"$inc": {"quantity": quantity}},
+                                                upsert=False
+                                            )
                                     
-                                    if sku:
-                                        await db.inventory_items.update_one(
-                                            {"sku": sku.upper(), "store_name": store_name},
-                                            {"$inc": {"quantity": quantity}},
-                                            upsert=False
-                                        )
-                                
-                                await db.customers.update_one(
-                                    {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
-                                    {"$set": {
-                                        "stock_deducted": False,
-                                        "stock_restored": True,
-                                        "stock_restored_at": datetime.now(timezone.utc).isoformat(),
-                                        "payment_status": "refunded"
-                                    }}
-                                )
-                                logger.info(f"✅ Auto-restored stock for returned order {customer.get('order_number')}")
-                                updated_count += 1
+                                    await db.customers.update_one(
+                                        {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                                        {"$set": {
+                                            "stock_deducted": False,
+                                            "stock_restored": True,
+                                            "stock_restored_at": datetime.now(timezone.utc).isoformat(),
+                                            "payment_status": "refunded"
+                                        }}
+                                    )
+                                    logger.info(f"✅ Auto-restored stock for returned order {customer.get('order_number')}")
+                                    updated_count += 1
                         
             except Exception as e:
-                errors.append(f"{tracking_number}: {str(e)}")
-                logger.error(f"Error tracking {tracking_number}: {str(e)}")
+                batch_tracking_numbers = ','.join(tracking_numbers)
+                errors.append(f"Batch error: {str(e)}")
+                logger.error(f"Error tracking batch {batch_tracking_numbers}: {str(e)}")
                 continue
         
         return {
