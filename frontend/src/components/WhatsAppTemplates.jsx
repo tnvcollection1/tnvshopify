@@ -145,6 +145,7 @@ Thank you for shopping with TNV Collection!`,
     {
       name: "order_dispatched",
       category: "UTILITY",
+      type: "Transactional",
       description: "Send when order is shipped",
       body: `Hi {{1}},
 
