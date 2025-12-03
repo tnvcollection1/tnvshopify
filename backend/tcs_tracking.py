@@ -92,7 +92,12 @@ class TCSTracker:
                     # Parse expiry date
                     if expiry_str:
                         try:
-                            self.token_expiry = datetime.fromisoformat(expiry_str.replace('Z', '+00:00'))
+                            parsed_dt = datetime.fromisoformat(expiry_str.replace('Z', '+00:00'))
+                            # Ensure timezone aware
+                            if parsed_dt.tzinfo is None:
+                                self.token_expiry = parsed_dt.replace(tzinfo=timezone.utc)
+                            else:
+                                self.token_expiry = parsed_dt
                         except:
                             # Token valid for 24 hours by default
                             self.token_expiry = datetime.now(timezone.utc) + timedelta(hours=24)
