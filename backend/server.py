@@ -17,6 +17,7 @@ from shopify_sync_async import ShopifyAsyncSync
 from datetime import timedelta
 from tcs_tracking import TCSTracker
 from scheduler import get_scheduler
+import asyncio
 
 
 ROOT_DIR = Path(__file__).parent
