@@ -948,20 +948,14 @@ const DispatchTracker = () => {
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
                                     <p className="font-semibold text-gray-900">{checkpoint.status}</p>
-                                    {checkpoint.location && (
-                                      <p className="text-sm text-gray-600 mt-1">📍 {checkpoint.location}</p>
+                                    {checkpoint.recievedby && (
+                                      <p className="text-sm text-gray-600 mt-1">📍 {checkpoint.recievedby}</p>
                                     )}
                                   </div>
                                   <div className="text-right ml-4">
-                                    <p className="text-sm text-gray-600">{checkpoint.date}</p>
-                                    {checkpoint.time && (
-                                      <p className="text-xs text-gray-500">{checkpoint.time}</p>
-                                    )}
+                                    <p className="text-sm text-gray-600">{checkpoint.datetime}</p>
                                   </div>
                                 </div>
-                                {checkpoint.remarks && (
-                                  <p className="text-sm text-gray-500 mt-2 italic">{checkpoint.remarks}</p>
-                                )}
                               </div>
                             </div>
                           ))}
