@@ -3551,7 +3551,33 @@ async def notify_order_status_change(data: dict):
             {"customer_id": customer_id, "store_name": store_name},
             {"_id": 0}
         )
-
+        
+        if not customer or not customer.get("phone"):
+            return {"success": False, "error": "Customer not found or no phone number"}
+        
+        # Create status-specific message
+        message = generate_status_message(customer, new_status)
+        
+        # Send WhatsApp
+        result = await whatsapp_service.send_text_message(customer["phone"], message)
+        
+        # Log notification
+        if result.get("success"):
+            await db.whatsapp_messages.insert_one({
+                "customer_id": customer_id,
+                "to": customer["phone"],
+                "message": message,
+                "message_id": result.get("message_id"),
+                "type": "status_notification",
+                "status": new_status,
+                "direction": "outgoing",
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            })
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error sending notification: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ============= WhatsApp Marketing API Endpoints =============
 
