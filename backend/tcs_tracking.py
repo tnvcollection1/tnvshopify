@@ -470,9 +470,16 @@ class TCSTracker:
                 detail = {}
             
             payment_info['cod_amount'] = detail.get('codamount', 0) if isinstance(detail, dict) else 0
-            payment_info['paid_amount'] = detail.get('paidamount', 0) if isinstance(detail, dict) else 0
+            payment_info['paid_amount'] = detail.get('amount paid', detail.get('paidamount', 0)) if isinstance(detail, dict) else 0
             payment_info['balance'] = detail.get('balance', 0) if isinstance(detail, dict) else 0
-            payment_info['payment_date'] = detail.get('paymentdate') if isinstance(detail, dict) else None
+            payment_info['payment_date'] = detail.get('payment date', detail.get('paymentdate')) if isinstance(detail, dict) else None
+            payment_info['booking_date'] = detail.get('booking date') if isinstance(detail, dict) else None
+            payment_info['delivery_date'] = detail.get('delivery date') if isinstance(detail, dict) else None
+            payment_info['delivery_charges'] = detail.get('delivery charges', 0) if isinstance(detail, dict) else 0
+            payment_info['parcel_weight'] = detail.get('parcel weight', 0) if isinstance(detail, dict) else 0
+            payment_info['city'] = detail.get('city') if isinstance(detail, dict) else None
+            payment_info['cn_status'] = detail.get('cn status', 'OK') if isinstance(detail, dict) else 'OK'
+            payment_info['order_no'] = detail.get('order no') if isinstance(detail, dict) else None
             
             # Determine payment status
             if payment_info['balance'] <= 0 and payment_info['cod_amount'] > 0:
