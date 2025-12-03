@@ -123,10 +123,11 @@ await axios.post('${API}/whatsapp/send-template', {
     toast.success("Code copied to clipboard!");
   };
 
-  const recommendedTemplates = [
+  const utilityTemplates = [
     {
       name: "order_confirmation",
       category: "UTILITY",
+      type: "Transactional",
       description: "Send when customer places an order",
       body: `Hello {{1}},
 
