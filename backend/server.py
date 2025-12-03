@@ -2717,3 +2717,58 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+@api_router.get("/dashboard/stats")
+async def get_dashboard_stats(store_name: str = None):
+    """Get dashboard statistics (optimized)"""
+    try:
+        query = {}
+        if store_name and store_name != "all":
+            query["store_name"] = store_name
+        
+        # Get fulfillment status counts
+        fulfillment_pipeline = [
+            {"$match": query},
+            {"$group": {
+                "_id": "$fulfillment_status",
+                "count": {"$sum": 1}
+            }}
+        ]
+        
+        fulfillment_results = await db.customers.aggregate(fulfillment_pipeline).to_list(100)
+        fulfillment_status = {item["_id"]: item["count"] for item in fulfillment_results if item["_id"]}
+        
+        # Get payment status counts
+        payment_pipeline = [
+            {"$match": query},
+            {"$group": {
+                "_id": "$payment_status",
+                "count": {"$sum": 1}
+            }}
+        ]
+        
+        payment_results = await db.customers.aggregate(payment_pipeline).to_list(100)
+        payment_status = {item["_id"]: item["count"] for item in payment_results if item["_id"]}
+        
+        # Get delivery status counts  
+        delivery_pipeline = [
+            {"$match": query},
+            {"$group": {
+                "_id": "$delivery_status",
+                "count": {"$sum": 1}
+            }}
+        ]
+        
+        delivery_results = await db.customers.aggregate(delivery_pipeline).to_list(100)
+        delivery_status = {item["_id"]: item["count"] for item in delivery_results if item["_id"]}
+        
+        return {
+            "fulfillmentStatus": fulfillment_status,
+            "paymentStatus": payment_status,
+            "deliveryStatus": delivery_status
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching dashboard stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
