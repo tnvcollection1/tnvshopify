@@ -1741,6 +1741,7 @@ async def _sync_cod_payments_background():
                         "parcel_weight": payment_data.get('parcel_weight', 0),
                         "booking_date": payment_data.get('booking_date'),
                         "delivery_date": payment_data.get('delivery_date'),
+                        "payment_date": payment_data.get('payment_date'),
                         "collection_date": payment_data.get('collection_date'),
                         "remittance_date": payment_data.get('remittance_date'),
                         "remittance_amount": payment_data.get('remittance_amount', 0.0),
