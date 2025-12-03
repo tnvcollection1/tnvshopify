@@ -1258,6 +1258,86 @@ async def track_tcs_consignment(tracking_number: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/tcs/sync-one-by-one")
+async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
+    """
+    Sync TCS tracking numbers ONE BY ONE with delay
+    This is slower but more reliable for API rate limits
+    """
+    try:
+        import time
+        
+        # Get TCS credentials
+        config = await db.tcs_config.find_one({"service": "tcs_pakistan"}, {"_id": 0})
+        if not config:
+            raise HTTPException(status_code=400, detail="TCS not configured")
+        
+        # Get customers with TCS tracking numbers
+        customers = await db.customers.find({
+            "tracking_number": {"$exists": True, "$nin": [None, ""]},
+            "tracking_company": {"$regex": "TCS", "$options": "i"}
+        }, {"_id": 0, "tracking_number": 1, "customer_id": 1, "store_name": 1, "delivery_status": 1, "order_skus": 1, "order_number": 1, "stock_deducted": 1}).limit(limit).to_list(limit)
+        
+        if not customers:
+            return {
+                "success": True,
+                "message": "No TCS tracking numbers to sync",
+                "synced_count": 0
+            }
+        
+        # Initialize TCS tracker
+        from tcs_tracking import TCSTracker
+        if config.get('auth_type') == 'bearer':
+            tracker = TCSTracker(bearer_token=config.get('bearer_token'), token_expiry=config.get('token_expiry'))
+        else:
+            tracker = TCSTracker(username=config.get('username'), password=config.get('password'))
+        
+        synced_count = 0
+        errors = []
+        
+        # Process ONE BY ONE with delay
+        for idx, customer in enumerate(customers):
+            try:
+                tracking_number = customer['tracking_number']
+                tracking_data = tracker.track_consignment(tracking_number)
+                
+                if tracking_data and tracking_data.get('normalized_status') not in ['NOT_FOUND', None, 'UNKNOWN']:
+                    new_status = tracking_data.get('normalized_status')
+                    old_status = customer.get('delivery_status')
+                    
+                    # Update delivery status
+                    await db.customers.update_one(
+                        {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
+                        {"$set": {
+                            "delivery_status": new_status,
+                            "delivery_location": tracking_data.get('current_location'),
+                            "delivery_updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    synced_count += 1
+                    logger.info(f"Synced {tracking_number}: {old_status} → {new_status}")
+                
+                # Delay between requests
+                if idx < len(customers) - 1:
+                    time.sleep(delay)
+                    
+            except Exception as e:
+                errors.append(f"{tracking_number}: {str(e)}")
+                logger.error(f"Error tracking {tracking_number}: {str(e)}")
+                continue
+        
+        return {
+            "success": True,
+            "message": f"TCS one-by-one sync completed: {synced_count} orders synced",
+            "synced_count": synced_count,
+            "errors": errors if errors else None
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in one-by-one sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/tcs/sync-all")
 async def sync_all_tcs_deliveries():
     """
