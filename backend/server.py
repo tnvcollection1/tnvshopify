@@ -1277,10 +1277,24 @@ async def sync_all_tcs_deliveries():
         }, {"_id": 0, "tracking_number": 1, "customer_id": 1, "store_name": 1, "delivery_status": 1, "order_skus": 1, "order_number": 1, "stock_deducted": 1}).to_list(1000)
         
         if not customers:
+            # Count total customers with non-TCS tracking
+            total_with_tracking = await db.customers.count_documents({
+                "tracking_number": {"$ne": None, "$ne": "", "$exists": True}
+            })
+            non_tcs = await db.customers.count_documents({
+                "tracking_number": {"$ne": None, "$ne": "", "$exists": True},
+                "tracking_company": {"$not": {"$regex": "TCS", "$options": "i"}}
+            })
+            
             return {
                 "success": True,
-                "message": "No tracking numbers to update",
-                "synced_count": 0
+                "message": f"No TCS tracking numbers found. Total tracking numbers: {total_with_tracking}, Non-TCS: {non_tcs}",
+                "synced_count": 0,
+                "info": {
+                    "total_with_tracking": total_with_tracking,
+                    "non_tcs_tracking": non_tcs,
+                    "tcs_tracking": 0
+                }
             }
         
         # Initialize TCS tracker
