@@ -272,6 +272,18 @@ frontend:
           agent: "testing"
           comment: "TESTED ✅ - Settings page working perfectly. All 3 stores displayed correctly (asmia: Configured, tnvcollection: Not Configured, tnvcollectionpk: Configured with last synced timestamp). Form inputs functional, error handling working (invalid credentials properly rejected with toast), page remains stable after errors. Professional UI with proper status badges and responsive design."
 
+  - task: "Enhanced Settings page with tabs (Shopify Integration + TCS API)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Settings.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Enhanced Settings page with tabs fully functional. Successfully verified: 1) Login with admin/admin123 works, 2) Navigation to /settings successful, 3) Two tabs present (Shopify Integration & TCS API) with proper icons, 4) Shopify Integration tab shows all 3 stores (asmia, tnvcollection, tnvcollectionpk) with correct status indicators, 5) TCS API tab displays complete configuration form with authentication type radio buttons (Bearer Token/Username-Password), input fields for Bearer Token, Token Expiry, Username/Password, TCS Customer Number field, and Save button, 6) Tab switching works smoothly between both tabs, 7) Screenshots captured for both tabs. All review request requirements verified successfully."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
