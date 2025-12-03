@@ -1334,21 +1334,28 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
                 tracking_number = customer['tracking_number']
                 tracking_data = tracker.track_consignment(tracking_number)
                 
-                if tracking_data and tracking_data.get('normalized_status') not in ['NOT_FOUND', None, 'UNKNOWN']:
+                if tracking_data:
                     new_status = tracking_data.get('normalized_status')
-                    old_status = customer.get('delivery_status')
                     
-                    # Update delivery status
+                    # SKIP UNKNOWN/NOT_FOUND statuses - don't update database
+                    if new_status in ['UNKNOWN', 'NOT_FOUND', None]:
+                        logger.info(f"Skipping {tracking_number}: Status is {new_status}")
+                        continue
+                    
+                    old_status = customer.get('delivery_status')
+                    location = tracking_data.get('current_location')
+                    
+                    # Update delivery status with VALID status only
                     await db.customers.update_one(
                         {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
                         {"$set": {
                             "delivery_status": new_status,
-                            "delivery_location": tracking_data.get('current_location'),
+                            "delivery_location": location,
                             "delivery_updated_at": datetime.now(timezone.utc).isoformat()
                         }}
                     )
                     synced_count += 1
-                    logger.info(f"Synced {tracking_number}: {old_status} → {new_status}")
+                    logger.info(f"Synced {tracking_number}: {old_status} → {new_status} at {location}")
                 
                 # Delay between requests
                 if idx < len(customers) - 1:
