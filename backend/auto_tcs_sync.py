@@ -32,11 +32,21 @@ class AutoTCSSync:
             # Track with TCS API
             tracking_data = tracker.track_consignment(tracking_number)
             
-            if tracking_data and tracking_data.get('normalized_status') not in ['NOT_FOUND', None, 'UNKNOWN']:
+            if tracking_data:
                 new_status = tracking_data.get('normalized_status')
                 location = tracking_data.get('current_location')
                 
-                # Update database
+                # SKIP if status is UNKNOWN or NOT_FOUND (old/invalid tracking)
+                if new_status in ['UNKNOWN', 'NOT_FOUND', None]:
+                    logger.debug(f"⏭️  Skipping {tracking_number}: Status is {new_status}")
+                    # Mark as synced so we don't keep trying
+                    await self.db.customers.update_one(
+                        {'customer_id': customer['customer_id'], 'store_name': customer['store_name']},
+                        {'$set': {'last_auto_sync': datetime.now(timezone.utc).isoformat()}}
+                    )
+                    return False
+                
+                # Update database with VALID status
                 await self.db.customers.update_one(
                     {'customer_id': customer['customer_id'], 'store_name': customer['store_name']},
                     {'$set': {
@@ -48,7 +58,7 @@ class AutoTCSSync:
                 )
                 
                 if old_status != new_status:
-                    logger.info(f"✅ Order {customer['order_number']} ({tracking_number}): {old_status} → {new_status}")
+                    logger.info(f"✅ Order {customer['order_number']} ({tracking_number}): {old_status} → {new_status} at {location}")
                     self.synced_today += 1
                     
                     # Auto-deduct stock if delivered
