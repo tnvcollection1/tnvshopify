@@ -3449,21 +3449,38 @@ async def get_customers_count(
     if stock_availability and store_name and store_name != "all":
         customers = await db.customers.find(query, {"_id": 0, "order_skus": 1}).to_list(50000)
         
-        # Get stock for the store
+        # Get stock from inventory_v2 (new) and stock (old) collections
+        inventory_v2_items = await db.inventory_v2.find(
+            {"store_name": store_name, "quantity": {"$gt": 0}}, 
+            {"_id": 0, "sku": 1}
+        ).to_list(10000)
+        
         stock_items = await db.stock.find({"store_name": store_name}, {"_id": 0, "sku": 1}).to_list(10000)
-        stock_skus = set(item["sku"].upper() for item in stock_items)
+        
+        # Combine SKUs from both collections
+        stock_skus = set()
+        stock_skus.update(item["sku"].upper() for item in inventory_v2_items)
+        stock_skus.update(item["sku"].upper() for item in stock_items)
         
         # Count customers matching stock status
         matching_count = 0
         for customer in customers:
-            order_skus = [sku.upper() for sku in customer.get('order_skus', [])]
+            order_skus = customer.get('order_skus', [])
+            # Handle both string format and dict format
+            if order_skus:
+                if isinstance(order_skus[0], str):
+                    order_sku_list = [sku.upper() for sku in order_skus]
+                else:
+                    order_sku_list = [sku.get('sku', '').upper() if isinstance(sku, dict) else str(sku).upper() for sku in order_skus]
+            else:
+                order_sku_list = []
             
-            if not order_skus:
+            if not order_sku_list:
                 stock_status = "unknown"
             else:
-                in_stock = sum(1 for sku in order_skus if sku in stock_skus)
+                in_stock = sum(1 for sku in order_sku_list if sku in stock_skus)
                 
-                if in_stock == len(order_skus):
+                if in_stock == len(order_sku_list):
                     stock_status = "in_stock"
                 elif in_stock == 0:
                     stock_status = "out_of_stock"
