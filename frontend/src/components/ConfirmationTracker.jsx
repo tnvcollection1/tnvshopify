@@ -440,6 +440,7 @@ const ConfirmationTracker = () => {
                     <TableHead className="font-semibold text-gray-700">Store</TableHead>
                     <TableHead className="font-semibold text-gray-700">Customer</TableHead>
                     <TableHead className="font-semibold text-gray-700">Phone</TableHead>
+                    <TableHead className="font-semibold text-gray-700">WhatsApp</TableHead>
                     <TableHead className="font-semibold text-gray-700">Stock Status</TableHead>
                     <TableHead className="font-semibold text-gray-700">Calling Status</TableHead>
                     <TableHead className="font-semibold text-gray-700">Confirmation</TableHead>
@@ -451,13 +452,13 @@ const ConfirmationTracker = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={12} className="text-center py-8 text-gray-500">
                         Loading orders...
                       </TableCell>
                     </TableRow>
                   ) : orders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={12} className="text-center py-8 text-gray-500">
                         No unfulfilled orders found
                       </TableCell>
                     </TableRow>
