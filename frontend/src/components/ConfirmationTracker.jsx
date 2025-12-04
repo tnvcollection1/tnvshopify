@@ -319,6 +319,17 @@ const ConfirmationTracker = () => {
               <SelectItem value="CANCELED">Canceled</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={filters.stock_status} onValueChange={(v) => setFilters({ ...filters, stock_status: v })}>
+            <SelectTrigger className="w-40 border-gray-300">
+              <SelectValue placeholder="Stock Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Stock</SelectItem>
+              <SelectItem value="in_stock">✅ In Stock</SelectItem>
+              <SelectItem value="partial">⚠️ Partial</SelectItem>
+              <SelectItem value="out_of_stock">❌ Out of Stock</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={filters.year} onValueChange={(v) => setFilters({ ...filters, year: v })}>
             <SelectTrigger className="w-32 border-gray-300">
               <SelectValue placeholder="Year" />
