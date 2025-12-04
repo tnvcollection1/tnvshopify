@@ -38,6 +38,7 @@ class InventoryItemCreate(BaseModel):
     """Request model for creating inventory item"""
     sku: str
     product_name: str
+    collection: Optional[str] = None
     order_number: Optional[str] = None
     cost: float
     store_name: Optional[str] = None
