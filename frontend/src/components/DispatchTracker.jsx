@@ -157,6 +157,26 @@ const DispatchTracker = () => {
     }
   };
 
+  // Selection handlers
+  const handleSelectAll = (checked) => {
+    setSelectAll(checked);
+    if (checked) {
+      setSelectedOrders(orders.map(o => o.customer_id));
+    } else {
+      setSelectedOrders([]);
+    }
+  };
+
+  const handleSelectOrder = (customerId) => {
+    setSelectedOrders(prev => {
+      if (prev.includes(customerId)) {
+        return prev.filter(id => id !== customerId);
+      } else {
+        return [...prev, customerId];
+      }
+    });
+  };
+
   const fetchOrders = async () => {
     setLoading(true);
     try {
