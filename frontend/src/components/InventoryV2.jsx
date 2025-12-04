@@ -409,7 +409,7 @@ const InventoryV2 = () => {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                         <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
                         No inventory items found
                       </TableCell>
@@ -417,6 +417,12 @@ const InventoryV2 = () => {
                   ) : (
                     items.map((item) => (
                       <TableRow key={item.id}>
+                        <TableCell>
+                          <Checkbox 
+                            checked={selectedItems.includes(item.id)}
+                            onCheckedChange={() => handleSelectItem(item.id)}
+                          />
+                        </TableCell>
                         <TableCell className="font-mono">{item.sku}</TableCell>
                         <TableCell>{item.product_name}</TableCell>
                         <TableCell className="font-mono">
