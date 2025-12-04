@@ -741,6 +741,14 @@ const DispatchTracker = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold text-gray-700 w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectAll}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        className="w-4 h-4 cursor-pointer"
+                      />
+                    </TableHead>
                     <TableHead className="font-semibold text-gray-700">Date</TableHead>
                     <TableHead className="font-semibold text-gray-700">Order #</TableHead>
                     <TableHead className="font-semibold text-gray-700">Store</TableHead>
