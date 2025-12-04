@@ -468,15 +468,22 @@ const InventoryOverview = () => {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {stats.by_collection.slice(0, 12).map((item, idx) => (
-              <Card key={idx} className="border-indigo-100 hover:shadow-lg transition-shadow">
+              <Card 
+                key={idx} 
+                className="border-indigo-100 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => openDetailModal('collection', `📦 Collection: ${item._id || 'Uncategorized'}`, item._id)}
+              >
                 <CardHeader className="pb-2">
                   <CardDescription className="text-xs text-indigo-600 font-semibold truncate" title={item._id}>
                     {item._id || 'Uncategorized'}
                   </CardDescription>
                   <CardTitle className="text-2xl font-bold text-indigo-700">{item.count}</CardTitle>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Rs. {item.total_cost.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] text-indigo-500 italic mt-1">Click for details</p>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-xs text-gray-500">Rs. {item.total_cost.toLocaleString()}</p>
                 </CardContent>
               </Card>
             ))}
