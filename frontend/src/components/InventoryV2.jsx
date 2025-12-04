@@ -700,13 +700,15 @@ const InventoryV2 = () => {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="font-semibold text-blue-900 mb-2">Excel Format:</h4>
               <div className="text-sm text-blue-700 space-y-1">
-                <div>Column 1: <span className="font-mono">SKU</span> (required)</div>
-                <div>Column 2: <span className="font-mono">Product Name</span> (required)</div>
-                <div>Column 3: <span className="font-mono">Cost</span> (required)</div>
-                <div>Column 4: <span className="font-mono">Collection</span> (optional)</div>
-                <div>Column 5: <span className="font-mono">Order Number</span> (optional)</div>
+                <div>Column 1: <span className="font-mono">Box No</span> (optional)</div>
+                <div>Column 2: <span className="font-mono">SKU</span> (required)</div>
+                <div>Column 3: <span className="font-mono">Size</span> (optional)</div>
+                <div>Column 4: <span className="font-mono">Color</span> (optional)</div>
+                <div>Column 5: <span className="font-mono">Collection</span> (optional)</div>
+                <div>Column 6: <span className="font-mono">Cost</span> (required)</div>
               </div>
               <p className="text-xs text-blue-600 mt-2">* First row should contain headers</p>
+              <p className="text-xs text-green-600 mt-1">* Orders will be auto-linked by matching SKU</p>
             </div>
             <div>
               <Label>Select File</Label>
