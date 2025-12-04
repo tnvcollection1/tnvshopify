@@ -4243,6 +4243,107 @@ async def get_marketing_campaigns():
     try:
         # Placeholder - will be implemented with campaign feature
         campaigns = []
+
+
+@api_router.get("/inventory/v2/campaign-items")
+async def get_campaign_items(tag: str = None):
+    """Get inventory items for campaign management"""
+    try:
+        query = {}
+        if tag and tag != 'all':
+            query['campaign_tag'] = tag
+        
+        items = await db.inventory_v2.find(query, {"_id": 0}).to_list(10000)
+        
+        return {
+            "success": True,
+            "items": items,
+            "total": len(items)
+        }
+    
+    except Exception as e:
+        logger.error(f"Error fetching campaign items: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/inventory/v2/bulk-tag")
+async def bulk_tag_items(request: dict):
+    """Apply tags to multiple inventory items"""
+    try:
+        skus = request.get('skus', [])
+        tag = request.get('tag')
+        
+        if not skus or not tag:
+            raise HTTPException(status_code=400, detail="SKUs and tag are required")
+        
+        # Update all items with the tag
+        result = await db.inventory_v2.update_many(
+            {"sku": {"$in": skus}},
+            {"$set": {"campaign_tag": tag}}
+        )
+        
+        return {
+            "success": True,
+            "updated_count": result.modified_count,
+            "message": f"Tagged {result.modified_count} items as {tag}"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error bulk tagging: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/inventory/v2/bulk-pricing")
+async def bulk_pricing_update(request: dict):
+    """Update pricing for multiple items"""
+    try:
+        skus = request.get('skus', [])
+        discount_type = request.get('discount_type', 'percentage')
+        discount_value = float(request.get('discount_value', 0))
+        
+        if not skus:
+            raise HTTPException(status_code=400, detail="No SKUs provided")
+        
+        # Get current items
+        items = await db.inventory_v2.find({"sku": {"$in": skus}}, {"_id": 0}).to_list(10000)
+        
+        updated_count = 0
+        for item in items:
+            current_price = item.get('sale_price', item.get('cost', 0))
+            
+            if discount_type == 'percentage':
+                new_price = current_price * (1 - discount_value / 100)
+                discount_pct = discount_value
+            else:  # fixed
+                new_price = max(0, current_price - discount_value)
+                discount_pct = round((discount_value / current_price) * 100, 2) if current_price > 0 else 0
+            
+            # Update the item
+            await db.inventory_v2.update_one(
+                {"sku": item['sku']},
+                {"$set": {
+                    "sale_price": round(new_price, 2),
+                    "discount_percentage": discount_pct,
+                    "original_price": current_price
+                }}
+            )
+            updated_count += 1
+        
+        return {
+            "success": True,
+            "updated_count": updated_count,
+            "message": f"Updated pricing for {updated_count} items"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error bulk pricing: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
         
         return {
             "success": True,
