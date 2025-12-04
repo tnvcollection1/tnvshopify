@@ -210,7 +210,7 @@ const ConfirmationTracker = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-7 gap-4 mt-6">
+        <div className="grid grid-cols-5 gap-4 mt-6">
           <Card className="border-gray-200">
             <CardContent className="p-4">
               <div className="flex flex-col">
@@ -246,24 +246,36 @@ const ConfirmationTracker = () => {
           <Card className="border-gray-200">
             <CardContent className="p-4">
               <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">Not Purchased</p>
-                <p className="text-2xl font-bold text-red-600 mt-1">{stats.notPurchased}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Canceled</p>
                 <p className="text-2xl font-bold text-orange-600 mt-1">{stats.canceled}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+        </div>
+
+        {/* Stock Status Cards */}
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          <Card className="border-green-200 bg-green-50">
             <CardContent className="p-4">
               <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">In Transit</p>
-                <p className="text-2xl font-bold text-blue-600 mt-1">{stats.inTransit}</p>
+                <p className="text-xs font-medium text-green-700 uppercase">✅ In Stock</p>
+                <p className="text-2xl font-bold text-green-600 mt-1">{stats.inStock || 0}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-yellow-200 bg-yellow-50">
+            <CardContent className="p-4">
+              <div className="flex flex-col">
+                <p className="text-xs font-medium text-yellow-700 uppercase">⚠️ Partial Stock</p>
+                <p className="text-2xl font-bold text-yellow-600 mt-1">{stats.partialStock || 0}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-4">
+              <div className="flex flex-col">
+                <p className="text-xs font-medium text-red-700 uppercase">❌ Out of Stock</p>
+                <p className="text-2xl font-bold text-red-600 mt-1">{stats.outOfStock || 0}</p>
               </div>
             </CardContent>
           </Card>
