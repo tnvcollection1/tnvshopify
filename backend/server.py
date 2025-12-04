@@ -2539,6 +2539,30 @@ async def get_all_items_detail(
                     "order_number": order.get("order_number"),
                     "customer": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
                     "tracking_number": order.get("tracking_number"),
+                    "delivery_status": order.get("delivery_status"),
+                    "total_spent": order.get("total_spent", 0)
+                })
+        
+        # Add orders to items
+        detailed_items = []
+        for item in items:
+            sku_upper = item.get('sku', '').upper().strip()
+            item['orders'] = sku_to_orders.get(sku_upper, [])
+            detailed_items.append(item)
+        
+        total_cost = sum(item.get('cost', 0) for item in items)
+        total_sale = sum(item.get('sale_price', item.get('cost', 0)) for item in items)
+        
+        return {
+            "success": True,
+            "total_items": len(items),
+            "total_cost": round(total_cost, 2),
+            "total_sale": round(total_sale, 2),
+            "items": detailed_items[:1000]
+        }
+    except Exception as e:
+        logger.error(f"Error fetching all items detail: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.get("/inventory/v2/search")
