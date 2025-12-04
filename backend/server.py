@@ -3432,6 +3432,107 @@ async def get_customers_count(
     return {"total": count}
 
 
+@api_router.get("/customers/stats")
+async def get_customers_stats(
+    fulfillment_status: Optional[str] = None,
+    delivery_status: Optional[str] = None,
+    payment_status: Optional[str] = None,
+    store_name: Optional[str] = None,
+    tcs_only: Optional[str] = None,
+    year: Optional[str] = None,
+    search: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
+):
+    """
+    Get detailed stats breakdown for customers matching filters
+    """
+    query = {}
+    
+    if fulfillment_status and fulfillment_status != "all":
+        query['fulfillment_status'] = fulfillment_status
+    if delivery_status and delivery_status != "all":
+        query['delivery_status'] = delivery_status
+    if payment_status and payment_status != "all":
+        query['payment_status'] = payment_status
+    if store_name and store_name != "all":
+        query['store_name'] = store_name
+    
+    if tcs_only == "true":
+        # ONLY orders with valid TCS tracking numbers
+        query['$and'] = [
+            {"tracking_number": {"$exists": True}},
+            {"tracking_number": {"$ne": None}},
+            {"tracking_number": {"$ne": ""}},
+            {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}}
+        ]
+    
+    # Year filter
+    if year and year != "all":
+        try:
+            year_int = int(year)
+            from datetime import datetime
+            start_date_val = datetime(year_int, 1, 1)
+            end_date_val = datetime(year_int, 12, 31, 23, 59, 59)
+            query['last_order_date'] = {
+                "$gte": start_date_val.isoformat(),
+                "$lte": end_date_val.isoformat()
+            }
+        except ValueError:
+            pass
+    
+    # Date range filter
+    if start_date or end_date:
+        from datetime import datetime, timedelta
+        date_filter = {}
+        if start_date:
+            date_filter["$gte"] = start_date
+        if end_date:
+            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+            end_dt = end_dt.replace(hour=23, minute=59, second=59)
+            date_filter["$lte"] = end_dt.isoformat()
+        query['last_order_date'] = date_filter
+    
+    # Search across multiple fields
+    if search:
+        search_regex = {"$regex": search, "$options": "i"}
+        query['$or'] = [
+            {'first_name': search_regex},
+            {'last_name': search_regex},
+            {'email': search_regex},
+            {'phone': search_regex},
+            {'order_number': search_regex},
+            {'tracking_number': search_regex}
+        ]
+    
+    # Fetch all matching customers (we need to calculate stats from all of them)
+    customers = await db.customers.find(query, {
+        "_id": 0,
+        "delivery_status": 1,
+        "payment_status": 1,
+        "cod_payment_status": 1
+    }).to_list(50000)
+    
+    # Calculate stats
+    total = len(customers)
+    delivered = sum(1 for c in customers if c.get('delivery_status') == "DELIVERED")
+    in_transit = sum(1 for c in customers if c.get('delivery_status') in ["IN_TRANSIT", "OUT_FOR_DELIVERY"])
+    pending = sum(1 for c in customers if not c.get('delivery_status') or c.get('delivery_status') in ["PENDING", "UNKNOWN"])
+    returned = sum(1 for c in customers if c.get('delivery_status') == "RETURNED")
+    payment_received = sum(1 for c in customers if c.get('cod_payment_status') == "RECEIVED" or c.get('payment_status') == "paid")
+    payment_pending = sum(1 for c in customers if c.get('cod_payment_status') == "PENDING" or c.get('payment_status') == "pending" or not c.get('cod_payment_status'))
+    
+    return {
+        "total": total,
+        "delivered": delivered,
+        "inTransit": in_transit,
+        "pending": pending,
+        "returned": returned,
+        "paymentReceived": payment_received,
+        "paymentPending": payment_pending
+    }
+
+
 @api_router.get("/shoe-sizes")
 async def get_shoe_sizes(store_name: Optional[str] = None):
     """
