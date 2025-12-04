@@ -1875,7 +1875,10 @@ inventory_manager = InventoryManager(db)
 # ========================================
 
 @api_router.get("/inventory/v2/overview-stats")
-async def get_inventory_overview_stats():
+async def get_inventory_overview_stats(
+    start_date: str = None,
+    end_date: str = None
+):
     """Get comprehensive inventory stats with breakdowns by TCS tracking and fulfillment status"""
     try:
         from datetime import datetime, timezone, timedelta
