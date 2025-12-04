@@ -4591,6 +4591,82 @@ async def export_segment(segment_type: str):
         result = await get_customers_by_segment(segment_type)
         customers = result.get('customers', [])
         
+
+
+@api_router.get("/bundles")
+async def get_bundles():
+    """Get all product bundles"""
+    try:
+        bundles = await db.bundles.find({}, {"_id": 0}).to_list(1000)
+        
+        return {
+            "success": True,
+            "bundles": bundles
+        }
+    
+    except Exception as e:
+        logger.error(f"Error fetching bundles: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/bundles/create")
+async def create_bundle(request: dict):
+    """Create a new product bundle"""
+    try:
+        import uuid
+        
+        bundle = {
+            "id": str(uuid.uuid4()),
+            "name": request.get('name'),
+            "description": request.get('description'),
+            "items": request.get('items', []),
+            "discount": float(request.get('discount', 0)),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "orders": 0,
+            "revenue": 0
+        }
+        
+        await db.bundles.insert_one(bundle)
+        
+        # Tag items as bundle
+        skus = [item['sku'] for item in bundle['items']]
+        await db.inventory_v2.update_many(
+            {"sku": {"$in": skus}},
+            {"$set": {"campaign_tag": "bundle"}}
+        )
+        
+        return {
+            "success": True,
+            "message": "Bundle created successfully",
+            "bundle_id": bundle['id']
+        }
+    
+    except Exception as e:
+        logger.error(f"Error creating bundle: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/bundles/{bundle_id}")
+async def delete_bundle(bundle_id: str):
+    """Delete a bundle"""
+    try:
+        result = await db.bundles.delete_one({"id": bundle_id})
+        
+        if result.deleted_count > 0:
+            return {
+                "success": True,
+                "message": "Bundle deleted"
+            }
+        else:
+            raise HTTPException(status_code=404, detail="Bundle not found")
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting bundle: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
         # Create CSV
         output = StringIO()
         writer = csv.DictWriter(output, fieldnames=['first_name', 'last_name', 'email', 'phone', 'total_spent', 'order_count'])
