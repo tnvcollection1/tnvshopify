@@ -31,7 +31,13 @@ const InventoryOverview = () => {
 
   const fetchInventoryStats = async () => {
     try {
-      const response = await axios.get(`${API}/api/inventory/v2/overview-stats`);
+      let url = `${API}/api/inventory/v2/overview-stats`;
+      const params = new URLSearchParams();
+      if (dateRange.start) params.append('start_date', dateRange.start);
+      if (dateRange.end) params.append('end_date', dateRange.end);
+      if (params.toString()) url += `?${params.toString()}`;
+      
+      const response = await axios.get(url);
       if (response.data.success) {
         setStats(response.data.stats);
       }
