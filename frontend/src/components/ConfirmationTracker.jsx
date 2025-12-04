@@ -592,6 +592,16 @@ const ConfirmationTracker = () => {
                   ) : (
                     orders.map((order) => (
                       <TableRow key={order.customer_id} className="hover:bg-gray-50">
+                        <TableCell>
+                          {!order.messaged && order.phone && (
+                            <input
+                              type="checkbox"
+                              checked={selectedOrders.includes(order.customer_id)}
+                              onChange={() => handleSelectOrder(order.customer_id)}
+                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            />
+                          )}
+                        </TableCell>
                         <TableCell className="text-sm text-gray-600">
                           {order.last_order_date
                             ? new Date(order.last_order_date).toLocaleDateString()
