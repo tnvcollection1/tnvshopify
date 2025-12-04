@@ -3298,20 +3298,26 @@ async def get_customers(
         stock_store = store_name if store_name and store_name != "all" else None
         
         # Get stock for the store from inventory_v2 (new) and stock (old) collections
+        inventory_v2_query = {"quantity": {"$gt": 0}}
+        stock_query = {}
+        
         if stock_store:
-            # Check inventory_v2 first (new system with quantity tracking)
-            inventory_v2_items = await db.inventory_v2.find(
-                {"store_name": stock_store, "quantity": {"$gt": 0}}, 
-                {"_id": 0, "sku": 1}
-            ).to_list(10000)
-            
-            # Also check old stock collection for backward compatibility
-            stock_items = await db.stock.find({"store_name": stock_store}, {"_id": 0, "sku": 1}).to_list(10000)
-            
-            # Combine SKUs from both collections
-            stock_skus = set()
-            stock_skus.update(item["sku"].upper() for item in inventory_v2_items)
-            stock_skus.update(item["sku"].upper() for item in stock_items)
+            inventory_v2_query["store_name"] = stock_store
+            stock_query["store_name"] = stock_store
+        
+        # Check inventory_v2 first (new system with quantity tracking)
+        inventory_v2_items = await db.inventory_v2.find(
+            inventory_v2_query, 
+            {"_id": 0, "sku": 1}
+        ).to_list(10000)
+        
+        # Also check old stock collection for backward compatibility
+        stock_items = await db.stock.find(stock_query, {"_id": 0, "sku": 1}).to_list(10000)
+        
+        # Combine SKUs from both collections
+        stock_skus = set()
+        stock_skus.update(item["sku"].upper() for item in inventory_v2_items)
+        stock_skus.update(item["sku"].upper() for item in stock_items)
             
             # Calculate stock status for each customer
             filtered_customers = []
