@@ -122,6 +122,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/marketing" 
+        element={
+          <ProtectedRoute>
+            <MarketingDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/reports" 
         element={
           <ProtectedRoute>
