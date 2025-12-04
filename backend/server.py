@@ -4243,6 +4243,15 @@ async def get_marketing_campaigns():
     try:
         # Placeholder - will be implemented with campaign feature
         campaigns = []
+        
+        return {
+            "success": True,
+            "campaigns": campaigns
+        }
+    
+    except Exception as e:
+        logger.error(f"Error fetching campaigns: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.get("/inventory/v2/campaign-items")
