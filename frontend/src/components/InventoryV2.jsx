@@ -439,6 +439,15 @@ const InventoryV2 = () => {
                         </TableCell>
                         <TableCell className="font-mono">{item.sku}</TableCell>
                         <TableCell>{item.product_name}</TableCell>
+                        <TableCell>
+                          {item.collection ? (
+                            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                              {item.collection}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
                         <TableCell className="font-mono">
                           {item.order_number || '-'}
                         </TableCell>
