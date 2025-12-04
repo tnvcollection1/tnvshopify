@@ -1899,6 +1899,7 @@ async def add_inventory_item(item: InventoryItemCreate, added_by: str = None):
         new_item = InventoryItem(
             sku=item.sku,
             product_name=item.product_name,
+            collection=item.collection,
             order_number=item.order_number,
             cost=item.cost,
             store_name=item.store_name,
