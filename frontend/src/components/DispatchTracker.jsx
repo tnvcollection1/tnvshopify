@@ -125,6 +125,25 @@ const DispatchTracker = () => {
     }
   };
 
+  const handleTCSSync = async () => {
+    setSyncingTCS(true);
+    try {
+      toast.info('Starting TCS tracking sync...');
+      const response = await axios.post(`${API}/tcs/sync-tracking`);
+      if (response.data.success) {
+        toast.success(`TCS sync complete! Updated ${response.data.updated || 0} orders`);
+        fetchOrders(); // Refresh orders
+      } else {
+        toast.warning('TCS sync completed with some issues');
+      }
+    } catch (error) {
+      console.error('TCS sync error:', error);
+      toast.error('Failed to sync TCS tracking');
+    } finally {
+      setSyncingTCS(false);
+    }
+  };
+
   const fetchAutoSyncStatus = async () => {
     try {
       const response = await axios.get(`${API}/tcs/auto-sync-status`);
