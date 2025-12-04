@@ -224,6 +224,56 @@ const ConfirmationTracker = () => {
     }
   };
 
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const allIds = orders
+        .filter(order => !order.messaged && order.phone)
+        .map(order => order.customer_id);
+      setSelectedOrders(allIds);
+    } else {
+      setSelectedOrders([]);
+    }
+  };
+
+  const handleSelectOrder = (customerId) => {
+    setSelectedOrders(prev => {
+      if (prev.includes(customerId)) {
+        return prev.filter(id => id !== customerId);
+      } else {
+        return [...prev, customerId];
+      }
+    });
+  };
+
+  const handleBulkWhatsApp = () => {
+    if (selectedOrders.length === 0) {
+      toast.error("Please select at least one customer");
+      return;
+    }
+    setBulkWhatsAppDialog(true);
+  };
+
+  const handleSendBulkWhatsApp = async () => {
+    try {
+      toast.loading(`Sending WhatsApp to ${selectedOrders.length} customers...`);
+      
+      const response = await axios.post(`${API}/customers/bulk-whatsapp`, {
+        customer_ids: selectedOrders,
+        template: whatsappTemplate
+      });
+      
+      if (response.data.success) {
+        toast.success(`WhatsApp sent to ${response.data.sent_count} customers!`);
+        setSelectedOrders([]);
+        setBulkWhatsAppDialog(false);
+        await fetchOrders();
+      }
+    } catch (error) {
+      console.error("Error sending bulk WhatsApp:", error);
+      toast.error("Failed to send bulk messages");
+    }
+  };
+
   const getCallingBadge = (status) => {
     const variants = {
       NOT_CALLED: "bg-gray-100 text-gray-800 border-gray-200",
