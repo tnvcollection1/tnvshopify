@@ -148,6 +148,7 @@ const ConfirmationTracker = () => {
         inStockValue: stockStats.in_stock_value || 0,
         outOfStock: stockStats.out_of_stock || 0,
         outOfStockValue: stockStats.out_of_stock_value || 0,
+        currency: stockStats.currency || "PKR",  // Store currency from backend
       });
       
       setTotalPages(Math.ceil(total / 100));
