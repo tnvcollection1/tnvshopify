@@ -16,6 +16,7 @@ import Settings from "@/components/Settings";
 import WhatsAppMessaging from "@/components/WhatsAppMessaging";
 import WhatsAppInbox from "@/components/WhatsAppInbox";
 import WhatsAppTemplates from "@/components/WhatsAppTemplates";
+import MarketingDashboard from "@/components/MarketingDashboard";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
