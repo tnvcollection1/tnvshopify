@@ -67,7 +67,20 @@ const InventoryOverview = () => {
     });
 
     try {
-      let url = `${API}/api/inventory/v2/overview-detail/${category}`;
+      let url;
+      
+      // Determine which endpoint to call based on category
+      if (category === 'collection') {
+        url = `${API}/api/inventory/v2/collection-detail/${encodeURIComponent(filterValue)}`;
+      } else if (category === 'size') {
+        url = `${API}/api/inventory/v2/size-detail/${encodeURIComponent(filterValue)}`;
+      } else if (category === 'all_items') {
+        url = `${API}/api/inventory/v2/all-items-detail`;
+      } else {
+        // Default to category detail endpoint
+        url = `${API}/api/inventory/v2/overview-detail/${category}`;
+      }
+      
       const params = new URLSearchParams();
       if (dateRange.start) params.append('start_date', dateRange.start);
       if (dateRange.end) params.append('end_date', dateRange.end);
