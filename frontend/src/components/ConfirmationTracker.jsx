@@ -362,7 +362,6 @@ const ConfirmationTracker = () => {
             <SelectContent>
               <SelectItem value="all">All Stock</SelectItem>
               <SelectItem value="in_stock">✅ In Stock</SelectItem>
-              <SelectItem value="partial">⚠️ Partial</SelectItem>
               <SelectItem value="out_of_stock">❌ Out of Stock</SelectItem>
             </SelectContent>
           </Select>
