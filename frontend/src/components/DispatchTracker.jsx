@@ -78,6 +78,8 @@ const DispatchTracker = () => {
     paymentReceived: 0,
     paymentPending: 0,
   });
+  const [selectedOrders, setSelectedOrders] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   const [stores, setStores] = useState([]);
   const [autoSyncStatus, setAutoSyncStatus] = useState(null);
   const [manualStatusDialog, setManualStatusDialog] = useState(false);
