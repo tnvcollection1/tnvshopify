@@ -775,13 +775,13 @@ const DispatchTracker = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={21} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={22} className="text-center py-8 text-gray-500">
                         Loading orders...
                       </TableCell>
                     </TableRow>
                   ) : orders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={21} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={22} className="text-center py-8 text-gray-500">
                         No fulfilled orders found
                       </TableCell>
                     </TableRow>
