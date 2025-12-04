@@ -129,9 +129,9 @@ const DispatchTracker = () => {
     setSyncingTCS(true);
     try {
       toast.info('Starting TCS tracking sync...');
-      const response = await axios.post(`${API}/tcs/sync-tracking`);
+      const response = await axios.post(`${API}/tcs/sync-all`);
       if (response.data.success) {
-        toast.success(`TCS sync complete! Updated ${response.data.updated || 0} orders`);
+        toast.success(`TCS sync complete! Updated ${response.data.synced_count || 0} orders`);
         fetchOrders(); // Refresh orders
       } else {
         toast.warning('TCS sync completed with some issues');
