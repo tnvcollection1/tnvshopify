@@ -15,7 +15,8 @@ import {
   MessageCircle,
   Inbox,
   FileText,
-  Target
+  Target,
+  Zap
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
