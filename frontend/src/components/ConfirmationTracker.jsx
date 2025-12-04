@@ -116,10 +116,11 @@ const ConfirmationTracker = () => {
       params.append("page", currentPage);
       params.append("limit", "100");
 
-      // Fetch both orders and count
-      const [ordersResponse, countResponse] = await Promise.all([
+      // Fetch orders, count, and stock stats with values
+      const [ordersResponse, countResponse, stockStatsResponse] = await Promise.all([
         axios.get(`${API}/customers?${params.toString()}`),
-        axios.get(`${API}/customers/count?${params.toString()}`)
+        axios.get(`${API}/customers/count?${params.toString()}`),
+        axios.get(`${API}/customers/stock-stats?${params.toString()}`)
       ]);
       
       const allOrders = Array.isArray(ordersResponse.data) ? ordersResponse.data : ordersResponse.data.customers || [];
