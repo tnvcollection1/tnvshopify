@@ -74,6 +74,9 @@ const ConfirmationTracker = () => {
   const [stores, setStores] = useState([]);
   const [editingOrder, setEditingOrder] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState([]);
+  const [bulkWhatsAppDialog, setBulkWhatsAppDialog] = useState(false);
+  const [whatsappTemplate, setWhatsappTemplate] = useState("order_ready");
 
   useEffect(() => {
     fetchOrders();
