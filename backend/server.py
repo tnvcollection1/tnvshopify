@@ -3490,12 +3490,11 @@ async def get_customers_count(
             else:
                 in_stock = sum(1 for sku in order_sku_list if sku in stock_skus)
                 
-                if in_stock == len(order_sku_list):
+                # If ANY items are in stock, mark as "in_stock"
+                if in_stock > 0:
                     stock_status = "in_stock"
-                elif in_stock == 0:
-                    stock_status = "out_of_stock"
                 else:
-                    stock_status = "partial"
+                    stock_status = "out_of_stock"
             
             if stock_status == stock_availability:
                 matching_count += 1
