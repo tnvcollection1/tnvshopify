@@ -5,6 +5,7 @@ import Dashboard from "@/components/DashboardOptimized";
 import Login from "@/components/Login";
 import Layout from "@/components/Layout";
 import Inventory from "@/components/InventoryV2";
+import InventoryOverview from "@/components/InventoryOverview";
 import Orders from "@/components/Orders";
 import DispatchTracker from "@/components/DispatchTracker";
 import ConfirmationTracker from "@/components/ConfirmationTracker";
