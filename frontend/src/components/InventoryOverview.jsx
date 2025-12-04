@@ -99,69 +99,126 @@ const InventoryOverview = () => {
           </div>
         </div>
 
-        {/* Financial Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-orange-200 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription className="text-orange-700 font-semibold">Total Cost</CardDescription>
-                <DollarSign className="w-8 h-8 text-orange-500" />
-              </div>
-              <CardTitle className="text-3xl font-bold text-orange-600">
-                Rs. {stats.total_cost.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-orange-600">Stock Value Investment</p>
-            </CardContent>
-          </Card>
+        {/* Financial Stats - Shopify Orders */}
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-gray-800 mb-3">💰 Shopify Order Values</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="border-orange-200 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardDescription className="text-orange-700 font-semibold">Total Cost</CardDescription>
+                  <DollarSign className="w-8 h-8 text-orange-500" />
+                </div>
+                <CardTitle className="text-3xl font-bold text-orange-600">
+                  Rs. {stats.total_cost.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-orange-600">Stock Value Investment</p>
+              </CardContent>
+            </Card>
 
-          <Card className="border-blue-200 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription className="text-blue-700 font-semibold">Sale Value</CardDescription>
-                <ShoppingBag className="w-8 h-8 text-blue-500" />
-              </div>
-              <CardTitle className="text-3xl font-bold text-blue-600">
-                Rs. {stats.total_sale_value.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-blue-600">From Shopify Matched Orders</p>
-            </CardContent>
-          </Card>
+            <Card className="border-blue-200 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardDescription className="text-blue-700 font-semibold">Sale Value</CardDescription>
+                  <ShoppingBag className="w-8 h-8 text-blue-500" />
+                </div>
+                <CardTitle className="text-3xl font-bold text-blue-600">
+                  Rs. {stats.total_sale_value.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-blue-600">From Shopify Matched Orders</p>
+              </CardContent>
+            </Card>
 
-          <Card className="border-green-200 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription className="text-green-700 font-semibold">Potential Profit</CardDescription>
-                <TrendingUp className="w-8 h-8 text-green-500" />
-              </div>
-              <CardTitle className="text-3xl font-bold text-green-600">
-                Rs. {stats.total_profit.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-green-600">
-                {stats.total_cost > 0 ? `${((stats.total_profit / stats.total_cost) * 100).toFixed(1)}% Margin` : 'N/A'}
-              </p>
-            </CardContent>
-          </Card>
+            <Card className="border-green-200 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardDescription className="text-green-700 font-semibold">Potential Profit</CardDescription>
+                  <TrendingUp className="w-8 h-8 text-green-500" />
+                </div>
+                <CardTitle className="text-3xl font-bold text-green-600">
+                  Rs. {stats.total_profit.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-green-600">
+                  {stats.total_cost > 0 ? `${((stats.total_profit / stats.total_cost) * 100).toFixed(1)}% Margin` : 'N/A'}
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card className="border-purple-200 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription className="text-purple-700 font-semibold">Total Items</CardDescription>
-                <Package className="w-8 h-8 text-purple-500" />
-              </div>
-              <CardTitle className="text-3xl font-bold text-purple-600">
-                {stats.total_items.toLocaleString()}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-purple-600">In inventory database</p>
-            </CardContent>
-          </Card>
+            <Card className="border-purple-200 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardDescription className="text-purple-700 font-semibold">Total Items</CardDescription>
+                  <Package className="w-8 h-8 text-purple-500" />
+                </div>
+                <CardTitle className="text-3xl font-bold text-purple-600">
+                  {stats.total_items.toLocaleString()}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-purple-600">In inventory database</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* NEW: Inventory-Based Sale Value */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-800 mb-3">🏷️ Inventory SKU Sale Prices</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-cyan-200 shadow-lg bg-gradient-to-br from-cyan-50 to-cyan-100">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardDescription className="text-cyan-700 font-semibold">Inventory Sale Value</CardDescription>
+                  <ShoppingBag className="w-8 h-8 text-cyan-500" />
+                </div>
+                <CardTitle className="text-3xl font-bold text-cyan-600">
+                  Rs. {(stats.inventory_sale_value || 0).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-cyan-600">Based on SKU sale prices</p>
+                <p className="text-xs text-cyan-500 mt-1">{stats.items_with_sale_price || 0} items with sale price</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-teal-200 shadow-lg bg-gradient-to-br from-teal-50 to-teal-100">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardDescription className="text-teal-700 font-semibold">Inventory Profit</CardDescription>
+                  <TrendingUp className="w-8 h-8 text-teal-500" />
+                </div>
+                <CardTitle className="text-3xl font-bold text-teal-600">
+                  Rs. {(stats.inventory_profit || 0).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-teal-600">
+                  {stats.total_cost > 0 ? `${(((stats.inventory_profit || 0) / stats.total_cost) * 100).toFixed(1)}% Margin` : 'N/A'}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-indigo-200 shadow-lg bg-gradient-to-br from-indigo-50 to-indigo-100">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardDescription className="text-indigo-700 font-semibold">Value Difference</CardDescription>
+                  <TrendingUp className="w-8 h-8 text-indigo-500" />
+                </div>
+                <CardTitle className="text-3xl font-bold text-indigo-600">
+                  Rs. {((stats.inventory_sale_value || 0) - stats.total_sale_value).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-indigo-600">SKU Price vs Shopify Orders</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* SKU Status Breakdown - By TCS Tracking & Fulfillment */}
