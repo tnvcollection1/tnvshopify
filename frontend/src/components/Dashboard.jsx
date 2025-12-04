@@ -501,8 +501,19 @@ const Dashboard = () => {
     }
   };
 
-  const fetchShoeSizes = async () => {
+  const fetchInventoryStats = async () => {
     try {
+      const response = await axios.get(`${API}/inventory/v2/stats`);
+      if (response.data.success) {
+        setInventoryStats(response.data.stats);
+      }
+    } catch (error) {
+      console.error("Error fetching inventory stats:", error);
+    }
+  };
+
+  const fetchShoeSizes = async () => {
+    try:
       let url = `${API}/shoe-sizes?`;
       if (selectedStore && selectedStore !== "all") {
         url += `store_name=${selectedStore}`;
