@@ -411,6 +411,7 @@ const InventoryV2 = () => {
                     </TableHead>
                     <TableHead>SKU</TableHead>
                     <TableHead>Product Name</TableHead>
+                    <TableHead>Collection</TableHead>
                     <TableHead>Order #</TableHead>
                     <TableHead>Cost</TableHead>
                     <TableHead>Sale Price</TableHead>
