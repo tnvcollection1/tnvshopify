@@ -4122,21 +4122,6 @@ async def send_whatsapp_message(customer_id: str):
     except Exception as e:
         logger.error(f"Error sending WhatsApp message: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-    delivery_status: Optional[str] = None,
-    payment_status: Optional[str] = None,
-    store_name: Optional[str] = None,
-    tcs_only: Optional[str] = None,
-    year: Optional[str] = None,
-    search: Optional[str] = None,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None
-):
-    """
-    Get detailed stats breakdown for customers matching filters using MongoDB aggregation
-    """
-    query = {}
     
     if fulfillment_status and fulfillment_status != "all":
         query['fulfillment_status'] = fulfillment_status
