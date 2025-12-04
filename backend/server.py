@@ -2168,6 +2168,32 @@ async def get_inventory_overview_stats(
         total_sale_value = sum(total_matched_orders.values())
         total_profit = total_sale_value - total_cost if total_sale_value > 0 else 0
         
+        # NEW: Calculate sale value from inventory SKU sale prices
+        # Get all inventory items with sale_price field
+        inventory_with_sale_price = await db.inventory_v2.find(
+            date_query,
+            {"_id": 0, "sku": 1, "cost": 1, "sale_price": 1}
+        ).to_list(10000)
+        
+        total_inventory_sale_value = 0
+        total_inventory_cost = 0
+        items_with_sale_price = 0
+        
+        for inv_item in inventory_with_sale_price:
+            cost = inv_item.get('cost', 0)
+            sale_price = inv_item.get('sale_price', 0)
+            
+            total_inventory_cost += cost
+            
+            # Use sale_price if available, otherwise use cost as fallback
+            if sale_price and sale_price > 0:
+                total_inventory_sale_value += sale_price
+                items_with_sale_price += 1
+            else:
+                total_inventory_sale_value += cost
+        
+        inventory_profit = total_inventory_sale_value - total_inventory_cost
+        
         return {
             "success": True,
             "stats": {
@@ -2175,6 +2201,10 @@ async def get_inventory_overview_stats(
                 "total_cost": round(total_cost, 2),
                 "total_sale_value": round(total_sale_value, 2),
                 "total_profit": round(total_profit, 2),
+                # NEW: Inventory-based sale value (from SKU sale prices)
+                "inventory_sale_value": round(total_inventory_sale_value, 2),
+                "inventory_profit": round(inventory_profit, 2),
+                "items_with_sale_price": items_with_sale_price,
                 "can_fulfill_today": fulfill_stats,
                 "in_transit_tracked": transit_stats,
                 "delivered_recent": delivered_stats,
