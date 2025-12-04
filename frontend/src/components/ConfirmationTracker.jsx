@@ -55,6 +55,10 @@ const ConfirmationTracker = () => {
     year: "all",
     sortBy: "date_desc",
   });
+  const [dateRange, setDateRange] = useState({
+    start: '',
+    end: ''
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
