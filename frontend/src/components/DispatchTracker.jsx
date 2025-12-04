@@ -62,6 +62,11 @@ const DispatchTracker = () => {
     year: "all",
     sortBy: "date_desc",
   });
+  const [dateRange, setDateRange] = useState({
+    start: '',
+    end: ''
+  });
+  const [syncingTCS, setSyncingTCS] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [stats, setStats] = useState({
