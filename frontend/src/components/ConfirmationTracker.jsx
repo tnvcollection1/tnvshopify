@@ -131,6 +131,9 @@ const ConfirmationTracker = () => {
         notPurchased: allOrders.filter(c => c.confirmation_status === "NOT_PURCHASED").length,
         canceled: allOrders.filter(c => c.confirmation_status === "CANCELED").length,
         inTransit: allOrders.filter(c => c.dubai_tracking_number).length,
+        inStock: allOrders.filter(c => c.stock_status === "in_stock").length,
+        outOfStock: allOrders.filter(c => c.stock_status === "out_of_stock").length,
+        partialStock: allOrders.filter(c => c.stock_status === "partial").length,
       });
       
       setTotalPages(Math.ceil(total / 100));
