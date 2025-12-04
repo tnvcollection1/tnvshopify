@@ -57,6 +57,49 @@ const InventoryOverview = () => {
     }
   };
 
+  const openDetailModal = async (category, title) => {
+    setDetailModal({
+      open: true,
+      category,
+      title,
+      data: null,
+      loading: true
+    });
+
+    try {
+      let url = `${API}/api/inventory/v2/overview-detail/${category}`;
+      const params = new URLSearchParams();
+      if (dateRange.start) params.append('start_date', dateRange.start);
+      if (dateRange.end) params.append('end_date', dateRange.end);
+      if (params.toString()) url += `?${params.toString()}`;
+
+      const response = await axios.get(url);
+      if (response.data.success) {
+        setDetailModal(prev => ({
+          ...prev,
+          data: response.data,
+          loading: false
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching detail:', error);
+      setDetailModal(prev => ({
+        ...prev,
+        loading: false
+      }));
+    }
+  };
+
+  const closeDetailModal = () => {
+    setDetailModal({
+      open: false,
+      category: '',
+      title: '',
+      data: null,
+      loading: false
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
