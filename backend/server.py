@@ -2291,10 +2291,10 @@ async def upload_inventory_excel(file: UploadFile = File(...), store_name: str =
                 sale_price = 0.0
                 
                 if sku_upper in sku_to_orders:
-                    # Get the first matching order
+                    # Get the first matching order with the product price
                     first_order = sku_to_orders[sku_upper][0]
                     order_number = first_order["order_number"]
-                    sale_price = float(first_order["total_spent"])
+                    sale_price = float(first_order["sale_price"])
                 
                 # Create inventory item
                 new_item = InventoryItem(
