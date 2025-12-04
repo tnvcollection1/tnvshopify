@@ -4166,6 +4166,94 @@ async def send_bulk_whatsapp(request: dict):
     
     except HTTPException:
         raise
+
+
+@api_router.get("/marketing/stats")
+async def get_marketing_stats():
+    """Get marketing dashboard statistics"""
+    try:
+        from datetime import datetime, timezone, timedelta
+        
+        now = datetime.now(timezone.utc)
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_start = now - timedelta(days=7)
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Get all customers
+        all_customers = await db.customers.find({}, {"_id": 0}).to_list(100000)
+        
+        # Calculate today's revenue
+        today_revenue = sum(
+            c.get('total_spent', 0) 
+            for c in all_customers 
+            if c.get('created_at') and c.get('created_at') >= today_start.isoformat()
+        )
+        
+        # Calculate week revenue
+        week_revenue = sum(
+            c.get('total_spent', 0)
+            for c in all_customers
+            if c.get('created_at') and c.get('created_at') >= week_start.isoformat()
+        )
+        
+        # Calculate month revenue
+        month_revenue = sum(
+            c.get('total_spent', 0)
+            for c in all_customers
+            if c.get('created_at') and c.get('created_at') >= month_start.isoformat()
+        )
+        
+        # Count orders
+        total_orders = len(all_customers)
+        pending_orders = len([c for c in all_customers if c.get('fulfillment_status', '').lower() in ['unfulfilled', 'pending']])
+        
+        # WhatsApp sent count
+        whatsapp_sent = len([c for c in all_customers if c.get('messaged') == True])
+        
+        # Get inventory value
+        inventory_items = await db.inventory_v2.find({}, {"_id": 0, "sale_price": 1, "cost": 1}).to_list(10000)
+        inventory_value = sum(item.get('sale_price', item.get('cost', 0)) for item in inventory_items)
+        
+        # Calculate conversion rate (orders / unique visitors - simplified)
+        conversion_rate = round((total_orders / max(total_orders * 3, 1)) * 100, 1) if total_orders > 0 else 0
+        
+        return {
+            "success": True,
+            "stats": {
+                "todayRevenue": round(today_revenue, 2),
+                "weekRevenue": round(week_revenue, 2),
+                "monthRevenue": round(month_revenue, 2),
+                "totalRevenue": round(sum(c.get('total_spent', 0) for c in all_customers), 2),
+                "totalOrders": total_orders,
+                "pendingOrders": pending_orders,
+                "inventoryValue": round(inventory_value, 2),
+                "whatsappSent": whatsapp_sent,
+                "conversionRate": conversion_rate
+            }
+        }
+    
+    except Exception as e:
+        logger.error(f"Error fetching marketing stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/marketing/campaigns")
+async def get_marketing_campaigns():
+    """Get active marketing campaigns"""
+    try:
+        # Placeholder - will be implemented with campaign feature
+        campaigns = []
+        
+        return {
+            "success": True,
+            "campaigns": campaigns
+        }
+    
+    except Exception as e:
+        logger.error(f"Error fetching campaigns: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
     except Exception as e:
         logger.error(f"Error sending bulk WhatsApp: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
