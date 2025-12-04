@@ -490,6 +490,19 @@ const ConfirmationTracker = () => {
                           {order.phone || "N/A"}
                         </TableCell>
                         <TableCell>
+                          {order.messaged ? (
+                            <Badge className="bg-green-100 text-green-700 border-green-300">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Sent
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-gray-100 text-gray-600 border-gray-300">
+                              <XCircle className="w-3 h-3 mr-1" />
+                              Not Sent
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {getStockBadge(order.stock_status || "unknown")}
                         </TableCell>
                         <TableCell>
