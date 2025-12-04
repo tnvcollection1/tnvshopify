@@ -4593,6 +4593,30 @@ async def export_segment(segment_type: str):
         result = await get_customers_by_segment(segment_type)
         customers = result.get('customers', [])
         
+        # Create CSV
+        output = StringIO()
+        writer = csv.DictWriter(output, fieldnames=['first_name', 'last_name', 'email', 'phone', 'total_spent'])
+        writer.writeheader()
+        
+        for customer in customers:
+            writer.writerow({
+                'first_name': customer.get('first_name', ''),
+                'last_name': customer.get('last_name', ''),
+                'email': customer.get('email', ''),
+                'phone': customer.get('phone', ''),
+                'total_spent': customer.get('total_spent', 0)
+            })
+        
+        from fastapi.responses import StreamingResponse
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=segment_{segment_type}.csv"}
+        )
+    
+    except Exception as e:
+        logger.error(f"Error exporting segment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.get("/bundles")
