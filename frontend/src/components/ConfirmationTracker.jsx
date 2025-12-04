@@ -804,9 +804,6 @@ const ConfirmationTracker = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-};
 
       {/* Bulk WhatsApp Dialog */}
       <Dialog open={bulkWhatsAppDialog} onOpenChange={setBulkWhatsAppDialog}>
