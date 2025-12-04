@@ -27,7 +27,7 @@ const InventoryOverview = () => {
 
   useEffect(() => {
     fetchInventoryStats();
-  }, []);
+  }, [dateRange]);
 
   const fetchInventoryStats = async () => {
     try {
