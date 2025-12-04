@@ -390,7 +390,7 @@ const ConfirmationTracker = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
                         Loading orders...
                       </TableCell>
                     </TableRow>
