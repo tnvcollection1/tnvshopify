@@ -4122,6 +4122,55 @@ async def send_whatsapp_message(customer_id: str):
     except Exception as e:
         logger.error(f"Error sending WhatsApp message: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/customers/bulk-whatsapp")
+async def send_bulk_whatsapp(request: dict):
+    """Send WhatsApp messages to multiple customers"""
+    try:
+        customer_ids = request.get('customer_ids', [])
+        template = request.get('template', 'order_ready')
+        
+        if not customer_ids:
+            raise HTTPException(status_code=400, detail="No customers selected")
+        
+        sent_count = 0
+        failed_count = 0
+        
+        for customer_id in customer_ids:
+            try:
+                # Update messaged status for each customer
+                result = await db.customers.update_one(
+                    {"customer_id": customer_id},
+                    {"$set": {
+                        "messaged": True,
+                        "message_sent_at": datetime.now(timezone.utc).isoformat(),
+                        "message_template": template
+                    }}
+                )
+                
+                if result.modified_count > 0:
+                    sent_count += 1
+                else:
+                    failed_count += 1
+            except Exception as e:
+                logger.error(f"Error sending WhatsApp to {customer_id}: {str(e)}")
+                failed_count += 1
+        
+        return {
+            "success": True,
+            "sent_count": sent_count,
+            "failed_count": failed_count,
+            "total": len(customer_ids)
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending bulk WhatsApp: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
     
     if fulfillment_status and fulfillment_status != "all":
         query['fulfillment_status'] = fulfillment_status
