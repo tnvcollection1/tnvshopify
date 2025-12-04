@@ -721,6 +721,28 @@ const InventoryV2 = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Upload Errors Dialog */}
+      <Dialog open={errorsDialog} onOpenChange={setErrorsDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="w-5 h-5" />
+              Upload Errors ({uploadErrors.length})
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 overflow-y-auto max-h-96">
+            {uploadErrors.map((error, idx) => (
+              <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-sm text-red-800 font-mono">{error}</p>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setErrorsDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
