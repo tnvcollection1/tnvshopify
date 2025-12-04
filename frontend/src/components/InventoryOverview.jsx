@@ -500,6 +500,127 @@ const InventoryOverview = () => {
           </div>
         </div>
       </div>
+
+      {/* Detail Modal */}
+      <Dialog open={detailModal.open} onOpenChange={closeDetailModal}>
+        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{detailModal.title}</DialogTitle>
+            <DialogDescription>
+              Detailed breakdown of products and orders in this category
+            </DialogDescription>
+          </DialogHeader>
+
+          {detailModal.loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-lg text-gray-500">Loading details...</div>
+            </div>
+          ) : detailModal.data ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
+                <div>
+                  <p className="text-sm text-gray-600">Total Items in Category</p>
+                  <p className="text-2xl font-bold text-gray-900">{detailModal.data.total_items}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">Showing top 500 items</p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-100 border-b-2 border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-semibold text-gray-700">SKU</th>
+                      <th className="px-4 py-3 text-left font-semibold text-gray-700">Collection</th>
+                      <th className="px-4 py-3 text-right font-semibold text-gray-700">Cost</th>
+                      <th className="px-4 py-3 text-right font-semibold text-gray-700">Sale Price</th>
+                      <th className="px-4 py-3 text-left font-semibold text-gray-700">Orders</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {detailModal.data.items && detailModal.data.items.length > 0 ? (
+                      detailModal.data.items.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 font-mono text-xs">{item.sku}</td>
+                          <td className="px-4 py-3 text-xs">
+                            <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded">
+                              {item.collection || 'N/A'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right text-gray-700">
+                            Rs. {item.cost.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-4 py-3 text-right text-gray-700">
+                            Rs. {(item.sale_price || item.cost).toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-4 py-3">
+                            {item.orders && item.orders.length > 0 ? (
+                              <div className="space-y-1">
+                                {item.orders.slice(0, 3).map((order, oidx) => (
+                                  <div key={oidx} className="text-xs bg-blue-50 p-2 rounded">
+                                    <div className="flex justify-between items-center">
+                                      <span className="font-semibold text-blue-700">
+                                        #{order.order_number}
+                                      </span>
+                                      {order.tracking_number && (
+                                        <span className="text-gray-500 text-[10px] font-mono">
+                                          {order.tracking_number}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {order.customer && (
+                                      <div className="text-gray-600 text-[10px]">{order.customer}</div>
+                                    )}
+                                    {order.delivery_status && (
+                                      <div className="text-[10px] mt-1">
+                                        <span className={`px-2 py-0.5 rounded ${
+                                          order.delivery_status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
+                                          order.delivery_status === 'IN_TRANSIT' ? 'bg-yellow-100 text-yellow-700' :
+                                          'bg-gray-100 text-gray-700'
+                                        }`}>
+                                          {order.delivery_status}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                                {item.orders.length > 3 && (
+                                  <div className="text-xs text-gray-500 italic">
+                                    +{item.orders.length - 3} more orders
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400 italic">No linked orders</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
+                          No items found in this category
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="py-12 text-center text-gray-500">
+              No data available
+            </div>
+          )}
+
+          <div className="flex justify-end mt-4">
+            <Button onClick={closeDetailModal} variant="outline">
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
