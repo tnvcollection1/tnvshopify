@@ -4336,6 +4336,134 @@ async def bulk_pricing_update(request: dict):
             "updated_count": updated_count,
             "message": f"Updated pricing for {updated_count} items"
         }
+
+
+# Flash Sales Collection Helper
+async def init_flash_sales_collection():
+    """Initialize flash sales collection if it doesn't exist"""
+    collections = await db.list_collection_names()
+    if 'flash_sales' not in collections:
+        await db.create_collection('flash_sales')
+
+@api_router.get("/flash-sales")
+async def get_flash_sales():
+    """Get all flash sales"""
+    try:
+        sales = await db.flash_sales.find({}, {"_id": 0}).to_list(1000)
+        
+        return {
+            "success": True,
+            "sales": sales
+        }
+    
+    except Exception as e:
+        logger.error(f"Error fetching flash sales: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/flash-sales/create")
+async def create_flash_sale(request: dict):
+    """Create a new flash sale"""
+    try:
+        from datetime import datetime, timezone, timedelta
+        import uuid
+        
+        name = request.get('name')
+        collection = request.get('collection')
+        discount = float(request.get('discount', 0))
+        duration_hours = int(request.get('duration_hours', 24))
+        start_time_str = request.get('start_time')
+        
+        # Parse start time
+        if start_time_str:
+            start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+        else:
+            start_time = datetime.now(timezone.utc)
+        
+        end_time = start_time + timedelta(hours=duration_hours)
+        
+        flash_sale = {
+            "id": str(uuid.uuid4()),
+            "name": name,
+            "collection": collection,
+            "discount": discount,
+            "duration_hours": duration_hours,
+            "start_time": start_time.isoformat(),
+            "end_time": end_time.isoformat(),
+            "active": start_time <= datetime.now(timezone.utc),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "orders_count": 0,
+            "revenue": 0,
+            "conversion_rate": 0
+        }
+        
+        await db.flash_sales.insert_one(flash_sale)
+        
+        # Update inventory items with flash sale tag
+        if collection and collection != 'all':
+            await db.inventory_v2.update_many(
+                {"collection": {"$regex": collection, "$options": "i"}},
+                {"$set": {"campaign_tag": "flash_sale", "flash_sale_discount": discount}}
+            )
+        
+        return {
+            "success": True,
+            "message": "Flash sale created successfully",
+            "sale_id": flash_sale['id']
+        }
+    
+    except Exception as e:
+        logger.error(f"Error creating flash sale: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/flash-sales/{sale_id}/toggle")
+async def toggle_flash_sale(sale_id: str, request: dict):
+    """Activate or pause a flash sale"""
+    try:
+        active = request.get('active', False)
+        
+        result = await db.flash_sales.update_one(
+            {"id": sale_id},
+            {"$set": {"active": active}}
+        )
+        
+        if result.modified_count > 0:
+            return {
+                "success": True,
+                "message": f"Flash sale {'activated' if active else 'paused'}"
+            }
+        else:
+            raise HTTPException(status_code=404, detail="Flash sale not found")
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error toggling flash sale: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/flash-sales/{sale_id}")
+async def delete_flash_sale(sale_id: str):
+    """Delete a flash sale"""
+    try:
+        result = await db.flash_sales.delete_one({"id": sale_id})
+        
+        if result.deleted_count > 0:
+            return {
+                "success": True,
+                "message": "Flash sale deleted"
+            }
+        else:
+            raise HTTPException(status_code=404, detail="Flash sale not found")
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting flash sale: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
     
     except HTTPException:
         raise
