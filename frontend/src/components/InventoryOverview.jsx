@@ -156,13 +156,114 @@ const InventoryOverview = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Space Grotesk' }}>
                 📦 Inventory Overview
               </h1>
               <p className="text-gray-600">Financial and stock analytics for your inventory</p>
             </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="mb-6">
+            <div className="relative max-w-2xl">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                type="text"
+                placeholder="Search by SKU, Order Number, Collection, Customer Name..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-10 pr-10 py-6 text-base border-2 border-gray-300 focus:border-blue-500 rounded-lg"
+              />
+              {searchQuery && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+            
+            {/* Search Results */}
+            {searchResults && (
+              <div className="mt-4 bg-white rounded-lg shadow-lg border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Search Results for "{searchQuery}"
+                  </h3>
+                  <span className="text-sm text-gray-500">
+                    {searchResults.total_results} items found
+                  </span>
+                </div>
+                
+                {searchLoading ? (
+                  <div className="text-center py-8 text-gray-500">Searching...</div>
+                ) : searchResults.items && searchResults.items.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 border-b-2 border-gray-200">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">SKU</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Collection</th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Cost</th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Sale Price</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Orders</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {searchResults.items.slice(0, 20).map((item, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 font-mono text-xs">{item.sku}</td>
+                            <td className="px-4 py-3 text-xs">
+                              <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded">
+                                {item.collection || 'N/A'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right text-gray-700">
+                              Rs. {item.cost.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                            </td>
+                            <td className="px-4 py-3 text-right text-gray-700">
+                              Rs. {(item.sale_price || item.cost).toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                            </td>
+                            <td className="px-4 py-3">
+                              {item.orders && item.orders.length > 0 ? (
+                                <div className="flex gap-1 flex-wrap">
+                                  {item.orders.slice(0, 3).map((order, oidx) => (
+                                    <span key={oidx} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                      #{order.order_number}
+                                    </span>
+                                  ))}
+                                  {item.orders.length > 3 && (
+                                    <span className="text-xs text-gray-500">+{item.orders.length - 3}</span>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-xs text-gray-400 italic">No orders</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {searchResults.total_results > 20 && (
+                      <div className="mt-4 text-center text-sm text-gray-500">
+                        Showing 20 of {searchResults.total_results} results
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No items found matching "{searchQuery}"
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Date Range Filter */}
+          <div>
             
             {/* Date Filter */}
             <div className="flex gap-4 items-center">
