@@ -3317,7 +3317,9 @@ async def get_customers_count(
     china_tracking: Optional[str] = None,
     tcs_only: Optional[str] = None,
     year: Optional[str] = None,
-    search: Optional[str] = None
+    search: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
 ):
     """
     Get total count of customers matching filters including stock availability, fulfillment, delivery, and payment status
