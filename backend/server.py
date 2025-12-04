@@ -1959,9 +1959,12 @@ async def get_inventory_overview_stats():
             "total_spent": 1
         }).to_list(50000)
         
-        # Create mapping: order_number -> delivery_status
-        order_delivery_map = {
-            c.get("order_number"): c.get("delivery_status") 
+        # Create mapping: order_number -> {delivery_status, total_spent}
+        order_info_map = {
+            c.get("order_number"): {
+                "delivery_status": c.get("delivery_status"),
+                "total_spent": c.get("total_spent", 0)
+            }
             for c in customers if c.get("order_number")
         }
         
