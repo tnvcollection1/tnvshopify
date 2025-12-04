@@ -4345,6 +4345,12 @@ async def bulk_pricing_update(request: dict):
             "updated_count": updated_count,
             "message": f"Updated pricing for {updated_count} items"
         }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error bulk pricing: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Flash Sales Collection Helper
