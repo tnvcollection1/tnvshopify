@@ -379,6 +379,7 @@ const ConfirmationTracker = () => {
                     <TableHead className="font-semibold text-gray-700">Store</TableHead>
                     <TableHead className="font-semibold text-gray-700">Customer</TableHead>
                     <TableHead className="font-semibold text-gray-700">Phone</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Stock Status</TableHead>
                     <TableHead className="font-semibold text-gray-700">Calling Status</TableHead>
                     <TableHead className="font-semibold text-gray-700">Confirmation</TableHead>
                     <TableHead className="font-semibold text-gray-700">Dubai Tracking</TableHead>
