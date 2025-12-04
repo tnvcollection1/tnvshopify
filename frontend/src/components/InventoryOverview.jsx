@@ -350,14 +350,20 @@ const InventoryOverview = () => {
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-yellow-600 mt-2 italic">Active TCS tracking</p>
+                <p className="text-xs text-yellow-600 mt-2 italic">Click to view details</p>
               </CardContent>
             </Card>
 
             {/* Delivered Recent */}
-            <Card className="border-green-200 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+            <Card 
+              className="border-green-200 shadow-lg bg-gradient-to-br from-green-50 to-green-100 cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={() => openDetailModal('delivered', '✅ Delivered Recent - Detailed Breakdown')}
+            >
               <CardHeader className="pb-3">
-                <CardDescription className="text-green-700 font-semibold">✅ Delivered Recent</CardDescription>
+                <CardDescription className="text-green-700 font-semibold flex items-center justify-between">
+                  <span>✅ Delivered Recent</span>
+                  <ExternalLink className="h-4 w-4" />
+                </CardDescription>
                 <CardTitle className="text-3xl font-bold text-green-600">
                   {stats.delivered_recent.count.toLocaleString()} SKUs
                 </CardTitle>
@@ -383,14 +389,20 @@ const InventoryOverview = () => {
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-green-600 mt-2 italic">Nov 2024 onwards</p>
+                <p className="text-xs text-green-600 mt-2 italic">Click to view details</p>
               </CardContent>
             </Card>
 
             {/* Unknown/Old */}
-            <Card className="border-gray-300 shadow-lg bg-gradient-to-br from-gray-100 to-gray-200">
+            <Card 
+              className="border-gray-300 shadow-lg bg-gradient-to-br from-gray-100 to-gray-200 cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={() => openDetailModal('other', '❓ Other Orders - Detailed Breakdown')}
+            >
               <CardHeader className="pb-3">
-                <CardDescription className="text-gray-700 font-semibold">❓ Other Orders</CardDescription>
+                <CardDescription className="text-gray-700 font-semibold flex items-center justify-between">
+                  <span>❓ Other Orders</span>
+                  <ExternalLink className="h-4 w-4" />
+                </CardDescription>
                 <CardTitle className="text-3xl font-bold text-gray-600">
                   {stats.unknown_old.count.toLocaleString()} SKUs
                 </CardTitle>
@@ -416,7 +428,7 @@ const InventoryOverview = () => {
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 italic">Past orders without recent TCS tracking</p>
+                <p className="text-xs text-gray-500 mt-2 italic">Click to view details</p>
               </CardContent>
             </Card>
           </div>
