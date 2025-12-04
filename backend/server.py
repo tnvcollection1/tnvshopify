@@ -2087,7 +2087,21 @@ async def get_inventory_overview_stats():
         fulfill_stats = calc_stats(can_fulfill_today, fulfill_orders)
         transit_stats = calc_stats(in_transit_tracked, transit_orders)
         delivered_stats = calc_stats(delivered_recent, delivered_orders)
-        unknown_stats = calc_stats(unknown_old, {})
+        
+        # For unknown/old, calculate from all remaining matched orders
+        unknown_matched_orders = {}
+        unknown_skus = {item.get('sku', '').upper().strip() for item in unknown_old}
+        for order in all_matched_orders:
+            order_skus = [sku.upper().strip() for sku in order.get('order_skus', [])]
+            if any(sku in unknown_skus for sku in order_skus):
+                order_num = order.get('order_number')
+                # Exclude if already counted in other categories
+                if (order_num not in fulfill_orders and 
+                    order_num not in transit_orders and 
+                    order_num not in delivered_orders):
+                    unknown_matched_orders[order_num] = order.get('total_spent', 0)
+        
+        unknown_stats = calc_stats(unknown_old, unknown_matched_orders)
         
         # Total stats - include ALL matched orders, not just categorized ones
         # Get all orders that have been matched with inventory
