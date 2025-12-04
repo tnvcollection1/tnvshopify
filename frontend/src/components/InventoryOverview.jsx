@@ -117,6 +117,32 @@ const InventoryOverview = () => {
     });
   };
 
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+    
+    if (!query || query.trim().length < 2) {
+      setSearchResults(null);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      const response = await axios.get(`${API}/api/inventory/v2/search?q=${encodeURIComponent(query)}`);
+      if (response.data.success) {
+        setSearchResults(response.data);
+      }
+    } catch (error) {
+      console.error('Error searching inventory:', error);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults(null);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
