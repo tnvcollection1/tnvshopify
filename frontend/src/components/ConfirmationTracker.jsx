@@ -111,6 +111,8 @@ const ConfirmationTracker = () => {
       if (filters.year !== "all") params.append("year", filters.year);
       if (filters.sortBy) params.append("sort_by", filters.sortBy);
       if (searchQuery) params.append("search", searchQuery);
+      if (dateRange.start) params.append("start_date", dateRange.start);
+      if (dateRange.end) params.append("end_date", dateRange.end);
       params.append("page", currentPage);
       params.append("limit", "100");
 
