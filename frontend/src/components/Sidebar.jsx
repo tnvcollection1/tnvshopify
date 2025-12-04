@@ -65,6 +65,8 @@ const Sidebar = () => {
       items: [
         { icon: Target, label: 'Campaigns', path: '/campaigns' },
         { icon: Zap, label: 'Flash Sales', path: '/flash-sales' },
+        { icon: UsersIcon, label: 'Customer Segments', path: '/segments' },
+        { icon: Package, label: 'Bundles', path: '/bundles' },
       ]
     },
     {
