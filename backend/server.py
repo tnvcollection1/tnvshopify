@@ -2219,6 +2219,168 @@ async def get_inventory_overview_stats(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.get("/inventory/v2/overview-detail/{category}")
+async def get_inventory_category_detail(
+    category: str,
+    start_date: str = None,
+    end_date: str = None
+):
+    """Get detailed breakdown for a specific inventory category"""
+    try:
+        from datetime import datetime, timezone, timedelta
+        
+        # Build date filter query
+        date_query = {}
+        if start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter["$gte"] = start_date
+            if end_date:
+                from datetime import datetime, timedelta
+                end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                end_dt = end_dt + timedelta(days=1)
+                date_filter["$lt"] = end_dt.isoformat()
+            date_query["created_at"] = date_filter
+        
+        # Get inventory items with date filter
+        all_items = await db.inventory_v2.find(date_query, {
+            "_id": 0, 
+            "sku": 1,
+            "cost": 1,
+            "sale_price": 1,
+            "order_number": 1,
+            "collection": 1,
+            "created_at": 1
+        }).to_list(10000)
+        
+        # Get today's date
+        today = datetime.now(timezone.utc).date()
+        
+        # Get unfulfilled orders from today
+        unfulfilled_today = await db.customers.find({
+            "fulfillment_status": {"$in": ["unfulfilled", "Unfulfilled", "UNFULFILLED", None]},
+            "order_skus": {"$exists": True, "$ne": []},
+            "created_at": {"$exists": True}
+        }, {
+            "_id": 0,
+            "order_number": 1,
+            "order_skus": 1,
+            "total_spent": 1,
+            "created_at": 1,
+            "first_name": 1,
+            "last_name": 1
+        }).to_list(10000)
+        
+        # Get orders with tracking
+        orders_with_tracking = await db.customers.find({
+            "tracking_number": {"$exists": True, "$ne": None, "$ne": ""},
+            "order_skus": {"$exists": True, "$ne": []}
+        }, {
+            "_id": 0,
+            "order_number": 1,
+            "order_skus": 1,
+            "delivery_status": 1,
+            "tracking_number": 1,
+            "total_spent": 1,
+            "created_at": 1,
+            "first_name": 1,
+            "last_name": 1
+        }).to_list(50000)
+        
+        # Create mappings
+        sku_to_unfulfilled_orders = {}
+        sku_to_tracked_orders = {}
+        
+        # Map unfulfilled orders
+        for order in unfulfilled_today:
+            try:
+                order_date = datetime.fromisoformat(order.get("created_at", "")).date()
+                if (today - order_date).days <= 1:
+                    for sku in order.get("order_skus", []):
+                        sku_upper = sku.upper().strip()
+                        if sku_upper not in sku_to_unfulfilled_orders:
+                            sku_to_unfulfilled_orders[sku_upper] = []
+                        sku_to_unfulfilled_orders[sku_upper].append({
+                            "order_number": order.get("order_number"),
+                            "total_spent": order.get("total_spent", 0),
+                            "customer": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip()
+                        })
+            except:
+                continue
+        
+        # Map tracked orders
+        for order in orders_with_tracking:
+            delivery_status = order.get("delivery_status", "")
+            if delivery_status and delivery_status != "UNKNOWN":
+                for sku in order.get("order_skus", []):
+                    sku_upper = sku.upper().strip()
+                    if sku_upper not in sku_to_tracked_orders:
+                        sku_to_tracked_orders[sku_upper] = []
+                    sku_to_tracked_orders[sku_upper].append({
+                        "order_number": order.get("order_number"),
+                        "delivery_status": delivery_status,
+                        "tracking_number": order.get("tracking_number"),
+                        "total_spent": order.get("total_spent", 0),
+                        "customer": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip()
+                    })
+        
+        # Categorize items based on requested category
+        detailed_items = []
+        
+        for item in all_items:
+            sku_upper = item.get('sku', '').upper().strip()
+            cost = item.get('cost', 0)
+            sale_price = item.get('sale_price', 0)
+            
+            item_detail = {
+                "sku": item.get('sku'),
+                "cost": cost,
+                "sale_price": sale_price,
+                "collection": item.get('collection'),
+                "orders": []
+            }
+            
+            # Filter by category
+            if category == "can_fulfill_today":
+                if sku_upper in sku_to_unfulfilled_orders:
+                    item_detail["orders"] = sku_to_unfulfilled_orders[sku_upper]
+                    detailed_items.append(item_detail)
+            
+            elif category == "in_transit":
+                if sku_upper in sku_to_tracked_orders:
+                    for order in sku_to_tracked_orders[sku_upper]:
+                        if order["delivery_status"] in ["BOOKED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "ARRIVAL_AT_DESTINATION"]:
+                            item_detail["orders"].append(order)
+                    if item_detail["orders"]:
+                        detailed_items.append(item_detail)
+            
+            elif category == "delivered":
+                if sku_upper in sku_to_tracked_orders:
+                    for order in sku_to_tracked_orders[sku_upper]:
+                        if order["delivery_status"] == "DELIVERED":
+                            item_detail["orders"].append(order)
+                    if item_detail["orders"]:
+                        detailed_items.append(item_detail)
+            
+            elif category == "other":
+                # Items not in other categories
+                if (sku_upper not in sku_to_unfulfilled_orders and 
+                    sku_upper not in sku_to_tracked_orders):
+                    detailed_items.append(item_detail)
+        
+        return {
+            "success": True,
+            "category": category,
+            "total_items": len(detailed_items),
+            "items": detailed_items[:500]  # Limit to 500 for performance
+        }
+    
+    except Exception as e:
+        logger.error(f"Error fetching category detail: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @api_router.get("/inventory/v2/stats")
 async def get_inventory_stats():
     """Get financial stats for inventory"""
