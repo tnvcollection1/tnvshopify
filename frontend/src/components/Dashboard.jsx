@@ -135,6 +135,7 @@ const Dashboard = () => {
     fetchAgents();
     fetchCustomers("all", 1);
     fetchSchedulerStatus();
+    fetchInventoryStats();
   }, []);
 
   const fetchSchedulerStatus = async () => {
