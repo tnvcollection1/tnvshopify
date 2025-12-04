@@ -111,6 +111,58 @@ const InventoryV2 = () => {
     }
   };
 
+  // Selection handlers
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+      setSelectAll(false);
+    } else {
+      setSelectedItems(items.map(item => item.id));
+      setSelectAll(true);
+    }
+  };
+
+  const handleSelectItem = (itemId) => {
+    if (selectedItems.includes(itemId)) {
+      const newSelected = selectedItems.filter(id => id !== itemId);
+      setSelectedItems(newSelected);
+      setSelectAll(false);
+    } else {
+      const newSelected = [...selectedItems, itemId];
+      setSelectedItems(newSelected);
+      if (newSelected.length === items.length) {
+        setSelectAll(true);
+      }
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) {
+      toast.error('No items selected');
+      return;
+    }
+
+    if (!window.confirm(`Delete ${selectedItems.length} selected items?`)) {
+      return;
+    }
+
+    try {
+      const deletePromises = selectedItems.map(id =>
+        fetch(`${API}/inventory/v2/${id}`, { method: 'DELETE' })
+      );
+      
+      await Promise.all(deletePromises);
+      
+      toast.success(`${selectedItems.length} items deleted successfully`);
+      setSelectedItems([]);
+      setSelectAll(false);
+      fetchItems();
+    } catch (error) {
+      console.error('Error deleting items:', error);
+      toast.error('Failed to delete some items');
+    }
+  };
+
   const handleAddItem = async () => {
     try {
       const response = await fetch(`${API}/inventory/v2/add`, {
