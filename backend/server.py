@@ -1999,15 +1999,14 @@ async def get_inventory_overview_stats():
         
         # Calculate stats for each category
         def calc_stats_in_stock(items):
-            # For in-stock items, use sale_price from inventory (if available)
+            # For in-stock items without orders, only show cost
+            # Sale value and profit are 0 since they're not sold yet
             cost = sum(i.get('cost', 0) for i in items)
-            sale_value = sum(i.get('sale_price', 0) for i in items if i.get('sale_price', 0) > 0)
-            profit = sale_value - cost if sale_value > 0 else 0
             return {
                 "count": len(items),
                 "cost": round(cost, 2),
-                "sale_value": round(sale_value, 2),
-                "profit": round(profit, 2)
+                "sale_value": 0.0,  # No orders yet, so no sale value
+                "profit": 0.0  # No orders yet, so no profit
             }
         
         def calc_stats_with_orders(items, orders_map):
