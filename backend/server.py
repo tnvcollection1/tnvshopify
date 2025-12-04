@@ -1876,7 +1876,7 @@ inventory_manager = InventoryManager(db)
 
 @api_router.get("/inventory/v2/overview-stats")
 async def get_inventory_overview_stats():
-    """Get comprehensive inventory stats with breakdowns"""
+    """Get comprehensive inventory stats with breakdowns by delivery status"""
     try:
         # Aggregate by collection
         collection_pipeline = [
@@ -1938,13 +1938,71 @@ async def get_inventory_overview_stats():
         by_size = await db.inventory_v2.aggregate(size_pipeline).to_list(100)
         by_color = await db.inventory_v2.aggregate(color_pipeline).to_list(100)
         
-        # Get basic stats
-        all_items = await db.inventory_v2.find({}, {"_id": 0, "cost": 1, "sale_price": 1, "profit": 1, "order_number": 1}).to_list(10000)
+        # Get all inventory items with their order info
+        all_items = await db.inventory_v2.find({}, {
+            "_id": 0, 
+            "sku": 1,
+            "cost": 1, 
+            "sale_price": 1, 
+            "profit": 1, 
+            "order_number": 1
+        }).to_list(10000)
         
+        # Get all customers with their delivery status and order SKUs
+        customers = await db.customers.find({
+            "order_skus": {"$exists": True, "$ne": []}
+        }, {
+            "_id": 0,
+            "order_number": 1,
+            "order_skus": 1,
+            "delivery_status": 1,
+            "total_spent": 1
+        }).to_list(50000)
+        
+        # Create mapping: order_number -> delivery_status
+        order_delivery_map = {
+            c.get("order_number"): c.get("delivery_status") 
+            for c in customers if c.get("order_number")
+        }
+        
+        # Categorize inventory by delivery status
+        in_stock_items = []  # No order match
+        in_transit_items = []  # Matched with transit orders
+        delivered_items = []  # Matched with delivered orders
+        
+        for item in all_items:
+            order_num = item.get('order_number')
+            if not order_num:
+                in_stock_items.append(item)
+            else:
+                delivery_status = order_delivery_map.get(order_num, "")
+                if delivery_status == "DELIVERED":
+                    delivered_items.append(item)
+                elif delivery_status and delivery_status not in ["DELIVERED", "RETURN_IN_PROCESS"]:
+                    in_transit_items.append(item)
+                else:
+                    in_stock_items.append(item)
+        
+        # Calculate stats for each category
+        def calc_stats(items):
+            cost = sum(i.get('cost', 0) for i in items)
+            sale_value = sum(i.get('sale_price', 0) for i in items if i.get('sale_price', 0) > 0)
+            profit = sum(i.get('profit', 0) for i in items if i.get('profit', 0) > 0)
+            return {
+                "count": len(items),
+                "cost": round(cost, 2),
+                "sale_value": round(sale_value, 2),
+                "profit": round(profit, 2)
+            }
+        
+        in_stock_stats = calc_stats(in_stock_items)
+        in_transit_stats = calc_stats(in_transit_items)
+        delivered_stats = calc_stats(delivered_items)
+        
+        # Total stats
         total_cost = sum(item.get('cost', 0) for item in all_items)
         total_sale_value = sum(item.get('sale_price', 0) for item in all_items if item.get('sale_price', 0) > 0)
         total_profit = sum(item.get('profit', 0) for item in all_items if item.get('profit', 0) > 0)
-        matched_orders = len([item for item in all_items if item.get('order_number')])
         
         return {
             "success": True,
@@ -1953,7 +2011,9 @@ async def get_inventory_overview_stats():
                 "total_cost": round(total_cost, 2),
                 "total_sale_value": round(total_sale_value, 2),
                 "total_profit": round(total_profit, 2),
-                "matched_orders": matched_orders,
+                "in_stock": in_stock_stats,
+                "in_transit": in_transit_stats,
+                "delivered": delivered_stats,
                 "by_collection": by_collection,
                 "by_size": by_size,
                 "by_color": by_color
