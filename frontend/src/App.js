@@ -113,6 +113,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/inventory-overview" 
+        element={
+          <ProtectedRoute>
+            <InventoryOverview />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/reports" 
         element={
           <ProtectedRoute>
