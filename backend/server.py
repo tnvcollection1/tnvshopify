@@ -2089,10 +2089,34 @@ async def get_inventory_overview_stats():
         delivered_stats = calc_stats(delivered_recent, delivered_orders)
         unknown_stats = calc_stats(unknown_old, {})
         
-        # Total stats
+        # Total stats - include ALL matched orders, not just categorized ones
+        # Get all orders that have been matched with inventory
+        all_matched_orders = await db.customers.find({
+            "order_skus": {"$exists": True, "$ne": []},
+            "order_number": {"$exists": True}
+        }, {
+            "_id": 0,
+            "order_number": 1,
+            "total_spent": 1,
+            "order_skus": 1
+        }).to_list(50000)
+        
+        # Create SKU set from inventory
+        inventory_skus = {item.get('sku', '').upper().strip() for item in all_items}
+        
+        # Calculate totals from all orders that match our inventory
+        total_matched_orders = {}
+        for order in all_matched_orders:
+            order_skus = [sku.upper().strip() for sku in order.get('order_skus', [])]
+            # Check if any SKU from this order is in our inventory
+            if any(sku in inventory_skus for sku in order_skus):
+                order_num = order.get('order_number')
+                if order_num not in total_matched_orders:
+                    total_matched_orders[order_num] = order.get('total_spent', 0)
+        
         total_cost = sum(item.get('cost', 0) for item in all_items)
-        total_sale_value = sum(fulfill_orders.values()) + sum(transit_orders.values()) + sum(delivered_orders.values())
-        total_profit = total_sale_value - (fulfill_stats["cost"] + transit_stats["cost"] + delivered_stats["cost"])
+        total_sale_value = sum(total_matched_orders.values())
+        total_profit = total_sale_value - total_cost if total_sale_value > 0 else 0
         
         return {
             "success": True,
