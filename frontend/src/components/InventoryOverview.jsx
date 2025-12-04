@@ -57,7 +57,7 @@ const InventoryOverview = () => {
     }
   };
 
-  const openDetailModal = async (category, title) => {
+  const openDetailModal = async (category, title, filterValue = null) => {
     setDetailModal({
       open: true,
       category,
