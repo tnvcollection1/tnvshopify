@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://courier-tracker-16.preview.emergentagent.com/api'
+base_url = 'https://inventory-master-140.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
