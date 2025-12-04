@@ -579,13 +579,13 @@ const ConfirmationTracker = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={12} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={13} className="text-center py-8 text-gray-500">
                         Loading orders...
                       </TableCell>
                     </TableRow>
                   ) : orders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={12} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={13} className="text-center py-8 text-gray-500">
                         No unfulfilled orders found
                       </TableCell>
                     </TableRow>
