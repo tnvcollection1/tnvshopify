@@ -1948,8 +1948,22 @@ async def get_inventory_overview_stats(
         by_collection = await db.inventory_v2.aggregate(collection_pipeline).to_list(100)
         by_color = await db.inventory_v2.aggregate(color_pipeline).to_list(100)
         
-        # Get all inventory items
-        all_items = await db.inventory_v2.find({}, {
+        # Build date filter query
+        date_query = {}
+        if start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter["$gte"] = start_date
+            if end_date:
+                # Add one day to include the end date
+                from datetime import datetime, timedelta
+                end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                end_dt = end_dt + timedelta(days=1)
+                date_filter["$lt"] = end_dt.isoformat()
+            date_query["created_at"] = date_filter
+        
+        # Get inventory items with date filter
+        all_items = await db.inventory_v2.find(date_query, {
             "_id": 0, 
             "sku": 1,
             "cost": 1, 
