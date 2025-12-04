@@ -2014,7 +2014,7 @@ async def delete_inventory_item(item_id: str):
 
 @api_router.post("/inventory/v2/upload")
 async def upload_inventory_excel(file: UploadFile = File(...), store_name: str = "tnvcollectionpk"):
-    """Upload Excel file with inventory (SKU, Product Name, Cost, Order Number)"""
+    """Upload Excel file with inventory (Box No, SKU, Size, Color, Collection, Cost)"""
     try:
         import openpyxl
         from io import BytesIO
@@ -2026,16 +2026,54 @@ async def upload_inventory_excel(file: UploadFile = File(...), store_name: str =
         items_added = 0
         errors = []
         
+        # Get all customers with their order_skus for matching
+        customers = await db.customers.find(
+            {"order_skus": {"$exists": True, "$ne": []}},
+            {"_id": 0, "order_number": 1, "order_skus": 1, "total_spent": 1}
+        ).to_list(50000)
+        
+        # Create a mapping: SKU -> list of (order_number, total_spent)
+        sku_to_orders = {}
+        for customer in customers:
+            for sku in customer.get("order_skus", []):
+                sku_upper = sku.upper().strip()
+                if sku_upper not in sku_to_orders:
+                    sku_to_orders[sku_upper] = []
+                sku_to_orders[sku_upper].append({
+                    "order_number": customer.get("order_number"),
+                    "total_spent": customer.get("total_spent", 0)
+                })
+        
         for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
             try:
-                if not row[0]:  # Skip if SKU is empty
+                # Skip if SKU is empty (column 2, index 1)
+                if not row[1]:
                     continue
                 
-                sku = str(row[0]).strip()
-                product_name = str(row[1]).strip() if row[1] else "Unknown Product"
-                cost = float(row[2]) if row[2] else 0.0
-                collection = str(row[3]).strip() if len(row) > 3 and row[3] else None
-                order_number = str(row[4]).strip() if len(row) > 4 and row[4] else None
+                box_no = str(row[0]).strip() if row[0] else None
+                sku = str(row[1]).strip()
+                size = str(row[2]).strip() if row[2] else None
+                color = str(row[3]).strip() if row[3] else None
+                collection = str(row[4]).strip() if row[4] else None
+                cost = float(row[5]) if row[5] else 0.0
+                
+                # Build product name from SKU, size, color
+                product_name = f"{sku}"
+                if size:
+                    product_name += f" - Size {size}"
+                if color:
+                    product_name += f" - {color}"
+                
+                # Check if this SKU matches any orders
+                sku_upper = sku.upper().strip()
+                order_number = None
+                sale_price = 0.0
+                
+                if sku_upper in sku_to_orders:
+                    # Get the first matching order
+                    first_order = sku_to_orders[sku_upper][0]
+                    order_number = first_order["order_number"]
+                    sale_price = float(first_order["total_spent"])
                 
                 # Create inventory item
                 new_item = InventoryItem(
@@ -2044,18 +2082,10 @@ async def upload_inventory_excel(file: UploadFile = File(...), store_name: str =
                     collection=collection,
                     cost=cost,
                     order_number=order_number,
+                    sale_price=sale_price,
+                    profit=sale_price - cost if sale_price > 0 else 0.0,
                     store_name=store_name
                 )
-                
-                # Fetch sale price if order number provided
-                if order_number:
-                    customer = await db.customers.find_one(
-                        {"order_number": order_number},
-                        {"_id": 0, "total_spent": 1}
-                    )
-                    if customer:
-                        new_item.sale_price = float(customer.get("total_spent", 0))
-                        new_item.profit = new_item.sale_price - new_item.cost
                 
                 item_dict = new_item.model_dump()
                 await db.inventory_v2.insert_one(item_dict)
