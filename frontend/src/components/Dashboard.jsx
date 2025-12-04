@@ -886,6 +886,83 @@ const Dashboard = () => {
           </Card>
         </div>
 
+        {/* Inventory Financial Stats */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Space Grotesk' }}>📦 Inventory & Financial Overview</h2>
+          
+          {/* Financial Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <Card className="border-orange-200 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
+              <CardHeader className="pb-3">
+                <CardDescription className="text-orange-700 font-semibold">Total Cost (Stock Value)</CardDescription>
+                <CardTitle className="text-3xl font-bold text-orange-600">
+                  Rs. {inventoryStats.total_cost.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-orange-600">{inventoryStats.in_stock_count} items in stock</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-blue-200 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+              <CardHeader className="pb-3">
+                <CardDescription className="text-blue-700 font-semibold">Total Sale Value (Potential)</CardDescription>
+                <CardTitle className="text-3xl font-bold text-blue-600">
+                  Rs. {inventoryStats.total_sale_value.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-blue-600">From matched Shopify orders</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-green-200 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+              <CardHeader className="pb-3">
+                <CardDescription className="text-green-700 font-semibold">Total Profit (Potential)</CardDescription>
+                <CardTitle className="text-3xl font-bold text-green-600">
+                  Rs. {inventoryStats.total_profit.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-green-600">Sale Value - Cost</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Order Status Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-purple-200 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
+              <CardHeader className="pb-3">
+                <CardDescription className="text-purple-700 font-semibold">📅 Today's Stock Orders</CardDescription>
+                <CardTitle className="text-3xl font-bold text-purple-600">{inventoryStats.today_orders}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-purple-600">Inventory added today</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-yellow-200 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
+              <CardHeader className="pb-3">
+                <CardDescription className="text-yellow-700 font-semibold">🚛 In Transit (Not Delivered)</CardDescription>
+                <CardTitle className="text-3xl font-bold text-yellow-600">{inventoryStats.transit_orders}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-yellow-600">Orders currently in transit</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-teal-200 shadow-lg bg-gradient-to-br from-teal-50 to-teal-100">
+              <CardHeader className="pb-3">
+                <CardDescription className="text-teal-700 font-semibold">✅ Delivered Orders</CardDescription>
+                <CardTitle className="text-3xl font-bold text-teal-600">{inventoryStats.delivered_orders}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-teal-600">Successfully delivered</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
         {/* Filters */}
         <Card className="mb-8 border-none shadow-lg bg-white/80 backdrop-blur-sm">
           <CardHeader>
