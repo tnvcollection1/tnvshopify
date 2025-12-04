@@ -446,6 +446,9 @@ const ConfirmationTracker = () => {
                           {order.phone || "N/A"}
                         </TableCell>
                         <TableCell>
+                          {getStockBadge(order.stock_status || "unknown")}
+                        </TableCell>
+                        <TableCell>
                           {getCallingBadge(order.calling_status || "NOT_CALLED")}
                         </TableCell>
                         <TableCell>
