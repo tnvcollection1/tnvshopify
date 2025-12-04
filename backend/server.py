@@ -3156,6 +3156,8 @@ async def get_customers(
     year: Optional[str] = None,  # Filter by year (e.g., "2024", "2023")
     sort_by: Optional[str] = None,  # Sort options: "date_desc", "date_asc"
     search: Optional[str] = None,  # Search across multiple fields
+    start_date: Optional[str] = None,  # Start date for date range filter (YYYY-MM-DD)
+    end_date: Optional[str] = None,  # End date for date range filter (YYYY-MM-DD)
     page: int = 1,
     limit: int = 100
 ):
