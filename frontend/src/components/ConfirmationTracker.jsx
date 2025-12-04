@@ -50,6 +50,7 @@ const ConfirmationTracker = () => {
   const [filters, setFilters] = useState({
     calling_status: "all",
     confirmation_status: "all",
+    stock_status: "all",
     store: "all",
     year: "all",
     sortBy: "date_desc",
