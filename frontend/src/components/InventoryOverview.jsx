@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { Package, DollarSign, TrendingUp, ShoppingBag, Palette, Ruler, X, ExternalLink } from 'lucide-react';
+import { Package, DollarSign, TrendingUp, ShoppingBag, Palette, Ruler, X, ExternalLink, Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -12,6 +13,9 @@ const InventoryOverview = () => {
     start: '',
     end: ''
   });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [stats, setStats] = useState({
     total_items: 0,
     total_cost: 0,
