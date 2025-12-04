@@ -328,6 +328,16 @@ const InventoryV2 = () => {
             <p className="text-sm text-gray-500 mt-1">Track products with order linking and delivery status</p>
           </div>
           <div className="flex gap-2">
+            {selectedItems.length > 0 && (
+              <Button 
+                onClick={handleBulkDelete} 
+                variant="destructive"
+                className="mr-2"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Selected ({selectedItems.length})
+              </Button>
+            )}
             <Button onClick={() => setUploadDialog(true)} variant="outline">
               <Upload className="w-4 h-4 mr-2" />
               Upload Excel
