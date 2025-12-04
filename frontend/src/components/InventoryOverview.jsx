@@ -6,6 +6,10 @@ import axios from 'axios';
 const API = process.env.REACT_APP_BACKEND_URL;
 
 const InventoryOverview = () => {
+  const [dateRange, setDateRange] = useState({
+    start: '',
+    end: ''
+  });
   const [stats, setStats] = useState({
     total_items: 0,
     total_cost: 0,
