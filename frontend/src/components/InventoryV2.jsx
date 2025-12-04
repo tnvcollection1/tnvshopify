@@ -63,6 +63,8 @@ const InventoryV2 = () => {
   const [editDialog, setEditDialog] = useState(false);
   const [statusDialog, setStatusDialog] = useState(false);
   const [uploadDialog, setUploadDialog] = useState(false);
+  const [errorsDialog, setErrorsDialog] = useState(false);
+  const [uploadErrors, setUploadErrors] = useState([]);
   
   // Form states
   const [newItem, setNewItem] = useState({
