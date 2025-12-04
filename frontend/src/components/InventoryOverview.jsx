@@ -128,44 +128,45 @@ const InventoryOverview = () => {
             📦 Inventory by Order Status (TCS Tracking Based)
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* In Stock (No Order Match) */}
-            <Card className="border-gray-200 shadow-lg bg-gradient-to-br from-gray-50 to-gray-100">
+            {/* Can Fulfill Today */}
+            <Card className="border-blue-200 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
               <CardHeader className="pb-3">
-                <CardDescription className="text-gray-700 font-semibold">📦 In Stock (No Order)</CardDescription>
-                <CardTitle className="text-3xl font-bold text-gray-600">
-                  {stats.in_stock.count.toLocaleString()} SKUs
+                <CardDescription className="text-blue-700 font-semibold">🎯 Can Fulfill Today</CardDescription>
+                <CardTitle className="text-3xl font-bold text-blue-600">
+                  {stats.can_fulfill_today.count.toLocaleString()} SKUs
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Cost:</span>
-                    <span className="font-semibold text-gray-700">
-                      Rs. {stats.in_stock.cost.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                    <span className="text-blue-600">Cost:</span>
+                    <span className="font-semibold text-blue-700">
+                      Rs. {stats.can_fulfill_today.cost.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Sale Value:</span>
-                    <span className="font-semibold text-gray-500 italic">
-                      Pending Orders
+                    <span className="text-blue-600">Order Value:</span>
+                    <span className="font-semibold text-blue-700">
+                      Rs. {stats.can_fulfill_today.sale_value.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Profit:</span>
-                    <span className="font-semibold text-gray-500 italic">
-                      Pending Orders
+                    <span className="text-blue-600">Profit:</span>
+                    <span className="font-semibold text-green-600">
+                      Rs. {stats.can_fulfill_today.profit.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
+                <p className="text-xs text-blue-500 mt-2 italic">Matches today's unfulfilled orders</p>
               </CardContent>
             </Card>
 
-            {/* In Transit */}
+            {/* In Transit (TCS Tracked) */}
             <Card className="border-yellow-200 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
               <CardHeader className="pb-3">
-                <CardDescription className="text-yellow-700 font-semibold">🚛 In Transit (Matched)</CardDescription>
+                <CardDescription className="text-yellow-700 font-semibold">🚛 In Transit (TCS Live)</CardDescription>
                 <CardTitle className="text-3xl font-bold text-yellow-600">
-                  {stats.in_transit.count.toLocaleString()} SKUs
+                  {stats.in_transit_tracked.count.toLocaleString()} SKUs
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -173,31 +174,32 @@ const InventoryOverview = () => {
                   <div className="flex justify-between">
                     <span className="text-yellow-600">Cost:</span>
                     <span className="font-semibold text-yellow-700">
-                      Rs. {stats.in_transit.cost.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                      Rs. {stats.in_transit_tracked.cost.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-yellow-600">Sale Value:</span>
+                    <span className="text-yellow-600">Order Value:</span>
                     <span className="font-semibold text-yellow-700">
-                      Rs. {stats.in_transit.sale_value.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                      Rs. {stats.in_transit_tracked.sale_value.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-yellow-600">Profit:</span>
                     <span className="font-semibold text-green-600">
-                      Rs. {stats.in_transit.profit.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                      Rs. {stats.in_transit_tracked.profit.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
+                <p className="text-xs text-yellow-600 mt-2 italic">Active TCS tracking</p>
               </CardContent>
             </Card>
 
-            {/* Delivered */}
+            {/* Delivered Recent */}
             <Card className="border-green-200 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
               <CardHeader className="pb-3">
-                <CardDescription className="text-green-700 font-semibold">✅ Delivered (Matched)</CardDescription>
+                <CardDescription className="text-green-700 font-semibold">✅ Delivered Recent</CardDescription>
                 <CardTitle className="text-3xl font-bold text-green-600">
-                  {stats.delivered.count.toLocaleString()} SKUs
+                  {stats.delivered_recent.count.toLocaleString()} SKUs
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -205,22 +207,56 @@ const InventoryOverview = () => {
                   <div className="flex justify-between">
                     <span className="text-green-600">Cost:</span>
                     <span className="font-semibold text-green-700">
-                      Rs. {stats.delivered.cost.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                      Rs. {stats.delivered_recent.cost.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-green-600">Sale Value:</span>
+                    <span className="text-green-600">Order Value:</span>
                     <span className="font-semibold text-green-700">
-                      Rs. {stats.delivered.sale_value.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                      Rs. {stats.delivered_recent.sale_value.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-green-600">Profit:</span>
                     <span className="font-semibold text-green-700">
-                      Rs. {stats.delivered.profit.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                      Rs. {stats.delivered_recent.profit.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
+                <p className="text-xs text-green-600 mt-2 italic">Nov 2024 onwards</p>
+              </CardContent>
+            </Card>
+
+            {/* Unknown/Old */}
+            <Card className="border-gray-300 shadow-lg bg-gradient-to-br from-gray-100 to-gray-200">
+              <CardHeader className="pb-3">
+                <CardDescription className="text-gray-700 font-semibold">❓ Unknown/Old Stock</CardDescription>
+                <CardTitle className="text-3xl font-bold text-gray-600">
+                  {stats.unknown_old.count.toLocaleString()} SKUs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Cost:</span>
+                    <span className="font-semibold text-gray-700">
+                      Rs. {stats.unknown_old.cost.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Order Value:</span>
+                    <span className="font-semibold text-gray-500 italic">
+                      N/A
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Profit:</span>
+                    <span className="font-semibold text-gray-500 italic">
+                      N/A
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2 italic">No TCS tracking or old orders</p>
               </CardContent>
             </Card>
           </div>
