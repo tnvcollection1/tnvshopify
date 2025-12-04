@@ -3289,10 +3289,15 @@ async def get_customers(
         customer['cost'] = total_cost if total_cost > 0 else None
         customer['profit'] = total_profit if total_profit > 0 else None
     
-    # If filtering by stock availability or if we want to show stock status, calculate it
-    if stock_availability or store_name:
-        # Get stock for the store from inventory_v2 (new) and stock (old) collections
+    # Calculate stock status for unfulfilled orders or when explicitly requested
+    # For unfulfilled orders, always check stock status
+    should_calculate_stock = stock_availability or fulfillment_status == "unfulfilled"
+    
+    if should_calculate_stock:
+        # Get all stores' inventory if no specific store is selected
         stock_store = store_name if store_name and store_name != "all" else None
+        
+        # Get stock for the store from inventory_v2 (new) and stock (old) collections
         if stock_store:
             # Check inventory_v2 first (new system with quantity tracking)
             inventory_v2_items = await db.inventory_v2.find(
