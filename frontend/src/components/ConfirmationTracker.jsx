@@ -518,6 +518,34 @@ const ConfirmationTracker = () => {
         </div>
       </div>
 
+      {/* Bulk Actions Bar */}
+      {selectedOrders.length > 0 && (
+        <div className="px-8 py-4 bg-blue-50 border-b border-blue-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-blue-900">
+                {selectedOrders.length} customer{selectedOrders.length > 1 ? 's' : ''} selected
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSelectedOrders([])}
+                className="border-blue-300 text-blue-700 hover:bg-blue-100"
+              >
+                Clear Selection
+              </Button>
+            </div>
+            <Button
+              onClick={handleBulkWhatsApp}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Send WhatsApp to Selected ({selectedOrders.length})
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Orders Table */}
       <div className="p-8">
         <Card className="border-gray-200">
@@ -526,6 +554,14 @@ const ConfirmationTracker = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold text-gray-700 w-12">
+                      <input
+                        type="checkbox"
+                        onChange={handleSelectAll}
+                        checked={selectedOrders.length > 0 && selectedOrders.length === orders.filter(o => !o.messaged && o.phone).length}
+                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                      />
+                    </TableHead>
                     <TableHead className="font-semibold text-gray-700">Date</TableHead>
                     <TableHead className="font-semibold text-gray-700">Order #</TableHead>
                     <TableHead className="font-semibold text-gray-700">Store</TableHead>
