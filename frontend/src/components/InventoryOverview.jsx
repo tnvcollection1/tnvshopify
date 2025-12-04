@@ -230,7 +230,7 @@ const InventoryOverview = () => {
             {/* Unknown/Old */}
             <Card className="border-gray-300 shadow-lg bg-gradient-to-br from-gray-100 to-gray-200">
               <CardHeader className="pb-3">
-                <CardDescription className="text-gray-700 font-semibold">❓ Unknown/Old Stock</CardDescription>
+                <CardDescription className="text-gray-700 font-semibold">❓ Other Orders</CardDescription>
                 <CardTitle className="text-3xl font-bold text-gray-600">
                   {stats.unknown_old.count.toLocaleString()} SKUs
                 </CardTitle>
@@ -245,18 +245,18 @@ const InventoryOverview = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Order Value:</span>
-                    <span className="font-semibold text-gray-500 italic">
-                      N/A
+                    <span className="font-semibold text-gray-700">
+                      Rs. {stats.unknown_old.sale_value.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Profit:</span>
-                    <span className="font-semibold text-gray-500 italic">
-                      N/A
+                    <span className="font-semibold text-green-600">
+                      Rs. {stats.unknown_old.profit.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 italic">No TCS tracking or old orders</p>
+                <p className="text-xs text-gray-500 mt-2 italic">Past orders without recent TCS tracking</p>
               </CardContent>
             </Card>
           </div>
