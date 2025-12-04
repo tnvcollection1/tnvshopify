@@ -61,10 +61,42 @@ const InventoryOverview = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Space Grotesk' }}>
-            📦 Inventory Overview
-          </h1>
-          <p className="text-gray-600">Financial and stock analytics for your inventory</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Space Grotesk' }}>
+                📦 Inventory Overview
+              </h1>
+              <p className="text-gray-600">Financial and stock analytics for your inventory</p>
+            </div>
+            
+            {/* Date Filter */}
+            <div className="flex gap-4 items-center">
+              <div>
+                <label className="text-sm text-gray-600 block mb-1">Start Date</label>
+                <input
+                  type="date"
+                  value={dateRange.start}
+                  onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-600 block mb-1">End Date</label>
+                <input
+                  type="date"
+                  value={dateRange.end}
+                  onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+              </div>
+              <button
+                onClick={() => setDateRange({start: '', end: ''})}
+                className="mt-6 px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Financial Stats */}
