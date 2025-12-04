@@ -388,6 +388,37 @@ const ConfirmationTracker = () => {
             </SelectContent>
           </Select>
         </div>
+        
+        {/* Date Range Filter */}
+        <div className="flex items-center gap-3 px-8 py-3 border-t border-gray-200 bg-gray-50">
+          <span className="text-sm font-medium text-gray-600">Filter by Date:</span>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">Start Date</label>
+            <input
+              type="date"
+              value={dateRange.start}
+              onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">End Date</label>
+            <input
+              type="date"
+              value={dateRange.end}
+              onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDateRange({ start: '', end: '' })}
+            className="text-gray-600 hover:bg-gray-100"
+          >
+            Clear Dates
+          </Button>
+        </div>
       </div>
 
       {/* Orders Table */}
