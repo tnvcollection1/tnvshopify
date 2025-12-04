@@ -2377,6 +2377,194 @@ async def get_inventory_category_detail(
     
     except Exception as e:
         logger.error(f"Error fetching category detail: {str(e)}")
+
+
+@api_router.get("/inventory/v2/collection-detail/{collection_name}")
+async def get_collection_detail(collection_name: str):
+    """Get detailed breakdown for a specific collection"""
+    try:
+        # Get all items in this collection
+        items = await db.inventory_v2.find(
+            {"collection": collection_name},
+            {"_id": 0, "sku": 1, "cost": 1, "sale_price": 1, "order_number": 1, "collection": 1}
+        ).to_list(1000)
+        
+        # Get related orders
+        skus = [item.get('sku', '').upper().strip() for item in items]
+        orders = await db.customers.find(
+            {"order_skus": {"$in": skus}},
+            {"_id": 0, "order_number": 1, "order_skus": 1, "total_spent": 1, "first_name": 1, "last_name": 1, "tracking_number": 1, "delivery_status": 1}
+        ).to_list(1000)
+        
+        # Map SKUs to orders
+        sku_to_orders = {}
+        for order in orders:
+            for sku in order.get('order_skus', []):
+                sku_upper = sku.upper().strip()
+                if sku_upper not in sku_to_orders:
+                    sku_to_orders[sku_upper] = []
+                sku_to_orders[sku_upper].append({
+                    "order_number": order.get("order_number"),
+                    "customer": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                    "tracking_number": order.get("tracking_number"),
+                    "delivery_status": order.get("delivery_status"),
+                    "total_spent": order.get("total_spent", 0)
+                })
+        
+        # Add orders to items
+        detailed_items = []
+        for item in items:
+            sku_upper = item.get('sku', '').upper().strip()
+            item['orders'] = sku_to_orders.get(sku_upper, [])
+            detailed_items.append(item)
+        
+        total_cost = sum(item.get('cost', 0) for item in items)
+        total_sale = sum(item.get('sale_price', item.get('cost', 0)) for item in items)
+        
+        return {
+            "success": True,
+            "collection": collection_name,
+            "total_items": len(items),
+            "total_cost": round(total_cost, 2),
+            "total_sale": round(total_sale, 2),
+            "items": detailed_items[:500]
+        }
+    except Exception as e:
+        logger.error(f"Error fetching collection detail: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/inventory/v2/size-detail/{size}")
+async def get_size_detail(size: str):
+    """Get detailed breakdown for a specific size"""
+    try:
+        # Find items with this size in SKU
+        all_items = await db.inventory_v2.find({}, {"_id": 0}).to_list(10000)
+        
+        # Filter by size
+        import re
+        filtered_items = []
+        for item in all_items:
+            sku = item.get('sku', '')
+            # Extract size from SKU
+            size_match = re.search(r'-(\d+(?:\.\d+)?)\s*$', sku)
+            if size_match:
+                item_size = size_match.group(1)
+                if item_size == size:
+                    filtered_items.append(item)
+        
+        # Get related orders
+        skus = [item.get('sku', '').upper().strip() for item in filtered_items]
+        orders = await db.customers.find(
+            {"order_skus": {"$in": skus}},
+            {"_id": 0, "order_number": 1, "order_skus": 1, "total_spent": 1, "first_name": 1, "last_name": 1, "tracking_number": 1, "delivery_status": 1}
+        ).to_list(1000)
+        
+        # Map SKUs to orders
+        sku_to_orders = {}
+        for order in orders:
+            for sku in order.get('order_skus', []):
+                sku_upper = sku.upper().strip()
+                if sku_upper not in sku_to_orders:
+                    sku_to_orders[sku_upper] = []
+                sku_to_orders[sku_upper].append({
+                    "order_number": order.get("order_number"),
+                    "customer": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                    "tracking_number": order.get("tracking_number"),
+                    "delivery_status": order.get("delivery_status")
+                })
+        
+        # Add orders to items
+        detailed_items = []
+        for item in filtered_items:
+            sku_upper = item.get('sku', '').upper().strip()
+            item['orders'] = sku_to_orders.get(sku_upper, [])
+            detailed_items.append(item)
+        
+        total_cost = sum(item.get('cost', 0) for item in filtered_items)
+        
+        return {
+            "success": True,
+            "size": size,
+            "total_items": len(filtered_items),
+            "total_cost": round(total_cost, 2),
+            "items": detailed_items[:500]
+        }
+    except Exception as e:
+        logger.error(f"Error fetching size detail: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/inventory/v2/all-items-detail")
+async def get_all_items_detail(
+    start_date: str = None,
+    end_date: str = None
+):
+    """Get detailed breakdown of all inventory items"""
+    try:
+        from datetime import datetime, timedelta
+        
+        # Build date filter
+        date_query = {}
+        if start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter["$gte"] = start_date
+            if end_date:
+                end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                end_dt = end_dt + timedelta(days=1)
+                date_filter["$lt"] = end_dt.isoformat()
+            date_query["created_at"] = date_filter
+        
+        items = await db.inventory_v2.find(
+            date_query,
+            {"_id": 0, "sku": 1, "cost": 1, "sale_price": 1, "order_number": 1, "collection": 1, "created_at": 1}
+        ).to_list(1000)
+        
+        # Get related orders
+        skus = [item.get('sku', '').upper().strip() for item in items]
+        orders = await db.customers.find(
+            {"order_skus": {"$in": skus}},
+            {"_id": 0, "order_number": 1, "order_skus": 1, "total_spent": 1, "first_name": 1, "last_name": 1, "tracking_number": 1, "delivery_status": 1}
+        ).to_list(1000)
+        
+        # Map SKUs to orders
+        sku_to_orders = {}
+        for order in orders:
+            for sku in order.get('order_skus', []):
+                sku_upper = sku.upper().strip()
+                if sku_upper not in sku_to_orders:
+                    sku_to_orders[sku_upper] = []
+                sku_to_orders[sku_upper].append({
+                    "order_number": order.get("order_number"),
+                    "customer": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                    "tracking_number": order.get("tracking_number"),
+                    "delivery_status": order.get("delivery_status"),
+                    "total_spent": order.get("total_spent", 0)
+                })
+        
+        # Add orders to items
+        detailed_items = []
+        for item in items:
+            sku_upper = item.get('sku', '').upper().strip()
+            item['orders'] = sku_to_orders.get(sku_upper, [])
+            detailed_items.append(item)
+        
+        total_cost = sum(item.get('cost', 0) for item in items)
+        total_sale = sum(item.get('sale_price', item.get('cost', 0)) for item in items)
+        
+        return {
+            "success": True,
+            "total_items": len(items),
+            "total_cost": round(total_cost, 2),
+            "total_sale": round(total_sale, 2),
+            "items": detailed_items[:1000]
+        }
+    except Exception as e:
+        logger.error(f"Error fetching all items detail: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
         raise HTTPException(status_code=500, detail=str(e))
 
 
