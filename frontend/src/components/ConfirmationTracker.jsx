@@ -294,7 +294,7 @@ const ConfirmationTracker = () => {
                 <p className="text-xs font-medium text-green-700 uppercase">✅ In Stock</p>
                 <p className="text-2xl font-bold text-green-600 mt-1">{stats.inStock || 0}</p>
                 <p className="text-sm text-green-600 mt-1">
-                  Sale Value: PKR {(stats.inStockValue || 0).toLocaleString()}
+                  Sale Value: {stats.currency || "PKR"} {(stats.inStockValue || 0).toLocaleString()}
                 </p>
               </div>
             </CardContent>
@@ -305,7 +305,7 @@ const ConfirmationTracker = () => {
                 <p className="text-xs font-medium text-red-700 uppercase">❌ Out of Stock</p>
                 <p className="text-2xl font-bold text-red-600 mt-1">{stats.outOfStock || 0}</p>
                 <p className="text-sm text-red-600 mt-1">
-                  Sale Value: PKR {(stats.outOfStockValue || 0).toLocaleString()}
+                  Sale Value: {stats.currency || "PKR"} {(stats.outOfStockValue || 0).toLocaleString()}
                 </p>
               </div>
             </CardContent>
