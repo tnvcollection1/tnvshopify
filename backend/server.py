@@ -3205,14 +3205,27 @@ async def get_customers(
             year_int = int(year)
             # Filter by year using last_order_date
             from datetime import datetime
-            start_date = datetime(year_int, 1, 1)
-            end_date = datetime(year_int, 12, 31, 23, 59, 59)
+            start_date_val = datetime(year_int, 1, 1)
+            end_date_val = datetime(year_int, 12, 31, 23, 59, 59)
             query['last_order_date'] = {
-                "$gte": start_date.isoformat(),
-                "$lte": end_date.isoformat()
+                "$gte": start_date_val.isoformat(),
+                "$lte": end_date_val.isoformat()
             }
         except ValueError:
             pass
+    
+    # Date range filter (overrides year filter if both are provided)
+    if start_date or end_date:
+        from datetime import datetime, timedelta
+        date_filter = {}
+        if start_date:
+            date_filter["$gte"] = start_date
+        if end_date:
+            # Include the entire end date (until 23:59:59)
+            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+            end_dt = end_dt.replace(hour=23, minute=59, second=59)
+            date_filter["$lte"] = end_dt.isoformat()
+        query['last_order_date'] = date_filter
     
     # Search across multiple fields
     if search:
