@@ -186,6 +186,7 @@ const InventoryV2 = () => {
       setNewItem({
         sku: '',
         product_name: '',
+        collection: '',
         cost: '',
         order_number: '',
         store_name: 'tnvcollectionpk'
