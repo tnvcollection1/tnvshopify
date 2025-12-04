@@ -50,6 +50,7 @@ class InventoryItemUpdate(BaseModel):
     sale_price: Optional[float] = None
     status: Optional[str] = None
     order_number: Optional[str] = None
+    collection: Optional[str] = None
 
 
 class DeliveryStatusUpdate(BaseModel):
