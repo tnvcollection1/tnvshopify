@@ -2835,6 +2835,26 @@ async def get_customers(
     # Get customers with pagination and sorting
     customers = await db.customers.find(query, {"_id": 0}).sort(sort_field, sort_direction).skip(skip).limit(fetch_limit).to_list(fetch_limit)
     
+    # Fetch all inventory items once to calculate cost and profit for each order
+    inventory_items = await db.inventory_v2.find({}, {"_id": 0, "sku": 1, "cost": 1, "profit": 1}).to_list(10000)
+    inventory_map = {item.get("sku", "").upper(): item for item in inventory_items}
+    
+    # Calculate cost and profit for each customer based on their order SKUs
+    for customer in customers:
+        order_skus = customer.get('order_skus', [])
+        total_cost = 0
+        total_profit = 0
+        
+        for sku in order_skus:
+            sku_upper = sku.upper()
+            if sku_upper in inventory_map:
+                inv_item = inventory_map[sku_upper]
+                total_cost += inv_item.get('cost', 0) or 0
+                total_profit += inv_item.get('profit', 0) or 0
+        
+        customer['cost'] = total_cost if total_cost > 0 else None
+        customer['profit'] = total_profit if total_profit > 0 else None
+    
     # If filtering by stock availability or if we want to show stock status, calculate it
     if stock_availability or store_name:
         # Get stock for the store
