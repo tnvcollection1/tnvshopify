@@ -26,7 +26,7 @@ const InventoryOverview = () => {
 
   const fetchInventoryStats = async () => {
     try {
-      const response = await axios.get(`${API}/inventory/v2/overview-stats`);
+      const response = await axios.get(`${API}/api/inventory/v2/overview-stats`);
       if (response.data.success) {
         setStats(response.data.stats);
       }
