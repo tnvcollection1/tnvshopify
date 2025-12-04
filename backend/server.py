@@ -3765,11 +3765,22 @@ async def get_stock_stats_with_values(
             out_of_stock_count += 1
             out_of_stock_value += customer.get('total_spent', 0)  # Full order value if nothing available
     
+    # Get store currency
+    store_config = await db.store_config.find_one(
+        {"store_name": store_name if store_name and store_name != "all" else "tnvcollectionpk"},
+        {"_id": 0, "currency": 1, "currency_symbol": 1}
+    )
+    
+    currency = "PKR"  # Default
+    if store_config:
+        currency = store_config.get("currency", "PKR")
+    
     return {
         "in_stock": in_stock_count,
         "in_stock_value": round(in_stock_value, 2),
         "out_of_stock": out_of_stock_count,
-        "out_of_stock_value": round(out_of_stock_value, 2)
+        "out_of_stock_value": round(out_of_stock_value, 2),
+        "currency": currency
     }
 
 
