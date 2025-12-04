@@ -54,6 +54,7 @@ class InventoryItemUpdate(BaseModel):
     status: Optional[str] = None
     order_number: Optional[str] = None
     collection: Optional[str] = None
+    quantity: Optional[int] = None
 
 
 class DeliveryStatusUpdate(BaseModel):
