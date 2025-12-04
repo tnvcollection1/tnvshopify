@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { Package, DollarSign, TrendingUp, ShoppingBag, Palette, Ruler } from 'lucide-react';
+import { Package, DollarSign, TrendingUp, ShoppingBag, Palette, Ruler, X, ExternalLink } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+import { Button } from './ui/button';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -24,6 +26,13 @@ const InventoryOverview = () => {
     by_color: []
   });
   const [loading, setLoading] = useState(true);
+  const [detailModal, setDetailModal] = useState({
+    open: false,
+    category: '',
+    title: '',
+    data: null,
+    loading: false
+  });
 
   useEffect(() => {
     fetchInventoryStats();
