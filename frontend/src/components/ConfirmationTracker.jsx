@@ -808,4 +808,71 @@ const ConfirmationTracker = () => {
   );
 };
 
+      {/* Bulk WhatsApp Dialog */}
+      <Dialog open={bulkWhatsAppDialog} onOpenChange={setBulkWhatsAppDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send WhatsApp Messages</DialogTitle>
+            <DialogDescription>
+              Send message to {selectedOrders.length} selected customer{selectedOrders.length > 1 ? 's' : ''}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Message Template
+              </label>
+              <Select value={whatsappTemplate} onValueChange={setWhatsappTemplate}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="order_ready">
+                    ✅ Order Ready - "Your order is ready! Confirm within 24 hours"
+                  </SelectItem>
+                  <SelectItem value="flash_sale">
+                    ⚡ Flash Sale - "Limited time: 20% off on your favorites!"
+                  </SelectItem>
+                  <SelectItem value="stock_alert">
+                    📦 Stock Alert - "Items you wanted are back in stock"
+                  </SelectItem>
+                  <SelectItem value="payment_reminder">
+                    💰 Payment Reminder - "Complete your pending order"
+                  </SelectItem>
+                  <SelectItem value="new_arrivals">
+                    🆕 New Arrivals - "Check out our latest collection"
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-900">
+                <strong>Note:</strong> Messages will be sent to customers with valid phone numbers who haven't been messaged yet.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setBulkWhatsAppDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendBulkWhatsApp}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Send Messages
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
 export default ConfirmationTracker;
