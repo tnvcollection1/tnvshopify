@@ -122,12 +122,12 @@ const InventoryOverview = () => {
           </Card>
         </div>
 
-        {/* SKU Status Breakdown - Matched with Shopify Orders */}
+        {/* SKU Status Breakdown - By TCS Tracking & Fulfillment */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            📦 SKU Status by Order Delivery
+            📦 Inventory by Order Status (TCS Tracking Based)
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* In Stock (No Order Match) */}
             <Card className="border-gray-200 shadow-lg bg-gradient-to-br from-gray-50 to-gray-100">
               <CardHeader className="pb-3">
