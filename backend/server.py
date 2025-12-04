@@ -2539,6 +2539,138 @@ async def get_all_items_detail(
                     "order_number": order.get("order_number"),
                     "customer": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
                     "tracking_number": order.get("tracking_number"),
+
+
+@api_router.get("/inventory/v2/search")
+async def search_inventory(q: str):
+    """Search inventory by SKU, order number, collection, or customer name"""
+    try:
+        if not q or len(q) < 2:
+            return {
+                "success": False,
+                "message": "Search query must be at least 2 characters"
+            }
+        
+        search_query = q.strip()
+        
+        # Search in inventory_v2 collection
+        # Create a case-insensitive regex pattern
+        regex_pattern = {"$regex": search_query, "$options": "i"}
+        
+        # Search by SKU or collection
+        inventory_items = await db.inventory_v2.find({
+            "$or": [
+                {"sku": regex_pattern},
+                {"collection": regex_pattern},
+                {"order_number": regex_pattern}
+            ]
+        }, {
+            "_id": 0,
+            "sku": 1,
+            "cost": 1,
+            "sale_price": 1,
+            "order_number": 1,
+            "collection": 1
+        }).to_list(100)
+        
+        # Search in customers collection for order numbers or customer names
+        customer_orders = await db.customers.find({
+            "$or": [
+                {"order_number": regex_pattern},
+                {"first_name": regex_pattern},
+                {"last_name": regex_pattern},
+                {"tracking_number": regex_pattern}
+            ]
+        }, {
+            "_id": 0,
+            "order_number": 1,
+            "order_skus": 1,
+            "first_name": 1,
+            "last_name": 1,
+            "tracking_number": 1,
+            "total_spent": 1,
+            "delivery_status": 1
+        }).to_list(50)
+        
+        # Create a mapping of SKUs to orders
+        sku_to_orders = {}
+        for order in customer_orders:
+            for sku in order.get('order_skus', []):
+                sku_upper = sku.upper().strip()
+                if sku_upper not in sku_to_orders:
+                    sku_to_orders[sku_upper] = []
+                sku_to_orders[sku_upper].append({
+                    "order_number": order.get("order_number"),
+                    "customer": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                    "tracking_number": order.get("tracking_number"),
+                    "delivery_status": order.get("delivery_status"),
+                    "total_spent": order.get("total_spent", 0)
+                })
+        
+        # If searching by order number or customer name, find related SKUs
+        if customer_orders:
+            order_skus = set()
+            for order in customer_orders:
+                order_skus.update([sku.upper().strip() for sku in order.get('order_skus', [])])
+            
+            # Get inventory items for these SKUs
+            additional_items = await db.inventory_v2.find({
+                "sku": {"$in": list(order_skus)}
+            }, {
+                "_id": 0,
+                "sku": 1,
+                "cost": 1,
+                "sale_price": 1,
+                "order_number": 1,
+                "collection": 1
+            }).to_list(100)
+            
+            # Merge with existing inventory items (avoid duplicates)
+            existing_skus = {item.get('sku') for item in inventory_items}
+            for item in additional_items:
+                if item.get('sku') not in existing_skus:
+                    inventory_items.append(item)
+        
+        # Add order information to inventory items
+        results = []
+        for item in inventory_items:
+            sku_upper = item.get('sku', '').upper().strip()
+            item['orders'] = sku_to_orders.get(sku_upper, [])
+            results.append(item)
+        
+        # Sort by relevance (exact match first, then partial match)
+        def relevance_score(item):
+            sku = item.get('sku', '').lower()
+            collection = item.get('collection', '').lower()
+            query_lower = search_query.lower()
+            
+            if sku == query_lower:
+                return 0  # Exact SKU match
+            elif sku.startswith(query_lower):
+                return 1  # SKU starts with query
+            elif query_lower in sku:
+                return 2  # SKU contains query
+            elif collection == query_lower:
+                return 3  # Exact collection match
+            elif query_lower in collection:
+                return 4  # Collection contains query
+            else:
+                return 5  # Other matches
+        
+        results.sort(key=relevance_score)
+        
+        return {
+            "success": True,
+            "query": search_query,
+            "total_results": len(results),
+            "items": results[:100]  # Limit to 100 results
+        }
+    
+    except Exception as e:
+        logger.error(f"Error searching inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
                     "delivery_status": order.get("delivery_status"),
                     "total_spent": order.get("total_spent", 0)
                 })
