@@ -740,6 +740,12 @@ const DispatchTracker = () => {
                         <TableCell className="font-semibold text-red-600">
                           Rs. {order.payment_balance?.toFixed(2) || "0.00"}
                         </TableCell>
+                        <TableCell className="font-semibold text-orange-600">
+                          Rs. {order.cost?.toFixed(2) || "0.00"}
+                        </TableCell>
+                        <TableCell className="font-semibold text-green-700">
+                          Rs. {order.profit?.toFixed(2) || "0.00"}
+                        </TableCell>
                         <TableCell className="text-sm text-gray-600">
                           Rs. {order.delivery_charges?.toFixed(2) || "0.00"}
                         </TableCell>
