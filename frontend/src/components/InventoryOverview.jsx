@@ -239,7 +239,10 @@ const InventoryOverview = () => {
         <div className="mb-8">
           <h2 className="text-xl font-bold text-gray-800 mb-3">🏷️ Inventory SKU Sale Prices</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="border-cyan-200 shadow-lg bg-gradient-to-br from-cyan-50 to-cyan-100">
+            <Card 
+              className="border-cyan-200 shadow-lg bg-gradient-to-br from-cyan-50 to-cyan-100 cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={() => openDetailModal('all_items', '🏷️ Inventory SKU Sale Prices - Detailed View')}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardDescription className="text-cyan-700 font-semibold">Inventory Sale Value</CardDescription>
@@ -251,11 +254,14 @@ const InventoryOverview = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-cyan-600">Based on SKU sale prices</p>
-                <p className="text-xs text-cyan-500 mt-1">{stats.items_with_sale_price || 0} items with sale price</p>
+                <p className="text-xs text-cyan-500 mt-1">Click to view {stats.items_with_sale_price || 0} items</p>
               </CardContent>
             </Card>
 
-            <Card className="border-teal-200 shadow-lg bg-gradient-to-br from-teal-50 to-teal-100">
+            <Card 
+              className="border-teal-200 shadow-lg bg-gradient-to-br from-teal-50 to-teal-100 cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={() => openDetailModal('all_items', '🏷️ Inventory SKU Sale Prices - Detailed View')}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardDescription className="text-teal-700 font-semibold">Inventory Profit</CardDescription>
@@ -269,10 +275,14 @@ const InventoryOverview = () => {
                 <p className="text-sm text-teal-600">
                   {stats.total_cost > 0 ? `${(((stats.inventory_profit || 0) / stats.total_cost) * 100).toFixed(1)}% Margin` : 'N/A'}
                 </p>
+                <p className="text-xs text-teal-500 mt-1 italic">Click to view details</p>
               </CardContent>
             </Card>
 
-            <Card className="border-indigo-200 shadow-lg bg-gradient-to-br from-indigo-50 to-indigo-100">
+            <Card 
+              className="border-indigo-200 shadow-lg bg-gradient-to-br from-indigo-50 to-indigo-100 cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={() => openDetailModal('all_items', '🏷️ Inventory SKU Sale Prices - Detailed View')}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardDescription className="text-indigo-700 font-semibold">Value Difference</CardDescription>
