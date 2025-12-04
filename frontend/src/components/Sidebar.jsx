@@ -60,6 +60,13 @@ const Sidebar = () => {
       ]
     },
     {
+      title: 'MARKETING',
+      items: [
+        { icon: Target, label: 'Campaigns', path: '/campaigns' },
+        { icon: Zap, label: 'Flash Sales', path: '/flash-sales' },
+      ]
+    },
+    {
       title: 'INSIGHTS',
       items: [
         { icon: BarChart3, label: 'Reports', path: '/reports' },
