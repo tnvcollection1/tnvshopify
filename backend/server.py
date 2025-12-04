@@ -108,6 +108,8 @@ class Customer(BaseModel):
     cod_remittance_amount: Optional[float] = None  # Amount remitted to merchant
     abandoned_checkout: Optional[bool] = None  # Whether customer has abandoned checkouts
     abandoned_checkout_value: Optional[float] = None  # Value of abandoned items
+    cost: Optional[float] = None  # Total cost from inventory (sum of all SKU costs)
+    profit: Optional[float] = None  # Total profit (sum of all SKU profits)
 
 
 class Agent(BaseModel):
