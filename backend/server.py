@@ -1874,6 +1874,59 @@ inventory_manager = InventoryManager(db)
 # NEW INVENTORY MANAGEMENT API
 # ========================================
 
+@api_router.get("/inventory/v2/stats")
+async def get_inventory_stats():
+    """Get financial stats for inventory"""
+    try:
+        # Get all inventory items
+        all_items = await db.inventory_v2.find({}, {"_id": 0}).to_list(10000)
+        
+        # Calculate totals
+        total_cost = sum(item.get('cost', 0) for item in all_items)
+        total_sale_value = sum(item.get('sale_price', 0) for item in all_items if item.get('sale_price', 0) > 0)
+        total_profit = sum(item.get('profit', 0) for item in all_items if item.get('profit', 0) > 0)
+        
+        # Count by status
+        in_stock_count = len([item for item in all_items if item.get('status') == 'in_stock'])
+        in_transit_count = len([item for item in all_items if item.get('status') == 'in_transit'])
+        delivered_count = len([item for item in all_items if item.get('status') == 'delivered'])
+        
+        # Get today's orders (items created today)
+        from datetime import datetime, timezone
+        today = datetime.now(timezone.utc).date()
+        today_items = [item for item in all_items if datetime.fromisoformat(item.get('created_at', '')).date() == today]
+        today_orders_count = len(today_items)
+        
+        # Get orders from customers
+        customers_with_orders = await db.customers.find(
+            {"order_skus": {"$exists": True, "$ne": []}},
+            {"_id": 0, "delivery_status": 1}
+        ).to_list(50000)
+        
+        # Count transit orders (not delivered)
+        transit_orders = len([c for c in customers_with_orders if c.get('delivery_status') and c.get('delivery_status') not in ['DELIVERED', 'RETURN_IN_PROCESS']])
+        delivered_orders = len([c for c in customers_with_orders if c.get('delivery_status') == 'DELIVERED'])
+        
+        return {
+            "success": True,
+            "stats": {
+                "total_inventory_items": len(all_items),
+                "total_cost": round(total_cost, 2),
+                "total_sale_value": round(total_sale_value, 2),
+                "total_profit": round(total_profit, 2),
+                "in_stock_count": in_stock_count,
+                "in_transit_count": in_transit_count,
+                "delivered_count": delivered_count,
+                "today_orders": today_orders_count,
+                "transit_orders": transit_orders,
+                "delivered_orders": delivered_orders
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error fetching inventory stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.get("/inventory/v2")
 async def get_all_inventory_items(store_name: str = None, status: str = None):
     """Get all inventory items with filtering"""
