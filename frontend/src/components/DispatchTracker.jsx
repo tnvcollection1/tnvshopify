@@ -174,36 +174,29 @@ const DispatchTracker = () => {
       params.append("page", currentPage);
       params.append("limit", "100");
 
-      // Fetch both orders and count
-      const [ordersResponse, countResponse] = await Promise.all([
+      // Fetch orders, count, and stats
+      const [ordersResponse, statsResponse] = await Promise.all([
         axios.get(`${API}/customers?${params.toString()}`),
-        axios.get(`${API}/customers/count?${params.toString()}`)
+        axios.get(`${API}/customers/stats?${params.toString()}`)
       ]);
       
       const allOrders = Array.isArray(ordersResponse.data) ? ordersResponse.data : ordersResponse.data.customers || [];
-      const total = countResponse.data.total || 0;
+      const statsData = statsResponse.data;
       
       setOrders(allOrders);
       
-      // Calculate stats - use actual total from database
-      const delivered = allOrders.filter(c => c.delivery_status === "DELIVERED").length;
-      const inTransit = allOrders.filter(c => c.delivery_status === "IN_TRANSIT" || c.delivery_status === "OUT_FOR_DELIVERY").length;
-      const pending = allOrders.filter(c => !c.delivery_status || c.delivery_status === "PENDING" || c.delivery_status === "UNKNOWN").length;
-      const returned = allOrders.filter(c => c.delivery_status === "RETURNED").length;
-      const paymentReceived = allOrders.filter(c => c.cod_payment_status === "RECEIVED" || c.payment_status === "paid").length;
-      const paymentPending = allOrders.filter(c => c.cod_payment_status === "PENDING" || c.payment_status === "pending" || !c.cod_payment_status).length;
-      
+      // Use stats from backend (calculated from ALL filtered orders)
       setStats({
-        total: total,  // Show actual total from database
-        delivered,
-        inTransit,
-        pending,
-        returned,
-        paymentReceived,
-        paymentPending,
+        total: statsData.total || 0,
+        delivered: statsData.delivered || 0,
+        inTransit: statsData.inTransit || 0,
+        pending: statsData.pending || 0,
+        returned: statsData.returned || 0,
+        paymentReceived: statsData.paymentReceived || 0,
+        paymentPending: statsData.paymentPending || 0,
       });
       
-      setTotalPages(Math.ceil(total / 100));
+      setTotalPages(Math.ceil(statsData.total / 100));
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
