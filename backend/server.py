@@ -1633,11 +1633,24 @@ async def sync_all_tcs_deliveries():
                             
                                 if order_skus and store_name:
                                     for sku_data in order_skus:
-                                        sku = sku_data.get('sku')
-                                        quantity = sku_data.get('quantity', 1)
+                                        # Handle both string SKU and dict with sku/quantity
+                                        if isinstance(sku_data, str):
+                                            sku = sku_data
+                                            quantity = 1
+                                        else:
+                                            sku = sku_data.get('sku')
+                                            quantity = sku_data.get('quantity', 1)
                                         
                                         if sku:
+                                            # Update old inventory_items collection
                                             await db.inventory_items.update_one(
+                                                {"sku": sku.upper(), "store_name": store_name},
+                                                {"$inc": {"quantity": quantity}},
+                                                upsert=False
+                                            )
+                                            
+                                            # Also update new inventory_v2 collection
+                                            await db.inventory_v2.update_one(
                                                 {"sku": sku.upper(), "store_name": store_name},
                                                 {"$inc": {"quantity": quantity}},
                                                 upsert=False
