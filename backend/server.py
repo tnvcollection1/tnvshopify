@@ -1891,24 +1891,30 @@ async def get_inventory_overview_stats():
             {"$sort": {"count": -1}}
         ]
         
-        # Extract size from SKU
-        size_pipeline = [
-            {"$project": {
-                "size": {
-                    "$let": {
-                        "vars": {
-                            "parts": {"$split": ["$sku", "-"]}
-                        },
-                        "in": {"$arrayElemAt": ["$$parts", -1]}
-                    }
-                }
-            }},
-            {"$group": {
-                "_id": "$size",
-                "count": {"$sum": 1}
-            }},
-            {"$sort": {"_id": 1}}
-        ]
+        # Extract size from SKU (get last numeric part, typically shoe size)
+        # We'll do this in Python for better control
+        all_items_for_agg = await db.inventory_v2.find({}, {"_id": 0, "sku": 1}).to_list(10000)
+        
+        size_counts = {}
+        for item in all_items_for_agg:
+            sku = item.get('sku', '')
+            parts = sku.split('-')
+            # Look for numeric sizes (typically 20-50 for shoes)
+            size_found = None
+            for part in reversed(parts):  # Start from end
+                # Check if it's a number or starts with a number
+                import re
+                size_match = re.match(r'^(\d+(?:\.\d+)?)', part.strip())
+                if size_match:
+                    size_num = float(size_match.group(1))
+                    if 20 <= size_num <= 50:  # Typical shoe size range
+                        size_found = str(int(size_num))
+                        break
+            
+            if size_found:
+                size_counts[size_found] = size_counts.get(size_found, 0) + 1
+        
+        by_size = [{"_id": size, "count": count} for size, count in sorted(size_counts.items(), key=lambda x: float(x[0]) if x[0].replace('.','').isdigit() else 0)]
         
         # Extract color from SKU
         color_pipeline = [
