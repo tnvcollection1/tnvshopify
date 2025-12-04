@@ -132,6 +132,22 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/campaigns" 
+        element={
+          <ProtectedRoute>
+            <InventoryCampaignManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/flash-sales" 
+        element={
+          <ProtectedRoute>
+            <FlashSaleManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/reports" 
         element={
           <ProtectedRoute>
