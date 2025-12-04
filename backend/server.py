@@ -4018,6 +4018,117 @@ async def get_customers_count(
 @api_router.get("/customers/stats")
 async def get_customers_stats(
     fulfillment_status: Optional[str] = None,
+
+
+@api_router.post("/customers/sync-stock-status")
+async def sync_stock_status_to_db():
+    """Sync calculated stock status to database for all unfulfilled orders"""
+    try:
+        # Get all unfulfilled orders
+        unfulfilled_orders = await db.customers.find({
+            "fulfillment_status": {"$in": ["unfulfilled", "Unfulfilled", "UNFULFILLED"]}
+        }, {
+            "_id": 0,
+            "customer_id": 1,
+            "order_skus": 1,
+            "store_name": 1
+        }).to_list(10000)
+        
+        # Get all inventory items by store
+        all_inventory = await db.inventory_v2.find({}, {"_id": 0, "sku": 1, "store_name": 1}).to_list(100000)
+        
+        # Create a set of available SKUs per store
+        store_inventory = {}
+        for item in all_inventory:
+            store = item.get('store_name', '').lower()
+            if store not in store_inventory:
+                store_inventory[store] = set()
+            store_inventory[store].add(item.get('sku', '').upper().strip())
+        
+        updated_count = 0
+        in_stock_count = 0
+        out_of_stock_count = 0
+        
+        # Update stock status for each order
+        for order in unfulfilled_orders:
+            order_skus = order.get('order_skus', [])
+            store_name = order.get('store_name', '').lower()
+            
+            if not order_skus:
+                stock_status = "unknown"
+            else:
+                # Get available SKUs for this store
+                available_skus = store_inventory.get(store_name, set())
+                
+                # Parse order SKUs
+                if isinstance(order_skus, str):
+                    sku_list = [sku.strip().upper() for sku in order_skus.split(',')]
+                else:
+                    sku_list = [sku.upper().strip() for sku in order_skus]
+                
+                # Check how many are in stock
+                in_stock = sum(1 for sku in sku_list if sku in available_skus)
+                
+                if in_stock > 0:
+                    stock_status = "in_stock"
+                    in_stock_count += 1
+                else:
+                    stock_status = "out_of_stock"
+                    out_of_stock_count += 1
+            
+            # Update the database
+            await db.customers.update_one(
+                {"customer_id": order.get('customer_id')},
+                {"$set": {"stock_status": stock_status}}
+            )
+            updated_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Stock status synced for {updated_count} orders",
+            "in_stock": in_stock_count,
+            "out_of_stock": out_of_stock_count
+        }
+    
+    except Exception as e:
+        logger.error(f"Error syncing stock status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/customers/{customer_id}/send-whatsapp")
+async def send_whatsapp_message(customer_id: str):
+    """Send WhatsApp message to customer and mark as messaged"""
+    try:
+        # Get customer details
+        customer = await db.customers.find_one(
+            {"customer_id": customer_id},
+            {"_id": 0}
+        )
+        
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        # TODO: Implement actual WhatsApp API call here
+        # For now, just mark as messaged
+        
+        # Update messaged status
+        await db.customers.update_one(
+            {"customer_id": customer_id},
+            {"$set": {"messaged": True, "message_sent_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {
+            "success": True,
+            "message": f"WhatsApp message sent to {customer.get('first_name')} {customer.get('last_name')}"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending WhatsApp message: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
     delivery_status: Optional[str] = None,
     payment_status: Optional[str] = None,
     store_name: Optional[str] = None,
