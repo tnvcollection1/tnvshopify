@@ -3322,37 +3322,37 @@ async def get_customers(
         # Calculate stock status for each customer
         filtered_customers = []
         for customer in customers:
-                order_skus = customer.get('order_skus', [])
-                # Handle both string format and dict format
-                if order_skus:
-                    if isinstance(order_skus[0], str):
-                        order_sku_list = [sku.upper() for sku in order_skus]
-                    else:
-                        order_sku_list = [sku.get('sku', '').upper() if isinstance(sku, dict) else str(sku).upper() for sku in order_skus]
+            order_skus = customer.get('order_skus', [])
+            # Handle both string format and dict format
+            if order_skus:
+                if isinstance(order_skus[0], str):
+                    order_sku_list = [sku.upper() for sku in order_skus]
                 else:
-                    order_sku_list = []
+                    order_sku_list = [sku.get('sku', '').upper() if isinstance(sku, dict) else str(sku).upper() for sku in order_skus]
+            else:
+                order_sku_list = []
+            
+            if not order_sku_list:
+                customer['stock_status'] = "unknown"
+            else:
+                in_stock = sum(1 for sku in order_sku_list if sku in stock_skus)
                 
-                if not order_sku_list:
-                    customer['stock_status'] = "unknown"
+                if in_stock == len(order_sku_list):
+                    customer['stock_status'] = "in_stock"
+                elif in_stock == 0:
+                    customer['stock_status'] = "out_of_stock"
                 else:
-                    in_stock = sum(1 for sku in order_sku_list if sku in stock_skus)
-                    
-                    if in_stock == len(order_sku_list):
-                        customer['stock_status'] = "in_stock"
-                    elif in_stock == 0:
-                        customer['stock_status'] = "out_of_stock"
-                    else:
-                        customer['stock_status'] = "partial"
-                
-                # Filter by stock availability if specified
-                if stock_availability:
-                    if customer['stock_status'] == stock_availability:
-                        filtered_customers.append(customer)
-                        # Stop once we have enough for this page
-                        if len(filtered_customers) >= limit:
-                            break
-                else:
+                    customer['stock_status'] = "partial"
+            
+            # Filter by stock availability if specified
+            if stock_availability:
+                if customer['stock_status'] == stock_availability:
                     filtered_customers.append(customer)
+                    # Stop once we have enough for this page
+                    if len(filtered_customers) >= limit:
+                        break
+            else:
+                filtered_customers.append(customer)
             
             return filtered_customers[:limit]
     
