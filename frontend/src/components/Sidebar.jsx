@@ -53,6 +53,7 @@ const Sidebar = () => {
       title: 'MANAGEMENT',
       items: [
         { icon: Package, label: 'Inventory', path: '/inventory' },
+        { icon: BarChart3, label: 'Inventory Overview', path: '/inventory-overview' },
       ]
     },
     {
