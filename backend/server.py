@@ -3445,7 +3445,7 @@ async def get_customers_stats(
     end_date: Optional[str] = None
 ):
     """
-    Get detailed stats breakdown for customers matching filters
+    Get detailed stats breakdown for customers matching filters using MongoDB aggregation
     """
     query = {}
     
@@ -3505,31 +3505,79 @@ async def get_customers_stats(
             {'tracking_number': search_regex}
         ]
     
-    # Fetch all matching customers (we need to calculate stats from all of them)
-    customers = await db.customers.find(query, {
-        "_id": 0,
-        "delivery_status": 1,
-        "payment_status": 1,
-        "cod_payment_status": 1
-    }).to_list(50000)
+    # Use aggregation pipeline for efficient stats calculation
+    pipeline = [
+        {"$match": query},
+        {"$facet": {
+            "total": [{"$count": "count"}],
+            "delivered": [
+                {"$match": {"delivery_status": "DELIVERED"}},
+                {"$count": "count"}
+            ],
+            "inTransit": [
+                {"$match": {"delivery_status": {"$in": ["IN_TRANSIT", "OUT_FOR_DELIVERY"]}}},
+                {"$count": "count"}
+            ],
+            "pending": [
+                {"$match": {
+                    "$or": [
+                        {"delivery_status": {"$exists": False}},
+                        {"delivery_status": None},
+                        {"delivery_status": {"$in": ["PENDING", "UNKNOWN"]}}
+                    ]
+                }},
+                {"$count": "count"}
+            ],
+            "returned": [
+                {"$match": {"delivery_status": "RETURNED"}},
+                {"$count": "count"}
+            ],
+            "paymentReceived": [
+                {"$match": {
+                    "$or": [
+                        {"cod_payment_status": "RECEIVED"},
+                        {"payment_status": "paid"}
+                    ]
+                }},
+                {"$count": "count"}
+            ],
+            "paymentPending": [
+                {"$match": {
+                    "$or": [
+                        {"cod_payment_status": "PENDING"},
+                        {"payment_status": "pending"},
+                        {"cod_payment_status": {"$exists": False}},
+                        {"cod_payment_status": None}
+                    ]
+                }},
+                {"$count": "count"}
+            ]
+        }}
+    ]
     
-    # Calculate stats
-    total = len(customers)
-    delivered = sum(1 for c in customers if c.get('delivery_status') == "DELIVERED")
-    in_transit = sum(1 for c in customers if c.get('delivery_status') in ["IN_TRANSIT", "OUT_FOR_DELIVERY"])
-    pending = sum(1 for c in customers if not c.get('delivery_status') or c.get('delivery_status') in ["PENDING", "UNKNOWN"])
-    returned = sum(1 for c in customers if c.get('delivery_status') == "RETURNED")
-    payment_received = sum(1 for c in customers if c.get('cod_payment_status') == "RECEIVED" or c.get('payment_status') == "paid")
-    payment_pending = sum(1 for c in customers if c.get('cod_payment_status') == "PENDING" or c.get('payment_status') == "pending" or not c.get('cod_payment_status'))
+    result = await db.customers.aggregate(pipeline).to_list(1)
+    
+    if not result:
+        return {
+            "total": 0,
+            "delivered": 0,
+            "inTransit": 0,
+            "pending": 0,
+            "returned": 0,
+            "paymentReceived": 0,
+            "paymentPending": 0
+        }
+    
+    stats = result[0]
     
     return {
-        "total": total,
-        "delivered": delivered,
-        "inTransit": in_transit,
-        "pending": pending,
-        "returned": returned,
-        "paymentReceived": payment_received,
-        "paymentPending": payment_pending
+        "total": stats["total"][0]["count"] if stats["total"] else 0,
+        "delivered": stats["delivered"][0]["count"] if stats["delivered"] else 0,
+        "inTransit": stats["inTransit"][0]["count"] if stats["inTransit"] else 0,
+        "pending": stats["pending"][0]["count"] if stats["pending"] else 0,
+        "returned": stats["returned"][0]["count"] if stats["returned"] else 0,
+        "paymentReceived": stats["paymentReceived"][0]["count"] if stats["paymentReceived"] else 0,
+        "paymentPending": stats["paymentPending"][0]["count"] if stats["paymentPending"] else 0
     }
 
 
