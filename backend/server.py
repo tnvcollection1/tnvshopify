@@ -1989,7 +1989,7 @@ async def get_inventory_overview_stats(
         
         # Get unfulfilled orders from today
         unfulfilled_today = await db.customers.find({
-            "fulfillment_status": {"$in": ["UNFULFILLED", None]},
+            "fulfillment_status": {"$in": ["unfulfilled", "Unfulfilled", "UNFULFILLED", None]},
             "order_skus": {"$exists": True, "$ne": []},
             "created_at": {"$exists": True}
         }, {
@@ -2000,16 +2000,16 @@ async def get_inventory_overview_stats(
             "created_at": 1
         }).to_list(10000)
         
-        # Get orders with TCS tracking
+        # Get orders with TCS tracking (using tracking_number field)
         orders_with_tracking = await db.customers.find({
-            "tcs_tracking_number": {"$exists": True, "$ne": None},
+            "tracking_number": {"$exists": True, "$ne": None, "$ne": ""},
             "order_skus": {"$exists": True, "$ne": []}
         }, {
             "_id": 0,
             "order_number": 1,
             "order_skus": 1,
             "delivery_status": 1,
-            "tcs_tracking_number": 1,
+            "tracking_number": 1,
             "total_spent": 1,
             "payment_date": 1,
             "cod_payment_status": 1,
