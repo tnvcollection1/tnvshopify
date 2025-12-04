@@ -3318,10 +3318,10 @@ async def get_customers(
         stock_skus = set()
         stock_skus.update(item["sku"].upper() for item in inventory_v2_items)
         stock_skus.update(item["sku"].upper() for item in stock_items)
-            
-            # Calculate stock status for each customer
-            filtered_customers = []
-            for customer in customers:
+        
+        # Calculate stock status for each customer
+        filtered_customers = []
+        for customer in customers:
                 order_skus = customer.get('order_skus', [])
                 # Handle both string format and dict format
                 if order_skus:
