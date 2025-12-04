@@ -68,6 +68,7 @@ const InventoryV2 = () => {
   const [newItem, setNewItem] = useState({
     sku: '',
     product_name: '',
+    collection: '',
     cost: '',
     order_number: '',
     store_name: 'tnvcollectionpk'
