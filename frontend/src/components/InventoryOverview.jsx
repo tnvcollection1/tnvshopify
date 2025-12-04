@@ -145,14 +145,14 @@ const InventoryOverview = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Sale Value:</span>
-                    <span className="font-semibold text-gray-700">
-                      Rs. {stats.in_stock.sale_value.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                    <span className="font-semibold text-gray-500 italic">
+                      Pending Orders
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Profit:</span>
-                    <span className="font-semibold text-green-600">
-                      Rs. {stats.in_stock.profit.toLocaleString('en-PK', { minimumFractionDigits: 2 })}
+                    <span className="font-semibold text-gray-500 italic">
+                      Pending Orders
                     </span>
                   </div>
                 </div>
