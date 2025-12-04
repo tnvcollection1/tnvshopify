@@ -240,6 +240,13 @@ const ConfirmationTracker = () => {
             <h1 className="text-2xl font-semibold text-gray-900">Confirmation Tracker</h1>
             <p className="text-sm text-gray-500 mt-1">Call customers and confirm unfulfilled orders before dispatch</p>
           </div>
+          <Button
+            onClick={handleSyncStockStatus}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Package className="w-4 h-4 mr-2" />
+            Sync Stock Status
+          </Button>
         </div>
 
         {/* Stats Cards */}
