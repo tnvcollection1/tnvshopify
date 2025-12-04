@@ -207,7 +207,8 @@ const InventoryV2 = () => {
           cost: parseFloat(editingItem.cost),
           sale_price: parseFloat(editingItem.sale_price),
           status: editingItem.status,
-          order_number: editingItem.order_number
+          order_number: editingItem.order_number,
+          collection: editingItem.collection
         })
       });
       
