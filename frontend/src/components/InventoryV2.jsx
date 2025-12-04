@@ -53,6 +53,10 @@ const InventoryV2 = () => {
     status: 'all'
   });
   
+  // Selection state
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  
   // Dialogs
   const [addDialog, setAddDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
