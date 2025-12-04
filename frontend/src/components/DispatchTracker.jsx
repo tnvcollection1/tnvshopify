@@ -788,6 +788,14 @@ const DispatchTracker = () => {
                   ) : (
                     orders.map((order) => (
                       <TableRow key={order.customer_id} className="hover:bg-gray-50">
+                        <TableCell>
+                          <input
+                            type="checkbox"
+                            checked={selectedOrders.includes(order.customer_id)}
+                            onChange={() => handleSelectOrder(order.customer_id)}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                        </TableCell>
                         <TableCell className="text-sm text-gray-600">
                           {order.last_order_date
                             ? new Date(order.last_order_date).toLocaleDateString()
