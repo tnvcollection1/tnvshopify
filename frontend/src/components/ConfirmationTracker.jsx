@@ -187,6 +187,24 @@ const ConfirmationTracker = () => {
     return <Badge variant="outline" className={`${variant} font-medium text-xs`}>{status || "NOT_CALLED"}</Badge>;
   };
 
+  const getStockBadge = (status) => {
+    const variants = {
+      in_stock: "bg-green-100 text-green-800 border-green-200",
+      partial: "bg-yellow-100 text-yellow-800 border-yellow-200",
+      out_of_stock: "bg-red-100 text-red-800 border-red-200",
+      unknown: "bg-gray-100 text-gray-600 border-gray-200",
+    };
+    const labels = {
+      in_stock: "✅ In Stock",
+      partial: "⚠️ Partial",
+      out_of_stock: "❌ Out of Stock",
+      unknown: "Unknown",
+    };
+    const variant = variants[status] || variants.unknown;
+    const label = labels[status] || "Unknown";
+    return <Badge variant="outline" className={`${variant} font-medium text-xs`}>{label}</Badge>;
+  };
+
   const getConfirmationBadge = (status) => {
     const variants = {
       PENDING: "bg-gray-100 text-gray-800 border-gray-200",
