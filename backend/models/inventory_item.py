@@ -17,6 +17,7 @@ class InventoryItem(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     sku: str
     product_name: str
+    collection: Optional[str] = None  # Product collection/category
     order_number: Optional[str] = None  # Shopify order number this item is linked to
     cost: float = 0.0  # Purchase cost
     sale_price: float = 0.0  # Auto-fetched from Shopify
