@@ -4015,11 +4015,6 @@ async def get_customers_count(
     return {"total": count}
 
 
-@api_router.get("/customers/stats")
-async def get_customers_stats(
-    fulfillment_status: Optional[str] = None,
-
-
 @api_router.post("/customers/sync-stock-status")
 async def sync_stock_status_to_db():
     """Sync calculated stock status to database for all unfulfilled orders"""
