@@ -150,6 +150,22 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/segments" 
+        element={
+          <ProtectedRoute>
+            <CustomerSegmentation />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/bundles" 
+        element={
+          <ProtectedRoute>
+            <BundleCreator />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/reports" 
         element={
           <ProtectedRoute>
