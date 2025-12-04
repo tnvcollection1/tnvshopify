@@ -78,7 +78,7 @@ const ConfirmationTracker = () => {
   useEffect(() => {
     fetchOrders();
     fetchStores();
-  }, [currentPage, filters, searchQuery]);
+  }, [currentPage, filters, searchQuery, dateRange]);
 
   // Reset to page 1 when filters or search change
   useEffect(() => {
