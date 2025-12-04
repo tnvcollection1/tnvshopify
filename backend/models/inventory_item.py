@@ -23,6 +23,9 @@ class InventoryItem(BaseModel):
     sale_price: float = 0.0  # Auto-fetched from Shopify
     profit: float = 0.0  # Calculated: sale_price - cost
     
+    # Quantity tracking
+    quantity: int = 1  # Available quantity in stock
+    
     # Manual status fields
     status: str = "in_stock"  # Options: "in_stock", "in_transit", "delivered", "returned"
     delivery_timeline: List[DeliveryStatusEntry] = []  # Manual delivery status entries
