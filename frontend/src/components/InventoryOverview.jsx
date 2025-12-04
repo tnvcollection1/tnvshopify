@@ -523,15 +523,19 @@ const InventoryOverview = () => {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {stats.by_color.slice(0, 12).map((item, idx) => (
-              <Card key={idx} className="border-pink-100 hover:shadow-lg transition-shadow">
+              <Card 
+                key={idx} 
+                className="border-pink-100 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => openDetailModal('color', `🎨 Color: ${item._id || 'N/A'}`, item._id)}
+              >
                 <CardHeader className="pb-2">
                   <CardDescription className="text-xs text-pink-600 font-semibold uppercase">
                     {item._id || 'N/A'}
                   </CardDescription>
                   <CardTitle className="text-2xl font-bold text-pink-700">{item.count}</CardTitle>
+                  <p className="text-[10px] text-pink-500 italic mt-1">Click for details</p>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-xs text-gray-500">Items</p>
                 </CardContent>
               </Card>
             ))}
