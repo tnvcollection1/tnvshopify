@@ -190,6 +190,37 @@ const ConfirmationTracker = () => {
     }
   };
 
+  const handleSyncStockStatus = async () => {
+    try {
+      toast.loading("Syncing stock status for all unfulfilled orders...");
+      const response = await axios.post(`${API}/customers/sync-stock-status`);
+      
+      if (response.data.success) {
+        toast.success(
+          `Stock status synced! In Stock: ${response.data.in_stock}, Out of Stock: ${response.data.out_of_stock}`
+        );
+        await fetchOrders(); // Refresh the orders list
+      }
+    } catch (error) {
+      console.error("Error syncing stock status:", error);
+      toast.error("Failed to sync stock status");
+    }
+  };
+
+  const handleSendWhatsApp = async (customerId, customerName) => {
+    try {
+      const response = await axios.post(`${API}/customers/${customerId}/send-whatsapp`);
+      
+      if (response.data.success) {
+        toast.success(`WhatsApp message sent to ${customerName}`);
+        await fetchOrders(); // Refresh to show updated messaged status
+      }
+    } catch (error) {
+      console.error("Error sending WhatsApp:", error);
+      toast.error("Failed to send WhatsApp message");
+    }
+  };
+
   const getCallingBadge = (status) => {
     const variants = {
       NOT_CALLED: "bg-gray-100 text-gray-800 border-gray-200",
