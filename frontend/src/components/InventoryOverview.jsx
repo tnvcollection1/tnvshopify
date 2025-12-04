@@ -498,12 +498,17 @@ const InventoryOverview = () => {
           </h2>
           <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-10 gap-4">
             {stats.by_size.slice(0, 20).map((item, idx) => (
-              <Card key={idx} className="border-teal-100 hover:shadow-lg transition-shadow">
+              <Card 
+                key={idx} 
+                className="border-teal-100 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => openDetailModal('size', `📏 Size: ${item._id || 'N/A'}`, item._id)}
+              >
                 <CardHeader className="pb-2 text-center">
                   <CardDescription className="text-xs text-teal-600 font-semibold">
                     Size {item._id || 'N/A'}
                   </CardDescription>
                   <CardTitle className="text-xl font-bold text-teal-700">{item.count}</CardTitle>
+                  <p className="text-[10px] text-teal-500 italic mt-1">Click</p>
                 </CardHeader>
               </Card>
             ))}
