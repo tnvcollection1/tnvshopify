@@ -1874,6 +1874,96 @@ inventory_manager = InventoryManager(db)
 # NEW INVENTORY MANAGEMENT API
 # ========================================
 
+@api_router.get("/inventory/v2/overview-stats")
+async def get_inventory_overview_stats():
+    """Get comprehensive inventory stats with breakdowns"""
+    try:
+        # Aggregate by collection
+        collection_pipeline = [
+            {"$match": {"collection": {"$exists": True, "$ne": None}}},
+            {"$group": {
+                "_id": "$collection",
+                "count": {"$sum": 1},
+                "total_cost": {"$sum": "$cost"}
+            }},
+            {"$sort": {"count": -1}}
+        ]
+        
+        # Extract size from SKU or product name
+        size_pipeline = [
+            {"$project": {
+                "size": {
+                    "$let": {
+                        "vars": {
+                            "parts": {"$split": ["$sku", "-"]}
+                        },
+                        "in": {"$arrayElemAt": ["$$parts", -1]}
+                    }
+                }
+            }},
+            {"$group": {
+                "_id": "$size",
+                "count": {"$sum": 1}
+            }},
+            {"$sort": {"_id": 1}}
+        ]
+        
+        # Extract color from SKU
+        color_pipeline = [
+            {"$project": {
+                "color": {
+                    "$let": {
+                        "vars": {
+                            "parts": {"$split": ["$sku", "-"]}
+                        },
+                        "in": {
+                            "$cond": {
+                                "if": {"$gte": [{"$size": "$$parts"}, 2]},
+                                "then": {"$arrayElemAt": ["$$parts", 1]},
+                                "else": "Unknown"
+                            }
+                        }
+                    }
+                }
+            }},
+            {"$group": {
+                "_id": "$color",
+                "count": {"$sum": 1}
+            }},
+            {"$sort": {"count": -1}}
+        ]
+        
+        # Run aggregations
+        by_collection = await db.inventory_v2.aggregate(collection_pipeline).to_list(100)
+        by_size = await db.inventory_v2.aggregate(size_pipeline).to_list(100)
+        by_color = await db.inventory_v2.aggregate(color_pipeline).to_list(100)
+        
+        # Get basic stats
+        all_items = await db.inventory_v2.find({}, {"_id": 0, "cost": 1, "sale_price": 1, "profit": 1, "order_number": 1}).to_list(10000)
+        
+        total_cost = sum(item.get('cost', 0) for item in all_items)
+        total_sale_value = sum(item.get('sale_price', 0) for item in all_items if item.get('sale_price', 0) > 0)
+        total_profit = sum(item.get('profit', 0) for item in all_items if item.get('profit', 0) > 0)
+        matched_orders = len([item for item in all_items if item.get('order_number')])
+        
+        return {
+            "success": True,
+            "stats": {
+                "total_items": len(all_items),
+                "total_cost": round(total_cost, 2),
+                "total_sale_value": round(total_sale_value, 2),
+                "total_profit": round(total_profit, 2),
+                "matched_orders": matched_orders,
+                "by_collection": by_collection,
+                "by_size": by_size,
+                "by_color": by_color
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error fetching inventory overview stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.get("/inventory/v2/stats")
 async def get_inventory_stats():
     """Get financial stats for inventory"""
