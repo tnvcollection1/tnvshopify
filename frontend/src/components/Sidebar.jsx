@@ -30,13 +30,14 @@ const Sidebar = () => {
       title: 'MAIN',
       items: [
         { icon: Home, label: 'Dashboard', path: '/dashboard' },
+        { icon: Target, label: 'Marketing Dashboard', path: '/marketing', highlighted: true },
       ]
     },
     {
       title: 'OPERATIONS',
       items: [
         { icon: PhoneCall, label: 'Confirmation Tracker', path: '/confirmation' },
-        { icon: Truck, label: 'Dispatch Tracker', path: '/tracker', highlighted: true },
+        { icon: Truck, label: 'Dispatch Tracker', path: '/tracker' },
         { icon: Plane, label: 'Purchase Tracker', path: '/purchase' },
         { icon: ShoppingCart, label: 'Orders', path: '/orders' },
         { icon: Users, label: 'Customers', path: '/customers' },
