@@ -1943,7 +1943,6 @@ async def get_inventory_overview_stats():
         
         # Run aggregations
         by_collection = await db.inventory_v2.aggregate(collection_pipeline).to_list(100)
-        by_size = await db.inventory_v2.aggregate(size_pipeline).to_list(100)
         by_color = await db.inventory_v2.aggregate(color_pipeline).to_list(100)
         
         # Get all inventory items
