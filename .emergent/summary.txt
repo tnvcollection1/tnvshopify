@@ -1,218 +1,191 @@
-<analysis>**original_problem_statement**: The user initially wanted to fix issues with TCS courier tracking and payment reconciliation. This session evolved to include several new feature requests and bug fixes:
-1.  Fix the unreliable and slow COD payment sync endpoint.
-2.  Fix an issue where China Post orders were not appearing in the Purchase Tracker.
-3.  Add several payment-related fields from the TCS API to the Dispatch Tracker UI (Amount Paid, Balance, Delivery Charges, Weight, Booking Date).
-4.  Add a Payment Date column to the Dispatch Tracker.
-5.  Implement a full-featured integration with the official **Meta WhatsApp Business Platform API**, including:
-    *   Sending messages to customers from the UI.
-    *   An Inbox to view message history.
-    *   A Message Templates page to manage utility and marketing templates.
-    *   The ability to create and submit new templates for approval directly from the dashboard.
+<analysis>**original_problem_statement**: The user's initial problem was a blocked WhatsApp integration. The scope then expanded to include numerous inventory management and reporting features. The most recent requests involve adding a new Asmia store, implementing DTDC courier tracking, fixing bugs with date filtering and TCS sync, adding bulk selection to order pages, and refining the stock status and sale value calculations on the Confirmation Tracker page.
+
+**PRODUCT REQUIREMENTS**:
+1.  (IN PROGRESS) Sync ALL orders from the new Asmia Shopify store.
+2.  (NOT STARTED) Implement DTDC courier tracking using the provided TrackingMore API credentials, mirroring the existing TCS integration.
+3.  (BLOCKED) Fix the TCS sync, which isn't updating delivery statuses. This is blocked on the user providing the correct credentials.
+4.  (IN PROGRESS) Add a Select All checkbox and bulk action capabilities to all order pages (Dispatch, Confirmation, Purchase, Dashboard).
+5.  (NOT STARTED) Add a Mark as Received button in the UI for manually confirming returned orders.
+6.  (BLOCKED) Fix the original WhatsApp template creation issue. Blocked on the user providing a valid access token.
+7.  (Future) Refactor the  monolith.
+8.  (Future) Add a UI to delete old orders.
 
 **User's preferred language**: English
 
 **what currently exists?**
-- A robust and stable TCS/Shopify integration. The previously buggy COD payment sync endpoint () has been fixed to use background tasks and the correct Shopify-first logic.
-- The Purchase Tracker now correctly displays all China Post orders after a data backfill script was created and run to add the missing  field.
-- The Dispatch Tracker UI and backend  model have been updated to support and display detailed payment fields from the TCS API, including a Payment Date.
-- A comprehensive WhatsApp integration has been built:
-    - **Backend**: Services for sending utility/marketing messages (, ), webhook handlers (), and API endpoints in  for sending messages, managing templates, and fetching history.
-    - **Frontend**:
-        - A WhatsApp button in the Dispatch Tracker to send messages to customers.
-        - A WhatsApp Inbox page () to view message history.
-        - A Message Templates page () to view, manage, and create both utility and marketing templates.
-        - Sidebar navigation links for WhatsApp Inbox and Message Templates.
-- All user-provided WhatsApp credentials (Phone Number ID, WABA ID, Access Token) are stored in the  file.
+- The application has a **Dispatch Tracker** with date-reactive statistics cards and a fixed TCS sync button. The order table also filters correctly by date.
+- The **Confirmation Tracker** has been significantly enhanced. It now correctly calculates and displays In Stock and Out of Stock statuses based on the  collection. The status cards display the total sale value for each category, calculated from individual SKU prices. The currency symbol (e.g., PKR) is now dynamically fetched from a new  database collection. Date filters have also been successfully added.
+- The **inventory system** has been upgraded. The  collection schema now includes a  field, and the logic for restoring stock on returned orders has been updated to use this new schema.
+- **Multi-store support** has been initiated. A  collection was created, the Asmia store was added, and its first 50 orders were synced. The frontend store filter dropdown now correctly shows all configured stores.
+- A placeholder file for the new **DTDC integration** () has been created.
 
 **Last working item**:
-- **Last item agent was working**: The agent was debugging why creating a new WhatsApp template from the dashboard failed. It discovered the Meta API access token was invalid. After getting a new token from the user, the API returned an Unsupported post request error, indicating a permission or configuration issue with the new token, despite having the correct permission scopes (, ). The user has just provided a new, third access token from their Meta developer dashboard.
+- **Last item agent was working**: The user requested to sync ALL orders from the new Asmia Shopify store, not just the initial 50. The agent's attempt failed due to an  related to improper handling of Shopify's API pagination. The agent was in the process of fixing the pagination logic to enable a full-store sync.
 - **Status**: IN PROGRESS
 - **Agent Testing Done**: N
-- **Which testing method agent to use?**: manual testing by curl
+- **Which testing method agent to use?**: backend testing agent
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: WhatsApp template creation fails due to an invalid access token or permission issue (P0)
--   Issue 2: User request to delete old orders is pending confirmation (P1)
--   Issue 3: Large  monolith requires refactoring (P2)
--   Issue 4: User unable to upload CSV in WhatsApp section (P3)
+-   Issue 1: Sync ALL orders from the Asmia Shopify store (P0)
+-   Issue 2: TCS sync is not updating delivery status (P1)
+-   Issue 3: WhatsApp integration is blocked (P2)
 
 **Issues Detail**:
--   **Issue 1: WhatsApp template creation fails due to an invalid access token or permission issue**
-    -   **Attempted fixes**: The agent identified the initial token was expired. A second token provided by the user resulted in  errors from the Meta Graph API, even though a token debug check showed the correct permissions were granted. This suggests an issue with how the token is linked to the WhatsApp Business Account ID (WABA ID) or Phone Number ID. The user has just provided a third access token.
+-   **Issue 1: Sync ALL orders from the Asmia Shopify store**
+    -   **Attempted fixes**: The agent attempted to sync all orders but the script failed with an . The agent correctly identified that the script was not using Shopify's cursor-based pagination.
     -   **Next debug checklist**:
-        1.  Update the  in  with the newest token provided by the user in the last message.
-        2.  Restart the backend server using backend: stopped
-backend: started.
-        3.  Re-run the test to create a template using a  command to the  endpoint. Example: .
-        4.  If it still fails, use the new token to test the  command provided by the Meta developer page UI to confirm basic message sending works outside the application's code.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the final step to make the WhatsApp integration fully functional, allowing the user to manage templates directly from the application.
+        1.  Modify the Shopify sync script (likely in  or a related file).
+        2.  Implement cursor-based pagination using the  provided in Shopify's API responses to iterate through all order pages.
+        3.  Trigger the full sync for the ashmiaa store.
+        4.  Verify completion by querying the  collection in the database for  and ensuring the count is greater than 50.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will ensure the application has a complete and accurate dataset for the newly added Asmia store.
     -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Backend.
+    -   **Blocked on other issue**: None.
+
+-   **Issue 2: TCS sync is not updating delivery status**
+    -   **Attempted fixes**: A  was consulted and diagnosed the root cause as missing TCS credentials in the database.
+    -   **Next debug checklist**:
+        1.  Await user action to provide and configure the TCS credentials.
+        2.  Once credentials are provided, trigger the TCS sync again.
+        3.  Monitor backend logs and the Dispatch Tracker UI to confirm that delivery statuses are updating.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a core feature for the user's primary store () that is currently non-functional.
+    -   **Status**: BLOCKED (on user action)
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Both.
     -   **Blocked on other issue**: None.
 
--   **Issue 2: User request to delete old orders is pending confirmation**
-    -   **Attempted fixes**: None. The agent has asked for clarification.
+-   **Issue 3: WhatsApp integration is blocked**
+    -   **Attempted fixes**: The previous agent diagnosed the issue as an invalid access token and missing payment method on the user's Meta Business Account.
     -   **Next debug checklist**:
-        1.  Confirm with the user the exact cut-off date (e.g., October 1st, 2025 or 2024).
-        2.  Confirm if a backup of the deleted data is required before proceeding.
-        3.  Create a standalone Python script to perform the deletion from the  collection in MongoDB based on the  or  field.
-    -   **Why fix this issue and what will be achieved with the fix?**: It will clean up the user's database, removing irrelevant old data and potentially improving dashboard performance.
-    -   **Status**: BLOCKED (on user confirmation)
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend.
-    -   **Blocked on other issue**: None.
-
--   **Issue 3: Large  monolith requires refactoring**
-    -   **Attempted fixes**: Agent identified the need for refactoring and listed the endpoints to be moved, but did not proceed due to the size of the task and user interruptions. The file has since grown even larger with the addition of WhatsApp endpoints.
-    -   **Next debug checklist**:
-        1.  Create new files in the  directory (e.g., , , ).
-        2.  Systematically move related endpoints from  into these new router files.
-        3.  Import and include these new routers in the main  file.
-    -   **Why fix this issue and what will be achieved with the fix?**: Improves backend code maintainability, organization, and scalability.
-    -   **Status**: NOT STARTED
+        1.  Await user action to provide a new, permanent WhatsApp access token.
+        2.  Update the  in the environment.
+        3.  Restart the backend and re-test template creation.
+    -   **Why fix this issue and what will be achieved with the fix?**: This was the original feature request for the project.
+    -   **Status**: BLOCKED (on user action)
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend.
-    -   **Blocked on other issue**: None.
-
--   **Issue 4: User unable to upload CSV in WhatsApp section**
-    -   **Attempted fixes**: None in this session. This is a carry-over issue.
-    -   **Next debug checklist**: Guide the user to re-test, checking the file format and browser console for errors.
-    -   **Why fix this issue and what will be achieved with the fix?**: Enables bulk contact uploads for WhatsApp messaging.
-    -   **Status**: BLOCKED (on user feedback)
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend.
     -   **Blocked on other issue**: None.
 
 **In progress Task List**:
--   **Task 1: Complete WhatsApp Integration (P0)**
-    -   **Where to resume**: Resolve the access token issue (Issue #1).
-    -   **What will be achieved with this?**: A fully functional WhatsApp messaging and template management system integrated into the dashboard.
+-   **Task 1: Add bulk selection (Select All) to order pages**
+    -   **Where to resume**: The agent has already added the basic state, handlers, and checkbox UI to . The next step is to add the actual bulk action UI (e.g., a dropdown button that appears when items are selected) and connect it to backend endpoints.
+    -   **What will be achieved with this?**: Users will be able to efficiently manage multiple orders at once across different pages.
     -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: Both.
-    -   **Blocked on something**: Blocked on fixing Issue #1.
+    -   **Blocked on something**: None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   **P0**: Complete the UI/Performance Optimization for all pages (Orders, Trackers) using  as a template.
-    -   **P1**: Implement Agent Reporting by building out the  page.
-    -   **P2**: Implement Conversion & Sales Tracking in .
+    -   (P0) Implement DTDC tracking using the TrackingMore API. This involves building out the logic in , adding API endpoints to , and integrating a Sync DTDC button into the frontend.
+    -   (P1) Complete the Select All feature for  and extend it to , , and .
+    -   (P2) Add a Mark as Received button in the UI for manual confirmation of returned items.
 -   **Future Tasks**:
-    -   Implement a caching strategy (e.g., using Redis) for dashboard stats.
-    -   Set up a CI/CD pipeline for automated deployments.
+    -   Refactor the  monolith into smaller, more manageable route files.
+    -   Implement a UI for deleting old orders, based on user confirmation.
+    -   Build a dedicated UI for managing the  collection (add/edit/delete items).
 
 **Completed work in this session**
--   **COD Sync Endpoint Fixed**: Refactored the  endpoint in  to use background tasks, preventing timeouts and ensuring reliable data syncs.
--   **China Post Order Visibility Fixed**: Created and ran a script () to backfill the  for 588 China Post orders, making them visible in the Purchase Tracker.
--   **Dispatch Tracker UI Enhanced**:
-    -   Added columns and data for: Amount Paid, Balance, Delivery Charges, Weight, and Booking Date.
-    -   Added a Payment Date column.
-    -   Fixed a bug where these new fields were not being returned by the API by updating the  Pydantic model in .
--   **Full WhatsApp Integration Implemented**:
-    -   **Backend**: Created services, webhooks, and API endpoints for utility messages, marketing messages, template creation, and message history.
-    -   **Frontend**: Built pages for WhatsApp Inbox and Message Templates, added them to the sidebar, and integrated a Send WhatsApp button into the Dispatch Tracker.
-
-**Earlier issues found/mentioned but not fixed**
--   None.
-
-**Known issue recurrence from previous fork**
--   None.
+-   **Dispatch Tracker Fixes**:
+    -   Fixed stats cards to update with date filters using an efficient new  endpoint.
+    -   Fixed the Sync TCS Tracking button to call the correct backend endpoint.
+    -   Fixed the orders table not respecting date filters by adding  and  parameters to the  endpoint.
+-   **Confirmation Tracker Major Enhancements**:
+    -   Fixed stock status logic to correctly use the  collection.
+    -   Corrected the Out of Stock calculation by backfilling a default  for all existing inventory items.
+    -   Implemented the user's business rule: Partial Stock status was removed, and orders with at least one available SKU are now considered In Stock.
+    -   Added total sale value to the status cards, calculated from individual SKU prices in inventory.
+    -   Successfully added and tested date filters on the page.
+-   **Dynamic Currency & Multi-Store Integration**:
+    -   Created a new  collection to manage store-specific settings like currency.
+    -   The UI now dynamically displays the currency (e.g., PKR) based on the selected store.
+    -   Added the Asmia store and successfully synced its first 50 orders, which are now visible on the frontend.
+-   **Return & Inventory Management**:
+    -   Updated the  database model to include a  field.
+    -   Updated the return logic to correctly increment quantity in  when an order is marked .
+    -   Manually updated a specific user-requested order (#29307) to reflect its correct SKU list and status.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Backend**: FastAPI, Motor, Pydantic, BackgroundTasks for async jobs.
-- **Frontend**: React, Tailwind CSS, shadcn/ui, axios.
-- **Database**: MongoDB.
-- **APIs**:
-    - Meta WhatsApp Business Platform API (Graph API)
-    - Shopify Admin API
-    - TCS Courier APIs
+- **Backend**: FastAPI, MongoDB (including Aggregation pipelines), Pydantic models.
+- **Frontend**: React (Hooks: , ), , , .
+- **Integrations**: Shopify Admin API (Order Sync), TCS API, TrackingMore API (for DTDC, pending).
+- **Data Architecture**: A new  collection now holds store-specific settings, enabling multi-store functionality and dynamic features like currency display.
 
 **key DB schema**
 -   **customers**: 
--   **whatsapp_messages**: (Implicitly created)  stores message history.
+-   **inventory_v2**: 
+-   **store_config** (NEW): 
 
 **changes in tech stack**
--    library was added to the backend for making API calls to Meta.
+-   None.
 
 **All files of reference**
 -   **New Files Created**:
     -   
-    -   
-    -   
-    -   
-    -   
-    -   
-    -   
-    -   Multiple  guide files.
 -   **Key Files Modified**:
-    -   : Major additions for COD sync background task and all WhatsApp endpoints. Pydantic model updated. Several syntax errors fixed.
-    -   : Major additions for new data columns and WhatsApp UI integration.
-    -   : Added navigation links for new WhatsApp pages.
-    -   : Added routes for new WhatsApp pages.
-    -   : Updated with WhatsApp API credentials.
+    -   
+    -   
+    -   
+    -   
 
 **Areas that need refactoring**:
--    is now over 3500 lines long and is critically in need of refactoring. Endpoints for scheduling, customers, Shopify, and TCS should be moved to their respective files in the  directory.
+-    remains a large monolith and is a prime candidate for being broken down into separate FastAPI routers for customers, inventory, and tracking.
 
 **key api endpoints**
--   : **(FIXED)** Triggers a background sync of COD payments.
--   : Main endpoint for fetching customer/order data.
--   : Sends a freeform WhatsApp message.
--   : Sends a templated WhatsApp message.
--   : Fetches WhatsApp message history.
--   : **(IN PROGRESS/BUGGY)** Creates a new WhatsApp template via Meta's API.
--   : Receives incoming webhooks from Meta.
+-   : (MODIFIED) Returns delivery status counts, now respects date filters.
+-   : (NEW) Returns In Stock/Out of Stock counts and sale values for the Confirmation Tracker, calculated from SKU prices.
+-   : (MODIFIED) Now accepts  and  parameters to filter the order list correctly.
+-   : (NEWLY USED) Endpoint called by the fixed Sync TCS Tracking button.
 
 **Critical Info for New Agent**
--   **WhatsApp Auth is the Blocker**: The immediate task is to fix the WhatsApp integration. Use the newest access token provided by the user in the last message, update it in , restart the backend, and test template creation. Be prepared that the token might still have issues, and guide the user on generating a long-lived server token with all necessary permissions if it fails again.
--   **Confirm Data Deletion**: Before acting on the user's request to delete old orders, you MUST get confirmation on the cut-off date and whether a backup is needed. This is a destructive operation.
--   **Browser Cache is a Factor**: The user previously had trouble seeing UI updates due to browser caching. If the UI doesn't update after a fix, remind the user to perform a hard refresh () or use an incognito window.
--   **Refactoring is a Priority**: The  monolith is a significant source of technical debt and is becoming unmanageable. Prioritize refactoring after the critical WhatsApp issue is resolved.
+-   The immediate task is to fix the Shopify pagination logic to sync all orders for the Asmia store. Use cursor-based pagination.
+-   The next major task is to build out the DTDC tracking integration using the  file and the credentials stored in the  collection. The implementation should be similar to the existing TCS logic.
+-   The user has changed the business logic for stock status: Partial Stock is no longer a valid state. If any item in an order is in stock, the entire order is considered In Stock.
+-   Sale value calculations are now based on individual SKU prices from the  collection, not the total order value.
+-   The TCS sync issue is blocked pending user-provided credentials. Do not spend time debugging it until the credentials are confirmed.
 
 **documents created in this job**
--   
--   
--   
--   
--   
+-   None.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: Provided a new access token and screenshot from the Meta developer page showing their setup. (PENDING - Agent needs to use this new token).
-2.  **User**: Asked how to confirm the API is working after previous failures. (Agent investigated token permissions).
-3.  **User**: Provided another new (but expired) access token. (Agent identified it as expired).
-4.  **User**: Reported Failed to create template. (This started the whole token debugging process).
-5.  **User**: Requested the ability to approve templates from the dashboard. (Agent implemented the feature).
-6.  **User**: Provided a link to the Marketing Messages API and asked for it to be configured. (Agent implemented it).
-7.  **User**: Asked where the new Inbox and Templates pages were in the UI. (Agent realized they forgot to add them to the sidebar and fixed it).
-8.  **User**: Requested a template approval section, renaming history to Inbox, and guidance on next steps. (Agent implemented these).
-9.  **User**: Stated they want to implement the official WhatsApp API. (Agent began implementation).
-10. **User**: Confirmed the Payment Date column was added and working.
+1.  **User**: Requested Select All buttons for all order pages, reported TCS sync failure, and requested inventory quantity tracking. (IN PROGRESS/BLOCKED)
+2.  **User**: Asked to fix the stock status on the Confirmation Tracker. (COMPLETED)
+3.  **User**: Requested date filters on the Confirmation Tracker. (COMPLETED)
+4.  **User**: Reported that the Out of Stock status was incorrect. (COMPLETED - was due to case-sensitivity and missing quantity data).
+5.  **User**: Asked why an order was partial stock and redefined the business logic to in stock if any item is available. (COMPLETED)
+6.  **User**: Clarified that sale price should be based on SKU price, not order total. (COMPLETED)
+7.  **User**: Requested currency to be PKR. (COMPLETED)
+8.  **User**: Requested that currency should sync from the Shopify store. (COMPLETED - via  collection).
+9.  **User**: Provided credentials for a new Asmia store and requested order import and DTDC integration. (IN PROGRESS)
+10. **User**: Pointed out that only 50 Asmia orders were synced and requested a full sync. Also provided a link to the TrackingMore DTDC API. (IN PROGRESS - This is the last working item).
 
 **Project Health Check:**
--   **Broken**: The core new feature (WhatsApp integration) is currently broken due to an authentication issue with the Meta API.
--   **Mocked**: No components are mocked.
+-   **Broken**:
+    -   TCS Sync is non-functional due to missing credentials.
+-   **Mocked**: None.
 
 **3rd Party Integrations**
--   Shopify Admin API
--   TCS Courier Public Tracking API
--   TCS Courier Authenticated Payment API
--   Meta WhatsApp Business Platform API (requires User API Key)
+-   Shopify Admin API — requires User API Key
+-   TCS Courier Public Tracking API — requires User API Key (currently misconfigured/missing)
+-   TrackingMore DTDC API — requires User API Key (implementation pending)
+-   Meta WhatsApp Business Platform API — requires User API Key (currently blocked)
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (Used multiple times to verify UI fixes for payment details and WhatsApp button addition).
--   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: [, ]
--   **Known regressions**: None.
+-   **Testing agent used after significant changes**: NO
+-   **Troubleshoot agent used after agent stuck in loop**: YES (for TCS sync issue)
+-   **Test files created**: None
+-   **Known regressions**: None. The  page, which was broken at the start of the previous session, is now functional.
 
 **Credentials to test flow:**
 -   **Username**: 
 -   **Password**: 
--   **WhatsApp Credentials**: Stored in  (the access token needs to be updated with the latest one from the user).
 
 **What agent forgot to execute**
--   The agent initially forgot to add the new WhatsApp Inbox and Message Templates pages to the sidebar navigation menu, which the user had to point out.
--   The agent introduced several syntax and import errors into  during the rapid implementation of WhatsApp features, causing the backend to crash multiple times and requiring several debug-fix-restart cycles.</analysis>
+-   The agent has started but not completed the request to add select all buttons to all order pages. It was only partially implemented on the Dispatch Tracker.
+-   The agent created a placeholder for the DTDC integration but has not started the implementation.
+-   The request for a Mark as Received button for returns has not been started.</analysis>
