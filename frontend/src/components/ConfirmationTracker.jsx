@@ -129,9 +129,12 @@ const ConfirmationTracker = () => {
       setOrders(allOrders);
       setTotalCount(total);
       
-      // Calculate stats from current page only (for display purposes)
+      // Calculate page-level stats
       const inStockOrders = allOrders.filter(c => c.stock_status === "in_stock");
       const outOfStockOrders = allOrders.filter(c => c.stock_status === "out_of_stock");
+      
+      // Get stock stats with SKU-based sale values from backend
+      const stockStats = stockStatsResponse.data || {};
       
       setStats({
         total: total,  // Show actual total from database
@@ -141,10 +144,10 @@ const ConfirmationTracker = () => {
         notPurchased: allOrders.filter(c => c.confirmation_status === "NOT_PURCHASED").length,
         canceled: allOrders.filter(c => c.confirmation_status === "CANCELED").length,
         inTransit: allOrders.filter(c => c.dubai_tracking_number).length,
-        inStock: inStockOrders.length,
-        inStockValue: inStockOrders.reduce((sum, order) => sum + (parseFloat(order.total_spent) || 0), 0),
-        outOfStock: outOfStockOrders.length,
-        outOfStockValue: outOfStockOrders.reduce((sum, order) => sum + (parseFloat(order.total_spent) || 0), 0),
+        inStock: stockStats.in_stock || 0,
+        inStockValue: stockStats.in_stock_value || 0,
+        outOfStock: stockStats.out_of_stock || 0,
+        outOfStockValue: stockStats.out_of_stock_value || 0,
       });
       
       setTotalPages(Math.ceil(total / 100));
