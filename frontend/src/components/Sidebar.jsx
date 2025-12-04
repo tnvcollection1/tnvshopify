@@ -14,7 +14,8 @@ import {
   Plane,
   MessageCircle,
   Inbox,
-  FileText
+  FileText,
+  Target
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
