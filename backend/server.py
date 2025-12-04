@@ -4483,6 +4483,8 @@ async def delete_flash_sale(sale_id: str):
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Error deleting flash sale: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.get("/customers/segments")
