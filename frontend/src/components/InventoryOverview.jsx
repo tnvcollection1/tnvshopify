@@ -11,10 +11,12 @@ const InventoryOverview = () => {
     total_cost: 0,
     total_sale_value: 0,
     total_profit: 0,
+    in_stock: { count: 0, cost: 0, sale_value: 0, profit: 0 },
+    in_transit: { count: 0, cost: 0, sale_value: 0, profit: 0 },
+    delivered: { count: 0, cost: 0, sale_value: 0, profit: 0 },
     by_collection: [],
     by_size: [],
-    by_color: [],
-    matched_orders: 0
+    by_color: []
   });
   const [loading, setLoading] = useState(true);
 
