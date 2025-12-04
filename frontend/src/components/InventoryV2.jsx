@@ -82,6 +82,9 @@ const InventoryV2 = () => {
   useEffect(() => {
     fetchItems();
     fetchStores();
+    // Reset selections when filters change
+    setSelectedItems([]);
+    setSelectAll(false);
   }, [filters]);
 
   const fetchItems = async () => {
