@@ -1968,29 +1968,41 @@ async def get_inventory_overview_stats():
             for c in customers if c.get("order_number")
         }
         
-        # Categorize inventory by delivery status
+        # Categorize inventory by delivery status and track matched orders
         in_stock_items = []  # No order match
         in_transit_items = []  # Matched with transit orders
         delivered_items = []  # Matched with delivered orders
+        
+        # Track unique orders for each category (to get order total_spent)
+        in_transit_orders = {}  # order_number -> total_spent
+        delivered_orders = {}  # order_number -> total_spent
         
         for item in all_items:
             order_num = item.get('order_number')
             if not order_num:
                 in_stock_items.append(item)
             else:
-                delivery_status = order_delivery_map.get(order_num, "")
+                order_info = order_info_map.get(order_num, {})
+                delivery_status = order_info.get("delivery_status", "")
+                total_spent = order_info.get("total_spent", 0)
+                
                 if delivery_status == "DELIVERED":
                     delivered_items.append(item)
+                    if order_num not in delivered_orders:
+                        delivered_orders[order_num] = total_spent
                 elif delivery_status and delivery_status not in ["DELIVERED", "RETURN_IN_PROCESS"]:
                     in_transit_items.append(item)
+                    if order_num not in in_transit_orders:
+                        in_transit_orders[order_num] = total_spent
                 else:
                     in_stock_items.append(item)
         
         # Calculate stats for each category
-        def calc_stats(items):
+        def calc_stats_in_stock(items):
+            # For in-stock items, use sale_price from inventory (if available)
             cost = sum(i.get('cost', 0) for i in items)
             sale_value = sum(i.get('sale_price', 0) for i in items if i.get('sale_price', 0) > 0)
-            profit = sum(i.get('profit', 0) for i in items if i.get('profit', 0) > 0)
+            profit = sale_value - cost if sale_value > 0 else 0
             return {
                 "count": len(items),
                 "cost": round(cost, 2),
@@ -1998,9 +2010,21 @@ async def get_inventory_overview_stats():
                 "profit": round(profit, 2)
             }
         
-        in_stock_stats = calc_stats(in_stock_items)
-        in_transit_stats = calc_stats(in_transit_items)
-        delivered_stats = calc_stats(delivered_items)
+        def calc_stats_with_orders(items, orders_map):
+            # For matched orders, use actual order total_spent
+            cost = sum(i.get('cost', 0) for i in items)
+            sale_value = sum(orders_map.values())  # Sum of all order totals
+            profit = sale_value - cost
+            return {
+                "count": len(items),
+                "cost": round(cost, 2),
+                "sale_value": round(sale_value, 2),
+                "profit": round(profit, 2)
+            }
+        
+        in_stock_stats = calc_stats_in_stock(in_stock_items)
+        in_transit_stats = calc_stats_with_orders(in_transit_items, in_transit_orders)
+        delivered_stats = calc_stats_with_orders(delivered_items, delivered_orders)
         
         # Total stats
         total_cost = sum(item.get('cost', 0) for item in all_items)
