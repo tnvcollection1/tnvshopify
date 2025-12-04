@@ -574,6 +574,14 @@ const InventoryV2 = () => {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
+                <Label>Collection</Label>
+                <Input
+                  value={editingItem.collection || ''}
+                  onChange={(e) => setEditingItem({...editingItem, collection: e.target.value})}
+                  placeholder="e.g., Summer 2024, Men's Shoes, etc."
+                />
+              </div>
+              <div>
                 <Label>Order Number</Label>
                 <Input
                   value={editingItem.order_number || ''}
