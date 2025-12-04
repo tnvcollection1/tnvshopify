@@ -58,6 +58,17 @@ const Dashboard = () => {
     uniqueSizes: 0,
     filteredCount: 0
   });
+  const [inventoryStats, setInventoryStats] = useState({
+    total_cost: 0,
+    total_sale_value: 0,
+    total_profit: 0,
+    in_stock_count: 0,
+    in_transit_count: 0,
+    delivered_count: 0,
+    today_orders: 0,
+    transit_orders: 0,
+    delivered_orders: 0
+  });
   const [agents, setAgents] = useState([]);
   const [selectedAgent, setSelectedAgent] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
