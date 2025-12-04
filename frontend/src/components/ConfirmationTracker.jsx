@@ -563,14 +563,28 @@ const ConfirmationTracker = () => {
                           ${order.total_spent?.toFixed(2) || "0.00"}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditOrder(order)}
-                            className="border-gray-300 hover:bg-blue-50"
-                          >
-                            <Edit className="w-3 h-3" />
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditOrder(order)}
+                              className="border-gray-300 hover:bg-blue-50"
+                              title="Edit Order"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                            {!order.messaged && order.phone && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleSendWhatsApp(order.customer_id, `${order.first_name} ${order.last_name}`)}
+                                className="border-green-300 hover:bg-green-50 text-green-600"
+                                title="Send WhatsApp Message"
+                              >
+                                <Phone className="w-3 h-3" />
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
