@@ -2229,22 +2229,40 @@ async def upload_inventory_excel(file: UploadFile = File(...), store_name: str =
         items_added = 0
         errors = []
         
-        # Get all customers with their order_skus for matching
+        # Get all customers with their order_skus and line_items for matching
         customers = await db.customers.find(
             {"order_skus": {"$exists": True, "$ne": []}},
-            {"_id": 0, "order_number": 1, "order_skus": 1, "total_spent": 1}
+            {"_id": 0, "order_number": 1, "order_skus": 1, "total_spent": 1, "line_items": 1}
         ).to_list(50000)
         
-        # Create a mapping: SKU -> list of (order_number, total_spent)
+        # Create a mapping: SKU -> list of (order_number, price_per_item)
         sku_to_orders = {}
         for customer in customers:
-            for sku in customer.get("order_skus", []):
+            order_skus = customer.get("order_skus", [])
+            line_items = customer.get("line_items", [])
+            order_number = customer.get("order_number")
+            
+            # Try to match SKU with line items to get individual item price
+            for sku in order_skus:
                 sku_upper = sku.upper().strip()
                 if sku_upper not in sku_to_orders:
                     sku_to_orders[sku_upper] = []
+                
+                # Find matching line item for this SKU to get the actual product price
+                item_price = 0
+                for line_item in line_items:
+                    line_sku = line_item.get("sku", "").upper().strip()
+                    if line_sku == sku_upper:
+                        item_price = float(line_item.get("price", 0))
+                        break
+                
+                # Fallback to total_spent / number of items if price not found
+                if item_price == 0 and len(order_skus) > 0:
+                    item_price = float(customer.get("total_spent", 0)) / len(order_skus)
+                
                 sku_to_orders[sku_upper].append({
-                    "order_number": customer.get("order_number"),
-                    "total_spent": customer.get("total_spent", 0)
+                    "order_number": order_number,
+                    "sale_price": item_price
                 })
         
         for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
