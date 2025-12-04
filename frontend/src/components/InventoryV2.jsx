@@ -529,6 +529,14 @@ const InventoryV2 = () => {
               />
             </div>
             <div>
+              <Label>Collection (Optional)</Label>
+              <Input
+                value={newItem.collection || ''}
+                onChange={(e) => setNewItem({...newItem, collection: e.target.value})}
+                placeholder="e.g., Summer 2024, Men's Shoes, etc."
+              />
+            </div>
+            <div>
               <Label>Cost</Label>
               <Input
                 type="number"
