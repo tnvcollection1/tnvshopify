@@ -3337,12 +3337,11 @@ async def get_customers(
             else:
                 in_stock = sum(1 for sku in order_sku_list if sku in stock_skus)
                 
-                if in_stock == len(order_sku_list):
+                # If ANY items are in stock, mark as "in_stock" (can fulfill at least partially)
+                if in_stock > 0:
                     customer['stock_status'] = "in_stock"
-                elif in_stock == 0:
-                    customer['stock_status'] = "out_of_stock"
                 else:
-                    customer['stock_status'] = "partial"
+                    customer['stock_status'] = "out_of_stock"
             
             # Filter by stock availability if specified
             if stock_availability:
