@@ -102,6 +102,7 @@ const ConfirmationTracker = () => {
       
       if (filters.calling_status !== "all") params.append("calling_status", filters.calling_status);
       if (filters.confirmation_status !== "all") params.append("confirmation_status", filters.confirmation_status);
+      if (filters.stock_status !== "all") params.append("stock_availability", filters.stock_status);
       if (filters.store !== "all") params.append("store_name", filters.store);
       if (filters.year !== "all") params.append("year", filters.year);
       if (filters.sortBy) params.append("sort_by", filters.sortBy);
