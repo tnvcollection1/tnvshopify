@@ -2084,7 +2084,7 @@ async def get_inventory_overview_stats():
                 "profit": round(profit, 2)
             }
         
-        # Get all orders that have been matched with inventory (for totals)
+        # Get all orders that have been matched with inventory (for totals and unknown calc)
         all_matched_orders_for_calc = await db.customers.find({
             "order_skus": {"$exists": True, "$ne": []},
             "order_number": {"$exists": True}
@@ -2100,7 +2100,7 @@ async def get_inventory_overview_stats():
         
         # Calculate totals from all orders that match our inventory
         total_matched_orders = {}
-        for order in all_matched_orders:
+        for order in all_matched_orders_for_calc:
             order_skus = [sku.upper().strip() for sku in order.get('order_skus', [])]
             # Check if any SKU from this order is in our inventory
             if any(sku in inventory_skus for sku in order_skus):
@@ -2108,6 +2108,27 @@ async def get_inventory_overview_stats():
                 if order_num not in total_matched_orders:
                     total_matched_orders[order_num] = order.get('total_spent', 0)
         
+        # Calculate stats for categorized items
+        fulfill_stats = calc_stats(can_fulfill_today, fulfill_orders)
+        transit_stats = calc_stats(in_transit_tracked, transit_orders)
+        delivered_stats = calc_stats(delivered_recent, delivered_orders)
+        
+        # For unknown/old, calculate from all remaining matched orders
+        unknown_matched_orders = {}
+        unknown_skus = {item.get('sku', '').upper().strip() for item in unknown_old}
+        for order in all_matched_orders_for_calc:
+            order_skus = [sku.upper().strip() for sku in order.get('order_skus', [])]
+            if any(sku in unknown_skus for sku in order_skus):
+                order_num = order.get('order_number')
+                # Exclude if already counted in other categories
+                if (order_num not in fulfill_orders and 
+                    order_num not in transit_orders and 
+                    order_num not in delivered_orders):
+                    unknown_matched_orders[order_num] = order.get('total_spent', 0)
+        
+        unknown_stats = calc_stats(unknown_old, unknown_matched_orders)
+        
+        # Calculate overall totals
         total_cost = sum(item.get('cost', 0) for item in all_items)
         total_sale_value = sum(total_matched_orders.values())
         total_profit = total_sale_value - total_cost if total_sale_value > 0 else 0
