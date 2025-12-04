@@ -4483,6 +4483,141 @@ async def delete_flash_sale(sale_id: str):
     except HTTPException:
         raise
     except Exception as e:
+
+
+@api_router.get("/customers/segments")
+async def get_customer_segments():
+    """Get all customer segments"""
+    try:
+        segments = await db.customer_segments.find({}, {"_id": 0}).to_list(1000)
+        
+        return {
+            "success": True,
+            "segments": segments
+        }
+    
+    except Exception as e:
+        logger.error(f"Error fetching segments: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/customers/segment/{segment_type}")
+async def get_customers_by_segment(segment_type: str):
+    """Get customers filtered by segment type"""
+    try:
+        from datetime import datetime, timezone, timedelta
+        
+        now = datetime.now(timezone.utc)
+        
+        # Define segment queries
+        if segment_type == "all":
+            query = {}
+        elif segment_type == "high_value":
+            query = {"total_spent": {"$gte": 10000}}
+        elif segment_type == "frequent":
+            # Count documents per customer
+            pipeline = [
+                {"$group": {"_id": "$email", "count": {"$sum": 1}, "data": {"$first": "$$ROOT"}}},
+                {"$match": {"count": {"$gte": 3}}},
+                {"$replaceRoot": {"newRoot": "$data"}}
+            ]
+            customers = await db.customers.aggregate(pipeline).to_list(10000)
+            return {
+                "success": True,
+                "customers": customers,
+                "count": len(customers)
+            }
+        elif segment_type == "new":
+            thirty_days_ago = now - timedelta(days=30)
+            query = {"created_at": {"$gte": thirty_days_ago.isoformat()}}
+        elif segment_type == "inactive":
+            sixty_days_ago = now - timedelta(days=60)
+            query = {"last_order_date": {"$lte": sixty_days_ago.isoformat()}}
+        elif segment_type == "pending":
+            query = {"fulfillment_status": {"$in": ["unfulfilled", "Unfulfilled", "UNFULFILLED"]}}
+        else:
+            query = {}
+        
+        customers = await db.customers.find(query, {"_id": 0}).to_list(10000)
+        
+        return {
+            "success": True,
+            "customers": customers,
+            "count": len(customers)
+        }
+    
+    except Exception as e:
+        logger.error(f"Error fetching segment customers: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/customers/segments/create")
+async def create_customer_segment(request: dict):
+    """Create a custom customer segment"""
+    try:
+        import uuid
+        
+        segment = {
+            "id": str(uuid.uuid4()),
+            "name": request.get('name'),
+            "criteria": request.get('criteria'),
+            "min_orders": request.get('min_orders'),
+            "min_spend": request.get('min_spend'),
+            "collection": request.get('collection'),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.customer_segments.insert_one(segment)
+        
+        return {
+            "success": True,
+            "message": "Segment created successfully",
+            "segment_id": segment['id']
+        }
+    
+    except Exception as e:
+        logger.error(f"Error creating segment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/customers/segment/{segment_type}/export")
+async def export_segment(segment_type: str):
+    """Export segment customers as CSV"""
+    try:
+        from io import StringIO
+        import csv
+        
+        # Get customers
+        result = await get_customers_by_segment(segment_type)
+        customers = result.get('customers', [])
+        
+        # Create CSV
+        output = StringIO()
+        writer = csv.DictWriter(output, fieldnames=['first_name', 'last_name', 'email', 'phone', 'total_spent', 'order_count'])
+        writer.writeheader()
+        
+        for customer in customers:
+            writer.writerow({
+                'first_name': customer.get('first_name', ''),
+                'last_name': customer.get('last_name', ''),
+                'email': customer.get('email', ''),
+                'phone': customer.get('phone', ''),
+                'total_spent': customer.get('total_spent', 0),
+                'order_count': customer.get('order_count', 1)
+            })
+        
+        from fastapi.responses import StreamingResponse
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=segment_{segment_type}.csv"}
+        )
+    
+    except Exception as e:
+        logger.error(f"Error exporting segment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
         logger.error(f"Error bulk pricing: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
