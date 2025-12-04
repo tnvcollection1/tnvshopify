@@ -293,7 +293,8 @@ const InventoryV2 = () => {
       
       toast.success(`${data.items_added} items uploaded successfully`);
       if (data.errors && data.errors.length > 0) {
-        toast.warning(`${data.errors.length} errors occurred. Check console for details.`);
+        setUploadErrors(data.errors);
+        setErrorsDialog(true);
         console.error('Upload errors:', data.errors);
       }
       
