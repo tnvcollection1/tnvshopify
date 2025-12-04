@@ -280,9 +280,15 @@ const InventoryOverview = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Can Fulfill Today */}
-            <Card className="border-blue-200 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+            <Card 
+              className="border-blue-200 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={() => openDetailModal('can_fulfill_today', '🎯 Can Fulfill Today - Detailed Breakdown')}
+            >
               <CardHeader className="pb-3">
-                <CardDescription className="text-blue-700 font-semibold">🎯 Can Fulfill Today</CardDescription>
+                <CardDescription className="text-blue-700 font-semibold flex items-center justify-between">
+                  <span>🎯 Can Fulfill Today</span>
+                  <ExternalLink className="h-4 w-4" />
+                </CardDescription>
                 <CardTitle className="text-3xl font-bold text-blue-600">
                   {stats.can_fulfill_today.count.toLocaleString()} SKUs
                 </CardTitle>
@@ -308,12 +314,15 @@ const InventoryOverview = () => {
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-blue-500 mt-2 italic">Matches today's unfulfilled orders</p>
+                <p className="text-xs text-blue-500 mt-2 italic">Click to view details</p>
               </CardContent>
             </Card>
 
             {/* In Transit (TCS Tracked) */}
-            <Card className="border-yellow-200 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
+            <Card 
+              className="border-yellow-200 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100 cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={() => openDetailModal('in_transit', '🚛 In Transit (TCS Live) - Detailed Breakdown')}
+            >
               <CardHeader className="pb-3">
                 <CardDescription className="text-yellow-700 font-semibold">🚛 In Transit (TCS Live)</CardDescription>
                 <CardTitle className="text-3xl font-bold text-yellow-600">
