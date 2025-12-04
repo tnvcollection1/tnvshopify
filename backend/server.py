@@ -2034,12 +2034,14 @@ async def upload_inventory_excel(file: UploadFile = File(...), store_name: str =
                 sku = str(row[0]).strip()
                 product_name = str(row[1]).strip() if row[1] else "Unknown Product"
                 cost = float(row[2]) if row[2] else 0.0
-                order_number = str(row[3]).strip() if len(row) > 3 and row[3] else None
+                collection = str(row[3]).strip() if len(row) > 3 and row[3] else None
+                order_number = str(row[4]).strip() if len(row) > 4 and row[4] else None
                 
                 # Create inventory item
                 new_item = InventoryItem(
                     sku=sku,
                     product_name=product_name,
+                    collection=collection,
                     cost=cost,
                     order_number=order_number,
                     store_name=store_name
