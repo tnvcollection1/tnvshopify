@@ -423,7 +423,7 @@ const InventoryV2 = () => {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={10} className="text-center py-8 text-gray-500">
                         <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
                         No inventory items found
                       </TableCell>
