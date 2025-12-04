@@ -3352,7 +3352,7 @@ async def get_customers(
                     if len(filtered_customers) >= limit:
                         break
             else:
-            filtered_customers.append(customer)
+                filtered_customers.append(customer)
         
         return filtered_customers[:limit]
     
