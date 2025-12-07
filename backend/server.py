@@ -6407,6 +6407,53 @@ async def get_inventory_health_analysis():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/inventory/create-clearance-campaign")
+async def create_clearance_campaign(campaign_data: dict):
+    """Auto-create clearance campaign for old stock"""
+    try:
+        from uuid import uuid4
+        
+        age_days = campaign_data.get("age_days", 90)
+        discount = campaign_data.get("discount_percentage", 20)
+        
+        # Find items older than threshold
+        items = await db.inventory_v2.find({}, {"_id": 0}).to_list(10000)
+        now = datetime.now(timezone.utc)
+        old_items = []
+        
+        for item in items:
+            created_at = item.get("created_at")
+            if created_at:
+                try:
+                    created_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                    age = (now - created_date).days
+                    if age >= age_days:
+                        old_items.append(item)
+                except:
+                    pass
+        
+        # Create campaign
+        campaign = {
+            "id": str(uuid4()),
+            "name": f"Auto Clearance - {age_days}+ Days Old",
+            "type": "clearance",
+            "target": "old_stock",
+            "discount_percentage": discount,
+            "start_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "end_date": (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d"),
+            "status": "active",
+            "items_count": len(old_items),
+            "items_skus": [item["sku"] for item in old_items[:100]],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.campaigns.insert_one(campaign)
+        
+        return {
+            "success": True,
+            "message": f"Clearance campaign created with {discount}% discount",
+            "campaign_id": campaign["id"],
             "items_count": len(old_items)
         }
     
