@@ -111,9 +111,9 @@ class DynamicPricingEngine:
             
             historical_count = await self.db.customers.count_documents(query)
             
-            # Get base price from inventory_v2
+            # Get base price from inventory_v2 (try both exact and case-insensitive match)
             inventory_item = await self.db.inventory_v2.find_one(
-                {"sku": sku.upper()},
+                {"sku": {"$regex": f"^{sku}$", "$options": "i"}},
                 {"_id": 0, "cost": 1, "sale_price": 1, "product_name": 1}
             )
             
