@@ -753,12 +753,20 @@ async def sync_shopify_orders(store_name: str, days_back: int = 3650, full_sync:
                 }
                 await db.customers.insert_one(new_customer)
                 customers_created += 1
+            
+            # Track order for dynamic pricing
+            try:
+                await pricing_engine.track_new_order(order_data)
+            except Exception as pricing_error:
+                logger.warning(f"Failed to track order for pricing: {pricing_error}")
         
         # Update last sync time
         await db.stores.update_one(
             {"store_name": store_name},
             {"$set": {"last_synced_at": datetime.now(timezone.utc).isoformat()}}
         )
+        
+        logger.info(f"✅ Pricing: Tracked {len(orders)} orders for dynamic pricing")
         
         return {
             "success": True,
