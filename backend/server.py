@@ -6065,6 +6065,29 @@ async def update_pricing_rule(sku: str, update_data: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/pricing/bulk-enable")
+async def bulk_enable_pricing(category: str = None, limit: int = 1000):
+    """Enable pricing for all SKUs or specific category"""
+    try:
+        query = {}
+        if category:
+            query["category"] = category.upper()
+        
+        result = await db.pricing_rules.update_many(
+            query,
+            {"$set": {"enabled": True}}
+        )
+        
+        return {
+            "success": True,
+            "message": f"Enabled pricing for {result.modified_count} SKUs",
+            "modified_count": result.modified_count
+        }
+    except Exception as e:
+        logger.error(f"Error enabling pricing: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.get("/pricing/dashboard-stats")
 async def get_pricing_dashboard_stats():
     """Get statistics for pricing dashboard"""
