@@ -287,6 +287,39 @@ class AutoSyncScheduler:
         
         return customers_updated
     
+    def sync_dynamic_pricing(self):
+        """
+        Sync dynamic prices to Shopify for all enabled pricing rules
+        Runs in separate thread, calls API endpoint
+        """
+        try:
+            logger.info("🔄 [AUTO] Starting dynamic pricing sync to Shopify...")
+            
+            import requests
+            
+            # Sync prices for ashmiaa store
+            try:
+                response = requests.post(
+                    "http://localhost:8001/api/pricing/sync-all-to-shopify?store_name=ashmiaa&limit=50",
+                    timeout=300  # 5 minutes timeout
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('success'):
+                        logger.info(f"✅ [AUTO] Pricing sync completed: {data.get('success_count', 0)} prices synced, "
+                                  f"{data.get('failed_count', 0)} failed")
+                    else:
+                        logger.error(f"❌ [AUTO] Pricing sync failed: {data.get('error', 'Unknown error')}")
+                else:
+                    logger.error(f"❌ [AUTO] Pricing sync HTTP error: {response.status_code}")
+            except requests.exceptions.Timeout:
+                logger.warning("⚠️ [AUTO] Pricing sync timeout (still running in background)")
+            except Exception as req_error:
+                logger.error(f"❌ [AUTO] Pricing sync request error: {str(req_error)}")
+                
+        except Exception as e:
+            logger.error(f"❌ [AUTO] Pricing sync error: {str(e)}")
+    
     def sync_cod_payments(self):
         """
         Sync TCS COD payment status for all orders
