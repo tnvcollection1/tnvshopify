@@ -116,10 +116,10 @@ const CustomerSegmentationDashboard = () => {
             Rs. {segments?.high_value?.total_value?.toLocaleString() || 0}
           </p>
           <button
-            onClick={() => sendBulkMessage('high_value')}
+            onClick={() => downloadCustomerList('high_value')}
             className="mt-3 w-full px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors"
           >
-            Send VIP Preview
+            Download High Value List
           </button>
         </div>
 
