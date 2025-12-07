@@ -110,12 +110,30 @@ const CustomerSegmentationDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-          👥 Customer Segmentation
-        </h1>
-        <p className="text-gray-400">
-          Segment customers by value and behavior for targeted marketing
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+              👥 Customer Segmentation
+            </h1>
+            <p className="text-gray-400">
+              Segment customers by value and behavior for targeted marketing
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-gray-400">Filter by Store:</label>
+            <select
+              value={selectedStore}
+              onChange={(e) => setSelectedStore(e.target.value)}
+              className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="all">All Stores</option>
+              <option value="tnvcollection">TNC Collection</option>
+              <option value="tnvcollectionpk">TNC Collection PK</option>
+              <option value="ashmiaa">Ashmiaa</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Segment Stats */}
