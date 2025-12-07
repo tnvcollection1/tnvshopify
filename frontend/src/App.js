@@ -224,6 +224,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/inventory-health" 
+        element={
+          <ProtectedRoute>
+            <InventoryHealthDashboard />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
