@@ -374,6 +374,7 @@ test_plan:
   completed_this_session:
     - "Password change feature and default credentials removal - FULLY TESTED AND WORKING"
     - "WhatsApp integration in Dispatch Tracker - FULLY TESTED AND WORKING"
+    - "Customer Segmentation store filter feature - FULLY TESTED AND WORKING"
 
 agent_communication:
     - agent: "main"
