@@ -17,7 +17,8 @@ const CustomerSegmentationDashboard = () => {
   const fetchSegments = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/api/customers/segments`);
+      const storeParam = selectedStore !== 'all' ? `?store_name=${selectedStore}` : '';
+      const res = await axios.get(`${API_URL}/api/customers/segments${storeParam}`);
       setSegments(res.data);
       setLoading(false);
     } catch (error) {
