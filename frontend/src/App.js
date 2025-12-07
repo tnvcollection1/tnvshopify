@@ -21,6 +21,7 @@ import InventoryCampaignManager from "@/components/InventoryCampaignManager";
 import FlashSaleManager from "@/components/FlashSaleManager";
 import CustomerSegmentation from "@/components/CustomerSegmentation";
 import BundleCreator from "@/components/BundleCreator";
+import DynamicPricingDashboard from "@/components/DynamicPricingDashboard";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
