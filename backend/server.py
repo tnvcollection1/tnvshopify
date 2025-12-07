@@ -5976,7 +5976,7 @@ async def sync_price_to_shopify(sku: str, store_name: str):
     try:
         # Get store credentials
         store = await db.stores.find_one(
-            {"name": store_name},
+            {"store_name": store_name},
             {"_id": 0, "shopify_domain": 1, "shopify_token": 1}
         )
         
