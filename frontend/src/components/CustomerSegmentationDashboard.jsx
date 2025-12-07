@@ -62,7 +62,8 @@ const CustomerSegmentationDashboard = () => {
 
   const downloadCustomerList = async (segment) => {
     try {
-      const res = await axios.get(`${API_URL}/api/customers/export-segment/${segment}`);
+      const storeParam = selectedStore !== 'all' ? `?store_name=${selectedStore}` : '';
+      const res = await axios.get(`${API_URL}/api/customers/export-segment/${segment}${storeParam}`);
       
       if (!res.data.customers || res.data.customers.length === 0) {
         alert(`No customers found in ${segment} segment`);
