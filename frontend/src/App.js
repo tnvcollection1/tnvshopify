@@ -157,7 +157,7 @@ function AppRoutes() {
         path="/segments" 
         element={
           <ProtectedRoute>
-            <CustomerSegmentation />
+            <CustomerSegmentationDashboard />
           </ProtectedRoute>
         } 
       />
