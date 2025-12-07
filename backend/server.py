@@ -6190,6 +6190,198 @@ async def update_pricing_rule(sku: str, update_data: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.get("/inventory/health-analysis")
+async def get_inventory_health_analysis():
+    """Analyze inventory health - dead stock, slow moving, profit margins"""
+    try:
+        from datetime import timedelta
+        
+        # Get all inventory items
+        items = await db.inventory_v2.find({}, {"_id": 0}).to_list(10000)
+        
+        # Calculate age for each item
+        now = datetime.now(timezone.utc)
+        dead_stock = []
+        slow_moving = []
+        fast_moving = []
+        
+        for item in items:
+            created_at = item.get("created_at")
+            if created_at:
+                try:
+                    created_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                    age_days = (now - created_date).days
+                    item["age_days"] = age_days
+                    
+                    # Classify by age and order history
+                    if age_days >= 180:
+                        dead_stock.append(item)
+                    elif age_days >= 90:
+                        slow_moving.append(item)
+                    elif age_days < 30:
+                        fast_moving.append(item)
+                except:
+                    item["age_days"] = 0
+            else:
+                item["age_days"] = 0
+        
+        # Calculate values
+        def calc_value(items_list):
+            return sum(item.get("sale_price", 0) * item.get("quantity", 1) for item in items_list)
+        
+        dead_stock_value = calc_value(dead_stock)
+        slow_moving_value = calc_value(slow_moving)
+        fast_moving_value = calc_value(fast_moving)
+        total_value = calc_value(items)
+        
+        # Age buckets
+        age_buckets = [
+            {
+                "label": "🔴 Dead Stock (180+ days)",
+                "count": len(dead_stock),
+                "value": dead_stock_value,
+                "min_age": 180,
+                "action": "Create 30% Off Campaign"
+            },
+            {
+                "label": "🟠 Slow Moving (90-179 days)",
+                "count": len(slow_moving),
+                "value": slow_moving_value,
+                "min_age": 90,
+                "action": "Create 20% Off Campaign"
+            },
+            {
+                "label": "🟢 Fast Moving (< 30 days)",
+                "count": len(fast_moving),
+                "value": fast_moving_value,
+                "min_age": 0,
+                "action": None
+            }
+        ]
+        
+        # Profit margin analysis
+        margin_analysis = []
+        for item in items:
+            cost = item.get("cost", 0)
+            sale_price = item.get("sale_price", 0)
+            if cost > 0 and sale_price > 0:
+                margin = ((sale_price - cost) / sale_price) * 100
+                item["margin"] = margin
+        
+        # Group by margin ranges
+        high_margin = [i for i in items if i.get("margin", 0) >= 50]
+        medium_margin = [i for i in items if 30 <= i.get("margin", 0) < 50]
+        low_margin = [i for i in items if i.get("margin", 0) < 30]
+        
+        margin_analysis = [
+            {
+                "category": "High Margin (50%+)",
+                "count": len(high_margin),
+                "avg_margin": round(sum(i.get("margin", 0) for i in high_margin) / len(high_margin)) if high_margin else 0
+            },
+            {
+                "category": "Medium Margin (30-50%)",
+                "count": len(medium_margin),
+                "avg_margin": round(sum(i.get("margin", 0) for i in medium_margin) / len(medium_margin)) if medium_margin else 0
+            },
+            {
+                "category": "Low Margin (<30%)",
+                "count": len(low_margin),
+                "avg_margin": round(sum(i.get("margin", 0) for i in low_margin) / len(low_margin)) if low_margin else 0
+            }
+        ]
+        
+        # Alerts
+        alerts = []
+        if len(dead_stock) > 0:
+            alerts.append({
+                "message": f"⚠️ {len(dead_stock)} items unsold for 180+ days (Rs. {dead_stock_value:,.0f})",
+                "age_threshold": 180,
+                "action": "Create Clearance Campaign"
+            })
+        if len(slow_moving) > 50:
+            alerts.append({
+                "message": f"⚠️ {len(slow_moving)} items slow-moving (90+ days)",
+                "age_threshold": 90,
+                "action": "Create Discount Campaign"
+            })
+        
+        return {
+            "success": True,
+            "dead_stock_count": len(dead_stock),
+            "dead_stock_value": dead_stock_value,
+            "slow_moving_count": len(slow_moving),
+            "slow_moving_value": slow_moving_value,
+            "fast_moving_count": len(fast_moving),
+            "fast_moving_value": fast_moving_value,
+            "total_items": len(items),
+            "total_value": total_value,
+            "age_buckets": age_buckets,
+            "margin_analysis": margin_analysis,
+            "alerts": alerts,
+            "dead_stock_items": sorted(dead_stock, key=lambda x: x.get("age_days", 0), reverse=True)[:50]
+        }
+    
+    except Exception as e:
+        logger.error(f"Error in health analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/inventory/create-clearance-campaign")
+async def create_clearance_campaign(campaign_data: dict):
+    """Auto-create clearance campaign for old stock"""
+    try:
+        from uuid import uuid4
+        
+        age_days = campaign_data.get("age_days", 90)
+        discount = campaign_data.get("discount_percentage", 20)
+        
+        # Find items older than threshold
+        items = await db.inventory_v2.find({}, {"_id": 0}).to_list(10000)
+        now = datetime.now(timezone.utc)
+        old_items = []
+        
+        for item in items:
+            created_at = item.get("created_at")
+            if created_at:
+                try:
+                    created_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                    age = (now - created_date).days
+                    if age >= age_days:
+                        old_items.append(item)
+                except:
+                    pass
+        
+        # Create campaign
+        campaign = {
+            "id": str(uuid4()),
+            "name": f"Auto Clearance - {age_days}+ Days Old",
+            "type": "clearance",
+            "target": "old_stock",
+            "discount_percentage": discount,
+            "start_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "end_date": (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d"),
+            "status": "active",
+            "items_count": len(old_items),
+            "items_skus": [item["sku"] for item in old_items[:100]],  # First 100
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.campaigns.insert_one(campaign)
+        
+        return {
+            "success": True,
+            "message": f"Clearance campaign created with {discount}% discount",
+            "campaign_id": campaign["id"],
+            "items_count": len(old_items)
+        }
+    
+    except Exception as e:
+        logger.error(f"Error creating clearance campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/pricing/bulk-enable")
 async def bulk_enable_pricing(category: str = None, limit: int = 1000):
     """Enable pricing for all SKUs or specific category"""
