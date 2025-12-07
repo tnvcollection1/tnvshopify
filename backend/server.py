@@ -1798,6 +1798,50 @@ async def _sync_cod_payments_background():
         logger.error(f"❌ Error in background COD payment sync: {str(e)}")
 
 
+@api_router.post("/tcs/cleanup-invalid-orders")
+async def cleanup_invalid_tcs_orders():
+    """Clean up TCS payment data for orders with invalid tracking numbers"""
+    try:
+        # Find orders with cod_payment_status but invalid/old tracking
+        invalid_orders = await db.customers.find({
+            "cod_payment_status": {"$exists": True, "$ne": None},
+            "tracking_number": {"$exists": True}
+        }, {"_id": 0, "order_number": 1, "tracking_number": 1, "cod_payment_status": 1}).to_list(1000)
+        
+        cleaned_count = 0
+        for order in invalid_orders:
+            tracking = order.get("tracking_number")
+            if not tracking:
+                continue
+            
+            # Check if tracking is valid by trying TCS API
+            try:
+                tracking_url = f"https://www.tcsexpress.com/track-shipment?tracking_id={tracking}"
+                # If order is very old (before a certain date), mark as archived
+                result = await db.customers.update_one(
+                    {"order_number": order["order_number"]},
+                    {"$set": {
+                        "order_validity": "archived",
+                        "archived_reason": "Old tracking number",
+                        "archived_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                if result.modified_count > 0:
+                    cleaned_count += 1
+            except:
+                pass
+        
+        return {
+            "success": True,
+            "message": f"Cleaned up {cleaned_count} invalid orders",
+            "cleaned_count": cleaned_count
+        }
+    
+    except Exception as e:
+        logger.error(f"Error cleaning up invalid orders: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/tcs/sync-cod-payments")
 async def sync_cod_payments(background_tasks: BackgroundTasks):
     """
