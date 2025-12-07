@@ -174,10 +174,10 @@ const CustomerSegmentationDashboard = () => {
               </p>
             </div>
             <button
-              onClick={() => sendBulkMessage('dormant')}
+              onClick={() => downloadCustomerList('dormant')}
               className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
             >
-              Send "We Miss You" Campaign
+              Download Dormant Customer List
             </button>
           </div>
         </div>
