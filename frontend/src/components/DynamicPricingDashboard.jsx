@@ -160,9 +160,9 @@ const DynamicPricingDashboard = () => {
               onChange={(e) => setSelectedStore(e.target.value)}
               className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
             >
-              <option value="tnvcollection">TNC Collection (Working ✅)</option>
-              <option value="tnvcollectionpk">TNC Collection PK (Update Token)</option>
-              <option value="ashmiaa">Ashmiaa</option>
+              <option value="tnvcollection">TNC Collection ✅</option>
+              <option value="tnvcollectionpk">TNC Collection PK ✅</option>
+              <option value="ashmiaa">Ashmiaa ✅</option>
             </select>
             
             <button
