@@ -58,9 +58,40 @@ const CustomerSegmentationDashboard = () => {
     window.open(whatsappUrl, '_blank');
   };
 
-  const downloadCustomerList = (segment) => {
-    // Create CSV of customer list for that segment
-    alert(`This will download ${segment} customer list with phone numbers for bulk messaging`);
+  const downloadCustomerList = async (segment) => {
+    try {
+      const res = await axios.get(`${API_URL}/api/customers/export-segment/${segment}`);
+      
+      if (!res.data.customers || res.data.customers.length === 0) {
+        alert(`No customers found in ${segment} segment`);
+        return;
+      }
+      
+      // Create CSV content
+      const customers = res.data.customers;
+      const csvHeader = 'Name,Phone,Order Number,Total Spent,Orders,WhatsApp Link,Suggested Message\n';
+      const csvRows = customers.map(c => 
+        `"${c.name}","${c.phone}","${c.order_number}",${c.total_spent},${c.orders},"${c.whatsapp_link}","${c.suggested_message}"`
+      ).join('\n');
+      
+      const csvContent = csvHeader + csvRows;
+      
+      // Download as CSV file
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${segment}_customers_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      alert(`✅ Downloaded ${customers.length} customers from ${segment} segment!\n\nThe CSV includes:\n- Phone numbers\n- Order numbers\n- WhatsApp links (click to open)\n- Pre-written messages`);
+    } catch (error) {
+      console.error('Error downloading customer list:', error);
+      alert('❌ Error downloading customer list');
+    }
   };
 
   if (loading) {
