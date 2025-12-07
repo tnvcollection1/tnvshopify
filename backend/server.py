@@ -4658,7 +4658,9 @@ async def get_customer_segments():
                 "email": customer.get("email", ""),
                 "total_spent": total_spent,
                 "order_count": order_count,
-                "last_order_date": last_order
+                "last_order_date": last_order,
+                "order_number": customer.get("order_number", ""),
+                "order_skus": customer.get("order_skus", [])
             }
             
             # Segment by value
