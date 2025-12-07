@@ -154,7 +154,16 @@ const DynamicPricingDashboard = () => {
             </p>
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <select
+              value={selectedStore}
+              onChange={(e) => setSelectedStore(e.target.value)}
+              className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="tnvcollectionpk">TNC Collection PK</option>
+              <option value="ashmiaa">Ashmiaa</option>
+            </select>
+            
             <button
               onClick={handleClassifyAll}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
