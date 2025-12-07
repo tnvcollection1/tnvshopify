@@ -12,7 +12,7 @@ const DynamicPricingDashboard = () => {
   const [filter, setFilter] = useState('all'); // all, A, B, C
   const [showConfig, setShowConfig] = useState(false);
   const [config, setConfig] = useState(null);
-  const [selectedStore, setSelectedStore] = useState('tnvcollectionpk'); // Default store
+  const [selectedStore, setSelectedStore] = useState('tnvcollection'); // Default store
 
   useEffect(() => {
     fetchDashboardData();
