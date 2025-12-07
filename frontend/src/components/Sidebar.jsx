@@ -58,6 +58,7 @@ const Sidebar = () => {
       items: [
         { icon: Package, label: 'Inventory', path: '/inventory' },
         { icon: BarChart3, label: 'Inventory Overview', path: '/inventory-overview' },
+        { icon: TrendingUp, label: 'Inventory Health', path: '/inventory-health', highlighted: true },
       ]
     },
     {
