@@ -21,6 +21,7 @@ import InventoryCampaignManager from "@/components/InventoryCampaignManager";
 import CampaignManager from "@/components/CampaignManager";
 import FlashSaleManager from "@/components/FlashSaleManager";
 import CustomerSegmentation from "@/components/CustomerSegmentation";
+import CustomerSegmentationDashboard from "@/components/CustomerSegmentationDashboard";
 import BundleCreator from "@/components/BundleCreator";
 import DynamicPricingDashboard from "@/components/DynamicPricingDashboard";
 import InventoryHealthDashboard from "@/components/InventoryHealthDashboard";
