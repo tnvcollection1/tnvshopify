@@ -139,7 +139,7 @@ function AppRoutes() {
         path="/campaigns" 
         element={
           <ProtectedRoute>
-            <InventoryCampaignManager />
+            <CampaignManager />
           </ProtectedRoute>
         } 
       />
