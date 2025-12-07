@@ -71,21 +71,19 @@ const DynamicPricingDashboard = () => {
       
       if (sku) {
         // Sync single SKU
-        const storeName = 'asmia'; // Default store
-        const res = await axios.post(`${API_URL}/api/pricing/sync-to-shopify/${sku}?store_name=${storeName}`);
+        const res = await axios.post(`${API_URL}/api/pricing/sync-to-shopify/${sku}?store_name=${selectedStore}`);
         
         if (res.data.success) {
-          alert(`✅ Price synced to Shopify for ${sku}\nNew Price: Rs. ${res.data.new_price}`);
+          alert(`✅ Price synced to Shopify for ${sku}\nStore: ${selectedStore}\nNew Price: Rs. ${res.data.new_price}`);
         } else {
           alert(`❌ Sync failed: ${res.data.error || 'Unknown error'}`);
         }
       } else {
         // Bulk sync all
-        const storeName = 'asmia';
-        const res = await axios.post(`${API_URL}/api/pricing/sync-all-to-shopify?store_name=${storeName}&limit=100`);
+        const res = await axios.post(`${API_URL}/api/pricing/sync-all-to-shopify?store_name=${selectedStore}&limit=100`);
         
         if (res.data.success) {
-          alert(`✅ Bulk sync complete!\n\nSuccessfully synced: ${res.data.success_count || 0} SKUs\nFailed: ${res.data.failed_count || 0} SKUs\nTotal processed: ${res.data.total_processed || 0}`);
+          alert(`✅ Bulk sync complete to ${selectedStore}!\n\nSuccessfully synced: ${res.data.success_count || 0} SKUs\nFailed: ${res.data.failed_count || 0} SKUs\nTotal processed: ${res.data.total_processed || 0}`);
         } else {
           alert(`❌ Sync failed: ${res.data.error || 'Unknown error'}\n\nNote: Make sure Shopify credentials are configured correctly.`);
         }
