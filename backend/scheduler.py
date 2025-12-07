@@ -60,6 +60,17 @@ class AutoSyncScheduler:
             coalesce=True
         )
         
+        # Schedule Dynamic Pricing sync to Shopify every 30 minutes
+        self.scheduler.add_job(
+            func=self.sync_dynamic_pricing,
+            trigger=IntervalTrigger(minutes=30),
+            id='pricing_sync',
+            name='Dynamic Pricing Sync to Shopify (Every 30 Minutes)',
+            replace_existing=True,
+            max_instances=1,
+            coalesce=True
+        )
+        
         # Schedule TCS COD payment sync every 4 hours
         # TEMPORARILY DISABLED: COD Payment API returning 404 - needs different credentials
         # Uncomment when proper API access is obtained from TCS
