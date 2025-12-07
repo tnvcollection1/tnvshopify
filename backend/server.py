@@ -4834,6 +4834,100 @@ async def export_segment(segment_type: str):
         logger.error(f"Error exporting segment: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/customers/export-segment/{segment}")
+async def export_customer_segment(segment: str):
+    """Export customer segment as CSV with phone numbers for bulk messaging"""
+    try:
+        from io import StringIO
+        import csv
+        
+        # Get customers in segment
+        customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
+        
+        target_customers = []
+        now = datetime.now(timezone.utc)
+        
+        for customer in customers:
+            total_spent = customer.get("total_spent", 0)
+            
+            # Get suggested message based on segment
+            if segment == "vip" and total_spent >= 10000:
+                message = "🌟 Exclusive VIP Offer! As one of our most valued customers, enjoy 15% OFF + Free Shipping."
+                target_customers.append({
+                    "name": customer.get("name", ""),
+                    "phone": customer.get("phone", ""),
+                    "order_number": customer.get("order_number", ""),
+                    "total_spent": total_spent,
+                    "orders": customer.get("order_count", 0),
+                    "suggested_message": message,
+                    "whatsapp_link": f"https://wa.me/{customer.get('phone', '').replace(' ', '')}?text={message.replace(' ', '%20')}"
+                })
+            elif segment == "high_value" and 5000 <= total_spent < 10000:
+                message = "🎁 Special Preview Access! Get early access to new collection + 10% discount."
+                target_customers.append({
+                    "name": customer.get("name", ""),
+                    "phone": customer.get("phone", ""),
+                    "order_number": customer.get("order_number", ""),
+                    "total_spent": total_spent,
+                    "orders": customer.get("order_count", 0),
+                    "suggested_message": message,
+                    "whatsapp_link": f"https://wa.me/{customer.get('phone', '').replace(' ', '')}?text={message.replace(' ', '%20')}"
+                })
+            elif segment == "medium_value" and 2000 <= total_spent < 5000:
+                message = "💎 Special Offer! Enjoy 15% OFF on your next purchase."
+                target_customers.append({
+                    "name": customer.get("name", ""),
+                    "phone": customer.get("phone", ""),
+                    "order_number": customer.get("order_number", ""),
+                    "total_spent": total_spent,
+                    "orders": customer.get("order_count", 0),
+                    "suggested_message": message,
+                    "whatsapp_link": f"https://wa.me/{customer.get('phone', '').replace(' ', '')}?text={message.replace(' ', '%20')}"
+                })
+            elif segment == "low_value" and total_spent < 2000:
+                message = "👋 Welcome! Get 20% OFF your next order."
+                target_customers.append({
+                    "name": customer.get("name", ""),
+                    "phone": customer.get("phone", ""),
+                    "order_number": customer.get("order_number", ""),
+                    "total_spent": total_spent,
+                    "orders": customer.get("order_count", 0),
+                    "suggested_message": message,
+                    "whatsapp_link": f"https://wa.me/{customer.get('phone', '').replace(' ', '')}?text={message.replace(' ', '%20')}"
+                })
+            elif segment == "dormant":
+                # Check if dormant
+                last_order = customer.get("last_order_date")
+                if last_order:
+                    try:
+                        last_order_date = datetime.fromisoformat(last_order.replace('Z', '+00:00'))
+                        days_since = (now - last_order_date).days
+                        if days_since >= 90:
+                            message = "💌 We Miss You! Come back and enjoy 20% OFF your next order."
+                            target_customers.append({
+                                "name": customer.get("name", ""),
+                                "phone": customer.get("phone", ""),
+                                "order_number": customer.get("order_number", ""),
+                                "total_spent": total_spent,
+                                "orders": customer.get("order_count", 0),
+                                "days_inactive": days_since,
+                                "suggested_message": message,
+                                "whatsapp_link": f"https://wa.me/{customer.get('phone', '').replace(' ', '')}?text={message.replace(' ', '%20')}"
+                            })
+                    except:
+                        pass
+        
+        return {
+            "success": True,
+            "segment": segment,
+            "customers": target_customers,
+            "count": len(target_customers)
+        }
+    
+    except Exception as e:
+        logger.error(f"Error exporting segment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @api_router.get("/bundles")
 async def get_bundles():
