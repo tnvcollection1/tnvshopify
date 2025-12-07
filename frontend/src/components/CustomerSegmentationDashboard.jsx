@@ -134,10 +134,10 @@ const CustomerSegmentationDashboard = () => {
             Rs. {segments?.medium_value?.total_value?.toLocaleString() || 0}
           </p>
           <button
-            onClick={() => sendBulkMessage('medium_value')}
+            onClick={() => downloadCustomerList('medium_value')}
             className="mt-3 w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors"
           >
-            Send Discount Offer
+            Download Medium Value List
           </button>
         </div>
 
