@@ -4622,11 +4622,15 @@ async def delete_flash_sale(sale_id: str):
 
 
 @api_router.get("/customers/segments")
-async def get_customer_segments():
+async def get_customer_segments(store_name: str = None):
     """Segment customers by value and behavior"""
     try:
         # Get all customers with order history
-        customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
+        query = {}
+        if store_name:
+            query["store_name"] = store_name
+        
+        customers = await db.customers.find(query, {"_id": 0}).to_list(10000)
         
         vip_customers = []
         high_value_customers = []
