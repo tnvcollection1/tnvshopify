@@ -182,20 +182,6 @@ const DynamicPricingDashboard = () => {
             </button>
           </div>
         </div>
-        
-        {/* Shopify Configuration Notice */}
-        <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="text-yellow-400 font-semibold mb-1">Shopify Configuration Required</h3>
-              <p className="text-sm text-gray-300">
-                To sync prices automatically to Shopify, make sure your store credentials are configured in Settings. 
-                The system will calculate prices automatically, but manual sync to Shopify requires valid API access.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Stats Cards */}
