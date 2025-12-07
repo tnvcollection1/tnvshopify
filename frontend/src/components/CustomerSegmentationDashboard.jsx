@@ -25,21 +25,42 @@ const CustomerSegmentationDashboard = () => {
     }
   };
 
-  const sendBulkMessage = async (segment) => {
-    try {
-      const message = prompt(`Enter WhatsApp message for ${segment} customers:`);
-      if (!message) return;
-      
-      const res = await axios.post(`${API_URL}/api/customers/bulk-message`, {
-        segment: segment,
-        message: message
-      });
-      
-      alert(`✅ ${res.data.message}\nSent to ${res.data.sent_count} customers`);
-    } catch (error) {
-      console.error('Error sending messages:', error);
-      alert('❌ Error sending messages');
+  const getWhatsAppMessage = (segment) => {
+    const messages = {
+      vip: "🌟 Exclusive VIP Offer! As one of our most valued customers, enjoy 15% OFF + Free Shipping on your next order. Shop now: [Your Store Link]",
+      high_value: "🎁 Special Preview Access! Thank you for being a loyal customer. Get early access to our new collection + 10% discount. Limited time!",
+      medium_value: "💎 Special Offer Just For You! Enjoy 15% OFF on your next purchase. Use code: THANKYOU15",
+      low_value: "👋 Welcome! Get 20% OFF your next order as a thank you for choosing us. Start shopping now!",
+      dormant: "💌 We Miss You! It's been a while. Come back and enjoy 20% OFF your next order. We'd love to see you again!"
+    };
+    return messages[segment] || "Hello! Check out our latest collection.";
+  };
+
+  const openWhatsAppWeb = (phone, segment) => {
+    if (!phone) {
+      alert('No phone number available for this customer');
+      return;
     }
+    
+    // Clean phone number (remove spaces, dashes, etc.)
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    // Get pre-filled message based on segment
+    const message = getWhatsAppMessage(segment);
+    
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // WhatsApp Web link
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+    
+    // Open in new tab
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const downloadCustomerList = (segment) => {
+    // Create CSV of customer list for that segment
+    alert(`This will download ${segment} customer list with phone numbers for bulk messaging`);
   };
 
   if (loading) {
