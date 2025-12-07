@@ -223,6 +223,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/campaigns" 
+        element={
+          <ProtectedRoute>
+            <CampaignManager />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
