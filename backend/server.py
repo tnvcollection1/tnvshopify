@@ -4839,14 +4839,18 @@ async def export_segment(segment_type: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/customers/export-segment/{segment}")
-async def export_customer_segment(segment: str):
+async def export_customer_segment(segment: str, store_name: str = None):
     """Export customer segment as CSV with phone numbers for bulk messaging"""
     try:
         from io import StringIO
         import csv
         
         # Get customers in segment
-        customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
+        query = {}
+        if store_name:
+            query["store_name"] = store_name
+        
+        customers = await db.customers.find(query, {"_id": 0}).to_list(10000)
         
         target_customers = []
         now = datetime.now(timezone.utc)
