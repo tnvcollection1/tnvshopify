@@ -63,6 +63,7 @@ const Sidebar = () => {
     {
       title: 'MARKETING',
       items: [
+        { icon: TrendingUp, label: 'Dynamic Pricing', path: '/dynamic-pricing', highlighted: true },
         { icon: Target, label: 'Campaigns', path: '/campaigns' },
         { icon: Zap, label: 'Flash Sales', path: '/flash-sales' },
         { icon: UsersIcon, label: 'Customer Segments', path: '/segments' },
