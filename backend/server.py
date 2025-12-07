@@ -5781,6 +5781,329 @@ def generate_status_message(customer: dict, status: str) -> str:
     return messages.get(status, f"Hi {name},\n\nOrder #{order_num} status update:\nStatus: {status}\nTracking: {tracking}\n\nTNV Collection")
 
 
+# ========================================
+# DYNAMIC PRICING ENDPOINTS
+# ========================================
+
+# Initialize pricing engine
+pricing_engine = DynamicPricingEngine(db)
+
+@api_router.post("/pricing/initialize")
+async def initialize_pricing_system():
+    """Initialize dynamic pricing collections and indexes"""
+    try:
+        result = await pricing_engine.initialize_pricing_collection()
+        if result:
+            return {"success": True, "message": "Dynamic pricing system initialized"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to initialize pricing")
+    except Exception as e:
+        logger.error(f"Error initializing pricing: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/pricing/config")
+async def get_pricing_config():
+    """Get current pricing configuration"""
+    try:
+        return {
+            "success": True,
+            "config": pricing_engine.config
+        }
+    except Exception as e:
+        logger.error(f"Error getting pricing config: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/pricing/config")
+async def update_pricing_config(config_update: dict):
+    """Update pricing configuration"""
+    try:
+        # Merge with existing config
+        pricing_engine.config.update(config_update)
+        
+        return {
+            "success": True,
+            "message": "Pricing configuration updated",
+            "config": pricing_engine.config
+        }
+    except Exception as e:
+        logger.error(f"Error updating pricing config: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/pricing/classify-all")
+async def classify_all_skus(store_name: str = None):
+    """Classify all SKUs in inventory into pricing categories"""
+    try:
+        # Get all unique SKUs from inventory
+        query = {}
+        if store_name:
+            query["store_name"] = store_name
+        
+        items = await db.inventory_v2.find(query, {"_id": 0, "sku": 1}).to_list(10000)
+        unique_skus = list(set(item["sku"] for item in items if item.get("sku")))
+        
+        results = []
+        for sku in unique_skus:
+            classification = await pricing_engine.classify_sku(sku, store_name)
+            
+            # Upsert into pricing_rules
+            await db.pricing_rules.update_one(
+                {"sku": sku.upper()},
+                {"$set": classification},
+                upsert=True
+            )
+            
+            results.append(classification)
+        
+        # Count by category
+        category_counts = {
+            "A": len([r for r in results if r["category"] == "A"]),
+            "B": len([r for r in results if r["category"] == "B"]),
+            "C": len([r for r in results if r["category"] == "C"])
+        }
+        
+        return {
+            "success": True,
+            "message": f"Classified {len(results)} SKUs",
+            "total_skus": len(results),
+            "category_breakdown": category_counts,
+            "results": results[:50]  # Return first 50 for preview
+        }
+    except Exception as e:
+        logger.error(f"Error classifying SKUs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/pricing/rules")
+async def get_all_pricing_rules(category: str = None, limit: int = 100):
+    """Get all pricing rules with optional category filter"""
+    try:
+        query = {}
+        if category:
+            query["category"] = category.upper()
+        
+        rules = await db.pricing_rules.find(query, {"_id": 0}).limit(limit).to_list(limit)
+        
+        return {
+            "success": True,
+            "rules": rules,
+            "total": len(rules)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching pricing rules: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/pricing/calculate/{sku}")
+async def calculate_price_for_sku(sku: str, store_name: str = None):
+    """Calculate current dynamic price for a specific SKU"""
+    try:
+        price_data = await pricing_engine.calculate_dynamic_price(sku, store_name)
+        
+        return {
+            "success": True,
+            "pricing": price_data
+        }
+    except Exception as e:
+        logger.error(f"Error calculating price: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/pricing/calculate-all")
+async def calculate_all_prices(store_name: str = None, limit: int = 100):
+    """Calculate dynamic prices for all SKUs"""
+    try:
+        # Get all pricing rules
+        query = {}
+        if store_name:
+            # Get SKUs from this store
+            items = await db.inventory_v2.find(
+                {"store_name": store_name},
+                {"_id": 0, "sku": 1}
+            ).limit(limit).to_list(limit)
+            skus = [item["sku"] for item in items if item.get("sku")]
+            query["sku"] = {"$in": skus}
+        
+        rules = await db.pricing_rules.find(query, {"_id": 0, "sku": 1}).limit(limit).to_list(limit)
+        
+        results = []
+        for rule in rules:
+            sku = rule["sku"]
+            price_data = await pricing_engine.calculate_dynamic_price(sku, store_name)
+            results.append(price_data)
+        
+        return {
+            "success": True,
+            "prices": results,
+            "total": len(results)
+        }
+    except Exception as e:
+        logger.error(f"Error calculating all prices: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/pricing/track-order")
+async def track_order_for_pricing(order_data: dict):
+    """Track a new order for pricing calculations"""
+    try:
+        result = await pricing_engine.track_new_order(order_data)
+        
+        if result:
+            return {
+                "success": True,
+                "message": "Order tracked for dynamic pricing"
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to track order")
+    except Exception as e:
+        logger.error(f"Error tracking order: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/pricing/sync-to-shopify/{sku}")
+async def sync_price_to_shopify(sku: str, store_name: str):
+    """Sync calculated price to Shopify for a specific SKU"""
+    try:
+        # Get store credentials
+        store = await db.stores.find_one(
+            {"name": store_name},
+            {"_id": 0, "shopify_domain": 1, "shopify_token": 1}
+        )
+        
+        if not store:
+            raise HTTPException(status_code=404, detail="Store not found")
+        
+        # Calculate current price
+        price_data = await pricing_engine.calculate_dynamic_price(sku, store_name)
+        
+        # Sync to Shopify
+        result = await pricing_engine.sync_price_to_shopify(
+            sku,
+            price_data["current_price"],
+            price_data.get("compare_at_price"),
+            store["shopify_domain"],
+            store["shopify_token"]
+        )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error syncing to Shopify: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/pricing/sync-all-to-shopify")
+async def sync_all_prices_to_shopify(store_name: str, limit: int = 100):
+    """Bulk sync all dynamic prices to Shopify"""
+    try:
+        result = await pricing_engine.bulk_sync_to_shopify(store_name, limit)
+        return result
+    except Exception as e:
+        logger.error(f"Error in bulk sync: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/pricing/reset-weekly")
+async def reset_weekly_pricing():
+    """Reset weekly pricing counters (scheduled task)"""
+    try:
+        result = await pricing_engine.reset_weekly_counters()
+        return result
+    except Exception as e:
+        logger.error(f"Error resetting weekly counters: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/pricing/rule/{sku}")
+async def update_pricing_rule(sku: str, update_data: dict):
+    """Update pricing rule for a specific SKU"""
+    try:
+        sku = sku.upper()
+        
+        # Build update dict
+        update_fields = {}
+        if "enabled" in update_data:
+            update_fields["enabled"] = update_data["enabled"]
+        if "category" in update_data:
+            update_fields["category"] = update_data["category"]
+        if "base_price" in update_data:
+            update_fields["base_price"] = float(update_data["base_price"])
+        if "manual_override" in update_data:
+            update_fields["manual_override"] = update_data["manual_override"]
+        if "override_multiplier" in update_data:
+            update_fields["override_multiplier"] = float(update_data["override_multiplier"])
+        
+        update_fields["last_updated"] = datetime.now(timezone.utc).isoformat()
+        
+        result = await db.pricing_rules.update_one(
+            {"sku": sku},
+            {"$set": update_fields}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Pricing rule not found")
+        
+        return {
+            "success": True,
+            "message": f"Pricing rule updated for {sku}"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating pricing rule: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/pricing/dashboard-stats")
+async def get_pricing_dashboard_stats():
+    """Get statistics for pricing dashboard"""
+    try:
+        # Count by category
+        total_rules = await db.pricing_rules.count_documents({})
+        enabled_rules = await db.pricing_rules.count_documents({"enabled": True})
+        
+        category_a = await db.pricing_rules.count_documents({"category": "A"})
+        category_b = await db.pricing_rules.count_documents({"category": "B"})
+        category_c = await db.pricing_rules.count_documents({"category": "C"})
+        
+        # Get recent price changes (high multipliers)
+        surging_items = await db.pricing_rules.find(
+            {},
+            {"_id": 0, "sku": 1, "product_name": 1, "category": 1, "base_price": 1}
+        ).limit(10).to_list(10)
+        
+        # Calculate current prices for surging items
+        for item in surging_items:
+            price_data = await pricing_engine.calculate_dynamic_price(item["sku"])
+            item["current_price"] = price_data.get("current_price", 0)
+            item["multiplier"] = price_data.get("multiplier", 1.0)
+            item["rolling_orders"] = price_data.get("rolling_orders", 0)
+        
+        # Sort by multiplier
+        surging_items = sorted(surging_items, key=lambda x: x.get("multiplier", 1.0), reverse=True)
+        
+        # Get items on sale (discount)
+        sale_items = [item for item in surging_items if item.get("multiplier", 1.0) < 1.0]
+        
+        return {
+            "success": True,
+            "stats": {
+                "total_skus": total_rules,
+                "enabled_skus": enabled_rules,
+                "category_a_count": category_a,
+                "category_b_count": category_b,
+                "category_c_count": category_c,
+                "surging_items": surging_items[:5],
+                "sale_items": sale_items[:5]
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error fetching pricing dashboard stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # Include the router in the main app
 app.include_router(api_router)
