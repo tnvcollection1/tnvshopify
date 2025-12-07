@@ -119,8 +119,10 @@ class DynamicPricingEngine:
             
             base_price = 0
             if inventory_item:
-                # Use sale_price as base, fallback to cost * 1.5
-                base_price = inventory_item.get("sale_price", 0) or (inventory_item.get("cost", 0) * 1.5)
+                # Use sale_price as base, fallback to cost * 2 (standard retail markup)
+                sale_price = inventory_item.get("sale_price", 0)
+                cost = inventory_item.get("cost", 0)
+                base_price = sale_price if sale_price > 0 else (cost * 2)
             
             # Classify
             category = "C"  # Default: Low velocity
