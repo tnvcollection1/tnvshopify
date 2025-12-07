@@ -4930,6 +4930,27 @@ async def export_customer_segment(segment: str):
 
 @api_router.post("/customers/bulk-message")
 async def send_bulk_message(message_data: dict):
+    """Send bulk messages to customers"""
+    try:
+        # Basic implementation for bulk messaging
+        customer_ids = message_data.get('customer_ids', [])
+        message = message_data.get('message', '')
+        
+        if not customer_ids:
+            raise HTTPException(status_code=400, detail="No customers selected")
+        
+        if not message:
+            raise HTTPException(status_code=400, detail="Message is required")
+        
+        return {
+            "success": True,
+            "message": f"Bulk message prepared for {len(customer_ids)} customers",
+            "customer_count": len(customer_ids)
+        }
+    
+    except Exception as e:
+        logger.error(f"Error sending bulk message: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/bundles")
 async def get_bundles():
