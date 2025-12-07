@@ -4623,17 +4623,97 @@ async def delete_flash_sale(sale_id: str):
 
 @api_router.get("/customers/segments")
 async def get_customer_segments():
-    """Get all customer segments"""
+    """Segment customers by value and behavior"""
     try:
-        segments = await db.customer_segments.find({}, {"_id": 0}).to_list(1000)
+        # Get all customers with order history
+        customers = await db.customers.find({}, {"_id": 0}).to_list(10000)
+        
+        vip_customers = []
+        high_value_customers = []
+        medium_value_customers = []
+        low_value_customers = []
+        dormant_customers = []
+        
+        now = datetime.now(timezone.utc)
+        
+        for customer in customers:
+            total_spent = customer.get("total_spent", 0)
+            order_count = customer.get("order_count", 0)
+            last_order = customer.get("last_order_date")
+            
+            # Check if dormant (90+ days)
+            is_dormant = False
+            if last_order:
+                try:
+                    last_order_date = datetime.fromisoformat(last_order.replace('Z', '+00:00'))
+                    days_since = (now - last_order_date).days
+                    if days_since >= 90:
+                        is_dormant = True
+                except:
+                    pass
+            
+            customer_data = {
+                "name": customer.get("name", "Unknown"),
+                "phone": customer.get("phone", ""),
+                "email": customer.get("email", ""),
+                "total_spent": total_spent,
+                "order_count": order_count,
+                "last_order_date": last_order
+            }
+            
+            # Segment by value
+            if total_spent >= 10000:
+                vip_customers.append(customer_data)
+            elif total_spent >= 5000:
+                high_value_customers.append(customer_data)
+            elif total_spent >= 2000:
+                medium_value_customers.append(customer_data)
+            else:
+                low_value_customers.append(customer_data)
+            
+            if is_dormant:
+                dormant_customers.append(customer_data)
+        
+        # Sort by total spent
+        vip_customers.sort(key=lambda x: x["total_spent"], reverse=True)
+        high_value_customers.sort(key=lambda x: x["total_spent"], reverse=True)
+        medium_value_customers.sort(key=lambda x: x["total_spent"], reverse=True)
+        
+        def calc_total(segment):
+            return sum(c["total_spent"] for c in segment)
         
         return {
             "success": True,
-            "segments": segments
+            "vip": {
+                "count": len(vip_customers),
+                "total_value": calc_total(vip_customers),
+                "customers": vip_customers[:10]
+            },
+            "high_value": {
+                "count": len(high_value_customers),
+                "total_value": calc_total(high_value_customers),
+                "customers": high_value_customers[:10]
+            },
+            "medium_value": {
+                "count": len(medium_value_customers),
+                "total_value": calc_total(medium_value_customers),
+                "customers": medium_value_customers[:10]
+            },
+            "low_value": {
+                "count": len(low_value_customers),
+                "total_value": calc_total(low_value_customers),
+                "customers": low_value_customers[:10]
+            },
+            "dormant": {
+                "count": len(dormant_customers),
+                "total_value": calc_total(dormant_customers),
+                "customers": dormant_customers[:10]
+            },
+            "total_value": calc_total(customers)
         }
     
     except Exception as e:
-        logger.error(f"Error fetching segments: {str(e)}")
+        logger.error(f"Error getting customer segments: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
