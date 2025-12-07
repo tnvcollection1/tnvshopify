@@ -196,16 +196,25 @@ const CustomerSegmentationDashboard = () => {
           <div className="p-6">
             {segments?.vip?.customers?.slice(0, 5).map((customer, idx) => (
               <div key={idx} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg mb-3">
-                <div>
+                <div className="flex-1">
                   <div className="font-semibold">{customer.name}</div>
                   <div className="text-sm text-gray-400">{customer.phone}</div>
+                  <div className="text-xs text-gray-500 mt-1">Order: {customer.order_number}</div>
                 </div>
-                <div className="text-right">
+                <div className="text-right mr-3">
                   <div className="text-lg font-bold text-yellow-400">
                     Rs. {customer.total_spent?.toLocaleString()}
                   </div>
                   <div className="text-xs text-gray-400">{customer.order_count} orders</div>
                 </div>
+                <button
+                  onClick={() => openWhatsAppWeb(customer.phone, 'vip')}
+                  className="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-xs transition-colors flex items-center gap-1"
+                  title="Open WhatsApp"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp
+                </button>
               </div>
             ))}
           </div>
