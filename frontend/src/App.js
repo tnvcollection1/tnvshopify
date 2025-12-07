@@ -18,6 +18,7 @@ import WhatsAppInbox from "@/components/WhatsAppInbox";
 import WhatsAppTemplates from "@/components/WhatsAppTemplates";
 import MarketingDashboard from "@/components/MarketingDashboard";
 import InventoryCampaignManager from "@/components/InventoryCampaignManager";
+import CampaignManager from "@/components/CampaignManager";
 import FlashSaleManager from "@/components/FlashSaleManager";
 import CustomerSegmentation from "@/components/CustomerSegmentation";
 import BundleCreator from "@/components/BundleCreator";
