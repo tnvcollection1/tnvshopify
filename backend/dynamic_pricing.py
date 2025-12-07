@@ -399,12 +399,12 @@ class DynamicPricingEngine:
         try:
             # Get store credentials
             store = await self.db.stores.find_one(
-                {"name": store_name},
+                {"store_name": store_name},
                 {"_id": 0, "shopify_domain": 1, "shopify_token": 1}
             )
             
             if not store:
-                return {"success": False, "error": "Store not found"}
+                return {"success": False, "error": f"Store '{store_name}' not found"}
             
             # Get all enabled pricing rules
             pricing_rules = await self.db.pricing_rules.find(
