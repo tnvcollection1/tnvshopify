@@ -23,6 +23,7 @@ import FlashSaleManager from "@/components/FlashSaleManager";
 import CustomerSegmentation from "@/components/CustomerSegmentation";
 import BundleCreator from "@/components/BundleCreator";
 import DynamicPricingDashboard from "@/components/DynamicPricingDashboard";
+import InventoryHealthDashboard from "@/components/InventoryHealthDashboard";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
