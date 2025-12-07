@@ -344,6 +344,18 @@ frontend:
           agent: "testing"
           comment: "TESTED ✅ - WhatsApp integration fully functional in Dispatch Tracker. Verified: 1) Login with admin/admin123 successful, 2) Navigation to /tracker successful, 3) Orders loading correctly (100 orders displayed), 4) WhatsApp buttons (green message circle icons) visible in Actions column (302 buttons found), 5) WhatsApp dialog opens when clicked, 6) Dialog displays customer name (hayder ali), phone (03335177057), order number (#29445), and pre-filled message (109 characters), 7) Professional UI with Send/Cancel buttons, 8) All screenshots captured as requested. WhatsApp integration working perfectly without affecting existing functionality."
 
+  - task: "Customer Segmentation store filter feature"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/CustomerSegmentationDashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Customer Segmentation store filter feature fully functional. Successfully verified: 1) Login with admin/admin123, 2) Navigation to /segments successful, 3) Store filter dropdown visible at top right with all options (All Stores, TNC Collection, TNC Collection PK, Ashmiaa), 4) Store filtering works correctly - customer counts change based on selected store (TNC Collection PK: VIP=722, Ashmiaa: VIP=594, TNC Collection: VIP=0), 5) Store switching between all options working smoothly, 6) Download functionality working with store filter (CSV downloads filtered customers), 7) WhatsApp buttons (12 found) functional with filtered data, 8) Data consistency verified - different stores show different customer segments. Professional UI with smooth transitions and real-time updates. All review requirements met successfully."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
