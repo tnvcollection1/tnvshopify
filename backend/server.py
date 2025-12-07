@@ -4928,6 +4928,8 @@ async def export_customer_segment(segment: str):
         logger.error(f"Error exporting segment: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/customers/bulk-message")
+async def send_bulk_message(message_data: dict):
 
 @api_router.get("/bundles")
 async def get_bundles():
