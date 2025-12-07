@@ -4246,6 +4246,87 @@ async def get_marketing_stats():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.get("/campaigns")
+async def get_campaigns():
+    """Get all campaigns"""
+    try:
+        campaigns = await db.campaigns.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+        return {
+            "success": True,
+            "campaigns": campaigns
+        }
+    except Exception as e:
+        logger.error(f"Error fetching campaigns: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/campaigns/create")
+async def create_campaign(campaign_data: dict):
+    """Create a new marketing campaign"""
+    try:
+        from uuid import uuid4
+        
+        campaign = {
+            "id": str(uuid4()),
+            "name": campaign_data.get("name"),
+            "type": campaign_data.get("type", "discount"),
+            "target": campaign_data.get("target", "all"),
+            "discount_percentage": campaign_data.get("discount_percentage", 0),
+            "start_date": campaign_data.get("start_date"),
+            "end_date": campaign_data.get("end_date"),
+            "status": campaign_data.get("status", "draft"),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.campaigns.insert_one(campaign)
+        
+        return {
+            "success": True,
+            "message": "Campaign created successfully",
+            "campaign_id": campaign["id"]
+        }
+    except Exception as e:
+        logger.error(f"Error creating campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/campaigns/{campaign_id}/status")
+async def update_campaign_status(campaign_id: str, status_data: dict):
+    """Update campaign status"""
+    try:
+        result = await db.campaigns.update_one(
+            {"id": campaign_id},
+            {"$set": {
+                "status": status_data.get("status"),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        return {"success": True, "message": "Campaign status updated"}
+    except Exception as e:
+        logger.error(f"Error updating campaign status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/campaigns/{campaign_id}")
+async def delete_campaign(campaign_id: str):
+    """Delete a campaign"""
+    try:
+        result = await db.campaigns.delete_one({"id": campaign_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        return {"success": True, "message": "Campaign deleted"}
+    except Exception as e:
+        logger.error(f"Error deleting campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.get("/marketing/campaigns")
 async def get_marketing_campaigns():
     """Get active marketing campaigns"""
