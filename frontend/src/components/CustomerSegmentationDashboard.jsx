@@ -12,7 +12,7 @@ const CustomerSegmentationDashboard = () => {
 
   useEffect(() => {
     fetchSegments();
-  }, []);
+  }, [selectedStore]);
 
   const fetchSegments = async () => {
     try {
