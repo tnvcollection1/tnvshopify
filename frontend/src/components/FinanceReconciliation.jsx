@@ -99,8 +99,8 @@ const FinanceReconciliation = () => {
     try {
       setLoading(true);
       toast.info('🔗 Matching transactions...');
-      const response = await axios.post(`${API_URL}/api/finance/match-transactions`);
-      toast.success(`✅ Matched ${response.data.matched_count} transactions`);
+      const response = await axios.post(`${API_URL}/api/finance/match-transactions?store_name=${selectedStore}`);
+      toast.success(`✅ Matched ${response.data.matched_count} transactions for ${selectedStore}`);
       // Refresh reconciliation
       await fetchReconciliation();
     } catch (error) {
