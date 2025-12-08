@@ -586,6 +586,14 @@ const Orders = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold text-gray-700 w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.length === orders.length && orders.length > 0}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                    </TableHead>
                     <TableHead className="font-semibold text-gray-700">Order #</TableHead>
                     <TableHead className="font-semibold text-gray-700">Customer</TableHead>
                     <TableHead className="font-semibold text-gray-700">Date</TableHead>
