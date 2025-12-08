@@ -41,11 +41,14 @@ class DynamicPricingEngine:
             cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_lookback)
             
             logger.info(f"🔍 Analyzing product velocity for last {days_lookback} days...")
+            logger.info("📦 Fetching lifetime orders from customers collection...")
             
-            # Get all orders from inventory_v2 (which has SKU/product data)
-            orders = await db.inventory_v2.find({}).to_list(10000)
+            # Get all customer orders (lifetime orders)
+            orders = await db.customers.find({}).to_list(50000)
             
-            # Aggregate sales by SKU
+            logger.info(f"📊 Found {len(orders)} total orders to analyze")
+            
+            # Aggregate sales by SKU from line_items
             product_sales = defaultdict(lambda: {
                 'total_quantity': 0,
                 'total_revenue': 0,
@@ -53,29 +56,58 @@ class DynamicPricingEngine:
                 'last_sale_date': None,
                 'product_name': None,
                 'current_price': 0,
-                'current_stock': 0
+                'current_stock': 0,
+                'first_sale_date': None
             })
             
+            processed_orders = 0
+            products_found = 0
+            
             for order in orders:
-                sku = order.get('sku')
-                if not sku:
+                line_items = order.get('line_items', [])
+                
+                if not line_items:
                     continue
+                
+                processed_orders += 1
+                order_date = order.get('created_at')
+                
+                # Process each line item (product) in the order
+                for item in line_items:
+                    sku = item.get('sku')
+                    if not sku or sku == '':
+                        # Try variant_title or product_id as fallback
+                        sku = item.get('variant_title') or item.get('product_id')
                     
-                quantity = order.get('quantity', 0)
-                price = order.get('price', 0)
-                
-                product_sales[sku]['total_quantity'] += quantity
-                product_sales[sku]['total_revenue'] += (quantity * price)
-                product_sales[sku]['order_count'] += 1
-                product_sales[sku]['product_name'] = order.get('product_name', sku)
-                product_sales[sku]['current_price'] = price
-                product_sales[sku]['current_stock'] = order.get('stock', 0)
-                
-                # Track last sale date
-                created_at = order.get('created_at')
-                if created_at:
-                    if not product_sales[sku]['last_sale_date'] or created_at > product_sales[sku]['last_sale_date']:
-                        product_sales[sku]['last_sale_date'] = created_at
+                    if not sku:
+                        continue
+                    
+                    products_found += 1
+                    quantity = item.get('quantity', 1)
+                    price = item.get('price', 0)
+                    
+                    # Try to get numeric price
+                    try:
+                        if isinstance(price, str):
+                            price = float(price)
+                    except:
+                        price = 0
+                    
+                    product_sales[sku]['total_quantity'] += quantity
+                    product_sales[sku]['total_revenue'] += (quantity * price)
+                    product_sales[sku]['order_count'] += 1
+                    product_sales[sku]['product_name'] = item.get('title', item.get('name', sku))
+                    product_sales[sku]['current_price'] = price
+                    
+                    # Track first and last sale dates
+                    if order_date:
+                        if not product_sales[sku]['first_sale_date']:
+                            product_sales[sku]['first_sale_date'] = order_date
+                        if not product_sales[sku]['last_sale_date'] or order_date > product_sales[sku]['last_sale_date']:
+                            product_sales[sku]['last_sale_date'] = order_date
+            
+            logger.info(f"✅ Processed {processed_orders} orders with {products_found} line items")
+            logger.info(f"📦 Found {len(product_sales)} unique products/SKUs")
             
             if not product_sales:
                 logger.warning("⚠️  No product sales data found")
