@@ -83,9 +83,9 @@ const FinanceReconciliation = () => {
   const fetchReconciliation = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/api/finance/reconciliation?store_name=${selectedStore}`);
+      const response = await axios.get(`${API_URL}/api/finance/reconciliation?store_name=ashmiaa`);
       setReconciliationData(response.data);
-      toast.success(`✅ Reconciliation complete for ${selectedStore}`);
+      toast.success('✅ Reconciliation complete');
     } catch (error) {
       console.error('Error fetching reconciliation:', error);
       toast.error('Failed to fetch reconciliation');
