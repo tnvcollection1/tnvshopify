@@ -27,7 +27,7 @@ import FlashSaleManager from "@/components/FlashSaleManager";
 import CustomerSegmentation from "@/components/CustomerSegmentation";
 import CustomerSegmentationDashboard from "@/components/CustomerSegmentationDashboard";
 import BundleCreator from "@/components/BundleCreator";
-import DynamicPricing from "@/components/DynamicPricing";
+import DynamicPricingDashboard from "@/components/DynamicPricingDashboard";
 import InventoryHealthDashboard from "@/components/InventoryHealthDashboard";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
