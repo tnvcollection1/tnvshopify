@@ -234,6 +234,14 @@ const Orders = () => {
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
+              onClick={openWhatsAppWeb}
+              className="border-green-300 hover:bg-green-50 text-green-700"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Open WhatsApp Web
+            </Button>
+            <Button
+              variant="outline"
               onClick={handleSyncTCS}
               disabled={loading}
               className="border-gray-300 hover:bg-gray-50"
