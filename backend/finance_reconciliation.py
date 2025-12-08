@@ -23,8 +23,8 @@ class FinanceReconciliation:
         Returns dict with order_number as key
         """
         try:
-            # Read Excel file
-            df = pd.read_excel(io.BytesIO(file_content), engine='openpyxl')
+            # Read Excel file - skip first 2 rows to get to headers
+            df = pd.read_excel(io.BytesIO(file_content), engine='openpyxl', header=2)
             
             logger.info(f"📊 Loaded general ledger with {len(df)} rows")
             logger.info(f"Columns: {list(df.columns)}")
