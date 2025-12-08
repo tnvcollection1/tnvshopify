@@ -425,12 +425,12 @@ const FinanceReconciliation = () => {
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Order #</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Customer</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Shopify Status</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Delivery</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Ledger Status</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Payment</th>
                   <th className="px-6 py-4 text-right text-sm font-semibold text-gray-400">Amount</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">TX Match</th>
                   <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">Status</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
