@@ -233,22 +233,20 @@ const CustomerSegmentationDashboard = () => {
       {/* Dormant Customers Alert */}
       {segments?.dormant && segments.dormant.count > 0 && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-start gap-4">
+            <AlertCircle className="w-8 h-8 text-red-400 mt-1 flex-shrink-0" />
+            <div className="flex-1">
               <h3 className="text-xl font-bold text-red-400 mb-2">
                 ⚠️ Dormant Customers Alert
               </h3>
               <p className="text-gray-300">
-                {segments.dormant.count} customers haven't ordered in 90+ days
-                (Rs. {segments.dormant.total_value?.toLocaleString()} potential revenue)
+                <span className="font-bold text-red-300">{segments.dormant.count} customers</span> haven't ordered in 90+ days
+                (<span className="font-bold text-red-300">Rs. {segments.dormant.total_value?.toLocaleString()}</span> potential revenue)
+              </p>
+              <p className="text-sm text-gray-400 mt-2">
+                💡 Use the Dormant Customers card above to download and message these customers with "We Miss You" offers.
               </p>
             </div>
-            <button
-              onClick={() => downloadCustomerList('dormant')}
-              className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-            >
-              Download Dormant Customer List
-            </button>
           </div>
         </div>
       )}
