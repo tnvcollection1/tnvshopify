@@ -7139,6 +7139,89 @@ async def get_finance_status():
             'ledger_records': ledger_count,
             'transaction_records': transaction_count,
             'last_ledger_upload': last_ledger.get('uploaded_at') if last_ledger else None,
+
+
+@api_router.post("/finance/match-transactions")
+async def match_transactions():
+    """
+    Automatically match bank transactions to orders
+    """
+    try:
+        logger.info("🔗 Starting automatic transaction matching...")
+        
+        finance_rec = get_finance_reconciliation(db)
+        result = await finance_rec.match_transactions_to_orders()
+        
+        if not result.get('success'):
+            raise HTTPException(status_code=500, detail=result.get('error'))
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Error matching transactions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/finance/verify-order")
+async def verify_order(order_number: str, verified_by: str, notes: str = ''):
+    """
+    Mark an order as verified after manual review
+    """
+    try:
+        logger.info(f"✅ Verifying order {order_number}")
+        
+        finance_rec = get_finance_reconciliation(db)
+        result = await finance_rec.mark_order_verified(order_number, verified_by, notes)
+        
+        if not result.get('success'):
+            raise HTTPException(status_code=500, detail=result.get('error'))
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Error verifying order: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/finance/upload-history")
+async def get_upload_history():
+    """
+    Get upload history for rollback capability
+    """
+    try:
+        finance_rec = get_finance_reconciliation(db)
+        result = await finance_rec.get_upload_history()
+        
+        if not result.get('success'):
+            raise HTTPException(status_code=500, detail=result.get('error'))
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting upload history: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/finance/rollback/{snapshot_id}")
+async def rollback_snapshot(snapshot_id: str):
+    """
+    Rollback to a previous snapshot
+    """
+    try:
+        logger.info(f"🔄 Rolling back to snapshot {snapshot_id}")
+        
+        finance_rec = get_finance_reconciliation(db)
+        result = await finance_rec.rollback_to_snapshot(snapshot_id)
+        
+        if not result.get('success'):
+            raise HTTPException(status_code=400, detail=result.get('error'))
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Error rolling back: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
             'last_transaction_upload': last_transaction.get('uploaded_at') if last_transaction else None
         }
         
