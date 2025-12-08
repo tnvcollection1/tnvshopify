@@ -184,6 +184,41 @@ const Orders = () => {
     window.open('https://web.whatsapp.com/', '_blank');
   };
 
+  const handleShopifySync = async () => {
+    try {
+      setLoading(true);
+      toast.info("Syncing orders from Shopify...");
+
+      // Sync all stores
+      const stores = ["tnvcollection", "tnvcollectionpk", "asmia"];
+      let totalSynced = 0;
+
+      for (const store of stores) {
+        try {
+          const response = await axios.post(`${API}/shopify/sync-orders-fast`, null, {
+            params: { store_name: store, days_back: 30 }
+          });
+          
+          if (response.data.success) {
+            totalSynced += response.data.total_synced || 0;
+            toast.success(`✅ ${store}: ${response.data.total_synced || 0} orders synced`);
+          }
+        } catch (error) {
+          console.error(`Error syncing ${store}:`, error);
+          toast.error(`Failed to sync ${store}`);
+        }
+      }
+
+      toast.success(`🎉 Total: ${totalSynced} orders synced from all stores!`);
+      await fetchOrders(); // Refresh the orders list
+    } catch (error) {
+      console.error("Error syncing Shopify:", error);
+      toast.error("Failed to sync orders from Shopify");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleTCSPaymentUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
