@@ -1,0 +1,339 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Upload, FileText, DollarSign, CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL;
+
+const FinanceReconciliation = () => {
+  const [reconciliationData, setReconciliationData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [financeStatus, setFinanceStatus] = useState(null);
+  const [filter, setFilter] = useState('all'); // all, complete, partial, missing
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchFinanceStatus();
+  }, []);
+
+  const fetchFinanceStatus = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/finance/status`);
+      setFinanceStatus(response.data);
+    } catch (error) {
+      console.error('Error fetching finance status:', error);
+    }
+  };
+
+  const handleLedgerUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API_URL}/api/finance/upload-ledger`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      toast.success(`✅ Uploaded ${response.data.uploaded_count} ledger records`);
+      fetchFinanceStatus();
+      
+    } catch (error) {
+      console.error('Error uploading ledger:', error);
+      toast.error('Failed to upload ledger file');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTransactionsUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API_URL}/api/finance/upload-transactions`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      toast.success(`✅ Uploaded ${response.data.uploaded_count} bank transactions`);
+      fetchFinanceStatus();
+      
+    } catch (error) {
+      console.error('Error uploading transactions:', error);
+      toast.error('Failed to upload transactions file');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchReconciliation = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/api/finance/reconciliation?store_name=ashmiaa`);
+      setReconciliationData(response.data);
+      toast.success('✅ Reconciliation complete');
+    } catch (error) {
+      console.error('Error fetching reconciliation:', error);
+      toast.error('Failed to fetch reconciliation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const styles = {
+      'Complete': 'bg-green-500/20 text-green-300 border-green-500/50',
+      'Partial': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50',
+      'Missing Data': 'bg-red-500/20 text-red-300 border-red-500/50'
+    };
+
+    const icons = {
+      'Complete': <CheckCircle className="w-4 h-4" />,
+      'Partial': <AlertCircle className="w-4 h-4" />,
+      'Missing Data': <XCircle className="w-4 h-4" />
+    };
+
+    return (
+      <span className={`px-3 py-1 rounded-full text-xs font-semibold border flex items-center gap-1 ${styles[status]}`}>
+        {icons[status]}
+        {status}
+      </span>
+    );
+  };
+
+  const filteredOrders = reconciliationData?.orders?.filter(order => {
+    const matchesFilter = filter === 'all' || order.reconciliation_status.toLowerCase().includes(filter);
+    const matchesSearch = order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.customer_name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesFilter && matchesSearch;
+  }) || [];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
+          💰 Finance Reconciliation - Ashmia
+        </h1>
+        <p className="text-gray-400">
+          Match Shopify orders with purchase records and bank transactions
+        </p>
+      </div>
+
+      {/* Upload Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <FileText className="w-6 h-6 text-blue-400" />
+            <h3 className="text-lg font-semibold">General Ledger</h3>
+          </div>
+          <p className="text-sm text-gray-400 mb-4">
+            {financeStatus?.ledger_records || 0} records uploaded
+          </p>
+          <label className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg cursor-pointer transition-colors">
+            <Upload className="w-4 h-4" />
+            Upload Excel
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleLedgerUpload}
+              className="hidden"
+              disabled={loading}
+            />
+          </label>
+        </div>
+
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <DollarSign className="w-6 h-6 text-green-400" />
+            <h3 className="text-lg font-semibold">Bank Transactions</h3>
+          </div>
+          <p className="text-sm text-gray-400 mb-4">
+            {financeStatus?.transaction_records || 0} records uploaded
+          </p>
+          <label className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg cursor-pointer transition-colors">
+            <Upload className="w-4 h-4" />
+            Upload Excel
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleTransactionsUpload}
+              className="hidden"
+              disabled={loading}
+            />
+          </label>
+        </div>
+
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <RefreshCw className="w-6 h-6 text-purple-400" />
+            <h3 className="text-lg font-semibold">Reconcile</h3>
+          </div>
+          <p className="text-sm text-gray-400 mb-4">
+            Run reconciliation process
+          </p>
+          <button
+            onClick={fetchReconciliation}
+            disabled={loading || !financeStatus?.ledger_records}
+            className="flex items-center justify-center gap-2 px-4 py-2 w-full bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Processing...' : 'Run Reconciliation'}
+          </button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      {reconciliationData?.summary && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+            <div className="text-3xl font-bold text-white mb-2">
+              {reconciliationData.summary.total_orders}
+            </div>
+            <div className="text-gray-400 text-sm">Total Orders</div>
+          </div>
+          
+          <div className="bg-gray-800/50 border border-green-900/50 rounded-xl p-6">
+            <div className="text-3xl font-bold text-green-400 mb-2">
+              {reconciliationData.summary.fully_reconciled}
+            </div>
+            <div className="text-gray-400 text-sm">Fully Reconciled</div>
+          </div>
+          
+          <div className="bg-gray-800/50 border border-yellow-900/50 rounded-xl p-6">
+            <div className="text-3xl font-bold text-yellow-400 mb-2">
+              {reconciliationData.summary.partial_reconciled}
+            </div>
+            <div className="text-gray-400 text-sm">Partial Match</div>
+          </div>
+          
+          <div className="bg-gray-800/50 border border-red-900/50 rounded-xl p-6">
+            <div className="text-3xl font-bold text-red-400 mb-2">
+              {reconciliationData.summary.not_reconciled}
+            </div>
+            <div className="text-gray-400 text-sm">Missing Data</div>
+          </div>
+        </div>
+      )}
+
+      {/* Filters */}
+      {reconciliationData && (
+        <div className="mb-6 flex gap-4 items-center">
+          <input
+            type="text"
+            placeholder="Search by order number or customer..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter('complete')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                filter === 'complete' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400'
+              }`}
+            >
+              Complete
+            </button>
+            <button
+              onClick={() => setFilter('partial')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                filter === 'partial' ? 'bg-yellow-600 text-white' : 'bg-gray-800 text-gray-400'
+              }`}
+            >
+              Partial
+            </button>
+            <button
+              onClick={() => setFilter('missing')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                filter === 'missing' ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-400'
+              }`}
+            >
+              Missing
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Orders Table */}
+      {reconciliationData && (
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-900/50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Order #</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Customer</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Shopify Status</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Delivery</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Ledger Status</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Payment</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-400">Amount</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {filteredOrders.map((order) => (
+                  <tr key={order.order_number} className="hover:bg-gray-700/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className="font-mono text-sm font-semibold text-blue-400">
+                        #{order.order_number}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-300">{order.customer_name || 'N/A'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-300">{order.shopify_status}</td>
+                    <td className="px-6 py-4 text-sm text-gray-300">{order.delivery_status}</td>
+                    <td className="px-6 py-4 text-sm text-gray-300">{order.ledger_status}</td>
+                    <td className="px-6 py-4 text-sm text-gray-300">{order.payment_status}</td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="text-white font-semibold">
+                        Rs. {order.amount?.toFixed(2) || '0.00'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {getStatusBadge(order.reconciliation_status)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {filteredOrders.length === 0 && (
+            <div className="p-12 text-center text-gray-400">
+              <p className="text-lg">No orders found matching your filters</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!reconciliationData && !loading && (
+        <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-12 text-center">
+          <FileText className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-400 text-lg mb-2">No reconciliation data yet</p>
+          <p className="text-gray-500 text-sm">
+            Upload ledger and bank transaction files, then run reconciliation
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FinanceReconciliation;
