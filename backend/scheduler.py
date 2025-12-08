@@ -38,16 +38,17 @@ class AutoSyncScheduler:
             logger.warning("Scheduler already running")
             return
         
+        # DISABLED: Automatic Shopify sync - user will trigger manually
         # Schedule Shopify sync every 1 hour
-        self.scheduler.add_job(
-            func=self.sync_shopify_orders,
-            trigger=IntervalTrigger(hours=1),
-            id='shopify_sync',
-            name='Shopify Orders Sync (Hourly)',
-            replace_existing=True,
-            max_instances=1,  # Prevent overlapping jobs
-            coalesce=True  # Combine missed jobs into one
-        )
+        # self.scheduler.add_job(
+        #     func=self.sync_shopify_orders,
+        #     trigger=IntervalTrigger(hours=1),
+        #     id='shopify_sync',
+        #     name='Shopify Orders Sync (Hourly)',
+        #     replace_existing=True,
+        #     max_instances=1,  # Prevent overlapping jobs
+        #     coalesce=True  # Combine missed jobs into one
+        # )
         
         # Schedule TCS delivery sync every 2 hours
         self.scheduler.add_job(
