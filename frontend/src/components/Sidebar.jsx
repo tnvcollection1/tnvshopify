@@ -171,11 +171,17 @@ const Sidebar = () => {
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3 px-4 py-3 bg-gray-800 rounded-lg mb-3">
           <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold">A</span>
+            <span className="text-white font-bold">
+              {agent?.username?.charAt(0).toUpperCase() || 'A'}
+            </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">Admin</p>
-            <p className="text-xs text-gray-400">Administrator</p>
+            <p className="text-sm font-medium text-white truncate">
+              {agent?.full_name || agent?.username || 'Admin'}
+            </p>
+            <p className="text-xs text-gray-400 capitalize">
+              {isDemoUser ? 'Demo Reviewer' : (agent?.role || 'Administrator')}
+            </p>
           </div>
         </div>
         
