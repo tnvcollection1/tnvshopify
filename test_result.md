@@ -356,6 +356,18 @@ frontend:
           agent: "testing"
           comment: "TESTED ✅ - Customer Segmentation store filter feature fully functional. Successfully verified: 1) Login with admin/admin123, 2) Navigation to /segments successful, 3) Store filter dropdown visible at top right with all options (All Stores, TNC Collection, TNC Collection PK, Ashmiaa), 4) Store filtering works correctly - customer counts change based on selected store (TNC Collection PK: VIP=722, Ashmiaa: VIP=594, TNC Collection: VIP=0), 5) Store switching between all options working smoothly, 6) Download functionality working with store filter (CSV downloads filtered customers), 7) WhatsApp buttons (12 found) functional with filtered data, 8) Data consistency verified - different stores show different customer segments. Professional UI with smooth transitions and real-time updates. All review requirements met successfully."
 
+  - task: "Unmatched Records feature in Finance Reconciliation"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/FinanceReconciliation.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Unmatched Records feature fully functional. Successfully verified: 1) Login with admin/admin credentials, 2) Navigation to /finance-reconciliation successful, 3) Orange 'View Unmatched Records' button visible and clickable in top right area, 4) Panel opens with orange border and title 'Unmatched Records from Uploaded Files', 5) Summary cards show correct counts: 54 unmatched ledger records (out of 433) and 104 unmatched transactions (out of 341), 6) Ledger table displays with headers (Order #, Date, Status, Payment, Amount, Tracking, Reason) and sample orders like #2611/2976 with reason 'Order number not found in Shopify', 7) Transaction table displays with headers (Date, Description, Mode, Debit, Credit, Reason) and 'No matching order found' reasons, 8) Close button (X) works correctly to hide panel. Backend API verified returning exact data. Professional UI with proper styling and data formatting. All review requirements met perfectly."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
