@@ -50,6 +50,36 @@ async def startup_event():
     scheduler = get_scheduler()
     scheduler.start()
     logger.info("✅ Background scheduler initialized")
+    
+    # Start dynamic pricing cache warmup in background
+    async def warmup_pricing_cache():
+        try:
+            from dynamic_pricing_engine import dynamic_pricing_engine
+            logger.info("🔥 Warming up dynamic pricing cache...")
+            
+            # Check if cache exists
+            cached = await db.dynamic_pricing_cache.find_one({"type": "analysis_report"})
+            if not cached:
+                logger.info("📊 Running initial pricing analysis...")
+                result = await dynamic_pricing_engine.analyze_product_velocity(db, days_lookback=365)
+                if result.get('success'):
+                    await db.dynamic_pricing_cache.update_one(
+                        {"type": "analysis_report"},
+                        {"$set": {
+                            "type": "analysis_report",
+                            "data": result,
+                            "last_updated": datetime.now(timezone.utc).isoformat()
+                        }},
+                        upsert=True
+                    )
+                    logger.info("✅ Pricing cache initialized")
+            else:
+                logger.info("✅ Pricing cache already exists")
+        except Exception as e:
+            logger.error(f"❌ Error warming up pricing cache: {str(e)}")
+    
+    # Run in background
+    asyncio.create_task(warmup_pricing_cache())
 
 
 @app.on_event("shutdown")
