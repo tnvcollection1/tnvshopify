@@ -1,68 +1,68 @@
-<analysis>**original_problem_statement**: The user initially wanted to build a comprehensive WhatsApp CRM and marketing system, including an order tracking page with DTDC integration. The scope has now expanded significantly to include a **Dynamic Pricing Engine** based on product sales velocity and a new, complex **Finance Management System**.
-
-The latest request is to build a finance reconciliation system that can match Shopify orders against purchase data from an Excel-based general ledger and transaction data from credit card statements.
+<analysis>**original_problem_statement**: The user initially wanted a WhatsApp CRM and order tracking system. The scope expanded to include a Dynamic Pricing Engine. The most recent and primary focus has been the development of a comprehensive **Finance Management System** to reconcile Shopify orders for the ashmiaa store against data from two uploaded Excel files (, ). The user also requested a separate, standalone WhatsApp Inbox app for Meta's review process. The very last user request is to address why some orders appear with Missing Data on the finance dashboard.
 
 **PRODUCT REQUIREMENTS**:
-1.  **Finance Management System (NEW & P0)**:
-    -   Ingest and parse data from uploaded Excel files (, ).
-    -   Create a system to reconcile four data points for each order:
-        -   Order status (from Shopify).
-        -   Fulfilment/Delivery status (from existing tracking data).
-        -   Purchase status (from the general ledger Excel file).
-        -   Transaction status (from credit card bills, to be provided later).
-    -   Build a frontend interface to display the reconciliation status of each order.
+1.  **Finance Management System (P0)**:
+    -   Ingest and parse data from uploaded Excel files for the ashmiaa store.
+    -   Create a reconciliation system matching Shopify orders against general ledger and bank transaction data.
+    -   The system must perform strict validation: Order #, SKU, and Tracking Number must all match between Shopify and the ledger file. Any mismatch should flag the order with an Error status.
+    -   The UI must show the reconciliation status (Complete, Partial, Error, Missing Data), allow manual verification, and display unmatched records from the Excel files.
+    -   The system must be strictly isolated to the ashmiaa store, preventing any data contamination from other stores like tnvcollectionpk.
+    -   Provide a way to handle orders that exist in Shopify but are missing from the uploaded Excel ledger.
 2.  **Dynamic Pricing Dashboard**:
-    -   A UI to manage the dynamic pricing engine.
-    -   Must display all products classified into categories (A, B, C) with their lifetime order counts.
-    -   Allow editing discount percentages for each category.
-    -   Provide a button to sync the updated prices to Shopify.
-    -   Must use the black background with fire theme from the old  component.
+    -   A functional, performant UI to manage the dynamic pricing engine.
+    -   Display products by category with lifetime order counts.
+    -   Allow editing of discount percentages and syncing price changes to Shopify.
+3.  **Standalone WhatsApp Inbox**:
+    -   A separate, publicly accessible URL for the WhatsApp Inbox feature, to be submitted for Meta Business API review.
+    -   This URL should not require authentication.
+    -   The existing integrated inbox must remain functional within the main application.
 
 **User's preferred language**: English
 
 **what currently exists?**
-- A full-stack application (React/FastAPI/MongoDB) with a working inventory management system and WhatsApp CRM.
-- The DTDC tracking integration is **fixed**. It now syncs tracking data directly from the Shopify fulfillments API, resolving previous API key issues.
-- A complete backend for the **Dynamic Pricing Engine** has been built. It analyzes lifetime order history from the  collection, categorizes over 12,000 products, and has API endpoints to report, analyze, and apply pricing changes.
-- A **broken** frontend dashboard for the Dynamic Pricing feature. The agent attempted to merge new functionality into an old, visually preferred component (), but left it with multiple JavaScript errors.
+- A full-stack application (React/FastAPI/MongoDB).
+- A working DTDC tracking integration that syncs data via the Shopify fulfillments API.
+- A fully functional backend for the Dynamic Pricing Engine with caching and background processing for performance.
+- A **fixed and performant** Dynamic Pricing Dashboard UI. The previous issues related to breakage, login failures, and slow loading have been resolved.
+- A newly built, multi-feature **Finance Management System** for the ashmiaa store. It supports Excel uploads, data reconciliation with strict validation (Order#, SKU, Tracking#), error flagging, and viewing of unmatched records. It has been debugged to prevent cross-store data contamination.
+- Two versions of the WhatsApp Inbox: an integrated one () and a standalone, unauthenticated one for Meta review (). The backend APIs to support the inbox have been created.
 
 **Last working item**:
--   **Last item agent was working**: The user uploaded two Excel files and defined the requirements for a new **Finance Management System**. The agent acknowledged the request and had just begun analyzing the contents of the uploaded files.
--   **Status**: NOT STARTED
+-   **Last item agent was working**: The user reported that several orders were appearing on the Finance Reconciliation dashboard with a Missing Data status. The agent identified that these orders exist in Shopify but are not present in the user-uploaded Excel ledger file. The agent explained this to the user and began implementing a feature to export a list of these missing orders to help the user update their ledger.
+-   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: To build the finance system, the agent will need to use a combination of methods:
-    -   Backend:  to test Excel parsing logic.
-    -   API:  to test new reconciliation endpoints.
-    -   Frontend:  to verify the new UI.
+-   **Which testing method agent to use?**: Backend testing agent to test the new export endpoint () and frontend testing agent to verify the addition of a corresponding Export Missing button on the UI.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Dynamic Pricing Dashboard UI is broken (P0)
+-   Issue 1: Provide a way to handle Shopify orders that are missing from the accounting ledger (P0)
 -   Issue 2:  requires major refactoring (P1)
--   Issue 3: TCS data mismatch creating accounting confusion (P2)
--   Issue 4: Search on Orders page does not work (P3)
+-   Issue 3: TCS data mismatch causing accounting confusion (P2)
+-   Issue 4: Search on the main Orders page does not work (P3)
+-   Issue 5: Shopify sync does not pull full  data (P4)
 
 **Issues Detail**:
--   **Issue 1: Dynamic Pricing Dashboard UI is broken**
-    -   **Description**: The UI at the  route is non-functional, showing a Something went wrong error page. This happened after the agent tried to merge the new backend logic with an old, visually preferred UI component. The component is plagued with JavaScript errors due to mismatches between the old component's state/props and the new API data structure.
-    -   **Attempted fixes**: The agent made several attempts to fix this by replacing references to an old  object with a new  object, but failed to resolve all of them, leading to s. The last attempt removed a UI block, but the page still failed to load.
+-   **Issue 1: Provide a way to handle Shopify orders that are missing from the accounting ledger**
+    -   **Description**: Orders present in Shopify but absent from the user-uploaded  are flagged as Missing Data. The user needs a simple way to identify and correct these data gaps.
+    -   **Attempted fixes**: The agent explained the root cause to the user and started implementing a feature to export a list of these missing orders as a CSV file.
     -   **Next debug checklist**:
-        1.  Carefully review .
-        2.  Take a screenshot and inspect the browser console logs for the exact  or other React error.
-        3.  Systematically trace the data flow from the  API call to the component's state ().
-        4.  Ensure every part of the JSX that renders data from the  object is using the correct structure (e.g., , not ).
-        5.  Fix all remaining references to the old  object.
-    -   **Why fix this issue and what will be achieved with the fix?**: This dashboard is a core part of the Dynamic Pricing feature requested by the user. Fixing it will provide the user with the necessary tool to manage their product pricing.
+        1.  Create a new backend endpoint (e.g., ) in  and register it in .
+        2.  The endpoint should identify  orders in the  collection that do not have a corresponding entry in the  collection.
+        3.  It should generate and return a CSV file containing the , , and  for these missing orders.
+        4.  Add an Export Missing Orders button to the  frontend that calls this new endpoint to trigger the file download.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will empower the user to maintain data integrity between their live store and their accounting records, leading to accurate financial reconciliation.
     -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Frontend (using screenshot tool).
-    -   **Blocked on other issue**: None.
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on other issue**: None
 
 -   **Issue 2:  requires major refactoring**
-    -   **Description**: The main backend file, , has grown excessively large and complex, making it difficult to maintain and increasing the risk of introducing bugs.
+    -   **Description**:  has become a monolith containing logic for most of the application's features, making it hard to maintain and debug.
+    -   **Next debug checklist**: Break down  by moving related endpoints into separate FastAPI routers (e.g., , , ).
+    -   **Why fix this issue and what will be achieved with the fix?**: Refactoring will improve code organization, maintainability, and scalability.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Should Test frontend/backend/both after fix?**: Both (regression testing).
 
 -   **Issue 3: TCS data mismatch creating accounting confusion**
     -   **Description**: Invalid TCS tracking numbers from a previous integration are causing accounting issues.
@@ -70,109 +70,136 @@ The latest request is to build a finance reconciliation system that can match Sh
     -   **Is recurring issue?**: Y
 
 -   **Issue 4: Search on Orders page does not work**
-    -   **Description**: The agent noted during debugging that the search input on the Orders page did not filter the results as expected but did not fix it.
+    -   **Description**: The search input on the Orders page () does not filter the results.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+
+-   **Issue 5: Shopify sync does not pull full  data**
+    -   **Description**: The Shopify order sync does not store the  array, which contains individual product details, quantities, and prices for each order. This limits detailed sales analysis.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
 
 **In progress Task List**:
--   **Task 1: Build Dynamic Pricing Dashboard**
-    -   **Where to resume**: The task is blocked by **Issue 1**. The next agent must first debug and fix the  component.
-    -   **What will be achieved with this?**: A functional and visually appealing dashboard for managing product pricing strategies.
-    -   **Status**: BLOCKED
-    -   **Should Test frontend/backend/both after fix?**: Frontend.
-    -   **Blocked on something**: Issue 1: Dynamic Pricing Dashboard UI is broken.
+-   **Task 1: Implement Export Missing Orders feature**
+    -   **Where to resume**: Create the backend API endpoint in .
+    -   **What will be achieved with this?**: The user will be able to download a CSV of orders present in Shopify but missing from their accounting ledger, streamlining their data correction process.
+    -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   **(P0) Build Finance Management System**: This is the user's new top priority. Involves parsing Excel files, creating new models/APIs, and building a UI for financial reconciliation.
-    -   **(P1)** Update WhatsApp templates to include clickable tracking links (now that DTDC sync is working).
-    -   **(P2)** Implement the Sync to Shopify functionality for the Dynamic Pricing engine. The backend endpoint is partially implemented.
-
+    -   (P1) Update WhatsApp templates to include clickable tracking links.
+    -   (P2) Add a Sync to Shopify button on the Dynamic Pricing dashboard UI to trigger the existing backend sync API.
 -   **Future Tasks**:
-    -   Refactor  into a modular structure using FastAPI routers.
     -   Build a Smart Inventory Clearance Engine.
     -   Build Abandoned Cart Recovery via WhatsApp.
 
 **Completed work in this session**
--   **DTDC Tracking Integration Fix**: Successfully re-engineered the DTDC tracking sync. It now fetches fulfillment data directly from the Shopify API, completely resolving the previous integration failures.
--   **Order Data Cleanup**:
-    -   Performed a batch update on 1,077  orders to set the  to DTDC.
-    -   Corrected the  for 10 orders that were miscategorized.
-    -   Executed a full order sync for the  store.
--   **Dynamic Pricing Engine (Backend)**:
-    -   Created  to analyze lifetime sales data from the  collection.
-    -   The engine successfully classifies 12,081 unique products into performance categories (A, B, C).
-    -   Implemented API endpoints to run the analysis, apply price changes to the local  collection, and retrieve a full classification report.
+-   **Dynamic Pricing Dashboard - Fixed & Optimized**:
+    -   Resolved authentication issues and slow sync problems by adding the correct Shopify token and moving the sync to a background task.
+    -   Fixed a major performance bottleneck by implementing database caching for the pricing report, reducing load time from over 5 minutes to ~1.5 seconds.
+-   **Finance Management System - Built & Refined**:
+    -   Created a full reconciliation system from scratch, including backend logic () and a frontend UI ().
+    -   Implemented user-requested features: automated transaction matching, manual verification, upload history, and viewing unmatched records.
+    -   **Fixed Critical Bugs**: Corrected a major flaw that caused data from the tnvcollectionpk store to be mixed with ashmiaa data, ensuring the system is now strictly isolated as required.
+    -   **Implemented Strict Validation**: Added logic to flag orders with an Error status if Order#, SKU, or Tracking Number do not match between Shopify and the ledger.
+-   **Standalone WhatsApp Inbox**:
+    -   Created a new, unauthenticated route () with a dedicated component to satisfy Meta's review requirements, while keeping the integrated inbox functional.
+    -   Built the necessary backend APIs (, ) to power both inbox versions.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Shopify sync does not pull **
-    -   **Debug checklist**: The Shopify order sync pulls an  array but not the full  object containing quantities and prices for each item. This limits inventory and pricing logic. The sync logic in  and related Shopify services needs to be updated to request and store this richer data.
-    -   **Why to solve this issue and what will be achieved with this?**: Fixing this will enable more accurate sales analysis and allow features like per-item profit calculation.
-    -   **Should Test frontend/backend/both after fix?**: Backend.
-    -   **Is recurring issue?**: N
+-   **Issue 1:  requires major refactoring**: This is a high-priority technical debt item that has been postponed.
+-   **Issue 2: TCS data mismatch creating accounting confusion**: Mentioned in the previous fork, but not addressed.
+-   **Issue 3: Search on Orders page does not work**: Noted in the previous fork, but not addressed.
+-   **Issue 4: Shopify sync does not pull **: Noted in the previous fork, but not addressed.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**:  requires major refactoring.
--   **Recurrence count**: 2
+-   **Recurrence count**: 3
 -   **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **API Pivot**: Shifted from attempting to integrate with a third-party DTDC API to using the more reliable Shopify Admin API () as the source of truth for tracking data.
--   **Data-Driven Categorization (ABC Analysis)**: The dynamic pricing engine implements ABC analysis based on sales velocity (sales count over a period) to segment products into performance tiers.
--   **UI Restoration & Refactoring Debt**: The agent attempted to restore a legacy UI component by retrofitting it with new API calls, leading to significant breakage and debugging loops. This highlights the cost of not refactoring UI components alongside backend changes.
+-   **Background Tasks (FastAPI )**: Used to run long-running jobs like Shopify price sync and pricing analysis without blocking the main server and causing timeouts.
+-   **API Caching**: Resolved a major performance bottleneck by caching the 5MB dynamic pricing report in a dedicated MongoDB collection, improving dashboard load times significantly.
+-   **Data Reconciliation Engine**: Developed a system to match live database records (Shopify orders) against static, user-uploaded data sources (Excel files) based on complex business rules.
+-   **Scoped Data Operations**: Fixed a critical data integrity bug by ensuring all financial operations are strictly scoped to the  store, preventing data contamination.
+-   **Strict Data Validation**: Implemented logic to enforce matching on multiple fields (Order#, SKU, Tracking#) and flag any discrepancies as errors.
 
 **key DB schema**
--   **customers**: This collection acts as the main  collection. It contains customer info, order numbers, and now , , and  fields populated by the new sync services.
--   **inventory_v2**: Contains product information. It has been updated with  ('A', 'B', 'C') and  fields by the pricing engine.
+-   **finance_ledger**: (New) Caches parsed ledger data from Excel. Contains , , , , .
+-   **finance_transactions**: (New) Caches parsed bank transaction data. Contains , , Mon Dec  8 17:31:32 UTC 2025, .
+-   **finance_uploads**: (New) Stores snapshots and metadata of uploaded files for history.
+-   **dynamic_pricing_cache**: (New) Stores the result of the product analysis to speed up the pricing dashboard.
+-   **customers**: (Modified) The main orders collection. The agent added a  field to track reconciliation state (e.g., , ).
+-   **store_config**: (Modified) Updated to include the  for the  store, fixing the price sync functionality.
 
 **All files of reference**
--   : Contains the new API endpoints for tracking and pricing.
--   : Core logic for the pricing engine.
--   : The successful DTDC tracking solution.
--   : The broken UI component that needs immediate attention.
--   : User-provided data for the new Finance module.
--   : User-provided data for the new Finance module.
+-   : Contains all logic for the new Finance System.
+-   : The frontend for the Finance System.
+-   : The main server file, heavily modified and in need of refactoring.
+-   : The now-fixed pricing dashboard.
+-   : The new unauthenticated inbox component.
+
+**Areas that need refactoring**:
+-   ****: This file is critically overgrown and contains logic for nearly all backend features. It urgently needs to be broken down into separate FastAPI routers for better maintainability.
+-   ****: This file has grown large. The Excel parsing logic could be separated from the data reconciliation and API endpoint logic into distinct helper modules.
+
+**key api endpoints**
+-   **Finance (New/Enhanced)**:
+    -   : Uploads the general ledger Excel file.
+    -   : Uploads the bank transactions Excel file.
+    -   : Gets the main reconciliation data for the dashboard.
+    -   : Manually marks an order as verified.
+    -   : Gets records from Excel files that don't match any Shopify order.
+-   **WhatsApp (New)**:
+    -   : Fetches the list of all WhatsApp conversations.
+    -   : Fetches messages for a specific phone number.
 
 **Critical Info for New Agent**
--   **Your new highest priority is the Finance Management System**. The user has clearly shifted focus. You must begin by planning the implementation based on the two uploaded Excel files.
--   Before starting the new feature, you should address the **broken Dynamic Pricing Dashboard (Issue #1)**, as it was the last thing the user reported and is a high-visibility bug.
--   The **DTDC integration is solved**. The correct approach is using the  service. Do not waste time trying to use a direct DTDC API key.
--   The backend logic for the Dynamic Pricing engine is **complete and working**. The problem is purely on the frontend. The full report is available at the  endpoint.
+-   Your immediate priority is to complete the Export Missing Orders feature for the Finance Reconciliation system. This is the last pending item from the user.
+-   The Dynamic Pricing dashboard and login issues are **RESOLVED**. The credentials / should work.
+-   The Finance Reconciliation system has been heavily debugged and is now correctly isolated to the  store. Do not introduce logic that might re-contaminate it with data from other stores.
+-   The agent created a separate URL () for the WhatsApp inbox specifically for Meta's review process. This URL is public and requires no login.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: Confirms to apply price changes based on lifetime orders. (COMPLETED)
-2.  **User**: Reports the app is stuck. (RESOLVED - Agent confirmed it was a normal background task).
-3.  **User**: Reports the pricing UI is not showing correct classifications. (RESOLVED - Agent applied the pricing analysis to the inventory).
-4.  **User**: Requests a full-featured UI for the pricing engine (view products, edit discounts, sync to Shopify). (IN PROGRESS)
-5.  **User**: Reports the new UI is blank (all gone). (RESOLVED - Agent found and fixed an API URL issue).
-6.  **User**: Sends a screenshot of the blank UI. (RESOLVED - Agent fixed API path prefixes).
-7.  **User**: Sends a screenshot of a stuck loading screen. (RESOLVED - Agent added a loading toast to improve user feedback for the large data load).
-8.  **User**: Asks to restore the previous UI theme (black with fire). (IN PROGRESS - This action led to the current broken state of the UI).
-9.  **User**: Reports Something went wrong with the restored UI. (IN PROGRESS - Agent made several attempts to fix JS errors).
-10. **(PENDING/NEW)** User uploads two Excel files and requests a brand new **Finance Management System** to reconcile orders, purchases, and credit card bills, making this the new top priority.
+1.  **User**: Asks why transactions are being matched from the  store. (RESOLVED - Agent fixed the logic to isolate ).
+2.  **User**: Requests strict validation where Order#, SKU, and Tracking# must all match. (COMPLETED - Agent implemented this).
+3.  **User**: Asks why the system is still matching transactions from  after the first fix. (RESOLVED - Agent found duplicate order numbers and added store-based filtering to the ledger data itself).
+4.  **User**: Asks to add a store filter to the UI. (COMPLETED - Agent added a filter).
+5.  **User**: Reverses course, asks to remove all other stores and make the finance module Ashmia-only. (COMPLETED - Agent removed the filter and hardcoded the logic for ).
+6.  **User**: Asks to create a separate WhatsApp Inbox app for review. (COMPLETED - Agent created a standalone, no-auth page).
+7.  **User**: Confirms the APIs should be linked for the new inbox. (COMPLETED - Agent created the necessary backend APIs).
+8.  **User**: (Sends screenshot) Points out 10 orders showing Missing Data on the finance dashboard. (PENDING - This is the current task).
+9.  **Agent**: Explains the orders are missing from the user's Excel file and proposes creating an export feature. (IN PROGRESS).
+10. **(No User Reply Yet)** The agent is waiting for user feedback on the proposed solution but has started implementation.
 
 **Project Health Check:**
 -   **Broken**:
-    -    frontend page.
-    -   Search functionality on the Orders page.
+    -   Search functionality on the  page.
 -   **Mocked**:
     -   None.
 
 **3rd Party Integrations**
 -   Shopify Admin API — Functional.
 -   Meta WhatsApp Business Platform API — Functional.
--   DTDC Courier API — **DEPRECATED**. The integration now works via the Shopify API.
+-   DTDC Courier API — **DEPRECATED**. All tracking is now handled via the Shopify API.
 
 **Testing status**
--   **Testing agent used after significant changes**: NO
+-   **Testing agent used after significant changes**: YES (Used to test the Finance Reconciliation UI enhancements).
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None.
--   **Known regressions**: The  page was working with a basic UI before the agent attempted to restore the old theme.
+-   **Known regressions**: None. The previous regression on the Dynamic Pricing page was fixed.
+
+**Credentials to test flow:**
+-   **Username**: 
+-   **Password**: 
 
 **What agent forgot to execute**
-- The agent did not fix the non-functional search bar on the  page.
-- The agent did not fix the underlying issue where the Shopify sync does not pull full  data, instead working around it for the pricing engine.
-- The agent promised a UI to Sync classified all products to Shopify with updated prices but the frontend implementation for this is not complete.</analysis>
+-   The agent has consistently postponed refactoring , despite it being a recurring issue.
+-   The original request to fix the broken search bar on the  page has not been addressed.
+-   The underlying issue of the Shopify sync not pulling full  data remains unresolved.
+-   A UI button to trigger the Sync to Shopify function on the pricing dashboard was part of the original request but was not implemented as priorities shifted.</analysis>

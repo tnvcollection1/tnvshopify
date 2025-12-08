@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://orderflow-sync-1.preview.emergentagent.com/api'
+base_url = 'https://fintech-hub-80.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
