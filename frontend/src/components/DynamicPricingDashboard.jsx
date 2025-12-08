@@ -26,21 +26,28 @@ const DynamicPricingDashboard = () => {
         timeout: 30000
       });
       setReport(response.data);
-      
-      // Extract rules from report for table display
-      const categories = response.data.categories || {};
-      let allProducts = [];
-      if (filter === 'all') {
-        allProducts = [...(categories.A || []), ...(categories.B || []), ...(categories.C || [])];
-      } else {
-        allProducts = categories[filter] || [];
-      }
-      setPricingRules(allProducts.slice(0, 50));
+      updatePricingRules(response.data, filter);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      alert('Failed to load pricing data. Please try refreshing.');
       setLoading(false);
     }
+  };
+
+  const updatePricingRules = (reportData, currentFilter) => {
+    if (!reportData || !reportData.categories) return;
+    
+    const categories = reportData.categories;
+    let allProducts = [];
+    
+    if (currentFilter === 'all') {
+      allProducts = [...(categories.A || []), ...(categories.B || []), ...(categories.C || [])];
+    } else {
+      allProducts = categories[currentFilter] || [];
+    }
+    
+    setPricingRules(allProducts.slice(0, 50));
   };
 
   const handleAnalyze = async () => {
