@@ -7,6 +7,7 @@ import pandas as pd
 from typing import Dict, List, Optional
 from datetime import datetime, timezone
 import io
+import uuid
 
 logger = logging.getLogger(__name__)
 
