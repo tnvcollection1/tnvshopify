@@ -238,6 +238,10 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/tracking/:identifier" 
+        element={<TrackingPage />}
+      />
+      <Route 
         path="/dynamic-pricing" 
         element={
           <ProtectedRoute>
