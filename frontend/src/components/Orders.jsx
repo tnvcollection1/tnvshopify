@@ -170,6 +170,18 @@ const Orders = () => {
     }
   };
 
+  const getRandomGreeting = () => {
+    const greetings = [
+      "Hello",
+      "Hi",
+      "Assalam o Alaikum",
+      "Hey",
+      "Greetings",
+      "Good day"
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  };
+
   const sendBulkWhatsAppToSelected = async () => {
     const ordersToSend = orders.filter(o => 
       selectedOrders.includes(o.customer_id) && (o.phone || o.default_address?.phone)
@@ -187,16 +199,43 @@ const Orders = () => {
 
     for (const order of ordersToSend) {
       try {
-        await sendWhatsAppNotification(order);
+        // Get random greeting for each customer
+        const greeting = getRandomGreeting();
+        
+        // Extract phone number
+        let phone = order.phone || order.default_address?.phone;
+        phone = phone.replace(/[\s-()]/g, '');
+        if (!phone.startsWith('+') && !phone.startsWith('92')) {
+          phone = '92' + phone;
+        } else if (phone.startsWith('+')) {
+          phone = phone.substring(1);
+        }
+
+        // Get order details - try to extract product link from order
+        const orderNumber = order.order_number || order.name || "N/A";
+        const trackingLink = order.tracking_number 
+          ? `https://footwear-analyzer.emergent.host/tracking/${order.tracking_number}`
+          : `https://footwear-analyzer.emergent.host/tracking/${orderNumber}`;
+
+        // Construct message with random greeting
+        const message = `${greeting} ${order.first_name}!\n\nYour order #${orderNumber} has been confirmed.\n\nTrack your order: ${trackingLink}\n\nThank you for shopping with us!`;
+
+        // Send via WhatsApp Web format (opens WhatsApp with pre-filled message)
+        const whatsappUrl = `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+
         successCount++;
-        // Small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        toast.success(`✅ Opened chat ${successCount}/${ordersToSend.length}: ${order.first_name}`);
+        
+        // Delay to allow user to send message before opening next
+        await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (error) {
         failCount++;
+        console.error(`Error for order ${order.order_number}:`, error);
       }
     }
 
-    toast.success(`✅ Sent ${successCount} messages! ${failCount > 0 ? `${failCount} failed.` : ''}`);
+    toast.success(`✅ Opened ${successCount} WhatsApp chats! ${failCount > 0 ? `${failCount} failed.` : ''}`);
     setSelectedOrders([]); // Clear selection after sending
   };
 
