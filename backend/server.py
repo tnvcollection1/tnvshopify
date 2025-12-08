@@ -6190,6 +6190,46 @@ async def get_customer_whatsapp_messages(customer_id: str):
         logger.error(f"Error fetching all messages: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@api_router.get("/whatsapp/messages-by-phone/{phone}")
+async def get_whatsapp_messages_by_phone(phone: str):
+    """
+    Get WhatsApp message history for a customer by phone number
+    """
+    try:
+        # Clean phone number
+        phone_clean = phone.replace('+', '').replace(' ', '').replace('-', '')
+        
+        # Get customer messages from customer record
+        customer = await db.customers.find_one(
+            {'phone': {'$regex': phone_clean}},
+            {'_id': 0, 'whatsapp_messages': 1, 'first_name': 1, 'last_name': 1}
+        )
+        
+        if not customer:
+            return {
+                'success': True,
+                'messages': [],
+                'customer_name': 'Unknown'
+            }
+        
+        messages = customer.get('whatsapp_messages', [])
+        
+        # Sort by timestamp
+        messages.sort(key=lambda x: x.get('timestamp', ''), reverse=False)
+        
+        return {
+            'success': True,
+            'messages': messages,
+            'customer_name': f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching messages by phone: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @api_router.post("/whatsapp/templates/create")
 async def create_template(data: dict):
     """
