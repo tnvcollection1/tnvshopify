@@ -414,6 +414,7 @@ const Orders = () => {
                     <TableHead className="font-semibold text-gray-700">Delivery</TableHead>
                     <TableHead className="font-semibold text-gray-700">Payment</TableHead>
                     <TableHead className="font-semibold text-gray-700">Amount</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
