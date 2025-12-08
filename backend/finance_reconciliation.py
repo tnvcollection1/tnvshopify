@@ -122,11 +122,14 @@ class FinanceReconciliation:
                 'error': str(e)
             }
     
-    async def upload_ledger_data(self, ledger_data: Dict) -> Dict:
+    async def upload_ledger_data(self, ledger_data: Dict, file_name: str = 'ledger.xlsx') -> Dict:
         """
         Upload parsed ledger data to MongoDB
         """
         try:
+            # Save snapshot before clearing
+            snapshot_id = await self.save_upload_snapshot('ledger', file_name, len(ledger_data))
+            
             records = []
             for order_num, data in ledger_data.items():
                 record = {
@@ -146,7 +149,8 @@ class FinanceReconciliation:
             
             return {
                 'success': True,
-                'uploaded_count': len(records)
+                'uploaded_count': len(records),
+                'snapshot_id': snapshot_id
             }
             
         except Exception as e:
