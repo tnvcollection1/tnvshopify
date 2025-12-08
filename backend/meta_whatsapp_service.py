@@ -1,10 +1,11 @@
 """
 Meta WhatsApp Business API Service
 Handles sending and receiving WhatsApp messages using Meta's official API
+Supports utility templates, marketing messages, media messages, and webhooks
 """
 import logging
 import requests
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
@@ -13,11 +14,13 @@ logger = logging.getLogger(__name__)
 class MetaWhatsAppService:
     """Service for interacting with Meta WhatsApp Business API"""
     
-    def __init__(self, access_token: str, phone_number_id: str, api_version: str = "v22.0"):
+    def __init__(self, access_token: str, phone_number_id: str, business_account_id: str = None, api_version: str = "v22.0"):
         self.access_token = access_token
         self.phone_number_id = phone_number_id
+        self.business_account_id = business_account_id
         self.api_version = api_version
         self.base_url = f"https://graph.facebook.com/{api_version}/{phone_number_id}"
+        self.business_url = f"https://graph.facebook.com/{api_version}/{business_account_id}" if business_account_id else None
         
     def send_text_message(self, to_phone: str, message: str) -> Dict:
         """
