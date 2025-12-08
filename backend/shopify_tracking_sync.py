@@ -19,39 +19,55 @@ class ShopifyTrackingSync:
         self.access_token = os.environ.get('SHOPIFY_ACCESS_TOKEN')
         self.api_url = f"https://{self.shop_url}/admin/api/2024-01/graphql.json"
         
-    async def sync_tracking_for_orders(self, db, order_ids: List[str] = None) -> Dict:
+    async def sync_tracking_for_orders(self, db, order_numbers: List[str] = None) -> Dict:
         """
         Sync tracking data from Shopify fulfillments to local database
         
         Args:
             db: MongoDB database instance
-            order_ids: Optional list of specific Shopify order IDs to sync
+            order_numbers: Optional list of specific Shopify order numbers to sync (e.g., ["29436", "29437"])
             
         Returns:
             Dict with sync results
         """
         try:
-            # If no specific order IDs provided, get all orders that need tracking sync
-            if not order_ids:
-                # Get orders that don't have tracking info or need update
-                orders = await db.orders.find(
-                    {},
-                    {"_id": 0, "id": 1, "name": 1}
-                ).to_list(1000)
-                order_ids = [str(order['id']) for order in orders if order.get('id')]
+            # If no specific order numbers provided, get all customers/orders that need tracking sync
+            if not order_numbers:
+                # Get customers with order_number
+                customers = await db.customers.find(
+                    {"order_number": {"$exists": True, "$ne": None}},
+                    {"_id": 0, "order_number": 1}
+                ).to_list(5000)
+                order_numbers = [str(c.get('order_number')) for c in customers if c.get('order_number')]
             
-            if not order_ids:
+            if not order_numbers:
                 return {
                     'success': True,
                     'message': 'No orders to sync',
-                    'updated': 0
+                    'updated': 0,
+                    'total': 0
                 }
+            
+            logger.info(f"Syncing tracking for {len(order_numbers)} orders...")
             
             updated_count = 0
             errors = []
             
+            # Get order IDs from Shopify by order name/number
+            order_id_map = await self._get_order_ids_by_names(order_numbers)
+            
+            if not order_id_map:
+                return {
+                    'success': True,
+                    'message': 'No matching orders found in Shopify',
+                    'updated': 0,
+                    'total': len(order_numbers)
+                }
+            
             # Process orders in batches
             batch_size = 50
+            order_ids = list(order_id_map.keys())
+            
             for i in range(0, len(order_ids), batch_size):
                 batch_ids = order_ids[i:i + batch_size]
                 
@@ -62,7 +78,8 @@ class ShopifyTrackingSync:
                     # Update local database with tracking info
                     for order_id, fulfillment_data in fulfillments.items():
                         try:
-                            await self._update_order_tracking(db, order_id, fulfillment_data)
+                            order_name = order_id_map.get(order_id)
+                            await self._update_customer_tracking(db, order_name, fulfillment_data)
                             updated_count += 1
                         except Exception as e:
                             logger.error(f"Error updating order {order_id}: {str(e)}")
@@ -75,7 +92,7 @@ class ShopifyTrackingSync:
             return {
                 'success': True,
                 'updated': updated_count,
-                'total': len(order_ids),
+                'total': len(order_numbers),
                 'errors': errors if errors else None
             }
             
@@ -84,7 +101,8 @@ class ShopifyTrackingSync:
             return {
                 'success': False,
                 'error': str(e),
-                'updated': 0
+                'updated': 0,
+                'total': 0
             }
     
     async def _fetch_fulfillments(self, order_ids: List[str]) -> Dict[str, Dict]:
