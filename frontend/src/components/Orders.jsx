@@ -131,24 +131,53 @@ const Orders = () => {
       toast.info("Sending WhatsApp notification...");
 
       const response = await axios.post(`${API}/whatsapp/send-template`, {
-        to: phone,
+        phone: phone,
         template_name: "order_confirmation_ashmiaa",
-        parameters: {
-          customer_name: `${order.first_name} ${order.last_name}`,
-          order_number: order.order_number || "N/A",
-          tracking_number: order.tracking_number || "Will be updated soon"
-        }
+        language_code: "en_US",
+        body_params: [
+          { type: "text", text: `${order.first_name} ${order.last_name}` },
+          { type: "text", text: order.order_number || "N/A" },
+          { type: "text", text: order.tracking_number || "Will be updated soon" }
+        ]
       });
 
       if (response.data.success) {
-        toast.success(`✅ WhatsApp notification sent to ${order.first_name}`);
+        toast.success(`✅ WhatsApp sent to ${order.first_name}!`);
       } else {
         toast.error("Failed to send WhatsApp notification");
       }
     } catch (error) {
       console.error("Error sending WhatsApp:", error);
-      toast.error(error.response?.data?.detail || "Failed to send WhatsApp notification");
+      const errorMsg = error.response?.data?.detail || error.response?.data?.error || "Failed to send WhatsApp";
+      toast.error(errorMsg);
     }
+  };
+
+  const sendBulkWhatsApp = async () => {
+    const ordersToSend = orders.slice(0, 10).filter(o => o.phone || o.default_address?.phone);
+    
+    if (ordersToSend.length === 0) {
+      toast.error("No orders with phone numbers found");
+      return;
+    }
+
+    toast.info(`Sending WhatsApp to ${ordersToSend.length} customers...`);
+    
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const order of ordersToSend) {
+      try {
+        await sendWhatsAppNotification(order);
+        successCount++;
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } catch (error) {
+        failCount++;
+      }
+    }
+
+    toast.success(`✅ Sent ${successCount} messages! ${failCount > 0 ? `${failCount} failed.` : ''}`);
   };
 
   const openWhatsAppWeb = () => {
