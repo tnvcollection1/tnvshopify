@@ -7229,6 +7229,29 @@ async def rollback_snapshot(snapshot_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.get("/finance/unmatched-records")
+async def get_unmatched_records(store_name: str = 'ashmiaa'):
+    """
+    Get records from uploaded files that are NOT matched to Shopify orders
+    Shows which ledger records and transactions couldn't be matched
+    """
+    try:
+        logger.info(f"🔍 Fetching unmatched records for store: {store_name}")
+        
+        finance_rec = get_finance_reconciliation(db)
+        result = await finance_rec.get_unmatched_records(store_name)
+        
+        if not result.get('success'):
+            raise HTTPException(status_code=500, detail=result.get('error'))
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting unmatched records: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 
 # Include the router in the main app
 app.include_router(api_router)
