@@ -157,6 +157,21 @@ const FinanceReconciliation = () => {
     }
   };
 
+  const fetchUnmatchedRecords = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/api/finance/unmatched-records?store_name=ashmiaa`);
+      setUnmatchedData(response.data);
+      setShowUnmatched(true);
+      toast.info(`Found ${response.data.summary.unmatched_ledger_count} unmatched ledger records`);
+    } catch (error) {
+      console.error('Error fetching unmatched records:', error);
+      toast.error('Failed to fetch unmatched records');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const styles = {
       'Verified': 'bg-blue-500/20 text-blue-300 border-blue-500/50',
