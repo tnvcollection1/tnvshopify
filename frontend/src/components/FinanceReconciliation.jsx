@@ -675,10 +675,27 @@ const FinanceReconciliation = () => {
                       </td>
                     </tr>
                     
-                    {/* Expanded Row - Transaction Details */}
-                    {expandedOrder === order.order_number && order.transaction_matched && (
+                    {/* Expanded Row - Transaction Details & Validation Errors */}
+                    {expandedOrder === order.order_number && (order.transaction_matched || order.has_errors) && (
                       <tr className="bg-gray-900/50">
                         <td colSpan="8" className="px-6 py-4">
+                          {/* Validation Errors (if any) */}
+                          {order.has_errors && order.validation_errors && (
+                            <div className="ml-8 mb-4 p-4 bg-red-900/20 rounded-lg border border-red-500">
+                              <h4 className="text-sm font-semibold text-red-400 mb-3 flex items-center gap-2">
+                                <XCircle className="w-4 h-4" />
+                                Validation Errors - Data Mismatch Detected
+                              </h4>
+                              <ul className="list-disc list-inside space-y-1 text-sm text-red-300">
+                                {order.validation_errors.map((error, idx) => (
+                                  <li key={idx}>{error}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {/* Transaction Details */}
+                          {order.transaction_matched && (
                           <div className="ml-8 p-4 bg-gray-800/50 rounded-lg border border-green-900/50">
                             <h4 className="text-sm font-semibold text-green-400 mb-3 flex items-center gap-2">
                               <Link2 className="w-4 h-4" />
