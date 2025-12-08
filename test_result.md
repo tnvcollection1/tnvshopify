@@ -380,6 +380,18 @@ frontend:
           agent: "testing"
           comment: "TESTED ✅ - Enhanced Finance Reconciliation with Transaction Details and Tracking Verification FULLY FUNCTIONAL. Successfully verified ALL review requirements: 1) Login with admin/admin and navigation to /finance-reconciliation ✅, 2) 'Run Reconciliation' button working - processed and displayed 7 summary cards ✅, 3) Found 359 orders with matched transactions showing green checkmarks and percentages (100%) in TX Match column ✅, 4) Expandable rows working perfectly - clicking orders shows 'Matched Bank Transaction' section with green border ✅, 5) Transaction details displaying correctly: Date (2025-05-30), Description (VANYA KARACHI PK, PayFast KARACHI), Payment Mode (HBL Credit Card), Debit amounts (Rs. 14623.53, Rs. 5490.00), Credit amounts, and confidence percentages (100%) ✅, 6) Multiple order expansion/collapse tested successfully ✅, 7) Delivery column shows 218 green checkmarks indicating tracking verification ✅, 8) Summary statistics verified: 3298 Total Orders, 1 Verified, 214 Complete, 164 Partial, 2919 Missing, 359 TX Matched ✅. Professional UI with dark theme, proper color coding, and excellent user experience. All expected functionality working perfectly including order expansion, transaction matching, and tracking verification."
 
+  - task: "Store Filter feature in Finance Reconciliation"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/FinanceReconciliation.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "TESTED ✅ - Store Filter feature in Finance Reconciliation FULLY FUNCTIONAL. Successfully verified ALL review requirements: 1) Login with admin/admin credentials successful ✅, 2) Navigation to /finance-reconciliation successful ✅, 3) Store Filter UI verification: 'Select Store:' section visible in top right, two buttons '🏪 Ashmia' and '🏪 TNV Collection' present ✅, 4) Ashmia selected by default with gradient background (bg-gradient-to-r from-green-500 to-blue-500) ✅, 5) Ashmia Store reconciliation: Run Reconciliation shows 3,298 total orders with proper summary cards (1 Verified, 214 Complete, 3 Partial, 161 Errors, 2919 Missing, 359 TX Matched) ✅, 6) Store switching: TNV Collection button changes to purple gradient when selected, Ashmia becomes gray ✅, 7) Toast notifications working: 'Switched to tnvcollectionpk store' message appears ✅, 8) TNV reconciliation shows different data (10,000 total orders initially, then different counts) ✅, 9) Switch back to Ashmia working with proper UI updates and data restoration ✅, 10) Match Transactions with store filter functional - button clickable and processes correctly ✅. All screenshots captured successfully. Store filter feature working perfectly with proper data isolation per store, correct UI state management, and seamless switching between stores."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
