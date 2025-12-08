@@ -17,6 +17,7 @@ const FinanceReconciliation = () => {
   const [unmatchedData, setUnmatchedData] = useState(null);
   const [showUnmatched, setShowUnmatched] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [selectedStore, setSelectedStore] = useState('ashmiaa');
 
   useEffect(() => {
     fetchFinanceStatus();
