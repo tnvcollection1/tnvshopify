@@ -217,6 +217,10 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/inbox" 
+        element={<WhatsAppInboxStandalone />} 
+      />
+      <Route 
         path="/whatsapp-templates" 
         element={
           <ProtectedRoute>
