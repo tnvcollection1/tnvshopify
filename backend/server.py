@@ -1397,17 +1397,38 @@ async def apply_dynamic_pricing(auto_apply: bool = False, days_lookback: int = 1
 async def get_pricing_report():
     """
     Get current dynamic pricing report with all categorized products
+    Returns cached analysis from last run
     """
     try:
-        from dynamic_pricing_engine import dynamic_pricing_engine
+        # Get cached analysis from database
+        cached_report = await db.dynamic_pricing_cache.find_one(
+            {"type": "analysis_report"},
+            {"_id": 0}
+        )
         
-        # Get latest analysis
-        analysis = await dynamic_pricing_engine.analyze_product_velocity(db, days_lookback=180)
+        if not cached_report:
+            # No cached data, run analysis for the first time
+            from dynamic_pricing_engine import dynamic_pricing_engine
+            logger.info("🔄 No cached report found, running initial analysis...")
+            analysis = await dynamic_pricing_engine.analyze_product_velocity(db, days_lookback=365)
+            
+            if analysis.get('success'):
+                # Cache the result
+                await db.dynamic_pricing_cache.update_one(
+                    {"type": "analysis_report"},
+                    {"$set": {
+                        "type": "analysis_report",
+                        "data": analysis,
+                        "last_updated": datetime.now(timezone.utc).isoformat()
+                    }},
+                    upsert=True
+                )
+                return analysis
+            else:
+                raise HTTPException(status_code=500, detail=analysis.get('error', 'Analysis failed'))
         
-        if not analysis.get('success'):
-            raise HTTPException(status_code=500, detail=analysis.get('error', 'Analysis failed'))
-        
-        return analysis
+        # Return cached data
+        return cached_report.get('data')
         
     except Exception as e:
         logger.error(f"❌ Error getting pricing report: {str(e)}")
