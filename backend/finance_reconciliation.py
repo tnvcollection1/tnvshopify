@@ -348,8 +348,147 @@ class FinanceReconciliation:
                 'error': str(e)
             }
     
-    def _determine_status(self, shopify_order: Dict, ledger_data: Dict) -> str:
+    async def mark_order_verified(self, order_number: str, verified_by: str, notes: str = '') -> Dict:
+        """
+        Mark an order as verified after manual review
+        """
+        try:
+            verification = {
+                'order_number': order_number,
+                'verified': True,
+                'verified_by': verified_by,
+                'verified_at': datetime.now(timezone.utc).isoformat(),
+                'notes': notes
+            }
+            
+            await self.db.finance_verifications.update_one(
+                {'order_number': order_number},
+                {'$set': verification},
+                upsert=True
+            )
+            
+            logger.info(f"✅ Marked order {order_number} as verified by {verified_by}")
+            
+            return {
+                'success': True,
+                'message': f'Order {order_number} marked as verified'
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error marking order verified: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    async def save_upload_snapshot(self, upload_type: str, file_name: str, record_count: int) -> str:
+        """
+        Save a snapshot of uploaded data for rollback capability
+        """
+        try:
+            snapshot_id = str(uuid.uuid4())
+            
+            # Get current data
+            if upload_type == 'ledger':
+                data = await self.db.finance_ledger.find({}, {'_id': 0}).to_list(10000)
+                collection = 'finance_ledger'
+            else:
+                data = await self.db.finance_transactions.find({}, {'_id': 0}).to_list(10000)
+                collection = 'finance_transactions'
+            
+            # Save snapshot
+            snapshot = {
+                'snapshot_id': snapshot_id,
+                'upload_type': upload_type,
+                'file_name': file_name,
+                'collection': collection,
+                'record_count': record_count,
+                'data': data,
+                'created_at': datetime.now(timezone.utc).isoformat()
+            }
+            
+            await self.db.finance_upload_history.insert_one(snapshot)
+            
+            logger.info(f"✅ Saved snapshot {snapshot_id} for {upload_type}")
+            
+            return snapshot_id
+            
+        except Exception as e:
+            logger.error(f"❌ Error saving snapshot: {str(e)}")
+            return None
+    
+    async def get_upload_history(self) -> Dict:
+        """
+        Get upload history
+        """
+        try:
+            history = await self.db.finance_upload_history.find(
+                {},
+                {'_id': 0, 'data': 0}  # Exclude large data field
+            ).sort('created_at', -1).to_list(50)
+            
+            return {
+                'success': True,
+                'history': history
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting upload history: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    async def rollback_to_snapshot(self, snapshot_id: str) -> Dict:
+        """
+        Rollback to a previous snapshot
+        """
+        try:
+            # Get snapshot
+            snapshot = await self.db.finance_upload_history.find_one(
+                {'snapshot_id': snapshot_id},
+                {'_id': 0}
+            )
+            
+            if not snapshot:
+                return {
+                    'success': False,
+                    'error': 'Snapshot not found'
+                }
+            
+            collection_name = snapshot['collection']
+            data = snapshot['data']
+            
+            # Clear current data and restore snapshot
+            if collection_name == 'finance_ledger':
+                await self.db.finance_ledger.delete_many({})
+                if data:
+                    await self.db.finance_ledger.insert_many(data)
+            else:
+                await self.db.finance_transactions.delete_many({})
+                if data:
+                    await self.db.finance_transactions.insert_many(data)
+            
+            logger.info(f"✅ Rolled back to snapshot {snapshot_id}")
+            
+            return {
+                'success': True,
+                'message': f'Rolled back to {snapshot["file_name"]} ({snapshot["created_at"]})',
+                'record_count': len(data)
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error rolling back: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def _determine_status(self, shopify_order: Dict, ledger_data: Dict, verification: Dict = None) -> str:
         """Determine reconciliation status"""
+        if verification and verification.get('verified'):
+            return 'Verified'
+        
         if not ledger_data:
             return 'Missing Data'
         
@@ -357,8 +496,9 @@ class FinanceReconciliation:
         has_delivery = shopify_order.get('delivery_status') not in [None, '', 'N/A']
         has_ledger = bool(ledger_data.get('order_status'))
         has_payment = bool(ledger_data.get('payment_status'))
+        has_transaction = bool(ledger_data.get('matched_transaction'))
         
-        if has_delivery and has_ledger and has_payment:
+        if has_delivery and has_ledger and has_payment and has_transaction:
             return 'Complete'
         elif has_ledger:
             return 'Partial'
