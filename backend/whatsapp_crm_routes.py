@@ -17,18 +17,11 @@ logger = logging.getLogger(__name__)
 # Initialize router
 whatsapp_router = APIRouter(prefix="/api/whatsapp", tags=["whatsapp"])
 
-# MongoDB connection (lazy initialization to avoid env issues at import time)
-_db = None
-
-def get_db():
-    """Get database connection"""
-    global _db
-    if _db is None:
-        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-        db_name = os.environ.get('DB_NAME', 'shopify_customers_db')
-        client = AsyncIOMotorClient(mongo_url)
-        _db = client[db_name]
-    return _db
+# MongoDB connection
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+db_name = os.environ.get('DB_NAME', 'shopify_customers_db')
+client = AsyncIOMotorClient(mongo_url)
+db = client[db_name]
 
 # WhatsApp service initialization helper
 def get_whatsapp_service(store_name: str = "ashmiaa") -> MetaWhatsAppService:
