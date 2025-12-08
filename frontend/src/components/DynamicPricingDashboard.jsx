@@ -43,15 +43,16 @@ const DynamicPricingDashboard = () => {
     }
   };
 
-  const handleClassifyAll = async () => {
+  const handleAnalyze = async () => {
     try {
       setLoading(true);
-      const res = await axios.post(`${API_URL}/api/pricing/classify-all`);
-      alert(`✅ ${res.data.message}\nCategory A: ${res.data.category_breakdown.A}\nCategory B: ${res.data.category_breakdown.B}\nCategory C: ${res.data.category_breakdown.C}`);
-      fetchDashboardData();
+      const res = await axios.post(`${API_URL}/api/dynamic-pricing/analyze?days_lookback=365`);
+      alert(`✅ Analyzed ${res.data.total_products} products!\nCategory A: ${res.data.categories.A.length}\nCategory B: ${res.data.categories.B.length}\nCategory C: ${res.data.categories.C.length}`);
+      fetchReport();
     } catch (error) {
-      console.error('Error classifying SKUs:', error);
-      alert('❌ Error classifying SKUs');
+      console.error('Error analyzing products:', error);
+      alert('❌ Error analyzing products');
+      setLoading(false);
     }
   };
 
