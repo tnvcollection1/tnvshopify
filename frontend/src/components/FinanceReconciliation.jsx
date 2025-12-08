@@ -315,33 +315,47 @@ const FinanceReconciliation = () => {
 
       {/* Summary Cards */}
       {reconciliationData?.summary && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-            <div className="text-3xl font-bold text-white mb-2">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+            <div className="text-2xl font-bold text-white mb-1">
               {reconciliationData.summary.total_orders}
             </div>
-            <div className="text-gray-400 text-sm">Total Orders</div>
+            <div className="text-gray-400 text-xs">Total Orders</div>
           </div>
           
-          <div className="bg-gray-800/50 border border-green-900/50 rounded-xl p-6">
-            <div className="text-3xl font-bold text-green-400 mb-2">
+          <div className="bg-gray-800/50 border border-blue-900/50 rounded-xl p-4">
+            <div className="text-2xl font-bold text-blue-400 mb-1">
+              {reconciliationData.summary.verified || 0}
+            </div>
+            <div className="text-gray-400 text-xs">Verified</div>
+          </div>
+          
+          <div className="bg-gray-800/50 border border-green-900/50 rounded-xl p-4">
+            <div className="text-2xl font-bold text-green-400 mb-1">
               {reconciliationData.summary.fully_reconciled}
             </div>
-            <div className="text-gray-400 text-sm">Fully Reconciled</div>
+            <div className="text-gray-400 text-xs">Complete</div>
           </div>
           
-          <div className="bg-gray-800/50 border border-yellow-900/50 rounded-xl p-6">
-            <div className="text-3xl font-bold text-yellow-400 mb-2">
+          <div className="bg-gray-800/50 border border-yellow-900/50 rounded-xl p-4">
+            <div className="text-2xl font-bold text-yellow-400 mb-1">
               {reconciliationData.summary.partial_reconciled}
             </div>
-            <div className="text-gray-400 text-sm">Partial Match</div>
+            <div className="text-gray-400 text-xs">Partial</div>
           </div>
           
-          <div className="bg-gray-800/50 border border-red-900/50 rounded-xl p-6">
-            <div className="text-3xl font-bold text-red-400 mb-2">
+          <div className="bg-gray-800/50 border border-red-900/50 rounded-xl p-4">
+            <div className="text-2xl font-bold text-red-400 mb-1">
               {reconciliationData.summary.not_reconciled}
             </div>
-            <div className="text-gray-400 text-sm">Missing Data</div>
+            <div className="text-gray-400 text-xs">Missing</div>
+          </div>
+          
+          <div className="bg-gray-800/50 border border-indigo-900/50 rounded-xl p-4">
+            <div className="text-2xl font-bold text-indigo-400 mb-1">
+              {reconciliationData.summary.transaction_matched || 0}
+            </div>
+            <div className="text-gray-400 text-xs">TX Matched</div>
           </div>
         </div>
       )}
