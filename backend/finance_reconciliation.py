@@ -160,11 +160,14 @@ class FinanceReconciliation:
                 'error': str(e)
             }
     
-    async def upload_transaction_data(self, transactions: List[Dict]) -> Dict:
+    async def upload_transaction_data(self, transactions: List[Dict], file_name: str = 'transactions.xlsx') -> Dict:
         """
         Upload parsed transaction data to MongoDB
         """
         try:
+            # Save snapshot before clearing
+            snapshot_id = await self.save_upload_snapshot('transactions', file_name, len(transactions))
+            
             if transactions:
                 # Clear existing data
                 await self.db.finance_transactions.delete_many({})
@@ -180,7 +183,8 @@ class FinanceReconciliation:
             
             return {
                 'success': True,
-                'uploaded_count': len(transactions)
+                'uploaded_count': len(transactions),
+                'snapshot_id': snapshot_id
             }
             
         except Exception as e:
