@@ -7248,6 +7248,52 @@ async def match_transactions(store_name: str = 'ashmiaa'):
         logger.info(f"🔗 Starting automatic transaction matching for {store_name}...")
         
         finance_rec = get_finance_reconciliation(db)
+
+
+@api_router.get("/finance/missing-orders")
+async def get_missing_orders(store_name: str = 'ashmiaa'):
+    """
+    Get orders that exist in Shopify but NOT in uploaded Excel ledger
+    Returns list ready for Excel export
+    """
+    try:
+        finance_rec = get_finance_reconciliation(db)
+        result = await finance_rec.reconcile_orders(store_name)
+        
+        if not result.get('success'):
+            raise HTTPException(status_code=500, detail=result.get('error'))
+        
+        # Filter only missing data orders
+        missing_orders = [
+            order for order in result.get('orders', [])
+            if order.get('reconciliation_status') == 'Missing Data'
+        ]
+        
+        # Format for easy Excel import
+        excel_ready = []
+        for order in missing_orders:
+            excel_ready.append({
+                'order_number': order['order_number'],
+                'customer_name': order['customer_name'],
+                'delivery_status': order['delivery_status'],
+                'amount': order['amount'],
+                'tracking_number': order['tracking_number'] if order['tracking_number'] != 'N/A' else '',
+                'order_status': order['shopify_status'],
+                'payment_status': 'PENDING',  # Default value to fill
+                'store_name': store_name
+            })
+        
+        return {
+            'success': True,
+            'missing_orders': excel_ready,
+            'total': len(excel_ready)
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting missing orders: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
         result = await finance_rec.match_transactions_to_orders(store_name)
         
         if not result.get('success'):
