@@ -1451,28 +1451,20 @@ async def get_pricing_report():
         )
         
         if not cached_report:
-            # No cached data, run analysis for the first time
-            from dynamic_pricing_engine import dynamic_pricing_engine
-            logger.info("🔄 No cached report found, running initial analysis...")
-            analysis = await dynamic_pricing_engine.analyze_product_velocity(db, days_lookback=365)
-            
-            if analysis.get('success'):
-                # Cache the result
-                await db.dynamic_pricing_cache.update_one(
-                    {"type": "analysis_report"},
-                    {"$set": {
-                        "type": "analysis_report",
-                        "data": analysis,
-                        "last_updated": datetime.now(timezone.utc).isoformat()
-                    }},
-                    upsert=True
-                )
-                return analysis
-            else:
-                raise HTTPException(status_code=500, detail=analysis.get('error', 'Analysis failed'))
+            # Return loading state - cache is being populated in background
+            return {
+                "success": True,
+                "loading": True,
+                "message": "Analysis is running in background. Please refresh in a moment.",
+                "total_products": 0,
+                "categories": {"A": [], "B": [], "C": []}
+            }
         
         # Return cached data
-        return cached_report.get('data')
+        data = cached_report.get('data')
+        data['loading'] = False
+        data['last_updated'] = cached_report.get('last_updated')
+        return data
         
     except Exception as e:
         logger.error(f"❌ Error getting pricing report: {str(e)}")
