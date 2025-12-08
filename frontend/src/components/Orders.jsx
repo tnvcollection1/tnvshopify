@@ -184,6 +184,30 @@ const Orders = () => {
     window.open('https://web.whatsapp.com/', '_blank');
   };
 
+  const openWhatsAppWebWithNumber = (order) => {
+    // Extract phone number
+    let phone = order.phone || order.default_address?.phone;
+    if (!phone) {
+      toast.error("No phone number found for this customer");
+      return;
+    }
+
+    // Clean phone number (remove spaces, dashes, etc.)
+    phone = phone.replace(/[\s-()]/g, '');
+    
+    // Add country code if not present (assuming Pakistan +92)
+    if (!phone.startsWith('+') && !phone.startsWith('92')) {
+      phone = '92' + phone;
+    } else if (phone.startsWith('+')) {
+      phone = phone.substring(1);
+    }
+
+    // Open WhatsApp Web with pre-filled number
+    const url = `https://web.whatsapp.com/send?phone=${phone}`;
+    window.open(url, '_blank');
+    toast.success(`Opening WhatsApp chat with ${order.first_name} ${order.last_name}`);
+  };
+
   const handleShopifySync = async () => {
     try {
       setLoading(true);
