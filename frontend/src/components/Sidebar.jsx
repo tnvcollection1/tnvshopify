@@ -51,11 +51,11 @@ const Sidebar = () => {
     {
       title: 'WHATSAPP CRM',
       items: [
-        { icon: Inbox, label: 'WhatsApp Inbox', path: '/whatsapp-inbox', highlighted: true },
-        { icon: FileText, label: 'Templates', path: '/whatsapp-templates', highlighted: true },
-        { icon: Target, label: 'Campaigns', path: '/whatsapp-campaigns', highlighted: true },
-        { icon: BarChart3, label: 'Analytics', path: '/whatsapp-analytics', highlighted: true },
-        { icon: MessageCircle, label: 'Legacy Messaging', path: '/whatsapp' },
+        { icon: Inbox, label: 'WhatsApp Inbox', path: '/whatsapp-inbox', highlighted: true, showForDemo: true },
+        { icon: FileText, label: 'Templates', path: '/whatsapp-templates', highlighted: true, showForDemo: true },
+        { icon: Target, label: 'Campaigns', path: '/whatsapp-campaigns', highlighted: true, showForDemo: true },
+        { icon: BarChart3, label: 'Analytics', path: '/whatsapp-analytics', highlighted: true, showForDemo: true },
+        { icon: MessageCircle, label: 'Legacy Messaging', path: '/whatsapp', showForDemo: false },
       ]
     },
     {
