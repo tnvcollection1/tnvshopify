@@ -1408,6 +1408,100 @@ async def get_pricing_report():
             raise HTTPException(status_code=500, detail=analysis.get('error', 'Analysis failed'))
         
         return analysis
+
+
+class ShopifySyncRequest(BaseModel):
+    discounts: Dict[str, float] = {"A": 0, "B": 10, "C": 20}
+
+
+@api_router.post("/dynamic-pricing/sync-to-shopify")
+async def sync_pricing_to_shopify(request: ShopifySyncRequest):
+    """
+    Sync dynamic pricing to Shopify with custom discount percentages
+    """
+    try:
+        from dynamic_pricing_engine import dynamic_pricing_engine
+        import shopify
+        
+        logger.info("🔄 Starting Shopify price sync...")
+        
+        # Analyze products with lifetime data
+        analysis = await dynamic_pricing_engine.analyze_product_velocity(db, days_lookback=365)
+        
+        if not analysis.get('success'):
+            raise HTTPException(status_code=500, detail="Failed to analyze products")
+        
+        categories = analysis.get('categories', {})
+        discounts = request.discounts
+        
+        updated_count = 0
+        errors = []
+        
+        # Get all stores
+        stores = await db.store_config.find({}).to_list(10)
+        
+        for store_config in stores:
+            store_name = store_config.get('store_name')
+            shop_url = store_config.get('shopify_domain')
+            access_token = store_config.get('shopify_token')
+            
+            if not shop_url or not access_token:
+                continue
+            
+            logger.info(f"📦 Syncing prices for {store_name}...")
+            
+            # Initialize Shopify session
+            shop_url_clean = shop_url.replace('https://', '').replace('http://', '')
+            session = shopify.Session(shop_url_clean, '2024-01', access_token)
+            shopify.ShopifyResource.activate_session(session)
+            
+            try:
+                # Process each category
+                for category, products in categories.items():
+                    discount_percent = discounts.get(category, 0)
+                    
+                    for product_data in products:
+                        sku = product_data.get('sku')
+                        current_price = product_data.get('current_price', 0)
+                        
+                        if not sku or current_price <= 0:
+                            continue
+                        
+                        # Calculate new price
+                        new_price = current_price * (1 - discount_percent / 100)
+                        
+                        try:
+                            # Find product by SKU in Shopify
+                            variants = shopify.Variant.find(sku=sku)
+                            
+                            if variants:
+                                variant = variants[0]
+                                variant.price = str(round(new_price, 2))
+                                variant.save()
+                                updated_count += 1
+                                
+                                logger.info(f"✅ Updated {sku}: ${current_price} → ${new_price:.2f} (Category {category}, {discount_percent}% off)")
+                                
+                        except Exception as e:
+                            logger.error(f"Error updating SKU {sku}: {str(e)}")
+                            errors.append(f"{sku}: {str(e)}")
+                
+            finally:
+                shopify.ShopifyResource.clear_session()
+        
+        logger.info(f"✅ Shopify sync complete: {updated_count} products updated")
+        
+        return {
+            'success': True,
+            'updated_count': updated_count,
+            'total_products': analysis.get('total_products', 0),
+            'discounts_applied': discounts,
+            'errors': errors[:10] if errors else None  # Return first 10 errors
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error syncing to Shopify: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
         
     except Exception as e:
         logger.error(f"❌ Error getting pricing report: {str(e)}")
