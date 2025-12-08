@@ -6093,6 +6093,57 @@ class WhatsAppMessage(BaseModel):
 class BulkWhatsAppMessage(BaseModel):
     recipients: List[Dict]
 
+
+
+@api_router.get("/whatsapp/conversations")
+async def get_whatsapp_conversations():
+    """
+    Get all WhatsApp conversations with customers
+    Returns list of conversations with last message and unread count
+    """
+    try:
+        # Get all customers who have WhatsApp messages
+        pipeline = [
+            {
+                '$match': {
+                    'whatsapp_messages': {'$exists': True, '$ne': []}
+                }
+            },
+            {
+                '$project': {
+                    '_id': 0,
+                    'phone': '$phone',
+                    'customer_name': {'$concat': ['$first_name', ' ', '$last_name']},
+                    'first_name': 1,
+                    'last_name': 1,
+                    'last_message': {'$arrayElemAt': ['$whatsapp_messages.message', -1]},
+                    'last_message_time': {'$arrayElemAt': ['$whatsapp_messages.timestamp', -1]},
+                    'messages': '$whatsapp_messages'
+                }
+            },
+            {
+                '$addFields': {
+                    'unread_count': 0  # Can be enhanced with actual unread tracking
+                }
+            },
+            {
+                '$sort': {'last_message_time': -1}
+            }
+        ]
+        
+        conversations = await db.customers.aggregate(pipeline).to_list(1000)
+        
+        return {
+            'success': True,
+            'conversations': conversations,
+            'total': len(conversations)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching WhatsApp conversations: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/whatsapp/send")
 async def send_whatsapp_message(data: WhatsAppMessage):
     """Send a WhatsApp message to a customer"""
