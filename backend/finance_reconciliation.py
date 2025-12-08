@@ -354,6 +354,9 @@ class FinanceReconciliation:
                 # Get matched transaction details
                 matched_transaction = ledger_data.get('matched_transaction', {})
                 
+                # Determine reconciliation status with validation errors
+                status = self._determine_status(order, ledger_data, verification, validation_errors)
+                
                 reconciled.append({
                     'order_number': order_num,
                     'customer_name': f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
