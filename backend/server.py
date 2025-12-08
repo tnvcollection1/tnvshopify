@@ -1408,6 +1408,10 @@ async def get_pricing_report():
             raise HTTPException(status_code=500, detail=analysis.get('error', 'Analysis failed'))
         
         return analysis
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting pricing report: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 class ShopifySyncRequest(BaseModel):
