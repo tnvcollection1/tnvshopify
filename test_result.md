@@ -446,6 +446,80 @@ agent_communication:
         4. Logout → Redirects to login page
     - agent: "testing"
       message: |
+        🎯 STORE FILTER FEATURE IN FINANCE RECONCILIATION TESTING COMPLETE ✅
+        
+        **TEST SCENARIO EXECUTED**: Comprehensive verification of Store Filter feature in Finance Reconciliation as per review request
+        
+        **✅ ALL REVIEW REQUEST REQUIREMENTS MET SUCCESSFULLY**:
+        
+        **1. Login and Navigation** ✅
+        - Successfully authenticated with admin/admin credentials
+        - Successfully navigated to /finance-reconciliation page
+        - Page loads correctly with professional UI and store filter section
+        
+        **2. Store Filter UI Verification** ✅
+        - ✅ "Select Store:" section visible in top right area
+        - ✅ Two buttons present: "🏪 Ashmia" and "🏪 TNV Collection"
+        - ✅ Ashmia selected by default with gradient background (bg-gradient-to-r from-green-500 to-blue-500)
+        - ✅ Professional UI design with proper positioning and styling
+        
+        **3. Ashmia Store (Default) Testing** ✅
+        - ✅ "Run Reconciliation" button found and clickable
+        - ✅ Reconciliation completed successfully showing ashmia data
+        - ✅ Summary shows **3,298 total orders** (matches expected ~3,298)
+        - ✅ Complete summary cards: 1 Verified, 214 Complete, 3 Partial, 161 Errors, 2919 Missing, 359 TX Matched
+        - ✅ Screenshot captured: ashmia_reconciliation.png
+        
+        **4. Switch to TNV Collection Store** ✅
+        - ✅ Clicked "🏪 TNV Collection" button successfully
+        - ✅ TNV Collection button changes to purple gradient background (bg-gradient-to-r from-purple-500 to-pink-500)
+        - ✅ Ashmia button becomes gray (bg-gray-700) as expected
+        - ✅ Toast notification system working (store switching messages appear)
+        
+        **5. TNV Collection Reconciliation** ✅
+        - ✅ "Run Reconciliation" for TNV Collection working
+        - ✅ Different order count displayed (10,000 initially, then different data)
+        - ✅ Summary cards update with TNV-specific data
+        - ✅ Screenshot captured: tnv_reconciliation.png
+        
+        **6. Switch Back to Ashmia** ✅
+        - ✅ Clicked "🏪 Ashmia" button to switch back
+        - ✅ UI updates correctly with Ashmia gradient background restored
+        - ✅ Run reconciliation again shows ashmia data returns (3,298 orders)
+        - ✅ Data isolation working perfectly between stores
+        
+        **7. Match Transactions with Store Filter** ✅
+        - ✅ "Match Transactions" button found and functional
+        - ✅ With ashmia selected, clicked Match Transactions successfully
+        - ✅ Processing works correctly with store-specific filtering
+        - ✅ All API calls include proper store_name parameter
+        
+        **✅ TECHNICAL IMPLEMENTATION VERIFIED**:
+        - **Store State Management**: selectedStore state properly managed with 'ashmiaa' default
+        - **API Integration**: All API calls (reconciliation, match-transactions, unmatched-records) include store_name parameter
+        - **UI State Updates**: Button styling changes correctly based on selected store
+        - **Data Isolation**: Each store shows completely different reconciliation data
+        - **Toast Notifications**: Store switching triggers appropriate user feedback
+        - **Professional Design**: Consistent with Finance Reconciliation dark theme
+        
+        **✅ DATA VERIFICATION**:
+        - **Ashmia Store**: 3,298 total orders with detailed breakdown
+        - **TNV Collection Store**: Different dataset (10,000+ orders initially)
+        - **Store Switching**: Clean data reset when switching between stores
+        - **API Responses**: Backend properly filters data by store_name parameter
+        
+        **✅ SCREENSHOTS CAPTURED**:
+        - ✅ store_filter_initial.png - Initial state with Ashmia selected
+        - ✅ ashmia_reconciliation.png - Ashmia reconciliation results
+        - ✅ tnv_reconciliation.png - TNV Collection reconciliation results  
+        - ✅ store_filter_final.png - Final state after all testing
+        
+        **TESTING COMPLETE**: Store Filter feature in Finance Reconciliation is fully functional and exceeds all requirements. 
+        The feature provides perfect data isolation between stores, seamless UI state management, proper toast notifications, 
+        and maintains excellent user experience. All expected functionality including store switching, reconciliation per store, 
+        transaction matching per store, and UI state updates working flawlessly.
+    - agent: "testing"
+      message: |
         🎯 UNMATCHED RECORDS FEATURE TESTING COMPLETE ✅
         
         **TEST SCENARIO EXECUTED**: Comprehensive verification of "Unmatched Records" feature in Finance Reconciliation
