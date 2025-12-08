@@ -96,15 +96,15 @@ class FinanceReconciliation:
                 transaction = {
                     'date': str(row.get('Date', '')),
                     'description': str(row.get('Description', '')),
-                    'payment_mode': str(row.get('Mode Of Payment', row.get('mode of payment', ''))),
+                    'payment_mode': str(row.get('Mode', row.get('Mode Of Payment', ''))),
                     'debit': self._safe_float(row.get('Debit', 0)),
-                    'credit': self._safe_float(row.get('Credit', 0)),
+                    'credit': self._safe_float(row.get('Credit', row.get('Unnamed: 5', 0))),
                     'correction': str(row.get('CORRECTION', '')),
-                    'check': str(row.get('Check', '')),
+                    'check': str(row.get('Check', row.get('Unnamed: 7', ''))),
                 }
                 
                 # Only include rows with meaningful data
-                if transaction['debit'] > 0 or transaction['credit'] > 0:
+                if transaction['debit'] > 0 or transaction['credit'] > 0 or transaction['description'] not in ['', 'nan']:
                     transactions.append(transaction)
             
             logger.info(f"✅ Parsed {len(transactions)} bank transactions")
