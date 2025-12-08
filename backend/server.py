@@ -7228,13 +7228,6 @@ async def rollback_snapshot(snapshot_id: str):
         logger.error(f"❌ Error rolling back: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-            'last_transaction_upload': last_transaction.get('uploaded_at') if last_transaction else None
-        }
-        
-    except Exception as e:
-        logger.error(f"❌ Error getting finance status: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 
 
 # Include the router in the main app
