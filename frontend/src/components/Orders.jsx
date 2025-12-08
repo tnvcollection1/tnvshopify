@@ -154,11 +154,29 @@ const Orders = () => {
     }
   };
 
-  const sendBulkWhatsApp = async () => {
-    const ordersToSend = orders.slice(0, 10).filter(o => o.phone || o.default_address?.phone);
+  const toggleSelectOrder = (orderId) => {
+    setSelectedOrders(prev => 
+      prev.includes(orderId) 
+        ? prev.filter(id => id !== orderId)
+        : [...prev, orderId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedOrders.length === orders.length) {
+      setSelectedOrders([]);
+    } else {
+      setSelectedOrders(orders.map(o => o.customer_id));
+    }
+  };
+
+  const sendBulkWhatsAppToSelected = async () => {
+    const ordersToSend = orders.filter(o => 
+      selectedOrders.includes(o.customer_id) && (o.phone || o.default_address?.phone)
+    );
     
     if (ordersToSend.length === 0) {
-      toast.error("No orders with phone numbers found");
+      toast.error("No selected orders with phone numbers found");
       return;
     }
 
@@ -179,6 +197,7 @@ const Orders = () => {
     }
 
     toast.success(`✅ Sent ${successCount} messages! ${failCount > 0 ? `${failCount} failed.` : ''}`);
+    setSelectedOrders([]); // Clear selection after sending
   };
 
   const openWhatsAppWeb = () => {
