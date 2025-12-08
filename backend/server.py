@@ -7081,7 +7081,7 @@ async def upload_bank_transactions(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail=result.get('error'))
         
         # Upload to database
-        upload_result = await finance_rec.upload_transaction_data(result['data'])
+        upload_result = await finance_rec.upload_transaction_data(result['data'], file.filename)
         
         if not upload_result.get('success'):
             raise HTTPException(status_code=500, detail=upload_result.get('error'))
@@ -7090,7 +7090,8 @@ async def upload_bank_transactions(file: UploadFile = File(...)):
             'success': True,
             'message': 'Bank transactions uploaded successfully',
             'total_records': result['total_records'],
-            'uploaded_count': upload_result['uploaded_count']
+            'uploaded_count': upload_result['uploaded_count'],
+            'snapshot_id': upload_result.get('snapshot_id')
         }
         
     except Exception as e:
