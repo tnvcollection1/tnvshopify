@@ -167,42 +167,45 @@ const DynamicPricingDashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      {stats && (
+      {report && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <DollarSign className="w-8 h-8 text-green-400" />
-              <span className="text-2xl font-bold">{stats.total_skus}</span>
+              <span className="text-2xl font-bold">{report.total_products}</span>
             </div>
-            <h3 className="text-gray-400 text-sm">Total SKUs</h3>
-            <p className="text-xs text-gray-500 mt-1">{stats.enabled_skus} enabled</p>
+            <h3 className="text-gray-400 text-sm">Total Products</h3>
+            <p className="text-xs text-gray-500 mt-1">From lifetime orders</p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-red-900/50 rounded-xl p-6">
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-red-900/50 rounded-xl p-6 cursor-pointer hover:bg-gray-800/70 transition-colors"
+               onClick={() => setFilter('A')}>
             <div className="flex items-center justify-between mb-4">
               <TrendingUp className="w-8 h-8 text-red-400" />
-              <span className="text-2xl font-bold">{stats.category_a_count}</span>
+              <span className="text-2xl font-bold">{report.categories.A?.length || 0}</span>
             </div>
-            <h3 className="text-gray-400 text-sm">Category A</h3>
-            <p className="text-xs text-red-400 mt-1">High Velocity (10+ orders)</p>
+            <h3 className="text-gray-400 text-sm">Category A 🔥</h3>
+            <p className="text-xs text-red-400 mt-1">Fast-moving (Top 20%)</p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-yellow-900/50 rounded-xl p-6">
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-yellow-900/50 rounded-xl p-6 cursor-pointer hover:bg-gray-800/70 transition-colors"
+               onClick={() => setFilter('B')}>
             <div className="flex items-center justify-between mb-4">
               <Zap className="w-8 h-8 text-yellow-400" />
-              <span className="text-2xl font-bold">{stats.category_b_count}</span>
+              <span className="text-2xl font-bold">{report.categories.B?.length || 0}</span>
             </div>
-            <h3 className="text-gray-400 text-sm">Category B</h3>
-            <p className="text-xs text-yellow-400 mt-1">Medium (3-9 orders)</p>
+            <h3 className="text-gray-400 text-sm">Category B ⚡</h3>
+            <p className="text-xs text-yellow-400 mt-1">Medium (30%)</p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-green-900/50 rounded-xl p-6">
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-green-900/50 rounded-xl p-6 cursor-pointer hover:bg-gray-800/70 transition-colors"
+               onClick={() => setFilter('C')}>
             <div className="flex items-center justify-between mb-4">
               <Tag className="w-8 h-8 text-green-400" />
-              <span className="text-2xl font-bold">{stats.category_c_count}</span>
+              <span className="text-2xl font-bold">{report.categories.C?.length || 0}</span>
             </div>
-            <h3 className="text-gray-400 text-sm">Category C</h3>
-            <p className="text-xs text-green-400 mt-1">Low Velocity (0-2 orders)</p>
+            <h3 className="text-gray-400 text-sm">Category C 💰</h3>
+            <p className="text-xs text-green-400 mt-1">Slow (50% - Need Discount)</p>
           </div>
         </div>
       )}
