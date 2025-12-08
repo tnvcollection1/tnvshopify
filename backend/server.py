@@ -7304,18 +7304,6 @@ async def get_missing_orders(store_name: str = 'ashmiaa'):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-        result = await finance_rec.match_transactions_to_orders(store_name)
-        
-        if not result.get('success'):
-            raise HTTPException(status_code=500, detail=result.get('error'))
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"❌ Error matching transactions: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @api_router.post("/finance/verify-order")
 async def verify_order(order_number: str, verified_by: str, notes: str = ''):
     """
