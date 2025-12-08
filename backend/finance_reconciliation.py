@@ -322,16 +322,37 @@ class FinanceReconciliation:
                 # Determine reconciliation status
                 status = self._determine_status(order, ledger_data, verification)
                 
-                # Check tracking number match ONLY if order numbers match
-                # (ledger_data exists means order number was found in Excel for this Shopify order)
+                # Strict validation: Check Order#, SKU, and Tracking number match
+                validation_errors = []
+                
+                # 1. Order number already matched (ledger_data exists)
+                
+                # 2. Check SKU match (if available)
+                shopify_skus = order.get('order_skus', [])  # List of SKUs from Shopify
+                ledger_sku = ledger_data.get('sku', '') if ledger_data else ''
+                sku_match = False
+                
+                if ledger_data and ledger_sku:
+                    # Check if ledger SKU exists in Shopify order SKUs
+                    sku_match = ledger_sku in shopify_skus if shopify_skus else False
+                    if not sku_match and shopify_skus:
+                        validation_errors.append(f"SKU mismatch: Excel has '{ledger_sku}', Shopify has {shopify_skus}")
+                
+                # 3. Check tracking number match (MANDATORY)
                 shopify_tracking = order.get('tracking_number', '')
                 ledger_tracking = ledger_data.get('tracking_number', '') if ledger_data else ''
                 tracking_match = False
                 
-                if ledger_data and shopify_tracking and ledger_tracking:
-                    # Both order numbers match AND both have tracking numbers
-                    # Normalize and compare (remove spaces, case insensitive)
-                    tracking_match = shopify_tracking.replace(' ', '').upper() == ledger_tracking.replace(' ', '').upper()
+                if ledger_data:
+                    if shopify_tracking and ledger_tracking:
+                        # Both have tracking - compare (remove spaces, case insensitive)
+                        tracking_match = shopify_tracking.replace(' ', '').upper() == ledger_tracking.replace(' ', '').upper()
+                        if not tracking_match:
+                            validation_errors.append(f"Tracking mismatch: Shopify '{shopify_tracking}' ≠ Excel '{ledger_tracking}'")
+                    elif not ledger_tracking:
+                        validation_errors.append(f"Tracking missing in Excel")
+                    elif not shopify_tracking:
+                        validation_errors.append(f"Tracking missing in Shopify")
                 
                 # Get matched transaction details
                 matched_transaction = ledger_data.get('matched_transaction', {})
