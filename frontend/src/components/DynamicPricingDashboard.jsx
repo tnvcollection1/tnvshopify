@@ -19,6 +19,12 @@ const DynamicPricingDashboard = () => {
     fetchReport();
   }, []);
 
+  useEffect(() => {
+    if (report) {
+      updatePricingRules(report, filter);
+    }
+  }, [filter]);
+
   const fetchReport = async () => {
     try {
       setLoading(true);
