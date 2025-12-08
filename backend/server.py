@@ -1518,105 +1518,20 @@ async def sync_pricing_to_shopify(request: ShopifySyncRequest, background_tasks:
         from dynamic_pricing_engine import dynamic_pricing_engine
         import shopify
         
-        # Define the background sync task
-        async def background_sync():
-            try:
-                logger.info("🔄 Starting background Shopify price sync...")
-                
-                # Get cached analysis (must exist)
-                cached_report = await db.dynamic_pricing_cache.find_one(
-                    {"type": "analysis_report"},
-                    {"_id": 0}
-                )
-                
-                if not cached_report:
-                    logger.error("❌ No cached pricing data found. Run analysis first.")
-                    return
-                
-                analysis = cached_report.get('data')
-                categories = analysis.get('categories', {})
-                discounts = request.discounts
-                
-                updated_count = 0
-                errors = []
-                total_to_update = sum(len(products) for products in categories.values())
-                
-                # Get all stores with tokens
-                stores = await db.store_config.find({"shopify_token": {"$exists": True, "$ne": None}}).to_list(10)
-                
-                logger.info(f"📊 Will sync {total_to_update} products across {len(stores)} stores")
-                
-                for store_config in stores:
-                    store_name = store_config.get('store_name')
-                    shop_url = store_config.get('shopify_domain')
-                    access_token = store_config.get('shopify_token')
-                    
-                    if not shop_url or not access_token:
-                        continue
-                    
-                    logger.info(f"📦 Syncing prices for {store_name}...")
-                    
-                    # Initialize Shopify session
-                    shop_url_clean = shop_url.replace('https://', '').replace('http://', '')
-                    session = shopify.Session(shop_url_clean, '2024-01', access_token)
-                    shopify.ShopifyResource.activate_session(session)
-                    
-                    try:
-                        # Process each category
-                        for category, products in categories.items():
-                            discount_percent = discounts.get(category, 0)
-                            
-                            for product_data in products:
-                                sku = product_data.get('sku')
-                                current_price = product_data.get('current_price', 0)
-                                
-                                if not sku or current_price <= 0:
-                                    continue
-                                
-                                # Calculate new price
-                                new_price = current_price * (1 - discount_percent / 100)
-                                
-                                try:
-                                    # Find product by SKU in Shopify
-                                    variants = shopify.Variant.find(sku=sku)
-                                    
-                                    if variants:
-                                        variant = variants[0]
-                                        variant.price = str(round(new_price, 2))
-                                        variant.save()
-                                        updated_count += 1
-                                        
-                                        if updated_count % 100 == 0:
-                                            logger.info(f"📊 Progress: {updated_count}/{total_to_update} products updated")
-                                        
-                                except Exception as e:
-                                    logger.error(f"Error updating SKU {sku}: {str(e)}")
-                                    errors.append(f"{sku}: {str(e)}")
-                        
-                    finally:
-                        shopify.ShopifyResource.clear_session()
-                
-                logger.info(f"✅ Shopify sync complete: {updated_count} products updated, {len(errors)} errors")
-                
-                # Store sync result in cache
-                await db.dynamic_pricing_cache.update_one(
-                    {"type": "last_sync_result"},
-                    {"$set": {
-                        "type": "last_sync_result",
-                        "updated_count": updated_count,
-                        "total_products": total_to_update,
-                        "discounts_applied": discounts,
-                        "errors": errors[:50],
-                        "completed_at": datetime.now(timezone.utc).isoformat()
-                    }},
-                    upsert=True
-                )
-                
-            except Exception as e:
-                logger.error(f"❌ Background sync error: {str(e)}")
+        # Store sync request in database for processing by scheduler
+        logger.info("📝 Storing sync request for background processing...")
+        await db.dynamic_pricing_cache.update_one(
+            {"type": "sync_request"},
+            {"$set": {
+                "type": "sync_request",
+                "discounts": request.discounts,
+                "status": "pending",
+                "requested_at": datetime.now(timezone.utc).isoformat()
+            }},
+            upsert=True
+        )
         
-        # Add to background tasks
-        background_tasks.add_task(background_sync)
+        logger.info("✅ Sync request queued. Will be processed by scheduler.")
         
         # Get total count for response
         cached_report = await db.dynamic_pricing_cache.find_one(
