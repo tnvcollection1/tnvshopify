@@ -409,6 +409,75 @@ agent_communication:
         4. Logout → Redirects to login page
     - agent: "testing"
       message: |
+        🎯 UNMATCHED RECORDS FEATURE TESTING COMPLETE ✅
+        
+        **TEST SCENARIO EXECUTED**: Comprehensive verification of "Unmatched Records" feature in Finance Reconciliation
+        
+        **✅ ALL REVIEW REQUEST REQUIREMENTS MET SUCCESSFULLY**:
+        
+        **1. Login and Navigation** ✅
+        - Successfully authenticated with admin/admin credentials
+        - Successfully navigated to /finance-reconciliation page
+        - Page loads correctly with professional UI and upload status indicators
+        
+        **2. View Unmatched Records Button** ✅
+        - ✅ Orange "View Unmatched Records" button found in top right area
+        - ✅ Button is visible and clickable
+        - ✅ Button styling matches expected orange color scheme
+        
+        **3. Unmatched Records Panel Opens** ✅
+        - ✅ Panel opens successfully with orange border
+        - ✅ Panel title "Unmatched Records from Uploaded Files" displayed correctly
+        - ✅ Professional dark theme design with proper styling
+        
+        **4. Summary Cards Verification** ✅
+        - ✅ **Unmatched Ledger Records: 54** (out of 433) - MATCHES EXPECTED
+        - ✅ **Unmatched Transactions: 104** (out of 341) - MATCHES EXPECTED
+        - ✅ Both summary cards display correct counts and descriptions
+        
+        **5. Unmatched Ledger Table** ✅
+        - ✅ Section "📄 Ledger Records Not Found in Shopify (54)" displayed
+        - ✅ Table headers present: Order #, Date, Status, Payment, Amount, Tracking, Reason
+        - ✅ Sample orders displayed (e.g., #2611/2976, #2506/2788, #2414/2777)
+        - ✅ Reason column shows "Order number not found in Shopify" as expected
+        - ✅ Proper data formatting with amounts, tracking numbers, and statuses
+        
+        **6. Unmatched Transactions Table** ✅
+        - ✅ Section "💳 Bank Transactions Not Matched to Orders (104)" displayed
+        - ✅ Table headers present: Date, Description, Mode, Debit, Credit, Reason
+        - ✅ Transaction data displayed with payment modes and amounts
+        - ✅ Reason column shows "No matching order found" as expected
+        
+        **7. Close Button Functionality** ✅
+        - ✅ Close button (X) visible in panel header
+        - ✅ Close button successfully hides the panel when clicked
+        - ✅ Panel disappears completely after close action
+        
+        **✅ BACKEND API VERIFICATION**:
+        - **API Endpoint**: GET /api/finance/unmatched-records?store_name=ashmiaa working perfectly
+        - **Data Accuracy**: Backend returns exactly 54 unmatched ledger records and 104 unmatched transactions
+        - **Sample Data**: Verified sample orders like "2611/2976" with correct reasons and amounts
+        - **Response Structure**: Proper JSON structure with summary counts and detailed records
+        
+        **✅ UI/UX QUALITY VERIFIED**:
+        - Professional Finance Reconciliation interface with dark theme
+        - Orange-bordered panel with proper contrast and readability
+        - Well-organized table layouts with clear headers and data formatting
+        - Responsive design maintains functionality across different screen sizes
+        - Smooth panel open/close animations and interactions
+        
+        **✅ DATA CONSISTENCY VERIFIED**:
+        - Upload status shows 433 ledger records and 341 transactions (matches API)
+        - Unmatched counts (54 and 104) match backend API response exactly
+        - Sample order data matches between UI display and API response
+        - Reason messages are consistent and informative
+        
+        **TESTING COMPLETE**: Unmatched Records feature is fully functional and meets all requirements. 
+        The feature successfully identifies and displays unmatched records from uploaded files, 
+        provides clear summary statistics, and offers detailed table views with proper reasoning 
+        for why records couldn't be matched. All expected functionality working perfectly.
+    - agent: "testing"
+      message: |
         🎯 FINANCE RECONCILIATION SYSTEM TESTING COMPLETE ✅
         
         **TEST SCENARIO EXECUTED**: Comprehensive testing of Finance Reconciliation System at /finance-reconciliation
