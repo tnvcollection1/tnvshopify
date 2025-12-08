@@ -5661,13 +5661,21 @@ async def generate_whatsapp_link(request: WhatsAppRequest):
     }
 
 
-# Include WhatsApp routes from the new modular structure
+# Include WhatsApp CRM routes (NEW comprehensive WhatsApp system)
 try:
-    from routes.whatsapp import router as whatsapp_router
-    api_router.include_router(whatsapp_router)
-    print("✅ WhatsApp routes loaded")
+    from whatsapp_crm_routes import whatsapp_router as whatsapp_crm_router
+    app.include_router(whatsapp_crm_router)
+    print("✅ WhatsApp CRM routes loaded")
 except Exception as e:
-    print(f"⚠️ Could not load WhatsApp routes: {str(e)}")
+    print(f"⚠️ Could not load WhatsApp CRM routes: {str(e)}")
+
+# Include legacy WhatsApp routes (OLD system - for backward compatibility)
+try:
+    from routes.whatsapp import router as whatsapp_legacy_router
+    api_router.include_router(whatsapp_legacy_router)
+    print("✅ Legacy WhatsApp routes loaded")
+except Exception as e:
+    print(f"⚠️ Could not load legacy WhatsApp routes: {str(e)}")
 
 
 @api_router.get("/dashboard/stats")
