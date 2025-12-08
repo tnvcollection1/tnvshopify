@@ -25,7 +25,10 @@ import { useAuth } from '../contexts/AuthContext';
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, agent } = useAuth();
+
+  // Check if user is demo/reviewer
+  const isDemoUser = agent?.role === 'demo' || agent?.role === 'reviewer';
 
   const menuSections = [
     {
