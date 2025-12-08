@@ -603,7 +603,7 @@ class FinanceReconciliation:
             }
     
     def _determine_status(self, shopify_order: Dict, ledger_data: Dict, verification: Dict = None) -> str:
-        """Determine reconciliation status"""
+        """Determine reconciliation status with tracking verification"""
         if verification and verification.get('verified'):
             return 'Verified'
         
@@ -616,7 +616,15 @@ class FinanceReconciliation:
         has_payment = bool(ledger_data.get('payment_status'))
         has_transaction = bool(ledger_data.get('matched_transaction'))
         
-        if has_delivery and has_ledger and has_payment and has_transaction:
+        # Check tracking number match for delivery verification
+        shopify_tracking = shopify_order.get('tracking_number', '')
+        ledger_tracking = ledger_data.get('tracking_number', '')
+        tracking_verified = False
+        if shopify_tracking and ledger_tracking:
+            tracking_verified = shopify_tracking.replace(' ', '').upper() == ledger_tracking.replace(' ', '').upper()
+        
+        # Complete status requires all data points + tracking verification
+        if has_ledger and has_payment and has_transaction and (tracking_verified or has_delivery):
             return 'Complete'
         elif has_ledger:
             return 'Partial'
