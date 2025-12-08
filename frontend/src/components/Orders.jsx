@@ -20,6 +20,8 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
+  MessageCircle,
+  ExternalLink,
 } from "lucide-react";
 import {
   Table,
