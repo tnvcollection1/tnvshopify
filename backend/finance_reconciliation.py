@@ -448,6 +448,95 @@ class FinanceReconciliation:
                 'error': str(e)
             }
     
+    async def get_unmatched_records(self, store_name: str = 'ashmiaa') -> Dict:
+        """
+        Get records from uploaded files that are NOT matched to Shopify orders
+        """
+        try:
+            logger.info(f"🔍 Finding unmatched records for store: {store_name}")
+            
+            # Get all Shopify order numbers
+            shopify_orders = await self.db.customers.find(
+                {'store_name': store_name},
+                {'_id': 0, 'order_number': 1}
+            ).to_list(10000)
+            
+            shopify_order_numbers = set(order.get('order_number') for order in shopify_orders)
+            
+            # Get all ledger records
+            ledger_records = await self.db.finance_ledger.find(
+                {},
+                {'_id': 0}
+            ).to_list(10000)
+            
+            # Get all transactions
+            transactions = await self.db.finance_transactions.find(
+                {},
+                {'_id': 0}
+            ).to_list(10000)
+            
+            # Find unmatched ledger records (order numbers not in Shopify)
+            unmatched_ledger = []
+            for record in ledger_records:
+                order_num = record.get('order_number')
+                if order_num not in shopify_order_numbers:
+                    unmatched_ledger.append({
+                        'order_number': order_num,
+                        'date': record.get('date', ''),
+                        'sale_price': record.get('sale_price', 0),
+                        'order_status': record.get('order_status', ''),
+                        'payment_status': record.get('payment_status', ''),
+                        'tracking_number': record.get('tracking_number', ''),
+                        'description': record.get('description', ''),
+                        'reason': 'Order number not found in Shopify'
+                    })
+            
+            # Find unmatched transactions (not linked to any ledger record)
+            matched_transactions = set()
+            for record in ledger_records:
+                if record.get('matched_transaction'):
+                    # Create a unique identifier for the transaction
+                    trans = record.get('matched_transaction', {})
+                    trans_id = f"{trans.get('date')}_{trans.get('description')}_{trans.get('debit', 0)}_{trans.get('credit', 0)}"
+                    matched_transactions.add(trans_id)
+            
+            unmatched_transactions = []
+            for trans in transactions:
+                trans_id = f"{trans.get('date')}_{trans.get('description')}_{trans.get('debit', 0)}_{trans.get('credit', 0)}"
+                if trans_id not in matched_transactions:
+                    amount = trans.get('credit', 0) or trans.get('debit', 0)
+                    if amount > 0:  # Only include transactions with amounts
+                        unmatched_transactions.append({
+                            'date': trans.get('date', ''),
+                            'description': trans.get('description', ''),
+                            'payment_mode': trans.get('payment_mode', ''),
+                            'debit': trans.get('debit', 0),
+                            'credit': trans.get('credit', 0),
+                            'amount': amount,
+                            'reason': 'No matching order found'
+                        })
+            
+            logger.info(f"✅ Found {len(unmatched_ledger)} unmatched ledger records and {len(unmatched_transactions)} unmatched transactions")
+            
+            return {
+                'success': True,
+                'unmatched_ledger': unmatched_ledger,
+                'unmatched_transactions': unmatched_transactions,
+                'summary': {
+                    'total_ledger_records': len(ledger_records),
+                    'unmatched_ledger_count': len(unmatched_ledger),
+                    'total_transactions': len(transactions),
+                    'unmatched_transactions_count': len(unmatched_transactions)
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting unmatched records: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
     async def rollback_to_snapshot(self, snapshot_id: str) -> Dict:
         """
         Rollback to a previous snapshot
