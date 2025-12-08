@@ -22,6 +22,7 @@ from whatsapp_service import whatsapp_service
 from whatsapp_webhook import router as whatsapp_webhook_router
 from whatsapp_marketing import whatsapp_marketing, MARKETING_TEMPLATES
 from dynamic_pricing import DynamicPricingEngine
+from meta_whatsapp_service import MetaWhatsAppService
 
 
 ROOT_DIR = Path(__file__).parent
