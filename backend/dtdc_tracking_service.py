@@ -17,6 +17,7 @@ class DTDCTrackingService:
         # DTDC API configuration
         self.api_url = os.environ.get('DTDC_API_URL', 'https://shipsy.in/api/customer/integration/consignment/track')
         self.api_key = os.environ.get('DTDC_API_KEY', '8cea6c356df78fb8940a328ef6b6abad')
+        self.customer_code = os.environ.get('DTDC_CUSTOMER_CODE', 'GL6029')
         
     def get_tracking_data(self, tracking_number: str) -> Dict:
         """
