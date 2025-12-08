@@ -17,6 +17,7 @@ const FinanceReconciliation = () => {
 
   useEffect(() => {
     fetchFinanceStatus();
+    fetchUploadHistory();
   }, []);
 
   const fetchFinanceStatus = async () => {
