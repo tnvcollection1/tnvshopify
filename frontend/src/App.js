@@ -259,6 +259,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/finance-reconciliation" 
+        element={
+          <ProtectedRoute>
+            <FinanceReconciliation />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
