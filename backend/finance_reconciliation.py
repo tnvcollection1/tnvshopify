@@ -644,13 +644,22 @@ class FinanceReconciliation:
                 'error': str(e)
             }
     
-    def _determine_status(self, shopify_order: Dict, ledger_data: Dict, verification: Dict = None) -> str:
-        """Determine reconciliation status with tracking verification"""
+    def _determine_status(self, shopify_order: Dict, ledger_data: Dict, verification: Dict = None, validation_errors: list = None) -> str:
+        """
+        Determine reconciliation status with strict validation
+        ERROR status if Order#/SKU/Tracking don't match
+        """
+        # Priority 1: If manually verified, override everything
         if verification and verification.get('verified'):
             return 'Verified'
         
+        # Priority 2: If no ledger data at all
         if not ledger_data:
             return 'Missing Data'
+        
+        # Priority 3: If there are validation errors (Order#, SKU, or Tracking mismatch)
+        if validation_errors and len(validation_errors) > 0:
+            return 'Error'
         
         # Check if all key fields are present
         has_delivery = shopify_order.get('delivery_status') not in [None, '', 'N/A']
@@ -666,7 +675,7 @@ class FinanceReconciliation:
             tracking_verified = shopify_tracking.replace(' ', '').upper() == ledger_tracking.replace(' ', '').upper()
         
         # Complete status requires all data points + tracking verification
-        if has_ledger and has_payment and has_transaction and (tracking_verified or has_delivery):
+        if has_ledger and has_payment and has_transaction and tracking_verified:
             return 'Complete'
         elif has_ledger:
             return 'Partial'
