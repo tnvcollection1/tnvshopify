@@ -442,6 +442,15 @@ const Orders = () => {
             </Button>
             <Button
               variant="outline"
+              onClick={handleDTDCSync}
+              disabled={loading}
+              className="border-purple-500 hover:bg-purple-50 text-purple-700"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Sync DTDC Tracking
+            </Button>
+            <Button
+              variant="outline"
               onClick={handleSyncTCS}
               disabled={loading}
               className="border-gray-300 hover:bg-gray-50"
