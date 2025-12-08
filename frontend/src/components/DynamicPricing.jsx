@@ -29,11 +29,17 @@ function DynamicPricing() {
   const fetchReport = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API}/api/dynamic-pricing/report`);
+      toast.loading("Loading pricing data... (12,000+ products)", { duration: 10000 });
+      const response = await axios.get(`${API}/api/dynamic-pricing/report`, {
+        timeout: 30000 // 30 second timeout
+      });
+      toast.dismiss();
       setReport(response.data);
+      toast.success(`Loaded ${response.data.total_products} products!`);
     } catch (error) {
       console.error("Error fetching report:", error);
-      toast.error("Failed to load pricing report");
+      toast.dismiss();
+      toast.error("Failed to load pricing report. Try clicking 'Analyze Products'.");
     } finally {
       setLoading(false);
     }
