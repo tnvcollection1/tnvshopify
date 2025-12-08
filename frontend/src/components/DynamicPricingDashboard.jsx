@@ -124,11 +124,12 @@ const DynamicPricingDashboard = () => {
     );
   };
 
-  if (loading && !stats) {
+  if (loading && !report) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-8">
         <div className="flex items-center justify-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+          <p className="ml-4 text-gray-400">Loading pricing data...</p>
         </div>
       </div>
     );
