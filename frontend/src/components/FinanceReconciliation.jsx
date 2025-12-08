@@ -755,6 +755,7 @@ const FinanceReconciliation = () => {
                               </div>
                             )}
                           </div>
+                          )}
                         </td>
                       </tr>
                     )}
