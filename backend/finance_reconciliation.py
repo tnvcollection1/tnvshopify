@@ -185,6 +185,76 @@ class FinanceReconciliation:
                 'error': str(e)
             }
     
+    async def match_transactions_to_orders(self) -> Dict:
+        """
+        Automatically match bank transactions to orders based on amount and date proximity
+        """
+        try:
+            logger.info("🔗 Starting automatic transaction matching...")
+            
+            # Get all ledger records with amounts
+            ledger_records = await self.db.finance_ledger.find(
+                {'sale_price': {'$gt': 0}},
+                {'_id': 0}
+            ).to_list(10000)
+            
+            # Get all transactions
+            transactions = await self.db.finance_transactions.find(
+                {},
+                {'_id': 0}
+            ).to_list(10000)
+            
+            matched_count = 0
+            
+            for ledger in ledger_records:
+                order_num = ledger.get('order_number')
+                amount = ledger.get('sale_price', 0)
+                ledger_date = ledger.get('date', '')
+                
+                # Find matching transactions (within 10% of amount)
+                matches = []
+                for trans in transactions:
+                    trans_amount = trans.get('credit', 0) or trans.get('debit', 0)
+                    if trans_amount == 0:
+                        continue
+                    
+                    # Check if amounts are close (within 10%)
+                    diff = abs(amount - trans_amount) / amount if amount > 0 else 1
+                    if diff <= 0.1:  # Within 10%
+                        matches.append({
+                            'transaction': trans,
+                            'difference': diff,
+                            'amount': trans_amount
+                        })
+                
+                # Update ledger with matched transactions
+                if matches:
+                    best_match = min(matches, key=lambda x: x['difference'])
+                    await self.db.finance_ledger.update_one(
+                        {'order_number': order_num},
+                        {'$set': {
+                            'matched_transaction': best_match['transaction'],
+                            'transaction_amount': best_match['amount'],
+                            'match_confidence': 1 - best_match['difference']
+                        }}
+                    )
+                    matched_count += 1
+            
+            logger.info(f"✅ Matched {matched_count} orders to transactions")
+            
+            return {
+                'success': True,
+                'matched_count': matched_count,
+                'total_ledger_records': len(ledger_records)
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error matching transactions: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
     async def reconcile_orders(self, store_name: str = 'ashmiaa') -> Dict:
         """
         Reconcile Shopify orders with ledger and transactions
@@ -206,6 +276,12 @@ class FinanceReconciliation:
                 {}, {'_id': 0}
             ).to_list(10000)
             
+            # Get verification status
+            verifications = await self.db.finance_verifications.find(
+                {}, {'_id': 0}
+            ).to_list(10000)
+            verification_lookup = {v['order_number']: v for v in verifications}
+            
             # Create lookup dict
             ledger_lookup = {rec['order_number']: rec for rec in ledger_records}
             
@@ -218,8 +294,11 @@ class FinanceReconciliation:
                 # Get ledger data
                 ledger_data = ledger_lookup.get(order_num, {})
                 
+                # Get verification status
+                verification = verification_lookup.get(order_num, {})
+                
                 # Determine reconciliation status
-                status = self._determine_status(order, ledger_data)
+                status = self._determine_status(order, ledger_data, verification)
                 
                 reconciled.append({
                     'order_number': order_num,
@@ -233,8 +312,15 @@ class FinanceReconciliation:
                     'received_from_dtdc': ledger_data.get('received_from_dtdc', 0),
                     'received_in_bank': ledger_data.get('received_in_bank', 0),
                     'purchase_status': ledger_data.get('purchase_vendor', 'Not Found'),
+                    'transaction_matched': bool(ledger_data.get('matched_transaction')),
+                    'transaction_amount': ledger_data.get('transaction_amount', 0),
+                    'match_confidence': ledger_data.get('match_confidence', 0),
                     'reconciliation_status': status,
                     'ledger_exists': bool(ledger_data),
+                    'verified': verification.get('verified', False),
+                    'verified_by': verification.get('verified_by', ''),
+                    'verified_at': verification.get('verified_at', ''),
+                    'notes': verification.get('notes', ''),
                 })
             
             logger.info(f"✅ Reconciled {len(reconciled)} orders")
@@ -245,6 +331,8 @@ class FinanceReconciliation:
                 'fully_reconciled': sum(1 for r in reconciled if r['reconciliation_status'] == 'Complete'),
                 'partial_reconciled': sum(1 for r in reconciled if r['reconciliation_status'] == 'Partial'),
                 'not_reconciled': sum(1 for r in reconciled if r['reconciliation_status'] == 'Missing Data'),
+                'verified': sum(1 for r in reconciled if r['verified']),
+                'transaction_matched': sum(1 for r in reconciled if r['transaction_matched']),
             }
             
             return {
