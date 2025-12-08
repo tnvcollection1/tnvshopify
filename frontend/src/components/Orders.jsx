@@ -315,6 +315,15 @@ const Orders = () => {
             </Button>
             <Button
               variant="outline"
+              onClick={handleShopifySync}
+              disabled={loading}
+              className="border-blue-500 hover:bg-blue-50 text-blue-700"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Sync Shopify Orders
+            </Button>
+            <Button
+              variant="outline"
               onClick={handleSyncTCS}
               disabled={loading}
               className="border-gray-300 hover:bg-gray-50"
