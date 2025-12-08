@@ -1320,6 +1320,8 @@ async def analyze_product_velocity(days_lookback: int = 180):
     - Category A: Fast-moving (top 20%)
     - Category B: Medium-moving (next 30%)
     - Category C: Slow-moving (bottom 50%)
+    
+    This will update the cached report used by the dashboard
     """
     try:
         from dynamic_pricing_engine import dynamic_pricing_engine
@@ -1334,6 +1336,18 @@ async def analyze_product_velocity(days_lookback: int = 180):
             logger.info(f"   Category A (Fast): {len(categories.get('A', []))} products")
             logger.info(f"   Category B (Medium): {len(categories.get('B', []))} products")
             logger.info(f"   Category C (Slow): {len(categories.get('C', []))} products")
+            
+            # Update cached report
+            await db.dynamic_pricing_cache.update_one(
+                {"type": "analysis_report"},
+                {"$set": {
+                    "type": "analysis_report",
+                    "data": result,
+                    "last_updated": datetime.now(timezone.utc).isoformat()
+                }},
+                upsert=True
+            )
+            logger.info("✅ Cached report updated")
             
             return result
         else:
