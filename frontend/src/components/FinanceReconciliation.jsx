@@ -442,9 +442,7 @@ const FinanceReconciliation = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-300">{order.customer_name || 'N/A'}</td>
-                    <td className="px-6 py-4 text-sm text-gray-300">{order.shopify_status}</td>
                     <td className="px-6 py-4 text-sm text-gray-300">{order.delivery_status}</td>
-                    <td className="px-6 py-4 text-sm text-gray-300">{order.ledger_status}</td>
                     <td className="px-6 py-4 text-sm text-gray-300">{order.payment_status}</td>
                     <td className="px-6 py-4 text-right">
                       <span className="text-white font-semibold">
@@ -452,7 +450,31 @@ const FinanceReconciliation = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
+                      {order.transaction_matched ? (
+                        <span className="text-green-400 text-sm flex items-center justify-center gap-1">
+                          <CheckCircle className="w-4 h-4" />
+                          {(order.match_confidence * 100).toFixed(0)}%
+                        </span>
+                      ) : (
+                        <span className="text-gray-500 text-sm">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center">
                       {getStatusBadge(order.reconciliation_status)}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {!order.verified && order.ledger_exists && (
+                        <button
+                          onClick={() => verifyOrder(order.order_number)}
+                          disabled={verifyingOrder === order.order_number}
+                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                        >
+                          {verifyingOrder === order.order_number ? '...' : 'Verify'}
+                        </button>
+                      )}
+                      {order.verified && (
+                        <span className="text-green-400 text-xs">✓ Verified</span>
+                      )}
                     </td>
                   </tr>
                 ))}
