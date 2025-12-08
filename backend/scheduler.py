@@ -96,14 +96,15 @@ class AutoSyncScheduler:
         logger.info("📅 Dynamic pricing sync: Every 30 minutes")
         logger.info("⏸️  TCS COD payment sync: DISABLED (waiting for API credentials)")
         
-        # Run initial sync after 2 minutes (give server time to start)
-        self.scheduler.add_job(
-            func=self.sync_shopify_orders,
-            trigger='date',
-            run_date=datetime.now(timezone.utc) + timedelta(minutes=2),
-            id='initial_shopify_sync',
-            name='Initial Shopify Sync'
-        )
+        # DISABLED: Initial sync on startup - causing blocking issues
+        # User can manually trigger sync from API when needed
+        # self.scheduler.add_job(
+        #     func=self.sync_shopify_orders,
+        #     trigger='date',
+        #     run_date=datetime.now(timezone.utc) + timedelta(minutes=2),
+        #     id='initial_shopify_sync',
+        #     name='Initial Shopify Sync'
+        # )
         
     def stop(self):
         """Stop the background scheduler"""
