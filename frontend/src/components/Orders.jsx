@@ -380,6 +380,21 @@ const Orders = () => {
             <p className="text-sm text-gray-500 mt-1">Manage and track all your orders</p>
           </div>
           <div className="flex items-center gap-3">
+            {selectedOrders.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg">
+                <span className="text-sm font-medium text-blue-700">
+                  {selectedOrders.length} selected
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedOrders([])}
+                  className="h-7 text-xs"
+                >
+                  Clear
+                </Button>
+              </div>
+            )}
             <Button
               variant="outline"
               onClick={openWhatsAppWeb}
@@ -390,12 +405,12 @@ const Orders = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={sendBulkWhatsApp}
-              disabled={loading || orders.length === 0}
+              onClick={sendBulkWhatsAppToSelected}
+              disabled={loading || selectedOrders.length === 0}
               className="border-green-500 hover:bg-green-600 bg-green-500 text-white hover:text-white"
             >
               <MessageCircle className="w-4 h-4 mr-2" />
-              Send to First 10 Orders
+              Send to Selected ({selectedOrders.length})
             </Button>
             <Button
               variant="outline"
