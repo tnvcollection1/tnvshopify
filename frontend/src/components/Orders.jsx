@@ -109,6 +109,52 @@ const Orders = () => {
     }
   };
 
+  const sendWhatsAppNotification = async (order) => {
+    try {
+      // Extract phone number
+      let phone = order.phone || order.default_address?.phone;
+      if (!phone) {
+        toast.error("No phone number found for this customer");
+        return;
+      }
+
+      // Clean phone number (remove spaces, dashes, etc.)
+      phone = phone.replace(/[\s-()]/g, '');
+      
+      // Add country code if not present (assuming Pakistan +92)
+      if (!phone.startsWith('+') && !phone.startsWith('92')) {
+        phone = '92' + phone;
+      } else if (phone.startsWith('+')) {
+        phone = phone.substring(1);
+      }
+
+      toast.info("Sending WhatsApp notification...");
+
+      const response = await axios.post(`${API}/whatsapp/send-template`, {
+        to: phone,
+        template_name: "order_confirmation_ashmiaa",
+        parameters: {
+          customer_name: `${order.first_name} ${order.last_name}`,
+          order_number: order.order_number || "N/A",
+          tracking_number: order.tracking_number || "Will be updated soon"
+        }
+      });
+
+      if (response.data.success) {
+        toast.success(`✅ WhatsApp notification sent to ${order.first_name}`);
+      } else {
+        toast.error("Failed to send WhatsApp notification");
+      }
+    } catch (error) {
+      console.error("Error sending WhatsApp:", error);
+      toast.error(error.response?.data?.detail || "Failed to send WhatsApp notification");
+    }
+  };
+
+  const openWhatsAppWeb = () => {
+    window.open('https://web.whatsapp.com/', '_blank');
+  };
+
   const handleTCSPaymentUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
