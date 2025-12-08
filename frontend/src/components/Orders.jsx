@@ -303,6 +303,25 @@ const Orders = () => {
     }
   };
 
+  const handleDTDCSync = async () => {
+    try {
+      setLoading(true);
+      toast.info("Syncing DTDC tracking for all orders...");
+
+      const response = await axios.post(`${API}/dtdc/sync-all-tracking`);
+      
+      if (response.data.success) {
+        toast.success(`✅ ${response.data.updated} orders updated! ${response.data.failed} failed.`);
+        await fetchOrders(); // Refresh the orders list
+      }
+    } catch (error) {
+      console.error("Error syncing DTDC:", error);
+      toast.error(error.response?.data?.detail || "Failed to sync DTDC tracking");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleTCSPaymentUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
