@@ -322,11 +322,14 @@ class FinanceReconciliation:
                 # Determine reconciliation status
                 status = self._determine_status(order, ledger_data, verification)
                 
-                # Check tracking number match
+                # Check tracking number match ONLY if order numbers match
+                # (ledger_data exists means order number was found in Excel for this Shopify order)
                 shopify_tracking = order.get('tracking_number', '')
-                ledger_tracking = ledger_data.get('tracking_number', '')
+                ledger_tracking = ledger_data.get('tracking_number', '') if ledger_data else ''
                 tracking_match = False
-                if shopify_tracking and ledger_tracking:
+                
+                if ledger_data and shopify_tracking and ledger_tracking:
+                    # Both order numbers match AND both have tracking numbers
                     # Normalize and compare (remove spaces, case insensitive)
                     tracking_match = shopify_tracking.replace(' ', '').upper() == ledger_tracking.replace(' ', '').upper()
                 
