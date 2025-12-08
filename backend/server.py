@@ -292,6 +292,73 @@ async def login_agent(credentials: AgentLogin):
 
 
 class PasswordChange(BaseModel):
+
+
+@api_router.post("/setup/create-demo-user")
+async def create_demo_user_endpoint():
+    """
+    ONE-TIME SETUP: Create demo user for Meta app review
+    This endpoint can only be called once - it will fail if demo user already exists
+    """
+    try:
+        import hashlib
+        
+        # Demo user credentials
+        username = "demo_reviewer"
+        password = "MetaReview2024!"
+        
+        # Check if demo user already exists
+        existing_user = await db.agents.find_one({"username": username})
+        
+        if existing_user:
+            return {
+                "success": True,
+                "message": "Demo user already exists",
+                "username": username,
+                "note": "Demo user was already created"
+            }
+        
+        # Hash password
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        
+        # Create demo user
+        demo_user = {
+            "id": str(uuid.uuid4()),
+            "username": username,
+            "password": hashed_password,
+            "full_name": "Meta Reviewer",
+            "role": "demo",
+            "email": "reviewer@meta.com",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "last_login": None,
+            "active": True,
+            "permissions": [
+                "whatsapp_inbox",
+                "whatsapp_templates",
+                "whatsapp_campaigns",
+                "whatsapp_analytics"
+            ]
+        }
+        
+        # Insert into database
+        result = await db.agents.insert_one(demo_user)
+        
+        logger.info("✅ Demo user created successfully for Meta app review")
+        
+        return {
+            "success": True,
+            "message": "Demo user created successfully!",
+            "username": username,
+            "password": password,
+            "role": "demo",
+            "note": "Demo user can only access WhatsApp CRM features"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating demo user: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create demo user: {str(e)}")
+
+
     username: str
     current_password: str
     new_password: str
