@@ -162,16 +162,24 @@ const FinanceReconciliation = () => {
   const fetchUnmatchedRecords = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/api/finance/unmatched-records?store_name=ashmiaa`);
+      const response = await axios.get(`${API_URL}/api/finance/unmatched-records?store_name=${selectedStore}`);
       setUnmatchedData(response.data);
       setShowUnmatched(true);
-      toast.info(`Found ${response.data.summary.unmatched_ledger_count} unmatched ledger records`);
+      toast.info(`Found ${response.data.summary.unmatched_ledger_count} unmatched ledger records for ${selectedStore}`);
     } catch (error) {
       console.error('Error fetching unmatched records:', error);
       toast.error('Failed to fetch unmatched records');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStoreChange = (store) => {
+    setSelectedStore(store);
+    setReconciliationData(null);
+    setUnmatchedData(null);
+    setShowUnmatched(false);
+    toast.info(`Switched to ${store} store`);
   };
 
   const getStatusBadge = (status) => {
