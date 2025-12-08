@@ -210,6 +210,24 @@ const CustomerSegmentationDashboard = () => {
             Download New Customer List
           </button>
         </div>
+
+        <div className="bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+            <span className="text-3xl font-bold">{segments?.dormant?.count || 0}</span>
+          </div>
+          <h3 className="text-red-400 font-semibold mb-1">Dormant Customers</h3>
+          <p className="text-xs text-gray-400 mb-2">90+ days inactive</p>
+          <p className="text-2xl font-bold text-red-300">
+            Rs. {segments?.dormant?.total_value?.toLocaleString() || 0}
+          </p>
+          <button
+            onClick={() => downloadCustomerList('dormant')}
+            className="mt-3 w-full px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition-colors"
+          >
+            Download Dormant List
+          </button>
+        </div>
       </div>
 
       {/* Dormant Customers Alert */}
