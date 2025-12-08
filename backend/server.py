@@ -292,6 +292,8 @@ async def login_agent(credentials: AgentLogin):
 
 
 class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str
 
 
 @api_router.post("/setup/create-demo-user")
