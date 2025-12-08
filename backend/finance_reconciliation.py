@@ -402,6 +402,7 @@ class FinanceReconciliation:
                 'fully_reconciled': sum(1 for r in reconciled if r['reconciliation_status'] == 'Complete'),
                 'partial_reconciled': sum(1 for r in reconciled if r['reconciliation_status'] == 'Partial'),
                 'not_reconciled': sum(1 for r in reconciled if r['reconciliation_status'] == 'Missing Data'),
+                'errors': sum(1 for r in reconciled if r['reconciliation_status'] == 'Error'),
                 'verified': sum(1 for r in reconciled if r['verified']),
                 'transaction_matched': sum(1 for r in reconciled if r['transaction_matched']),
             }
