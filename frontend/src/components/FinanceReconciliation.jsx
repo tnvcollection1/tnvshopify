@@ -209,43 +209,12 @@ const FinanceReconciliation = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-8">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
-              💰 Finance Reconciliation
-            </h1>
-            <p className="text-gray-400">
-              Match Shopify orders with purchase records and bank transactions
-            </p>
-          </div>
-          
-          {/* Store Filter */}
-          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-            <div className="text-sm text-gray-400 mb-2">Select Store:</div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleStoreChange('ashmiaa')}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                  selectedStore === 'ashmiaa'
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white shadow-lg'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
-              >
-                🏪 Ashmia
-              </button>
-              <button
-                onClick={() => handleStoreChange('tnvcollectionpk')}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                  selectedStore === 'tnvcollectionpk'
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
-              >
-                🏪 TNV Collection
-              </button>
-            </div>
-          </div>
-        </div>
+        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
+          💰 Finance Reconciliation - Ashmia
+        </h1>
+        <p className="text-gray-400">
+          Match Shopify orders with purchase records and bank transactions
+        </p>
       </div>
 
       {/* Upload Section */}
