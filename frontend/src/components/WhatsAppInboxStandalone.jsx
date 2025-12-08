@@ -36,7 +36,7 @@ const WhatsAppInboxStandalone = () => {
 
   const fetchMessages = async (phone) => {
     try {
-      const response = await axios.get(`${API_URL}/api/whatsapp/messages/${phone}`);
+      const response = await axios.get(`${API_URL}/api/whatsapp/messages-by-phone/${phone}`);
       setMessages(response.data.messages || []);
     } catch (error) {
       console.error('Error fetching messages:', error);
