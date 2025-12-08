@@ -570,9 +570,17 @@ const FinanceReconciliation = () => {
               Partial
             </button>
             <button
+              onClick={() => setFilter('error')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                filter === 'error' ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-400'
+              }`}
+            >
+              Errors
+            </button>
+            <button
               onClick={() => setFilter('missing')}
               className={`px-4 py-2 rounded-lg transition-colors ${
-                filter === 'missing' ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-400'
+                filter === 'missing' ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400'
               }`}
             >
               Missing
