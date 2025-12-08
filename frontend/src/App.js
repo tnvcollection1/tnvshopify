@@ -216,7 +216,23 @@ function AppRoutes() {
         path="/whatsapp-templates" 
         element={
           <ProtectedRoute>
-            <WhatsAppTemplates />
+            <WhatsAppTemplateManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/whatsapp-campaigns" 
+        element={
+          <ProtectedRoute>
+            <WhatsAppCampaignManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/whatsapp-analytics" 
+        element={
+          <ProtectedRoute>
+            <WhatsAppAnalytics />
           </ProtectedRoute>
         } 
       />
