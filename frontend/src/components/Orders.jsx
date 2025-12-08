@@ -195,8 +195,8 @@ const Orders = () => {
 
       for (const store of stores) {
         try {
-          const response = await axios.post(`${API}/shopify/sync-orders-fast`, null, {
-            params: { store_name: store, days_back: 30 }
+          const response = await axios.post(`${API}/shopify/sync-fast/${store}`, null, {
+            params: { days_back: 30 }
           });
           
           if (response.data.success) {
@@ -205,7 +205,8 @@ const Orders = () => {
           }
         } catch (error) {
           console.error(`Error syncing ${store}:`, error);
-          toast.error(`Failed to sync ${store}`);
+          const errorMsg = error.response?.data?.detail || `Failed to sync ${store}`;
+          toast.error(errorMsg);
         }
       }
 
