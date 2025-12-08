@@ -91,6 +91,70 @@ const FinanceReconciliation = () => {
     }
   };
 
+  const matchTransactions = async () => {
+    try {
+      setLoading(true);
+      toast.info('🔗 Matching transactions...');
+      const response = await axios.post(`${API_URL}/api/finance/match-transactions`);
+      toast.success(`✅ Matched ${response.data.matched_count} transactions`);
+      // Refresh reconciliation
+      await fetchReconciliation();
+    } catch (error) {
+      console.error('Error matching transactions:', error);
+      toast.error('Failed to match transactions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyOrder = async (orderNumber) => {
+    const username = localStorage.getItem('username') || 'admin';
+    const notes = prompt('Add verification notes (optional):') || '';
+    
+    try {
+      setVerifyingOrder(orderNumber);
+      await axios.post(`${API_URL}/api/finance/verify-order`, null, {
+        params: { order_number: orderNumber, verified_by: username, notes }
+      });
+      toast.success(`✅ Order ${orderNumber} verified`);
+      // Refresh reconciliation
+      await fetchReconciliation();
+    } catch (error) {
+      console.error('Error verifying order:', error);
+      toast.error('Failed to verify order');
+    } finally {
+      setVerifyingOrder(null);
+    }
+  };
+
+  const fetchUploadHistory = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/finance/upload-history`);
+      setUploadHistory(response.data.history || []);
+    } catch (error) {
+      console.error('Error fetching upload history:', error);
+    }
+  };
+
+  const rollbackToSnapshot = async (snapshotId) => {
+    if (!window.confirm('Are you sure you want to rollback? This will replace current data.')) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API_URL}/api/finance/rollback/${snapshotId}`);
+      toast.success(response.data.message);
+      await fetchFinanceStatus();
+      await fetchReconciliation();
+    } catch (error) {
+      console.error('Error rolling back:', error);
+      toast.error('Failed to rollback');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const styles = {
       'Complete': 'bg-green-500/20 text-green-300 border-green-500/50',
