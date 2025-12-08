@@ -338,6 +338,136 @@ const FinanceReconciliation = () => {
         </div>
       )}
 
+      {/* Unmatched Records Panel */}
+      {showUnmatched && unmatchedData && (
+        <div className="mb-8 bg-gray-800/50 backdrop-blur-sm border border-orange-700 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-orange-400" />
+              Unmatched Records from Uploaded Files
+            </h3>
+            <button
+              onClick={() => setShowUnmatched(false)}
+              className="text-gray-400 hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Summary */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-gray-900/50 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-orange-400 mb-1">
+                {unmatchedData.summary.unmatched_ledger_count}
+              </div>
+              <div className="text-sm text-gray-400">
+                Unmatched Ledger Records (out of {unmatchedData.summary.total_ledger_records})
+              </div>
+            </div>
+            <div className="bg-gray-900/50 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-orange-400 mb-1">
+                {unmatchedData.summary.unmatched_transactions_count}
+              </div>
+              <div className="text-sm text-gray-400">
+                Unmatched Transactions (out of {unmatchedData.summary.total_transactions})
+              </div>
+            </div>
+          </div>
+
+          {/* Unmatched Ledger Records */}
+          {unmatchedData.unmatched_ledger.length > 0 && (
+            <div className="mb-6">
+              <h4 className="text-lg font-semibold mb-3 text-orange-300">
+                📄 Ledger Records Not Found in Shopify ({unmatchedData.unmatched_ledger.length})
+              </h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-900/50">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-gray-400">Order #</th>
+                      <th className="px-4 py-2 text-left text-gray-400">Date</th>
+                      <th className="px-4 py-2 text-left text-gray-400">Status</th>
+                      <th className="px-4 py-2 text-left text-gray-400">Payment</th>
+                      <th className="px-4 py-2 text-right text-gray-400">Amount</th>
+                      <th className="px-4 py-2 text-left text-gray-400">Tracking</th>
+                      <th className="px-4 py-2 text-left text-gray-400">Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {unmatchedData.unmatched_ledger.slice(0, 50).map((record, idx) => (
+                      <tr key={idx} className="hover:bg-gray-700/30">
+                        <td className="px-4 py-2 font-mono text-orange-400">#{record.order_number}</td>
+                        <td className="px-4 py-2 text-gray-300">{record.date}</td>
+                        <td className="px-4 py-2 text-gray-300">{record.order_status}</td>
+                        <td className="px-4 py-2 text-gray-300">{record.payment_status}</td>
+                        <td className="px-4 py-2 text-right text-white">Rs. {record.sale_price?.toFixed(2)}</td>
+                        <td className="px-4 py-2 text-gray-300">{record.tracking_number || '-'}</td>
+                        <td className="px-4 py-2 text-orange-300 text-xs">{record.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {unmatchedData.unmatched_ledger.length > 50 && (
+                  <p className="text-center text-gray-500 mt-2 text-sm">
+                    Showing first 50 of {unmatchedData.unmatched_ledger.length} records
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Unmatched Transactions */}
+          {unmatchedData.unmatched_transactions.length > 0 && (
+            <div>
+              <h4 className="text-lg font-semibold mb-3 text-orange-300">
+                💳 Bank Transactions Not Matched to Orders ({unmatchedData.unmatched_transactions.length})
+              </h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-900/50">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-gray-400">Date</th>
+                      <th className="px-4 py-2 text-left text-gray-400">Description</th>
+                      <th className="px-4 py-2 text-left text-gray-400">Mode</th>
+                      <th className="px-4 py-2 text-right text-gray-400">Debit</th>
+                      <th className="px-4 py-2 text-right text-gray-400">Credit</th>
+                      <th className="px-4 py-2 text-left text-gray-400">Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {unmatchedData.unmatched_transactions.slice(0, 50).map((trans, idx) => (
+                      <tr key={idx} className="hover:bg-gray-700/30">
+                        <td className="px-4 py-2 text-gray-300">{trans.date}</td>
+                        <td className="px-4 py-2 text-gray-300">{trans.description}</td>
+                        <td className="px-4 py-2 text-gray-300">{trans.payment_mode}</td>
+                        <td className="px-4 py-2 text-right text-red-400">
+                          {trans.debit > 0 ? `Rs. ${trans.debit.toFixed(2)}` : '-'}
+                        </td>
+                        <td className="px-4 py-2 text-right text-green-400">
+                          {trans.credit > 0 ? `Rs. ${trans.credit.toFixed(2)}` : '-'}
+                        </td>
+                        <td className="px-4 py-2 text-orange-300 text-xs">{trans.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {unmatchedData.unmatched_transactions.length > 50 && (
+                  <p className="text-center text-gray-500 mt-2 text-sm">
+                    Showing first 50 of {unmatchedData.unmatched_transactions.length} records
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {unmatchedData.unmatched_ledger.length === 0 && unmatchedData.unmatched_transactions.length === 0 && (
+            <p className="text-center text-green-400 py-8">
+              ✅ All records from uploaded files are matched!
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Summary Cards */}
       {reconciliationData?.summary && (
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
