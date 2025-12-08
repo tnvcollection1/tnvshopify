@@ -6674,6 +6674,7 @@ async def get_pricing_dashboard_stats():
 # Include the router in the main app
 app.include_router(api_router)
 app.include_router(whatsapp_webhook_router)
+app.include_router(tracking_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 app.add_middleware(
