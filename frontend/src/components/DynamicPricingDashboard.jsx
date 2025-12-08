@@ -5,47 +5,37 @@ import { TrendingUp, TrendingDown, DollarSign, Settings, RefreshCw, Zap, Tag, Ch
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const DynamicPricingDashboard = () => {
-  const [stats, setStats] = useState(null);
+  const [report, setReport] = useState(null);
   const [pricingRules, setPricingRules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [filter, setFilter] = useState('all'); // all, A, B, C
-  const [showConfig, setShowConfig] = useState(false);
-  const [config, setConfig] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [editingDiscounts, setEditingDiscounts] = useState({ A: 0, B: 10, C: 20 });
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedStore, setSelectedStore] = useState('tnvcollectionpk'); // Default store
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [filter]);
+    fetchReport();
+  }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchReport = async () => {
     try {
       setLoading(true);
+      const response = await axios.get(`${API_URL}/api/dynamic-pricing/report`, {
+        timeout: 30000
+      });
+      setReport(response.data);
       
-      // Fetch dashboard stats
-      const statsRes = await axios.get(`${API_URL}/api/pricing/dashboard-stats`);
-      setStats(statsRes.data.stats);
-      
-      // Fetch pricing rules
-      const rulesQuery = filter !== 'all' ? `?category=${filter}` : '';
-      const rulesRes = await axios.get(`${API_URL}/api/pricing/rules${rulesQuery}&limit=50`);
-      
-      // Calculate current prices for each rule
-      const rulesWithPrices = await Promise.all(
-        rulesRes.data.rules.map(async (rule) => {
-          try {
-            const priceRes = await axios.get(`${API_URL}/api/pricing/calculate/${rule.sku}`);
-            return {
-              ...rule,
-              ...priceRes.data.pricing
-            };
-          } catch (err) {
-            return rule;
-          }
-        })
-      );
-      
-      setPricingRules(rulesWithPrices);
+      // Extract rules from report for table display
+      const categories = response.data.categories || {};
+      let allProducts = [];
+      if (filter === 'all') {
+        allProducts = [...(categories.A || []), ...(categories.B || []), ...(categories.C || [])];
+      } else {
+        allProducts = categories[filter] || [];
+      }
+      setPricingRules(allProducts.slice(0, 50));
       setLoading(false);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
