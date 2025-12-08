@@ -271,6 +271,7 @@ function App() {
             <AppRoutes />
           </BrowserRouter>
           <Toaster position="top-right" />
+          <HotToaster position="top-right" />
         </AuthProvider>
       </div>
     </ErrorBoundary>
