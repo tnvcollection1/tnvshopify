@@ -93,6 +93,86 @@ class ConversationReplyRequest(BaseModel):
 
 # ============= Template Management Routes =============
 
+@whatsapp_router.post("/templates/init-samples")
+async def initialize_sample_templates(store_name: str = "ashmiaa"):
+    """
+    Initialize all sample templates (for testing/setup)
+    This creates all 7 sample templates and submits them to Meta for approval
+    """
+    try:
+        from whatsapp_sample_templates import ALL_SAMPLE_TEMPLATES
+        
+        results = []
+        for template_def in ALL_SAMPLE_TEMPLATES:
+            try:
+                # Create request object
+                request = CreateTemplateRequest(
+                    name=template_def["name"],
+                    category=template_def["category"],
+                    language=template_def["language"],
+                    components=template_def["components"],
+                    store_name=store_name
+                )
+                
+                # Note: We're not actually creating on Meta yet, just saving to database
+                # User needs to create these templates via Meta Business Manager
+                
+                # Save template to database as PENDING
+                template_doc = {
+                    "id": str(uuid.uuid4()),
+                    "template_id": None,  # Will be filled when synced from Meta
+                    "name": template_def["name"],
+                    "category": template_def["category"],
+                    "language": template_def["language"],
+                    "components": template_def["components"],
+                    "status": "DRAFT",  # User needs to create on Meta
+                    "store_name": store_name,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+                
+                # Check if already exists
+                existing = await db.whatsapp_templates.find_one({
+                    "name": template_def["name"],
+                    "store_name": store_name
+                })
+                
+                if existing:
+                    results.append({
+                        "name": template_def["name"],
+                        "status": "already_exists",
+                        "category": template_def["category"]
+                    })
+                else:
+                    await db.whatsapp_templates.insert_one(template_doc)
+                    results.append({
+                        "name": template_def["name"],
+                        "status": "created",
+                        "category": template_def["category"]
+                    })
+                
+            except Exception as e:
+                logger.error(f"Error creating template {template_def['name']}: {str(e)}")
+                results.append({
+                    "name": template_def["name"],
+                    "status": "error",
+                    "error": str(e)
+                })
+        
+        logger.info(f"✅ Initialized {len(results)} sample templates")
+        
+        return {
+            "success": True,
+            "message": f"Initialized {len(results)} sample templates",
+            "templates": results,
+            "note": "Templates saved as DRAFT. Create them on Meta Business Manager for approval."
+        }
+        
+    except Exception as e:
+        logger.error(f"Error initializing sample templates: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @whatsapp_router.post("/templates/create")
 async def create_template(request: CreateTemplateRequest):
     """
