@@ -267,9 +267,9 @@ class ShopifyTrackingSync:
             'created_at': fulfillment.get('createdAt')
         }
     
-    async def _update_order_tracking(self, db, order_id: str, tracking_data: Dict):
+    async def _update_customer_tracking(self, db, order_name: str, tracking_data: Dict):
         """
-        Update order in database with tracking information
+        Update customer/order in database with tracking information
         """
         if not tracking_data:
             return
@@ -286,11 +286,13 @@ class ShopifyTrackingSync:
         update_data = {k: v for k, v in update_data.items() if v is not None}
         
         if update_data:
-            await db.orders.update_one(
-                {'id': int(order_id)},
+            # Update customers collection by order_number
+            result = await db.customers.update_many(
+                {'order_number': str(order_name)},
                 {'$set': update_data}
             )
-            logger.info(f"Updated tracking for order {order_id}: {update_data.get('tracking_number')}")
+            if result.modified_count > 0:
+                logger.info(f"✅ Updated tracking for order #{order_name}: {update_data.get('tracking_number')}")
 
 
 # Global instance
