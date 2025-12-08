@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://marketing-suite-13.preview.emergentagent.com/api'
+base_url = 'https://market-mate-14.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
