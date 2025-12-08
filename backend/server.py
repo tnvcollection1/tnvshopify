@@ -1313,6 +1313,107 @@ async def sync_all_dtdc_tracking():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/dynamic-pricing/analyze")
+async def analyze_product_velocity(days_lookback: int = 180):
+    """
+    Analyze product sales velocity and categorize as A/B/C
+    - Category A: Fast-moving (top 20%)
+    - Category B: Medium-moving (next 30%)
+    - Category C: Slow-moving (bottom 50%)
+    """
+    try:
+        from dynamic_pricing_engine import dynamic_pricing_engine
+        
+        logger.info(f"🔍 Starting product velocity analysis (last {days_lookback} days)...")
+        
+        result = await dynamic_pricing_engine.analyze_product_velocity(db, days_lookback)
+        
+        if result.get('success'):
+            categories = result.get('categories', {})
+            logger.info(f"✅ Analysis complete:")
+            logger.info(f"   Category A (Fast): {len(categories.get('A', []))} products")
+            logger.info(f"   Category B (Medium): {len(categories.get('B', []))} products")
+            logger.info(f"   Category C (Slow): {len(categories.get('C', []))} products")
+            
+            return result
+        else:
+            raise HTTPException(status_code=500, detail=result.get('error', 'Analysis failed'))
+            
+    except Exception as e:
+        logger.error(f"❌ Error analyzing product velocity: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/dynamic-pricing/apply")
+async def apply_dynamic_pricing(auto_apply: bool = False, days_lookback: int = 180):
+    """
+    Apply dynamic pricing based on product velocity analysis
+    - Category A: No discount (fast-moving)
+    - Category B: 10% discount (medium-moving)
+    - Category C: 20% discount (slow-moving)
+    
+    Set auto_apply=true to automatically update inventory prices
+    """
+    try:
+        from dynamic_pricing_engine import dynamic_pricing_engine
+        
+        # First analyze
+        logger.info("🔍 Analyzing product velocity...")
+        analysis = await dynamic_pricing_engine.analyze_product_velocity(db, days_lookback)
+        
+        if not analysis.get('success'):
+            raise HTTPException(status_code=500, detail=analysis.get('error', 'Analysis failed'))
+        
+        recommendations = analysis.get('pricing_recommendations', [])
+        
+        if not recommendations:
+            return {
+                'success': True,
+                'message': 'No pricing recommendations generated',
+                'total_products': 0
+            }
+        
+        # Apply pricing
+        logger.info(f"💰 Applying pricing recommendations (auto_apply={auto_apply})...")
+        result = await dynamic_pricing_engine.apply_pricing(db, recommendations, auto_apply)
+        
+        # Include analysis summary
+        result['analysis_summary'] = {
+            'total_products': analysis.get('total_products', 0),
+            'category_a_count': len(analysis.get('categories', {}).get('A', [])),
+            'category_b_count': len(analysis.get('categories', {}).get('B', [])),
+            'category_c_count': len(analysis.get('categories', {}).get('C', [])),
+            'analysis_period_days': days_lookback
+        }
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Error applying dynamic pricing: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/dynamic-pricing/report")
+async def get_pricing_report():
+    """
+    Get current dynamic pricing report with all categorized products
+    """
+    try:
+        from dynamic_pricing_engine import dynamic_pricing_engine
+        
+        # Get latest analysis
+        analysis = await dynamic_pricing_engine.analyze_product_velocity(db, days_lookback=180)
+        
+        if not analysis.get('success'):
+            raise HTTPException(status_code=500, detail=analysis.get('error', 'Analysis failed'))
+        
+        return analysis
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting pricing report: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/tcs/track/{tracking_number}")
 async def track_tcs_consignment(tracking_number: str):
     """
