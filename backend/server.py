@@ -7148,15 +7148,16 @@ async def get_finance_status():
 
 
 @api_router.post("/finance/match-transactions")
-async def match_transactions():
+async def match_transactions(store_name: str = 'ashmiaa'):
     """
     Automatically match bank transactions to orders
+    ONLY for the specified store (ashmia by default)
     """
     try:
-        logger.info("🔗 Starting automatic transaction matching...")
+        logger.info(f"🔗 Starting automatic transaction matching for {store_name}...")
         
         finance_rec = get_finance_reconciliation(db)
-        result = await finance_rec.match_transactions_to_orders()
+        result = await finance_rec.match_transactions_to_orders(store_name)
         
         if not result.get('success'):
             raise HTTPException(status_code=500, detail=result.get('error'))
