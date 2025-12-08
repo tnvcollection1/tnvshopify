@@ -29,7 +29,7 @@ function DynamicPricing() {
   const fetchReport = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API}/dynamic-pricing/report`);
+      const response = await axios.get(`${API}/api/dynamic-pricing/report`);
       setReport(response.data);
     } catch (error) {
       console.error("Error fetching report:", error);
@@ -43,7 +43,7 @@ function DynamicPricing() {
     try {
       setAnalyzing(true);
       toast.loading("Analyzing product velocity...");
-      const response = await axios.post(`${API}/dynamic-pricing/analyze?days_lookback=365`);
+      const response = await axios.post(`${API}/api/dynamic-pricing/analyze?days_lookback=365`);
       toast.dismiss();
       toast.success(`Analyzed ${response.data.total_products} products!`);
       setReport(response.data);
@@ -60,7 +60,7 @@ function DynamicPricing() {
       setSyncingToShopify(true);
       toast.loading("Syncing prices to Shopify...");
       
-      const response = await axios.post(`${API}/dynamic-pricing/sync-to-shopify`, {
+      const response = await axios.post(`${API}/api/dynamic-pricing/sync-to-shopify`, {
         discounts: editingDiscounts
       });
       
@@ -77,7 +77,7 @@ function DynamicPricing() {
   const applyPricingLocally = async () => {
     try {
       toast.loading("Applying pricing to local inventory...");
-      const response = await axios.post(`${API}/dynamic-pricing/apply?auto_apply=true&days_lookback=365`);
+      const response = await axios.post(`${API}/api/dynamic-pricing/apply?auto_apply=true&days_lookback=365`);
       toast.dismiss();
       toast.success(`Updated ${response.data.updated_count} products!`);
       fetchReport();
