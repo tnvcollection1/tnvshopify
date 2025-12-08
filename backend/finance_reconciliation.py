@@ -210,14 +210,19 @@ class FinanceReconciliation:
             
             valid_order_numbers = set(order.get('order_number') for order in shopify_orders)
             
-            # Get ledger records ONLY for orders that exist in Shopify for this store
+            # Get ledger records ONLY for this store
             ledger_records = await self.db.finance_ledger.find(
-                {'sale_price': {'$gt': 0}},
+                {
+                    'sale_price': {'$gt': 0},
+                    'store_name': store_name  # Must be for this store
+                },
                 {'_id': 0}
             ).to_list(10000)
             
-            # Filter to only valid order numbers for this store
+            # Filter to only valid order numbers for this store in Shopify
             ledger_records = [l for l in ledger_records if l.get('order_number') in valid_order_numbers]
+            
+            logger.info(f"Found {len(ledger_records)} ledger records specifically for {store_name} store")
             
             # Get all transactions
             transactions = await self.db.finance_transactions.find(
