@@ -252,13 +252,66 @@ const FinanceReconciliation = () => {
           <button
             onClick={fetchReconciliation}
             disabled={loading || !financeStatus?.ledger_records}
-            className="flex items-center justify-center gap-2 px-4 py-2 w-full bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-4 py-2 w-full bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50 mb-2"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             {loading ? 'Processing...' : 'Run Reconciliation'}
           </button>
+          <button
+            onClick={matchTransactions}
+            disabled={loading || !financeStatus?.transaction_records}
+            className="flex items-center justify-center gap-2 px-4 py-2 w-full bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <Link2 className="w-4 h-4" />
+            Match Transactions
+          </button>
         </div>
       </div>
+
+      {/* Upload History Button */}
+      <div className="mb-6 flex justify-end">
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-lg transition-colors"
+        >
+          <History className="w-4 h-4" />
+          {showHistory ? 'Hide History' : 'View Upload History'}
+        </button>
+      </div>
+
+      {/* Upload History Panel */}
+      {showHistory && (
+        <div className="mb-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <History className="w-5 h-5 text-blue-400" />
+            Upload History & Rollback
+          </h3>
+          <div className="space-y-2">
+            {uploadHistory.length === 0 ? (
+              <p className="text-gray-400">No upload history yet</p>
+            ) : (
+              uploadHistory.map((item) => (
+                <div key={item.snapshot_id} className="flex items-center justify-between bg-gray-900/50 p-4 rounded-lg">
+                  <div className="flex-1">
+                    <p className="font-semibold text-white">{item.file_name}</p>
+                    <p className="text-sm text-gray-400">
+                      {item.upload_type} • {item.record_count} records • {new Date(item.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => rollbackToSnapshot(item.snapshot_id)}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-3 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Rollback
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Summary Cards */}
       {reconciliationData?.summary && (
