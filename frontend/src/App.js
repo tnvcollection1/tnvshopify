@@ -245,7 +245,7 @@ function AppRoutes() {
         path="/dynamic-pricing" 
         element={
           <ProtectedRoute>
-            <DynamicPricingDashboard />
+            <DynamicPricing />
           </ProtectedRoute>
         } 
       />
