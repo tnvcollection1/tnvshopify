@@ -56,35 +56,25 @@ const DynamicPricingDashboard = () => {
     }
   };
 
-  const handleSyncToShopify = async (sku = null) => {
+  const handleSyncToShopify = async () => {
     try {
       setSyncing(true);
       
-      if (sku) {
-        // Sync single SKU
-        const res = await axios.post(`${API_URL}/api/pricing/sync-to-shopify/${sku}?store_name=${selectedStore}`);
-        
-        if (res.data.success) {
-          alert(`✅ Price synced to Shopify for ${sku}\nStore: ${selectedStore}\nNew Price: Rs. ${res.data.new_price}`);
-        } else {
-          alert(`❌ Sync failed: ${res.data.error || 'Unknown error'}`);
-        }
+      const res = await axios.post(`${API_URL}/api/dynamic-pricing/sync-to-shopify`, {
+        discounts: editingDiscounts
+      });
+      
+      if (res.data.success) {
+        alert(`✅ Synced ${res.data.updated_count} products to Shopify!\n\nTotal Products: ${res.data.total_products}\nDiscounts Applied:\nCategory A: ${editingDiscounts.A}%\nCategory B: ${editingDiscounts.B}%\nCategory C: ${editingDiscounts.C}%`);
       } else {
-        // Bulk sync all
-        const res = await axios.post(`${API_URL}/api/pricing/sync-all-to-shopify?store_name=${selectedStore}&limit=100`);
-        
-        if (res.data.success) {
-          alert(`✅ Bulk sync complete to ${selectedStore}!\n\nSuccessfully synced: ${res.data.success_count || 0} SKUs\nFailed: ${res.data.failed_count || 0} SKUs\nTotal processed: ${res.data.total_processed || 0}`);
-        } else {
-          alert(`❌ Sync failed: ${res.data.error || 'Unknown error'}\n\nNote: Make sure Shopify credentials are configured correctly.`);
-        }
+        alert(`❌ Sync failed: ${res.data.error || 'Unknown error'}`);
       }
       
       setSyncing(false);
     } catch (error) {
       console.error('Error syncing to Shopify:', error);
       const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
-      alert(`❌ Error syncing to Shopify\n\n${errorMsg}\n\nPlease check:\n1. Shopify credentials are configured\n2. Store has valid API access\n3. Backend is running`);
+      alert(`❌ Error syncing to Shopify\n\n${errorMsg}`);
       setSyncing(false);
     }
   };
