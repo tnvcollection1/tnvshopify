@@ -223,34 +223,34 @@ const DynamicPricingDashboard = () => {
         </div>
       )}
 
-      {/* Surging Items Alert */}
-      {stats && stats.surging_items && stats.surging_items.length > 0 && (
+      {/* Top Sellers Section */}
+      {report && report.categories && report.categories.A && report.categories.A.length > 0 && (
         <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/50 rounded-xl p-6 mb-8">
           <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
             <TrendingUp className="w-6 h-6 text-red-400" />
-            🔥 Hot Items (Price Surging)
+            🔥 Top Selling Products (Category A)
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {stats.surging_items.slice(0, 3).map((item) => (
+            {report.categories.A.slice(0, 3).map((item) => (
               <div key={item.sku} className="bg-gray-800/50 rounded-lg p-4">
                 <div className="text-sm font-semibold text-gray-300 mb-1">{item.sku}</div>
                 <div className="text-xs text-gray-500 mb-2">{item.product_name || 'N/A'}</div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs text-gray-400">Base: Rs. {item.base_price}</div>
-                    <div className="text-lg font-bold text-red-400">
-                      Rs. {item.current_price || (item.base_price * item.multiplier).toFixed(2)}
+                    <div className="text-xs text-gray-400">Price: Rs. {item.current_price?.toFixed(2)}</div>
+                    <div className="text-lg font-bold text-green-400">
+                      {item.total_quantity_sold} units sold
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs text-gray-400">Surge</div>
-                    <div className="text-lg font-bold text-red-400">
-                      +{((item.multiplier - 1) * 100).toFixed(0)}%
+                    <div className="text-xs text-gray-400">Revenue</div>
+                    <div className="text-lg font-bold text-green-400">
+                      Rs. {item.total_revenue?.toFixed(0)}
                     </div>
                   </div>
                 </div>
                 <div className="mt-2 text-xs text-gray-400">
-                  {item.rolling_orders || 0} orders this week
+                  {item.order_count} orders received
                 </div>
               </div>
             ))}
