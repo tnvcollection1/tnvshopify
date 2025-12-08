@@ -1475,6 +1475,39 @@ class ShopifySyncRequest(BaseModel):
     discounts: Dict[str, float] = {"A": 0, "B": 10, "C": 20}
 
 
+@api_router.get("/dynamic-pricing/sync-status")
+async def get_sync_status():
+    """
+    Get the status of the last Shopify sync
+    """
+    try:
+        sync_result = await db.dynamic_pricing_cache.find_one(
+            {"type": "last_sync_result"},
+            {"_id": 0}
+        )
+        
+        if not sync_result:
+            return {
+                "success": True,
+                "has_sync": False,
+                "message": "No sync has been run yet"
+            }
+        
+        return {
+            "success": True,
+            "has_sync": True,
+            "updated_count": sync_result.get('updated_count', 0),
+            "total_products": sync_result.get('total_products', 0),
+            "discounts_applied": sync_result.get('discounts_applied', {}),
+            "completed_at": sync_result.get('completed_at'),
+            "errors_count": len(sync_result.get('errors', []))
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting sync status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/dynamic-pricing/sync-to-shopify")
 async def sync_pricing_to_shopify(request: ShopifySyncRequest, background_tasks: BackgroundTasks):
     """
