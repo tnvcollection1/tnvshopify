@@ -381,6 +381,14 @@ const FinanceReconciliation = () => {
               All
             </button>
             <button
+              onClick={() => setFilter('verified')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                filter === 'verified' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
+              }`}
+            >
+              Verified
+            </button>
+            <button
               onClick={() => setFilter('complete')}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 filter === 'complete' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400'
