@@ -285,8 +285,16 @@ const FinanceReconciliation = () => {
         </div>
       </div>
 
-      {/* Upload History Button */}
-      <div className="mb-6 flex justify-end">
+      {/* Upload History & Unmatched Records Buttons */}
+      <div className="mb-6 flex justify-end gap-3">
+        <button
+          onClick={fetchUnmatchedRecords}
+          disabled={loading || !financeStatus?.ledger_records}
+          className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 border border-orange-500 rounded-lg transition-colors disabled:opacity-50"
+        >
+          <AlertCircle className="w-4 h-4" />
+          View Unmatched Records
+        </button>
         <button
           onClick={() => setShowHistory(!showHistory)}
           className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-lg transition-colors"
