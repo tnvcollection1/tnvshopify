@@ -746,6 +746,8 @@ async def verify_webhook(request: Request):
     """
     Verify webhook for Meta WhatsApp
     """
+    from fastapi.responses import PlainTextResponse
+    
     try:
         mode = request.query_params.get("hub.mode")
         token = request.query_params.get("hub.verify_token")
@@ -755,11 +757,14 @@ async def verify_webhook(request: Request):
         
         if mode == "subscribe" and token == verify_token:
             logger.info("✅ Webhook verified successfully")
-            return int(challenge)
+            return PlainTextResponse(content=challenge, status_code=200)
         else:
             logger.warning("❌ Webhook verification failed")
             raise HTTPException(status_code=403, detail="Verification failed")
             
+    except ValueError as e:
+        logger.error(f"Error in webhook verification: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         logger.error(f"Error in webhook verification: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
