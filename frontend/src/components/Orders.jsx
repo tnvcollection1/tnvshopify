@@ -426,7 +426,7 @@ const Orders = () => {
                     </TableRow>
                   ) : orders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={10} className="text-center py-8 text-gray-500">
                         No orders found
                       </TableCell>
                     </TableRow>
@@ -442,6 +442,12 @@ const Orders = () => {
                               {order.first_name} {order.last_name}
                             </p>
                             <p className="text-xs text-gray-500">{order.email}</p>
+                            {order.phone && (
+                              <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                                <MessageCircle className="w-3 h-3" />
+                                {order.phone}
+                              </p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-sm text-gray-600">
@@ -460,6 +466,18 @@ const Orders = () => {
                         <TableCell>{getStatusBadge(order.payment_status, "payment")}</TableCell>
                         <TableCell className="font-semibold text-gray-900">
                           ${order.total_spent?.toFixed(2) || "0.00"}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => sendWhatsAppNotification(order)}
+                            disabled={!order.phone && !order.default_address?.phone}
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                            title={order.phone || order.default_address?.phone ? "Send WhatsApp notification" : "No phone number"}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
