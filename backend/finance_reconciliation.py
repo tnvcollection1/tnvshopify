@@ -309,6 +309,17 @@ class FinanceReconciliation:
                 # Determine reconciliation status
                 status = self._determine_status(order, ledger_data, verification)
                 
+                # Check tracking number match
+                shopify_tracking = order.get('tracking_number', '')
+                ledger_tracking = ledger_data.get('tracking_number', '')
+                tracking_match = False
+                if shopify_tracking and ledger_tracking:
+                    # Normalize and compare (remove spaces, case insensitive)
+                    tracking_match = shopify_tracking.replace(' ', '').upper() == ledger_tracking.replace(' ', '').upper()
+                
+                # Get matched transaction details
+                matched_transaction = ledger_data.get('matched_transaction', {})
+                
                 reconciled.append({
                     'order_number': order_num,
                     'customer_name': f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
@@ -321,9 +332,18 @@ class FinanceReconciliation:
                     'received_from_dtdc': ledger_data.get('received_from_dtdc', 0),
                     'received_in_bank': ledger_data.get('received_in_bank', 0),
                     'purchase_status': ledger_data.get('purchase_vendor', 'Not Found'),
-                    'transaction_matched': bool(ledger_data.get('matched_transaction')),
+                    'transaction_matched': bool(matched_transaction),
                     'transaction_amount': ledger_data.get('transaction_amount', 0),
                     'match_confidence': ledger_data.get('match_confidence', 0),
+                    'matched_transaction_details': {
+                        'date': matched_transaction.get('date', '') if matched_transaction else '',
+                        'description': matched_transaction.get('description', '') if matched_transaction else '',
+                        'payment_mode': matched_transaction.get('payment_mode', '') if matched_transaction else '',
+                        'debit': matched_transaction.get('debit', 0) if matched_transaction else 0,
+                        'credit': matched_transaction.get('credit', 0) if matched_transaction else 0,
+                    },
+                    'tracking_match': tracking_match,
+                    'ledger_tracking': ledger_tracking,
                     'reconciliation_status': status,
                     'ledger_exists': bool(ledger_data),
                     'verified': verification.get('verified', False),
