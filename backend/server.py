@@ -7248,6 +7248,16 @@ async def match_transactions(store_name: str = 'ashmiaa'):
         logger.info(f"🔗 Starting automatic transaction matching for {store_name}...")
         
         finance_rec = get_finance_reconciliation(db)
+        result = await finance_rec.match_transactions(store_name)
+        
+        return {
+            "success": True,
+            "matched_count": result.get("matched_count", 0),
+            "message": result.get("message", "Matching complete")
+        }
+    except Exception as e:
+        logger.error(f"❌ Error matching transactions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.get("/finance/missing-orders")
