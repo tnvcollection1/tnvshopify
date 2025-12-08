@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Upload, FileText, DollarSign, CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Upload, FileText, DollarSign, CheckCircle, XCircle, AlertCircle, RefreshCw, Link2, History, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -9,8 +9,11 @@ const FinanceReconciliation = () => {
   const [reconciliationData, setReconciliationData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [financeStatus, setFinanceStatus] = useState(null);
-  const [filter, setFilter] = useState('all'); // all, complete, partial, missing
+  const [filter, setFilter] = useState('all'); // all, complete, partial, missing, verified
   const [searchTerm, setSearchTerm] = useState('');
+  const [uploadHistory, setUploadHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [verifyingOrder, setVerifyingOrder] = useState(null);
 
   useEffect(() => {
     fetchFinanceStatus();
