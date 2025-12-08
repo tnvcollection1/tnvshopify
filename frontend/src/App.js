@@ -27,7 +27,7 @@ import FlashSaleManager from "@/components/FlashSaleManager";
 import CustomerSegmentation from "@/components/CustomerSegmentation";
 import CustomerSegmentationDashboard from "@/components/CustomerSegmentationDashboard";
 import BundleCreator from "@/components/BundleCreator";
-import DynamicPricingDashboard from "@/components/DynamicPricingDashboard";
+import DynamicPricing from "@/components/DynamicPricing";
 import InventoryHealthDashboard from "@/components/InventoryHealthDashboard";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
