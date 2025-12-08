@@ -473,7 +473,7 @@ const FinanceReconciliation = () => {
 
       {/* Summary Cards */}
       {reconciliationData?.summary && (
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-8">
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
             <div className="text-2xl font-bold text-white mb-1">
               {reconciliationData.summary.total_orders}
@@ -504,6 +504,13 @@ const FinanceReconciliation = () => {
           
           <div className="bg-gray-800/50 border border-red-900/50 rounded-xl p-4">
             <div className="text-2xl font-bold text-red-400 mb-1">
+              {reconciliationData.summary.errors || 0}
+            </div>
+            <div className="text-gray-400 text-xs">Errors</div>
+          </div>
+          
+          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+            <div className="text-2xl font-bold text-gray-400 mb-1">
               {reconciliationData.summary.not_reconciled}
             </div>
             <div className="text-gray-400 text-xs">Missing</div>
