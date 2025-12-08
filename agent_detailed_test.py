@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://smart-messenger-40.preview.emergentagent.com/api'
+base_url = 'https://wapp-order-hub.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 

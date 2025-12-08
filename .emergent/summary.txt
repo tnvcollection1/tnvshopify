@@ -1,188 +1,216 @@
-<analysis>**original_problem_statement**: The user initially wanted to fix a blocked WhatsApp integration and address inventory management issues. The scope then massively expanded. In this session, the user requested a dynamic pricing system, which the agent built. The user then approved a list of 12 additional marketing and sales automation features proposed by the agent, including an Inventory Health Dashboard, Customer Segmentation, a Smart Clearance Engine, and more. The most recent request was to integrate the WhatsApp Business API for the Ashmiaa store using newly provided credentials and build a management UI for it.
+<analysis>**original_problem_statement**: The user wants to build a comprehensive, real-time WhatsApp CRM and marketing system for their Ashmiaa store, fully integrated into the existing application. This includes support for utility and marketing messages, automated messages based on order status, a full conversation inbox, template management, and campaign analytics. Additionally, the user requested a public-facing, custom order tracking page that integrates with the DTDC courier service and includes clickable tracking links within the WhatsApp messages.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is an inventory management system with a newly built, advanced marketing and sales suite.
-- **Dynamic Pricing Engine**: A fully functional system that categorizes all 847 SKUs based on sales velocity (High, Medium, Low). It automatically adjusts prices based on order volume and syncs them to the live Shopify stores ( and  are confirmed working). It includes a frontend dashboard () for monitoring.
-- **Inventory Health Dashboard**: A new page () providing insights into fast-moving stock, dead stock, and profit margin analysis.
-- **Customer Segmentation Dashboard**: A new page () that categorizes all customers into segments like VIP, High Value, Medium Value, New, and Dormant. It includes store-wise filtering, CSV export functionality, and direct links to open WhatsApp Web/Desktop to message individual customers.
-- **Marketing Suite Scaffolding**: Placeholder pages and backend routes exist for Campaigns, Flash Sales, and Bundles. A basic Campaign Manager UI has been created.
-- **Shopify Integration**: Sync is confirmed working for  and  stores after the agent successfully updated their API tokens.
-- **WhatsApp Integration (Scaffolding)**: The agent has begun building the integration for the Ashmiaa store, storing the new credentials and creating a backend service module ().
+The application is an inventory management system with a fully functional WhatsApp CRM and an order tracking system pending a working DTDC integration.
+- **WhatsApp CRM**: The backend and frontend are complete. The Meta Webhook is now successfully configured and tested, enabling real-time, two-way message synchronization. Test messages from Meta's dashboard are correctly received and displayed in the WhatsApp Inbox UI.
+- **Meta App Submission Package**: A complete package for Meta's app review has been created, including a 1024x1024 transparent app icon, a 56-second screencast video demonstrating all CRM features, and detailed text responses for all required forms.
+- **Secure Demo User**: A special demo user role has been implemented with credentials ( / ). This user has a restricted view, only able to see the WhatsApp CRM features, ensuring business data is secure during Meta's review process. A one-time API endpoint () was created to set this user up in a production environment.
+- **Enhanced Orders Page**: The Orders page is now a central hub for WhatsApp marketing. It features Shopify order syncing, checkboxes for selecting orders, and buttons for bulk-sending personalized template messages (with random greetings, order numbers, and product links) to selected customers. It also includes per-order buttons to open a chat directly in WhatsApp Web.
+- **DTDC Integration**: The backend service and frontend button to sync DTDC tracking statuses have been built, but the integration is not functional as the API calls are failing.
 
 **Last working item**:
--   **Last item agent was working**: The agent had just started building the full WhatsApp Business API integration for the Ashmiaa store, as requested by the user with new credentials. The agent created a new backend service file () and was in the process of adding the necessary API endpoints to  to handle sending and receiving messages.
+-   **Last item agent was working**: The agent was actively debugging the DTDC API integration. After previous attempts using a provided API key failed with 301/404 errors, the user shared their DTDC customer code () from a working Shopify integration. The agent was about to modify the API call to incorporate this new information.
 -   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: both (A frontend UI will be needed to manage WhatsApp, and the backend API needs to be tested.)
+-   **Agent Testing Done**: N (The last  tests for the DTDC API failed)
+-   **Which testing method agent to use?**: backend testing agent or manual testing by curl. The agent should first try to make a successful API call to the DTDC service using  with the new customer code ().
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Backend Stability / Syntax Errors (P0)
--   Issue 2: TCS data mismatch creating accounting confusion (P1)
--   Issue 3: Original WhatsApp integration is blocked (P2)
--   Issue 4: DTDC courier integration is not implemented (P2)
+-   Issue 1: DTDC API Integration is Not Working (P0)
+-   Issue 2: Meta App Submission is Pending User Action (P1)
+-   Issue 3:  requires major refactoring (P2)
+-   Issue 4: TCS data mismatch creating accounting confusion (P3)
 
 **Issues Detail**:
--   **Issue 1: Backend Stability / Syntax Errors**
-    -   **Description**: The agent introduced a critical  in  when trying to remove a duplicate API route. This crashed the backend. While the agent fixed it, the monolithic nature of  makes it extremely prone to such errors.
-    -   **Attempted fixes**: The agent fixed the specific indentation issue by carefully removing the orphaned code block.
+-   **Issue 1: DTDC API Integration is Not Working**
+    -   **Description**: The application cannot fetch tracking data from DTDC. The current endpoint  with the provided API key is failing. The issue is likely with the endpoint URL or the request payload/authentication method.
+    -   **Attempted fixes**:
+        1.  Used the API key  in a POST request to the Shipsy API endpoint. This resulted in a 301 redirect, followed by a 404 error, indicating the URL or request format is incorrect.
     -   **Next debug checklist**:
-        1.  Before any modification to , especially deletions, view a wide context of the surrounding code.
-        2.  Consider refactoring parts of  into smaller router files as a preventative measure (see Future Tasks).
-        3.  Restart and check backend logs immediately after any change to .
-    -   **Why fix this issue and what will be achieved with the fix?**: Prevents application-wide crashes and improves development velocity.
-    -   **Status**: RESOLVED (for now)
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Backend.
-    -   **Blocked on other issue**: None.
-
--   **Issue 2: TCS data mismatch creating accounting confusion**
-    -   **Description**: Persisting payment data for orders with invalid TCS tracking numbers causes accounting confusion.
-    -   **Attempted fixes**: An API endpoint () was created to find and potentially clean these orders. The test run found 0 invalid orders, meaning the endpoint is functional but hasn't altered any data yet.
-    -   **Next debug checklist**:
-        1.  Run a diagnostic query to confirm if any orders currently match the invalid criteria.
-        2.  If yes, run the cleanup endpoint again and verify the data is corrected.
-        3.  Investigate the root cause of why this invalid data is saved in the first place.
+        1.  View .
+        2.  The user provided a customer code: . The next attempt should be to modify the API request to use this code, as it's likely required for authentication.
+        3.  Search for Shipsy/DTDC API documentation related to authentication using a customer code or partner code.
+        4.  Construct a new test  command that includes the  code in the payload or headers and test it against the API.
+        5.  Once a successful call is made, update  and test the Sync DTDC Tracking button on the Orders page.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will enable real-time shipment tracking for customers on the public tracking page and within the admin dashboard.
     -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Backend.
-    -   **Blocked on other issue**: None.
-
--   **Issue 3: Original WhatsApp integration is blocked**
-    -   **Description**: The initial WhatsApp integration attempt is blocked on the user side due to missing Advanced Access permissions from Meta. This is separate from the new Ashmiaa store integration.
-    -   **Status**: BLOCKED (on user action).
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Backend.
-
--   **Issue 4: DTDC courier integration is not implemented**
-    -   **Description**: Blocked pending user providing API keys and clarifying which API (TrackingMore or direct DTDC) to use.
-    -   **Status**: BLOCKED (on user action).
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Should Test frontend/backend/both after fix?**: Backend first, then both.
+    -   **Blocked on other issue**: None
+
+-   **Issue 2: Meta App Submission is Pending User Action**
+    -   **Description**: The user needs to complete the Meta App Review submission. All required assets and information have been prepared by the agent.
+    -   **Attempted fixes**: N/A
+    -   **Next debug checklist**: This is a user-led task. The next agent should be prepared to answer questions or assist if the submission is rejected. All materials are in  and various  files.
+    -   **Why fix this issue and what will be achieved with the fix?**: Publishing the app will allow the CRM to receive real messages from customers, moving it from development to production mode.
+    -   **Status**: BLOCKED (on User action)
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: N/A
+
+-   **Issue 3:  requires major refactoring**
+    -   **Description**: The main server file is extremely large and complex, posing a stability and maintenance risk.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: Y
+
+-   **Issue 4: TCS data mismatch creating accounting confusion**
+    -   **Description**: Invalid TCS tracking numbers are causing accounting issues.
+    -   **Status**: IN PROGRESS (but low priority)
+    -   **Is recurring issue?**: Y
 
 **In progress Task List**:
--   **Task 1: Complete the Marketing and Sales Suite (P0)**
-    -   **Description**: The user approved the development of a full suite of 12 marketing features. The agent has started this and must now complete the remaining modules.
-    -   **Where to resume**: The agent was building the WhatsApp management system for the Ashmiaa store. After that, it should proceed to the next features on the user-approved list.
-    -   **What will be achieved with this?**: A comprehensive, automated marketing and sales platform integrated directly into the application.
+-   **Task 1: Complete DTDC API Integration (P0)**
+    -   **Where to resume**: The agent should focus on fixing the DTDC API call in  by using the newly provided customer code .
+    -   **What will be achieved with this?**: A fully functional, live order tracking system integrated with DTDC.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Both.
-    -   **Blocked on something**: The WhatsApp part is dependent on the new credentials working.
+    -   **Should Test frontend/backend/both after fix?**: Backend first, then both.
+    -   **Blocked on something**: No.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P0) Build WhatsApp Management UI: Create a frontend interface for the new Ashmiaa WhatsApp integration.
-    -   (P1) Build Smart Inventory Clearance Engine: Automatically identify and discount slow-moving stock.
-    -   (P1) Build Abandoned Cart Recovery: Use WhatsApp to message customers who abandon checkout.
-    -   (P2) Build Flash Sale Automation & Smart Bundle Creator.
-    -   (P2) Extend bulk selection (Select All) to all other order pages (, etc.).
+    -   (P1) Update WhatsApp templates to include clickable links to the live tracking page (once DTDC is working).
+    -   (P2) Build Smart Inventory Clearance Engine.
+    -   (P3) Build Abandoned Cart Recovery via WhatsApp.
+    -   (P3) Build Flash Sale Automation & Smart Bundle Creator.
 -   **Future Tasks**:
-    -   **CRITICAL**: Refactor  into smaller FastAPI routers (e.g., , ). The file is now over 6,500 lines and is a major stability risk.
-    -   Build AI-Powered Product Recommendations.
-    -   Build Customer Lifetime Value (CLV) Scoring.
-    -   Build Predictive Restocking Alerts, Social Proof Engine, and Loyalty Points System.
-    -   Implement the Mark as Received button for returned orders.
+    -   **CRITICAL**: Refactor  into smaller FastAPI routers.
+    -   Build AI-Powered Product Recommendations, CLV Scoring, Predictive Restocking, etc.
+    -   Implement Mark as Received for returned orders.
 
 **Completed work in this session**
--   **Dynamic Pricing System**: Built a complete, velocity-based dynamic pricing engine from scratch. Includes SKU classification, automatic price changes based on order volume, and live sync to Shopify.
--   **Inventory Health Dashboard**: Created a new dashboard to analyze inventory health, showing fast-movers, dead stock, and profit margins.
--   **Customer Segmentation Dashboard**: Created a new dashboard to segment customers (VIP, High Value, etc.). Added features for store-wise filtering, CSV export, and direct links to message customers via WhatsApp Web.
--   **Shopify Integration Fix**: Successfully debugged and updated API tokens for both  and  stores, making them fully operational.
--   **TCS Data Cleanup Endpoint**: Created a backend endpoint to address the data integrity issue with TCS orders.
--   **Marketing Suite Foundation**: Built out several key components (Inventory Health, Customer Segments) of the user-approved marketing suite.
--   **WhatsApp Integration Start**: Began work on the new Ashmiaa WhatsApp integration by storing credentials and creating the backend service module.
+-   **Meta Webhook Integration**: Fully debugged and activated real-time message receiving for the WhatsApp CRM.
+-   **Meta App Review Package**: Created a complete submission package including a screencast video, app icon, and detailed responses for all review forms.
+-   **Secure Demo User**: Implemented a role-based demo user to provide secure, restricted access for Meta reviewers.
+-   **Enhanced Orders Page**: Transformed the Orders page into a WhatsApp marketing hub with features for syncing orders, selecting customers, and sending bulk personalized messages.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: Frontend compilation errors and backend syntax errors.
--   **Recurrence count**: 1 (The agent introduced a backend-crashing  in ).
--   **Status**: RESOLVED (but risk remains high).
+-   **Issue recurrence in previous fork**:  requires major refactoring.
+-   **Recurrence count**: 1
+-   **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI, MongoDB (including case-insensitive queries with ).
--   **Frontend**: React, , , .
--   **Dynamic Pricing**: Velocity-based rules, automatic price recalculation, and synchronization with an external e-commerce platform (Shopify).
--   **Data-Driven UI**: Dashboards are populated by complex backend aggregation queries to provide business intelligence.
+-   **Role-Based Access Control (RBAC)**: Implemented on both frontend (hiding sidebar links) and backend (user model  field) to create a secure demo environment.
+-   **FFmpeg & Pillow**: Used command-line tools  (for video creation) and Python's  library (for image resizing/transparency) to generate assets for the Meta app submission.
+-   **Complex Frontend State Management**: Enhanced the  component with state for selected items () to enable bulk actions.
+-   **Dynamic API Payloads**: The frontend now constructs and sends complex API payloads for sending WhatsApp messages, including dynamic components for order details.
 
 **key DB schema**
--   **stores**:  (new fields added for Ashmiaa store).
--   **pricing_rules** (NEW): .
--   **pricing_order_tracking** (NEW): .
+-   **agents**: collection now contains a  field (e.g., 'admin', 'demo').
+
+**changes in tech stack**
+-   **Pillow**: Looking in indexes: https://pypi.org/simple, https://d33sy5i8bnduwe.cloudfront.net/simple/
+Requirement already satisfied: Pillow in /root/.venv/lib/python3.11/site-packages (12.0.0) was run to handle image manipulation.
+-   **ffmpeg**: Was installed via apt 2.6.1 (arm64)
+Usage: apt-get [options] command
+       apt-get [options] install|remove pkg1 [pkg2 ...]
+       apt-get [options] source pkg1 [pkg2 ...]
+
+apt-get is a command line interface for retrieval of packages
+and information about them from authenticated sources and
+for installation, upgrade and removal of packages together
+with their dependencies.
+
+Most used commands:
+  update - Retrieve new lists of packages
+  upgrade - Perform an upgrade
+  install - Install new packages (pkg is libc6 not libc6.deb)
+  reinstall - Reinstall packages (pkg is libc6 not libc6.deb)
+  remove - Remove packages
+  purge - Remove packages and config files
+  autoremove - Remove automatically all unused packages
+  dist-upgrade - Distribution upgrade, see apt-get(8)
+  dselect-upgrade - Follow dselect selections
+  build-dep - Configure build-dependencies for source packages
+  satisfy - Satisfy dependency strings
+  clean - Erase downloaded archive files
+  autoclean - Erase old downloaded archive files
+  check - Verify that there are no broken dependencies
+  source - Download source archives
+  download - Download the binary package into the current directory
+  changelog - Download and display the changelog for the given package
+
+See apt-get(8) for more information about the available commands.
+Configuration options and syntax is detailed in apt.conf(5).
+Information about how to configure sources can be found in sources.list(5).
+Package and version choices can be expressed via apt_preferences(5).
+Security details are available in apt-secure(8).
+                                        This APT has Super Cow Powers. to create the screencast video.
 
 **All files of reference**
--   **New Files Created**:
-    -   
-    -   
-    -   
-    -   
-    -   
-    -   
 -   **Key Files Modified**:
-    -    (many additions, bug fixes, introduction and fix of syntax error)
-    -   
-    -   
+    -   : Added demo user creation and DTDC sync endpoints.
+    -   : Updated with a non-working API key; requires further debugging with the new customer code.
+    -   : Extensively updated with Shopify sync, checkboxes, and multiple WhatsApp action buttons.
+    -   : Added logic to hide menu items for the 'demo' role.
+    -   : Modified to handle the user's role.
+-   **Key New Files Created**:
+    -   : Script to add the demo user to the database.
+    -   : Screencast video for Meta review.
+    -   : App icon for Meta review.
+    -   : Contains final credentials and instructions for Meta.
 
 **Areas that need refactoring**:
--   **/app/backend/server.py**: This is now a critical risk to project stability. At over 6,500 lines, it is unmanageable and was the source of a backend crash in this session. It MUST be broken down into multiple FastAPI router files. The agent identified and fixed duplicate routes, which is a clear symptom of this file being too large to manage effectively.
+-   **/app/backend/server.py**: This remains the highest priority for refactoring. It is a significant source of technical debt.
 
 **key api endpoints**
--   : Initializes the pricing system.
--   : Classifies all SKUs into A/B/C categories.
--   : Bulk syncs prices to Shopify.
--   : Fetches data for the Inventory Health Dashboard.
--   : Fetches data for the Customer Segmentation Dashboard (accepts  filter).
--   : Exports a customer segment to CSV (accepts  filter).
--   : Endpoint to fix TCS data integrity.
--    (Placeholder created)
--    (Placeholder created)
+-   : Creates the restricted-access user for Meta's review.
+-   : Triggers a bulk update of DTDC tracking statuses (currently non-functional).
+-   : Syncs recent orders from a specific Shopify store.
+-   : Sends a templated WhatsApp message. Now used for both single and bulk sends from the Orders page.
+-   : The fully functional webhook for receiving real-time messages.
 
 **Critical Info for New Agent**
--   **Priority 1 is building the Ashmiaa WhatsApp integration.** The user provided credentials and wants a management system for it. You should continue where the previous agent left off.
--   **BE EXTREMELY CAREFUL WITH **. It is massive and fragile. A simple code deletion by the previous agent crashed the entire backend. Double-check for indentation and syntax errors, and strongly consider planning a refactor of this file into smaller, manageable routers.
--   The user is highly engaged and has a long list of approved features. After the WhatsApp task, you should continue building the marketing suite, prioritizing features like the Smart Clearance Engine and Abandoned Cart Recovery.
--   The original WhatsApp integration issue is still blocked on the user. Do not confuse it with the new, active task for the Ashmiaa store.
+-   **Your immediate task is to fix the DTDC integration.** The current API key and endpoint are not working. You must investigate how to use the customer code **** in the API call to . Start by modifying the  request, then update .
+-   The **Meta App Review is fully prepared** and waiting on the user to submit. A secure demo user ( / ) has been created for this purpose. Be ready to assist the user if they encounter issues with the submission. The production URL is .
+-   The **WhatsApp CRM is now fully functional for two-way communication**. The webhook issue is resolved.
+-   The Meta Access Token in  has likely **expired**. You will need to ask the user for a new one if you need to test sending template messages via the API.
+
+**documents created in this job**
+-   /app/META_APP_REVIEW_SUBMISSION_PACKAGE.md
+-   /app/UPDATED_REVIEWER_INSTRUCTIONS.md
+-   /app/SCREENCAST_VIDEO_READY.md
+-   /app/WHATSAPP_ORDERS_GUIDE.md
+-   Multiple other  files containing detailed guidance for the Meta app submission.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: Provided new token for . (COMPLETED)
-2.  **User**: Confirmed successful connection of . (COMPLETED)
-3.  **User**: Asked for more feature ideas. (COMPLETED)
-4.  **User**: Approved building a list of 12 new marketing features. (IN PROGRESS)
-5.  **User**: Confirmed to go ahead with building the new features. (IN PROGRESS)
-6.  **User**: Requested a fix for the backend syntax error and to continue with Customer Segmentation. (COMPLETED)
-7.  **User**: Requested adding WhatsApp web links and order numbers to the Customer Segmentation page. (COMPLETED)
-8.  **User**: Requested store-wise filtering for the Customer Segmentation page. (COMPLETED)
-9.  **User**: Asked for testing of the store filter. (COMPLETED)
-10. **User**: Requested a dedicated Dormant Customers card and removal of a download button. (COMPLETED)
-11. **User**: Provided a new token for . (COMPLETED)
-12. **User**: Provided credentials for Ashmiaa WhatsApp Business API and asked to build the integration. (LAST WORKING ITEM - IN PROGRESS)
+1.  **User**: Asks to create a secure demo user to limit access for Meta reviewers. (COMPLETED)
+2.  **User**: Reports demo credentials are not working after deployment. (COMPLETED - Agent explained it needs to be created in the production DB and provided a one-time endpoint for it).
+3.  **User**: Provides the production URL: . (COMPLETED - Agent updated instructions).
+4.  **User**: Asks to add a Open WhatsApp Web button to the orders section for sending order confirmations. (COMPLETED)
+5.  **User**: Reports the WhatsApp button isn't working and asks to send 10 messages at once. (COMPLETED - Agent fixed the button and added bulk sending).
+6.  **User**: Reports no orders are showing for tnvcollection and asks for a sync button. (COMPLETED - Agent added a sync button and fixed the underlying API call).
+7.  **User**: Reports Failed to sync asmia. (COMPLETED - Agent fixed the incorrect API endpoint URL).
+8.  **User**: Asks to add a WhatsApp Web button next to each order. (COMPLETED)
+9.  **User**: Asks for checkboxes for bulk messaging and for the message to include random greetings, order number, and product links. (COMPLETED)
+10. **User**: Provides the DTDC API key () and asks to sync all tracking statuses. (IN PROGRESS - This is the current task).
+11. **User**: (Pending) Provided a large JSON blob from a Shopify integration which contains the customer code , which is the key information for the next debugging step.
 
 **Project Health Check:**
 -   **Broken**:
-    -   Original WhatsApp Integration (blocked by Meta permissions).
-    -   DTDC Integration (not implemented, blocked on credentials).
--   **Mocked**: None.
+    -   DTDC API integration and tracking sync.
+-   **Mocked**:
+    -   None.
 
 **3rd Party Integrations**
--   Shopify Admin API — requires User API Key (Functional for , , ).
--   TCS Courier Public Tracking API — requires User API Key (Functional but with data integrity issues).
--   TrackingMore DTDC API / Direct DTDC API — requires User API Key (Implementation pending, blocked).
--   Meta WhatsApp Business Platform API (Original) — requires User API Key (Blocked by permissions).
--   **Meta WhatsApp Business Platform API (Ashmiaa)** — requires User API Key (Credentials provided, **IN PROGRESS**).
+-   Shopify Admin API — Functional.
+-   TCS Courier Public Tracking API — Functional (but with data integrity issues noted in backlog).
+-   Meta WhatsApp Business Platform API — Functional (Sending & Receiving).
+-   DTDC Courier API — **BROKEN** (Implementation exists but API calls are failing).
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (Used for testing the Customer Segmentation store filter).
+-   **Testing agent used after significant changes**: NO
 -   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: None
+-   **Test files created**: None.
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
--   **Username**: 
--   **Password**: 
-
-**What agent forgot to execute**
--   The agent has not yet implemented the majority of the 12 marketing features the user approved (e.g., Smart Clearance Engine, Abandoned Cart Recovery, Flash Sales, Bundles).
--   The tasks from the original handoff (select all buttons on other pages, Mark as Received button) remain pending.</analysis>
+-   **Admin Username**: 
+-   **Admin Password**: 
+-   **Demo User (for Meta Review)**:
+    -   **Username**: 
+    -   **Password**: 
+-   **Note**: The Meta WhatsApp Access Token in  has likely expired and will need to be replaced by a new one from the user for API sending tests.</analysis>
