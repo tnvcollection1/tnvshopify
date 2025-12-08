@@ -41,11 +41,11 @@ const Sidebar = () => {
     {
       title: 'OPERATIONS',
       items: [
-        { icon: PhoneCall, label: 'Confirmation Tracker', path: '/confirmation' },
-        { icon: Truck, label: 'Dispatch Tracker', path: '/tracker' },
-        { icon: Plane, label: 'Purchase Tracker', path: '/purchase' },
-        { icon: ShoppingCart, label: 'Orders', path: '/orders' },
-        { icon: Users, label: 'Customers', path: '/customers' },
+        { icon: PhoneCall, label: 'Confirmation Tracker', path: '/confirmation', showForDemo: false },
+        { icon: Truck, label: 'Dispatch Tracker', path: '/tracker', showForDemo: false },
+        { icon: Plane, label: 'Purchase Tracker', path: '/purchase', showForDemo: false },
+        { icon: ShoppingCart, label: 'Orders', path: '/orders', showForDemo: false },
+        { icon: Users, label: 'Customers', path: '/customers', showForDemo: false },
       ]
     },
     {
