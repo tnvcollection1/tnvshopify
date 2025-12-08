@@ -1311,19 +1311,6 @@ async def sync_all_dtdc_tracking():
     except Exception as e:
         logger.error(f"❌ Error syncing DTDC tracking: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-                logger.error(f"Error processing {tracking_number}: {str(e)}")
-        
-        return {
-            "success": True,
-            "message": f"Synced DTDC tracking for {updated_count} orders",
-            "updated": updated_count,
-            "failed": failed_count,
-            "total": len(customers)
-        }
-        
-    except Exception as e:
-        logger.error(f"Error syncing DTDC tracking: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.post("/tcs/track/{tracking_number}")
