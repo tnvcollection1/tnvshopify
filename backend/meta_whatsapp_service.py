@@ -224,15 +224,265 @@ class MetaWhatsAppService:
             "results": results
         }
     
-    def get_message_templates(self) -> List[Dict]:
+    def send_media_message(
+        self,
+        to_phone: str,
+        media_type: str,
+        media_id: str = None,
+        media_link: str = None,
+        caption: str = None
+    ) -> Dict:
         """
-        Get list of approved message templates
-        Note: Requires business_account_id
+        Send a media message (image, video, document)
+        
+        Args:
+            to_phone: Recipient phone number
+            media_type: Type of media (image, video, document, audio)
+            media_id: Media ID (uploaded to WhatsApp)
+            media_link: Direct URL to media (alternative to media_id)
+            caption: Optional caption for the media
+            
+        Returns:
+            Dict with success status
         """
         try:
-            # This would require the business account ID
-            # For now, return empty list
-            return []
+            clean_phone = to_phone.replace(" ", "").replace("-", "").replace("+", "")
+            
+            url = f"{self.base_url}/messages"
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "Content-Type": "application/json"
+            }
+            
+            media_object = {}
+            if media_id:
+                media_object["id"] = media_id
+            elif media_link:
+                media_object["link"] = media_link
+            
+            if caption and media_type in ["image", "video", "document"]:
+                media_object["caption"] = caption
+            
+            payload = {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": clean_phone,
+                "type": media_type,
+                media_type: media_object
+            }
+            
+            response = requests.post(url, json=payload, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                return {
+                    "success": True,
+                    "message_id": data.get("messages", [{}])[0].get("id"),
+                    "phone": to_phone
+                }
+            else:
+                error_data = response.json()
+                return {
+                    "success": False,
+                    "error": error_data.get("error", {}).get("message", "Unknown error"),
+                    "phone": to_phone
+                }
+                
+        except Exception as e:
+            logger.error(f"Error sending media message: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "phone": to_phone
+            }
+    
+    def mark_message_as_read(self, message_id: str) -> Dict:
+        """
+        Mark an incoming message as read
+        
+        Args:
+            message_id: WhatsApp message ID
+            
+        Returns:
+            Dict with success status
+        """
+        try:
+            url = f"{self.base_url}/messages"
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "messaging_product": "whatsapp",
+                "status": "read",
+                "message_id": message_id
+            }
+            
+            response = requests.post(url, json=payload, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                return {"success": True, "message_id": message_id}
+            else:
+                error_data = response.json()
+                return {
+                    "success": False,
+                    "error": error_data.get("error", {}).get("message", "Unknown error")
+                }
+                
+        except Exception as e:
+            logger.error(f"Error marking message as read: {str(e)}")
+            return {"success": False, "error": str(e)}
+    
+    def create_template(
+        self,
+        name: str,
+        category: str,
+        language: str,
+        components: List[Dict]
+    ) -> Dict:
+        """
+        Create a new message template
+        
+        Args:
+            name: Template name (lowercase, alphanumeric, underscores)
+            category: Template category (UTILITY, MARKETING, AUTHENTICATION)
+            language: Language code (e.g., "en_US")
+            components: List of template components (header, body, footer, buttons)
+            
+        Returns:
+            Dict with success status and template ID
+        """
+        try:
+            if not self.business_url:
+                return {
+                    "success": False,
+                    "error": "Business account ID not configured"
+                }
+            
+            url = f"{self.business_url}/message_templates"
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "name": name,
+                "category": category,
+                "language": language,
+                "components": components
+            }
+            
+            response = requests.post(url, json=payload, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                return {
+                    "success": True,
+                    "template_id": data.get("id"),
+                    "status": data.get("status"),
+                    "category": data.get("category")
+                }
+            else:
+                error_data = response.json()
+                logger.error(f"Template creation error: {error_data}")
+                return {
+                    "success": False,
+                    "error": error_data.get("error", {}).get("message", "Unknown error"),
+                    "error_code": error_data.get("error", {}).get("code")
+                }
+                
+        except Exception as e:
+            logger.error(f"Error creating template: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
+    def get_message_templates(self) -> List[Dict]:
+        """
+        Get list of message templates from WhatsApp Business Account
+        
+        Returns:
+            List of template dicts
+        """
+        try:
+            if not self.business_url:
+                logger.warning("Business account ID not configured")
+                return []
+            
+            url = f"{self.business_url}/message_templates"
+            headers = {
+                "Authorization": f"Bearer {self.access_token}"
+            }
+            
+            response = requests.get(url, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("data", [])
+            else:
+                error_data = response.json()
+                logger.error(f"Error fetching templates: {error_data}")
+                return []
+                
         except Exception as e:
             logger.error(f"Error getting templates: {str(e)}")
             return []
+    
+    def parse_webhook_message(self, webhook_data: Dict) -> Optional[Dict]:
+        """
+        Parse incoming webhook message from Meta
+        
+        Args:
+            webhook_data: Raw webhook data from Meta
+            
+        Returns:
+            Parsed message dict or None
+        """
+        try:
+            entry = webhook_data.get("entry", [{}])[0]
+            changes = entry.get("changes", [{}])[0]
+            value = changes.get("value", {})
+            
+            messages = value.get("messages", [])
+            if not messages:
+                return None
+            
+            message = messages[0]
+            contacts = value.get("contacts", [{}])
+            contact = contacts[0] if contacts else {}
+            
+            parsed = {
+                "message_id": message.get("id"),
+                "from_phone": message.get("from"),
+                "from_name": contact.get("profile", {}).get("name", "Unknown"),
+                "timestamp": message.get("timestamp"),
+                "type": message.get("type"),
+                "text": None,
+                "media_id": None,
+                "media_mime_type": None,
+                "caption": None
+            }
+            
+            # Parse based on message type
+            if message.get("type") == "text":
+                parsed["text"] = message.get("text", {}).get("body")
+            elif message.get("type") == "image":
+                parsed["media_id"] = message.get("image", {}).get("id")
+                parsed["media_mime_type"] = message.get("image", {}).get("mime_type")
+                parsed["caption"] = message.get("image", {}).get("caption")
+            elif message.get("type") == "document":
+                parsed["media_id"] = message.get("document", {}).get("id")
+                parsed["media_mime_type"] = message.get("document", {}).get("mime_type")
+                parsed["caption"] = message.get("document", {}).get("caption")
+            elif message.get("type") == "video":
+                parsed["media_id"] = message.get("video", {}).get("id")
+                parsed["media_mime_type"] = message.get("video", {}).get("mime_type")
+                parsed["caption"] = message.get("video", {}).get("caption")
+            
+            return parsed
+            
+        except Exception as e:
+            logger.error(f"Error parsing webhook message: {str(e)}")
+            return None
