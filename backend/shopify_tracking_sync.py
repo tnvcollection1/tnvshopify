@@ -105,6 +105,73 @@ class ShopifyTrackingSync:
                 'total': 0
             }
     
+    async def _get_order_ids_by_names(self, order_names: List[str]) -> Dict[str, str]:
+        """
+        Get Shopify order IDs from order names/numbers
+        
+        Returns:
+            Dict mapping order_id to order_name
+        """
+        # Query to search orders by name
+        query = """
+        query SearchOrders($query: String!) {
+          orders(first: 250, query: $query) {
+            edges {
+              node {
+                id
+                name
+              }
+            }
+          }
+        }
+        """
+        
+        # Build search query (e.g., "name:29436 OR name:29437")
+        search_parts = [f"name:{name.replace('#', '')}" for name in order_names[:250]]  # Limit to 250
+        search_query = " OR ".join(search_parts)
+        
+        variables = {"query": search_query}
+        
+        headers = {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": self.access_token
+        }
+        
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    self.api_url,
+                    json={"query": query, "variables": variables},
+                    headers=headers
+                )
+                
+                if response.status_code != 200:
+                    logger.error(f"Shopify API error: {response.status_code}")
+                    return {}
+                
+                data = response.json()
+                
+                if 'errors' in data:
+                    logger.error(f"GraphQL errors: {data['errors']}")
+                    return {}
+                
+                # Parse response and build mapping
+                result = {}
+                edges = data.get('data', {}).get('orders', {}).get('edges', [])
+                for edge in edges:
+                    node = edge.get('node', {})
+                    if node:
+                        order_id = node['id'].split('/')[-1]  # Extract ID from GID
+                        order_name = node['name'].replace('#', '')  # Remove # prefix
+                        result[order_id] = order_name
+                
+                logger.info(f"Found {len(result)} orders in Shopify")
+                return result
+                
+        except Exception as e:
+            logger.error(f"Error fetching order IDs: {str(e)}")
+            return {}
+    
     async def _fetch_fulfillments(self, order_ids: List[str]) -> Dict[str, Dict]:
         """
         Fetch fulfillment data from Shopify for given order IDs
