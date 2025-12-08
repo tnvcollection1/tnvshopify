@@ -319,9 +319,6 @@ class FinanceReconciliation:
                 # Get verification status
                 verification = verification_lookup.get(order_num, {})
                 
-                # Determine reconciliation status with validation errors
-                status = self._determine_status(order, ledger_data, verification, validation_errors)
-                
                 # Strict validation: Check Order#, SKU, and Tracking number match
                 validation_errors = []
                 
