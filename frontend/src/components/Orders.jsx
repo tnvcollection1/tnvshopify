@@ -615,13 +615,24 @@ const Orders = () => {
                     </TableRow>
                   ) : orders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
                         No orders found
                       </TableCell>
                     </TableRow>
                   ) : (
                     orders.map((order) => (
-                      <TableRow key={order.customer_id} className="hover:bg-gray-50">
+                      <TableRow 
+                        key={order.customer_id} 
+                        className={`hover:bg-gray-50 ${selectedOrders.includes(order.customer_id) ? 'bg-green-50' : ''}`}
+                      >
+                        <TableCell>
+                          <input
+                            type="checkbox"
+                            checked={selectedOrders.includes(order.customer_id)}
+                            onChange={() => toggleSelectOrder(order.customer_id)}
+                            className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                          />
+                        </TableCell>
                         <TableCell className="font-medium text-gray-900">
                           {order.order_number || "N/A"}
                         </TableCell>
