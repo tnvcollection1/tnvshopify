@@ -138,7 +138,7 @@ const CustomerSegmentationDashboard = () => {
       </div>
 
       {/* Segment Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <Crown className="w-8 h-8 text-yellow-400" />
