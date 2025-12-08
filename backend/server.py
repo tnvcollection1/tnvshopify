@@ -7020,6 +7020,132 @@ async def get_pricing_dashboard_stats():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+# ============================================================
+# FINANCE RECONCILIATION ENDPOINTS
+# ============================================================
+
+@api_router.post("/finance/upload-ledger")
+async def upload_general_ledger(file: UploadFile = File(...)):
+    """
+    Upload general ledger Excel file (ASMIA GERNAL ENTRY SHEET.xlsx)
+    """
+    try:
+        logger.info(f"📤 Uploading general ledger file: {file.filename}")
+        
+        # Read file content
+        content = await file.read()
+        
+        # Parse the file
+        finance_rec = get_finance_reconciliation(db)
+        result = await finance_rec.parse_general_ledger(content)
+        
+        if not result.get('success'):
+            raise HTTPException(status_code=400, detail=result.get('error'))
+        
+        # Upload to database
+        upload_result = await finance_rec.upload_ledger_data(result['data'])
+        
+        if not upload_result.get('success'):
+            raise HTTPException(status_code=500, detail=upload_result.get('error'))
+        
+        return {
+            'success': True,
+            'message': 'General ledger uploaded successfully',
+            'total_records': result['total_records'],
+            'uploaded_count': upload_result['uploaded_count']
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error uploading ledger: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/finance/upload-transactions")
+async def upload_bank_transactions(file: UploadFile = File(...)):
+    """
+    Upload bank transactions Excel file (Asmia and TNV Collection - Imran Abbas account check H.xlsx)
+    """
+    try:
+        logger.info(f"📤 Uploading bank transactions file: {file.filename}")
+        
+        # Read file content
+        content = await file.read()
+        
+        # Parse the file
+        finance_rec = get_finance_reconciliation(db)
+        result = await finance_rec.parse_bank_transactions(content)
+        
+        if not result.get('success'):
+            raise HTTPException(status_code=400, detail=result.get('error'))
+        
+        # Upload to database
+        upload_result = await finance_rec.upload_transaction_data(result['data'])
+        
+        if not upload_result.get('success'):
+            raise HTTPException(status_code=500, detail=upload_result.get('error'))
+        
+        return {
+            'success': True,
+            'message': 'Bank transactions uploaded successfully',
+            'total_records': result['total_records'],
+            'uploaded_count': upload_result['uploaded_count']
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error uploading transactions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/finance/reconciliation")
+async def get_reconciliation(store_name: str = 'ashmiaa'):
+    """
+    Get reconciliation report for orders
+    Matches Shopify orders with ledger and bank transactions
+    """
+    try:
+        logger.info(f"🔍 Fetching reconciliation for store: {store_name}")
+        
+        finance_rec = get_finance_reconciliation(db)
+        result = await finance_rec.reconcile_orders(store_name)
+        
+        if not result.get('success'):
+            raise HTTPException(status_code=500, detail=result.get('error'))
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting reconciliation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/finance/status")
+async def get_finance_status():
+    """
+    Get status of uploaded finance data
+    """
+    try:
+        ledger_count = await db.finance_ledger.count_documents({})
+        transaction_count = await db.finance_transactions.count_documents({})
+        
+        # Get last upload time
+        last_ledger = await db.finance_ledger.find_one({}, {'uploaded_at': 1}, sort=[('uploaded_at', -1)])
+        last_transaction = await db.finance_transactions.find_one({}, {'uploaded_at': 1}, sort=[('uploaded_at', -1)])
+        
+        return {
+            'success': True,
+            'ledger_records': ledger_count,
+            'transaction_records': transaction_count,
+            'last_ledger_upload': last_ledger.get('uploaded_at') if last_ledger else None,
+            'last_transaction_upload': last_transaction.get('uploaded_at') if last_transaction else None
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting finance status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 # Include the router in the main app
 app.include_router(api_router)
 app.include_router(whatsapp_webhook_router)
