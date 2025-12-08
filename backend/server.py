@@ -1282,6 +1282,77 @@ async def sync_tcs_payment_status():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+@api_router.post("/dtdc/sync-all-tracking")
+async def sync_all_dtdc_tracking():
+    """
+    Sync DTDC tracking status for all orders with tracking numbers
+    """
+    try:
+        from dtdc_tracking_service import DTDCTrackingService
+        
+        dtdc_service = DTDCTrackingService()
+        
+        # Get all customers with DTDC tracking numbers
+        customers = await db.customers.find({
+            "tracking_number": {"$exists": True, "$ne": None, "$ne": ""}
+        }, {"_id": 0}).to_list(10000)
+        
+        logger.info(f"Found {len(customers)} orders with tracking numbers")
+        
+        updated_count = 0
+        failed_count = 0
+        
+        for customer in customers:
+            tracking_number = customer.get('tracking_number')
+            if not tracking_number:
+                continue
+            
+            try:
+                # Get tracking data from DTDC
+                result = dtdc_service.get_tracking_data(tracking_number)
+                
+                if result.get('success'):
+                    tracking_data = result.get('tracking_data', {})
+                    delivery_status = tracking_data.get('status', 'UNKNOWN')
+                    
+                    # Update customer record
+                    await db.customers.update_one(
+                        {"customer_id": customer.get('customer_id')},
+                        {
+                            "$set": {
+                                "delivery_status": delivery_status,
+                                "dtdc_tracking_data": tracking_data,
+                                "last_tracking_update": datetime.now(timezone.utc).isoformat()
+                            }
+                        }
+                    )
+                    updated_count += 1
+                    logger.info(f"Updated tracking for {tracking_number}: {delivery_status}")
+                else:
+                    failed_count += 1
+                    logger.warning(f"Failed to get tracking for {tracking_number}")
+                    
+                # Small delay to avoid rate limiting
+                await asyncio.sleep(0.5)
+                
+            except Exception as e:
+                failed_count += 1
+                logger.error(f"Error processing {tracking_number}: {str(e)}")
+        
+        return {
+            "success": True,
+            "message": f"Synced DTDC tracking for {updated_count} orders",
+            "updated": updated_count,
+            "failed": failed_count,
+            "total": len(customers)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing DTDC tracking: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/tcs/track/{tracking_number}")
 async def track_tcs_consignment(tracking_number: str):
     """
