@@ -178,14 +178,16 @@ const FinanceReconciliation = () => {
       'Verified': 'bg-blue-500/20 text-blue-300 border-blue-500/50',
       'Complete': 'bg-green-500/20 text-green-300 border-green-500/50',
       'Partial': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50',
-      'Missing Data': 'bg-red-500/20 text-red-300 border-red-500/50'
+      'Missing Data': 'bg-gray-500/20 text-gray-300 border-gray-500/50',
+      'Error': 'bg-red-600/30 text-red-200 border-red-500'
     };
 
     const icons = {
       'Verified': <CheckCircle className="w-4 h-4" />,
       'Complete': <CheckCircle className="w-4 h-4" />,
       'Partial': <AlertCircle className="w-4 h-4" />,
-      'Missing Data': <XCircle className="w-4 h-4" />
+      'Missing Data': <XCircle className="w-4 h-4" />,
+      'Error': <XCircle className="w-4 h-4" />
     };
 
     return (
