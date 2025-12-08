@@ -591,48 +591,140 @@ const FinanceReconciliation = () => {
               </thead>
               <tbody className="divide-y divide-gray-700">
                 {filteredOrders.map((order) => (
-                  <tr key={order.order_number} className="hover:bg-gray-700/30 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="font-mono text-sm font-semibold text-blue-400">
-                        #{order.order_number}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-300">{order.customer_name || 'N/A'}</td>
-                    <td className="px-6 py-4 text-sm text-gray-300">{order.delivery_status}</td>
-                    <td className="px-6 py-4 text-sm text-gray-300">{order.payment_status}</td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-white font-semibold">
-                        Rs. {order.amount?.toFixed(2) || '0.00'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {order.transaction_matched ? (
-                        <span className="text-green-400 text-sm flex items-center justify-center gap-1">
-                          <CheckCircle className="w-4 h-4" />
-                          {(order.match_confidence * 100).toFixed(0)}%
+                  <React.Fragment key={order.order_number}>
+                    <tr 
+                      className="hover:bg-gray-700/30 transition-colors cursor-pointer"
+                      onClick={() => setExpandedOrder(expandedOrder === order.order_number ? null : order.order_number)}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm font-semibold text-blue-400">
+                            #{order.order_number}
+                          </span>
+                          {order.transaction_matched && (
+                            <span className="text-xs text-gray-500">
+                              {expandedOrder === order.order_number ? '▼' : '▶'}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-300">{order.customer_name || 'N/A'}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-300">{order.delivery_status}</span>
+                          {order.tracking_match && (
+                            <CheckCircle className="w-3 h-3 text-green-500" title="Tracking verified" />
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-300">{order.payment_status}</td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="text-white font-semibold">
+                          Rs. {order.amount?.toFixed(2) || '0.00'}
                         </span>
-                      ) : (
-                        <span className="text-gray-500 text-sm">-</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {getStatusBadge(order.reconciliation_status)}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {!order.verified && order.ledger_exists && (
-                        <button
-                          onClick={() => verifyOrder(order.order_number)}
-                          disabled={verifyingOrder === order.order_number}
-                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs font-semibold transition-colors disabled:opacity-50"
-                        >
-                          {verifyingOrder === order.order_number ? '...' : 'Verify'}
-                        </button>
-                      )}
-                      {order.verified && (
-                        <span className="text-green-400 text-xs">✓ Verified</span>
-                      )}
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {order.transaction_matched ? (
+                          <button 
+                            className="text-green-400 text-sm flex items-center justify-center gap-1 hover:text-green-300"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedOrder(expandedOrder === order.order_number ? null : order.order_number);
+                            }}
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            {(order.match_confidence * 100).toFixed(0)}%
+                          </button>
+                        ) : (
+                          <span className="text-gray-500 text-sm">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {getStatusBadge(order.reconciliation_status)}
+                      </td>
+                      <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        {!order.verified && order.ledger_exists && (
+                          <button
+                            onClick={() => verifyOrder(order.order_number)}
+                            disabled={verifyingOrder === order.order_number}
+                            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                          >
+                            {verifyingOrder === order.order_number ? '...' : 'Verify'}
+                          </button>
+                        )}
+                        {order.verified && (
+                          <span className="text-green-400 text-xs">✓ Verified</span>
+                        )}
+                      </td>
+                    </tr>
+                    
+                    {/* Expanded Row - Transaction Details */}
+                    {expandedOrder === order.order_number && order.transaction_matched && (
+                      <tr className="bg-gray-900/50">
+                        <td colSpan="8" className="px-6 py-4">
+                          <div className="ml-8 p-4 bg-gray-800/50 rounded-lg border border-green-900/50">
+                            <h4 className="text-sm font-semibold text-green-400 mb-3 flex items-center gap-2">
+                              <Link2 className="w-4 h-4" />
+                              Matched Bank Transaction ({(order.match_confidence * 100).toFixed(0)}% confidence)
+                            </h4>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                              <div>
+                                <div className="text-gray-500 text-xs mb-1">Date</div>
+                                <div className="text-white">{order.matched_transaction_details?.date || 'N/A'}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500 text-xs mb-1">Description</div>
+                                <div className="text-white">{order.matched_transaction_details?.description || 'N/A'}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500 text-xs mb-1">Payment Mode</div>
+                                <div className="text-white">{order.matched_transaction_details?.payment_mode || 'N/A'}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500 text-xs mb-1">Debit</div>
+                                <div className="text-red-400">
+                                  {order.matched_transaction_details?.debit > 0 
+                                    ? `Rs. ${order.matched_transaction_details.debit.toFixed(2)}` 
+                                    : '-'}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500 text-xs mb-1">Credit</div>
+                                <div className="text-green-400">
+                                  {order.matched_transaction_details?.credit > 0 
+                                    ? `Rs. ${order.matched_transaction_details.credit.toFixed(2)}` 
+                                    : '-'}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Tracking Verification */}
+                            {order.tracking_number && order.tracking_number !== 'N/A' && (
+                              <div className="mt-3 pt-3 border-t border-gray-700">
+                                <div className="text-xs text-gray-400 mb-2">Tracking Verification:</div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-300">Shopify: {order.tracking_number}</span>
+                                  {order.tracking_match ? (
+                                    <>
+                                      <CheckCircle className="w-4 h-4 text-green-500" />
+                                      <span className="text-gray-300">Excel: {order.ledger_tracking || 'N/A'}</span>
+                                      <span className="text-green-400 text-xs ml-2">✓ Match Verified</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <XCircle className="w-4 h-4 text-red-500" />
+                                      <span className="text-gray-300">Excel: {order.ledger_tracking || 'Not found'}</span>
+                                      <span className="text-red-400 text-xs ml-2">✗ Mismatch</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
