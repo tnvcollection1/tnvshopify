@@ -91,6 +91,16 @@ const Sidebar = () => {
     }
   ];
 
+  // Filter sections and items based on demo user status
+  const filteredSections = isDemoUser 
+    ? menuSections
+        .map(section => ({
+          ...section,
+          items: section.items.filter(item => item.showForDemo)
+        }))
+        .filter(section => section.items.length > 0)
+    : menuSections;
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -106,12 +116,14 @@ const Sidebar = () => {
           </div>
           TNC Collection
         </h1>
-        <p className="text-xs text-gray-400 mt-1">Dispatch Management</p>
+        <p className="text-xs text-gray-400 mt-1">
+          {isDemoUser ? 'WhatsApp CRM Demo' : 'Dispatch Management'}
+        </p>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-4 overflow-y-auto">
-        {menuSections.map((section, sectionIndex) => (
+        {filteredSections.map((section, sectionIndex) => (
           <div key={section.title} className={sectionIndex > 0 ? 'mt-6' : ''}>
             <div className="px-4 mb-2">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
