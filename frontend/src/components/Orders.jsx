@@ -271,6 +271,15 @@ const Orders = () => {
             </Button>
             <Button
               variant="outline"
+              onClick={sendBulkWhatsApp}
+              disabled={loading || orders.length === 0}
+              className="border-green-500 hover:bg-green-600 bg-green-500 text-white hover:text-white"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Send to First 10 Orders
+            </Button>
+            <Button
+              variant="outline"
               onClick={handleSyncTCS}
               disabled={loading}
               className="border-gray-300 hover:bg-gray-50"
