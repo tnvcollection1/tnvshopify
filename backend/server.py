@@ -1286,58 +1286,31 @@ async def sync_tcs_payment_status():
 @api_router.post("/dtdc/sync-all-tracking")
 async def sync_all_dtdc_tracking():
     """
-    Sync DTDC tracking status for all orders with tracking numbers
+    Sync DTDC tracking data from Shopify fulfillments to local database
     """
     try:
-        from dtdc_tracking_service import DTDCTrackingService
+        from shopify_tracking_sync import shopify_tracking_sync
         
-        dtdc_service = DTDCTrackingService()
+        logger.info("Starting DTDC tracking sync from Shopify...")
         
-        # Get all customers with DTDC tracking numbers
-        customers = await db.customers.find({
-            "tracking_number": {"$exists": True, "$ne": None, "$ne": ""}
-        }, {"_id": 0}).to_list(10000)
+        # Sync tracking data from Shopify fulfillments
+        result = await shopify_tracking_sync.sync_tracking_for_orders(db)
         
-        logger.info(f"Found {len(customers)} orders with tracking numbers")
-        
-        updated_count = 0
-        failed_count = 0
-        
-        for customer in customers:
-            tracking_number = customer.get('tracking_number')
-            if not tracking_number:
-                continue
+        if result.get('success'):
+            logger.info(f"✅ Successfully synced tracking for {result.get('updated', 0)}/{result.get('total', 0)} orders")
+            return {
+                "success": True,
+                "message": f"Successfully synced tracking data for {result.get('updated', 0)} orders",
+                "updated": result.get('updated', 0),
+                "total": result.get('total', 0),
+                "errors": result.get('errors')
+            }
+        else:
+            raise HTTPException(status_code=500, detail=result.get('error', 'Unknown error'))
             
-            try:
-                # Get tracking data from DTDC
-                result = dtdc_service.get_tracking_data(tracking_number)
-                
-                if result.get('success'):
-                    tracking_data = result.get('tracking_data', {})
-                    delivery_status = tracking_data.get('status', 'UNKNOWN')
-                    
-                    # Update customer record
-                    await db.customers.update_one(
-                        {"customer_id": customer.get('customer_id')},
-                        {
-                            "$set": {
-                                "delivery_status": delivery_status,
-                                "dtdc_tracking_data": tracking_data,
-                                "last_tracking_update": datetime.now(timezone.utc).isoformat()
-                            }
-                        }
-                    )
-                    updated_count += 1
-                    logger.info(f"Updated tracking for {tracking_number}: {delivery_status}")
-                else:
-                    failed_count += 1
-                    logger.warning(f"Failed to get tracking for {tracking_number}")
-                    
-                # Small delay to avoid rate limiting
-                await asyncio.sleep(0.5)
-                
-            except Exception as e:
-                failed_count += 1
+    except Exception as e:
+        logger.error(f"❌ Error syncing DTDC tracking: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
                 logger.error(f"Error processing {tracking_number}: {str(e)}")
         
         return {
