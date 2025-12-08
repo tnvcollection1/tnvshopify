@@ -7139,6 +7139,12 @@ async def get_finance_status():
             'ledger_records': ledger_count,
             'transaction_records': transaction_count,
             'last_ledger_upload': last_ledger.get('uploaded_at') if last_ledger else None,
+            'last_transaction_upload': last_transaction.get('uploaded_at') if last_transaction else None
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting finance status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.post("/finance/match-transactions")
