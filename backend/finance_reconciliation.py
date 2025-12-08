@@ -194,18 +194,30 @@ class FinanceReconciliation:
                 'error': str(e)
             }
     
-    async def match_transactions_to_orders(self) -> Dict:
+    async def match_transactions_to_orders(self, store_name: str = 'ashmiaa') -> Dict:
         """
         Automatically match bank transactions to orders based on amount and date proximity
+        ONLY for the specified store (ashmia)
         """
         try:
-            logger.info("🔗 Starting automatic transaction matching...")
+            logger.info(f"🔗 Starting automatic transaction matching for {store_name}...")
             
-            # Get all ledger records with amounts
+            # Get Shopify orders for this store to validate order numbers
+            shopify_orders = await self.db.customers.find(
+                {'store_name': store_name},
+                {'_id': 0, 'order_number': 1}
+            ).to_list(10000)
+            
+            valid_order_numbers = set(order.get('order_number') for order in shopify_orders)
+            
+            # Get ledger records ONLY for orders that exist in Shopify for this store
             ledger_records = await self.db.finance_ledger.find(
                 {'sale_price': {'$gt': 0}},
                 {'_id': 0}
             ).to_list(10000)
+            
+            # Filter to only valid order numbers for this store
+            ledger_records = [l for l in ledger_records if l.get('order_number') in valid_order_numbers]
             
             # Get all transactions
             transactions = await self.db.finance_transactions.find(
@@ -249,12 +261,13 @@ class FinanceReconciliation:
                     )
                     matched_count += 1
             
-            logger.info(f"✅ Matched {matched_count} orders to transactions")
+            logger.info(f"✅ Matched {matched_count} {store_name} orders to transactions")
             
             return {
                 'success': True,
                 'matched_count': matched_count,
-                'total_ledger_records': len(ledger_records)
+                'total_ledger_records': len(ledger_records),
+                'store_name': store_name
             }
             
         except Exception as e:
