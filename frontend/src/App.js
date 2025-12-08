@@ -19,6 +19,7 @@ import WhatsAppTemplates from "@/components/WhatsAppTemplates";
 import WhatsAppTemplateManager from "@/components/WhatsAppTemplateManager";
 import WhatsAppCampaignManager from "@/components/WhatsAppCampaignManager";
 import WhatsAppAnalytics from "@/components/WhatsAppAnalytics";
+import TrackingPage from "@/components/TrackingPage";
 import MarketingDashboard from "@/components/MarketingDashboard";
 import InventoryCampaignManager from "@/components/InventoryCampaignManager";
 import CampaignManager from "@/components/CampaignManager";
