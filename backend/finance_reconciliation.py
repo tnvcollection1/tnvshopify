@@ -313,8 +313,17 @@ class FinanceReconciliation:
             for order in shopify_orders:
                 order_num = order.get('order_number', '')
                 
-                # Get ledger data
+                # CRITICAL: Only get ledger data if it's for the same store
+                # Skip if order exists in another store (unless ledger explicitly says ashmia)
                 ledger_data = ledger_lookup.get(order_num, {})
+                
+                # Validate this ledger record is for the correct store
+                if ledger_data:
+                    ledger_store = ledger_data.get('store_name', 'ashmiaa')
+                    if ledger_store != store_name:
+                        # Ledger record is for a different store, ignore it
+                        ledger_data = {}
+                        logger.debug(f"Skipping order {order_num}: ledger is for {ledger_store}, not {store_name}")
                 
                 # Get verification status
                 verification = verification_lookup.get(order_num, {})
