@@ -34,8 +34,8 @@ const Sidebar = () => {
     {
       title: 'MAIN',
       items: [
-        { icon: Home, label: 'Dashboard', path: '/dashboard' },
-        { icon: Target, label: 'Marketing Dashboard', path: '/marketing', highlighted: true },
+        { icon: Home, label: 'Dashboard', path: '/dashboard', showForDemo: false },
+        { icon: Target, label: 'Marketing Dashboard', path: '/marketing', highlighted: true, showForDemo: false },
       ]
     },
     {
