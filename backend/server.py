@@ -23,6 +23,7 @@ from whatsapp_webhook import router as whatsapp_webhook_router
 from whatsapp_marketing import whatsapp_marketing, MARKETING_TEMPLATES
 from dynamic_pricing import DynamicPricingEngine
 from meta_whatsapp_service import MetaWhatsAppService
+from whatsapp_crm_routes import whatsapp_router
 
 
 ROOT_DIR = Path(__file__).parent
