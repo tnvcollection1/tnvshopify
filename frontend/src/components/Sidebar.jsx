@@ -61,32 +61,32 @@ const Sidebar = () => {
     {
       title: 'MANAGEMENT',
       items: [
-        { icon: Package, label: 'Inventory', path: '/inventory' },
-        { icon: BarChart3, label: 'Inventory Overview', path: '/inventory-overview' },
-        { icon: TrendingUp, label: 'Inventory Health', path: '/inventory-health', highlighted: true },
+        { icon: Package, label: 'Inventory', path: '/inventory', showForDemo: false },
+        { icon: BarChart3, label: 'Inventory Overview', path: '/inventory-overview', showForDemo: false },
+        { icon: TrendingUp, label: 'Inventory Health', path: '/inventory-health', highlighted: true, showForDemo: false },
       ]
     },
     {
       title: 'MARKETING',
       items: [
-        { icon: TrendingUp, label: 'Dynamic Pricing', path: '/dynamic-pricing', highlighted: true },
-        { icon: Target, label: 'Campaigns', path: '/campaigns' },
-        { icon: Zap, label: 'Flash Sales', path: '/flash-sales' },
-        { icon: UsersIcon, label: 'Customer Segments', path: '/segments' },
-        { icon: Package, label: 'Bundles', path: '/bundles' },
+        { icon: TrendingUp, label: 'Dynamic Pricing', path: '/dynamic-pricing', highlighted: true, showForDemo: false },
+        { icon: Target, label: 'Campaigns', path: '/campaigns', showForDemo: false },
+        { icon: Zap, label: 'Flash Sales', path: '/flash-sales', showForDemo: false },
+        { icon: UsersIcon, label: 'Customer Segments', path: '/segments', showForDemo: false },
+        { icon: Package, label: 'Bundles', path: '/bundles', showForDemo: false },
       ]
     },
     {
       title: 'INSIGHTS',
       items: [
-        { icon: BarChart3, label: 'Reports', path: '/reports' },
-        { icon: TrendingUp, label: 'Analytics', path: '/analytics' },
+        { icon: BarChart3, label: 'Reports', path: '/reports', showForDemo: false },
+        { icon: TrendingUp, label: 'Analytics', path: '/analytics', showForDemo: false },
       ]
     },
     {
       title: 'SYSTEM',
       items: [
-        { icon: Settings, label: 'Settings', path: '/settings' },
+        { icon: Settings, label: 'Settings', path: '/settings', showForDemo: false },
       ]
     }
   ];
