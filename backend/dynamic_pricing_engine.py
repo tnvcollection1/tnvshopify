@@ -64,47 +64,74 @@ class DynamicPricingEngine:
             products_found = 0
             
             for order in orders:
+                # Try line_items first (Shopify format)
                 line_items = order.get('line_items', [])
                 
-                if not line_items:
+                # Fallback to order_skus (simplified format)
+                order_skus = order.get('order_skus', [])
+                
+                if not line_items and not order_skus:
                     continue
                 
                 processed_orders += 1
-                order_date = order.get('created_at')
+                order_date = order.get('created_at') or order.get('last_order_date')
+                total_spent = order.get('total_spent', 0)
                 
-                # Process each line item (product) in the order
-                for item in line_items:
-                    sku = item.get('sku')
-                    if not sku or sku == '':
-                        # Try variant_title or product_id as fallback
-                        sku = item.get('variant_title') or item.get('product_id')
+                # Process line_items if available (detailed format)
+                if line_items:
+                    for item in line_items:
+                        sku = item.get('sku')
+                        if not sku or sku == '':
+                            sku = item.get('variant_title') or item.get('product_id')
+                        
+                        if not sku:
+                            continue
+                        
+                        products_found += 1
+                        quantity = item.get('quantity', 1)
+                        price = item.get('price', 0)
+                        
+                        try:
+                            if isinstance(price, str):
+                                price = float(price)
+                        except:
+                            price = 0
+                        
+                        product_sales[sku]['total_quantity'] += quantity
+                        product_sales[sku]['total_revenue'] += (quantity * price)
+                        product_sales[sku]['order_count'] += 1
+                        product_sales[sku]['product_name'] = item.get('title', item.get('name', sku))
+                        product_sales[sku]['current_price'] = price
+                        
+                        if order_date:
+                            if not product_sales[sku]['first_sale_date']:
+                                product_sales[sku]['first_sale_date'] = order_date
+                            if not product_sales[sku]['last_sale_date'] or order_date > product_sales[sku]['last_sale_date']:
+                                product_sales[sku]['last_sale_date'] = order_date
+                
+                # Process order_skus if no line_items (simplified format)
+                elif order_skus:
+                    num_skus = len(order_skus)
+                    avg_price_per_item = total_spent / num_skus if num_skus > 0 else 0
                     
-                    if not sku:
-                        continue
-                    
-                    products_found += 1
-                    quantity = item.get('quantity', 1)
-                    price = item.get('price', 0)
-                    
-                    # Try to get numeric price
-                    try:
-                        if isinstance(price, str):
-                            price = float(price)
-                    except:
-                        price = 0
-                    
-                    product_sales[sku]['total_quantity'] += quantity
-                    product_sales[sku]['total_revenue'] += (quantity * price)
-                    product_sales[sku]['order_count'] += 1
-                    product_sales[sku]['product_name'] = item.get('title', item.get('name', sku))
-                    product_sales[sku]['current_price'] = price
-                    
-                    # Track first and last sale dates
-                    if order_date:
-                        if not product_sales[sku]['first_sale_date']:
-                            product_sales[sku]['first_sale_date'] = order_date
-                        if not product_sales[sku]['last_sale_date'] or order_date > product_sales[sku]['last_sale_date']:
-                            product_sales[sku]['last_sale_date'] = order_date
+                    for sku in order_skus:
+                        if not sku or sku == '':
+                            continue
+                        
+                        products_found += 1
+                        
+                        # Assume 1 quantity per SKU, split total order value
+                        product_sales[sku]['total_quantity'] += 1
+                        product_sales[sku]['total_revenue'] += avg_price_per_item
+                        product_sales[sku]['order_count'] += 1
+                        product_sales[sku]['product_name'] = sku
+                        product_sales[sku]['current_price'] = avg_price_per_item
+                        
+                        if order_date:
+                            if not product_sales[sku]['first_sale_date']:
+                                product_sales[sku]['first_sale_date'] = order_date
+                            if not product_sales[sku]['last_sale_date'] or order_date > product_sales[sku]['last_sale_date']:
+                                product_sales[sku]['last_sale_date'] = order_date
             
             logger.info(f"✅ Processed {processed_orders} orders with {products_found} line items")
             logger.info(f"📦 Found {len(product_sales)} unique products/SKUs")
