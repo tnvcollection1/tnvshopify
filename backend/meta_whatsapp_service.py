@@ -81,14 +81,25 @@ class MetaWhatsAppService:
                 "phone": to_phone
             }
     
-    def send_template_message(self, to_phone: str, template_name: str, language_code: str = "en") -> Dict:
+    def send_template_message(
+        self, 
+        to_phone: str, 
+        template_name: str, 
+        language_code: str = "en_US",
+        header_params: Optional[List[Dict]] = None,
+        body_params: Optional[List[Dict]] = None,
+        button_params: Optional[List[Dict]] = None
+    ) -> Dict:
         """
-        Send a template message (required for business-initiated conversations)
+        Send a template message with parameters (utility or marketing)
         
         Args:
             to_phone: Recipient phone number
             template_name: Name of approved template
-            language_code: Language code (e.g., "en", "ur")
+            language_code: Language code (e.g., "en_US", "ur")
+            header_params: List of header parameters (for media headers)
+            body_params: List of body text parameters
+            button_params: List of button parameters
             
         Returns:
             Dict with success status and message ID
@@ -102,6 +113,27 @@ class MetaWhatsAppService:
                 "Content-Type": "application/json"
             }
             
+            # Build template components
+            components = []
+            
+            if header_params:
+                components.append({
+                    "type": "header",
+                    "parameters": header_params
+                })
+            
+            if body_params:
+                components.append({
+                    "type": "body",
+                    "parameters": body_params
+                })
+            
+            if button_params:
+                components.append({
+                    "type": "button",
+                    "parameters": button_params
+                })
+            
             payload = {
                 "messaging_product": "whatsapp",
                 "to": clean_phone,
@@ -114,6 +146,9 @@ class MetaWhatsAppService:
                 }
             }
             
+            if components:
+                payload["template"]["components"] = components
+            
             response = requests.post(url, json=payload, headers=headers, timeout=30)
             
             if response.status_code == 200:
@@ -125,9 +160,11 @@ class MetaWhatsAppService:
                 }
             else:
                 error_data = response.json()
+                logger.error(f"WhatsApp API error: {error_data}")
                 return {
                     "success": False,
                     "error": error_data.get("error", {}).get("message", "Unknown error"),
+                    "error_code": error_data.get("error", {}).get("code"),
                     "phone": to_phone
                 }
                 
