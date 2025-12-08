@@ -29,14 +29,14 @@ class DTDCTrackingService:
             Dict with tracking data or error
         """
         try:
-            # Make API call to DTDC
+            # Make API call to DTDC (Shipsy API)
             headers = {
                 'Content-Type': 'application/json',
-                'Authorization': f'Bearer {self.api_key}'
+                'api-key': self.api_key
             }
             
             payload = {
-                'shipmentNo': tracking_number
+                'reference_number': tracking_number
             }
             
             response = requests.post(
