@@ -14,6 +14,8 @@ const FinanceReconciliation = () => {
   const [uploadHistory, setUploadHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [verifyingOrder, setVerifyingOrder] = useState(null);
+  const [unmatchedData, setUnmatchedData] = useState(null);
+  const [showUnmatched, setShowUnmatched] = useState(false);
 
   useEffect(() => {
     fetchFinanceStatus();
