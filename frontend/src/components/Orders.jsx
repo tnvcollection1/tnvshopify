@@ -361,27 +361,91 @@ const Orders = () => {
       clipboardText += '-'.repeat(50) + '\n\n';
     });
     
+    // Create HTML version with clickable buttons
+    let htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Messages - ${allMessages.length} customers</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; background: #f5f5f5; }
+    .header { background: #25D366; color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+    .message-card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .customer-info { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
+    .phone { color: #666; font-size: 14px; }
+    .message-text { background: #E8F5E9; padding: 15px; border-radius: 8px; white-space: pre-wrap; margin: 15px 0; font-size: 14px; line-height: 1.6; }
+    .send-btn { background: #25D366; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; }
+    .send-btn:hover { background: #20BA5A; }
+    .copy-btn { background: #2196F3; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 14px; margin-top: 10px; }
+    .copy-btn:hover { background: #1976D2; }
+    .counter { color: #888; font-size: 14px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📱 WhatsApp Bulk Messages</h1>
+    <p>Total: ${allMessages.length} customers | Generated: ${new Date().toLocaleString()}</p>
+  </div>
+`;
+
+    allMessages.forEach((msg, index) => {
+      htmlContent += `
+  <div class="message-card">
+    <div class="counter">[${index + 1}/${allMessages.length}]</div>
+    <div class="customer-info">${msg.name}</div>
+    <div class="phone">+${msg.phone}</div>
+    <div class="message-text">${msg.message.replace(/\n/g, '<br>')}</div>
+    <button class="send-btn" onclick="window.open('${msg.waLink}?text=${encodeURIComponent(msg.message)}', '_blank')">
+      🚀 Open in WhatsApp
+    </button>
+    <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${msg.message.replace(/`/g, '\\`')}\`).then(() => alert('Message copied!'))">
+      📋 Copy Message
+    </button>
+  </div>
+`;
+    });
+
+    htmlContent += `
+  <div style="text-align: center; color: #888; margin-top: 40px; padding: 20px;">
+    <p>💡 Tip: Click "Open in WhatsApp" to open the chat, then paste the message and send.</p>
+    <p>✨ Each message uses a different template to avoid spam detection.</p>
+  </div>
+</body>
+</html>`;
+    
     // Copy to clipboard
     try {
       await navigator.clipboard.writeText(clipboardText);
-      toast.success(`✅ Copied ${allMessages.length} messages to clipboard!`, {
+      
+      // Download HTML file
+      const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
+      const htmlUrl = URL.createObjectURL(htmlBlob);
+      const htmlLink = document.createElement('a');
+      htmlLink.href = htmlUrl;
+      htmlLink.download = `whatsapp-messages-${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(htmlLink);
+      htmlLink.click();
+      document.body.removeChild(htmlLink);
+      URL.revokeObjectURL(htmlUrl);
+      
+      // Also download text file
+      const txtBlob = new Blob([clipboardText], { type: 'text/plain' });
+      const txtUrl = URL.createObjectURL(txtBlob);
+      const txtLink = document.createElement('a');
+      txtLink.href = txtUrl;
+      txtLink.download = `whatsapp-messages-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(txtLink);
+      txtLink.click();
+      document.body.removeChild(txtLink);
+      URL.revokeObjectURL(txtUrl);
+      
+      toast.success(`✅ Downloaded ${allMessages.length} messages as HTML file!`, {
         duration: 5000
       });
-      
-      // Also download as file
-      const blob = new Blob([clipboardText], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `whatsapp-messages-${new Date().toISOString().split('T')[0]}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      toast.info('📥 Also downloaded as text file for your reference');
     } catch (error) {
-      toast.error('Failed to copy messages');
+      toast.error('Failed to prepare messages');
       console.error(error);
     }
   };
