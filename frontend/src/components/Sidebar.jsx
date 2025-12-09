@@ -17,7 +17,8 @@ import {
   FileText,
   Target,
   Zap,
-  Users as UsersIcon
+  Users as UsersIcon,
+  DollarSign
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
