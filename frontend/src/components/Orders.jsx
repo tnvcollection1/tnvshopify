@@ -192,19 +192,24 @@ const Orders = () => {
       return;
     }
 
-    // Alert user about popup blocker
-    if (ordersToSend.length > 1) {
-      toast.info(`⚠️ Please allow popups in your browser to send to ${ordersToSend.length} customers`, {
-        duration: 5000
-      });
+    // Show summary and get confirmation
+    const proceed = window.confirm(
+      `Ready to send WhatsApp messages to ${ordersToSend.length} customers.\n\n` +
+      `Each message will open in a new window.\n` +
+      `Click OK to continue, then click through each message.`
+    );
+    
+    if (!proceed) {
+      return;
     }
 
-    toast.info(`Opening WhatsApp chats for ${ordersToSend.length} customers...`);
+    toast.info(`Preparing ${ordersToSend.length} WhatsApp messages...`);
     
     let successCount = 0;
     let failCount = 0;
 
-    for (const order of ordersToSend) {
+    for (let i = 0; i < ordersToSend.length; i++) {
+      const order = ordersToSend[i];
       try {
         // Get random greeting for each customer
         const greeting = getRandomGreeting();
