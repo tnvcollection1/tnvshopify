@@ -6078,7 +6078,7 @@ async def generate_whatsapp_link(request: WhatsAppRequest):
     
     return {
         "whatsapp_link": f"https://wa.me/{cleaned_phone}",
-        "whatsapp_web": f"https://web.whatsapp.com/send?phone={cleaned_phone}"
+        "whatsapp_web": f"https://api.whatsapp.com/send?phone={cleaned_phone}"
     }
 
 
