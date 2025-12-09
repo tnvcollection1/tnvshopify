@@ -4176,10 +4176,19 @@ async def get_customers(
     # Determine sort order
     sort_field = "last_order_date"
     sort_direction = -1  # Default: newest first
+    
     if sort_by == "date_asc":
-        sort_direction = 1  # Oldest first
+        sort_field = "created_at"
+        sort_direction = 1  # Oldest first by date
     elif sort_by == "date_desc":
-        sort_direction = -1  # Newest first
+        sort_field = "created_at"
+        sort_direction = -1  # Newest first by date
+    elif sort_by == "order_asc":
+        sort_field = "order_number"
+        sort_direction = 1  # Oldest first by order number
+    elif sort_by == "order_desc":
+        sort_field = "order_number"
+        sort_direction = -1  # Newest first by order number
     
     # Get customers with pagination and sorting
     customers = await db.customers.find(query, {"_id": 0}).sort(sort_field, sort_direction).skip(skip).limit(fetch_limit).to_list(fetch_limit)
