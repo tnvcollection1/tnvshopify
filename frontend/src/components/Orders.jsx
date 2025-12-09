@@ -519,12 +519,14 @@ const Orders = () => {
     
     // Pick template - use provided index or random
     let templateIdx;
-    if (templateIndex !== null && templateIndex >= 0) {
+    if (templateIndex !== null && templateIndex !== undefined && templateIndex >= 0) {
       // Use index-based selection to ensure variety
       templateIdx = templateIndex % templates.length;
+      console.log(`Template selection: index=${templateIndex}, template=${templateIdx} (${['Hello', 'Hi', 'Hey', 'Greetings', 'Hi there'][templateIdx]})`);
     } else {
       // Random selection
       templateIdx = Math.floor(Math.random() * templates.length);
+      console.log(`Template selection: random, template=${templateIdx} (${['Hello', 'Hi', 'Hey', 'Greetings', 'Hi there'][templateIdx]})`);
     }
     
     const template = templates[templateIdx];
