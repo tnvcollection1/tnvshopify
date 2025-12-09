@@ -677,35 +677,28 @@ const Orders = () => {
         const newWindow = window.open(whatsappUrl, '_blank');
         
         if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-          // Popup was blocked
-          toast.error(`❌ Popup blocked for ${customerName}. Please allow popups and try again.`, {
-            duration: 5000
-          });
-          failCount++;
+          // Popup was blocked - show error and offer to download HTML file
+          toast.error(
+            `❌ Popup blocked after ${successCount} messages!\n\n` +
+            `Please:\n` +
+            `1. Click the popup icon in address bar\n` +
+            `2. Select "Always allow popups"\n` +
+            `3. Try again\n\n` +
+            `Or use the HTML file method (click Cancel next time)`,
+            { duration: 8000 }
+          );
+          failCount += (ordersToSend.length - i);
           break; // Stop the loop if popup is blocked
-        } else {
-          successCount++;
-          toast.success(`✅ Opened chat ${successCount}/${ordersToSend.length}: ${customerName}`);
         }
         
-        // Only continue if there are more messages and user wants to proceed
+        successCount++;
+        toast.success(`✅ ${successCount}/${ordersToSend.length}: ${customerName}`, {
+          duration: 2000
+        });
+        
+        // Automatic delay before opening next window (avoid spam detection)
         if (i < ordersToSend.length - 1) {
-          // Ask user to continue to next message
-          const continueToNext = await new Promise(resolve => {
-            setTimeout(() => {
-              const next = window.confirm(
-                `Message ${successCount} of ${ordersToSend.length} opened.\n\n` +
-                `Next: ${ordersToSend[i + 1].first_name || 'Customer'} (Order #${ordersToSend[i + 1].order_number})\n\n` +
-                `Click OK to open next message, or Cancel to stop.`
-              );
-              resolve(next);
-            }, 1000);
-          });
-          
-          if (!continueToNext) {
-            toast.info(`Stopped at ${successCount} of ${ordersToSend.length} messages`);
-            break;
-          }
+          await new Promise(resolve => setTimeout(resolve, 2000));
         }
       } catch (error) {
         failCount++;
