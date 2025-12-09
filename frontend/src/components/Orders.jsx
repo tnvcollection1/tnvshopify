@@ -415,18 +415,21 @@ const Orders = () => {
       return;
     }
 
-    // Show summary and get confirmation
-    const proceed = window.confirm(
-      `Ready to send WhatsApp messages to ${ordersToSend.length} customers.\n\n` +
-      `Each message will open in a new window.\n` +
-      `Click OK to continue, then click through each message.`
+    // Ask user which method they prefer
+    const useDesktopApp = window.confirm(
+      `Send to ${ordersToSend.length} customers.\n\n` +
+      `Choose sending method:\n\n` +
+      `✅ OK = Open in WhatsApp Desktop (one by one)\n` +
+      `❌ Cancel = Copy all messages for manual sending`
     );
     
-    if (!proceed) {
+    if (!useDesktopApp) {
+      // Copy all messages method
+      await copyAllMessagesToClipboard(ordersToSend);
       return;
     }
 
-    toast.info(`Preparing ${ordersToSend.length} WhatsApp messages...`);
+    toast.info(`Opening WhatsApp for ${ordersToSend.length} customers...`);
     
     let successCount = 0;
     let failCount = 0;
