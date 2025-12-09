@@ -192,7 +192,14 @@ const Orders = () => {
       return;
     }
 
-    toast.info(`Sending WhatsApp to ${ordersToSend.length} customers...`);
+    // Alert user about popup blocker
+    if (ordersToSend.length > 1) {
+      toast.info(`⚠️ Please allow popups in your browser to send to ${ordersToSend.length} customers`, {
+        duration: 5000
+      });
+    }
+
+    toast.info(`Opening WhatsApp chats for ${ordersToSend.length} customers...`);
     
     let successCount = 0;
     let failCount = 0;
