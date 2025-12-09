@@ -198,6 +198,7 @@ class ShopifyAsyncSync:
             customer_data = {
                 'shopify_order_id': str(order.id),
                 'order_number': order.order_number,
+                'order_number_int': int(order.order_number) if order.order_number and str(order.order_number).isdigit() else 0,
                 'customer_id': f"shopify_{customer.id}" if customer.id else f"order_{order.id}",
                 'first_name': customer.first_name or '',
                 'last_name': customer.last_name or '',
