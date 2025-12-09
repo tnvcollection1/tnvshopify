@@ -705,12 +705,16 @@ const Orders = () => {
         
         successCount++;
         toast.success(`✅ ${successCount}/${ordersToSend.length}: ${customerName}`, {
-          duration: 2000
+          duration: 3000
         });
         
-        // Automatic delay before opening next window (avoid spam detection)
+        // Automatic delay before opening next window (20 seconds to allow sending)
         if (i < ordersToSend.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          const nextCustomer = ordersToSend[i + 1].first_name || 'Customer';
+          toast.info(`⏳ Next: ${nextCustomer} in 20 seconds...`, {
+            duration: 20000
+          });
+          await new Promise(resolve => setTimeout(resolve, 20000)); // 20 second delay
         }
       } catch (error) {
         failCount++;
