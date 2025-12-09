@@ -261,8 +261,8 @@ const Orders = () => {
       phone = phone.substring(1);
     }
 
-    // Open WhatsApp Web with pre-filled number
-    const url = `https://web.whatsapp.com/send?phone=${phone}`;
+    // Open WhatsApp with pre-filled number (works on desktop app and web)
+    const url = `https://api.whatsapp.com/send?phone=${phone}`;
     window.open(url, '_blank');
     toast.success(`Opening WhatsApp chat with ${order.first_name} ${order.last_name}`);
   };
