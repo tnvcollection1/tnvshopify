@@ -763,10 +763,9 @@ const Orders = () => {
       return;
     }
 
-    // Open WhatsApp with pre-filled number (works on desktop app and web)
-    // wa.me format is more reliable for opening desktop app
-    const url = `https://wa.me/${phone}`;
-    window.open(url, '_blank');
+    // Use whatsapp:// protocol to open desktop app directly
+    const url = `whatsapp://send?phone=${phone}`;
+    window.location.href = url;
     toast.success(`Opening WhatsApp chat with ${order.first_name || 'Customer'} ${order.last_name || ''}`);
   };
 
