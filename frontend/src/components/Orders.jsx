@@ -692,11 +692,16 @@ const Orders = () => {
           i // Pass index to ensure different templates
         );
 
-        // Use wa.me format which is more reliable for opening desktop app
-        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        // Use whatsapp:// protocol to force desktop app
+        const whatsappUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
         
-        // Try to open window
-        const newWindow = window.open(whatsappUrl, '_blank');
+        // Try to open desktop app
+        window.location.href = whatsappUrl;
+        
+        // Small delay to let the protocol handler work
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const newWindow = true; // Protocol handlers don't return window object
         
         if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
           // Popup was blocked - show error and offer to download HTML file
