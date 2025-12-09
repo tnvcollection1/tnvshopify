@@ -331,7 +331,7 @@ const Orders = () => {
   };
 
   const openWhatsAppWeb = () => {
-    window.open('https://api.whatsapp.com/', '_blank');
+    window.open('https://web.whatsapp.com/', '_blank');
   };
 
   const openWhatsAppWebWithNumber = (order) => {
