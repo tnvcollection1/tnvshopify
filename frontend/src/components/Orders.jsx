@@ -283,15 +283,43 @@ const Orders = () => {
         message += `❌ "CANCEL" - to cancel your order\n\n`;
         message += `Thank you for shopping with us! 🛍️`;
 
-        // Send via WhatsApp (opens WhatsApp app or web with pre-filled message)
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
-
-        successCount++;
-        toast.success(`✅ Opened chat ${successCount}/${ordersToSend.length}: ${customerName}`);
+        // Use wa.me format which is more reliable for opening desktop app
+        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
         
-        // Delay to allow browser to open window and avoid popup blocker
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Try to open window
+        const newWindow = window.open(whatsappUrl, '_blank');
+        
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+          // Popup was blocked
+          toast.error(`❌ Popup blocked for ${customerName}. Please allow popups and try again.`, {
+            duration: 5000
+          });
+          failCount++;
+          break; // Stop the loop if popup is blocked
+        } else {
+          successCount++;
+          toast.success(`✅ Opened chat ${successCount}/${ordersToSend.length}: ${customerName}`);
+        }
+        
+        // Only continue if there are more messages and user wants to proceed
+        if (i < ordersToSend.length - 1) {
+          // Ask user to continue to next message
+          const continueToNext = await new Promise(resolve => {
+            setTimeout(() => {
+              const next = window.confirm(
+                `Message ${successCount} of ${ordersToSend.length} opened.\n\n` +
+                `Next: ${ordersToSend[i + 1].first_name || 'Customer'} (Order #${ordersToSend[i + 1].order_number})\n\n` +
+                `Click OK to open next message, or Cancel to stop.`
+              );
+              resolve(next);
+            }, 1000);
+          });
+          
+          if (!continueToNext) {
+            toast.info(`Stopped at ${successCount} of ${ordersToSend.length} messages`);
+            break;
+          }
+        }
       } catch (error) {
         failCount++;
         console.error(`Error for order ${order.order_number}:`, error);
