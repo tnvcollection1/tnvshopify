@@ -285,20 +285,24 @@ const Orders = () => {
       return;
     }
 
-    // Clean phone number (remove spaces, dashes, etc.)
+    // Clean phone number (remove spaces, dashes, parentheses)
     phone = phone.replace(/[\s-()]/g, '');
     
-    // Add country code if not present (assuming Pakistan +92)
-    if (!phone.startsWith('+') && !phone.startsWith('92')) {
-      phone = '92' + phone;
-    } else if (phone.startsWith('+')) {
+    // Remove leading + if present
+    if (phone.startsWith('+')) {
       phone = phone.substring(1);
+    }
+    
+    // Add country code if not present (default to Pakistan +92)
+    if (!phone.match(/^(92|91|1|44|61|86)/)) {
+      // If phone doesn't start with a known country code, add 92 (Pakistan)
+      phone = '92' + phone;
     }
 
     // Open WhatsApp with pre-filled number (works on desktop app and web)
     const url = `https://api.whatsapp.com/send?phone=${phone}`;
     window.open(url, '_blank');
-    toast.success(`Opening WhatsApp chat with ${order.first_name} ${order.last_name}`);
+    toast.success(`Opening WhatsApp chat with ${order.first_name || 'Customer'} ${order.last_name || ''}`);
   };
 
   const handleShopifySync = async () => {
