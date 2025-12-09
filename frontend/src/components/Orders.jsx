@@ -202,6 +202,7 @@ const Orders = () => {
       if (filters.delivery !== "all") params.append("delivery_status", filters.delivery);
       if (filters.payment !== "all") params.append("payment_status", filters.payment);
       if (filters.store !== "all") params.append("store_name", filters.store);
+      if (filters.sort) params.append("sort_by", filters.sort);
       if (searchQuery) params.append("search", searchQuery);
       params.append("page", currentPage);
       params.append("limit", "50");
