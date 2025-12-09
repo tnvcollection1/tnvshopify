@@ -488,27 +488,23 @@ const Orders = () => {
             .join('\n');
         }
 
-        // Get total amount
+        // Get total amount and currency
         const totalAmount = order.total_spent || order.total_price || 0;
-        const currency = order.currency || 'PKR';
+        // Get currency from order, or map from country code
+        const currency = order.currency || COUNTRY_CURRENCIES[countryCode] || 'PKR';
 
-        // Construct enhanced confirmation message
+        // Customer name
         const customerName = order.first_name || 'Customer';
-        let message = `${greeting} ${customerName}!\n\n`;
-        message += `🛍️ Order Confirmation Request - #${orderNumber}\n\n`;
-        message += `We have received your order. Please confirm to proceed:\n\n`;
         
-        if (productList) {
-          message += `📦 *Products Ordered:*\n${productList}\n\n`;
-        }
-        
-        message += `💰 *Total Amount:* ${currency} ${totalAmount.toLocaleString()}\n\n`;
-        message += `🔗 Track your order: ${trackingLink}\n\n`;
-        message += `⚠️ *Action Required:*\n`;
-        message += `Please reply with:\n`;
-        message += `✅ "CONFIRM" - to confirm your order\n`;
-        message += `❌ "CANCEL" - to cancel your order\n\n`;
-        message += `Thank you for shopping with us! 🛍️`;
+        // Generate randomized message using template system
+        const message = generateOrderMessage(
+          customerName,
+          orderNumber,
+          productList,
+          totalAmount.toLocaleString(),
+          currency,
+          trackingLink
+        );
 
         // Use wa.me format which is more reliable for opening desktop app
         const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
