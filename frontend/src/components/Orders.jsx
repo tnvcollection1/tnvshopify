@@ -42,7 +42,7 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Country code to phone dial code mapping
+// Country code to phone dial code mapping (ISO 3166-1 alpha-2 to ITU-T E.164)
 const COUNTRY_DIAL_CODES = {
   'PK': '92',   // Pakistan
   'IN': '91',   // India
@@ -74,10 +74,12 @@ const COUNTRY_DIAL_CODES = {
   'ZA': '27',   // South Africa
   'KE': '254',  // Kenya
   'NG': '234',  // Nigeria
+  'GH': '233',  // Ghana
   'DE': '49',   // Germany
   'FR': '33',   // France
   'IT': '39',   // Italy
   'ES': '34',   // Spain
+  'PT': '351',  // Portugal
   'NL': '31',   // Netherlands
   'BE': '32',   // Belgium
   'CH': '41',   // Switzerland
@@ -93,6 +95,19 @@ const COUNTRY_DIAL_CODES = {
   'AR': '54',   // Argentina
   'CL': '56',   // Chile
   'CO': '57',   // Colombia
+  'PE': '51',   // Peru
+  'BO': '591',  // Bolivia
+  'KZ': '7',    // Kazakhstan
+  'AL': '355',  // Albania
+  'CZ': '420',  // Czech Republic
+  'SD': '249',  // Sudan
+  'WS': '685',  // Samoa
+  'SC': '248',  // Seychelles
+  'LA': '856',  // Laos
+  'RW': '250',  // Rwanda
+  'AW': '297',  // Aruba
+  'MZ': '258',  // Mozambique
+  'KN': '1869', // Saint Kitts and Nevis
 };
 
 const Orders = () => {
