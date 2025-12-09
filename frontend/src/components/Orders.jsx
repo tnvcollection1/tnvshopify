@@ -285,8 +285,8 @@ const Orders = () => {
         successCount++;
         toast.success(`✅ Opened chat ${successCount}/${ordersToSend.length}: ${customerName}`);
         
-        // Delay to allow user to send message before opening next
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Delay to allow browser to open window and avoid popup blocker
+        await new Promise(resolve => setTimeout(resolve, 3000));
       } catch (error) {
         failCount++;
         console.error(`Error for order ${order.order_number}:`, error);
