@@ -166,6 +166,7 @@ const Orders = () => {
     delivery: "all",
     payment: "all",
     store: "all",
+    sort: "date_desc", // Add sort option: date_desc (newest first) or date_asc (oldest first)
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
