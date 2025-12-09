@@ -300,7 +300,8 @@ const Orders = () => {
   const copyAllMessagesToClipboard = async (ordersToSend) => {
     let allMessages = [];
     
-    for (const order of ordersToSend) {
+    for (let idx = 0; idx < ordersToSend.length; idx++) {
+      const order = ordersToSend[idx];
       try {
         const rawPhone = order.phone || order.default_address?.phone;
         const countryCode = order.country_code || order.default_address?.country_code || 'PK';
