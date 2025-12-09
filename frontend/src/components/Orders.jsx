@@ -1109,12 +1109,14 @@ const Orders = () => {
               </SelectContent>
             </Select>
             <Select value={filters.sort} onValueChange={(v) => setFilters({ ...filters, sort: v })}>
-              <SelectTrigger className="w-44 border-gray-300 bg-blue-50">
+              <SelectTrigger className="w-48 border-gray-300 bg-blue-50">
                 <SelectValue placeholder="Sort Order" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="date_desc">⬇️ Newest First</SelectItem>
-                <SelectItem value="date_asc">⬆️ Oldest First</SelectItem>
+                <SelectItem value="date_desc">📅 Newest Date First</SelectItem>
+                <SelectItem value="date_asc">📅 Oldest Date First</SelectItem>
+                <SelectItem value="order_desc">#️⃣ Highest Order # First</SelectItem>
+                <SelectItem value="order_asc">#️⃣ Lowest Order # First</SelectItem>
               </SelectContent>
             </Select>
           </div>
