@@ -569,30 +569,35 @@ const Orders = () => {
       return;
     }
 
-    // Always use copy method due to browser popup blocker issues
-    toast.info(`Preparing ${ordersToSend.length} WhatsApp messages...`, {
+    // Ask user which method they prefer
+    const autoOpen = window.confirm(
+      `Send to ${ordersToSend.length} customers.\n\n` +
+      `Choose method:\n\n` +
+      `✅ OK = Auto-open WhatsApp (automatic, may need popup permission)\n` +
+      `❌ Cancel = Download HTML file (manual clicking)`
+    );
+    
+    if (!autoOpen) {
+      // Use HTML file method
+      toast.info(`Preparing ${ordersToSend.length} WhatsApp messages...`, {
+        duration: 3000
+      });
+      await copyAllMessagesToClipboard(ordersToSend);
+      setTimeout(() => {
+        toast.success(
+          `📥 HTML file downloaded!\n\n` +
+          `Open it in your browser and click the buttons to send.`,
+          { duration: 5000 }
+        );
+      }, 1000);
+      return;
+    }
+
+    // Auto-open method
+    toast.info(`🚀 Auto-opening WhatsApp for ${ordersToSend.length} customers...`, {
       duration: 3000
     });
     
-    await copyAllMessagesToClipboard(ordersToSend);
-    
-    // Show helpful instructions
-    setTimeout(() => {
-      toast.success(
-        `📋 Messages copied! 📥 File downloaded!\n\n` +
-        `To send:\n` +
-        `1. Open the downloaded text file\n` +
-        `2. Click each wa.me link to open WhatsApp\n` +
-        `3. Copy-paste the message\n` +
-        `4. Send to customer\n\n` +
-        `Or open WhatsApp Web and paste manually.`,
-        { duration: 10000 }
-      );
-    }, 1000);
-    
-    return;
-
-    // OLD CODE - Keeping for reference but not using due to popup blocker
     let successCount = 0;
     let failCount = 0;
 
