@@ -220,8 +220,8 @@ const Orders = () => {
         // Construct message with random greeting
         const message = `${greeting} ${order.first_name}!\n\nYour order #${orderNumber} has been confirmed.\n\nTrack your order: ${trackingLink}\n\nThank you for shopping with us!`;
 
-        // Send via WhatsApp Web format (opens WhatsApp with pre-filled message)
-        const whatsappUrl = `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+        // Send via WhatsApp (opens WhatsApp app or web with pre-filled message)
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
 
         successCount++;
