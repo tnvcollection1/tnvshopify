@@ -297,7 +297,7 @@ const Orders = () => {
   };
 
   // Generate varied message templates to avoid spam detection
-  const generateOrderMessage = (customerName, orderNumber, productList, totalAmount, currency, trackingLink) => {
+  const generateOrderMessage = (customerName, orderNumber, productList, totalAmount, currency) => {
     const templates = [
       // Template 1
       () => {
@@ -305,7 +305,6 @@ const Orders = () => {
         msg += `Your order #${orderNumber} has been received and is being processed.\n\n`;
         msg += `Order Details:\n${productList}\n\n`;
         msg += `Total: ${currency} ${totalAmount}\n\n`;
-        msg += `Track here: ${trackingLink}\n\n`;
         msg += `Please confirm by replying:\n`;
         msg += `✓ Type CONFIRM to proceed\n`;
         msg += `✗ Type CANCEL to cancel\n\n`;
@@ -318,7 +317,6 @@ const Orders = () => {
         msg += `We've received your order #${orderNumber}!\n\n`;
         msg += `Items ordered:\n${productList}\n\n`;
         msg += `Amount: ${currency} ${totalAmount}\n\n`;
-        msg += `Tracking: ${trackingLink}\n\n`;
         msg += `Please confirm your order:\n`;
         msg += `Reply CONFIRM to accept\n`;
         msg += `Reply CANCEL to decline\n\n`;
@@ -331,7 +329,6 @@ const Orders = () => {
         msg += `Order #${orderNumber} - Confirmation needed\n\n`;
         msg += `Products:\n${productList}\n\n`;
         msg += `Total Amount: ${currency} ${totalAmount}\n\n`;
-        msg += `View tracking: ${trackingLink}\n\n`;
         msg += `Action Required:\n`;
         msg += `• CONFIRM - Proceed with order\n`;
         msg += `• CANCEL - Cancel order\n\n`;
@@ -344,7 +341,6 @@ const Orders = () => {
         msg += `Thank you for placing order #${orderNumber}\n\n`;
         msg += `Order Summary:\n${productList}\n\n`;
         msg += `Payment: ${currency} ${totalAmount}\n\n`;
-        msg += `Track your order: ${trackingLink}\n\n`;
         msg += `Kindly confirm:\n`;
         msg += `Type CONFIRM to approve\n`;
         msg += `Type CANCEL to reject\n\n`;
@@ -357,7 +353,6 @@ const Orders = () => {
         msg += `Your order (#${orderNumber}) is ready for confirmation.\n\n`;
         msg += `What you ordered:\n${productList}\n\n`;
         msg += `Total: ${currency} ${totalAmount}\n\n`;
-        msg += `Tracking link: ${trackingLink}\n\n`;
         msg += `Please respond:\n`;
         msg += `CONFIRM - Yes, proceed\n`;
         msg += `CANCEL - No, cancel it\n\n`;
