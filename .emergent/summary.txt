@@ -1,205 +1,231 @@
-<analysis>**original_problem_statement**: The user initially wanted a WhatsApp CRM and order tracking system. The scope expanded to include a Dynamic Pricing Engine. The most recent and primary focus has been the development of a comprehensive **Finance Management System** to reconcile Shopify orders for the ashmiaa store against data from two uploaded Excel files (, ). The user also requested a separate, standalone WhatsApp Inbox app for Meta's review process. The very last user request is to address why some orders appear with Missing Data on the finance dashboard.
+<analysis>**original_problem_statement**: The user's primary goal is to have a robust CRM and order management system. The initial focus from the previous fork was to build a Finance Management System for the ashmiaa store, which involved reconciling Shopify orders against uploaded Excel files.
+
+In this session, the user's requests pivoted to extensive bug fixing and feature enhancement, primarily focused on the WhatsApp messaging capabilities and order visibility.
 
 **PRODUCT REQUIREMENTS**:
-1.  **Finance Management System (P0)**:
-    -   Ingest and parse data from uploaded Excel files for the ashmiaa store.
-    -   Create a reconciliation system matching Shopify orders against general ledger and bank transaction data.
-    -   The system must perform strict validation: Order #, SKU, and Tracking Number must all match between Shopify and the ledger file. Any mismatch should flag the order with an Error status.
-    -   The UI must show the reconciliation status (Complete, Partial, Error, Missing Data), allow manual verification, and display unmatched records from the Excel files.
-    -   The system must be strictly isolated to the ashmiaa store, preventing any data contamination from other stores like tnvcollectionpk.
-    -   Provide a way to handle orders that exist in Shopify but are missing from the uploaded Excel ledger.
-2.  **Dynamic Pricing Dashboard**:
-    -   A functional, performant UI to manage the dynamic pricing engine.
-    -   Display products by category with lifetime order counts.
-    -   Allow editing of discount percentages and syncing price changes to Shopify.
-3.  **Standalone WhatsApp Inbox**:
-    -   A separate, publicly accessible URL for the WhatsApp Inbox feature, to be submitted for Meta Business API review.
-    -   This URL should not require authentication.
-    -   The existing integrated inbox must remain functional within the main application.
+1.  **Order Sync & Visibility (P0)**: The system must correctly sync and display all orders from Shopify. The user is currently unable to see a range of unfulfilled orders (specifically #29351 to #29389) on the Orders page.
+2.  **WhatsApp Bulk Messaging Automation (P1)**: The user wants a one-click solution to send bulk confirmation messages to selected orders. The system should automatically open each chat, pre-fill a randomized message template, and ideally, press Send. The current implementation automates opening chats sequentially but still requires the user to press Enter for each message.
+3.  **Correct WhatsApp Message Content (P1)**: WhatsApp messages must:
+    -   Automatically handle international phone numbers by prepending the correct country code based on the Shopify order's country.
+    -   Display the correct currency symbol (e.g., INR, PKR) based on the order's country, not hardcoded to PKR.
+    -   Use randomized message templates to avoid being flagged as spam by WhatsApp.
+    -   NOT include the internal tracking link.
+4.  **Finance Management System (P2)**: The system needs a way to handle Shopify orders that are missing from the user's uploaded accounting ledger. An Export Missing Orders feature was started but never completed.
+5.  **General Bug Fixes (P2)**:
+    -   The Dispatch Tracker and Confirmation Tracker pages must be functional and not show errors.
+    -   The Purchase Tracker should not display incorrect tracking numbers for the wrong stores.
+    -   The search bar on the main Orders page should work.
 
 **User's preferred language**: English
 
 **what currently exists?**
-- A full-stack application (React/FastAPI/MongoDB).
-- A working DTDC tracking integration that syncs data via the Shopify fulfillments API.
-- A fully functional backend for the Dynamic Pricing Engine with caching and background processing for performance.
-- A **fixed and performant** Dynamic Pricing Dashboard UI. The previous issues related to breakage, login failures, and slow loading have been resolved.
-- A newly built, multi-feature **Finance Management System** for the ashmiaa store. It supports Excel uploads, data reconciliation with strict validation (Order#, SKU, Tracking#), error flagging, and viewing of unmatched records. It has been debugged to prevent cross-store data contamination.
-- Two versions of the WhatsApp Inbox: an integrated one () and a standalone, unauthenticated one for Meta review (). The backend APIs to support the inbox have been created.
+- A full-stack application (React/FastAPI/MongoDB) with a Finance Reconciliation system, Dynamic Pricing dashboard, and several order management trackers.
+- In this session, the agent performed numerous fixes and enhancements:
+    -   **Login Fixed**: A critical login timeout issue was resolved. The agent fixed multiple syntax errors in  and disabled an aggressive, blocking Shopify sync job that was running on startup.
+    -   **Trackers Fixed**: The Dispatch Tracker (Failed to fetch orders) and Confirmation Tracker (Something went wrong) have been repaired and are now functional.
+    -   **Data Integrity Fixed**: Incorrect China Post tracking numbers that were wrongly assigned to  store orders have been removed.
+    -   **WhatsApp Messaging VASTLY Improved**:
+        -   Links now correctly target the WhatsApp Desktop app ().
+        -   Phone numbers are automatically formatted with the correct country code.
+        -   Currency is dynamically set based on the order's country.
+        -   Message templates are randomized to prevent spam detection.
+        -   A bulk-sending mechanism was implemented that sequentially opens chats to work around browser popup blockers.
+    -   **UI/UX Improvements**: A FINANCE section was added to the sidebar. A sort-by-order-number dropdown was added to the Orders page.
 
 **Last working item**:
--   **Last item agent was working**: The user reported that several orders were appearing on the Finance Reconciliation dashboard with a Missing Data status. The agent identified that these orders exist in Shopify but are not present in the user-uploaded Excel ledger file. The agent explained this to the user and began implementing a feature to export a list of these missing orders to help the user update their ledger.
+-   **Last item agent was working**: The user reported that a large chunk of unfulfilled orders (from #29351 to #29389) are not visible in the application, even though they exist in Shopify. The system's order view jumps from recent orders (e.g., #29399) to very old ones (e.g., #1895), skipping the entire range in between. The agent had just confirmed the user's observation and was about to investigate if these orders exist in the database.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: Backend testing agent to test the new export endpoint () and frontend testing agent to verify the addition of a corresponding Export Missing button on the UI.
--   **User Testing Done**: N
+-   **Which testing method agent to use?**: Backend testing using a direct database query to check for the existence of the missing order numbers (e.g., , ).
+-   **User Testing Done**: Y (User has confirmed the issue persists).
 
 **All Pending/In progress Issue list**:
--   Issue 1: Provide a way to handle Shopify orders that are missing from the accounting ledger (P0)
--   Issue 2:  requires major refactoring (P1)
--   Issue 3: TCS data mismatch causing accounting confusion (P2)
--   Issue 4: Search on the main Orders page does not work (P3)
--   Issue 5: Shopify sync does not pull full  data (P4)
+-   Issue 1: Orders #29351-#29389 are missing from the application view (P0)
+-   Issue 2: Randomization of WhatsApp messages is not working as expected (P1)
+-   Issue 3: WhatsApp bulk sending is not fully automated (user still has to press Enter) (P1)
+-   Issue 4: Provide a way to handle Shopify orders that are missing from the accounting ledger (P2)
+-   Issue 5:  requires major refactoring (P2)
+-   Issue 6: Search on the main Orders page does not work (P3)
+-   Issue 7: Shopify sync does not pull full  data (P4)
 
 **Issues Detail**:
--   **Issue 1: Provide a way to handle Shopify orders that are missing from the accounting ledger**
-    -   **Description**: Orders present in Shopify but absent from the user-uploaded  are flagged as Missing Data. The user needs a simple way to identify and correct these data gaps.
-    -   **Attempted fixes**: The agent explained the root cause to the user and started implementing a feature to export a list of these missing orders as a CSV file.
+-   **Issue 1: Orders #29351-#29389 are missing from the application view**
+    -   **Description**: The user has shown via Shopify screenshots that there are many unfulfilled orders between #29351 and #29389. However, the application's Orders page skips this range entirely, jumping from newer orders to much older ones.
+    -   **Attempted fixes**: The agent added a Sort by Order Number dropdown, believing it was a pagination/sorting issue. While the feature was added, it did not solve the root problem, confirming that the orders are simply not being fetched or displayed.
     -   **Next debug checklist**:
-        1.  Create a new backend endpoint (e.g., ) in  and register it in .
-        2.  The endpoint should identify  orders in the  collection that do not have a corresponding entry in the  collection.
-        3.  It should generate and return a CSV file containing the , , and  for these missing orders.
-        4.  Add an Export Missing Orders button to the  frontend that calls this new endpoint to trigger the file download.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will empower the user to maintain data integrity between their live store and their accounting records, leading to accurate financial reconciliation.
+        1.  Connect to the  database.
+        2.  Run a query on the  collection to find one of the missing orders, e.g., .
+        3.  If the order exists, investigate the  endpoint in  and the  function in  to understand why it's being filtered out.
+        4.  If the order does NOT exist, the problem lies with the Shopify sync process, which needs to be investigated.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is critical for the user's workflow. They cannot manage or contact customers for orders they cannot see.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on other issue**: None
 
--   **Issue 2:  requires major refactoring**
-    -   **Description**:  has become a monolith containing logic for most of the application's features, making it hard to maintain and debug.
-    -   **Next debug checklist**: Break down  by moving related endpoints into separate FastAPI routers (e.g., , , ).
-    -   **Why fix this issue and what will be achieved with the fix?**: Refactoring will improve code organization, maintainability, and scalability.
+-   **Issue 2: Randomization of WhatsApp messages is not working as expected**
+    -   **Description**: The user reported that when generating bulk messages, the same message template is being used for all customers, defeating the purpose of randomization to avoid spam detection.
+    -   **Attempted fixes**: The agent modified the  function to use the loop index () to deterministically cycle through templates.
+    -   **Next debug checklist**:
+        1.  Add  statements inside  and  in  to log the  and the chosen  for each order.
+        2.  Test with 3-4 selected orders and check the browser console to verify that the template index is changing for each message.
+    -   **Why fix this issue and what will be achieved with the fix?**: Prevents the user's WhatsApp account from being banned for sending repetitive messages.
+    -   **Status**: USER VERIFICATION PENDING
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+
+-   **Issue 3: WhatsApp bulk sending is not fully automated**
+    -   **Description**: The user wants the application to automatically click the Send button in WhatsApp. The current solution opens the chat with the message pre-filled, but requires manual intervention to send.
+    -   **Attempted fixes**: The agent explained that browser security prevents this and proposed three solutions: a browser console script, a professional WhatsApp Business API integration, or a Python Selenium script. The user has not chosen a path forward.
+    -   **Next debug checklist**: Re-engage with the user to decide on the preferred solution. If they choose the console script, guide them on how to use it.
+    -   **Why fix this issue and what will be achieved with the fix?**: This would provide the one-click fully automated workflow the user desires.
+    -   **Status**: BLOCKED (Awaiting user decision)
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+
+-   **Issue 4: Provide a way to handle Shopify orders that are missing from the accounting ledger**
+    -   **Description**: This is the Missing Data issue from the previous fork. The agent was supposed to build an Export Missing Orders feature but got sidetracked by other bug fixes.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Both (regression testing).
 
--   **Issue 3: TCS data mismatch creating accounting confusion**
-    -   **Description**: Invalid TCS tracking numbers from a previous integration are causing accounting issues.
+-   **Issue 5:  requires major refactoring**
+    -   **Description**:  is a monolith. This is a recurring technical debt item.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
 
--   **Issue 4: Search on Orders page does not work**
-    -   **Description**: The search input on the Orders page () does not filter the results.
+-   **Issue 6: Search on Orders page does not work**
+    -   **Description**: The main search bar on the Orders page does not function.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
 
--   **Issue 5: Shopify sync does not pull full  data**
-    -   **Description**: The Shopify order sync does not store the  array, which contains individual product details, quantities, and prices for each order. This limits detailed sales analysis.
+-   **Issue 7: Shopify sync does not pull full  data**
+    -   **Description**: The sync process does not store , limiting detailed analysis.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
 
 **In progress Task List**:
--   **Task 1: Implement Export Missing Orders feature**
-    -   **Where to resume**: Create the backend API endpoint in .
-    -   **What will be achieved with this?**: The user will be able to download a CSV of orders present in Shopify but missing from their accounting ledger, streamlining their data correction process.
+-   **Task 1: Investigate and fix missing Shopify orders**
+    -   **Where to resume**: Executing a database query to check if orders like  exist in the  collection.
+    -   **What will be achieved with this?**: It will determine if the problem is in the data sync or the frontend display logic, unblocking the fix for the user's most critical issue.
     -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P1) Update WhatsApp templates to include clickable tracking links.
-    -   (P2) Add a Sync to Shopify button on the Dynamic Pricing dashboard UI to trigger the existing backend sync API.
+    -   (P1) Complete the Export Missing Orders feature for the Finance Reconciliation system.
+    -   (P2) Implement the user's chosen solution for fully automated WhatsApp sending.
+    -   (P3) Add a Sync to Shopify button on the Dynamic Pricing dashboard UI.
 -   **Future Tasks**:
     -   Build a Smart Inventory Clearance Engine.
     -   Build Abandoned Cart Recovery via WhatsApp.
 
 **Completed work in this session**
--   **Dynamic Pricing Dashboard - Fixed & Optimized**:
-    -   Resolved authentication issues and slow sync problems by adding the correct Shopify token and moving the sync to a background task.
-    -   Fixed a major performance bottleneck by implementing database caching for the pricing report, reducing load time from over 5 minutes to ~1.5 seconds.
--   **Finance Management System - Built & Refined**:
-    -   Created a full reconciliation system from scratch, including backend logic () and a frontend UI ().
-    -   Implemented user-requested features: automated transaction matching, manual verification, upload history, and viewing unmatched records.
-    -   **Fixed Critical Bugs**: Corrected a major flaw that caused data from the tnvcollectionpk store to be mixed with ashmiaa data, ensuring the system is now strictly isolated as required.
-    -   **Implemented Strict Validation**: Added logic to flag orders with an Error status if Order#, SKU, or Tracking Number do not match between Shopify and the ledger.
--   **Standalone WhatsApp Inbox**:
-    -   Created a new, unauthenticated route () with a dedicated component to satisfy Meta's review requirements, while keeping the integrated inbox functional.
-    -   Built the necessary backend APIs (, ) to power both inbox versions.
+-   **Login System Restored**: Fixed a hanging login API by resolving multiple syntax errors in  and disabling a problematic startup sync job in .
+-   **Data Cleanup**: Cleared all test/old data from the Finance Reconciliation collections (, , ).
+-   **Dispatch Tracker Fixed**: Created the missing  endpoint to resolve the Failed to fetch orders error.
+-   **Confirmation Tracker Fixed**: Repaired the UI by importing missing  and  components in .
+-   **Data Integrity Corrected**: Found and removed incorrect China Post (X-prefix) tracking numbers from  store orders in the database.
+-   **Sidebar Navigation Added**: Added a FINANCE section with a link to the reconciliation page in .
+-   **Order Page Sorting**: Added a dropdown to sort orders by  (newest/oldest) in  and the corresponding backend logic in .
+-   **Comprehensive WhatsApp Overhaul ()**:
+    -   **Desktop App Integration**: Changed URL schemes to  to prioritize opening the desktop app.
+    -   **Internationalization**: Added logic to format phone numbers with the correct country code and to display currency based on the order's country.
+    -   **Spam Avoidance**: Implemented randomization of message templates.
+    -   **Bulk Sending Automation**: Created a sequential, timer-based loop to open WhatsApp chats one-by-one, effectively bypassing browser popup blockers after initial user permission.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1:  requires major refactoring**: This is a high-priority technical debt item that has been postponed.
--   **Issue 2: TCS data mismatch creating accounting confusion**: Mentioned in the previous fork, but not addressed.
--   **Issue 3: Search on Orders page does not work**: Noted in the previous fork, but not addressed.
--   **Issue 4: Shopify sync does not pull **: Noted in the previous fork, but not addressed.
+-   **Issue 1:  requires major refactoring**: This is high-priority technical debt.
+-   **Issue 2: Search on Orders page does not work**: The search input on  is not functional.
+-   **Issue 3: Shopify sync does not pull **: Limits detailed order analysis.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**:  requires major refactoring.
--   **Recurrence count**: 3
+-   **Recurrence count**: 4
 -   **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Background Tasks (FastAPI )**: Used to run long-running jobs like Shopify price sync and pricing analysis without blocking the main server and causing timeouts.
--   **API Caching**: Resolved a major performance bottleneck by caching the 5MB dynamic pricing report in a dedicated MongoDB collection, improving dashboard load times significantly.
--   **Data Reconciliation Engine**: Developed a system to match live database records (Shopify orders) against static, user-uploaded data sources (Excel files) based on complex business rules.
--   **Scoped Data Operations**: Fixed a critical data integrity bug by ensuring all financial operations are strictly scoped to the  store, preventing data contamination.
--   **Strict Data Validation**: Implemented logic to enforce matching on multiple fields (Order#, SKU, Tracking#) and flag any discrepancies as errors.
+-   **Debugging Race Conditions/Startup Issues**: Identified and resolved a server-hanging issue by disabling long-running background jobs (, ) in the  and FastAPI startup events.
+-   **Advanced Frontend Logic**: Implemented complex client-side logic in  for the WhatsApp bulk-sending feature, including a timer-based loop (/ with ) to bypass browser popup restrictions.
+-   **Dynamic Content Generation**: Created functions to dynamically generate WhatsApp messages with randomized templates, country-specific currency, and correctly formatted international phone numbers.
+-   **API Extension**: Added a new FastAPI endpoint () to provide aggregated data for a UI component, fixing a frontend error.
+-   **Data-driven UI**: Created a data-driven sorting feature by adding a UI dropdown and corresponding backend query parameters to sort by different fields ().
 
 **key DB schema**
--   **finance_ledger**: (New) Caches parsed ledger data from Excel. Contains , , , , .
--   **finance_transactions**: (New) Caches parsed bank transaction data. Contains , , Mon Dec  8 17:31:32 UTC 2025, .
--   **finance_uploads**: (New) Stores snapshots and metadata of uploaded files for history.
--   **dynamic_pricing_cache**: (New) Stores the result of the product analysis to speed up the pricing dashboard.
--   **customers**: (Modified) The main orders collection. The agent added a  field to track reconciliation state (e.g., , ).
--   **store_config**: (Modified) Updated to include the  for the  store, fixing the price sync functionality.
+-   No schema changes were made in this session.
+
+**changes in tech stack**
+-   None.
 
 **All files of reference**
--   : Contains all logic for the new Finance System.
--   : The frontend for the Finance System.
--   : The main server file, heavily modified and in need of refactoring.
--   : The now-fixed pricing dashboard.
--   : The new unauthenticated inbox component.
+-   : Contains all the new WhatsApp features and the order sorting logic. The primary file for the next agent to review for WhatsApp-related issues.
+-   : Contains the login logic, the new  endpoint, and the updated sorting logic for . Critical for understanding data flow.
+-   : Shows the disabled startup jobs. Important if any sync issues arise.
+-   : File that was fixed for a UI crash.
+-   : File that was fixed for a data-fetching error.
+-   : Contains the new navigation link.
 
 **Areas that need refactoring**:
--   ****: This file is critically overgrown and contains logic for nearly all backend features. It urgently needs to be broken down into separate FastAPI routers for better maintainability.
--   ****: This file has grown large. The Excel parsing logic could be separated from the data reconciliation and API endpoint logic into distinct helper modules.
+-   ****: This component has become extremely bloated. The WhatsApp message generation, country code mapping, currency mapping, and bulk sending logic should be extracted into separate utility files (, ) to improve readability and maintainability.
+-   ****: Remains a critical bottleneck for maintainability. It needs to be broken down into feature-based routers.
 
 **key api endpoints**
--   **Finance (New/Enhanced)**:
-    -   : Uploads the general ledger Excel file.
-    -   : Uploads the bank transactions Excel file.
-    -   : Gets the main reconciliation data for the dashboard.
-    -   : Manually marks an order as verified.
-    -   : Gets records from Excel files that don't match any Shopify order.
--   **WhatsApp (New)**:
-    -   : Fetches the list of all WhatsApp conversations.
-    -   : Fetches messages for a specific phone number.
+-   : (New) Provides aggregated order statistics for the Dispatch Tracker.
+-   : (Modified) The  parameter was updated to support  and .
 
 **Critical Info for New Agent**
--   Your immediate priority is to complete the Export Missing Orders feature for the Finance Reconciliation system. This is the last pending item from the user.
--   The Dynamic Pricing dashboard and login issues are **RESOLVED**. The credentials / should work.
--   The Finance Reconciliation system has been heavily debugged and is now correctly isolated to the  store. Do not introduce logic that might re-contaminate it with data from other stores.
--   The agent created a separate URL () for the WhatsApp inbox specifically for Meta's review process. This URL is public and requires no login.
+-   **Highest Priority (P0)**: The user cannot see orders from #29351 to #29389. Your first action must be to query the database to determine if these orders exist. This will tell you if it's a sync problem or a display problem.
+-   **WhatsApp Automation Expectations**: The user is not satisfied with the current bulk-sending automation because they still have to press Enter to send each message. Be prepared to discuss the proposed solutions (console script, API integration) to achieve full automation.
+-   **Code Location**: Almost all of the complex WhatsApp logic (bulk sending, randomization, formatting) is packed into . This is the main file to investigate for any related bugs.
+-   **Previous Issue Derailment**: The original task from the last fork (Export Missing Orders for the finance module) was completely superseded by the user's stream of bug reports and feature requests. This task is still pending.
+
+**documents created in this job**
+-   /tmp/whatsapp_message_example.txt
+-   /tmp/whatsapp_message_variations.txt
+-   /tmp/whatsapp-bulk-automation-guide.md
+-   /app/frontend/public/whatsapp-automation.js
+-   /tmp/disable-popup-blocker-guide.md
+-   /tmp/automatic-bulk-send-guide.md
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: Asks why transactions are being matched from the  store. (RESOLVED - Agent fixed the logic to isolate ).
-2.  **User**: Requests strict validation where Order#, SKU, and Tracking# must all match. (COMPLETED - Agent implemented this).
-3.  **User**: Asks why the system is still matching transactions from  after the first fix. (RESOLVED - Agent found duplicate order numbers and added store-based filtering to the ledger data itself).
-4.  **User**: Asks to add a store filter to the UI. (COMPLETED - Agent added a filter).
-5.  **User**: Reverses course, asks to remove all other stores and make the finance module Ashmia-only. (COMPLETED - Agent removed the filter and hardcoded the logic for ).
-6.  **User**: Asks to create a separate WhatsApp Inbox app for review. (COMPLETED - Agent created a standalone, no-auth page).
-7.  **User**: Confirms the APIs should be linked for the new inbox. (COMPLETED - Agent created the necessary backend APIs).
-8.  **User**: (Sends screenshot) Points out 10 orders showing Missing Data on the finance dashboard. (PENDING - This is the current task).
-9.  **Agent**: Explains the orders are missing from the user's Excel file and proposes creating an export feature. (IN PROGRESS).
-10. **(No User Reply Yet)** The agent is waiting for user feedback on the proposed solution but has started implementation.
+1.  **User**: Asks for full automation for bulk WhatsApp messages, including pressing Enter. (IN PROGRESS)
+2.  **User**: Reports that bulk sending is still opening  instead of the desktop app. (RESOLVED - Agent switched to  protocol).
+3.  **User**: Asks what to do next. (Awaiting user testing).
+4.  **User**: Reports that the message randomization is not working. (IN PROGRESS)
+5.  **User**: Reports that orders older than #29399 are not syncing/showing. (IN PROGRESS)
+6.  **User**: Provides a screenshot from Shopify showing the missing unfulfilled orders. (Awaiting agent action).
+7.  **User**: Clarifies the issue: When filtering for Unfulfilled, old orders are not appearing. (Awaiting agent action).
+8.  **User**: Provides another screenshot showing the large gap in order numbers in the app's UI. (Awaiting agent action).
+9.  **User**: Reports the same issue persists after the agent's first attempt to fix it with a sort dropdown. (Awaiting agent action).
+10. **User**: Provides a screenshot showing the sort dropdown is not visible, confirming a browser cache issue. (Agent advised hard refresh).
+11. **User**: Confirms the issue is not resolved and provides side-by-side comparison of Shopify vs the app, proving orders #29351-#29389 are missing from the app. (PENDING - This is the current, active problem).
 
 **Project Health Check:**
 -   **Broken**:
+    -   Order sync/display for a specific range of orders (#29351-#29389).
     -   Search functionality on the  page.
 -   **Mocked**:
     -   None.
 
 **3rd Party Integrations**
 -   Shopify Admin API — Functional.
--   Meta WhatsApp Business Platform API — Functional.
--   DTDC Courier API — **DEPRECATED**. All tracking is now handled via the Shopify API.
+-   Meta WhatsApp Business Platform API — Functional (via user's own client, not API).
+-   DTDC Courier API — **DEPRECATED**.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (Used to test the Finance Reconciliation UI enhancements).
--   **Troubleshoot agent used after agent stuck in loop**: NO
+-   **Testing agent used after significant changes**: NO
+-   **Troubleshoot agent used after agent stuck in loop**: YES (Used to diagnose the initial login API timeout).
 -   **Test files created**: None.
--   **Known regressions**: None. The previous regression on the Dynamic Pricing page was fixed.
+-   **Known regressions**: None.
 
 **Credentials to test flow:**
 -   **Username**: 
 -   **Password**: 
 
 **What agent forgot to execute**
--   The agent has consistently postponed refactoring , despite it being a recurring issue.
--   The original request to fix the broken search bar on the  page has not been addressed.
--   The underlying issue of the Shopify sync not pulling full  data remains unresolved.
--   A UI button to trigger the Sync to Shopify function on the pricing dashboard was part of the original request but was not implemented as priorities shifted.</analysis>
+-   The Export Missing Orders feature from the original handoff summary was never implemented.
+-   The  refactoring task continues to be postponed.
+-   The broken search bar on the  page has not been addressed.</analysis>
