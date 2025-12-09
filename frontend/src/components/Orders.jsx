@@ -235,6 +235,45 @@ const Orders = () => {
     return greetings[Math.floor(Math.random() * greetings.length)];
   };
 
+  // Helper function to format phone number with correct country code
+  const formatPhoneWithCountryCode = (phone, countryCode) => {
+    if (!phone) return null;
+    
+    // Clean phone number (remove spaces, dashes, parentheses, dots)
+    let cleanPhone = phone.replace(/[\s\-().]/g, '');
+    
+    // Remove leading + if present
+    if (cleanPhone.startsWith('+')) {
+      cleanPhone = cleanPhone.substring(1);
+    }
+    
+    // Remove leading 0 if present (common in local phone numbers)
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = cleanPhone.substring(1);
+    }
+    
+    // Get the dial code for this country
+    const dialCode = COUNTRY_DIAL_CODES[countryCode] || '92'; // Default to Pakistan if not found
+    
+    // Check if phone already starts with the correct dial code
+    if (cleanPhone.startsWith(dialCode)) {
+      return cleanPhone;
+    }
+    
+    // Check if it starts with any other country code (first 1-3 digits)
+    const hasCountryCode = Object.values(COUNTRY_DIAL_CODES).some(code => 
+      cleanPhone.startsWith(code)
+    );
+    
+    // If no country code detected, add the correct one based on Shopify country
+    if (!hasCountryCode) {
+      return dialCode + cleanPhone;
+    }
+    
+    // If it has a different country code, keep it as is (might be correct)
+    return cleanPhone;
+  };
+
   const sendBulkWhatsAppToSelected = async () => {
     const ordersToSend = orders.filter(o => 
       selectedOrders.includes(o.customer_id) && (o.phone || o.default_address?.phone)
