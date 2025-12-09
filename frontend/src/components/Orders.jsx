@@ -399,8 +399,8 @@ const Orders = () => {
     <div class="customer-info">${msg.name}</div>
     <div class="phone">+${msg.phone}</div>
     <div class="message-text">${msg.message.replace(/\n/g, '<br>')}</div>
-    <button class="send-btn" onclick="window.open('${msg.waLink}?text=${encodeURIComponent(msg.message)}', '_blank')">
-      🚀 Open in WhatsApp
+    <button class="send-btn" onclick="window.location.href='whatsapp://send?phone=${msg.phone}&text=${encodeURIComponent(msg.message)}'">
+      🚀 Open in WhatsApp Desktop
     </button>
     <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${msg.message.replace(/`/g, '\\`')}\`).then(() => alert('Message copied!'))">
       📋 Copy Message
