@@ -1108,6 +1108,15 @@ const Orders = () => {
                 <SelectItem value="refunded">Refunded</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={filters.sort} onValueChange={(v) => setFilters({ ...filters, sort: v })}>
+              <SelectTrigger className="w-44 border-gray-300 bg-blue-50">
+                <SelectValue placeholder="Sort Order" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date_desc">⬇️ Newest First</SelectItem>
+                <SelectItem value="date_asc">⬆️ Oldest First</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
