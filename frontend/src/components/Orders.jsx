@@ -582,10 +582,16 @@ const Orders = () => {
 
     // Ask user which method they prefer
     const autoOpen = window.confirm(
-      `Send to ${ordersToSend.length} customers.\n\n` +
-      `Choose method:\n\n` +
-      `✅ OK = Auto-open WhatsApp (automatic, may need popup permission)\n` +
-      `❌ Cancel = Download HTML file (manual clicking)`
+      `🚀 AUTOMATIC BULK SEND\n\n` +
+      `Send to ${ordersToSend.length} customers automatically?\n\n` +
+      `✅ OK = AUTO-SEND (opens every 20 seconds)\n` +
+      `   • Opens WhatsApp for customer 1\n` +
+      `   • Wait 20 seconds\n` +
+      `   • Opens WhatsApp for customer 2\n` +
+      `   • Wait 20 seconds\n` +
+      `   • Continues automatically...\n\n` +
+      `❌ Cancel = Download HTML file instead\n\n` +
+      `Note: First time you may need to allow popups.`
     );
     
     if (!autoOpen) {
@@ -605,9 +611,13 @@ const Orders = () => {
     }
 
     // Auto-open method
-    toast.info(`🚀 Auto-opening WhatsApp for ${ordersToSend.length} customers...`, {
-      duration: 3000
-    });
+    toast.success(
+      `🚀 AUTOMATIC SENDING STARTED!\n\n` +
+      `Opening ${ordersToSend.length} WhatsApp chats automatically.\n` +
+      `20 seconds between each customer.\n\n` +
+      `Just send each message as it opens!`,
+      { duration: 8000 }
+    );
     
     let successCount = 0;
     let failCount = 0;
