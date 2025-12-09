@@ -296,6 +296,96 @@ const Orders = () => {
     return greetings[Math.floor(Math.random() * greetings.length)];
   };
 
+  // Copy all messages to clipboard for bulk sending
+  const copyAllMessagesToClipboard = async (ordersToSend) => {
+    let allMessages = [];
+    
+    for (const order of ordersToSend) {
+      try {
+        const rawPhone = order.phone || order.default_address?.phone;
+        const countryCode = order.country_code || order.default_address?.country_code || 'PK';
+        
+        if (!rawPhone) continue;
+        
+        const phone = formatPhoneWithCountryCode(rawPhone, countryCode);
+        if (!phone) continue;
+        
+        // Get order details
+        const orderNumber = order.order_number || order.name || "N/A";
+        const storeUrl = order.store_name === 'tnvcollectionpk' || order.store_name === 'tnvcollection'
+          ? 'https://tnvcollection.com'
+          : order.store_name === 'ashmiaa'
+          ? 'https://ashmiaa.com'
+          : 'https://tnvcollection.com';
+
+        let productList = '';
+        if (order.order_skus && order.order_skus.length > 0) {
+          productList = order.order_skus
+            .map((sku, index) => `${index + 1}. ${sku}\n   View: ${storeUrl}/products/${sku.toLowerCase().replace(/\s+/g, '-')}`)
+            .join('\n');
+        }
+
+        const totalAmount = order.total_spent || order.total_price || 0;
+        const currency = order.currency || COUNTRY_CURRENCIES[countryCode] || 'PKR';
+        const customerName = order.first_name || 'Customer';
+        
+        const message = generateOrderMessage(
+          customerName,
+          orderNumber,
+          productList,
+          totalAmount.toLocaleString(),
+          currency
+        );
+        
+        allMessages.push({
+          phone: phone,
+          name: customerName,
+          message: message,
+          waLink: `https://wa.me/${phone}`
+        });
+      } catch (error) {
+        console.error('Error processing order:', error);
+      }
+    }
+    
+    // Create formatted text for clipboard
+    let clipboardText = '📱 WHATSAPP BULK MESSAGES\n';
+    clipboardText += `Total: ${allMessages.length} messages\n`;
+    clipboardText += `Generated: ${new Date().toLocaleString()}\n\n`;
+    clipboardText += '=' .repeat(50) + '\n\n';
+    
+    allMessages.forEach((msg, index) => {
+      clipboardText += `[${index + 1}/${allMessages.length}] ${msg.name} (+${msg.phone})\n`;
+      clipboardText += `Link: ${msg.waLink}\n\n`;
+      clipboardText += msg.message + '\n\n';
+      clipboardText += '-'.repeat(50) + '\n\n';
+    });
+    
+    // Copy to clipboard
+    try {
+      await navigator.clipboard.writeText(clipboardText);
+      toast.success(`✅ Copied ${allMessages.length} messages to clipboard!`, {
+        duration: 5000
+      });
+      
+      // Also download as file
+      const blob = new Blob([clipboardText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `whatsapp-messages-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.info('📥 Also downloaded as text file for your reference');
+    } catch (error) {
+      toast.error('Failed to copy messages');
+      console.error(error);
+    }
+  };
+
   // Generate varied message templates to avoid spam detection
   const generateOrderMessage = (customerName, orderNumber, productList, totalAmount, currency) => {
     const templates = [
