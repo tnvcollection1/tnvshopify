@@ -670,13 +670,14 @@ const Orders = () => {
         // Customer name
         const customerName = order.first_name || 'Customer';
         
-        // Generate randomized message using template system
+        // Generate randomized message using template system (use index for variety)
         const message = generateOrderMessage(
           customerName,
           orderNumber,
           productList,
           totalAmount.toLocaleString(),
-          currency
+          currency,
+          i // Pass index to ensure different templates
         );
 
         // Use wa.me format which is more reliable for opening desktop app
