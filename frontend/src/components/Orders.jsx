@@ -497,8 +497,7 @@ const Orders = () => {
           orderNumber,
           productList,
           totalAmount.toLocaleString(),
-          currency,
-          trackingLink
+          currency
         );
 
         // Use wa.me format which is more reliable for opening desktop app
