@@ -451,7 +451,7 @@ const Orders = () => {
   };
 
   // Generate varied message templates to avoid spam detection
-  const generateOrderMessage = (customerName, orderNumber, productList, totalAmount, currency) => {
+  const generateOrderMessage = (customerName, orderNumber, productList, totalAmount, currency, templateIndex = null) => {
     const templates = [
       // Template 1
       () => {
