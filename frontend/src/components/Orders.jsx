@@ -505,22 +505,30 @@ const Orders = () => {
       return;
     }
 
-    // Ask user which method they prefer
-    const useDesktopApp = window.confirm(
-      `Send to ${ordersToSend.length} customers.\n\n` +
-      `Choose sending method:\n\n` +
-      `✅ OK = Open in WhatsApp Desktop (one by one)\n` +
-      `❌ Cancel = Copy all messages for manual sending`
-    );
+    // Always use copy method due to browser popup blocker issues
+    toast.info(`Preparing ${ordersToSend.length} WhatsApp messages...`, {
+      duration: 3000
+    });
     
-    if (!useDesktopApp) {
-      // Copy all messages method
-      await copyAllMessagesToClipboard(ordersToSend);
-      return;
-    }
+    await copyAllMessagesToClipboard(ordersToSend);
+    
+    // Show helpful instructions
+    setTimeout(() => {
+      toast.success(
+        `📋 Messages copied! 📥 File downloaded!\n\n` +
+        `To send:\n` +
+        `1. Open the downloaded text file\n` +
+        `2. Click each wa.me link to open WhatsApp\n` +
+        `3. Copy-paste the message\n` +
+        `4. Send to customer\n\n` +
+        `Or open WhatsApp Web and paste manually.`,
+        { duration: 10000 }
+      );
+    }, 1000);
+    
+    return;
 
-    toast.info(`Opening WhatsApp for ${ordersToSend.length} customers...`);
-    
+    // OLD CODE - Keeping for reference but not using due to popup blocker
     let successCount = 0;
     let failCount = 0;
 
