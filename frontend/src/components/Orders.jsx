@@ -42,6 +42,59 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Country code to phone dial code mapping
+const COUNTRY_DIAL_CODES = {
+  'PK': '92',   // Pakistan
+  'IN': '91',   // India
+  'US': '1',    // United States
+  'CA': '1',    // Canada
+  'GB': '44',   // United Kingdom
+  'AU': '61',   // Australia
+  'NZ': '64',   // New Zealand
+  'AE': '971',  // UAE
+  'SA': '966',  // Saudi Arabia
+  'QA': '974',  // Qatar
+  'KW': '965',  // Kuwait
+  'BH': '973',  // Bahrain
+  'OM': '968',  // Oman
+  'BD': '880',  // Bangladesh
+  'LK': '94',   // Sri Lanka
+  'NP': '977',  // Nepal
+  'AF': '93',   // Afghanistan
+  'CN': '86',   // China
+  'JP': '81',   // Japan
+  'SG': '65',   // Singapore
+  'MY': '60',   // Malaysia
+  'TH': '66',   // Thailand
+  'ID': '62',   // Indonesia
+  'PH': '63',   // Philippines
+  'VN': '84',   // Vietnam
+  'TR': '90',   // Turkey
+  'EG': '20',   // Egypt
+  'ZA': '27',   // South Africa
+  'KE': '254',  // Kenya
+  'NG': '234',  // Nigeria
+  'DE': '49',   // Germany
+  'FR': '33',   // France
+  'IT': '39',   // Italy
+  'ES': '34',   // Spain
+  'NL': '31',   // Netherlands
+  'BE': '32',   // Belgium
+  'CH': '41',   // Switzerland
+  'AT': '43',   // Austria
+  'SE': '46',   // Sweden
+  'NO': '47',   // Norway
+  'DK': '45',   // Denmark
+  'FI': '358',  // Finland
+  'PL': '48',   // Poland
+  'RU': '7',    // Russia
+  'BR': '55',   // Brazil
+  'MX': '52',   // Mexico
+  'AR': '54',   // Argentina
+  'CL': '56',   // Chile
+  'CO': '57',   // Colombia
+};
+
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
