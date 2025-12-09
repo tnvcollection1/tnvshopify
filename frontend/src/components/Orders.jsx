@@ -426,25 +426,21 @@ const Orders = () => {
   };
 
   const openWhatsAppWebWithNumber = (order) => {
-    // Extract phone number
-    let phone = order.phone || order.default_address?.phone;
-    if (!phone) {
+    // Get phone number and country code from order
+    const rawPhone = order.phone || order.default_address?.phone;
+    const countryCode = order.country_code || order.default_address?.country_code || 'PK';
+    
+    if (!rawPhone) {
       toast.error("No phone number found for this customer");
       return;
     }
 
-    // Clean phone number (remove spaces, dashes, parentheses)
-    phone = phone.replace(/[\s-()]/g, '');
+    // Format phone with correct country code based on Shopify country
+    const phone = formatPhoneWithCountryCode(rawPhone, countryCode);
     
-    // Remove leading + if present
-    if (phone.startsWith('+')) {
-      phone = phone.substring(1);
-    }
-    
-    // Add country code if not present (default to Pakistan +92)
-    if (!phone.match(/^(92|91|1|44|61|86)/)) {
-      // If phone doesn't start with a known country code, add 92 (Pakistan)
-      phone = '92' + phone;
+    if (!phone) {
+      toast.error("Invalid phone number format");
+      return;
     }
 
     // Open WhatsApp with pre-filled number (works on desktop app and web)
