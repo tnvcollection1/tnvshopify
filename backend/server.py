@@ -4184,10 +4184,10 @@ async def get_customers(
         sort_field = "created_at"
         sort_direction = -1  # Newest first by date
     elif sort_by == "order_asc":
-        sort_field = "order_number"
+        sort_field = "order_number_int"
         sort_direction = 1  # Oldest first by order number
     elif sort_by == "order_desc":
-        sort_field = "order_number"
+        sort_field = "order_number_int"
         sort_direction = -1  # Newest first by order number
     
     # Get customers with pagination and sorting
