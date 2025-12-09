@@ -60,6 +60,12 @@ const Sidebar = () => {
       ]
     },
     {
+      title: 'FINANCE',
+      items: [
+        { icon: DollarSign, label: 'Finance Reconciliation', path: '/finance-reconciliation', highlighted: true, showForDemo: false },
+      ]
+    },
+    {
       title: 'MANAGEMENT',
       items: [
         { icon: Package, label: 'Inventory', path: '/inventory', showForDemo: false },
