@@ -202,30 +202,64 @@ const Orders = () => {
         // Get random greeting for each customer
         const greeting = getRandomGreeting();
         
-        // Extract phone number
+        // Extract and clean phone number
         let phone = order.phone || order.default_address?.phone;
+        if (!phone) {
+          failCount++;
+          console.error(`No phone number for order ${order.order_number}`);
+          continue;
+        }
+        
+        // Clean phone number (remove spaces, dashes, parentheses)
         phone = phone.replace(/[\s-()]/g, '');
-        if (!phone.startsWith('+') && !phone.startsWith('92')) {
-          phone = '92' + phone;
-        } else if (phone.startsWith('+')) {
+        
+        // Remove leading + if present
+        if (phone.startsWith('+')) {
           phone = phone.substring(1);
         }
+        
+        // Add country code if not present (default to Pakistan +92)
+        if (!phone.match(/^(92|91|1|44|61|86)/)) {
+          // If phone doesn't start with a known country code, add 92 (Pakistan)
+          phone = '92' + phone;
+        }
 
-        // Get order details - try to extract product link from order
+        // Get order details
         const orderNumber = order.order_number || order.name || "N/A";
         const trackingLink = order.tracking_number 
           ? `https://footwear-analyzer.emergent.host/tracking/${order.tracking_number}`
           : `https://footwear-analyzer.emergent.host/tracking/${orderNumber}`;
 
-        // Construct message with random greeting
-        const message = `${greeting} ${order.first_name}!\n\nYour order #${orderNumber} has been confirmed.\n\nTrack your order: ${trackingLink}\n\nThank you for shopping with us!`;
+        // Get product names from order_skus or line_items
+        let productList = '';
+        if (order.order_skus && order.order_skus.length > 0) {
+          productList = order.order_skus
+            .map((sku, index) => `${index + 1}. ${sku}`)
+            .join('\n');
+        } else if (order.line_items && order.line_items.length > 0) {
+          productList = order.line_items
+            .map((item, index) => `${index + 1}. ${item.name || item.title} (x${item.quantity})`)
+            .join('\n');
+        }
+
+        // Construct enhanced message with greeting, order confirmation, products, and tracking
+        const customerName = order.first_name || 'Customer';
+        let message = `${greeting} ${customerName}!\n\n`;
+        message += `✅ Your order #${orderNumber} has been confirmed!\n\n`;
+        
+        if (productList) {
+          message += `📦 Products:\n${productList}\n\n`;
+        }
+        
+        message += `🔗 Track your order: ${trackingLink}\n\n`;
+        message += `Thank you for shopping with us! 🛍️`;
 
         // Send via WhatsApp (opens WhatsApp app or web with pre-filled message)
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
 
         successCount++;
-        toast.success(`✅ Opened chat ${successCount}/${ordersToSend.length}: ${order.first_name}`);
+        toast.success(`✅ Opened chat ${successCount}/${ordersToSend.length}: ${customerName}`);
         
         // Delay to allow user to send message before opening next
         await new Promise(resolve => setTimeout(resolve, 2000));
