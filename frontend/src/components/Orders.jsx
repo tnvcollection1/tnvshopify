@@ -237,28 +237,45 @@ const Orders = () => {
           ? `https://footwear-analyzer.emergent.host/tracking/${order.tracking_number}`
           : `https://footwear-analyzer.emergent.host/tracking/${orderNumber}`;
 
-        // Get product names from order_skus or line_items
+        // Get store website URL
+        const storeUrl = order.store_name === 'tnvcollectionpk' || order.store_name === 'tnvcollection'
+          ? 'https://tnvcollection.com'
+          : order.store_name === 'ashmiaa'
+          ? 'https://ashmiaa.com'
+          : 'https://tnvcollection.com';
+
+        // Get product names with links from order_skus or line_items
         let productList = '';
         if (order.order_skus && order.order_skus.length > 0) {
           productList = order.order_skus
-            .map((sku, index) => `${index + 1}. ${sku}`)
+            .map((sku, index) => `${index + 1}. ${sku}\n   View: ${storeUrl}/products/${sku.toLowerCase().replace(/\s+/g, '-')}`)
             .join('\n');
         } else if (order.line_items && order.line_items.length > 0) {
           productList = order.line_items
-            .map((item, index) => `${index + 1}. ${item.name || item.title} (x${item.quantity})`)
+            .map((item, index) => `${index + 1}. ${item.name || item.title} (x${item.quantity})\n   View: ${storeUrl}/products/${(item.handle || item.name || '').toLowerCase().replace(/\s+/g, '-')}`)
             .join('\n');
         }
 
-        // Construct enhanced message with greeting, order confirmation, products, and tracking
+        // Get total amount
+        const totalAmount = order.total_spent || order.total_price || 0;
+        const currency = order.currency || 'PKR';
+
+        // Construct enhanced confirmation message
         const customerName = order.first_name || 'Customer';
         let message = `${greeting} ${customerName}!\n\n`;
-        message += `✅ Your order #${orderNumber} has been confirmed!\n\n`;
+        message += `🛍️ Order Confirmation Request - #${orderNumber}\n\n`;
+        message += `We have received your order. Please confirm to proceed:\n\n`;
         
         if (productList) {
-          message += `📦 Products:\n${productList}\n\n`;
+          message += `📦 *Products Ordered:*\n${productList}\n\n`;
         }
         
+        message += `💰 *Total Amount:* ${currency} ${totalAmount.toLocaleString()}\n\n`;
         message += `🔗 Track your order: ${trackingLink}\n\n`;
+        message += `⚠️ *Action Required:*\n`;
+        message += `Please reply with:\n`;
+        message += `✅ "CONFIRM" - to confirm your order\n`;
+        message += `❌ "CANCEL" - to cancel your order\n\n`;
         message += `Thank you for shopping with us! 🛍️`;
 
         // Send via WhatsApp (opens WhatsApp app or web with pre-filled message)
