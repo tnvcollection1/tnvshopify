@@ -515,8 +515,17 @@ const Orders = () => {
       }
     ];
     
-    // Pick a random template
-    const template = templates[Math.floor(Math.random() * templates.length)];
+    // Pick template - use provided index or random
+    let templateIdx;
+    if (templateIndex !== null && templateIndex >= 0) {
+      // Use index-based selection to ensure variety
+      templateIdx = templateIndex % templates.length;
+    } else {
+      // Random selection
+      templateIdx = Math.floor(Math.random() * templates.length);
+    }
+    
+    const template = templates[templateIdx];
     return template();
   };
 
