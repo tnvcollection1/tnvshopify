@@ -335,7 +335,8 @@ const Orders = () => {
           orderNumber,
           productList,
           totalAmount.toLocaleString(),
-          currency
+          currency,
+          idx // Pass index for variety
         );
         
         allMessages.push({
