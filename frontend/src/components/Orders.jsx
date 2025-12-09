@@ -42,6 +42,52 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Country to currency mapping
+const COUNTRY_CURRENCIES = {
+  'PK': 'PKR',   // Pakistan
+  'IN': 'INR',   // India
+  'US': 'USD',   // United States
+  'CA': 'CAD',   // Canada
+  'GB': 'GBP',   // United Kingdom
+  'AU': 'AUD',   // Australia
+  'NZ': 'NZD',   // New Zealand
+  'AE': 'AED',   // UAE
+  'SA': 'SAR',   // Saudi Arabia
+  'QA': 'QAR',   // Qatar
+  'KW': 'KWD',   // Kuwait
+  'BH': 'BHD',   // Bahrain
+  'OM': 'OMR',   // Oman
+  'BD': 'BDT',   // Bangladesh
+  'LK': 'LKR',   // Sri Lanka
+  'NP': 'NPR',   // Nepal
+  'AF': 'AFN',   // Afghanistan
+  'CN': 'CNY',   // China
+  'JP': 'JPY',   // Japan
+  'SG': 'SGD',   // Singapore
+  'MY': 'MYR',   // Malaysia
+  'TH': 'THB',   // Thailand
+  'ID': 'IDR',   // Indonesia
+  'PH': 'PHP',   // Philippines
+  'VN': 'VND',   // Vietnam
+  'TR': 'TRY',   // Turkey
+  'EG': 'EGP',   // Egypt
+  'ZA': 'ZAR',   // South Africa
+  'EU': 'EUR',   // Eurozone
+  'DE': 'EUR',   // Germany
+  'FR': 'EUR',   // France
+  'IT': 'EUR',   // Italy
+  'ES': 'EUR',   // Spain
+  'PT': 'EUR',   // Portugal
+  'NL': 'EUR',   // Netherlands
+  'BE': 'EUR',   // Belgium
+  'AT': 'EUR',   // Austria
+  'BR': 'BRL',   // Brazil
+  'MX': 'MXN',   // Mexico
+  'AR': 'ARS',   // Argentina
+  'CL': 'CLP',   // Chile
+  'CO': 'COP',   // Colombia
+};
+
 // Country code to phone dial code mapping (ISO 3166-1 alpha-2 to ITU-T E.164)
 const COUNTRY_DIAL_CODES = {
   'PK': '92',   // Pakistan
