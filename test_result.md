@@ -1475,3 +1475,62 @@ All implemented features tested and working correctly. User should:
 
 ### RECOMMENDATION 🎯
 **READY FOR PRODUCTION** - The UI implementation is complete and fully functional. The modern Shopify-style design provides an excellent user experience with all requested features working correctly.
+
+---
+
+## ✅ FIX COMPLETED: Missing Orders #29351-#29389 (December 2025)
+
+### ISSUE DESCRIPTION
+User reported that unfulfilled orders from #29351 to #29389 were not visible in the application's Orders page, even though they existed in Shopify. The application would jump from recent orders (e.g., #29399) to very old orders (e.g., #1895), skipping the entire range in between.
+
+### ROOT CAUSE ANALYSIS
+The `order_number` field was stored as a STRING in MongoDB. When sorting by order_number:
+- String sorting is alphabetical/lexicographic (character-by-character)
+- Example: "29399" > "29389" > "29388" > "29351" > "3000" > "2999"
+- This caused older orders with lower numeric prefixes to appear after newer orders with higher numeric values
+
+### SOLUTION IMPLEMENTED
+1. **Database Migration**: Created and ran `/app/backend/migrate_order_numbers.py`
+   - Added new field `order_number_int` (integer type) to all 23,413 customer documents
+   - Successfully migrated all numeric order numbers
+   - Created database index on `order_number_int` for optimal query performance
+
+2. **Backend Updates**: Modified `/app/backend/server.py`
+   - Changed sorting logic to use `order_number_int` instead of `order_number` (string)
+   - Lines 4186-4191: Updated sort field for both ascending and descending order number sorts
+
+3. **Sync Process Updates**: Updated Shopify sync scripts
+   - `/app/backend/shopify_sync_async.py`: Line 201 - Added automatic `order_number_int` generation for new orders
+   - `/app/backend/shopify_sync.py`: Line 141 - Added automatic `order_number_int` generation for new orders
+   - Future synced orders will automatically have both string and integer order number fields
+
+### VERIFICATION RESULTS
+✅ **Backend API Testing**:
+- Total unfulfilled orders in system: 500
+- Order range: #28505 to #29493
+- **16 unfulfilled orders found in problematic range (29351-29389)**:
+  - Orders: #29389, #29387, #29383, #29380, #29379, #29378, #29377, #29373, #29363, #29362, #29360, #29359, #29357, #29356, #29354, #29353
+
+✅ **Sorting Verification**:
+- Orders now appear in correct numeric sequence: #29399 → #29398 → #29397 → #29396 → #29393 → #29389 → #29387...
+- No more jumps from #29399 to old orders like #3000
+- Page 1 (limit 100) now correctly shows orders from #29321 to #29493
+
+✅ **Search Functionality**:
+- Backend search API working correctly (e.g., search for "29389" returns the correct order)
+- Note: Frontend search input has a separate issue (#6) - not connected to this fix
+
+### FILES MODIFIED
+- ✅ `/app/backend/migrate_order_numbers.py` (created)
+- ✅ `/app/backend/server.py` (lines 4186-4191)
+- ✅ `/app/backend/shopify_sync_async.py` (line 201)
+- ✅ `/app/backend/shopify_sync.py` (line 141)
+
+### STATUS
+**RESOLVED** ✅ - All orders from #29351 to #29389 are now visible and accessible in the correct numeric order. The issue is fully fixed for both existing orders (via migration) and future orders (via sync updates).
+
+### NEXT ACTIONS
+- User should verify the fix by viewing unfulfilled orders on the Orders page
+- User can use the "Sort by Order Number" dropdown to see orders in proper numeric sequence
+
+---
