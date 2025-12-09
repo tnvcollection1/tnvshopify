@@ -4420,6 +4420,77 @@ async def get_customers_count(
     return {"total": count}
 
 
+@api_router.get("/customers/stats")
+async def get_customers_stats(
+    fulfillment_status: Optional[str] = None,
+    delivery_status: Optional[str] = None,
+    payment_status: Optional[str] = None,
+    confirmation_status: Optional[str] = None,
+    purchase_status: Optional[str] = None,
+    china_tracking: Optional[str] = None,
+    tcs_only: Optional[str] = None,
+    store_name: Optional[str] = None,
+    year: Optional[str] = None,
+    search: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
+):
+    """
+    Get aggregated stats for customers matching filters
+    Returns total, delivered, inTransit, pending, returned, paymentReceived, paymentPending
+    """
+    # Build base query
+    query = {}
+    
+    if fulfillment_status and fulfillment_status != "all":
+        query['fulfillment_status'] = fulfillment_status
+    if store_name and store_name != "all":
+        query['store_name'] = store_name
+    if tcs_only == "true":
+        query['tracking_company'] = 'tcs'
+    if china_tracking == "true":
+        query['china_tracking'] = {"$exists": True, "$ne": ""}
+    if year and year != "all":
+        query['order_year'] = year
+    if start_date or end_date:
+        date_query = {}
+        if start_date:
+            date_query['$gte'] = start_date
+        if end_date:
+            date_query['$lte'] = end_date
+        query['created_at'] = date_query
+    if search:
+        search_regex = {"$regex": search, "$options": "i"}
+        query['$or'] = [
+            {'order_number': search_regex},
+            {'customer_name': search_regex},
+            {'phone': search_regex},
+            {'tracking_number': search_regex}
+        ]
+    
+    # Get all matching customers
+    customers = await db.customers.find(query, {"_id": 0, "delivery_status": 1, "payment_status": 1}).to_list(50000)
+    
+    # Calculate stats
+    total = len(customers)
+    delivered = sum(1 for c in customers if c.get('delivery_status') == 'Delivered')
+    inTransit = sum(1 for c in customers if c.get('delivery_status') in ['In Transit', 'Dispatched', 'Out for Delivery'])
+    pending = sum(1 for c in customers if c.get('delivery_status') in ['Pending', 'Booked', 'Processing'])
+    returned = sum(1 for c in customers if c.get('delivery_status') in ['Returned', 'RTO', 'Return to Origin'])
+    paymentReceived = sum(1 for c in customers if c.get('payment_status') == 'paid')
+    paymentPending = sum(1 for c in customers if c.get('payment_status') in ['pending', 'unpaid', None])
+    
+    return {
+        "total": total,
+        "delivered": delivered,
+        "inTransit": inTransit,
+        "pending": pending,
+        "returned": returned,
+        "paymentReceived": paymentReceived,
+        "paymentPending": paymentPending
+    }
+
+
 @api_router.post("/customers/sync-stock-status")
 async def sync_stock_status_to_db():
     """Sync calculated stock status to database for all unfulfilled orders"""
