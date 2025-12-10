@@ -29,14 +29,30 @@ const DynamicPricingDashboard = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/api/dynamic-pricing/report`, {
-        timeout: 30000
+        timeout: 60000 // Increased timeout to 60s
       });
+      
+      // Check if data exists
+      if (!response.data || !response.data.categories) {
+        alert('⚠️ No pricing data available.\n\nPlease run "Analyze Products" first to generate pricing recommendations.\n\nThis will analyze your Shopify products and create ABC categories based on sales performance.');
+        setReport(null);
+        setLoading(false);
+        return;
+      }
+      
       setReport(response.data);
       updatePricingRules(response.data, filter);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      alert('Failed to load pricing data. Please try refreshing.');
+      const errorMsg = error.response?.data?.detail || error.message;
+      
+      if (error.code === 'ECONNABORTED' || errorMsg?.includes('timeout')) {
+        alert('⏱️ Request timed out.\n\nThe pricing analysis is taking longer than expected.\n\nPlease:\n1. Check if Shopify sync is complete\n2. Try running "Analyze Products" again\n3. Contact support if issue persists');
+      } else {
+        alert(`❌ Failed to load pricing data.\n\n${errorMsg}\n\nTry refreshing or run "Analyze Products" first.`);
+      }
+      
       setLoading(false);
     }
   };
