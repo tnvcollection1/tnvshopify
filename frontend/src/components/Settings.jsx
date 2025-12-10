@@ -725,6 +725,96 @@ const Settings = () => {
             </Card>
           </TabsContent>
 
+          {/* DTDC API Tab */}
+          <TabsContent value="dtdc" className="space-y-6">
+            {/* Info Banner */}
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-orange-900 mb-1">DTDC Courier Configuration</h3>
+                <p className="text-sm text-orange-700">
+                  Configure DTDC API credentials for tracking deliveries in India (tnvcollection and ashmiaa stores).
+                </p>
+              </div>
+            </div>
+
+            {/* DTDC Configuration Card */}
+            <Card className={`border-2 ${dtdcConfigured ? 'border-green-200' : 'border-gray-200'}`}>
+              <CardHeader className={dtdcConfigured ? 'bg-green-50' : 'bg-gray-50'}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Package className="w-6 h-6 text-gray-700" />
+                    <div>
+                      <CardTitle className="text-xl">DTDC API Credentials</CardTitle>
+                      <CardDescription className="text-sm mt-1">
+                        {dtdcConfigured ? (
+                          <span className="text-green-700 font-medium">✓ Configured</span>
+                        ) : (
+                          'Enter DTDC credentials to enable tracking'
+                        )}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  {dtdcConfigured && (
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  )}
+                </div>
+              </CardHeader>
+
+              <CardContent className="pt-6 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dtdc_username">Username</Label>
+                  <Input
+                    id="dtdc_username"
+                    type="text"
+                    placeholder="DTDC account username"
+                    value={dtdcConfig.username}
+                    onChange={(e) => setDtdcConfig({...dtdcConfig, username: e.target.value})}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dtdc_password">Password</Label>
+                  <Input
+                    id="dtdc_password"
+                    type="password"
+                    placeholder="DTDC account password"
+                    value={dtdcConfig.password}
+                    onChange={(e) => setDtdcConfig({...dtdcConfig, password: e.target.value})}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dtdc_api_url">API URL (Optional)</Label>
+                  <Input
+                    id="dtdc_api_url"
+                    type="text"
+                    placeholder="https://customer.dtdc.in/api"
+                    value={dtdcConfig.api_url}
+                    onChange={(e) => setDtdcConfig({...dtdcConfig, api_url: e.target.value})}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Default: https://customer.dtdc.in/api
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Button 
+                    onClick={handleSaveDtdc}
+                    disabled={savingDtdc || !dtdcConfig.username || !dtdcConfig.password}
+                    className="w-full"
+                  >
+                    {savingDtdc ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
+                    ) : (
+                      'Save DTDC Configuration'
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Auto-Sync Tab */}
           <TabsContent value="autosync" className="space-y-6">
             {/* Info Banner */}
