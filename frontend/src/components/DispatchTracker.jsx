@@ -211,9 +211,9 @@ const DispatchTracker = () => {
       // Removed tcs_only filter to show fulfilled orders from ALL stores regardless of courier
       params.append("fulfillment_status", "fulfilled");
       
-      // Default to showing only recent orders (2024 onwards) unless user filters differently
+      // Default to showing all orders from 2016 onwards unless user filters differently
       if (!dateRange.start && filters.year === "all") {
-        const startDate = new Date('2024-01-01').toISOString().split('T')[0];
+        const startDate = new Date('2016-01-01').toISOString().split('T')[0];
         params.append("start_date", startDate);
       }
       
