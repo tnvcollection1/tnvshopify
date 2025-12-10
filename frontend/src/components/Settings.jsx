@@ -48,6 +48,7 @@ const Settings = () => {
     interval_minutes: 60,
     sync_shopify: true,
     sync_tcs: true,
+    sync_dtdc: true,
     sync_inventory: true,
     last_sync: null
   });
