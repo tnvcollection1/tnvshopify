@@ -749,6 +749,29 @@ const Inventory = () => {
             <DialogTitle>Upload Inventory Excel</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {/* Store Selection */}
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <h4 className="font-semibold text-purple-900 mb-2">⚠️ Select Store First</h4>
+              <p className="text-sm text-purple-700 mb-3">
+                Choose which store this inventory file belongs to. Inventory will be synced with orders from this store only.
+              </p>
+              <div>
+                <Label className="text-purple-900">Store *</Label>
+                <Select value={uploadStore} onValueChange={setUploadStore}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select store" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stores.map(store => (
+                      <SelectItem key={store.store_name} value={store.store_name}>
+                        {store.store_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="font-semibold text-blue-900 mb-2">Excel Format:</h4>
               <div className="text-sm text-blue-700 space-y-1">
@@ -760,7 +783,7 @@ const Inventory = () => {
                 <div>Column 6: <span className="font-mono">Cost</span> (required)</div>
               </div>
               <p className="text-xs text-blue-600 mt-2">* First row should contain headers</p>
-              <p className="text-xs text-green-600 mt-1">* Orders will be auto-linked by matching SKU</p>
+              <p className="text-xs text-green-600 mt-1">* SKUs will be auto-matched with {uploadStore} orders</p>
             </div>
             <div>
               <Label>Select File</Label>
