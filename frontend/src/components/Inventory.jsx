@@ -752,4 +752,4 @@ const Inventory = () => {
   );
 };
 
-export default InventoryV2;
+export default Inventory;
