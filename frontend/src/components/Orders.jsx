@@ -323,23 +323,26 @@ const Orders = () => {
 
         let productList = '';
         if (order.line_items && order.line_items.length > 0) {
-          // Use line_items with product_id for working links
+          // Use line_items with search links (works with SKU or product name)
           productList = order.line_items
             .map((item, index) => {
               const productName = item.name || item.title || 'Product';
               const qty = item.quantity ? ` (x${item.quantity})` : '';
-              if (item.product_id) {
-                return `${index + 1}. ${productName}${qty}\n   🔗 ${storeUrl}/products/${item.product_id}`;
-              } else {
-                return `${index + 1}. ${productName}${qty}`;
-              }
+              const sku = item.sku || '';
+              // Create search link using SKU if available, otherwise product name
+              const searchQuery = sku || productName.split('/')[0].trim();
+              const searchLink = `${storeUrl}/search?q=${encodeURIComponent(searchQuery)}`;
+              return `${index + 1}. ${productName}${qty}\n   🔗 ${searchLink}`;
             })
             .join('\n\n');
         } else if (order.order_skus && order.order_skus.length > 0) {
-          // Fallback to SKUs without links (no product_id available)
+          // Fallback to SKUs with search links
           productList = order.order_skus
-            .map((sku, index) => `${index + 1}. ${sku}`)
-            .join('\n');
+            .map((sku, index) => {
+              const searchLink = `${storeUrl}/search?q=${encodeURIComponent(sku)}`;
+              return `${index + 1}. ${sku}\n   🔗 ${searchLink}`;
+            })
+            .join('\n\n');
         }
 
         const totalAmount = order.total_spent || order.total_price || 0;
