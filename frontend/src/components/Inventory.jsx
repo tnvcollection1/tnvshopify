@@ -281,11 +281,17 @@ const Inventory = () => {
       return;
     }
     
+    if (!uploadStore || uploadStore === 'all') {
+      toast.error('Please select a specific store');
+      return;
+    }
+    
+    setLoading(true);
     const formData = new FormData();
     formData.append('file', selectedFile);
     
     try {
-      const response = await fetch(`${API}/inventory/v2/upload?store_name=${filters.store === 'all' ? 'tnvcollectionpk' : filters.store}`, {
+      const response = await fetch(`${API}/inventory/v2/upload?store_name=${uploadStore}`, {
         method: 'POST',
         body: formData
       });
@@ -296,7 +302,7 @@ const Inventory = () => {
       
       const syncStatus = data.sync_status || {};
       toast.success(
-        `${data.items_added} items uploaded successfully! ` +
+        `✅ ${data.items_added} items uploaded for ${uploadStore}! ` +
         `Synced with ${syncStatus.orders_updated || 0} orders.`
       );
       if (data.errors && data.errors.length > 0) {
@@ -307,6 +313,7 @@ const Inventory = () => {
       
       setUploadDialog(false);
       setSelectedFile(null);
+      setUploadStore('tnvcollectionpk'); // Reset to default
       fetchItems();
     } catch (error) {
       console.error('Error uploading file:', error);
