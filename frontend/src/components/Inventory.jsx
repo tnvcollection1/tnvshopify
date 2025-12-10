@@ -292,7 +292,11 @@ const Inventory = () => {
       
       if (!response.ok) throw new Error(data.detail || 'Upload failed');
       
-      toast.success(`${data.items_added} items uploaded successfully`);
+      const syncStatus = data.sync_status || {};
+      toast.success(
+        `${data.items_added} items uploaded successfully! ` +
+        `Synced with ${syncStatus.orders_updated || 0} orders.`
+      );
       if (data.errors && data.errors.length > 0) {
         setUploadErrors(data.errors);
         setErrorsDialog(true);
