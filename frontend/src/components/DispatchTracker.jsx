@@ -181,6 +181,28 @@ const DispatchTracker = () => {
     });
   };
 
+  const viewCardDetails = (cardType) => {
+    let filtered = orders.filter(order => {
+      switch(cardType) {
+        case 'delivered': return order.delivery_status === 'DELIVERED';
+        case 'inTransit': return order.delivery_status === 'IN_TRANSIT' || order.delivery_status === 'IN TRANSIT';
+        case 'pending': return !order.delivery_status || order.delivery_status === 'PENDING' || order.delivery_status === 'NOT_DISPATCHED';
+        case 'returned': return order.delivery_status === 'RETURNED';
+        case 'paymentReceived': return order.payment_status === 'paid';
+        case 'paymentPending': return order.payment_status !== 'paid';
+        case 'total': return true;
+        default: return false;
+      }
+    });
+    setCardData(filtered);
+    setViewingCard(cardType);
+  };
+
+  const closeCardView = () => {
+    setViewingCard(null);
+    setCardData([]);
+  };
+
   const fetchOrders = async () => {
     setLoading(true);
     try {
