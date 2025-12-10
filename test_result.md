@@ -1827,3 +1827,204 @@ Order # | Customer      | Amount    | WhatsApp    | Actions
 **COMPLETED** ✅ - WhatsApp status visual indicator is now live and functional. Users can clearly see which customers have been messaged.
 
 ---
+
+---
+
+## ✅ FEATURE COMPLETE: Random Message Templates + Cancellation Messages (December 2025)
+
+### USER REQUEST
+1. Generate random greetings to avoid WhatsApp ban
+2. Add cancellation message button for no-response scenarios
+3. Generate random message variations to prevent spam detection
+
+### SOLUTION IMPLEMENTED
+**Enhanced Anti-Ban Messaging System** with 14 unique templates (8 confirmation + 6 cancellation)
+
+### CONFIRMATION MESSAGE TEMPLATES (8 Variations)
+
+**Template Styles:**
+1. **Friendly & Casual** - "Hello [Name]! 👋" with casual tone
+2. **Professional** - "Hi [Name]," formal business language
+3. **Warm & Welcoming** - "Hey [Name]! 😊" enthusiastic greeting
+4. **Formal & Polite** - "Dear [Name]," traditional business style
+5. **Enthusiastic** - "Hi there [Name]! 🎉" energetic approach
+6. **Simple & Direct** - "Hello [Name]," straightforward format
+7. **Personable** - "Hi [Name]! 👋" checking-in style
+8. **Business-like** - "Good day [Name]!" corporate tone
+
+**Message Structure Variations:**
+- Different greetings: Hello, Hi, Hey, Dear, Hi there, Good day
+- Varied order references: "Order #X", "Your order (#X)", "Order #X status"
+- Multiple CTAs: "Type CONFIRM", "Reply CONFIRM", "CONFIRM ✓"
+- Different closings: "Thank you!", "Best regards", "Cheers!", "Thanks!"
+- Mixed emoji usage: Some with 👋😊🎉, some without
+
+### CANCELLATION MESSAGE TEMPLATES (6 Variations)
+
+**Template Styles:**
+1. **Polite & Understanding** - Empathetic, customer-first
+2. **Gentle Reminder** - Soft follow-up approach
+3. **Professional** - Formal cancellation notice
+4. **Friendly & Casual** - Casual check-in style
+5. **Direct & Clear** - Straightforward notification
+6. **Empathetic** - Understanding and supportive tone
+
+**Common Elements:**
+- Order number reference
+- Reason: No confirmation received
+- Action: 24-hour cancellation window
+- Option: Reply CONFIRM to keep order
+- Supportive tone: "We understand if plans changed"
+
+### TECHNICAL IMPLEMENTATION
+
+**Files Modified:**
+- `/app/frontend/src/components/Orders.jsx`
+
+**New Functions Added:**
+1. `generateOrderMessage()` - Enhanced to 8 templates (was 5)
+2. `generateCancellationMessage()` - New function with 6 templates
+3. `sendBulkCancellationToSelected()` - Bulk cancellation sender
+4. `sendCancellationMessage()` - Individual cancellation sender
+
+**Randomization Logic:**
+```javascript
+// Bulk Send: Index-based rotation (ensures variety)
+templateIdx = templateIndex % templates.length;
+
+// Single Send: Random selection
+templateIdx = Math.floor(Math.random() * templates.length);
+```
+
+### UI ENHANCEMENTS
+
+**New Buttons Added:**
+
+**1. Bulk Actions (Top Bar):**
+- ✅ "Send to Selected" (Green) - Confirmation messages
+- ❌ "Send Cancellation" (Red) - Cancellation messages
+- Position: Between order selection and Shopify sync
+
+**2. Individual Actions (Table Row):**
+- 💬 Green button - Send confirmation message
+- ✗ Red button - Send cancellation message
+- 🔗 Blue button - Open WhatsApp chat
+
+**Visual Layout:**
+```
+Actions Column:
+┌──────────────────────────────────┐
+│  💬   ✗   🔗                     │
+│ (Confirm) (Cancel) (Chat)        │
+└──────────────────────────────────┘
+```
+
+### ANTI-BAN FEATURES
+
+**How Randomization Prevents Bans:**
+
+1. **Template Variety**
+   - 8 different confirmation formats
+   - 6 different cancellation formats
+   - Total 14 unique message structures
+
+2. **Content Variation**
+   - Different greetings and closings
+   - Varied call-to-action formats
+   - Mixed emoji usage (natural)
+   - Different message lengths
+
+3. **Behavioral Patterns**
+   - Index-based rotation for bulk (predictable variety)
+   - Random selection for singles (unpredictable)
+   - Automatic delays between messages (20s confirmation, 15s cancellation)
+   - Human-like message timing
+
+4. **Structure Differences**
+   - Some use bullet points, some don't
+   - Different order detail formats
+   - Varied confirmation instructions
+   - Multiple closing styles
+
+### USER WORKFLOWS
+
+**Workflow 1: Send Confirmation Messages**
+1. Select orders needing confirmation
+2. Click "Send to Selected (5)" green button
+3. System rotates through 8 templates automatically
+4. Each customer gets different message format
+5. WhatsApp opens sequentially (20s delay)
+
+**Workflow 2: Send Cancellation Messages**
+1. Select orders with no response
+2. Click "Send Cancellation (5)" red button
+3. Confirm action in popup
+4. System rotates through 6 cancellation templates
+5. WhatsApp opens sequentially (15s delay)
+
+**Workflow 3: Individual Messages**
+1. Click 💬 (green) for confirmation
+2. Click ✗ (red) for cancellation
+3. Random template selected each time
+4. WhatsApp opens immediately
+
+### VERIFICATION
+
+✅ **8 confirmation templates** created with variety  
+✅ **6 cancellation templates** created with empathy  
+✅ **Bulk cancellation button** added (red, top bar)  
+✅ **Individual cancellation button** added (red, table row)  
+✅ **Index-based rotation** for bulk sends  
+✅ **Random selection** for individual sends  
+✅ **Console logging** shows template selection  
+✅ **15-20 second delays** between bulk messages
+
+### EXAMPLE MESSAGE COMPARISON
+
+**Customer 1 (Template 1):**
+```
+Hello Ali! 👋
+Your order #29493 has been received...
+Please confirm by replying:
+✅ Type CONFIRM to proceed
+```
+
+**Customer 2 (Template 3):**
+```
+Hey Ahmed! 😊
+Great news! Your order #29494...
+Action needed:
+Reply CONFIRM ✓
+```
+
+**Customer 3 (Template 5):**
+```
+Hi there Sara! 🎉
+Your order (#29495) is awaiting...
+Quick action needed:
+✓ CONFIRM - Yes, proceed!
+```
+
+### TESTING INSTRUCTIONS
+
+1. **Test Confirmation Variety:**
+   - Select 8+ orders
+   - Click "Send to Selected"
+   - Each message will use different template (rotation)
+   - Check browser console for template numbers
+
+2. **Test Cancellation Feature:**
+   - Select orders with no response
+   - Click "Send Cancellation" (red button)
+   - Confirm the action
+   - Each message uses different cancellation template
+
+3. **Test Individual Buttons:**
+   - Click 💬 on any order → Random confirmation
+   - Click ✗ on any order → Random cancellation
+   - Click 🔗 on any order → Open empty chat
+
+### STATUS
+**COMPLETED** ✅ - Random message generation with 14 unique templates is now live. WhatsApp ban prevention through message variety and natural timing is fully implemented.
+
+---
