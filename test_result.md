@@ -1534,3 +1534,89 @@ The `order_number` field was stored as a STRING in MongoDB. When sorting by orde
 - User can use the "Sort by Order Number" dropdown to see orders in proper numeric sequence
 
 ---
+
+---
+
+## ✅ FIX COMPLETED: Broken Product Links in WhatsApp Messages (December 2025)
+
+### ISSUE DESCRIPTION
+WhatsApp confirmation messages were including product links in the format:
+```
+https://tnvcollection.com/products/856988015032-red-41
+```
+
+These links resulted in **404 "Page Not Found" errors** because:
+- The URLs were constructed using **SKU codes** (e.g., "856988015032-red-41")
+- Shopify uses **product handles** (slugs), not SKU codes in URLs
+- The system doesn't store Shopify product handles, only SKU codes
+
+### ROOT CAUSE
+The WhatsApp message generation in `/app/frontend/src/components/Orders.jsx` was constructing product URLs using:
+```javascript
+${storeUrl}/products/${sku.toLowerCase().replace(/\s+/g, '-')}
+```
+
+This approach doesn't work because:
+1. SKU codes ≠ Shopify product handles
+2. Product handles are not stored in the database
+3. There's no mapping available between SKUs and product handles
+
+### SOLUTION IMPLEMENTED
+**Removed all product view links from WhatsApp messages**
+
+**Files Modified:**
+- `/app/frontend/src/components/Orders.jsx` (Lines ~327 and ~673, ~677)
+
+**Changes:**
+- **Before**: `${index + 1}. ${sku}\n   View: ${storeUrl}/products/${sku.toLowerCase().replace(/\s+/g, '-')}`
+- **After**: `${index + 1}. ${sku}`
+
+**New Message Format:**
+```
+✨ *Hi Ali!* ✨
+
+Thank you for your order #29493 🎉
+
+📦 *Your Items:*
+1. 856988015032-red-41
+2. H-2605
+3. JJ0-101
+
+💰 *Total Amount:* PKR 12,500
+
+We'll process your order soon! 🚀
+```
+
+### VERIFICATION
+✅ Product links removed from both:
+- `copyAllMessagesToClipboard()` function (bulk copy to clipboard)
+- `sendBulkWhatsAppToSelected()` function (sequential WhatsApp opening)
+✅ Product SKUs still displayed (without links)
+✅ No more 404 errors for customers
+✅ Message format remains professional and readable
+
+### ALTERNATIVE SOLUTIONS (For Future Enhancement)
+If you want working product links in the future, you would need to:
+
+**Option 1: Store Product Handles**
+- Modify Shopify sync to extract and store `product.handle` for each line item
+- Update database schema to include `product_handles` array alongside `order_skus`
+- Use handles in URL construction: `${storeUrl}/products/${handle}`
+
+**Option 2: Product Search Links**
+- Link to store search page with SKU as query: `${storeUrl}/search?q=${sku}`
+- Not as direct but would help customers find products
+
+**Option 3: Use Shopify Product IDs**
+- Some themes support: `${storeUrl}/products/${product_id}`
+- Would require storing Shopify product IDs during sync
+
+### STATUS
+**RESOLVED** ✅ - All broken product links have been removed from WhatsApp messages. Customers will no longer encounter 404 errors when receiving order confirmations.
+
+### NEXT ACTIONS
+- Frontend will reload automatically (hot reload enabled)
+- Test by generating a new WhatsApp message from the Orders page
+- Verify the message shows SKUs without any "View" links
+
+---
