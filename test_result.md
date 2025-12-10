@@ -1721,3 +1721,109 @@ const searchLink = `${storeUrl}/search?q=${encodeURIComponent(searchQuery)}`;
 **COMPLETED** ✅ - Product links are now fully functional using smart search links. Customers can click links and find their ordered products easily.
 
 ---
+
+---
+
+## ✅ FEATURE ADDED: WhatsApp Status Visual Indicator (December 2025)
+
+### USER REQUEST
+Add a tick mark option to show whether WhatsApp messages have been sent or not for each order.
+
+### SOLUTION IMPLEMENTED
+**New "WhatsApp" Status Column** with visual indicators showing message sent/not sent status.
+
+### VISUAL INDICATORS
+
+**✅ Message Sent:**
+- Green checkmark icon (✓)
+- Text: "Sent"
+- Tooltip shows date sent: "Message sent on 12/9/2025"
+
+**❌ Message Not Sent:**
+- Gray X icon (✗)
+- Text: "Not Sent"
+- Tooltip: "Message not sent"
+
+### TABLE LAYOUT
+
+```
+Order # | Customer      | Amount    | WhatsApp    | Actions
+--------|---------------|-----------|-------------|----------
+29493   | Ali Ahmed     | $6,299.00 | ✓ Sent      | 💬 🔗
+29491   | Shakeel (WA)  | $5,766.00 | ✗ Not Sent  | 💬 🔗
+29489   | Saddam B.     | $5,766.00 | ✓ Sent      | 💬 🔗
+```
+
+### TECHNICAL IMPLEMENTATION
+
+**Files Modified:**
+- `/app/frontend/src/components/Orders.jsx`
+
+**Changes Made:**
+
+1. **New Table Column Added**
+   - Position: Between "Amount" and "Actions"
+   - Header: "WhatsApp"
+   - Centered alignment
+
+2. **Status Indicator Logic**
+```javascript
+{order.messaged ? (
+  <Check className="w-5 h-5 text-green-600" /> // Green checkmark
+  <span>Sent</span>
+) : (
+  <X className="w-5 h-5 text-gray-400" /> // Gray X
+  <span>Not Sent</span>
+)}
+```
+
+3. **Automatic Status Update**
+   - When bulk send completes → Calls `/api/customers/{id}/mark-messaged`
+   - When single message sent → Calls `/api/customers/{id}/mark-messaged`
+   - Page auto-refreshes to show updated status
+   - Database stores: `messaged: true`, `message_sent_at: timestamp`
+
+4. **Backend Integration**
+   - Uses existing API endpoint: `POST /api/customers/{customer_id}/mark-messaged`
+   - Updates fields: `messaged`, `last_messaged_at`, `messaged_by`, `message_count`
+   - Persists status across sessions
+
+### USER EXPERIENCE
+
+**Before Sending:**
+- All orders show: ✗ Not Sent (gray)
+
+**After Sending:**
+1. User clicks "Send to Selected" (bulk send)
+2. WhatsApp chats open for each customer
+3. Status automatically updates to: ✓ Sent (green)
+4. Hover over status to see exact date sent
+
+**Benefits:**
+- ✅ Quick visual identification of sent/not sent
+- ✅ Track which customers have been contacted
+- ✅ Avoid duplicate messages
+- ✅ Audit trail with timestamp
+- ✅ Color-coded for instant recognition
+
+### VERIFICATION
+
+✅ **Frontend**: New column added with visual indicators  
+✅ **Backend**: API endpoint working (`mark-messaged`)  
+✅ **Database**: Status persisted in `customers` collection  
+✅ **Auto-refresh**: Status updates immediately after sending  
+✅ **Tooltip**: Shows date when hovering over sent status
+
+### HOW TO TEST
+
+1. Go to Orders page
+2. Look for the new "WhatsApp" column (between Amount and Actions)
+3. Orders without sent messages will show: ✗ Not Sent
+4. Select some orders and click "Send to Selected"
+5. After sending, status will change to: ✓ Sent
+6. Hover over "✓ Sent" to see the date it was sent
+
+### STATUS
+**COMPLETED** ✅ - WhatsApp status visual indicator is now live and functional. Users can clearly see which customers have been messaged.
+
+---
