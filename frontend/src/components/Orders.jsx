@@ -596,6 +596,85 @@ const Orders = () => {
     return template();
   };
 
+  // Generate cancellation message templates (for no response)
+  const generateCancellationMessage = (customerName, orderNumber, templateIndex = null) => {
+    const templates = [
+      // Template 1 - Polite & Understanding
+      () => {
+        let msg = `Hi ${customerName},\n\n`;
+        msg += `We haven't received confirmation for order #${orderNumber}.\n\n`;
+        msg += `If you're no longer interested, we understand! 😊\n\n`;
+        msg += `Your order will be cancelled within 24 hours if we don't hear from you.\n\n`;
+        msg += `Reply CONFIRM if you still want to proceed.\n\n`;
+        msg += `Thank you!`;
+        return msg;
+      },
+      // Template 2 - Gentle Reminder
+      () => {
+        let msg = `Hello ${customerName},\n\n`;
+        msg += `Just following up on order #${orderNumber}.\n\n`;
+        msg += `We noticed we didn't get your confirmation yet.\n\n`;
+        msg += `If you'd still like to proceed, please reply CONFIRM.\n`;
+        msg += `Otherwise, we'll cancel it automatically.\n\n`;
+        msg += `Thanks for understanding! 🙏`;
+        return msg;
+      },
+      // Template 3 - Professional
+      () => {
+        let msg = `Dear ${customerName},\n\n`;
+        msg += `Order #${orderNumber} - Cancellation Notice\n\n`;
+        msg += `We haven't received your confirmation.\n\n`;
+        msg += `This order will be cancelled unless confirmed within 24 hours.\n\n`;
+        msg += `Reply CONFIRM to proceed with your order.\n\n`;
+        msg += `Best regards`;
+        return msg;
+      },
+      // Template 4 - Friendly & Casual
+      () => {
+        let msg = `Hey ${customerName}! 👋\n\n`;
+        msg += `Still interested in order #${orderNumber}?\n\n`;
+        msg += `We haven't heard back from you yet.\n\n`;
+        msg += `No worries if plans changed! Just let us know or we'll cancel it soon.\n\n`;
+        msg += `Reply CONFIRM if you want it.\n\n`;
+        msg += `Cheers! 😊`;
+        return msg;
+      },
+      // Template 5 - Direct & Clear
+      () => {
+        let msg = `Hi ${customerName},\n\n`;
+        msg += `Order #${orderNumber} - Awaiting Response\n\n`;
+        msg += `No confirmation received yet.\n\n`;
+        msg += `Action: Reply CONFIRM to keep your order\n\n`;
+        msg += `If we don't hear from you, we'll proceed with cancellation.\n\n`;
+        msg += `Thanks!`;
+        return msg;
+      },
+      // Template 6 - Empathetic
+      () => {
+        let msg = `Hello ${customerName},\n\n`;
+        msg += `Hope you're doing well! 😊\n\n`;
+        msg += `We're checking on order #${orderNumber}.\n\n`;
+        msg += `Haven't received your confirmation yet. Plans change, and that's okay!\n\n`;
+        msg += `Let us know if you'd like to proceed - just reply CONFIRM.\n\n`;
+        msg += `Thank you for your time!`;
+        return msg;
+      }
+    ];
+    
+    // Pick template - use provided index or random
+    let templateIdx;
+    if (templateIndex !== null && templateIndex !== undefined && templateIndex >= 0) {
+      templateIdx = templateIndex % templates.length;
+      console.log(`Cancellation template ${templateIdx + 1}/6 selected (index-based)`);
+    } else {
+      templateIdx = Math.floor(Math.random() * templates.length);
+      console.log(`Cancellation template ${templateIdx + 1}/6 selected (random)`);
+    }
+    
+    const template = templates[templateIdx];
+    return template();
+  };
+
   // Helper function to format phone number with correct country code
   const formatPhoneWithCountryCode = (phone, countryCode) => {
     if (!phone) return null;
