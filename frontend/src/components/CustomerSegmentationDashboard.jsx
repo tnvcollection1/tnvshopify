@@ -255,10 +255,11 @@ const CustomerSegmentationDashboard = () => {
             Rs. {segments?.dormant?.total_value?.toLocaleString() || 0}
           </p>
           <button
-            onClick={() => downloadCustomerList('dormant')}
-            className="mt-3 w-full px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition-colors"
+            onClick={() => viewSegmentCustomers('dormant')}
+            className="mt-3 w-full px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
           >
-            Download Dormant List
+            <Users className="w-4 h-4" />
+            View Customers
           </button>
         </div>
       </div>
