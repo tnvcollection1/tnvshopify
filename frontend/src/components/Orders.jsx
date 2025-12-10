@@ -788,6 +788,8 @@ const Orders = () => {
 
     toast.success(`✅ Opened ${successCount} WhatsApp chats! ${failCount > 0 ? `${failCount} failed.` : ''}`);
     setSelectedOrders([]); // Clear selection after sending
+    // Refresh orders to show updated WhatsApp status
+    fetchOrders();
   };
 
   const openWhatsAppWeb = () => {
