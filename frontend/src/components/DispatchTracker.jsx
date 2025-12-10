@@ -211,13 +211,23 @@ const DispatchTracker = () => {
       // Removed tcs_only filter to show fulfilled orders from ALL stores regardless of courier
       params.append("fulfillment_status", "fulfilled");
       
+      // Default to showing only recent orders (2024 onwards) unless user filters differently
+      if (!dateRange.start && filters.year === "all") {
+        const startDate = new Date('2024-01-01').toISOString().split('T')[0];
+        params.append("start_date", startDate);
+      }
+      
       if (filters.delivery !== "all") params.append("delivery_status", filters.delivery);
       if (filters.payment !== "all") params.append("payment_status", filters.payment);
       if (filters.store !== "all") params.append("store_name", filters.store);
       if (filters.year !== "all") params.append("year", filters.year);
       if (dateRange.start) params.append("start_date", dateRange.start);
       if (dateRange.end) params.append("end_date", dateRange.end);
-      if (filters.sortBy) params.append("sort_by", filters.sortBy);
+      
+      // Always sort by order date descending (newest first) if no specific sort selected
+      const sortBy = filters.sortBy || "order_desc";
+      params.append("sort_by", sortBy);
+      
       if (searchQuery) params.append("search", searchQuery);
       params.append("page", currentPage);
       params.append("limit", "100");
