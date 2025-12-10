@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "@/components/DashboardOptimized";
 import Login from "@/components/Login";
 import Layout from "@/components/Layout";
-import Inventory from "@/components/Inventory";
+import Inventory from "@/components/Inventory_Simple";
 import InventoryOverview from "@/components/InventoryOverview";
 import Orders from "@/components/Orders";
 import DispatchTracker from "@/components/DispatchTracker";
