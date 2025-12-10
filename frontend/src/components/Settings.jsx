@@ -653,6 +653,160 @@ const Settings = () => {
             </Card>
           </TabsContent>
 
+          {/* Auto-Sync Tab */}
+          <TabsContent value="autosync" className="space-y-6">
+            {/* Info Banner */}
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-purple-900 mb-1">Automatic Sync Configuration</h3>
+                <p className="text-sm text-purple-700">
+                  Configure automatic syncing of orders, tracking, and inventory. When enabled, the system will sync all stores at the specified interval.
+                </p>
+              </div>
+            </div>
+
+            {/* Auto-Sync Settings Card */}
+            <Card className="border-2">
+              <CardHeader className="bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <RefreshCw className="w-6 h-6 text-gray-700" />
+                    <div>
+                      <CardTitle className="text-xl">Auto-Sync Settings</CardTitle>
+                      <CardDescription className="text-sm mt-1">
+                        {autoSyncSettings.last_sync 
+                          ? `Last synced: ${new Date(autoSyncSettings.last_sync).toLocaleString()}`
+                          : 'Never synced'}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={handleTriggerSync}
+                    disabled={triggeringSync}
+                    variant="outline"
+                  >
+                    {triggeringSync ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Syncing...</>
+                    ) : (
+                      <><RefreshCw className="w-4 h-4 mr-2" /> Sync Now</>
+                    )}
+                  </Button>
+                </div>
+              </CardHeader>
+
+              <CardContent className="pt-6 space-y-6">
+                {/* Enable/Disable Toggle */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-gray-600" />
+                    <div>
+                      <Label className="text-base font-semibold">Enable Auto-Sync</Label>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Automatically sync all stores at regular intervals
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={autoSyncSettings.enabled}
+                      onChange={(e) => setAutoSyncSettings({...autoSyncSettings, enabled: e.target.checked})}
+                      className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                    />
+                    <span className={`text-sm font-medium ${autoSyncSettings.enabled ? 'text-green-600' : 'text-gray-400'}`}>
+                      {autoSyncSettings.enabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Sync Interval */}
+                <div className="space-y-2">
+                  <Label htmlFor="interval">Sync Interval (minutes)</Label>
+                  <Input
+                    id="interval"
+                    type="number"
+                    min="15"
+                    max="1440"
+                    value={autoSyncSettings.interval_minutes}
+                    onChange={(e) => setAutoSyncSettings({...autoSyncSettings, interval_minutes: parseInt(e.target.value)})}
+                    disabled={!autoSyncSettings.enabled}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Recommended: 60 minutes (1 hour). Minimum: 15 minutes. Maximum: 1440 minutes (24 hours).
+                  </p>
+                </div>
+
+                {/* Sync Options */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">What to Sync</Label>
+                  
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={autoSyncSettings.sync_shopify}
+                        onChange={(e) => setAutoSyncSettings({...autoSyncSettings, sync_shopify: e.target.checked})}
+                        disabled={!autoSyncSettings.enabled}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      />
+                      <Store className="w-5 h-5 text-gray-600" />
+                      <div className="flex-1">
+                        <div className="font-medium">Shopify Orders</div>
+                        <div className="text-sm text-gray-600">Sync new orders from all Shopify stores</div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={autoSyncSettings.sync_tcs}
+                        onChange={(e) => setAutoSyncSettings({...autoSyncSettings, sync_tcs: e.target.checked})}
+                        disabled={!autoSyncSettings.enabled}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      />
+                      <Truck className="w-5 h-5 text-gray-600" />
+                      <div className="flex-1">
+                        <div className="font-medium">TCS Tracking</div>
+                        <div className="text-sm text-gray-600">Update delivery status from TCS</div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={autoSyncSettings.sync_inventory}
+                        onChange={(e) => setAutoSyncSettings({...autoSyncSettings, sync_inventory: e.target.checked})}
+                        disabled={!autoSyncSettings.enabled}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      />
+                      <Package className="w-5 h-5 text-gray-600" />
+                      <div className="flex-1">
+                        <div className="font-medium">Inventory Sync</div>
+                        <div className="text-sm text-gray-600">Sync inventory with orders across all stores</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                <div className="pt-4 border-t">
+                  <Button 
+                    onClick={handleSaveAutoSync}
+                    disabled={savingAutoSync}
+                    className="w-full"
+                  >
+                    {savingAutoSync ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
+                    ) : (
+                      <>Save Auto-Sync Settings</>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Security/Password Change Tab */}
           <TabsContent value="security" className="space-y-6">
             {/* Info Banner */}
