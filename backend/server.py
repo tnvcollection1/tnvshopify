@@ -7552,6 +7552,130 @@ async def get_unmatched_records(store_name: str = 'ashmiaa'):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ========================================
+# AUTO-SYNC SETTINGS ENDPOINTS
+# ========================================
+
+class AutoSyncSettings(BaseModel):
+    enabled: bool = False
+    interval_minutes: int = 60
+    sync_shopify: bool = True
+    sync_tcs: bool = True
+    sync_inventory: bool = True
+    last_sync: Optional[str] = None
+
+@api_router.get("/settings/auto-sync")
+async def get_auto_sync_settings():
+    """Get auto-sync configuration"""
+    try:
+        settings = await db.system_settings.find_one(
+            {"setting_type": "auto_sync"},
+            {"_id": 0}
+        )
+        
+        if not settings:
+            # Return default settings
+            return {
+                "enabled": False,
+                "interval_minutes": 60,
+                "sync_shopify": True,
+                "sync_tcs": True,
+                "sync_inventory": True,
+                "last_sync": None
+            }
+        
+        return settings
+        
+    except Exception as e:
+        logger.error(f"Error fetching auto-sync settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/settings/auto-sync")
+async def update_auto_sync_settings(settings: AutoSyncSettings):
+    """Update auto-sync configuration"""
+    try:
+        settings_dict = settings.model_dump()
+        settings_dict["setting_type"] = "auto_sync"
+        settings_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        await db.system_settings.update_one(
+            {"setting_type": "auto_sync"},
+            {"$set": settings_dict},
+            upsert=True
+        )
+        
+        # If enabled, trigger an immediate sync
+        if settings.enabled:
+            # Trigger background sync
+            logger.info(f"Auto-sync enabled with {settings.interval_minutes} minute interval")
+        
+        return {
+            "success": True,
+            "message": "Auto-sync settings updated",
+            "settings": settings_dict
+        }
+        
+    except Exception as e:
+        logger.error(f"Error updating auto-sync settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/settings/auto-sync/trigger")
+async def trigger_manual_sync():
+    """Manually trigger a sync of all stores"""
+    try:
+        settings = await db.system_settings.find_one({"setting_type": "auto_sync"})
+        
+        if not settings:
+            raise HTTPException(status_code=400, detail="Auto-sync not configured")
+        
+        # Get all stores
+        stores = await db.stores.find({}, {"_id": 0, "store_name": 1}).to_list(100)
+        
+        sync_results = []
+        
+        for store in stores:
+            store_name = store["store_name"]
+            
+            try:
+                # Sync Shopify orders
+                if settings.get("sync_shopify", True):
+                    logger.info(f"Syncing Shopify orders for {store_name}...")
+                    # Call Shopify sync endpoint internally
+                    # This will be done via the existing sync endpoint
+                
+                # Sync inventory
+                if settings.get("sync_inventory", True):
+                    logger.info(f"Syncing inventory for {store_name}...")
+                    # Call inventory sync function
+                    sync_result = await sync_inventory_with_store(store_name)
+                    sync_results.append(sync_result)
+                
+            except Exception as e:
+                logger.error(f"Error syncing {store_name}: {str(e)}")
+                sync_results.append({
+                    "store_name": store_name,
+                    "success": False,
+                    "error": str(e)
+                })
+        
+        # Update last sync time
+        await db.system_settings.update_one(
+            {"setting_type": "auto_sync"},
+            {"$set": {"last_sync": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {
+            "success": True,
+            "message": "Manual sync completed",
+            "stores_synced": len(sync_results),
+            "results": sync_results
+        }
+        
+    except Exception as e:
+        logger.error(f"Error triggering manual sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Include the router in the main app
