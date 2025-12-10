@@ -51,6 +51,19 @@ import { Textarea } from "@/components/ui/textarea";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Helper function to get courier name based on order data
+const getCourierName = (order) => {
+  if (!order) return 'TCS';
+  
+  // Check if order has store_name or other indicators
+  if (order.store_name && order.store_name.toLowerCase().includes('dtdc')) {
+    return 'DTDC';
+  }
+  
+  // Default to TCS for most orders
+  return 'TCS';
+};
+
 const DispatchTracker = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
