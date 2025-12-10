@@ -57,6 +57,7 @@ const Settings = () => {
   useEffect(() => {
     fetchStores();
     fetchTcsConfig();
+    fetchDtdcConfig();
     fetchAutoSyncSettings();
   }, []);
 
