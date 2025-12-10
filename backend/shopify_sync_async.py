@@ -207,8 +207,23 @@ class ShopifyAsyncSync:
                 'country_code': order.shipping_address.country_code if order.shipping_address else '',
                 'order_date': order.created_at,
                 'total_price': float(order.total_price) if order.total_price else 0.0,
+                'subtotal_price': float(order.subtotal_price) if order.subtotal_price else 0.0,
+                'total_weight': float(order.total_weight) if order.total_weight else 0.0,
                 'financial_status': order.financial_status,
                 'fulfillment_status': order.fulfillment_status or 'unfulfilled',
+                'payment_status': order.financial_status or 'pending',
+                'gateway': order.gateway if hasattr(order, 'gateway') else None,
+                
+                # Financial fields for COD tracking
+                'cod_amount': float(order.total_price) if order.total_price else 0.0,
+                'amount_paid': float(order.total_price) if order.financial_status == 'paid' else 0.0,
+                'payment_balance': 0.0 if order.financial_status == 'paid' else float(order.total_price) if order.total_price else 0.0,
+                'cod_payment_status': 'PAID' if order.financial_status == 'paid' else 'UNPAID',
+                
+                # Delivery tracking fields
+                'parcel_weight': f"{float(order.total_weight)/1000:.2f}" if order.total_weight else None,
+                'booking_date': order.created_at if order.fulfillment_status == 'fulfilled' else None,
+                
                 'line_items': [],
                 'fulfillments': [],
                 'tracking_info': None
