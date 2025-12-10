@@ -322,7 +322,21 @@ const Orders = () => {
           : 'https://tnvcollection.com';
 
         let productList = '';
-        if (order.order_skus && order.order_skus.length > 0) {
+        if (order.line_items && order.line_items.length > 0) {
+          // Use line_items with product_id for working links
+          productList = order.line_items
+            .map((item, index) => {
+              const productName = item.name || item.title || 'Product';
+              const qty = item.quantity ? ` (x${item.quantity})` : '';
+              if (item.product_id) {
+                return `${index + 1}. ${productName}${qty}\n   🔗 ${storeUrl}/products/${item.product_id}`;
+              } else {
+                return `${index + 1}. ${productName}${qty}`;
+              }
+            })
+            .join('\n\n');
+        } else if (order.order_skus && order.order_skus.length > 0) {
+          // Fallback to SKUs without links (no product_id available)
           productList = order.order_skus
             .map((sku, index) => `${index + 1}. ${sku}`)
             .join('\n');
