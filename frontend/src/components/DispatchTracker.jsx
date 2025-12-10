@@ -55,12 +55,31 @@ const API = `${BACKEND_URL}/api`;
 const getCourierName = (order) => {
   if (!order) return 'TCS';
   
-  // Check if order has store_name or other indicators
-  if (order.store_name && order.store_name.toLowerCase().includes('dtdc')) {
+  // Check tracking_company field first
+  if (order.tracking_company) {
+    if (order.tracking_company.toUpperCase().includes('DTDC')) return 'DTDC';
+    if (order.tracking_company.toUpperCase().includes('TCS')) return 'TCS';
+  }
+  
+  // Check tracking number pattern
+  const tracking = order.tracking_number || '';
+  // DTDC tracking numbers typically start with I, D, or are numeric
+  if (tracking.match(/^[ID]\d{8}/)) {
     return 'DTDC';
   }
   
-  // Default to TCS for most orders
+  // Check store name - India stores use DTDC
+  if (order.store_name) {
+    const store = order.store_name.toLowerCase();
+    if (store === 'tnvcollection' || store === 'ashmiaa' || store === 'asmia') {
+      return 'DTDC';
+    }
+    if (store === 'tnvcollectionpk') {
+      return 'TCS';
+    }
+  }
+  
+  // Default to TCS for Pakistan orders
   return 'TCS';
 };
 
