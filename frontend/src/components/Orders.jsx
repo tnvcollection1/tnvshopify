@@ -674,7 +674,7 @@ const Orders = () => {
             .join('\n');
         } else if (order.line_items && order.line_items.length > 0) {
           productList = order.line_items
-            .map((item, index) => `${index + 1}. ${item.name || item.title} (x${item.quantity})\n   View: ${storeUrl}/products/${(item.handle || item.name || '').toLowerCase().replace(/\s+/g, '-')}`)
+            .map((item, index) => `${index + 1}. ${item.name || item.title} (x${item.quantity})`)
             .join('\n');
         }
 
