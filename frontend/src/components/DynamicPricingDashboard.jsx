@@ -14,6 +14,8 @@ const DynamicPricingDashboard = () => {
   const [editingDiscounts, setEditingDiscounts] = useState({ A: 0, B: 10, C: 20 });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStore, setSelectedStore] = useState('tnvcollectionpk'); // Default store
+  const [viewingCategory, setViewingCategory] = useState(null);
+  const [categoryProducts, setCategoryProducts] = useState([]);
 
   useEffect(() => {
     fetchReport();
