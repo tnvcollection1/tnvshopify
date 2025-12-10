@@ -1255,7 +1255,7 @@ const DispatchTracker = () => {
                               <div>
                                 <h4 className="font-semibold text-amber-900 mb-1">⚠️ Tracking Not Available</h4>
                                 <p className="text-sm text-amber-800">
-                                  This order is {daysDiff} days old. Tracking number not found in TCS system.
+                                  This order is {daysDiff} days old. Tracking number not found in {getCourierName(selectedOrder)} system.
                                 </p>
                                 <p className="text-xs text-amber-700 mt-2">
                                   💡 Use the <strong>green hand icon</strong> to manually update the delivery status.
