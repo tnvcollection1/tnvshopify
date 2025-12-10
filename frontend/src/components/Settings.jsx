@@ -253,6 +253,58 @@ const Settings = () => {
     }
   };
 
+  const fetchAutoSyncSettings = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/settings/auto-sync`);
+      if (!response.ok) throw new Error('Failed to fetch auto-sync settings');
+      const data = await response.json();
+      setAutoSyncSettings(data);
+    } catch (error) {
+      console.error('Error fetching auto-sync settings:', error);
+    }
+  };
+
+  const handleSaveAutoSync = async () => {
+    setSavingAutoSync(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/settings/auto-sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(autoSyncSettings)
+      });
+      
+      if (!response.ok) throw new Error('Failed to save auto-sync settings');
+      
+      toast.success('Auto-sync settings saved successfully!');
+      fetchAutoSyncSettings(); // Refresh
+    } catch (error) {
+      console.error('Error saving auto-sync settings:', error);
+      toast.error('Failed to save auto-sync settings');
+    } finally {
+      setSavingAutoSync(false);
+    }
+  };
+
+  const handleTriggerSync = async () => {
+    setTriggeringSync(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/settings/auto-sync/trigger`, {
+        method: 'POST'
+      });
+      
+      if (!response.ok) throw new Error('Failed to trigger sync');
+      
+      const data = await response.json();
+      toast.success(`Sync completed! ${data.stores_synced} stores synced.`);
+      fetchAutoSyncSettings(); // Refresh to get last_sync time
+    } catch (error) {
+      console.error('Error triggering sync:', error);
+      toast.error('Failed to trigger sync');
+    } finally {
+      setTriggeringSync(false);
+    }
+  };
+
   const getStoreStatus = (store) => {
     if (store.shopify_domain && store.shopify_token) {
       return {
