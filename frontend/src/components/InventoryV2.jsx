@@ -46,6 +46,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const InventoryV2 = () => {
+  console.log("🔍 LOADING: InventoryV2.jsx (Advanced Version)");
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [stores, setStores] = useState([]);

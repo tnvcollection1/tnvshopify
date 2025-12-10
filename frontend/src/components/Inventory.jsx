@@ -33,6 +33,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const Inventory = () => {
+  console.log("🔍 LOADING: Inventory.jsx (Simple Upload Version)");
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
