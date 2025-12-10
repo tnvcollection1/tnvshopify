@@ -312,6 +312,35 @@ const Inventory = () => {
     }
   };
 
+  const handleSyncInventory = async () => {
+    if (filters.store === 'all') {
+      toast.error('Please select a specific store to sync');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`${API}/inventory/sync/${filters.store}`, {
+        method: 'POST'
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.detail || 'Sync failed');
+      
+      toast.success(
+        `✅ Inventory synced! Updated ${data.orders_updated} orders for ${data.store_name}`
+      );
+      
+      fetchItems();
+    } catch (error) {
+      console.error('Error syncing inventory:', error);
+      toast.error('Failed to sync inventory with orders');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const variants = {
       in_stock: 'bg-blue-100 text-blue-800 border-blue-200',
