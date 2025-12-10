@@ -25,6 +25,15 @@ const Settings = () => {
   const [tcsConfigured, setTcsConfigured] = useState(false);
   const [savingTcs, setSavingTcs] = useState(false);
   
+  // DTDC config state
+  const [dtdcConfig, setDtdcConfig] = useState({
+    username: '',
+    password: '',
+    api_url: 'https://customer.dtdc.in/api'
+  });
+  const [dtdcConfigured, setDtdcConfigured] = useState(false);
+  const [savingDtdc, setSavingDtdc] = useState(false);
+  
   // Password change state
   const [passwordForm, setPasswordForm] = useState({
     current_password: '',
