@@ -386,6 +386,95 @@ const CustomerSegmentationDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Customer List Modal */}
+      {viewingSegment && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-700 flex items-center justify-between bg-gradient-to-r from-purple-600/20 to-pink-600/20">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  {viewingSegment === 'vip' && <Crown className="w-6 h-6 text-yellow-400" />}
+                  {viewingSegment === 'high_value' && <TrendingUp className="w-6 h-6 text-green-400" />}
+                  {viewingSegment === 'medium_value' && <Users className="w-6 h-6 text-blue-400" />}
+                  {viewingSegment === 'low_value' && <Users className="w-6 h-6 text-gray-400" />}
+                  {viewingSegment === 'dormant' && <AlertCircle className="w-6 h-6 text-red-400" />}
+                  {viewingSegment.replace('_', ' ').toUpperCase()} Customers
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">
+                  {segmentCustomers.length} customers • Click WhatsApp to message with random greeting
+                </p>
+              </div>
+              <button
+                onClick={closeCustomerView}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            {/* Modal Body - Customer List */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {segmentCustomers.map((customer, idx) => (
+                  <div key={idx} className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 hover:border-purple-500/50 transition-all">
+                    {/* Customer Info */}
+                    <div className="mb-3">
+                      <div className="font-semibold text-lg text-white mb-1">
+                        {customer.name || 'Customer'}
+                      </div>
+                      <div className="text-sm text-gray-400 flex items-center gap-1">
+                        📱 {customer.phone || 'No phone'}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Order #{customer.order_number || 'N/A'}
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 gap-2 mb-3 pb-3 border-b border-gray-700">
+                      <div>
+                        <div className="text-xs text-gray-400">Total Spent</div>
+                        <div className="text-sm font-bold text-green-400">
+                          Rs. {customer.total_spent?.toLocaleString() || 0}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-400">Orders</div>
+                        <div className="text-sm font-bold text-blue-400">
+                          {customer.orders || 0}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                      onClick={() => openWhatsAppWeb(customer.phone, viewingSegment, customer.name)}
+                      disabled={!customer.phone}
+                      className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                        customer.phone
+                          ? 'bg-green-600 hover:bg-green-700 text-white'
+                          : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      {customer.phone ? 'Send WhatsApp' : 'No Phone'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {segmentCustomers.length === 0 && (
+                <div className="text-center py-12">
+                  <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No customers found in this segment</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
