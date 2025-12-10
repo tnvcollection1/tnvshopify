@@ -100,6 +100,10 @@ const DispatchTracker = () => {
   const [sendingWhatsapp, setSendingWhatsapp] = useState(false);
   const [selectedWhatsappOrder, setSelectedWhatsappOrder] = useState(null);
 
+  // Clickable cards states
+  const [viewingCard, setViewingCard] = useState(null);
+  const [cardData, setCardData] = useState([]);
+
   useEffect(() => {
     fetchOrders();
     fetchStores();
