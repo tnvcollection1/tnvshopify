@@ -3414,6 +3414,81 @@ async def upload_inventory_excel(file: UploadFile = File(...), store_name: str =
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/inventory/sync/{store_name}")
+async def sync_inventory_with_store(store_name: str):
+    """
+    Sync uploaded inventory with store orders to update:
+    - Confirmation Tracker (show stock availability)
+    - Dispatch Tracker (show stock availability)  
+    - Inventory Overview (update stats)
+    - Dynamic Pricing (update pricing based on stock)
+    - Inventory Health (update health metrics)
+    """
+    try:
+        # Get all inventory items for this store
+        inventory_items = await db.inventory_v2.find(
+            {"store_name": store_name},
+            {"_id": 0, "sku": 1, "cost": 1, "sale_price": 1, "profit": 1}
+        ).to_list(50000)
+        
+        if not inventory_items:
+            return {
+                "success": False,
+                "message": f"No inventory found for store: {store_name}"
+            }
+        
+        # Create SKU lookup map
+        sku_map = {item["sku"].upper().strip(): item for item in inventory_items}
+        
+        # Update customers collection with inventory data
+        updated_count = 0
+        customers = await db.customers.find(
+            {"store_name": store_name, "order_skus": {"$exists": True, "$ne": []}},
+            {"_id": 0, "customer_id": 1, "order_skus": 1, "line_items": 1}
+        ).to_list(50000)
+        
+        for customer in customers:
+            order_skus = customer.get("order_skus", [])
+            line_items = customer.get("line_items", [])
+            
+            # Check if any SKU in this order is in inventory
+            in_stock_skus = []
+            out_of_stock_skus = []
+            
+            for sku in order_skus:
+                sku_upper = sku.upper().strip()
+                if sku_upper in sku_map:
+                    in_stock_skus.append(sku)
+                else:
+                    out_of_stock_skus.append(sku)
+            
+            # Update customer record with inventory status
+            await db.customers.update_one(
+                {"customer_id": customer["customer_id"]},
+                {
+                    "$set": {
+                        "in_stock_skus": in_stock_skus,
+                        "out_of_stock_skus": out_of_stock_skus,
+                        "inventory_synced": True,
+                        "inventory_sync_date": datetime.now(timezone.utc)
+                    }
+                }
+            )
+            updated_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Synced inventory for {store_name}",
+            "inventory_items": len(inventory_items),
+            "orders_updated": updated_count,
+            "store_name": store_name
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ========================================
 # OLD INVENTORY ENDPOINTS (KEPT FOR BACKWARD COMPATIBILITY)
 # ========================================
