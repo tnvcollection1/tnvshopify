@@ -382,6 +382,15 @@ const Inventory = () => {
                 Delete Selected ({selectedItems.length})
               </Button>
             )}
+            <Button 
+              onClick={handleSyncInventory} 
+              variant="outline"
+              disabled={filters.store === 'all' || loading}
+              title={filters.store === 'all' ? 'Select a store to sync' : 'Sync inventory with store orders'}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Sync Store
+            </Button>
             <Button onClick={() => setUploadDialog(true)} variant="outline">
               <Upload className="w-4 h-4 mr-2" />
               Upload Excel
