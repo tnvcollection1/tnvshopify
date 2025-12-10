@@ -72,18 +72,51 @@ const CustomerSegmentationDashboard = () => {
     return segmentTemplates[randomIndex];
   };
 
-  const openWhatsAppWeb = (phone, segment, customerName = 'Customer') => {
+  // Country code mapping (ISO 2-letter to dial code)
+  const getDialCode = (countryCode) => {
+    const dialCodes = {
+      'PK': '92',   // Pakistan
+      'IN': '91',   // India
+      'US': '1',    // USA
+      'GB': '44',   // UK
+      'AE': '971',  // UAE
+      'SA': '966',  // Saudi Arabia
+      'CA': '1',    // Canada
+      'AU': '61',   // Australia
+      'BD': '880',  // Bangladesh
+      'MY': '60',   // Malaysia
+      'SG': '65',   // Singapore
+      'NZ': '64',   // New Zealand
+      'ZA': '27',   // South Africa
+    };
+    return dialCodes[countryCode?.toUpperCase()] || '92'; // Default to Pakistan
+  };
+
+  const openWhatsAppWeb = (phone, segment, customerName = 'Customer', countryCode = 'PK') => {
     if (!phone) {
       alert('No phone number available for this customer');
       return;
     }
     
-    // Clean phone number (remove spaces, dashes, etc.)
+    // Clean phone number (remove all non-digits)
     let cleanPhone = phone.replace(/\D/g, '');
     
-    // Add Pakistan country code if not present (default)
-    if (!cleanPhone.startsWith('92') && cleanPhone.length <= 10) {
-      cleanPhone = '92' + cleanPhone.replace(/^0+/, ''); // Remove leading zeros
+    // Get correct dial code from country
+    const dialCode = getDialCode(countryCode);
+    
+    // Format phone number properly
+    if (cleanPhone.startsWith('00')) {
+      // Remove international prefix (00)
+      cleanPhone = cleanPhone.substring(2);
+    } else if (cleanPhone.startsWith('+')) {
+      // Already has +, just clean it
+      cleanPhone = cleanPhone.substring(1);
+    } else if (cleanPhone.startsWith('0')) {
+      // Local number with leading 0, remove it and add country code
+      cleanPhone = dialCode + cleanPhone.substring(1);
+    } else if (!cleanPhone.startsWith(dialCode)) {
+      // No country code, add it
+      cleanPhone = dialCode + cleanPhone;
     }
     
     // Get randomized message based on segment
@@ -94,6 +127,8 @@ const CustomerSegmentationDashboard = () => {
     
     // WhatsApp Desktop App link (prioritizes desktop over web)
     const whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodedMessage}`;
+    
+    console.log(`WhatsApp: ${phone} (${countryCode}) → ${cleanPhone}`);
     
     // Open WhatsApp (desktop app will be used if installed)
     window.open(whatsappUrl, '_blank');
