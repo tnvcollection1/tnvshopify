@@ -2026,14 +2026,25 @@ async def sync_all_tcs_deliveries():
                         new_status = tracking_data.get('normalized_status')
                         old_status = customer.get('delivery_status')
                         
+                        # Build update document
+                        update_doc = {
+                            "delivery_status": new_status,
+                            "delivery_location": tracking_data.get('current_location'),
+                            "delivery_updated_at": datetime.now(timezone.utc).isoformat()
+                        }
+                        
+                        # Add delivery_date when delivered
+                        if new_status == 'DELIVERED' and tracking_data.get('delivery_date'):
+                            update_doc['delivery_date'] = tracking_data.get('delivery_date')
+                        
+                        # Add delivery charges if available from tracking
+                        if tracking_data.get('delivery_charges'):
+                            update_doc['delivery_charges'] = float(tracking_data.get('delivery_charges'))
+                        
                         # Update delivery status
                         await db.customers.update_one(
                             {"customer_id": customer['customer_id'], "store_name": customer['store_name']},
-                            {"$set": {
-                                "delivery_status": new_status,
-                                "delivery_location": tracking_data.get('current_location'),
-                                "delivery_updated_at": datetime.now(timezone.utc).isoformat()
-                            }}
+                            {"$set": update_doc}
                         )
                         synced_count += 1
                     
