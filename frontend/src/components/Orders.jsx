@@ -1282,9 +1282,17 @@ const Orders = () => {
             />
           </div>
         </div>
+      </div>
 
+      {/* Store & Courier Sync Panel */}
+      <div className="px-8 py-6">
+        <StoreSyncPanel onSyncComplete={fetchOrders} />
+      </div>
+
+      {/* Content Section */}
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-5 gap-4 mt-6">
+        <div className="grid grid-cols-5 gap-4">
           <Card className="border-gray-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
