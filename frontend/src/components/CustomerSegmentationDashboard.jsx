@@ -27,15 +27,47 @@ const CustomerSegmentationDashboard = () => {
     }
   };
 
-  const getWhatsAppMessage = (segment) => {
-    const messages = {
-      vip: "🌟 Exclusive VIP Offer! As one of our most valued customers, enjoy 15% OFF + Free Shipping on your next order. Shop now: [Your Store Link]",
-      high_value: "🎁 Special Preview Access! Thank you for being a loyal customer. Get early access to our new collection + 10% discount. Limited time!",
-      medium_value: "💎 Special Offer Just For You! Enjoy 15% OFF on your next purchase. Use code: THANKYOU15",
-      low_value: "👋 Welcome! Get 20% OFF your next order as a thank you for choosing us. Start shopping now!",
-      dormant: "💌 We Miss You! It's been a while. Come back and enjoy 20% OFF your next order. We'd love to see you again!"
+  const getWhatsAppMessage = (segment, customerName = 'Valued Customer') => {
+    // Random greeting templates per segment to avoid spam detection
+    const templates = {
+      vip: [
+        `Hello ${customerName}! 🌟\n\nAs our VIP customer, enjoy exclusive 15% OFF + Free Shipping on your next order!\n\nThank you for your continued support!`,
+        `Hi ${customerName},\n\nExclusive VIP Offer just for you! 🎁\n\n15% discount + Free delivery on all orders.\n\nShop now and enjoy premium service!`,
+        `Hey ${customerName}! 👑\n\nYou're one of our most valued customers!\n\nSpecial VIP discount: 15% OFF + Free Shipping\n\nLimited time offer!`,
+        `Dear ${customerName},\n\n🌟 VIP Member Benefits:\n• 15% OFF all products\n• Free Shipping\n• Priority Support\n\nThank you for being with us!`
+      ],
+      high_value: [
+        `Hi ${customerName}! 🎁\n\nThank you for being our loyal customer!\n\nEarly access to new collection + 10% discount waiting for you.\n\nCheck it out now!`,
+        `Hello ${customerName},\n\nSpecial preview just for you! 👀\n\n10% OFF on our latest arrivals + priority access.\n\nShop before anyone else!`,
+        `Hey ${customerName}! 😊\n\nYou're invited to our exclusive preview!\n\nGet 10% discount + early access to new collection.\n\nDon't miss out!`
+      ],
+      medium_value: [
+        `Hi ${customerName}! 💎\n\nSpecial offer just for you!\n\n15% OFF on your next purchase\nUse code: THANKYOU15\n\nHappy shopping!`,
+        `Hello ${customerName},\n\nWe appreciate your business! 🙏\n\nEnjoy 15% discount with code: THANKYOU15\n\nValid on all products!`,
+        `Hey ${customerName}! 🎉\n\nThank you for shopping with us!\n\n15% OFF waiting for you\nCode: THANKYOU15\n\nStart shopping now!`
+      ],
+      low_value: [
+        `Hi ${customerName}! 👋\n\nWelcome back!\n\n20% OFF on your next order as our thank you gift.\n\nStart shopping and save big!`,
+        `Hello ${customerName},\n\nThank you for choosing us! 🎁\n\n20% discount on your next purchase.\n\nEnjoy amazing deals!`,
+        `Hey ${customerName}! 😊\n\nSpecial welcome offer: 20% OFF\n\nUse it on your next order!\n\nHappy shopping!`
+      ],
+      dormant: [
+        `Hi ${customerName}! 💌\n\nWe miss you!\n\nCome back and enjoy 20% OFF your next order.\n\nWe'd love to see you again!`,
+        `Hello ${customerName},\n\nIt's been a while! 🥺\n\n20% discount waiting for your return.\n\nWelcome back offer - don't miss it!`,
+        `Hey ${customerName}! 👋\n\nLong time no see!\n\nSpecial comeback offer: 20% OFF\n\nWe'd be happy to serve you again!`
+      ]
     };
-    return messages[segment] || "Hello! Check out our latest collection.";
+    
+    // Get templates for segment or use default
+    const segmentTemplates = templates[segment] || [
+      `Hello ${customerName}! Check out our latest collection!`,
+      `Hi ${customerName}, Special offers waiting for you!`,
+      `Hey ${customerName}! 😊 New arrivals just for you!`
+    ];
+    
+    // Random selection
+    const randomIndex = Math.floor(Math.random() * segmentTemplates.length);
+    return segmentTemplates[randomIndex];
   };
 
   const openWhatsAppWeb = (phone, segment) => {
