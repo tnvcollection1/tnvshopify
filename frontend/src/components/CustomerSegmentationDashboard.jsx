@@ -485,7 +485,7 @@ const CustomerSegmentationDashboard = () => {
 
                     {/* Action Button */}
                     <button
-                      onClick={() => openWhatsAppWeb(customer.phone, viewingSegment, customer.name)}
+                      onClick={() => openWhatsAppWeb(customer.phone, viewingSegment, customer.name, customer.country_code)}
                       disabled={!customer.phone}
                       className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                         customer.phone
