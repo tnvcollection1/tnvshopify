@@ -482,64 +482,100 @@ const Orders = () => {
   // Generate varied message templates to avoid spam detection
   const generateOrderMessage = (customerName, orderNumber, productList, totalAmount, currency, templateIndex = null) => {
     const templates = [
-      // Template 1
+      // Template 1 - Friendly & Casual
       () => {
-        let msg = `Hello ${customerName}!\n\n`;
+        let msg = `Hello ${customerName}! 👋\n\n`;
         msg += `Your order #${orderNumber} has been received and is being processed.\n\n`;
         msg += `Order Details:\n${productList}\n\n`;
         msg += `Total: ${currency} ${totalAmount}\n\n`;
         msg += `Please confirm by replying:\n`;
-        msg += `✓ Type CONFIRM to proceed\n`;
-        msg += `✗ Type CANCEL to cancel\n\n`;
-        msg += `Thank you for your order!`;
+        msg += `✅ Type CONFIRM to proceed\n`;
+        msg += `❌ Type CANCEL to cancel\n\n`;
+        msg += `Thank you for choosing us!`;
         return msg;
       },
-      // Template 2
+      // Template 2 - Professional
       () => {
         let msg = `Hi ${customerName},\n\n`;
-        msg += `We've received your order #${orderNumber}!\n\n`;
+        msg += `We've received your order #${orderNumber} successfully!\n\n`;
         msg += `Items ordered:\n${productList}\n\n`;
         msg += `Amount: ${currency} ${totalAmount}\n\n`;
-        msg += `Please confirm your order:\n`;
-        msg += `Reply CONFIRM to accept\n`;
-        msg += `Reply CANCEL to decline\n\n`;
-        msg += `Thanks for shopping with us!`;
+        msg += `Kindly confirm your order by replying:\n`;
+        msg += `• CONFIRM to accept\n`;
+        msg += `• CANCEL to decline\n\n`;
+        msg += `Thanks for shopping with us! 🛍️`;
         return msg;
       },
-      // Template 3
+      // Template 3 - Warm & Welcoming
       () => {
-        let msg = `Hey ${customerName}!\n\n`;
-        msg += `Order #${orderNumber} - Confirmation needed\n\n`;
+        let msg = `Hey ${customerName}! 😊\n\n`;
+        msg += `Great news! Your order #${orderNumber} is ready for processing.\n\n`;
         msg += `Products:\n${productList}\n\n`;
         msg += `Total Amount: ${currency} ${totalAmount}\n\n`;
-        msg += `Action Required:\n`;
-        msg += `• CONFIRM - Proceed with order\n`;
-        msg += `• CANCEL - Cancel order\n\n`;
+        msg += `Action needed:\n`;
+        msg += `Reply CONFIRM ✓\n`;
+        msg += `Reply CANCEL ✗\n\n`;
         msg += `Looking forward to serving you!`;
         return msg;
       },
-      // Template 4
+      // Template 4 - Formal & Polite
       () => {
-        let msg = `Greetings ${customerName},\n\n`;
-        msg += `Thank you for placing order #${orderNumber}\n\n`;
+        let msg = `Dear ${customerName},\n\n`;
+        msg += `Thank you for placing order #${orderNumber} with us.\n\n`;
         msg += `Order Summary:\n${productList}\n\n`;
         msg += `Payment: ${currency} ${totalAmount}\n\n`;
-        msg += `Kindly confirm:\n`;
-        msg += `Type CONFIRM to approve\n`;
-        msg += `Type CANCEL to reject\n\n`;
-        msg += `We appreciate your business!`;
+        msg += `Please respond to confirm:\n`;
+        msg += `Type CONFIRM to proceed ✓\n`;
+        msg += `Type CANCEL to reject ✗\n\n`;
+        msg += `We appreciate your trust!`;
         return msg;
       },
-      // Template 5
+      // Template 5 - Enthusiastic
       () => {
-        let msg = `Hi there ${customerName}!\n\n`;
-        msg += `Your order (#${orderNumber}) is ready for confirmation.\n\n`;
+        let msg = `Hi there ${customerName}! 🎉\n\n`;
+        msg += `Your order (#${orderNumber}) is awaiting confirmation!\n\n`;
         msg += `What you ordered:\n${productList}\n\n`;
         msg += `Total: ${currency} ${totalAmount}\n\n`;
-        msg += `Please respond:\n`;
-        msg += `CONFIRM - Yes, proceed\n`;
-        msg += `CANCEL - No, cancel it\n\n`;
-        msg += `Thank you!`;
+        msg += `Quick action needed:\n`;
+        msg += `✓ CONFIRM - Yes, proceed!\n`;
+        msg += `✗ CANCEL - No thanks\n\n`;
+        msg += `Thank you for your order!`;
+        return msg;
+      },
+      // Template 6 - Simple & Direct
+      () => {
+        let msg = `Hello ${customerName},\n\n`;
+        msg += `Order #${orderNumber} confirmation required.\n\n`;
+        msg += `Items:\n${productList}\n\n`;
+        msg += `Amount: ${currency} ${totalAmount}\n\n`;
+        msg += `Reply with:\n`;
+        msg += `CONFIRM ✅\n`;
+        msg += `CANCEL ❌\n\n`;
+        msg += `Thanks!`;
+        return msg;
+      },
+      // Template 7 - Personable
+      () => {
+        let msg = `Hi ${customerName}! 👋\n\n`;
+        msg += `Just checking in about your order #${orderNumber}.\n\n`;
+        msg += `Your items:\n${productList}\n\n`;
+        msg += `Total: ${currency} ${totalAmount}\n\n`;
+        msg += `Would you like to:\n`;
+        msg += `✓ CONFIRM - Process my order\n`;
+        msg += `✗ CANCEL - Cancel it\n\n`;
+        msg += `We're here to help! 😊`;
+        return msg;
+      },
+      // Template 8 - Business-like
+      () => {
+        let msg = `Good day ${customerName}!\n\n`;
+        msg += `Order #${orderNumber} status: Awaiting confirmation\n\n`;
+        msg += `Order details:\n${productList}\n\n`;
+        msg += `Total: ${currency} ${totalAmount}\n\n`;
+        msg += `Please confirm:\n`;
+        msg += `→ CONFIRM to continue\n`;
+        msg += `→ CANCEL to stop\n\n`;
+        msg += `Best regards!`;
         return msg;
       }
     ];
@@ -549,11 +585,11 @@ const Orders = () => {
     if (templateIndex !== null && templateIndex !== undefined && templateIndex >= 0) {
       // Use index-based selection to ensure variety
       templateIdx = templateIndex % templates.length;
-      console.log(`Template selection: index=${templateIndex}, template=${templateIdx} (${['Hello', 'Hi', 'Hey', 'Greetings', 'Hi there'][templateIdx]})`);
+      console.log(`Template ${templateIdx + 1}/8 selected (index-based)`);
     } else {
       // Random selection
       templateIdx = Math.floor(Math.random() * templates.length);
-      console.log(`Template selection: random, template=${templateIdx} (${['Hello', 'Hi', 'Hey', 'Greetings', 'Hi there'][templateIdx]})`);
+      console.log(`Template ${templateIdx + 1}/8 selected (random)`);
     }
     
     const template = templates[templateIdx];
