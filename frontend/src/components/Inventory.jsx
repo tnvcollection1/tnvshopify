@@ -38,7 +38,8 @@ import {
   TrendingUp,
   Clock,
   Truck,
-  CheckCircle
+  CheckCircle,
+  RefreshCw
 } from 'lucide-react';
 import { Checkbox } from './ui/checkbox';
 
