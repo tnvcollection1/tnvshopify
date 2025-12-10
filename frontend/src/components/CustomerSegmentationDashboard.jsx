@@ -198,10 +198,11 @@ const CustomerSegmentationDashboard = () => {
             Rs. {segments?.high_value?.total_value?.toLocaleString() || 0}
           </p>
           <button
-            onClick={() => downloadCustomerList('high_value')}
-            className="mt-3 w-full px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors"
+            onClick={() => viewSegmentCustomers('high_value')}
+            className="mt-3 w-full px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
           >
-            Download High Value List
+            <Users className="w-4 h-4" />
+            View Customers
           </button>
         </div>
 
