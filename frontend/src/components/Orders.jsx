@@ -757,6 +757,13 @@ const Orders = () => {
           duration: 3000
         });
         
+        // Mark message as sent in database
+        try {
+          await axios.post(`${API}/customers/${order.customer_id}/mark-messaged`);
+        } catch (markError) {
+          console.error(`Failed to mark order ${order.order_number} as messaged:`, markError);
+        }
+        
         // Automatic delay before opening next window (20 seconds to allow sending)
         if (i < ordersToSend.length - 1) {
           const nextCustomer = ordersToSend[i + 1].first_name || 'Customer';
