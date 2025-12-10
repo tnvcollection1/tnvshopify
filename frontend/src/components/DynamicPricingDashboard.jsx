@@ -59,6 +59,21 @@ const DynamicPricingDashboard = () => {
     }
   };
 
+  const viewCategoryProducts = (category) => {
+    if (!report || !report.categories || !report.categories[category]) {
+      alert('No products found in this category');
+      return;
+    }
+    
+    setCategoryProducts(report.categories[category]);
+    setViewingCategory(category);
+  };
+
+  const closeProductView = () => {
+    setViewingCategory(null);
+    setCategoryProducts([]);
+  };
+
   const updatePricingRules = (reportData, currentFilter) => {
     if (!reportData || !reportData.categories) return;
     
