@@ -212,6 +212,64 @@ const Settings = () => {
     }
   };
 
+  const fetchDtdcConfig = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/dtdc/credentials`);
+      if (!response.ok) throw new Error('Failed to fetch DTDC config');
+      const data = await response.json();
+      
+      if (data.configured) {
+        setDtdcConfigured(true);
+        setDtdcConfig(prev => ({
+          ...prev,
+          api_url: data.api_url || 'https://customer.dtdc.in/api'
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching DTDC config:', error);
+    }
+  };
+
+  const handleSaveDtdc = async () => {
+    if (!dtdcConfig.username || !dtdcConfig.password) {
+      toast.error('Please provide username and password');
+      return;
+    }
+
+    setSavingDtdc(true);
+
+    try {
+      const payload = {
+        username: dtdcConfig.username,
+        password: dtdcConfig.password,
+        api_url: dtdcConfig.api_url || 'https://customer.dtdc.in/api'
+      };
+
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/dtdc/configure`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to configure DTDC API');
+      }
+
+      toast.success('DTDC API configured successfully!');
+      setDtdcConfigured(true);
+      await fetchDtdcConfig();
+    } catch (error) {
+      console.error('Error configuring DTDC:', error);
+      toast.error(error.message || 'Failed to configure DTDC API');
+    } finally {
+      setSavingDtdc(false);
+    }
+  };
+
   const handleChangePassword = async () => {
     if (!passwordForm.current_password || !passwordForm.new_password || !passwordForm.confirm_password) {
       toast.error('Please fill in all fields');
