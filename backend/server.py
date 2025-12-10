@@ -99,8 +99,8 @@ class Customer(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
     customer_id: str
-    first_name: str
-    last_name: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     country_code: Optional[str] = None
