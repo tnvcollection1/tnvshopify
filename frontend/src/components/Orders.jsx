@@ -324,7 +324,7 @@ const Orders = () => {
         let productList = '';
         if (order.order_skus && order.order_skus.length > 0) {
           productList = order.order_skus
-            .map((sku, index) => `${index + 1}. ${sku}\n   View: ${storeUrl}/products/${sku.toLowerCase().replace(/\s+/g, '-')}`)
+            .map((sku, index) => `${index + 1}. ${sku}`)
             .join('\n');
         }
 
