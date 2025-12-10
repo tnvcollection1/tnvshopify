@@ -411,14 +411,18 @@ const Settings = () => {
       
       <div className="p-8">
         <Tabs defaultValue="shopify" className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-4">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
             <TabsTrigger value="shopify" className="flex items-center gap-2">
               <Store className="w-4 h-4" />
-              Shopify Integration
+              Shopify
             </TabsTrigger>
             <TabsTrigger value="tcs" className="flex items-center gap-2">
               <Truck className="w-4 h-4" />
-              TCS API
+              TCS
+            </TabsTrigger>
+            <TabsTrigger value="dtdc" className="flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              DTDC
             </TabsTrigger>
             <TabsTrigger value="autosync" className="flex items-center gap-2">
               <RefreshCw className="w-4 h-4" />
