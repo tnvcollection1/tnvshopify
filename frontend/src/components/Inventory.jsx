@@ -83,6 +83,7 @@ const Inventory = () => {
     timestamp: new Date().toISOString().slice(0, 16)
   });
   const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadStore, setUploadStore] = useState('tnvcollectionpk'); // Store selection for upload
 
   useEffect(() => {
     fetchItems();
