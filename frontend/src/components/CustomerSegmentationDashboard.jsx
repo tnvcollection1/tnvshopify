@@ -70,25 +70,30 @@ const CustomerSegmentationDashboard = () => {
     return segmentTemplates[randomIndex];
   };
 
-  const openWhatsAppWeb = (phone, segment) => {
+  const openWhatsAppWeb = (phone, segment, customerName = 'Customer') => {
     if (!phone) {
       alert('No phone number available for this customer');
       return;
     }
     
     // Clean phone number (remove spaces, dashes, etc.)
-    const cleanPhone = phone.replace(/\D/g, '');
+    let cleanPhone = phone.replace(/\D/g, '');
     
-    // Get pre-filled message based on segment
-    const message = getWhatsAppMessage(segment);
+    // Add Pakistan country code if not present (default)
+    if (!cleanPhone.startsWith('92') && cleanPhone.length <= 10) {
+      cleanPhone = '92' + cleanPhone.replace(/^0+/, ''); // Remove leading zeros
+    }
+    
+    // Get randomized message based on segment
+    const message = getWhatsAppMessage(segment, customerName);
     
     // Encode message for URL
     const encodedMessage = encodeURIComponent(message);
     
-    // WhatsApp Web link
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+    // WhatsApp Desktop App link (prioritizes desktop over web)
+    const whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodedMessage}`;
     
-    // Open in new tab
+    // Open WhatsApp (desktop app will be used if installed)
     window.open(whatsappUrl, '_blank');
   };
 
