@@ -225,34 +225,37 @@ const DynamicPricingDashboard = () => {
             <p className="text-xs text-gray-500 mt-1">From lifetime orders</p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-red-900/50 rounded-xl p-6 cursor-pointer hover:bg-gray-800/70 transition-colors"
-               onClick={() => setFilter('A')}>
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-red-900/50 rounded-xl p-6 cursor-pointer hover:bg-red-900/30 hover:border-red-500 transition-all transform hover:scale-105"
+               onClick={() => viewCategoryProducts('A')}>
             <div className="flex items-center justify-between mb-4">
               <TrendingUp className="w-8 h-8 text-red-400" />
               <span className="text-2xl font-bold">{report.categories.A?.length || 0}</span>
             </div>
             <h3 className="text-gray-400 text-sm">Category A 🔥</h3>
             <p className="text-xs text-red-400 mt-1">Fast-moving (Top 20%)</p>
+            <p className="text-xs text-gray-500 mt-2">Click to view products</p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-yellow-900/50 rounded-xl p-6 cursor-pointer hover:bg-gray-800/70 transition-colors"
-               onClick={() => setFilter('B')}>
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-yellow-900/50 rounded-xl p-6 cursor-pointer hover:bg-yellow-900/30 hover:border-yellow-500 transition-all transform hover:scale-105"
+               onClick={() => viewCategoryProducts('B')}>
             <div className="flex items-center justify-between mb-4">
               <Zap className="w-8 h-8 text-yellow-400" />
               <span className="text-2xl font-bold">{report.categories.B?.length || 0}</span>
             </div>
             <h3 className="text-gray-400 text-sm">Category B ⚡</h3>
             <p className="text-xs text-yellow-400 mt-1">Medium (30%)</p>
+            <p className="text-xs text-gray-500 mt-2">Click to view products</p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm border border-green-900/50 rounded-xl p-6 cursor-pointer hover:bg-gray-800/70 transition-colors"
-               onClick={() => setFilter('C')}>
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-green-900/50 rounded-xl p-6 cursor-pointer hover:bg-green-900/30 hover:border-green-500 transition-all transform hover:scale-105"
+               onClick={() => viewCategoryProducts('C')}>
             <div className="flex items-center justify-between mb-4">
               <Tag className="w-8 h-8 text-green-400" />
               <span className="text-2xl font-bold">{report.categories.C?.length || 0}</span>
             </div>
             <h3 className="text-gray-400 text-sm">Category C 💰</h3>
             <p className="text-xs text-green-400 mt-1">Slow (50% - Need Discount)</p>
+            <p className="text-xs text-gray-500 mt-2">Click to view products</p>
           </div>
         </div>
       )}
