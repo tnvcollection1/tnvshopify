@@ -907,6 +907,96 @@ const Orders = () => {
     fetchOrders();
   };
 
+  // Send bulk cancellation messages to selected orders (no response)
+  const sendBulkCancellationToSelected = async () => {
+    const ordersToSend = orders.filter(o => selectedOrders.includes(o.customer_id));
+    
+    if (ordersToSend.length === 0) {
+      toast.error("No orders selected");
+      return;
+    }
+
+    // Confirm action
+    const confirmed = window.confirm(
+      `Send cancellation messages to ${ordersToSend.length} customers?\n\nThis will notify them that their order will be cancelled due to no response.`
+    );
+
+    if (!confirmed) {
+      toast.info("Cancellation sending cancelled");
+      return;
+    }
+
+    toast.info(`📤 Opening cancellation messages for ${ordersToSend.length} customers...`, {
+      duration: 5000
+    });
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < ordersToSend.length; i++) {
+      const order = ordersToSend[i];
+      
+      try {
+        // Get phone and country code
+        const rawPhone = order.phone || order.default_address?.phone;
+        const countryCode = order.country_code || order.default_address?.country_code || 'PK';
+        
+        if (!rawPhone) {
+          failCount++;
+          toast.error(`❌ No phone for ${order.first_name}`);
+          continue;
+        }
+
+        // Format phone with correct country code
+        const phone = formatPhoneWithCountryCode(rawPhone, countryCode);
+        
+        if (!phone) {
+          failCount++;
+          toast.error(`❌ Invalid phone for ${order.first_name}`);
+          continue;
+        }
+
+        // Customer details
+        const customerName = order.first_name || 'Customer';
+        const orderNumber = order.order_number || 'N/A';
+        
+        // Generate randomized cancellation message (use index for variety)
+        const message = generateCancellationMessage(
+          customerName,
+          orderNumber,
+          i // Pass index to ensure different templates
+        );
+
+        // Create WhatsApp URL with encoded message
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
+
+        // Open WhatsApp (prioritize desktop app)
+        window.open(whatsappUrl, '_blank');
+
+        successCount++;
+        toast.success(`✅ ${successCount}/${ordersToSend.length}: ${customerName} (Cancellation)`, {
+          duration: 3000
+        });
+        
+        // Automatic delay before opening next window (15 seconds)
+        if (i < ordersToSend.length - 1) {
+          const nextCustomer = ordersToSend[i + 1].first_name || 'Customer';
+          toast.info(`⏳ Next: ${nextCustomer} in 15 seconds...`, {
+            duration: 15000
+          });
+          await new Promise(resolve => setTimeout(resolve, 15000)); // 15 second delay
+        }
+      } catch (error) {
+        failCount++;
+        console.error(`Error for order ${order.order_number}:`, error);
+      }
+    }
+
+    toast.success(`✅ Opened ${successCount} cancellation messages! ${failCount > 0 ? `${failCount} failed.` : ''}`);
+    setSelectedOrders([]); // Clear selection after sending
+  };
+
   const openWhatsAppWeb = () => {
     window.open('https://web.whatsapp.com/', '_blank');
   };
