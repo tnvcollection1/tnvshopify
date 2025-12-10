@@ -105,6 +105,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/dispatch-tracker" 
+        element={
+          <ProtectedRoute>
+            <DispatchTracker />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/confirmation" 
         element={
           <ProtectedRoute>
