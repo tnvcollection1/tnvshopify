@@ -318,6 +318,8 @@ const Inventory = () => {
     } catch (error) {
       console.error('Error uploading file:', error);
       toast.error('Failed to upload inventory file');
+    } finally {
+      setLoading(false);
     }
   };
 
