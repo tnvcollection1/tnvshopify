@@ -1101,6 +1101,15 @@ const Orders = () => {
             </Button>
             <Button
               variant="outline"
+              onClick={sendBulkCancellationToSelected}
+              disabled={loading || selectedOrders.length === 0}
+              className="border-red-500 hover:bg-red-600 bg-red-500 text-white hover:text-white"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Send Cancellation ({selectedOrders.length})
+            </Button>
+            <Button
+              variant="outline"
               onClick={handleShopifySync}
               disabled={loading}
               className="border-blue-500 hover:bg-blue-50 text-blue-700"
