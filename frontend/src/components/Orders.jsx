@@ -260,6 +260,14 @@ const Orders = () => {
 
       if (response.data.success) {
         toast.success(`✅ WhatsApp sent to ${order.first_name}!`);
+        // Mark message as sent in database
+        try {
+          await axios.post(`${API}/customers/${order.customer_id}/mark-messaged`);
+          // Refresh orders to show updated status
+          fetchOrders();
+        } catch (markError) {
+          console.error(`Failed to mark order as messaged:`, markError);
+        }
       } else {
         toast.error("Failed to send WhatsApp notification");
       }
