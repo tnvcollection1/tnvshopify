@@ -179,10 +179,11 @@ const CustomerSegmentationDashboard = () => {
             Rs. {segments?.vip?.total_value?.toLocaleString() || 0}
           </p>
           <button
-            onClick={() => downloadCustomerList('vip')}
-            className="mt-3 w-full px-3 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm transition-colors"
+            onClick={() => viewSegmentCustomers('vip')}
+            className="mt-3 w-full px-3 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
           >
-            Download VIP List
+            <Users className="w-4 h-4" />
+            View Customers
           </button>
         </div>
 
