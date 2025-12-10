@@ -224,8 +224,8 @@ const DispatchTracker = () => {
       if (dateRange.start) params.append("start_date", dateRange.start);
       if (dateRange.end) params.append("end_date", dateRange.end);
       
-      // Always sort by order date descending (newest first) if no specific sort selected
-      const sortBy = filters.sortBy || "order_desc";
+      // Always sort by date descending (newest first) if no specific sort selected
+      const sortBy = filters.sortBy || "date_desc";
       params.append("sort_by", sortBy);
       
       if (searchQuery) params.append("search", searchQuery);
