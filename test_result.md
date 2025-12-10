@@ -312,13 +312,16 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/components/DispatchTracker.jsx"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: false
           agent: "testing"
           comment: "TESTED ❌ - CRITICAL FRONTEND LOADING ISSUE. Backend APIs working perfectly (GET /api/customers/stats returns total:33 orders as expected), but React application not initializing in browser. Page stuck on 'Loading...' title, no React elements rendered (0 found), no login form visible. Frontend service running correctly (supervisor: RUNNING), logs show successful compilation, but JavaScript not executing in browser. Cannot test Dispatch Tracker functionality due to React app initialization failure. Requires immediate frontend debugging to resolve React loading issue before any UI testing can proceed."
+        - working: false
+          agent: "testing"
+          comment: "TESTED ❌ - CRITICAL CORS CONFIGURATION ISSUE IDENTIFIED. React app now loading correctly (4 elements found), login form functional, but authentication failing due to CORS policy error. Frontend making API calls from 'https://shopify-comm-hub.preview.static.emergentagent.com' to wrong backend URL 'https://shopify-comm-hub.preview.emergentagent.com/api/agents/login' instead of correct 'https://ordertrackr.preview.emergentagent.com/api/agents/login'. Backend API working perfectly (verified via curl: 23,425 total orders). CORS headers configured correctly on backend. Issue: Frontend environment variable REACT_APP_BACKEND_URL not being read correctly in production deployment. Cannot test Dispatch Tracker functionality until CORS/URL configuration is fixed."
 
   - task: "TCS Sync in Dispatch Tracker"
     implemented: true
