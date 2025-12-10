@@ -580,61 +580,68 @@ const DispatchTracker = () => {
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards - Now Clickable */}
         <div className="grid grid-cols-7 gap-4 mt-6">
-          <Card className="border-gray-200">
+          <Card className="border-gray-200 cursor-pointer hover:shadow-lg hover:border-gray-400 transition-all" onClick={() => viewCardDetails('total')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Total</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+                <p className="text-xs text-gray-400 mt-1">Click to view</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-green-200 cursor-pointer hover:shadow-lg hover:border-green-500 transition-all" onClick={() => viewCardDetails('delivered')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Delivered</p>
                 <p className="text-2xl font-bold text-green-600 mt-1">{stats.delivered}</p>
+                <p className="text-xs text-gray-400 mt-1">Click to view</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-blue-200 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all" onClick={() => viewCardDetails('inTransit')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">In Transit</p>
                 <p className="text-2xl font-bold text-blue-600 mt-1">{stats.inTransit}</p>
+                <p className="text-xs text-gray-400 mt-1">Click to view</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-yellow-200 cursor-pointer hover:shadow-lg hover:border-yellow-500 transition-all" onClick={() => viewCardDetails('pending')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Pending</p>
                 <p className="text-2xl font-bold text-yellow-600 mt-1">{stats.pending}</p>
+                <p className="text-xs text-gray-400 mt-1">Click to view</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-red-200 cursor-pointer hover:shadow-lg hover:border-red-500 transition-all" onClick={() => viewCardDetails('returned')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Returned</p>
                 <p className="text-2xl font-bold text-red-600 mt-1">{stats.returned}</p>
+                <p className="text-xs text-gray-400 mt-1">Click to view</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-green-200 cursor-pointer hover:shadow-lg hover:border-green-500 transition-all" onClick={() => viewCardDetails('paymentReceived')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Paid</p>
                 <p className="text-2xl font-bold text-green-600 mt-1">{stats.paymentReceived}</p>
+                <p className="text-xs text-gray-400 mt-1">Click to view</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-orange-200 cursor-pointer hover:shadow-lg hover:border-orange-500 transition-all" onClick={() => viewCardDetails('paymentPending')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Due</p>
                 <p className="text-2xl font-bold text-orange-600 mt-1">{stats.paymentPending}</p>
+                <p className="text-xs text-gray-400 mt-1">Click to view</p>
               </div>
             </CardContent>
           </Card>
