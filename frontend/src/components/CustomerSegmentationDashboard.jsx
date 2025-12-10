@@ -380,7 +380,7 @@ const CustomerSegmentationDashboard = () => {
                   <div className="text-xs text-gray-400">{customer.order_count} orders</div>
                 </div>
                 <button
-                  onClick={() => openWhatsAppWeb(customer.phone, 'high_value', customer.name)}
+                  onClick={() => openWhatsAppWeb(customer.phone, 'high_value', customer.name, customer.country_code)}
                   className="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-xs transition-colors flex items-center gap-1"
                   title="Open WhatsApp with random greeting"
                 >
