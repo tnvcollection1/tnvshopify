@@ -1001,6 +1001,42 @@ const Orders = () => {
     window.open('https://web.whatsapp.com/', '_blank');
   };
 
+  // Send individual cancellation message (no response)
+  const sendCancellationMessage = (order) => {
+    // Get phone and country code
+    const rawPhone = order.phone || order.default_address?.phone;
+    const countryCode = order.country_code || order.default_address?.country_code || 'PK';
+    
+    if (!rawPhone) {
+      toast.error("No phone number found for this customer");
+      return;
+    }
+
+    // Format phone with correct country code
+    const phone = formatPhoneWithCountryCode(rawPhone, countryCode);
+    
+    if (!phone) {
+      toast.error("Invalid phone number format");
+      return;
+    }
+
+    // Customer details
+    const customerName = order.first_name || 'Customer';
+    const orderNumber = order.order_number || 'N/A';
+    
+    // Generate random cancellation message
+    const message = generateCancellationMessage(customerName, orderNumber);
+
+    // Create WhatsApp URL with encoded message
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
+
+    // Open WhatsApp (prioritize desktop app)
+    window.open(whatsappUrl, '_blank');
+    
+    toast.success(`📤 Cancellation message opened for ${customerName}`);
+  };
+
   const openWhatsAppWebWithNumber = (order) => {
     // Get phone number and country code from order
     const rawPhone = order.phone || order.default_address?.phone;
