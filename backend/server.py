@@ -1220,6 +1220,75 @@ async def configure_tcs_api(config_data: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ========================================
+# DTDC CONFIGURATION ENDPOINTS
+# ========================================
+
+class DTDCConfigRequest(BaseModel):
+    username: Optional[str] = None
+    password: Optional[str] = None
+    api_url: Optional[str] = "https://customer.dtdc.in/api"
+
+@api_router.get("/dtdc/credentials")
+async def get_dtdc_credentials():
+    """Get DTDC API configuration status"""
+    try:
+        config = await db.dtdc_config.find_one({"service": "dtdc_india"}, {"_id": 0})
+        
+        if config:
+            return {
+                "configured": True,
+                "username": config.get("username", "")[:5] + "..." if config.get("username") else None,
+                "api_url": config.get("api_url", "https://customer.dtdc.in/api")
+            }
+        else:
+            return {"configured": False}
+    except Exception as e:
+        logger.error(f"Error fetching DTDC credentials: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/dtdc/configure")
+async def configure_dtdc_api(config_data: dict):
+    """Configure DTDC API credentials for tnvcollection and ashmiaa stores"""
+    try:
+        username = config_data.get("username", "").strip()
+        password = config_data.get("password", "").strip()
+        api_url = config_data.get("api_url", "https://customer.dtdc.in/api").strip()
+        
+        if not username or not password:
+            raise HTTPException(status_code=400, detail="Username and password are required")
+        
+        dtdc_config = {
+            "service": "dtdc_india",
+            "username": username,
+            "password": password,
+            "api_url": api_url,
+            "configured_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Save to database (upsert)
+        await db.dtdc_config.update_one(
+            {"service": "dtdc_india"},
+            {"$set": dtdc_config},
+            upsert=True
+        )
+        
+        logger.info(f"✅ DTDC API configured successfully")
+        
+        return {
+            "success": True,
+            "message": "DTDC API configured successfully",
+            "api_url": api_url
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error configuring DTDC API: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/tcs/sync-payment-status")
 async def sync_tcs_payment_status():
     """
