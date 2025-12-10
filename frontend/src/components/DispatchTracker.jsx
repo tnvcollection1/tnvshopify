@@ -207,9 +207,9 @@ const DispatchTracker = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // Show BOTH fulfilled and unfulfilled orders from all stores
-      // Removed tcs_only and fulfillment_status filters to show all orders like Confirmation Tracker
-      // Users can filter by delivery status if they only want specific orders
+      // Show ONLY fulfilled orders from all stores (both TCS and DTDC)
+      // Removed tcs_only filter to show fulfilled orders from ALL stores regardless of courier
+      params.append("fulfillment_status", "fulfilled");
       
       if (filters.delivery !== "all") params.append("delivery_status", filters.delivery);
       if (filters.payment !== "all") params.append("payment_status", filters.payment);
