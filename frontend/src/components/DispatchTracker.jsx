@@ -1189,10 +1189,10 @@ const DispatchTracker = () => {
                                 <div>
                                   <h4 className="font-semibold text-blue-900 mb-1">⏳ Waiting to be Picked Up</h4>
                                   <p className="text-sm text-blue-800">
-                                    This order was placed {daysDiff} day{daysDiff !== 1 ? 's' : ''} ago. TCS courier has not yet picked up the shipment.
+                                    This order was placed {daysDiff} day{daysDiff !== 1 ? 's' : ''} ago. {getCourierName(selectedOrder)} has not yet picked up the shipment.
                                   </p>
                                   <p className="text-xs text-blue-700 mt-2">
-                                    ℹ️ Tracking will activate once TCS scans the package at pickup.
+                                    ℹ️ Tracking will activate once {getCourierName(selectedOrder)} scans the package at pickup.
                                   </p>
                                 </div>
                               </div>
