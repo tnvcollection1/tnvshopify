@@ -7630,6 +7630,7 @@ class AutoSyncSettings(BaseModel):
     interval_minutes: int = 60
     sync_shopify: bool = True
     sync_tcs: bool = True
+    sync_dtdc: bool = True
     sync_inventory: bool = True
     last_sync: Optional[str] = None
 
