@@ -14,6 +14,7 @@ import {
   PieChart,
   Activity,
 } from "lucide-react";
+import StoreSyncPanel from "./StoreSyncPanel";
 import {
   Select,
   SelectContent,
