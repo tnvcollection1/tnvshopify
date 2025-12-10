@@ -9,6 +9,8 @@ const CustomerSegmentationDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSegment, setSelectedSegment] = useState('all');
   const [selectedStore, setSelectedStore] = useState('all');
+  const [viewingSegment, setViewingSegment] = useState(null);
+  const [segmentCustomers, setSegmentCustomers] = useState([]);
 
   useEffect(() => {
     fetchSegments();
