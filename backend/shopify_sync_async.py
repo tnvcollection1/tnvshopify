@@ -253,6 +253,10 @@ class ShopifyAsyncSync:
                     }
                     customer_data['fulfillments'].append(fulfillment_data)
                     
+                    # Set booking date from first fulfillment
+                    if not customer_data['booking_date'] and fulfillment.created_at:
+                        customer_data['booking_date'] = fulfillment.created_at
+                    
                     if not customer_data['tracking_info'] and fulfillment.tracking_number:
                         customer_data['tracking_info'] = {
                             'tracking_number': fulfillment.tracking_number,
