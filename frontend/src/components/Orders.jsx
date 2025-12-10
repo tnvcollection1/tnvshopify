@@ -1497,9 +1497,19 @@ const Orders = () => {
                               onClick={() => sendWhatsAppNotification(order)}
                               disabled={!order.phone && !order.default_address?.phone}
                               className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                              title={order.phone || order.default_address?.phone ? "Send template message" : "No phone number"}
+                              title={order.phone || order.default_address?.phone ? "Send confirmation message" : "No phone number"}
                             >
                               <MessageCircle className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => sendCancellationMessage(order)}
+                              disabled={!order.phone && !order.default_address?.phone}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title={order.phone || order.default_address?.phone ? "Send cancellation message" : "No phone number"}
+                            >
+                              <X className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="ghost"
