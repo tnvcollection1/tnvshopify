@@ -1,308 +1,507 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Badge } from './ui/badge';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from './ui/table';
 import {
-  Upload,
-  Package,
-  AlertCircle,
-  Search,
-  Download,
-  RefreshCw,
-} from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from './ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from './ui/select';
+import { Textarea } from './ui/textarea';
+import { toast } from 'sonner';
+import { 
+  Plus, 
+  Upload, 
+  Edit, 
+  Trash2, 
+  Package, 
+  DollarSign,
+  TrendingUp,
+  Clock,
+  Truck,
+  CheckCircle
+} from 'lucide-react';
+import { Checkbox } from './ui/checkbox';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const Inventory = () => {
-  console.log("🔍 LOADING: Inventory.jsx (Simple Upload Version)");
-  const [inventory, setInventory] = useState([]);
+const InventoryV2 = () => {
+  console.log("🔍 LOADING: InventoryV2.jsx (Advanced Version)");
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStore, setSelectedStore] = useState("all");
   const [stores, setStores] = useState([]);
-  const [stats, setStats] = useState({
-    totalSKUs: 0,
-    totalQuantity: 0,
-    lowStock: 0,
-    outOfStock: 0,
+  const [filters, setFilters] = useState({
+    store: 'all',
+    status: 'all'
   });
+  
+  // Selection state
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  
+  // Dialogs
+  const [addDialog, setAddDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
+  const [statusDialog, setStatusDialog] = useState(false);
+  const [uploadDialog, setUploadDialog] = useState(false);
+  const [errorsDialog, setErrorsDialog] = useState(false);
+  const [uploadErrors, setUploadErrors] = useState([]);
+  
+  // Form states
+  const [newItem, setNewItem] = useState({
+    sku: '',
+    product_name: '',
+    collection: '',
+    cost: '',
+    order_number: '',
+    store_name: 'tnvcollectionpk'
+  });
+  const [editingItem, setEditingItem] = useState(null);
+  const [statusUpdate, setStatusUpdate] = useState({
+    status: '',
+    timestamp: new Date().toISOString().slice(0, 16)
+  });
+  const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
+    fetchItems();
     fetchStores();
-    fetchInventory();
-  }, [selectedStore]);
+    // Reset selections when filters change
+    setSelectedItems([]);
+    setSelectAll(false);
+  }, [filters]);
 
-  const fetchStores = async () => {
-    try {
-      const response = await axios.get(`${API}/stores`);
-      setStores(response.data || []);
-    } catch (error) {
-      console.error("Error fetching stores:", error);
-    }
-  };
-
-  const fetchInventory = async () => {
+  const fetchItems = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (selectedStore !== "all") params.append("store_name", selectedStore);
-
-      const response = await axios.get(`${API}/inventory/items?${params.toString()}`);
-      const items = response.data.items || [];
-      setInventory(items);
-
-      // Calculate stats
-      const totalQty = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
-      const lowStock = items.filter((item) => item.quantity > 0 && item.quantity <= 5).length;
-      const outOfStock = items.filter((item) => item.quantity === 0).length;
-
-      setStats({
-        totalSKUs: items.length,
-        totalQuantity: totalQty,
-        lowStock,
-        outOfStock,
-      });
+      if (filters.store !== 'all') params.append('store_name', filters.store);
+      if (filters.status !== 'all') params.append('status', filters.status);
+      
+      const response = await fetch(`${API}/inventory/v2?${params}`);
+      const data = await response.json();
+      setItems(data.items || []);
     } catch (error) {
-      console.error("Error fetching inventory:", error);
-      toast.error("Failed to fetch inventory");
+      console.error('Error fetching inventory:', error);
+      toast.error('Failed to load inventory');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInventoryUpload = async (event, storeName) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  const fetchStores = async () => {
+    try {
+      const response = await fetch(`${API}/stores`);
+      const data = await response.json();
+      setStores(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error fetching stores:', error);
+    }
+  };
 
-    if (!storeName || storeName === "all") {
-      toast.error("Please select a specific store before uploading");
+  // Selection handlers
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+      setSelectAll(false);
+    } else {
+      setSelectedItems(items.map(item => item.id));
+      setSelectAll(true);
+    }
+  };
+
+  const handleSelectItem = (itemId) => {
+    if (selectedItems.includes(itemId)) {
+      const newSelected = selectedItems.filter(id => id !== itemId);
+      setSelectedItems(newSelected);
+      setSelectAll(false);
+    } else {
+      const newSelected = [...selectedItems, itemId];
+      setSelectedItems(newSelected);
+      if (newSelected.length === items.length) {
+        setSelectAll(true);
+      }
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.length === 0) {
+      toast.error('No items selected');
       return;
     }
 
-    setUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
+    if (!window.confirm(`Delete ${selectedItems.length} selected items?`)) {
+      return;
+    }
 
     try {
-      toast.info("Uploading inventory...");
-      const response = await axios.post(`${API}/inventory/upload/${storeName}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (response.data.success) {
-        toast.success(
-          `✅ ${response.data.message}\n${response.data.items_added} items added, ${response.data.items_updated} updated`
-        );
-        await fetchInventory();
-      }
+      const deletePromises = selectedItems.map(id =>
+        fetch(`${API}/inventory/v2/${id}`, { method: 'DELETE' })
+      );
+      
+      await Promise.all(deletePromises);
+      
+      toast.success(`${selectedItems.length} items deleted successfully`);
+      setSelectedItems([]);
+      setSelectAll(false);
+      fetchItems();
     } catch (error) {
-      console.error("Inventory upload error:", error);
-      toast.error(error.response?.data?.detail || "Failed to upload inventory");
-    } finally {
-      setUploading(false);
-      event.target.value = "";
+      console.error('Error deleting items:', error);
+      toast.error('Failed to delete some items');
     }
   };
 
-  const filteredInventory = inventory.filter((item) =>
-    searchQuery
-      ? item.sku?.toLowerCase().includes(searchQuery.toLowerCase())
-      : true
-  );
-
-  const getStockBadge = (quantity) => {
-    if (quantity === 0) {
-      return <Badge className="bg-red-100 text-red-800 border-red-200">Out of Stock</Badge>;
-    } else if (quantity <= 5) {
-      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Low Stock</Badge>;
-    } else {
-      return <Badge className="bg-green-100 text-green-800 border-green-200">In Stock</Badge>;
+  const handleAddItem = async () => {
+    try {
+      const response = await fetch(`${API}/inventory/v2/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newItem,
+          cost: parseFloat(newItem.cost) || 0
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to add item');
+      
+      toast.success('Inventory item added successfully');
+      setAddDialog(false);
+      setNewItem({
+        sku: '',
+        product_name: '',
+        collection: '',
+        cost: '',
+        order_number: '',
+        store_name: 'tnvcollectionpk'
+      });
+      fetchItems();
+    } catch (error) {
+      console.error('Error adding item:', error);
+      toast.error('Failed to add inventory item');
     }
+  };
+
+  const handleUpdateItem = async () => {
+    try {
+      const response = await fetch(`${API}/inventory/v2/${editingItem.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cost: parseFloat(editingItem.cost),
+          sale_price: parseFloat(editingItem.sale_price),
+          status: editingItem.status,
+          order_number: editingItem.order_number,
+          collection: editingItem.collection
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to update item');
+      
+      toast.success('Inventory item updated successfully');
+      setEditDialog(false);
+      setEditingItem(null);
+      fetchItems();
+    } catch (error) {
+      console.error('Error updating item:', error);
+      toast.error('Failed to update inventory item');
+    }
+  };
+
+  const handleAddDeliveryStatus = async () => {
+    if (!statusUpdate.status.trim()) {
+      toast.error('Please enter a status');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API}/inventory/v2/${editingItem.id}/delivery-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(statusUpdate)
+      });
+      
+      if (!response.ok) throw new Error('Failed to add status');
+      
+      toast.success('Delivery status added');
+      setStatusDialog(false);
+      setStatusUpdate({
+        status: '',
+        timestamp: new Date().toISOString().slice(0, 16)
+      });
+      fetchItems();
+    } catch (error) {
+      console.error('Error adding delivery status:', error);
+      toast.error('Failed to add delivery status');
+    }
+  };
+
+  const handleDeleteItem = async (itemId) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    
+    try {
+      const response = await fetch(`${API}/inventory/v2/${itemId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete item');
+      
+      toast.success('Inventory item deleted');
+      fetchItems();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast.error('Failed to delete inventory item');
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) {
+      toast.error('Please select a file');
+      return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    
+    try {
+      const response = await fetch(`${API}/inventory/v2/upload?store_name=${filters.store === 'all' ? 'tnvcollectionpk' : filters.store}`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.detail || 'Upload failed');
+      
+      toast.success(`${data.items_added} items uploaded successfully`);
+      if (data.errors && data.errors.length > 0) {
+        setUploadErrors(data.errors);
+        setErrorsDialog(true);
+        console.error('Upload errors:', data.errors);
+      }
+      
+      setUploadDialog(false);
+      setSelectedFile(null);
+      fetchItems();
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error('Failed to upload inventory file');
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const variants = {
+      in_stock: 'bg-blue-100 text-blue-800 border-blue-200',
+      in_transit: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      delivered: 'bg-green-100 text-green-800 border-green-200',
+      returned: 'bg-red-100 text-red-800 border-red-200'
+    };
+    return variants[status] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  const getStatusIcon = (status) => {
+    const icons = {
+      in_stock: Package,
+      in_transit: Truck,
+      delivered: CheckCircle,
+      returned: Trash2
+    };
+    const Icon = icons[status] || Package;
+    return <Icon className="w-4 h-4" />;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+    <div className="flex-1 bg-gray-50">
+      <div className="bg-white border-b border-gray-200 px-8 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Inventory</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage your product stock levels</p>
+            <h1 className="text-2xl font-bold text-gray-900">Inventory Management</h1>
+            <p className="text-sm text-gray-500 mt-1">Track products with order linking and delivery status</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Select value={selectedStore} onValueChange={setSelectedStore}>
-              <SelectTrigger className="w-48 border-gray-300">
-                <SelectValue placeholder="Select Store" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Stores</SelectItem>
-                {stores.map((store) => (
-                  <SelectItem key={store.id} value={store.store_name}>
-                    {store.store_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              onClick={fetchInventory}
-              disabled={loading}
-              className="border-gray-300 hover:bg-gray-50"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-            <label htmlFor="inventory-upload">
-              <Button
-                variant="default"
-                disabled={uploading || selectedStore === "all"}
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => document.getElementById("inventory-upload").click()}
+          <div className="flex gap-2">
+            {selectedItems.length > 0 && (
+              <Button 
+                onClick={handleBulkDelete} 
+                variant="destructive"
+                className="mr-2"
               >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Stock Sheet
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Selected ({selectedItems.length})
               </Button>
-            </label>
-            <input
-              id="inventory-upload"
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={(e) => handleInventoryUpload(e, selectedStore)}
-              className="hidden"
-            />
+            )}
+            <Button onClick={() => setUploadDialog(true)} variant="outline">
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Excel
+            </Button>
+            <Button onClick={() => setAddDialog(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Item
+            </Button>
           </div>
         </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-4 gap-4 mt-6">
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-gray-500 uppercase">Total SKUs</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalSKUs}</p>
-                </div>
-                <Package className="w-8 h-8 text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-gray-500 uppercase">Total Quantity</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalQuantity}</p>
-                </div>
-                <Package className="w-8 h-8 text-blue-400" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-gray-500 uppercase">Low Stock</p>
-                  <p className="text-2xl font-bold text-yellow-600 mt-1">{stats.lowStock}</p>
-                </div>
-                <AlertCircle className="w-8 h-8 text-yellow-500" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-gray-500 uppercase">Out of Stock</p>
-                  <p className="text-2xl font-bold text-red-600 mt-1">{stats.outOfStock}</p>
-                </div>
-                <AlertCircle className="w-8 h-8 text-red-500" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
-      {/* Search */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Search by SKU..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 border-gray-300"
-          />
-        </div>
-      </div>
-
-      {/* Inventory Table */}
       <div className="p-8">
-        <Card className="border-gray-200">
-          <CardContent className="p-0">
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex gap-4">
+              <div className="w-48">
+                <Label>Store</Label>
+                <Select value={filters.store} onValueChange={(val) => setFilters({...filters, store: val})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Stores</SelectItem>
+                    {stores.map(store => (
+                      <SelectItem key={store.store_name} value={store.store_name}>
+                        {store.store_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-48">
+                <Label>Status</Label>
+                <Select value={filters.status} onValueChange={(val) => setFilters({...filters, status: val})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="in_stock">In Stock</SelectItem>
+                    <SelectItem value="in_transit">In Transit</SelectItem>
+                    <SelectItem value="delivered">Delivered</SelectItem>
+                    <SelectItem value="returned">Returned</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Inventory Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Inventory Items ({items.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold text-gray-700">SKU</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Size</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Color</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Cost</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Box No</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Store</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Quantity</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox 
+                        checked={selectAll}
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </TableHead>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Product Name</TableHead>
+                    <TableHead>Collection</TableHead>
+                    <TableHead>Order #</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead>Sale Price</TableHead>
+                    <TableHead>Profit</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {loading ? (
+                  {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-                        Loading inventory...
-                      </TableCell>
-                    </TableRow>
-                  ) : filteredInventory.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-                        {selectedStore === "all"
-                          ? "Select a store and upload inventory"
-                          : "No inventory items found"}
+                      <TableCell colSpan={10} className="text-center py-8 text-gray-500">
+                        <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        No inventory items found
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredInventory.map((item) => (
-                      <TableRow key={item._id || item.sku} className="hover:bg-gray-50">
-                        <TableCell className="font-medium font-mono text-gray-900">
-                          {item.sku}
+                    items.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <Checkbox 
+                            checked={selectedItems.includes(item.id)}
+                            onCheckedChange={() => handleSelectItem(item.id)}
+                          />
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600">{item.size || "N/A"}</TableCell>
-                        <TableCell className="text-sm text-gray-600">{item.color || "N/A"}</TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {item.cost ? `$${item.cost}` : "N/A"}
+                        <TableCell className="font-mono">{item.sku}</TableCell>
+                        <TableCell>{item.product_name}</TableCell>
+                        <TableCell>
+                          {item.collection ? (
+                            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                              {item.collection}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600">{item.box_no || "N/A"}</TableCell>
-                        <TableCell className="text-sm text-gray-600">{item.store_name}</TableCell>
-                        <TableCell className="font-semibold text-gray-900">{item.quantity}</TableCell>
-                        <TableCell>{getStockBadge(item.quantity)}</TableCell>
+                        <TableCell className="font-mono">
+                          {item.order_number || '-'}
+                        </TableCell>
+                        <TableCell>Rs. {item.cost.toFixed(2)}</TableCell>
+                        <TableCell>Rs. {item.sale_price.toFixed(2)}</TableCell>
+                        <TableCell>
+                          <span className={item.profit >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                            Rs. {item.profit.toFixed(2)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`${getStatusBadge(item.status)} flex items-center gap-1 w-fit`}>
+                            {getStatusIcon(item.status)}
+                            {item.status.replace('_', ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                setEditingItem(item);
+                                setEditDialog(true);
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                setEditingItem(item);
+                                setStatusDialog(true);
+                              }}
+                            >
+                              <Clock className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleDeleteItem(item.id)}
+                            >
+                              <Trash2 className="w-4 h-4 text-red-600" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
@@ -312,8 +511,245 @@ const Inventory = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Add Item Dialog */}
+      <Dialog open={addDialog} onOpenChange={setAddDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Inventory Item</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>SKU</Label>
+              <Input
+                value={newItem.sku}
+                onChange={(e) => setNewItem({...newItem, sku: e.target.value})}
+                placeholder="Enter SKU"
+              />
+            </div>
+            <div>
+              <Label>Product Name</Label>
+              <Input
+                value={newItem.product_name}
+                onChange={(e) => setNewItem({...newItem, product_name: e.target.value})}
+                placeholder="Enter product name"
+              />
+            </div>
+            <div>
+              <Label>Collection (Optional)</Label>
+              <Input
+                value={newItem.collection || ''}
+                onChange={(e) => setNewItem({...newItem, collection: e.target.value})}
+                placeholder="e.g., Summer 2024, Men's Shoes, etc."
+              />
+            </div>
+            <div>
+              <Label>Cost</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={newItem.cost}
+                onChange={(e) => setNewItem({...newItem, cost: e.target.value})}
+                placeholder="0.00"
+              />
+            </div>
+            <div>
+              <Label>Order Number (Optional)</Label>
+              <Input
+                value={newItem.order_number}
+                onChange={(e) => setNewItem({...newItem, order_number: e.target.value})}
+                placeholder="Auto-fetch sale price from Shopify"
+              />
+              <p className="text-xs text-gray-500 mt-1">Enter Shopify order number to auto-fetch sale price</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddDialog(false)}>Cancel</Button>
+            <Button onClick={handleAddItem}>Add Item</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Item Dialog */}
+      {editingItem && (
+        <Dialog open={editDialog} onOpenChange={setEditDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Inventory Item</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label>Collection</Label>
+                <Input
+                  value={editingItem.collection || ''}
+                  onChange={(e) => setEditingItem({...editingItem, collection: e.target.value})}
+                  placeholder="e.g., Summer 2024, Men's Shoes, etc."
+                />
+              </div>
+              <div>
+                <Label>Order Number</Label>
+                <Input
+                  value={editingItem.order_number || ''}
+                  onChange={(e) => setEditingItem({...editingItem, order_number: e.target.value})}
+                  placeholder="Link to order"
+                />
+              </div>
+              <div>
+                <Label>Cost</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editingItem.cost}
+                  onChange={(e) => setEditingItem({...editingItem, cost: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Sale Price</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editingItem.sale_price}
+                  onChange={(e) => setEditingItem({...editingItem, sale_price: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select value={editingItem.status} onValueChange={(val) => setEditingItem({...editingItem, status: val})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="in_stock">In Stock</SelectItem>
+                    <SelectItem value="in_transit">In Transit</SelectItem>
+                    <SelectItem value="delivered">Delivered</SelectItem>
+                    <SelectItem value="returned">Returned</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditDialog(false)}>Cancel</Button>
+              <Button onClick={handleUpdateItem}>Update</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Add Delivery Status Dialog */}
+      {editingItem && (
+        <Dialog open={statusDialog} onOpenChange={setStatusDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Delivery Status</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {editingItem.delivery_timeline && editingItem.delivery_timeline.length > 0 && (
+                <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold mb-2 text-sm">Current Timeline:</h4>
+                  <div className="space-y-2">
+                    {editingItem.delivery_timeline.map((entry, idx) => (
+                      <div key={idx} className="text-sm border-l-2 border-blue-500 pl-3 py-1">
+                        <div className="font-medium">{entry.status}</div>
+                        <div className="text-gray-500 text-xs">
+                          {new Date(entry.timestamp).toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div>
+                <Label>Status</Label>
+                <Select value={statusUpdate.status} onValueChange={(val) => setStatusUpdate({...statusUpdate, status: val})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Shipment Picked Up">Shipment Picked Up</SelectItem>
+                    <SelectItem value="Departed From TCS Facility">Departed From TCS Facility</SelectItem>
+                    <SelectItem value="Arrived at TCS Facility">Arrived at TCS Facility</SelectItem>
+                    <SelectItem value="Out For Delivery">Out For Delivery</SelectItem>
+                    <SelectItem value="Shipment Delivered">Shipment Delivered</SelectItem>
+                    <SelectItem value="Return In Process">Return In Process</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Timestamp</Label>
+                <Input
+                  type="datetime-local"
+                  value={statusUpdate.timestamp}
+                  onChange={(e) => setStatusUpdate({...statusUpdate, timestamp: e.target.value})}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setStatusDialog(false)}>Cancel</Button>
+              <Button onClick={handleAddDeliveryStatus}>Add Status</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Upload Dialog */}
+      <Dialog open={uploadDialog} onOpenChange={setUploadDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upload Inventory Excel</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-900 mb-2">Excel Format:</h4>
+              <div className="text-sm text-blue-700 space-y-1">
+                <div>Column 1: <span className="font-mono">Box No</span> (optional)</div>
+                <div>Column 2: <span className="font-mono">SKU</span> (required)</div>
+                <div>Column 3: <span className="font-mono">Size</span> (optional)</div>
+                <div>Column 4: <span className="font-mono">Color</span> (optional)</div>
+                <div>Column 5: <span className="font-mono">Collection</span> (optional)</div>
+                <div>Column 6: <span className="font-mono">Cost</span> (required)</div>
+              </div>
+              <p className="text-xs text-blue-600 mt-2">* First row should contain headers</p>
+              <p className="text-xs text-green-600 mt-1">* Orders will be auto-linked by matching SKU</p>
+            </div>
+            <div>
+              <Label>Select File</Label>
+              <Input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUploadDialog(false)}>Cancel</Button>
+            <Button onClick={handleFileUpload}>Upload</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Errors Dialog */}
+      <Dialog open={errorsDialog} onOpenChange={setErrorsDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="w-5 h-5" />
+              Upload Errors ({uploadErrors.length})
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 overflow-y-auto max-h-96">
+            {uploadErrors.map((error, idx) => (
+              <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-sm text-red-800 font-mono">{error}</p>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setErrorsDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
-export default Inventory;
+export default InventoryV2;
