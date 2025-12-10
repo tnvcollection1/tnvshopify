@@ -32,6 +32,18 @@ const Settings = () => {
     confirm_password: ''
   });
   const [changingPassword, setChangingPassword] = useState(false);
+  
+  // Auto-sync state
+  const [autoSyncSettings, setAutoSyncSettings] = useState({
+    enabled: false,
+    interval_minutes: 60,
+    sync_shopify: true,
+    sync_tcs: true,
+    sync_inventory: true,
+    last_sync: null
+  });
+  const [savingAutoSync, setSavingAutoSync] = useState(false);
+  const [triggeringSync, setTriggeringSync] = useState(false);
 
   useEffect(() => {
     fetchStores();
