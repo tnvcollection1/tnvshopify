@@ -1244,6 +1244,21 @@ const Orders = () => {
                           ${order.total_spent?.toFixed(2) || "0.00"}
                         </TableCell>
                         <TableCell>
+                          <div className="flex items-center justify-center">
+                            {order.messaged ? (
+                              <div className="flex items-center gap-1 text-green-600" title={`Message sent${order.message_sent_at ? ` on ${new Date(order.message_sent_at).toLocaleDateString()}` : ''}`}>
+                                <Check className="w-5 h-5" />
+                                <span className="text-xs font-medium">Sent</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-gray-400" title="Message not sent">
+                                <X className="w-5 h-5" />
+                                <span className="text-xs font-medium">Not Sent</span>
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           <div className="flex items-center gap-1">
                             <Button
                               variant="ghost"
