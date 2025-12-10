@@ -931,7 +931,22 @@ const Settings = () => {
                       <Truck className="w-5 h-5 text-gray-600" />
                       <div className="flex-1">
                         <div className="font-medium">TCS Tracking</div>
-                        <div className="text-sm text-gray-600">Update delivery status from TCS</div>
+                        <div className="text-sm text-gray-600">Update delivery status from TCS (Pakistan)</div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={autoSyncSettings.sync_dtdc}
+                        onChange={(e) => setAutoSyncSettings({...autoSyncSettings, sync_dtdc: e.target.checked})}
+                        disabled={!autoSyncSettings.enabled}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      />
+                      <Package className="w-5 h-5 text-gray-600" />
+                      <div className="flex-1">
+                        <div className="font-medium">DTDC Tracking</div>
+                        <div className="text-sm text-gray-600">Update delivery status from DTDC (India)</div>
                       </div>
                     </label>
 
