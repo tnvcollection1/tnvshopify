@@ -1232,7 +1232,7 @@ const DispatchTracker = () => {
                                 <div>
                                   <h4 className="font-semibold text-red-900 mb-1">❌ Tracking Expired/Invalid</h4>
                                   <p className="text-sm text-red-800">
-                                    This order is {daysDiff} days old. TCS tracking data is no longer available (expired after 30-60 days).
+                                    This order is {daysDiff} days old. {getCourierName(selectedOrder)} tracking data is no longer available (expired after 30-60 days).
                                   </p>
                                   <p className="text-xs text-red-700 mt-2">
                                     💡 Use the <strong>green hand icon</strong> to manually update the delivery status.
