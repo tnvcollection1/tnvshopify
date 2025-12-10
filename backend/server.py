@@ -3402,11 +3402,15 @@ async def upload_inventory_excel(file: UploadFile = File(...), store_name: str =
                 errors.append(f"Row {row_idx}: {str(e)}")
                 continue
         
+        # Auto-sync inventory with store orders after upload
+        sync_result = await sync_inventory_with_store(store_name)
+        
         return {
             "success": True,
-            "message": f"Processed {items_added} inventory items",
+            "message": f"Processed {items_added} inventory items and synced with {store_name}",
             "items_added": items_added,
-            "errors": errors if errors else None
+            "errors": errors if errors else None,
+            "sync_status": sync_result
         }
         
     except Exception as e:
