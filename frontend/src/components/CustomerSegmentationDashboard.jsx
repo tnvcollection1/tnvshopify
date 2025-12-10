@@ -72,22 +72,37 @@ const CustomerSegmentationDashboard = () => {
     return segmentTemplates[randomIndex];
   };
 
-  // Country code mapping (ISO 2-letter to dial code)
+  // Country code mapping (ISO 2-letter to dial code) - Comprehensive list
   const getDialCode = (countryCode) => {
     const dialCodes = {
       'PK': '92',   // Pakistan
       'IN': '91',   // India
       'US': '1',    // USA
+      'CA': '1',    // Canada
       'GB': '44',   // UK
       'AE': '971',  // UAE
       'SA': '966',  // Saudi Arabia
-      'CA': '1',    // Canada
       'AU': '61',   // Australia
-      'BD': '880',  // Bangladesh
-      'MY': '60',   // Malaysia
-      'SG': '65',   // Singapore
       'NZ': '64',   // New Zealand
+      'SG': '65',   // Singapore
+      'MY': '60',   // Malaysia
+      'BD': '880',  // Bangladesh
+      'LK': '94',   // Sri Lanka
+      'AF': '93',   // Afghanistan
       'ZA': '27',   // South Africa
+      'EG': '20',   // Egypt
+      'KW': '965',  // Kuwait
+      'QA': '974',  // Qatar
+      'OM': '968',  // Oman
+      'FR': '33',   // France
+      'DE': '49',   // Germany
+      'IT': '39',   // Italy
+      'ES': '34',   // Spain
+      'PT': '351',  // Portugal
+      'ID': '62',   // Indonesia
+      'JP': '81',   // Japan
+      'CN': '86',   // China
+      'KR': '82',   // South Korea
     };
     return dialCodes[countryCode?.toUpperCase()] || '92'; // Default to Pakistan
   };
