@@ -462,6 +462,174 @@ const DynamicPricingDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Product View Modal */}
+      {viewingCategory && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className={`p-6 border-b border-gray-700 flex items-center justify-between ${
+              viewingCategory === 'A' ? 'bg-gradient-to-r from-red-600/20 to-orange-600/20' :
+              viewingCategory === 'B' ? 'bg-gradient-to-r from-yellow-600/20 to-amber-600/20' :
+              'bg-gradient-to-r from-green-600/20 to-emerald-600/20'
+            }`}>
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  {viewingCategory === 'A' && <><TrendingUp className="w-6 h-6 text-red-400" /> 🔥 Category A - Fast Moving</>}
+                  {viewingCategory === 'B' && <><Zap className="w-6 h-6 text-yellow-400" /> ⚡ Category B - Medium</>}
+                  {viewingCategory === 'C' && <><Tag className="w-6 h-6 text-green-400" /> 💰 Category C - Sale Items</>}
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">
+                  {categoryProducts.length} products • {
+                    viewingCategory === 'A' ? 'Top 20% sellers - Premium pricing' :
+                    viewingCategory === 'B' ? 'Steady sellers - Standard pricing' :
+                    'Slow movers - Discount recommended'
+                  }
+                </p>
+              </div>
+              <button
+                onClick={closeProductView}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            {/* Modal Body - Product List */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {categoryProducts.map((product, idx) => (
+                  <div key={idx} className={`border rounded-lg p-5 transition-all hover:shadow-lg ${
+                    viewingCategory === 'A' ? 'bg-red-900/10 border-red-500/30 hover:border-red-500' :
+                    viewingCategory === 'B' ? 'bg-yellow-900/10 border-yellow-500/30 hover:border-yellow-500' :
+                    'bg-green-900/10 border-green-500/30 hover:border-green-500'
+                  }`}>
+                    {/* Product Header */}
+                    <div className="mb-3 pb-3 border-b border-gray-700">
+                      <div className="font-bold text-white text-lg mb-1">
+                        {product.product_name || product.sku || 'Unknown Product'}
+                      </div>
+                      <div className="text-xs text-gray-400 font-mono">
+                        SKU: {product.sku || 'N/A'}
+                      </div>
+                    </div>
+
+                    {/* Pricing Info */}
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <div className="text-xs text-gray-400">Current Price</div>
+                        <div className="text-lg font-bold text-blue-400">
+                          Rs. {product.current_price?.toLocaleString() || 0}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-400">Recommended</div>
+                        <div className={`text-lg font-bold ${
+                          viewingCategory === 'A' ? 'text-red-400' :
+                          viewingCategory === 'B' ? 'text-yellow-400' :
+                          'text-green-400'
+                        }`}>
+                          Rs. {product.recommended_price?.toLocaleString() || 0}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sales Stats */}
+                    <div className="grid grid-cols-3 gap-2 mb-3 p-3 bg-gray-800/50 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-xs text-gray-400">Orders</div>
+                        <div className="text-sm font-bold text-white">
+                          {product.order_frequency || 0}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-gray-400">Revenue</div>
+                        <div className="text-sm font-bold text-green-400">
+                          Rs. {product.total_revenue?.toLocaleString() || 0}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-gray-400">Margin</div>
+                        <div className="text-sm font-bold text-purple-400">
+                          {product.profit_margin?.toFixed(1) || 0}%
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Category Badge */}
+                    <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                      viewingCategory === 'A' ? 'bg-red-500/20 text-red-400' :
+                      viewingCategory === 'B' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-green-500/20 text-green-400'
+                    }`}>
+                      {viewingCategory === 'A' && '🔥 Fast Mover'}
+                      {viewingCategory === 'B' && '⚡ Steady Seller'}
+                      {viewingCategory === 'C' && '💰 Needs Boost'}
+                    </div>
+
+                    {/* Price Change Indicator */}
+                    {product.recommended_price && product.current_price && (
+                      <div className="mt-3 pt-3 border-t border-gray-700">
+                        {product.recommended_price > product.current_price ? (
+                          <div className="flex items-center gap-1 text-xs text-green-400">
+                            <TrendingUp className="w-3 h-3" />
+                            Increase by Rs. {(product.recommended_price - product.current_price).toFixed(0)}
+                          </div>
+                        ) : product.recommended_price < product.current_price ? (
+                          <div className="flex items-center gap-1 text-xs text-red-400">
+                            <TrendingDown className="w-3 h-3" />
+                            Reduce by Rs. {(product.current_price - product.recommended_price).toFixed(0)}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-xs text-gray-400">
+                            <CheckCircle className="w-3 h-3" />
+                            Price is optimal
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {categoryProducts.length === 0 && (
+                <div className="text-center py-12">
+                  <Tag className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No products found in this category</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer - Summary */}
+            <div className="p-6 border-t border-gray-700 bg-gray-800/50">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <div className="text-xs text-gray-400">Total Products</div>
+                  <div className="text-xl font-bold text-white">{categoryProducts.length}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400">Avg Price</div>
+                  <div className="text-xl font-bold text-blue-400">
+                    Rs. {(categoryProducts.reduce((sum, p) => sum + (p.current_price || 0), 0) / categoryProducts.length || 0).toFixed(0)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400">Total Revenue</div>
+                  <div className="text-xl font-bold text-green-400">
+                    Rs. {categoryProducts.reduce((sum, p) => sum + (p.total_revenue || 0), 0).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400">Avg Margin</div>
+                  <div className="text-xl font-bold text-purple-400">
+                    {(categoryProducts.reduce((sum, p) => sum + (p.profit_margin || 0), 0) / categoryProducts.length || 0).toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
