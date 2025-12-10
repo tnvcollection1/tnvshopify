@@ -7650,6 +7650,7 @@ async def get_auto_sync_settings():
                 "interval_minutes": 60,
                 "sync_shopify": True,
                 "sync_tcs": True,
+                "sync_dtdc": True,
                 "sync_inventory": True,
                 "last_sync": None
             }
