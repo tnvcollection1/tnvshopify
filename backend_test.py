@@ -446,6 +446,191 @@ class ShopifyCustomerAPITester:
         
         return False, {}
 
+    # ==================== FACEBOOK ROUTES TESTS ====================
+    
+    def test_facebook_status(self):
+        """Test Facebook API connection status"""
+        success, response = self.run_test("Facebook Status", "GET", "facebook/status", 200)
+        if success:
+            self.facebook_tests_passed += 1
+        self.facebook_tests_run += 1
+        return success, response
+    
+    def test_facebook_ad_accounts(self):
+        """Test Facebook ad accounts endpoint"""
+        success, response = self.run_test("Facebook Ad Accounts", "GET", "facebook/ad-accounts", 200)
+        if success:
+            self.facebook_tests_passed += 1
+        self.facebook_tests_run += 1
+        return success, response
+    
+    def test_facebook_set_ad_account(self):
+        """Test setting Facebook ad account"""
+        success, response = self.run_test(
+            "Set Facebook Ad Account", 
+            "POST", 
+            "facebook/set-ad-account?ad_account_id=act_3108518676133383", 
+            200
+        )
+        if success:
+            self.facebook_tests_passed += 1
+        self.facebook_tests_run += 1
+        return success, response
+    
+    def test_facebook_campaigns(self):
+        """Test Facebook campaigns endpoint"""
+        success, response = self.run_test("Facebook Campaigns", "GET", "facebook/campaigns", 200)
+        if success:
+            self.facebook_tests_passed += 1
+        self.facebook_tests_run += 1
+        return success, response
+    
+    def test_facebook_audiences(self):
+        """Test Facebook custom audiences endpoint"""
+        success, response = self.run_test("Facebook Audiences", "GET", "facebook/audiences", 200)
+        if success:
+            self.facebook_tests_passed += 1
+        self.facebook_tests_run += 1
+        return success, response
+    
+    def test_facebook_ai_analyze_campaigns(self):
+        """Test Facebook AI campaign analysis (may take 30-60 seconds)"""
+        success, response = self.run_test(
+            "Facebook AI Campaign Analysis", 
+            "POST", 
+            "facebook/ai/analyze-campaigns?date_preset=last_7d", 
+            200,
+            timeout=90  # Extended timeout for AI analysis
+        )
+        if success:
+            self.facebook_tests_passed += 1
+        self.facebook_tests_run += 1
+        return success, response
+    
+    # ==================== FINANCE ROUTES TESTS ====================
+    
+    def test_finance_status(self):
+        """Test Finance status endpoint"""
+        success, response = self.run_test("Finance Status", "GET", "finance/status", 200)
+        if success:
+            self.finance_tests_passed += 1
+        self.finance_tests_run += 1
+        return success, response
+    
+    def test_finance_reconciliation(self):
+        """Test Finance reconciliation endpoint"""
+        success, response = self.run_test(
+            "Finance Reconciliation", 
+            "GET", 
+            "finance/reconciliation?store_name=ashmiaa", 
+            200
+        )
+        if success:
+            self.finance_tests_passed += 1
+        self.finance_tests_run += 1
+        return success, response
+    
+    def test_finance_missing_orders(self):
+        """Test Finance missing orders endpoint"""
+        success, response = self.run_test(
+            "Finance Missing Orders", 
+            "GET", 
+            "finance/missing-orders?store_name=ashmiaa", 
+            200
+        )
+        if success:
+            self.finance_tests_passed += 1
+        self.finance_tests_run += 1
+        return success, response
+    
+    def test_finance_upload_history(self):
+        """Test Finance upload history endpoint"""
+        success, response = self.run_test("Finance Upload History", "GET", "finance/upload-history", 200)
+        if success:
+            self.finance_tests_passed += 1
+        self.finance_tests_run += 1
+        return success, response
+    
+    # ==================== EXISTING ENDPOINTS TESTS ====================
+    
+    def test_orders_endpoint(self):
+        """Test orders endpoint"""
+        success, response = self.run_test("Orders Endpoint", "GET", "orders", 200)
+        return success, response
+    
+    def test_inventory_overview_stats(self):
+        """Test inventory overview stats endpoint"""
+        success, response = self.run_test("Inventory Overview Stats", "GET", "inventory/v2/overview-stats", 200)
+        return success, response
+    
+    # ==================== REFACTORING TESTS ====================
+    
+    def run_refactoring_tests(self):
+        """Run comprehensive tests for refactored backend routes"""
+        print("\n" + "="*80)
+        print("🔧 BACKEND REFACTORING VALIDATION TESTS")
+        print("="*80)
+        
+        # Test Facebook Routes
+        print("\n📘 FACEBOOK ROUTES TESTS")
+        print("-" * 40)
+        
+        fb_status_success, fb_status_response = self.test_facebook_status()
+        fb_accounts_success, fb_accounts_response = self.test_facebook_ad_accounts()
+        fb_set_account_success, fb_set_account_response = self.test_facebook_set_ad_account()
+        fb_campaigns_success, fb_campaigns_response = self.test_facebook_campaigns()
+        fb_audiences_success, fb_audiences_response = self.test_facebook_audiences()
+        
+        # AI Analysis test (may take longer)
+        print("\n⚠️  Note: AI Campaign Analysis may take 30-60 seconds...")
+        fb_ai_success, fb_ai_response = self.test_facebook_ai_analyze_campaigns()
+        
+        # Test Finance Routes
+        print("\n💰 FINANCE ROUTES TESTS")
+        print("-" * 40)
+        
+        fin_status_success, fin_status_response = self.test_finance_status()
+        fin_reconciliation_success, fin_reconciliation_response = self.test_finance_reconciliation()
+        fin_missing_success, fin_missing_response = self.test_finance_missing_orders()
+        fin_history_success, fin_history_response = self.test_finance_upload_history()
+        
+        # Test Existing Endpoints
+        print("\n🔄 EXISTING ENDPOINTS VERIFICATION")
+        print("-" * 40)
+        
+        orders_success, orders_response = self.test_orders_endpoint()
+        customers_success, customers_response = self.test_customers_endpoint()
+        inventory_success, inventory_response = self.test_inventory_overview_stats()
+        
+        # Compile results
+        facebook_results = {
+            "status": fb_status_success,
+            "ad_accounts": fb_accounts_success,
+            "set_ad_account": fb_set_account_success,
+            "campaigns": fb_campaigns_success,
+            "audiences": fb_audiences_success,
+            "ai_analysis": fb_ai_success
+        }
+        
+        finance_results = {
+            "status": fin_status_success,
+            "reconciliation": fin_reconciliation_success,
+            "missing_orders": fin_missing_success,
+            "upload_history": fin_history_success
+        }
+        
+        existing_results = {
+            "orders": orders_success,
+            "customers": customers_success,
+            "inventory_stats": inventory_success
+        }
+        
+        return {
+            "facebook": facebook_results,
+            "finance": finance_results,
+            "existing": existing_results
+        }
+
     def run_performance_tests(self):
         """Run all performance-related tests"""
         print("\n" + "="*60)
