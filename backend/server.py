@@ -28,6 +28,7 @@ from meta_whatsapp_service import MetaWhatsAppService
 from whatsapp_crm_routes import whatsapp_router
 from tracking_routes import tracking_router
 from finance_reconciliation import get_finance_reconciliation
+from routes.facebook import facebook_router
 
 
 ROOT_DIR = Path(__file__).parent
