@@ -7956,12 +7956,13 @@ async def trigger_manual_sync():
 
 
 
+# Include the new modular routers BEFORE adding api_router to app
+api_router.include_router(facebook_router)
+
 # Include the router in the main app
 app.include_router(api_router)
 app.include_router(whatsapp_webhook_router)
 app.include_router(tracking_router)
-# Include the new modular routers
-api_router.include_router(facebook_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 app.add_middleware(
