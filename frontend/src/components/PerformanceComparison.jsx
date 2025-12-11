@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   TrendingUp, 
@@ -14,7 +15,8 @@ import {
   Percent,
   Eye,
   MousePointer,
-  Users
+  Users,
+  ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
