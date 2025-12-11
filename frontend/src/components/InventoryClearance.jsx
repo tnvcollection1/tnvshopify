@@ -142,8 +142,8 @@ const InventoryClearance = () => {
   };
 
   const syncToShopify = async (campaignId) => {
-    if (!selectedStore) {
-      toast.error('Please select a store first');
+    if (selectedStore === 'all') {
+      toast.error('Please select a specific store first');
       return;
     }
     
