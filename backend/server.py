@@ -5100,6 +5100,7 @@ api_router.include_router(finance_router)
 api_router.include_router(pricing_router)
 api_router.include_router(tcs_router)
 api_router.include_router(customers_router)
+api_router.include_router(clearance_router)
 
 # Include the router in the main app
 app.include_router(api_router)
