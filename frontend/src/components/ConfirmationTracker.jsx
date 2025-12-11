@@ -363,9 +363,9 @@ const ConfirmationTracker = () => {
           </Button>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards - Clickable */}
         <div className="grid grid-cols-5 gap-4 mt-6">
-          <Card className="border-gray-200">
+          <Card className="border-gray-200 cursor-pointer hover:shadow-lg hover:border-gray-400 transition-all" onClick={() => viewCardDetails('total')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Total</p>
@@ -373,7 +373,7 @@ const ConfirmationTracker = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-gray-200 cursor-pointer hover:shadow-lg hover:border-gray-400 transition-all" onClick={() => viewCardDetails('notCalled')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Not Called</p>
@@ -381,7 +381,7 @@ const ConfirmationTracker = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-blue-200 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all" onClick={() => viewCardDetails('called')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Called</p>
@@ -389,7 +389,7 @@ const ConfirmationTracker = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-green-200 cursor-pointer hover:shadow-lg hover:border-green-500 transition-all" onClick={() => viewCardDetails('purchased')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Purchased</p>
@@ -397,7 +397,7 @@ const ConfirmationTracker = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-200">
+          <Card className="border-orange-200 cursor-pointer hover:shadow-lg hover:border-orange-500 transition-all" onClick={() => viewCardDetails('canceled')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-gray-500 uppercase">Canceled</p>
@@ -407,9 +407,9 @@ const ConfirmationTracker = () => {
           </Card>
         </div>
 
-        {/* Stock Status Cards with Sale Value */}
+        {/* Stock Status Cards with Sale Value - Clickable */}
         <div className="grid grid-cols-2 gap-4 mt-4">
-          <Card className="border-green-200 bg-green-50">
+          <Card className="border-green-200 bg-green-50 cursor-pointer hover:shadow-lg hover:border-green-500 transition-all" onClick={() => viewCardDetails('inStock')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-green-700 uppercase">✅ In Stock</p>
@@ -420,7 +420,7 @@ const ConfirmationTracker = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-red-200 bg-red-50 cursor-pointer hover:shadow-lg hover:border-red-500 transition-all" onClick={() => viewCardDetails('outOfStock')}>
             <CardContent className="p-4">
               <div className="flex flex-col">
                 <p className="text-xs font-medium text-red-700 uppercase">❌ Out of Stock</p>
