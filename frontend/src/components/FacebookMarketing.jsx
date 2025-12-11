@@ -566,7 +566,11 @@ const FacebookMarketing = () => {
                   return (
                     <tr key={campaign.id} className={`border-b hover:bg-blue-50 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                       <td className="py-2 px-3 sticky left-0 bg-inherit">
-                        <div className={`w-10 h-5 rounded-full ${isActive ? 'bg-blue-600' : 'bg-gray-300'} relative cursor-pointer`}>
+                        <div 
+                          onClick={() => toggleCampaignStatus(campaign.id, campaign.effective_status)}
+                          className={`w-10 h-5 rounded-full ${isActive ? 'bg-blue-600' : 'bg-gray-300'} relative cursor-pointer hover:opacity-80 transition-opacity`}
+                          title={isActive ? 'Click to pause' : 'Click to activate'}
+                        >
                           <div className={`absolute w-4 h-4 rounded-full bg-white top-0.5 transition-all ${isActive ? 'right-0.5' : 'left-0.5'}`} />
                         </div>
                       </td>
