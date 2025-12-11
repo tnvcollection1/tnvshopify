@@ -21,6 +21,7 @@ import WhatsAppCampaignManager from "@/components/WhatsAppCampaignManager";
 import WhatsAppAnalytics from "@/components/WhatsAppAnalytics";
 import TrackingPage from "@/components/TrackingPage";
 import MarketingDashboard from "@/components/MarketingDashboard";
+import FacebookMarketing from "@/components/FacebookMarketing";
 import InventoryCampaignManager from "@/components/InventoryCampaignManager";
 import CampaignManager from "@/components/CampaignManager";
 import FlashSaleManager from "@/components/FlashSaleManager";
