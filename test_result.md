@@ -127,8 +127,9 @@ metadata:
     pricing_routes: "3/3 passed"
     tcs_routes: "1/2 passed (minor import issue)"
     customers_routes: "3/4 passed (minor field issue)"
+    clearance_routes: "5/5 passed"
     existing_endpoints: "2/3 passed (orders endpoint not found)"
-    total_success_rate: "86% (19/22 tests passed)"
+    total_success_rate: "89% (24/27 tests passed)"
 
 test_plan:
   current_focus:
