@@ -232,7 +232,7 @@ const Orders = () => {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
     } finally {
-      setLoading(false));
+      setLoading(false);
     }
   };
 
