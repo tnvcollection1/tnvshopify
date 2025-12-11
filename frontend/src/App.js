@@ -154,6 +154,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/facebook-marketing" 
+        element={
+          <ProtectedRoute>
+            <FacebookMarketing />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/campaigns" 
         element={
           <ProtectedRoute>
