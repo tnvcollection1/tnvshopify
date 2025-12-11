@@ -125,7 +125,7 @@ const PerformanceComparison = () => {
       
       // Get orders for the store
       const ordersResponse = await axios.get(`${API}/api/customers?store_name=${storeName}&limit=1000`);
-      const orders = ordersResponse.data || [];
+      const orders = ordersResponse.data?.customers || ordersResponse.data || [];
       
       // Calculate total revenue from orders
       let totalRevenue = 0;
