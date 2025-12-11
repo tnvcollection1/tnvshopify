@@ -511,7 +511,7 @@ class ShopifyCustomerAPITester:
     
     def test_finance_status(self):
         """Test Finance status endpoint"""
-        success, response = self.run_test("Finance Status", "GET", "finance/status", 200)
+        success, response, _ = self.run_test("Finance Status", "GET", "finance/status", 200)
         if success:
             self.finance_tests_passed += 1
         self.finance_tests_run += 1
@@ -519,7 +519,7 @@ class ShopifyCustomerAPITester:
     
     def test_finance_reconciliation(self):
         """Test Finance reconciliation endpoint"""
-        success, response = self.run_test(
+        success, response, _ = self.run_test(
             "Finance Reconciliation", 
             "GET", 
             "finance/reconciliation?store_name=ashmiaa", 
@@ -532,7 +532,7 @@ class ShopifyCustomerAPITester:
     
     def test_finance_missing_orders(self):
         """Test Finance missing orders endpoint"""
-        success, response = self.run_test(
+        success, response, _ = self.run_test(
             "Finance Missing Orders", 
             "GET", 
             "finance/missing-orders?store_name=ashmiaa", 
@@ -545,7 +545,7 @@ class ShopifyCustomerAPITester:
     
     def test_finance_upload_history(self):
         """Test Finance upload history endpoint"""
-        success, response = self.run_test("Finance Upload History", "GET", "finance/upload-history", 200)
+        success, response, _ = self.run_test("Finance Upload History", "GET", "finance/upload-history", 200)
         if success:
             self.finance_tests_passed += 1
         self.finance_tests_run += 1
