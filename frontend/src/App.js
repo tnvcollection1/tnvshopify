@@ -163,6 +163,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/performance-comparison" 
+        element={
+          <ProtectedRoute>
+            <PerformanceComparison />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/campaigns" 
         element={
           <ProtectedRoute>
