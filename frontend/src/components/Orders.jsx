@@ -194,6 +194,13 @@ const Orders = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Update filter when URL param changes
+  useEffect(() => {
+    if (storeFromUrl && storeFromUrl !== filters.store) {
+      setFilters(prev => ({ ...prev, store: storeFromUrl }));
+    }
+  }, [storeFromUrl]);
+
   useEffect(() => {
     fetchOrders();
     fetchStores();
@@ -202,7 +209,8 @@ const Orders = () => {
   const fetchStores = async () => {
     try {
       const response = await axios.get(`${API}/stores`);
-      setStores(response.data || []);
+      const storesData = response.data?.stores || response.data || [];
+      setStores(Array.isArray(storesData) ? storesData : []);
     } catch (error) {
       console.error("Error fetching stores:", error);
     }
