@@ -5,12 +5,21 @@ Handles all Facebook Ads Manager integration endpoints
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import logging
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime, timezone
 
 from facebook_marketing import facebook_marketing
 from ai_campaign_optimizer import ai_campaign_optimizer
 
 logger = logging.getLogger(__name__)
+
+# Database will be injected from server.py
+db = None
+
+def set_database(database):
+    """Set the database connection from server.py"""
+    global db
+    db = database
 
 # Create router with prefix
 facebook_router = APIRouter(prefix="/facebook", tags=["Facebook Marketing"])
@@ -24,6 +33,11 @@ class CreateCampaignRequest(BaseModel):
     daily_budget: Optional[float] = None
     lifetime_budget: Optional[float] = None
     status: str = 'PAUSED'
+
+
+class AudienceCustomersRequest(BaseModel):
+    customer_ids: List[str] = []
+    store_name: Optional[str] = None
 
 
 # ==================== CONNECTION & ACCOUNT ENDPOINTS ====================
@@ -169,6 +183,82 @@ async def create_facebook_custom_audience(name: str, description: str = None):
         return result
     except Exception as e:
         logger.error(f"Error creating audience: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@facebook_router.post("/audiences/{audience_id}/add-customers")
+async def add_customers_to_audience(audience_id: str, request: AudienceCustomersRequest):
+    """Add CRM customers to a Facebook custom audience"""
+    try:
+        if db is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        # Fetch customer data from CRM
+        query = {}
+        if request.customer_ids:
+            query["customer_id"] = {"$in": request.customer_ids}
+        if request.store_name:
+            query["store_name"] = request.store_name
+        
+        customers_cursor = db.customers.find(query, {"_id": 0, "email": 1, "phone": 1})
+        customers = await customers_cursor.to_list(10000)
+        
+        if not customers:
+            return {"success": False, "error": "No customers found"}
+        
+        # Add to Facebook audience
+        result = facebook_marketing.add_users_to_audience(audience_id, customers)
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error adding customers to audience: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@facebook_router.post("/audiences/sync-store")
+async def sync_store_to_audience(store_name: str, audience_name: str = None):
+    """Create an audience from all customers of a store"""
+    try:
+        if db is None:
+            raise HTTPException(status_code=500, detail="Database not initialized")
+        
+        # Fetch all customers from the store
+        customers_cursor = db.customers.find(
+            {"store_name": store_name},
+            {"_id": 0, "email": 1, "phone": 1, "first_name": 1, "last_name": 1}
+        )
+        customers = await customers_cursor.to_list(10000)
+        
+        if not customers:
+            return {"success": False, "error": f"No customers found for store: {store_name}"}
+        
+        # Create new audience
+        if not audience_name:
+            audience_name = f"{store_name} - CRM Customers - {datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
+        
+        create_result = facebook_marketing.create_custom_audience(
+            audience_name,
+            f"Synced from CRM for store: {store_name}"
+        )
+        
+        if not create_result.get('success'):
+            return create_result
+        
+        audience_id = create_result.get('audience_id')
+        
+        # Add customers to the audience
+        add_result = facebook_marketing.add_users_to_audience(audience_id, customers)
+        
+        return {
+            "success": True,
+            "audience_id": audience_id,
+            "audience_name": audience_name,
+            "store_name": store_name,
+            "customers_synced": len(customers)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing store to audience: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
