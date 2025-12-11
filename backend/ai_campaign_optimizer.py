@@ -329,14 +329,23 @@ Provide:
         if not account_insights:
             return "No account data available"
         
+        # Safely get numeric values with defaults
+        spend = float(account_insights.get('spend') or 0)
+        impressions = int(account_insights.get('impressions') or 0)
+        reach = int(account_insights.get('reach') or 0)
+        clicks = int(account_insights.get('clicks') or 0)
+        ctr = float(account_insights.get('ctr') or 0)
+        cpc = float(account_insights.get('cpc') or 0)
+        cpm = float(account_insights.get('cpm') or 0)
+        
         return f"""
-- Total Spend: {account_insights.get('spend', 0):.2f}
-- Total Impressions: {account_insights.get('impressions', 0):,}
-- Total Reach: {account_insights.get('reach', 0):,}
-- Total Clicks: {account_insights.get('clicks', 0):,}
-- Average CTR: {account_insights.get('ctr', 0):.2f}%
-- Average CPC: {account_insights.get('cpc', 0):.2f}
-- Average CPM: {account_insights.get('cpm', 0):.2f}
+- Total Spend: {spend:.2f}
+- Total Impressions: {impressions:,}
+- Total Reach: {reach:,}
+- Total Clicks: {clicks:,}
+- Average CTR: {ctr:.2f}%
+- Average CPC: {cpc:.2f}
+- Average CPM: {cpm:.2f}
 """
     
     def _parse_recommendations(self, ai_response: str, campaigns_data: List[Dict]) -> Dict:
