@@ -69,7 +69,7 @@ const InventoryClearance = () => {
     try {
       toast.loading('Analyzing inventory health...', { id: 'analyze' });
       const response = await axios.get(`${API}/api/clearance/health`, {
-        params: { store_name: selectedStore || undefined }
+        params: { store_name: selectedStore === 'all' ? undefined : selectedStore }
       });
       
       if (response.data.success) {
