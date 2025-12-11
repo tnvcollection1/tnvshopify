@@ -712,7 +712,20 @@ const FacebookMarketing = () => {
                       )}
                       {visibleColumns.results && <td className="py-2 px-3 text-right font-medium">{insights.purchases || '-'}</td>}
                       {visibleColumns.costPerResult && <td className="py-2 px-3 text-right">{insights.cost_per_purchase ? formatCurrency(insights.cost_per_purchase, 2) : '-'}</td>}
-                      {visibleColumns.budget && <td className="py-2 px-3 text-right">{campaign.daily_budget > 0 ? formatCurrency(campaign.daily_budget) : (campaign.lifetime_budget > 0 ? formatCurrency(campaign.lifetime_budget) + ' LT' : '-')}</td>}
+                      {visibleColumns.budget && (
+                        <td className="py-2 px-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <span>{campaign.daily_budget > 0 ? formatCurrency(campaign.daily_budget) : (campaign.lifetime_budget > 0 ? formatCurrency(campaign.lifetime_budget) + ' LT' : '-')}</span>
+                            <button
+                              onClick={() => openBudgetModal(campaign)}
+                              className="p-1 hover:bg-gray-200 rounded opacity-50 hover:opacity-100 transition-opacity"
+                              title="Edit Budget"
+                            >
+                              <Edit3 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                       {visibleColumns.spend && <td className="py-2 px-3 text-right font-medium">{insights.spend ? formatCurrency(insights.spend, 2) : '-'}</td>}
                       {visibleColumns.impressions && <td className="py-2 px-3 text-right">{formatNumber(insights.impressions)}</td>}
                       {visibleColumns.reach && <td className="py-2 px-3 text-right">{formatNumber(insights.reach)}</td>}
