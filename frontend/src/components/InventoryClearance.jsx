@@ -35,7 +35,7 @@ const InventoryClearance = () => {
   const [aiRecommendations, setAiRecommendations] = useState(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('dead_stock');
-  const [selectedStore, setSelectedStore] = useState('');
+  const [selectedStore, setSelectedStore] = useState('all');
   const [stores, setStores] = useState([]);
   const [expandedCategory, setExpandedCategory] = useState('dead_stock');
   const [creatingCampaign, setCreatingCampaign] = useState(false);
