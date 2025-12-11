@@ -968,6 +968,8 @@ def main():
             print(f"   - TCS routes: {tcs_total - tcs_passed} failures")
         if customers_passed < customers_total:
             print(f"   - Customers routes: {customers_total - customers_passed} failures")
+        if clearance_passed < clearance_total:
+            print(f"   - Clearance routes: {clearance_total - clearance_passed} failures")
         if ex_passed < ex_total:
             print(f"   - Existing endpoints: {ex_total - ex_passed} failures")
         return 1
