@@ -521,7 +521,7 @@ async def initialize_admin():
         if existing_admin:
             return {
                 "success": False,
-                "message": "Admin user already exists"
+                "message": "Admin user already exists. Use /api/reset-admin to reset password."
             }
         
         # Create default admin
@@ -552,6 +552,61 @@ async def initialize_admin():
     except Exception as e:
         logger.error(f"Error initializing admin: {str(e)}")
         raise HTTPException(status_code=500, detail="Admin initialization failed")
+
+
+@api_router.post("/reset-admin")
+async def reset_admin_password():
+    """
+    Reset admin password to default (admin/admin)
+    Creates admin if doesn't exist, resets password if exists
+    """
+    try:
+        import hashlib
+        
+        admin_password = "admin"
+        hashed_password = hashlib.sha256(admin_password.encode()).hexdigest()
+        
+        # Check if admin exists
+        existing_admin = await db.agents.find_one({"username": "admin"})
+        
+        if existing_admin:
+            # Reset password
+            await db.agents.update_one(
+                {"username": "admin"},
+                {"$set": {"password": hashed_password}}
+            )
+            logger.info("✅ Admin password reset to default")
+            return {
+                "success": True,
+                "message": "Admin password reset successfully",
+                "credentials": {
+                    "username": "admin",
+                    "password": "admin"
+                }
+            }
+        else:
+            # Create new admin
+            admin_user = {
+                "id": "admin-default-user",
+                "username": "admin",
+                "password": hashed_password,
+                "full_name": "Administrator",
+                "role": "admin",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.agents.insert_one(admin_user)
+            logger.info("✅ Admin user created with default password")
+            return {
+                "success": True,
+                "message": "Admin user created successfully",
+                "credentials": {
+                    "username": "admin",
+                    "password": "admin"
+                }
+            }
+    except Exception as e:
+        logger.error(f"Error resetting admin: {str(e)}")
+        raise HTTPException(status_code=500, detail="Admin reset failed")
 
 
 @api_router.post("/agents/signup")
