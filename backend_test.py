@@ -12,7 +12,7 @@ class ShopifyCustomerAPITester:
         self.tests_passed = 0
         self.test_results = []
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, timeout=30):
+    def run_test(self, name, method, endpoint, expected_status, data=None, timeout=30, measure_time=False):
         """Run a single API test"""
         url = f"{self.api_url}/{endpoint}"
         headers = {'Content-Type': 'application/json'}
@@ -22,11 +22,16 @@ class ShopifyCustomerAPITester:
         print(f"   URL: {url}")
         
         try:
+            start_time = time.time()
+            
             if method == 'GET':
                 response = requests.get(url, headers=headers, timeout=timeout)
             elif method == 'POST':
                 response = requests.post(url, json=data, headers=headers, timeout=timeout)
 
+            end_time = time.time()
+            response_time = (end_time - start_time) * 1000  # Convert to milliseconds
+            
             success = response.status_code == expected_status
             
             result = {
@@ -36,12 +41,15 @@ class ShopifyCustomerAPITester:
                 "expected_status": expected_status,
                 "actual_status": response.status_code,
                 "success": success,
-                "response_size": len(response.text) if response.text else 0
+                "response_size": len(response.text) if response.text else 0,
+                "response_time_ms": response_time
             }
             
             if success:
                 self.tests_passed += 1
                 print(f"✅ Passed - Status: {response.status_code}")
+                if measure_time:
+                    print(f"   Response time: {response_time:.2f}ms")
                 if response.text:
                     try:
                         response_json = response.json()
@@ -58,7 +66,7 @@ class ShopifyCustomerAPITester:
                 result["error_response"] = response.text[:200]
 
             self.test_results.append(result)
-            return success, response.json() if success and response.text else {}
+            return success, response.json() if success and response.text else {}, response_time
 
         except requests.exceptions.Timeout:
             print(f"❌ Failed - Request timeout after {timeout}s")
@@ -72,7 +80,7 @@ class ShopifyCustomerAPITester:
                 "error": "Request timeout"
             }
             self.test_results.append(result)
-            return False, {}
+            return False, {}, 0
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
             result = {
@@ -85,7 +93,7 @@ class ShopifyCustomerAPITester:
                 "error": str(e)
             }
             self.test_results.append(result)
-            return False, {}
+            return False, {}, 0
 
     def test_root_endpoint(self):
         """Test the root API endpoint"""
