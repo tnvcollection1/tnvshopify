@@ -96,7 +96,7 @@ const InventoryClearance = () => {
       toast.loading('Getting AI recommendations...', { id: 'ai' });
       const response = await axios.post(`${API}/api/clearance/ai-recommendations`, null, {
         params: { 
-          store_name: selectedStore || undefined,
+          store_name: selectedStore === 'all' ? undefined : selectedStore,
           category: selectedCategory
         }
       });
