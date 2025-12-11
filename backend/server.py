@@ -8128,6 +8128,184 @@ async def sync_store_to_audience(store_name: str, audience_name: str = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==================== CAMPAIGN MANAGEMENT ENDPOINTS ====================
+
+@api_router.post("/facebook/campaigns/{campaign_id}/status")
+async def update_facebook_campaign_status(campaign_id: str, status: str):
+    """Update campaign status (ACTIVE, PAUSED, ARCHIVED)"""
+    try:
+        if status not in ['ACTIVE', 'PAUSED', 'ARCHIVED']:
+            raise HTTPException(status_code=400, detail="Status must be ACTIVE, PAUSED, or ARCHIVED")
+        
+        result = facebook_marketing.update_campaign_status(campaign_id, status)
+        return result
+    except Exception as e:
+        logger.error(f"Error updating campaign status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/facebook/campaigns/{campaign_id}/budget")
+async def update_facebook_campaign_budget(campaign_id: str, daily_budget: float = None, lifetime_budget: float = None):
+    """Update campaign budget"""
+    try:
+        result = facebook_marketing.update_campaign_budget(campaign_id, daily_budget, lifetime_budget)
+        return result
+    except Exception as e:
+        logger.error(f"Error updating campaign budget: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class CreateCampaignRequest(BaseModel):
+    name: str
+    objective: str
+    daily_budget: float = None
+    lifetime_budget: float = None
+    status: str = 'PAUSED'
+
+
+@api_router.post("/facebook/campaigns/create")
+async def create_facebook_campaign(request: CreateCampaignRequest):
+    """Create a new Facebook campaign"""
+    try:
+        result = facebook_marketing.create_campaign(
+            name=request.name,
+            objective=request.objective,
+            daily_budget=request.daily_budget,
+            lifetime_budget=request.lifetime_budget,
+            status=request.status
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error creating campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/facebook/audiences/{audience_id}/lookalike")
+async def create_facebook_lookalike_audience(audience_id: str, name: str, country: str = 'PK', ratio: float = 0.01):
+    """Create a lookalike audience from a custom audience"""
+    try:
+        result = facebook_marketing.create_lookalike_audience(audience_id, name, country, ratio)
+        return result
+    except Exception as e:
+        logger.error(f"Error creating lookalike audience: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== AI CAMPAIGN OPTIMIZER ENDPOINTS ====================
+from ai_campaign_optimizer import ai_campaign_optimizer
+
+@api_router.post("/facebook/ai/analyze-campaigns")
+async def ai_analyze_campaigns(date_preset: str = 'last_30d'):
+    """AI analysis of all campaigns with recommendations"""
+    try:
+        # Get campaigns with insights
+        campaigns_result = facebook_marketing.get_all_campaigns_with_insights(date_preset)
+        if not campaigns_result.get('success'):
+            return campaigns_result
+        
+        # Get account insights
+        account_result = facebook_marketing.get_account_insights(date_preset)
+        account_insights = account_result.get('metrics') if account_result.get('success') else None
+        
+        # Run AI analysis
+        analysis = await ai_campaign_optimizer.analyze_campaigns(
+            campaigns_result.get('campaigns', []),
+            account_insights
+        )
+        
+        return analysis
+        
+    except Exception as e:
+        logger.error(f"Error in AI campaign analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/facebook/ai/scaling-recommendation/{campaign_id}")
+async def ai_scaling_recommendation(campaign_id: str, target_increase: float = 0.2):
+    """Get AI recommendation for scaling a specific campaign"""
+    try:
+        # Get campaign with insights
+        campaigns_result = facebook_marketing.get_campaigns()
+        if not campaigns_result.get('success'):
+            return campaigns_result
+        
+        campaign = None
+        for c in campaigns_result.get('campaigns', []):
+            if c.get('id') == campaign_id:
+                campaign = c
+                break
+        
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        # Get insights
+        insights_result = facebook_marketing.get_campaign_insights(campaign_id)
+        if insights_result.get('success'):
+            campaign['insights'] = insights_result.get('metrics', {})
+        
+        # Get AI recommendation
+        recommendation = await ai_campaign_optimizer.get_scaling_recommendation(campaign, target_increase)
+        return recommendation
+        
+    except Exception as e:
+        logger.error(f"Error getting scaling recommendation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/facebook/ai/budget-optimization")
+async def ai_budget_optimization(total_budget: float, date_preset: str = 'last_30d'):
+    """Get AI recommendation for optimal budget allocation"""
+    try:
+        # Get campaigns with insights
+        campaigns_result = facebook_marketing.get_all_campaigns_with_insights(date_preset)
+        if not campaigns_result.get('success'):
+            return campaigns_result
+        
+        # Get AI recommendation
+        recommendation = await ai_campaign_optimizer.get_budget_optimization(
+            campaigns_result.get('campaigns', []),
+            total_budget
+        )
+        
+        return recommendation
+        
+    except Exception as e:
+        logger.error(f"Error getting budget optimization: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/facebook/ai/diagnose/{campaign_id}")
+async def ai_diagnose_campaign(campaign_id: str):
+    """Get AI diagnosis for an underperforming campaign"""
+    try:
+        # Get campaign with insights
+        campaigns_result = facebook_marketing.get_campaigns()
+        if not campaigns_result.get('success'):
+            return campaigns_result
+        
+        campaign = None
+        for c in campaigns_result.get('campaigns', []):
+            if c.get('id') == campaign_id:
+                campaign = c
+                break
+        
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        # Get insights
+        insights_result = facebook_marketing.get_campaign_insights(campaign_id)
+        if insights_result.get('success'):
+            campaign['insights'] = insights_result.get('metrics', {})
+        
+        # Get AI diagnosis
+        diagnosis = await ai_campaign_optimizer.diagnose_campaign(campaign)
+        return diagnosis
+        
+    except Exception as e:
+        logger.error(f"Error diagnosing campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Include the router in the main app
 app.include_router(api_router)
 app.include_router(whatsapp_webhook_router)
