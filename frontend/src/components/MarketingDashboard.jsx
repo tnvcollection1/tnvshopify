@@ -69,6 +69,50 @@ const MarketingDashboard = () => {
     }
   };
 
+  // Clickable card functions
+  const viewCardDetails = async (cardType) => {
+    setViewingCard(cardType);
+    setLoadingOrders(true);
+    
+    try {
+      const params = new URLSearchParams();
+      params.append("limit", "100");
+      
+      // Filter by date range based on card type
+      const today = new Date();
+      
+      if (cardType === 'today') {
+        params.append("start_date", today.toISOString().split('T')[0]);
+        params.append("end_date", today.toISOString().split('T')[0]);
+      } else if (cardType === 'week') {
+        const weekAgo = new Date(today.setDate(today.getDate() - 7));
+        params.append("start_date", weekAgo.toISOString().split('T')[0]);
+      } else if (cardType === 'month') {
+        const monthAgo = new Date(today.setMonth(today.getMonth() - 1));
+        params.append("start_date", monthAgo.toISOString().split('T')[0]);
+      } else if (cardType === 'pending') {
+        params.append("fulfillment_status", "unfulfilled");
+      } else if (cardType === 'total') {
+        // All orders
+      }
+      
+      params.append("sort_by", "date_desc");
+      
+      const response = await axios.get(`${API}/api/customers?${params.toString()}`);
+      setCardOrders(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Error fetching orders for card:', error);
+      toast.error('Failed to load orders');
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const closeCardView = () => {
+    setViewingCard(null);
+    setCardOrders([]);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
