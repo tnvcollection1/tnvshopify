@@ -321,7 +321,7 @@ frontend:
           comment: "TESTED ❌ - CRITICAL FRONTEND LOADING ISSUE. Backend APIs working perfectly (GET /api/customers/stats returns total:33 orders as expected), but React application not initializing in browser. Page stuck on 'Loading...' title, no React elements rendered (0 found), no login form visible. Frontend service running correctly (supervisor: RUNNING), logs show successful compilation, but JavaScript not executing in browser. Cannot test Dispatch Tracker functionality due to React app initialization failure. Requires immediate frontend debugging to resolve React loading issue before any UI testing can proceed."
         - working: false
           agent: "testing"
-          comment: "TESTED ❌ - CRITICAL CORS CONFIGURATION ISSUE IDENTIFIED. React app now loading correctly (4 elements found), login form functional, but authentication failing due to CORS policy error. Frontend making API calls from 'https://shopify-comm-hub.preview.static.emergentagent.com' to wrong backend URL 'https://shopify-comm-hub.preview.emergentagent.com/api/agents/login' instead of correct 'https://ordertrackr.preview.emergentagent.com/api/agents/login'. Backend API working perfectly (verified via curl: 23,425 total orders). CORS headers configured correctly on backend. Issue: Frontend environment variable REACT_APP_BACKEND_URL not being read correctly in production deployment. Cannot test Dispatch Tracker functionality until CORS/URL configuration is fixed."
+          comment: "TESTED ❌ - CRITICAL CORS CONFIGURATION ISSUE IDENTIFIED. React app now loading correctly (4 elements found), login form functional, but authentication failing due to CORS policy error. Frontend making API calls from 'https://shopify-comm-hub.preview.static.emergentagent.com' to wrong backend URL 'https://order-sync-hub-1.preview.emergentagent.com/api/agents/login' instead of correct 'https://order-sync-hub-1.preview.emergentagent.com/api/agents/login'. Backend API working perfectly (verified via curl: 23,425 total orders). CORS headers configured correctly on backend. Issue: Frontend environment variable REACT_APP_BACKEND_URL not being read correctly in production deployment. Cannot test Dispatch Tracker functionality until CORS/URL configuration is fixed."
 
   - task: "TCS Sync in Dispatch Tracker"
     implemented: true
@@ -485,13 +485,13 @@ agent_communication:
         
         **❌ CRITICAL ISSUE - CORS/URL CONFIGURATION**:
         - ❌ **Authentication failing due to wrong backend URL**
-        - ❌ Frontend making API calls to: 'https://shopify-comm-hub.preview.emergentagent.com/api/agents/login'
-        - ✅ Should be making calls to: 'https://ordertrackr.preview.emergentagent.com/api/agents/login'
+        - ❌ Frontend making API calls to: 'https://order-sync-hub-1.preview.emergentagent.com/api/agents/login'
+        - ✅ Should be making calls to: 'https://order-sync-hub-1.preview.emergentagent.com/api/agents/login'
         - ❌ CORS error: "Access to XMLHttpRequest blocked by CORS policy: No 'Access-Control-Allow-Origin' header"
         - ❌ Environment variable REACT_APP_BACKEND_URL not being read correctly in production deployment
         
         **🔍 ROOT CAUSE ANALYSIS**:
-        - **Frontend .env Configuration**: Correctly set to 'https://ordertrackr.preview.emergentagent.com'
+        - **Frontend .env Configuration**: Correctly set to 'https://order-sync-hub-1.preview.emergentagent.com'
         - **Login Component Code**: Correctly using process.env.REACT_APP_BACKEND_URL
         - **Issue**: Frontend deployment serving from 'https://shopify-comm-hub.preview.static.emergentagent.com' but making API calls to wrong domain
         - **Impact**: Cannot authenticate, cannot access Dispatch Tracker, cannot test any functionality
@@ -536,8 +536,8 @@ agent_communication:
         - **Symptoms**: Page remains at "Loading..." state, no JavaScript execution
         
         **4. Technical Details**:
-        - **Frontend URL**: https://shopify-comm-hub.preview.emergentagent.com/login
-        - **Backend URL**: https://ordertrackr.preview.emergentagent.com/api (working)
+        - **Frontend URL**: https://order-sync-hub-1.preview.emergentagent.com/login
+        - **Backend URL**: https://order-sync-hub-1.preview.emergentagent.com/api (working)
         - **Page Structure**: Main page contains iframe loading preview
         - **React Status**: Not initializing (0 React elements detected)
         - **Console Errors**: No console messages captured (app not loading)

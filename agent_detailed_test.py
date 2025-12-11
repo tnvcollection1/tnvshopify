@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://ordertrackr.preview.emergentagent.com/api'
+base_url = 'https://order-sync-hub-1.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
