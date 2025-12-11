@@ -436,22 +436,6 @@ const FacebookMarketing = () => {
     });
   };
 
-  const SortableHeader = ({ field, label, className = "" }) => (
-    <th 
-      className={`py-2 px-3 text-xs font-semibold text-gray-600 cursor-pointer hover:bg-gray-100 whitespace-nowrap ${className}`}
-      onClick={() => handleSort(field)}
-    >
-      <div className="flex items-center gap-1">
-        {label}
-        {sortField === field ? (
-          sortDirection === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
-        ) : (
-          <ArrowUpDown className="w-3 h-3 opacity-30" />
-        )}
-      </div>
-    </th>
-  );
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
