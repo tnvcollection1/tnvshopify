@@ -450,7 +450,7 @@ class ShopifyCustomerAPITester:
     
     def test_facebook_status(self):
         """Test Facebook API connection status"""
-        success, response = self.run_test("Facebook Status", "GET", "facebook/status", 200)
+        success, response, _ = self.run_test("Facebook Status", "GET", "facebook/status", 200)
         if success:
             self.facebook_tests_passed += 1
         self.facebook_tests_run += 1
