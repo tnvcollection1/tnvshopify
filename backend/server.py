@@ -4605,6 +4605,39 @@ async def get_customers(
     return customers
 
 
+@api_router.post("/cache/refresh-inventory")
+async def refresh_inventory_cache():
+    """Manually refresh the inventory cache"""
+    try:
+        cache = await invalidate_inventory_cache()
+        return {
+            "success": True,
+            "message": "Inventory cache refreshed",
+            "items_cached": len(cache["data"]),
+            "stock_skus_cached": len(cache["stock_skus"]),
+            "last_updated": cache["last_updated"].isoformat() if cache["last_updated"] else None
+        }
+    except Exception as e:
+        logger.error(f"Error refreshing inventory cache: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/cache/status")
+async def get_cache_status():
+    """Get current cache status"""
+    global _inventory_cache
+    return {
+        "inventory_cache": {
+            "items_count": len(_inventory_cache["data"]),
+            "stock_skus_count": len(_inventory_cache["stock_skus"]),
+            "last_updated": _inventory_cache["last_updated"].isoformat() if _inventory_cache["last_updated"] else None,
+            "ttl_seconds": _inventory_cache["ttl_seconds"],
+            "is_valid": _inventory_cache["last_updated"] is not None and 
+                       (datetime.now(timezone.utc) - _inventory_cache["last_updated"]).total_seconds() < _inventory_cache["ttl_seconds"]
+        }
+    }
+
+
 @api_router.get("/customers/count")
 async def get_customers_count(
     shoe_size: Optional[str] = None,
