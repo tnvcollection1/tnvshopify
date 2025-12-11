@@ -458,7 +458,7 @@ class ShopifyCustomerAPITester:
     
     def test_facebook_ad_accounts(self):
         """Test Facebook ad accounts endpoint"""
-        success, response = self.run_test("Facebook Ad Accounts", "GET", "facebook/ad-accounts", 200)
+        success, response, _ = self.run_test("Facebook Ad Accounts", "GET", "facebook/ad-accounts", 200)
         if success:
             self.facebook_tests_passed += 1
         self.facebook_tests_run += 1
@@ -466,7 +466,7 @@ class ShopifyCustomerAPITester:
     
     def test_facebook_set_ad_account(self):
         """Test setting Facebook ad account"""
-        success, response = self.run_test(
+        success, response, _ = self.run_test(
             "Set Facebook Ad Account", 
             "POST", 
             "facebook/set-ad-account?ad_account_id=act_3108518676133383", 
@@ -479,7 +479,7 @@ class ShopifyCustomerAPITester:
     
     def test_facebook_campaigns(self):
         """Test Facebook campaigns endpoint"""
-        success, response = self.run_test("Facebook Campaigns", "GET", "facebook/campaigns", 200)
+        success, response, _ = self.run_test("Facebook Campaigns", "GET", "facebook/campaigns", 200)
         if success:
             self.facebook_tests_passed += 1
         self.facebook_tests_run += 1
@@ -487,7 +487,7 @@ class ShopifyCustomerAPITester:
     
     def test_facebook_audiences(self):
         """Test Facebook custom audiences endpoint"""
-        success, response = self.run_test("Facebook Audiences", "GET", "facebook/audiences", 200)
+        success, response, _ = self.run_test("Facebook Audiences", "GET", "facebook/audiences", 200)
         if success:
             self.facebook_tests_passed += 1
         self.facebook_tests_run += 1
@@ -495,7 +495,7 @@ class ShopifyCustomerAPITester:
     
     def test_facebook_ai_analyze_campaigns(self):
         """Test Facebook AI campaign analysis (may take 30-60 seconds)"""
-        success, response = self.run_test(
+        success, response, _ = self.run_test(
             "Facebook AI Campaign Analysis", 
             "POST", 
             "facebook/ai/analyze-campaigns?date_preset=last_7d", 
