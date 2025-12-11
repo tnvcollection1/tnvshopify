@@ -365,7 +365,11 @@ const PerformanceComparison = () => {
       {/* Store by Store Comparison */}
       <div className="space-y-4">
         {storePerformance.map((store, idx) => (
-          <Card key={idx} className="overflow-hidden">
+          <Card 
+            key={idx} 
+            className="overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:scale-[1.01] border-2 hover:border-blue-300"
+            onClick={() => navigate(`/orders?store=${store.store_name}`)}
+          >
             <CardHeader className="bg-gray-50 border-b pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -379,12 +383,15 @@ const PerformanceComparison = () => {
                     <span className="font-medium text-gray-700">{store.fb_account_name}</span>
                   </div>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-sm font-bold ${
-                  store.true_roas >= 2 ? 'bg-green-100 text-green-700' :
-                  store.true_roas >= 1 ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-red-100 text-red-700'
-                }`}>
-                  ROAS: {typeof store.true_roas === 'number' ? store.true_roas.toFixed(2) : '0.00'}x
+                <div className="flex items-center gap-3">
+                  <div className={`px-3 py-1 rounded-full text-sm font-bold ${
+                    store.true_roas >= 2 ? 'bg-green-100 text-green-700' :
+                    store.true_roas >= 1 ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    ROAS: {typeof store.true_roas === 'number' ? store.true_roas.toFixed(2) : '0.00'}x
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
             </CardHeader>
