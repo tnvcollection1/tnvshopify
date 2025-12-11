@@ -18,7 +18,8 @@ import {
   Target,
   Zap,
   Users as UsersIcon,
-  DollarSign
+  DollarSign,
+  Facebook
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
