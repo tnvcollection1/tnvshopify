@@ -688,6 +688,8 @@ const FacebookMarketing = () => {
             </CardContent>
           </Card>
         </div>
+        </>
+        )}
       </div>
     </div>
   );
