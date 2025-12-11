@@ -45,6 +45,76 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 
+# ==================== PERFORMANCE: In-Memory Caches ====================
+# These caches store frequently accessed data to avoid repeated DB queries
+
+# Inventory cache - refreshed every 5 minutes
+_inventory_cache = {
+    "data": {},  # SKU -> {cost, profit}
+    "stock_skus": set(),  # Set of SKUs in stock
+    "last_updated": None,
+    "ttl_seconds": 300  # 5 minutes
+}
+
+async def get_inventory_cache():
+    """Get cached inventory data, refresh if stale"""
+    global _inventory_cache
+    now = datetime.now(timezone.utc)
+    
+    # Check if cache is valid
+    if (_inventory_cache["last_updated"] and 
+        (now - _inventory_cache["last_updated"]).total_seconds() < _inventory_cache["ttl_seconds"]):
+        return _inventory_cache
+    
+    # Refresh cache
+    try:
+        # Fetch inventory for cost/profit calculations
+        inventory_items = await db.inventory_v2.find(
+            {}, 
+            {"_id": 0, "sku": 1, "cost": 1, "profit": 1, "quantity": 1}
+        ).to_list(10000)
+        
+        inventory_map = {}
+        stock_skus = set()
+        
+        for item in inventory_items:
+            sku = item.get("sku", "").upper()
+            if sku:
+                inventory_map[sku] = {
+                    "cost": item.get("cost", 0) or 0,
+                    "profit": item.get("profit", 0) or 0
+                }
+                if (item.get("quantity", 0) or 0) > 0:
+                    stock_skus.add(sku)
+        
+        # Also check old stock collection
+        stock_items = await db.stock.find({}, {"_id": 0, "sku": 1}).to_list(10000)
+        for item in stock_items:
+            sku = item.get("sku", "").upper()
+            if sku:
+                stock_skus.add(sku)
+        
+        _inventory_cache = {
+            "data": inventory_map,
+            "stock_skus": stock_skus,
+            "last_updated": now,
+            "ttl_seconds": 300
+        }
+        
+        logger.info(f"✅ Inventory cache refreshed: {len(inventory_map)} items, {len(stock_skus)} in stock")
+    except Exception as e:
+        logger.error(f"❌ Error refreshing inventory cache: {str(e)}")
+    
+    return _inventory_cache
+
+async def invalidate_inventory_cache():
+    """Force refresh of inventory cache"""
+    global _inventory_cache
+    _inventory_cache["last_updated"] = None
+    return await get_inventory_cache()
+
+# ==================== END PERFORMANCE CACHES ====================
+
 # Startup and shutdown events for scheduler
 @app.on_event("startup")
 async def startup_event():
@@ -53,6 +123,54 @@ async def startup_event():
     scheduler = get_scheduler()
     scheduler.start()
     logger.info("✅ Background scheduler initialized")
+    
+    # Create database indexes for performance
+    async def create_indexes():
+        try:
+            logger.info("📊 Creating database indexes for performance...")
+            
+            # Customers collection indexes
+            await db.customers.create_index("customer_id", unique=True, background=True)
+            await db.customers.create_index("order_number", background=True)
+            await db.customers.create_index("order_number_int", background=True)
+            await db.customers.create_index("store_name", background=True)
+            await db.customers.create_index("fulfillment_status", background=True)
+            await db.customers.create_index("delivery_status", background=True)
+            await db.customers.create_index("payment_status", background=True)
+            await db.customers.create_index("last_order_date", background=True)
+            await db.customers.create_index("created_at", background=True)
+            await db.customers.create_index("tracking_number", background=True)
+            
+            # Compound indexes for common queries
+            await db.customers.create_index([
+                ("fulfillment_status", 1),
+                ("created_at", -1)
+            ], background=True)
+            await db.customers.create_index([
+                ("store_name", 1),
+                ("order_number_int", -1)
+            ], background=True)
+            
+            # Inventory indexes
+            await db.inventory_v2.create_index("sku", unique=True, background=True)
+            await db.inventory_v2.create_index("store_name", background=True)
+            await db.inventory_v2.create_index("quantity", background=True)
+            
+            # Stock collection index
+            await db.stock.create_index("sku", background=True)
+            
+            logger.info("✅ Database indexes created successfully")
+        except Exception as e:
+            logger.warning(f"⚠️ Index creation warning (may already exist): {str(e)}")
+    
+    # Warm up inventory cache
+    async def warmup_inventory_cache():
+        try:
+            logger.info("🔥 Warming up inventory cache...")
+            await get_inventory_cache()
+            logger.info("✅ Inventory cache warmed up")
+        except Exception as e:
+            logger.error(f"❌ Error warming up inventory cache: {str(e)}")
     
     # Start dynamic pricing cache warmup in background
     async def warmup_pricing_cache():
@@ -81,7 +199,9 @@ async def startup_event():
         except Exception as e:
             logger.error(f"❌ Error warming up pricing cache: {str(e)}")
     
-    # Run in background
+    # Run startup tasks in background
+    asyncio.create_task(create_indexes())
+    asyncio.create_task(warmup_inventory_cache())
     asyncio.create_task(warmup_pricing_cache())
 
 
