@@ -79,6 +79,10 @@ const ConfirmationTracker = () => {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [bulkWhatsAppDialog, setBulkWhatsAppDialog] = useState(false);
   const [whatsappTemplate, setWhatsappTemplate] = useState("order_ready");
+  
+  // Clickable cards states
+  const [viewingCard, setViewingCard] = useState(null);
+  const [cardData, setCardData] = useState([]);
 
   useEffect(() => {
     fetchOrders();
