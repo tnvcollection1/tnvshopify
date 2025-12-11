@@ -323,6 +323,24 @@ class StoreCreate(BaseModel):
     shop_url: str
 
 
+class InventoryItemCreate(BaseModel):
+    sku: str
+    title: str
+    quantity: int = 0
+    store_name: str = "tnvcollectionpk"
+    price: Optional[float] = None
+    compare_at_price: Optional[float] = None
+    status: str = "active"
+
+
+class InventoryItemUpdate(BaseModel):
+    title: Optional[str] = None
+    quantity: Optional[int] = None
+    price: Optional[float] = None
+    compare_at_price: Optional[float] = None
+    status: Optional[str] = None
+
+
 class WhatsAppRequest(BaseModel):
     phone: str
     country_code: Optional[str] = None
