@@ -856,19 +856,19 @@ const ConfirmationTracker = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="order_ready">
-                    ✅ Order Ready - "Your order is ready! Confirm within 24 hours"
+                    ✅ Order Ready - Your order is ready! Confirm within 24 hours
                   </SelectItem>
                   <SelectItem value="flash_sale">
-                    ⚡ Flash Sale - "Limited time: 20% off on your favorites!"
+                    ⚡ Flash Sale - Limited time: 20% off on your favorites!
                   </SelectItem>
                   <SelectItem value="stock_alert">
-                    📦 Stock Alert - "Items you wanted are back in stock"
+                    📦 Stock Alert - Items you wanted are back in stock
                   </SelectItem>
                   <SelectItem value="payment_reminder">
-                    💰 Payment Reminder - "Complete your pending order"
+                    💰 Payment Reminder - Complete your pending order
                   </SelectItem>
                   <SelectItem value="new_arrivals">
-                    🆕 New Arrivals - "Check out our latest collection"
+                    🆕 New Arrivals - Check out our latest collection
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -876,7 +876,7 @@ const ConfirmationTracker = () => {
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-900">
-                <strong>Note:</strong> Messages will be sent to customers with valid phone numbers who haven't been messaged yet.
+                <strong>Note:</strong> Messages will be sent to customers with valid phone numbers who have not been messaged yet.
               </p>
             </div>
           </div>
