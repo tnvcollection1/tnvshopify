@@ -285,6 +285,213 @@ class ShopifyCustomerAPITester:
             timeout=60
         )
 
+    # ==================== PERFORMANCE TESTS ====================
+    
+    def test_cache_status(self):
+        """Test cache status endpoint"""
+        success, response, response_time = self.run_test(
+            "Cache Status Check", 
+            "GET", 
+            "cache/status", 
+            200, 
+            measure_time=True
+        )
+        
+        if success and response:
+            inventory_cache = response.get("inventory_cache", {})
+            items_count = inventory_cache.get("items_count", 0)
+            is_valid = inventory_cache.get("is_valid", False)
+            last_updated = inventory_cache.get("last_updated")
+            
+            print(f"   Cache items: {items_count}")
+            print(f"   Cache valid: {is_valid}")
+            print(f"   Last updated: {last_updated}")
+            
+            if items_count > 0 and is_valid:
+                print(f"   ✅ Cache is working properly")
+                return True, response
+            else:
+                print(f"   ❌ Cache is not properly initialized")
+                return False, response
+        
+        return False, {}
+
+    def test_cache_refresh(self):
+        """Test manual cache refresh endpoint"""
+        success, response, response_time = self.run_test(
+            "Manual Cache Refresh", 
+            "POST", 
+            "cache/refresh-inventory", 
+            200, 
+            measure_time=True
+        )
+        
+        if success and response:
+            items_cached = response.get("items_cached", 0)
+            stock_skus_cached = response.get("stock_skus_cached", 0)
+            last_updated = response.get("last_updated")
+            
+            print(f"   Items cached: {items_cached}")
+            print(f"   Stock SKUs cached: {stock_skus_cached}")
+            print(f"   Updated at: {last_updated}")
+            
+            if items_cached > 0:
+                print(f"   ✅ Cache refresh successful")
+                return True, response
+            else:
+                print(f"   ❌ Cache refresh failed or no items cached")
+                return False, response
+        
+        return False, {}
+
+    def test_customers_performance(self):
+        """Test customers endpoint performance - should be under 200ms"""
+        print(f"\n🚀 Performance Test: GET /api/customers")
+        
+        # Test multiple times to get average
+        response_times = []
+        success_count = 0
+        
+        for i in range(3):
+            success, response, response_time = self.run_test(
+                f"Customers Performance Test #{i+1}", 
+                "GET", 
+                "customers", 
+                200, 
+                measure_time=True
+            )
+            
+            if success:
+                success_count += 1
+                response_times.append(response_time)
+                print(f"   Test {i+1}: {response_time:.2f}ms")
+            else:
+                print(f"   Test {i+1}: FAILED")
+        
+        if response_times:
+            avg_time = sum(response_times) / len(response_times)
+            min_time = min(response_times)
+            max_time = max(response_times)
+            
+            print(f"\n📊 Performance Results:")
+            print(f"   Average: {avg_time:.2f}ms")
+            print(f"   Min: {min_time:.2f}ms")
+            print(f"   Max: {max_time:.2f}ms")
+            print(f"   Success rate: {success_count}/3")
+            
+            # Check if performance meets requirements
+            if avg_time < 200:
+                print(f"   ✅ Performance PASSED - Average {avg_time:.2f}ms < 200ms target")
+                return True, avg_time
+            else:
+                print(f"   ❌ Performance FAILED - Average {avg_time:.2f}ms >= 200ms target")
+                return False, avg_time
+        else:
+            print(f"   ❌ All performance tests failed")
+            return False, 0
+
+    def test_customers_filtered_performance(self):
+        """Test customers endpoint with filters - should be fast"""
+        print(f"\n🚀 Performance Test: GET /api/customers with filters")
+        
+        # Test with fulfillment_status filter
+        success, response, response_time = self.run_test(
+            "Customers Filtered Performance (unfulfilled)", 
+            "GET", 
+            "customers?fulfillment_status=unfulfilled", 
+            200, 
+            measure_time=True
+        )
+        
+        if success:
+            customer_count = len(response) if isinstance(response, list) else 0
+            print(f"   Found {customer_count} unfulfilled customers")
+            print(f"   Response time: {response_time:.2f}ms")
+            
+            if response_time < 200:
+                print(f"   ✅ Filtered query performance PASSED - {response_time:.2f}ms < 200ms")
+                return True, response_time
+            else:
+                print(f"   ❌ Filtered query performance FAILED - {response_time:.2f}ms >= 200ms")
+                return False, response_time
+        else:
+            print(f"   ❌ Filtered query failed")
+            return False, 0
+
+    def test_login_with_correct_credentials(self):
+        """Test agent login with correct admin credentials"""
+        success, response, response_time = self.run_test(
+            "Agent Login (admin/admin)",
+            "POST",
+            "agents/login",
+            200,
+            data={"username": "admin", "password": "admin"}
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "agent" in response:
+                agent = response["agent"]
+                if "username" in agent and agent["username"] == "admin":
+                    print(f"   ✅ Login successful for agent: {agent.get('full_name', 'Unknown')}")
+                    return True, agent
+                else:
+                    print(f"   ❌ Invalid agent data in response")
+            else:
+                print(f"   ❌ Invalid response structure")
+        
+        return False, {}
+
+    def run_performance_tests(self):
+        """Run all performance-related tests"""
+        print("\n" + "="*60)
+        print("🚀 PERFORMANCE OPTIMIZATION TESTS")
+        print("="*60)
+        
+        performance_results = {}
+        
+        # Test 1: Cache Status
+        print(f"\n📋 Test 1: Cache Status Check")
+        cache_success, cache_data = self.test_cache_status()
+        performance_results["cache_status"] = {
+            "success": cache_success,
+            "data": cache_data
+        }
+        
+        # Test 2: Manual Cache Refresh
+        print(f"\n📋 Test 2: Manual Cache Refresh")
+        refresh_success, refresh_data = self.test_cache_refresh()
+        performance_results["cache_refresh"] = {
+            "success": refresh_success,
+            "data": refresh_data
+        }
+        
+        # Test 3: Login with correct credentials
+        print(f"\n📋 Test 3: Authentication Test")
+        login_success, login_data = self.test_login_with_correct_credentials()
+        performance_results["login"] = {
+            "success": login_success,
+            "data": login_data
+        }
+        
+        # Test 4: Customers Performance
+        print(f"\n📋 Test 4: Customers Endpoint Performance")
+        customers_success, avg_time = self.test_customers_performance()
+        performance_results["customers_performance"] = {
+            "success": customers_success,
+            "avg_response_time": avg_time
+        }
+        
+        # Test 5: Filtered Customers Performance
+        print(f"\n📋 Test 5: Filtered Customers Performance")
+        filtered_success, filtered_time = self.test_customers_filtered_performance()
+        performance_results["filtered_performance"] = {
+            "success": filtered_success,
+            "response_time": filtered_time
+        }
+        
+        return performance_results
+
 def main():
     print("🚀 Starting Shopify Customer Management API Tests")
     print("=" * 60)
