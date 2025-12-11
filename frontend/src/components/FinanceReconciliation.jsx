@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Upload, FileText, DollarSign, CheckCircle, XCircle, AlertCircle, RefreshCw, Link2, History, RotateCcw } from 'lucide-react';
+import { Upload, FileText, DollarSign, CheckCircle, XCircle, AlertCircle, RefreshCw, Link2, History, RotateCcw, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
