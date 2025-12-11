@@ -7695,6 +7695,9 @@ async def trigger_manual_sync():
 # Include the new modular routers BEFORE adding api_router to app
 api_router.include_router(facebook_router)
 api_router.include_router(finance_router)
+api_router.include_router(pricing_router)
+api_router.include_router(tcs_router)
+api_router.include_router(customers_router)
 
 # Include the router in the main app
 app.include_router(api_router)
