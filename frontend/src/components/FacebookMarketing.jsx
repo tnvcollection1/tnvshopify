@@ -42,6 +42,23 @@ import AICampaignOptimizer from './AICampaignOptimizer';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
+// Sortable table header component
+const SortableHeader = ({ field, label, className = "", sortField, sortDirection, onSort }) => (
+  <th 
+    className={`py-2 px-3 text-xs font-semibold text-gray-600 cursor-pointer hover:bg-gray-100 whitespace-nowrap ${className}`}
+    onClick={() => onSort(field)}
+  >
+    <div className="flex items-center gap-1">
+      {label}
+      {sortField === field ? (
+        sortDirection === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+      ) : (
+        <ArrowUpDown className="w-3 h-3 opacity-30" />
+      )}
+    </div>
+  </th>
+);
+
 const FacebookMarketing = () => {
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState(null);
