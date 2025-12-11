@@ -525,7 +525,7 @@ async def initialize_admin():
             }
         
         # Create default admin
-        admin_password = "admin123"
+        admin_password = "admin"
         hashed_password = hashlib.sha256(admin_password.encode()).hexdigest()
         
         admin_user = {
