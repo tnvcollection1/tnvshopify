@@ -30,6 +30,9 @@ from tracking_routes import tracking_router
 from finance_reconciliation import get_finance_reconciliation
 from routes.facebook import facebook_router, set_database as set_facebook_db
 from routes.finance import finance_router, set_database as set_finance_db
+from routes.pricing import pricing_router, set_dependencies as set_pricing_deps
+from routes.tcs import tcs_router, set_database as set_tcs_db
+from routes.customers import customers_router, set_dependencies as set_customers_deps
 
 
 ROOT_DIR = Path(__file__).parent
