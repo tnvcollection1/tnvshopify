@@ -29,6 +29,7 @@ from whatsapp_crm_routes import whatsapp_router
 from tracking_routes import tracking_router
 from finance_reconciliation import get_finance_reconciliation
 from routes.facebook import facebook_router, set_database as set_facebook_db
+from routes.finance import finance_router, set_database as set_finance_db
 
 
 ROOT_DIR = Path(__file__).parent
