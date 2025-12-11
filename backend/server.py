@@ -4322,58 +4322,6 @@ async def delete_store(store_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to delete store: {str(e)}")
 
 
-@api_router.post("/customers/{customer_id}/mark-messaged")
-async def mark_customer_messaged(customer_id: str, agent_username: Optional[str] = None):
-    """
-    Mark a customer as messaged by an agent
-    """
-    result = await db.customers.update_one(
-        {"customer_id": customer_id},
-        {
-            "$set": {
-                "messaged": True,
-                "last_messaged_at": datetime.now(timezone.utc).isoformat(),
-                "messaged_by": agent_username or "Unknown"
-            },
-            "$inc": {"message_count": 1}
-        }
-    )
-    
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    
-    return {"success": True, "message": "Customer marked as messaged"}
-
-
-@api_router.post("/customers/{customer_id}/update-conversion")
-async def update_customer_conversion(
-    customer_id: str, 
-    converted: bool, 
-    notes: Optional[str] = None,
-    sale_amount: Optional[float] = None
-):
-    """
-    Update customer conversion status with sale amount
-    """
-    update_data = {
-        "converted": converted,
-        "conversion_notes": notes
-    }
-    
-    if converted and sale_amount:
-        update_data["sale_amount"] = sale_amount
-    
-    result = await db.customers.update_one(
-        {"customer_id": customer_id},
-        {"$set": update_data}
-    )
-    
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    
-    return {"success": True, "message": "Conversion updated"}
-
-
 @api_router.get("/message-greetings")
 async def get_random_greeting():
     """
