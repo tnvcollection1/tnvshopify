@@ -130,9 +130,9 @@ const MarketingDashboard = () => {
           <p className="text-gray-600">Track sales performance and manage marketing campaigns</p>
         </div>
 
-        {/* Revenue Stats */}
+        {/* Revenue Stats - Clickable */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-green-200 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+          <Card className="border-green-200 shadow-lg bg-gradient-to-br from-green-50 to-green-100 cursor-pointer hover:shadow-xl hover:border-green-400 transition-all" onClick={() => viewCardDetails('today')}>
             <CardHeader className="pb-3">
               <CardDescription className="text-green-700 font-semibold">Today's Revenue</CardDescription>
               <CardTitle className="text-3xl font-bold text-green-600">
@@ -147,7 +147,7 @@ const MarketingDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-blue-200 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+          <Card className="border-blue-200 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 cursor-pointer hover:shadow-xl hover:border-blue-400 transition-all" onClick={() => viewCardDetails('week')}>
             <CardHeader className="pb-3">
               <CardDescription className="text-blue-700 font-semibold">This Week</CardDescription>
               <CardTitle className="text-3xl font-bold text-blue-600">
@@ -162,7 +162,7 @@ const MarketingDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-purple-200 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
+          <Card className="border-purple-200 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 cursor-pointer hover:shadow-xl hover:border-purple-400 transition-all" onClick={() => viewCardDetails('month')}>
             <CardHeader className="pb-3">
               <CardDescription className="text-purple-700 font-semibold">This Month</CardDescription>
               <CardTitle className="text-3xl font-bold text-purple-600">
@@ -177,7 +177,7 @@ const MarketingDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-orange-200 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
+          <Card className="border-orange-200 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 cursor-pointer hover:shadow-xl hover:border-orange-400 transition-all" onClick={() => viewCardDetails('total')}>
             <CardHeader className="pb-3">
               <CardDescription className="text-orange-700 font-semibold">Conversion Rate</CardDescription>
               <CardTitle className="text-3xl font-bold text-orange-600">
