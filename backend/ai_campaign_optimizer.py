@@ -285,25 +285,40 @@ Provide:
         lines = []
         
         for i, campaign in enumerate(campaigns_data[:20], 1):  # Limit to 20 campaigns
-            insights = campaign.get('insights', {})
+            # Handle None insights gracefully
+            insights = campaign.get('insights') or {}
+            
+            # Safely get numeric values with defaults
+            spend = float(insights.get('spend') or 0)
+            impressions = int(insights.get('impressions') or 0)
+            reach = int(insights.get('reach') or 0)
+            clicks = int(insights.get('clicks') or 0)
+            ctr = float(insights.get('ctr') or 0)
+            cpc = float(insights.get('cpc') or 0)
+            cpm = float(insights.get('cpm') or 0)
+            frequency = float(insights.get('frequency') or 0)
+            purchases = int(insights.get('purchases') or 0)
+            purchase_value = float(insights.get('purchase_value') or 0)
+            purchase_roas = float(insights.get('purchase_roas') or 0)
+            cost_per_purchase = float(insights.get('cost_per_purchase') or 0)
             
             line = f"""
 ### Campaign {i}: {campaign.get('name', 'Unknown')}
 - Status: {campaign.get('effective_status', 'Unknown')}
 - Objective: {campaign.get('objective', 'Unknown')}
 - Daily Budget: {campaign.get('daily_budget', 0)}
-- Spend: {insights.get('spend', 0)}
-- Impressions: {insights.get('impressions', 0):,}
-- Reach: {insights.get('reach', 0):,}
-- Clicks: {insights.get('clicks', 0):,}
-- CTR: {insights.get('ctr', 0):.2f}%
-- CPC: {insights.get('cpc', 0):.2f}
-- CPM: {insights.get('cpm', 0):.2f}
-- Frequency: {insights.get('frequency', 0):.2f}
-- Purchases: {insights.get('purchases', 0)}
-- Purchase Value: {insights.get('purchase_value', 0):.2f}
-- ROAS: {insights.get('purchase_roas', 0):.2f}x
-- Cost per Purchase: {insights.get('cost_per_purchase', 0):.2f}
+- Spend: {spend}
+- Impressions: {impressions:,}
+- Reach: {reach:,}
+- Clicks: {clicks:,}
+- CTR: {ctr:.2f}%
+- CPC: {cpc:.2f}
+- CPM: {cpm:.2f}
+- Frequency: {frequency:.2f}
+- Purchases: {purchases}
+- Purchase Value: {purchase_value:.2f}
+- ROAS: {purchase_roas:.2f}x
+- Cost per Purchase: {cost_per_purchase:.2f}
 """
             lines.append(line)
         
