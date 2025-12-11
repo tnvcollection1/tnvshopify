@@ -160,12 +160,15 @@ const PerformanceComparison = () => {
       }
       
       for (const order of orders) {
+        if (!order) continue;
         const orderDate = new Date(order.last_order_date || order.created_at);
         if (orderDate >= startDate) {
-          totalRevenue += order.total_spent || 0;
+          totalRevenue += parseFloat(order.total_spent) || parseFloat(order.total_price) || 0;
           orderCount++;
         }
       }
+      
+      console.log(`Store ${storeName}: ${orderCount} orders, revenue: ${totalRevenue}`);
       
       return {
         revenue: totalRevenue,
