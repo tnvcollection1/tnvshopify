@@ -214,6 +214,28 @@ const FacebookMarketing = () => {
     }
   };
 
+  const toggleCampaignStatus = async (campaignId, currentStatus) => {
+    const newStatus = currentStatus === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+    
+    try {
+      toast.loading(`${newStatus === 'ACTIVE' ? 'Activating' : 'Pausing'} campaign...`, { id: 'toggle' });
+      
+      const response = await axios.post(
+        `${API}/api/facebook/campaigns/${campaignId}/status?status=${newStatus}`
+      );
+      
+      if (response.data.success) {
+        toast.success(`✅ Campaign ${newStatus.toLowerCase()}`, { id: 'toggle' });
+        fetchCampaignsWithInsights();
+      } else {
+        toast.error(response.data.error || 'Failed to update', { id: 'toggle' });
+      }
+    } catch (error) {
+      console.error('Error toggling campaign:', error);
+      toast.error('Failed to update campaign status', { id: 'toggle' });
+    }
+  };
+
   const formatCurrency = (value, decimals = 0) => {
     if (value === null || value === undefined) return '-';
     return new Intl.NumberFormat('en-US', {
