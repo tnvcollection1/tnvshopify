@@ -34,6 +34,11 @@ const MarketingDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [campaigns, setCampaigns] = useState([]);
+  
+  // Clickable card states
+  const [viewingCard, setViewingCard] = useState(null);
+  const [cardOrders, setCardOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   useEffect(() => {
     fetchMarketingStats();
