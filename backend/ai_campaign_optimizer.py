@@ -360,9 +360,10 @@ Provide:
         
         # Simple heuristic: campaigns with good ROAS should scale, bad ROAS should pause
         for campaign in campaigns_data:
-            insights = campaign.get('insights', {})
-            roas = insights.get('purchase_roas', 0) or 0
-            spend = insights.get('spend', 0) or 0
+            # Handle None insights gracefully
+            insights = campaign.get('insights') or {}
+            roas = float(insights.get('purchase_roas') or 0)
+            spend = float(insights.get('spend') or 0)
             
             if spend > 0:
                 if roas >= 2:
