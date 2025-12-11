@@ -299,6 +299,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/inventory-clearance" 
+        element={
+          <ProtectedRoute>
+            <InventoryClearance />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
