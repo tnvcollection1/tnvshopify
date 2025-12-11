@@ -3509,6 +3509,9 @@ async def update_inventory_item(item_id: str, update: InventoryItemUpdate):
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Inventory item not found")
         
+        # Invalidate inventory cache after updating
+        asyncio.create_task(invalidate_inventory_cache())
+        
         return {"success": True, "message": "Inventory item updated"}
     except Exception as e:
         logger.error(f"Error updating inventory item: {str(e)}")
