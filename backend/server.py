@@ -48,12 +48,16 @@ db = client[os.environ['DB_NAME']]
 # Initialize pricing engine with db
 pricing_engine = DynamicPricingEngine(db)
 
+# Initialize clearance engine
+clearance_engine = InventoryClearanceEngine(db)
+
 # Initialize modular routers with database and dependencies
 set_facebook_db(db)
 set_finance_db(db)
 set_tcs_db(db)
 set_customers_deps(db)
 set_pricing_deps(db, pricing_engine)
+set_clearance_deps(db, clearance_engine)
 
 # Create the main app without a prefix
 app = FastAPI()
