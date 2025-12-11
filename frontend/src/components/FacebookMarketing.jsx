@@ -655,22 +655,22 @@ const FacebookMarketing = () => {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="py-2 px-3 text-left text-xs font-semibold text-gray-600 sticky left-0 bg-gray-50">Off/On</th>
-                  <SortableHeader field="name" label="Campaign" className="text-left min-w-[200px]" />
+                  <SortableHeader field="name" label="Campaign" className="text-left min-w-[200px]" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
                   {visibleColumns.delivery && <th className="py-2 px-3 text-xs font-semibold text-gray-600">Delivery</th>}
-                  {visibleColumns.results && <SortableHeader field="purchases" label="Results" />}
-                  {visibleColumns.costPerResult && <SortableHeader field="costPerPurchase" label="Cost per Result" />}
+                  {visibleColumns.results && <SortableHeader field="purchases" label="Results" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.costPerResult && <SortableHeader field="costPerPurchase" label="Cost per Result" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
                   {visibleColumns.budget && <th className="py-2 px-3 text-xs font-semibold text-gray-600">Budget</th>}
-                  {visibleColumns.spend && <SortableHeader field="spend" label="Amount Spent" />}
-                  {visibleColumns.impressions && <SortableHeader field="impressions" label="Impressions" />}
-                  {visibleColumns.reach && <SortableHeader field="reach" label="Reach" />}
-                  {visibleColumns.frequency && <SortableHeader field="frequency" label="Frequency" />}
-                  {visibleColumns.cpm && <SortableHeader field="cpm" label="CPM" />}
-                  {visibleColumns.linkClicks && <SortableHeader field="link_clicks" label="Link Clicks" />}
-                  {visibleColumns.ctr && <SortableHeader field="ctr" label="CTR" />}
-                  {visibleColumns.purchases && <SortableHeader field="purchases" label="Purchases" />}
-                  {visibleColumns.purchaseValue && <SortableHeader field="purchase_value" label="Purchase Value" />}
-                  {visibleColumns.roas && <SortableHeader field="roas" label="ROAS" />}
-                  {visibleColumns.costPerPurchase && <SortableHeader field="cost_per_purchase" label="Cost/Purchase" />}
+                  {visibleColumns.spend && <SortableHeader field="spend" label="Amount Spent" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.impressions && <SortableHeader field="impressions" label="Impressions" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.reach && <SortableHeader field="reach" label="Reach" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.frequency && <SortableHeader field="frequency" label="Frequency" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.cpm && <SortableHeader field="cpm" label="CPM" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.linkClicks && <SortableHeader field="link_clicks" label="Link Clicks" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.ctr && <SortableHeader field="ctr" label="CTR" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.purchases && <SortableHeader field="purchases" label="Purchases" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.purchaseValue && <SortableHeader field="purchase_value" label="Purchase Value" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.roas && <SortableHeader field="roas" label="ROAS" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
+                  {visibleColumns.costPerPurchase && <SortableHeader field="cost_per_purchase" label="Cost/Purchase" sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />}
                   {visibleColumns.starts && <th className="py-2 px-3 text-xs font-semibold text-gray-600">Starts</th>}
                   {visibleColumns.ends && <th className="py-2 px-3 text-xs font-semibold text-gray-600">Ends</th>}
                 </tr>
