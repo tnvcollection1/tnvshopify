@@ -104,10 +104,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Cache Status Endpoint"
-    - "Cache Refresh Endpoint"
-    - "Customers API Performance"
-    - "Filtered Customers Performance"
+    - "Clickable Dashboard Cards - Confirmation Tracker"
+    - "Clickable Dashboard Cards - Marketing Dashboard"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -115,3 +113,5 @@ test_plan:
 agent_communication:
   - agent: "testing"
     message: "Performance optimization testing completed successfully. All cache endpoints working, API response times well under 200ms target. Cache system operational with 847 items cached. No critical issues found."
+  - agent: "testing"
+    message: "✅ Clickable dashboard cards testing completed successfully. Both Confirmation Tracker and Marketing Dashboard cards are working correctly. Cards open modals with filtered order data, have proper hover effects, and close functionality works. Authentication system also verified working. All requested features are functional."
