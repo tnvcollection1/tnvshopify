@@ -378,7 +378,7 @@ const PerformanceComparison = () => {
                   store.true_roas >= 1 ? 'bg-yellow-100 text-yellow-700' :
                   'bg-red-100 text-red-700'
                 }`}>
-                  ROAS: {store.true_roas.toFixed(2)}x
+                  ROAS: {typeof store.true_roas === 'number' ? store.true_roas.toFixed(2) : '0.00'}x
                 </div>
               </div>
             </CardHeader>
