@@ -796,6 +796,7 @@ class ShopifyCustomerAPITester:
             "pricing": pricing_results,
             "tcs": tcs_results,
             "customers": customers_results,
+            "clearance": clearance_results,
             "existing": existing_results
         }
 
