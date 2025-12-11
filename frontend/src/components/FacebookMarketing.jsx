@@ -24,13 +24,16 @@ import {
   Calendar,
   Filter,
   Columns,
-  MoreHorizontal
+  MoreHorizontal,
+  Brain,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import AICampaignOptimizer from './AICampaignOptimizer';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -48,6 +51,7 @@ const FacebookMarketing = () => {
   const [syncing, setSyncing] = useState(false);
   const [loadingInsights, setLoadingInsights] = useState(false);
   const [sortField, setSortField] = useState('spend');
+  const [activeTab, setActiveTab] = useState('campaigns'); // 'campaigns' or 'ai'
   const [sortDirection, setSortDirection] = useState('desc');
   const [visibleColumns, setVisibleColumns] = useState({
     delivery: true,
