@@ -199,6 +199,30 @@ const ConfirmationTracker = () => {
     }
   };
 
+  // Clickable card functions
+  const viewCardDetails = (cardType) => {
+    let filtered = orders.filter(order => {
+      switch(cardType) {
+        case 'total': return true;
+        case 'notCalled': return !order.calling_status || order.calling_status === 'NOT_CALLED';
+        case 'called': return order.calling_status === 'CALLED' || order.calling_status === 'NO_ANSWER' || order.calling_status === 'CONFIRMED';
+        case 'purchased': return order.confirmation_status === 'PURCHASED';
+        case 'notPurchased': return order.confirmation_status === 'NOT_PURCHASED';
+        case 'canceled': return order.confirmation_status === 'CANCELED';
+        case 'inStock': return order.stock_status === 'in_stock';
+        case 'outOfStock': return order.stock_status === 'out_of_stock';
+        default: return false;
+      }
+    });
+    setCardData(filtered);
+    setViewingCard(cardType);
+  };
+
+  const closeCardView = () => {
+    setViewingCard(null);
+    setCardData([]);
+  };
+
   const handleSyncStockStatus = async () => {
     try {
       toast.loading("Syncing stock status for all unfulfilled orders...");
