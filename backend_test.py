@@ -943,8 +943,8 @@ def main():
     print(f"   Overall: {ex_passed}/{ex_total} passed")
     
     # Overall assessment
-    total_passed = fb_passed + fin_passed + pricing_passed + tcs_passed + customers_passed + ex_passed
-    total_tests = fb_total + fin_total + pricing_total + tcs_total + customers_total + ex_total
+    total_passed = fb_passed + fin_passed + pricing_passed + tcs_passed + customers_passed + clearance_passed + ex_passed
+    total_tests = fb_total + fin_total + pricing_total + tcs_total + customers_total + clearance_total + ex_total
     
     print(f"\n🎯 REFACTORING VALIDATION: {total_passed}/{total_tests} tests passed")
     print(f"   Facebook Tests: {tester.facebook_tests_passed}/{tester.facebook_tests_run}")
