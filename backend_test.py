@@ -719,6 +719,20 @@ class ShopifyCustomerAPITester:
         customers_stats_success, customers_stats_response = self.test_customers_stats()
         customers_segments_success, customers_segments_response = self.test_customers_segments()
         
+        # Test Clearance Routes
+        print("\n🧹 CLEARANCE ENGINE TESTS")
+        print("-" * 40)
+        
+        clearance_stats_success, clearance_stats_response = self.test_clearance_stats()
+        clearance_health_success, clearance_health_response = self.test_clearance_health()
+        
+        # AI recommendations test (may take longer)
+        print("\n⚠️  Note: AI Recommendations may take 10-30 seconds...")
+        clearance_ai_success, clearance_ai_response = self.test_clearance_ai_recommendations()
+        
+        clearance_quick_success, clearance_quick_response = self.test_clearance_quick_clearance()
+        clearance_campaigns_success, clearance_campaigns_response = self.test_clearance_campaigns()
+        
         # Test Remaining Server.py Endpoints
         print("\n🔄 REMAINING SERVER.PY ENDPOINTS VERIFICATION")
         print("-" * 40)
