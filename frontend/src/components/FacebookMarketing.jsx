@@ -258,6 +258,89 @@ const FacebookMarketing = () => {
     }
   };
 
+  // Budget Management Functions
+  const openBudgetModal = (campaign) => {
+    setEditingCampaign(campaign);
+    setNewBudget(campaign.daily_budget > 0 ? campaign.daily_budget.toString() : (campaign.lifetime_budget > 0 ? campaign.lifetime_budget.toString() : ''));
+    setBudgetType(campaign.daily_budget > 0 ? 'daily' : 'lifetime');
+    setBudgetModalOpen(true);
+  };
+
+  const updateCampaignBudget = async () => {
+    if (!editingCampaign || !newBudget || parseFloat(newBudget) <= 0) {
+      toast.error('Please enter a valid budget');
+      return;
+    }
+
+    setUpdatingBudget(true);
+    try {
+      toast.loading('Updating budget...', { id: 'budget' });
+      
+      const params = budgetType === 'daily' 
+        ? `daily_budget=${parseFloat(newBudget)}`
+        : `lifetime_budget=${parseFloat(newBudget)}`;
+      
+      const response = await axios.post(
+        `${API}/api/facebook/campaigns/${editingCampaign.id}/budget?${params}`
+      );
+      
+      if (response.data.success) {
+        toast.success('✅ Budget updated successfully!', { id: 'budget' });
+        setBudgetModalOpen(false);
+        setEditingCampaign(null);
+        fetchCampaignsWithInsights();
+      } else {
+        toast.error(response.data.error || 'Failed to update budget', { id: 'budget' });
+      }
+    } catch (error) {
+      console.error('Error updating budget:', error);
+      toast.error('Failed to update budget', { id: 'budget' });
+    } finally {
+      setUpdatingBudget(false);
+    }
+  };
+
+  // Lookalike Audience Functions
+  const openLookalikeModal = (audience) => {
+    setSourceAudience(audience);
+    setLookalikeConfig({
+      name: `Lookalike - ${audience.name}`,
+      country: 'PK',
+      ratio: 0.01
+    });
+    setLookalikeModalOpen(true);
+  };
+
+  const createLookalikeAudience = async () => {
+    if (!sourceAudience || !lookalikeConfig.name) {
+      toast.error('Please provide a name for the lookalike audience');
+      return;
+    }
+
+    setCreatingLookalike(true);
+    try {
+      toast.loading('Creating lookalike audience...', { id: 'lookalike' });
+      
+      const response = await axios.post(
+        `${API}/api/facebook/audiences/${sourceAudience.id}/lookalike?name=${encodeURIComponent(lookalikeConfig.name)}&country=${lookalikeConfig.country}&ratio=${lookalikeConfig.ratio}`
+      );
+      
+      if (response.data.success) {
+        toast.success('✅ Lookalike audience created!', { id: 'lookalike' });
+        setLookalikeModalOpen(false);
+        setSourceAudience(null);
+        fetchAudiences();
+      } else {
+        toast.error(response.data.error || 'Failed to create lookalike', { id: 'lookalike' });
+      }
+    } catch (error) {
+      console.error('Error creating lookalike:', error);
+      toast.error('Failed to create lookalike audience', { id: 'lookalike' });
+    } finally {
+      setCreatingLookalike(false);
+    }
+  };
+
   const formatCurrency = (value, decimals = 0) => {
     if (value === null || value === undefined) return '-';
     return new Intl.NumberFormat('en-US', {
