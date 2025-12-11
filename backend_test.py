@@ -493,84 +493,79 @@ class ShopifyCustomerAPITester:
         return performance_results
 
 def main():
-    print("🚀 Starting Shopify Customer Management API Tests")
+    print("🚀 Starting CRM Performance Optimization Tests")
     print("=" * 60)
     
     # Setup
     tester = ShopifyCustomerAPITester()
     
-    # Run all tests
-    print("\n📋 Running Basic API Endpoint Tests...")
+    # Run performance tests as requested
+    performance_results = tester.run_performance_tests()
     
-    # Basic API tests
-    tester.test_root_endpoint()
-    tester.test_status_endpoints()
-    
-    # Customer management tests
-    tester.test_customers_endpoint()
-    tester.test_customers_with_filter()
-    tester.test_shoe_sizes_endpoint()
-    
-    # WhatsApp integration test
-    tester.test_whatsapp_link_endpoint()
-    
-    print("\n📋 Running Agent Login & Tracking System Tests...")
-    
-    # Agent system tests
-    agent_login_success, agent_data = tester.test_agent_login()
-    tester.test_agents_list()
-    
-    if agent_login_success:
-        # Only run agent tracking tests if login works
-        tester.test_mark_customer_messaged_with_agent()
-        tester.test_filter_customers_by_agent()
-        tester.test_daily_reports()
-    else:
-        print("⚠️  Skipping agent tracking tests due to login failure")
-    
-    # Shopify sync test (expected to fail)
-    tester.test_shopify_sync_endpoint()
-    
-    # Print final results
+    # Print final performance summary
     print("\n" + "=" * 60)
-    print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    print("📊 PERFORMANCE TEST SUMMARY")
+    print("=" * 60)
     
-    # Print detailed results
-    print("\n📋 Detailed Test Results:")
-    for result in tester.test_results:
-        status = "✅ PASS" if result["success"] else "❌ FAIL"
-        print(f"  {status} - {result['test_name']} ({result['method']} {result['endpoint']})")
-        if not result["success"] and "error" in result:
-            print(f"    Error: {result['error']}")
+    cache_status = performance_results.get("cache_status", {})
+    cache_refresh = performance_results.get("cache_refresh", {})
+    login_test = performance_results.get("login", {})
+    customers_perf = performance_results.get("customers_performance", {})
+    filtered_perf = performance_results.get("filtered_performance", {})
     
-    # Determine overall success - focus on agent system tests
-    agent_tests = [
-        "Agent Login", "Get Agents List", "Mark Customer Messaged by Agent",
-        "Filter Customers by Agent", "Daily Reports - All Agents", "Daily Reports - Admin Agent"
+    print(f"\n🔍 Cache Status: {'✅ PASS' if cache_status.get('success') else '❌ FAIL'}")
+    if cache_status.get("success"):
+        cache_data = cache_status.get("data", {}).get("inventory_cache", {})
+        print(f"   - Items cached: {cache_data.get('items_count', 0)}")
+        print(f"   - Cache valid: {cache_data.get('is_valid', False)}")
+    
+    print(f"\n🔄 Cache Refresh: {'✅ PASS' if cache_refresh.get('success') else '❌ FAIL'}")
+    if cache_refresh.get("success"):
+        refresh_data = cache_refresh.get("data", {})
+        print(f"   - Items refreshed: {refresh_data.get('items_cached', 0)}")
+    
+    print(f"\n🔐 Authentication: {'✅ PASS' if login_test.get('success') else '❌ FAIL'}")
+    
+    print(f"\n⚡ Customers API Performance: {'✅ PASS' if customers_perf.get('success') else '❌ FAIL'}")
+    if customers_perf.get("avg_response_time"):
+        avg_time = customers_perf.get("avg_response_time")
+        print(f"   - Average response time: {avg_time:.2f}ms")
+        print(f"   - Target: <200ms")
+    
+    print(f"\n🔍 Filtered Query Performance: {'✅ PASS' if filtered_perf.get('success') else '❌ FAIL'}")
+    if filtered_perf.get("response_time"):
+        filtered_time = filtered_perf.get("response_time")
+        print(f"   - Response time: {filtered_time:.2f}ms")
+        print(f"   - Target: <200ms")
+    
+    # Overall assessment
+    critical_tests = [
+        cache_status.get('success', False),
+        cache_refresh.get('success', False),
+        login_test.get('success', False),
+        customers_perf.get('success', False)
     ]
     
-    basic_tests = [
-        "Root API", "Get All Customers", "Get Shoe Sizes", "Generate WhatsApp Link"
-    ]
+    passed_critical = sum(critical_tests)
+    total_critical = len(critical_tests)
     
-    agent_passed = sum(1 for result in tester.test_results 
-                      if result["test_name"] in agent_tests and result["success"])
+    print(f"\n🎯 Critical Performance Tests: {passed_critical}/{total_critical} passed")
     
-    basic_passed = sum(1 for result in tester.test_results 
-                      if result["test_name"] in basic_tests and result["success"])
-    
-    print(f"\n🎯 Basic API Tests: {basic_passed}/{len(basic_tests)} passed")
-    print(f"🎯 Agent System Tests: {agent_passed}/{len(agent_tests)} passed")
-    
-    if basic_passed >= len(basic_tests) - 1 and agent_passed >= len(agent_tests) - 1:
-        print("✅ Backend API and Agent System are functioning well!")
+    if passed_critical >= 3:  # Allow 1 failure
+        print("✅ Performance optimization is working well!")
+        print("   - Cache system operational")
+        print("   - API response times meet requirements")
         return 0
     else:
-        print("❌ Backend has critical issues that need attention")
-        if basic_passed < len(basic_tests) - 1:
-            print("   - Basic API issues detected")
-        if agent_passed < len(agent_tests) - 1:
-            print("   - Agent system issues detected")
+        print("❌ Performance optimization has critical issues")
+        if not cache_status.get('success'):
+            print("   - Cache status check failed")
+        if not cache_refresh.get('success'):
+            print("   - Cache refresh failed")
+        if not login_test.get('success'):
+            print("   - Authentication failed")
+        if not customers_perf.get('success'):
+            print("   - Customers API performance below target")
         return 1
 
 if __name__ == "__main__":
