@@ -218,16 +218,21 @@ const Orders = () => {
       params.append("limit", "50");
 
       const response = await axios.get(`${API}/customers?${params.toString()}`);
-      const customersData = response.data || [];
-      setOrders(customersData);
+      // Handle response structure properly - API returns {customers: [], total: X}
+      const customersData = response.data?.customers || response.data || [];
+      const ordersArray = Array.isArray(customersData) ? customersData : [];
+      setOrders(ordersArray);
+      
+      // Use total from response if available, otherwise calculate from array
+      const totalCount = response.data?.total || ordersArray.length;
       setStats({
-        total: customersData.length,
-        delivered: customersData.filter(c => c.delivery_status === "DELIVERED").length || 0,
-        inTransit: customersData.filter(c => c.delivery_status === "IN_TRANSIT").length || 0,
-        pending: customersData.filter(c => !c.delivery_status || c.delivery_status === "PENDING").length || 0,
-        returned: customersData.filter(c => c.delivery_status === "RETURNED").length || 0,
+        total: totalCount,
+        delivered: ordersArray.filter(c => c.delivery_status === "DELIVERED").length || 0,
+        inTransit: ordersArray.filter(c => c.delivery_status === "IN_TRANSIT").length || 0,
+        pending: ordersArray.filter(c => !c.delivery_status || c.delivery_status === "PENDING").length || 0,
+        returned: ordersArray.filter(c => c.delivery_status === "RETURNED").length || 0,
       });
-      setTotalPages(Math.ceil(customersData.length / 50));
+      setTotalPages(response.data?.pages || Math.ceil(totalCount / 50));
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
