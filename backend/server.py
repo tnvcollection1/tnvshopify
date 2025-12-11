@@ -43,8 +43,8 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Initialize pricing engine
-pricing_engine = DynamicPricingEngine()
+# Initialize pricing engine with db
+pricing_engine = DynamicPricingEngine(db)
 
 # Initialize modular routers with database and dependencies
 set_facebook_db(db)
