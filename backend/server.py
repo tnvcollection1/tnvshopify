@@ -33,6 +33,8 @@ from routes.finance import finance_router, set_database as set_finance_db
 from routes.pricing import pricing_router, set_dependencies as set_pricing_deps
 from routes.tcs import tcs_router, set_database as set_tcs_db
 from routes.customers import customers_router, set_dependencies as set_customers_deps
+from routes.clearance import clearance_router, set_dependencies as set_clearance_deps
+from inventory_clearance_engine import InventoryClearanceEngine
 
 
 ROOT_DIR = Path(__file__).parent
