@@ -256,15 +256,15 @@ const MarketingDashboard = () => {
           </Card>
         </div>
 
-        {/* Performance Metrics */}
+        {/* Performance Metrics - Clickable */}
         <Card>
           <CardHeader>
             <CardTitle>📈 Performance Metrics</CardTitle>
-            <CardDescription>Key indicators for your business</CardDescription>
+            <CardDescription>Key indicators for your business - Click to view details</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 hover:shadow transition-all" onClick={() => viewCardDetails('total')}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600">Total Orders</span>
                   <ShoppingCart className="w-4 h-4 text-gray-400" />
@@ -272,7 +272,7 @@ const MarketingDashboard = () => {
                 <div className="text-2xl font-bold text-gray-900">{stats.totalOrders}</div>
               </div>
 
-              <div className="p-4 bg-yellow-50 rounded-lg">
+              <div className="p-4 bg-yellow-50 rounded-lg cursor-pointer hover:bg-yellow-100 hover:shadow transition-all" onClick={() => viewCardDetails('pending')}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600">Pending Orders</span>
                   <Clock className="w-4 h-4 text-yellow-600" />
@@ -280,7 +280,7 @@ const MarketingDashboard = () => {
                 <div className="text-2xl font-bold text-yellow-600">{stats.pendingOrders}</div>
               </div>
 
-              <div className="p-4 bg-green-50 rounded-lg">
+              <div className="p-4 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 hover:shadow transition-all" onClick={() => toast.info('WhatsApp analytics coming soon!')}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600">WhatsApp Sent</span>
                   <MessageCircle className="w-4 h-4 text-green-600" />
@@ -288,7 +288,7 @@ const MarketingDashboard = () => {
                 <div className="text-2xl font-bold text-green-600">{stats.whatsappSent}</div>
               </div>
 
-              <div className="p-4 bg-blue-50 rounded-lg">
+              <div className="p-4 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 hover:shadow transition-all" onClick={() => viewCardDetails('total')}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600">Avg Order Value</span>
                   <DollarSign className="w-4 h-4 text-blue-600" />
@@ -301,6 +301,106 @@ const MarketingDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Card Details Modal */}
+      {viewingCard && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeCardView}>
+          <div className="bg-white rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {viewingCard === 'today' && '💰 Today\'s Orders'}
+                    {viewingCard === 'week' && '📅 This Week\'s Orders'}
+                    {viewingCard === 'month' && '📆 This Month\'s Orders'}
+                    {viewingCard === 'total' && '📦 All Orders'}
+                    {viewingCard === 'pending' && '⏳ Pending Orders'}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {loadingOrders ? 'Loading...' : `${cardOrders.length} orders found`}
+                  </p>
+                </div>
+                <button
+                  onClick={closeCardView}
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors font-medium"
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+              {loadingOrders ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading orders...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {cardOrders.map((order, idx) => (
+                    <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <div className="font-bold text-lg text-gray-900">#{order.order_number}</div>
+                          <div className="text-sm text-gray-600">{order.first_name} {order.last_name}</div>
+                        </div>
+                        <div className={`px-2 py-1 rounded text-xs font-medium ${
+                          order.fulfillment_status === 'fulfilled' ? 'bg-green-100 text-green-800' :
+                          order.fulfillment_status === 'unfulfilled' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.fulfillment_status || 'PENDING'}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 mb-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-700">{order.phone || 'N/A'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Package className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-700">{order.store_name || 'N/A'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-4 h-4 text-gray-400" />
+                          <span className="font-bold text-green-600">Rs. {order.total_spent?.toLocaleString() || 0}</span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {order.last_order_date ? new Date(order.last_order_date).toLocaleDateString() : 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!loadingOrders && cardOrders.length === 0 && (
+                <div className="text-center py-12">
+                  <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">No orders found for this period</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Total: <span className="font-bold">{cardOrders.length}</span> orders | 
+                Revenue: <span className="font-bold text-green-600">Rs. {cardOrders.reduce((sum, o) => sum + (o.total_spent || 0), 0).toLocaleString()}</span>
+              </div>
+              <button
+                onClick={closeCardView}
+                className="px-6 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
