@@ -453,7 +453,7 @@ const PerformanceComparison = () => {
                 <div className="text-center">
                   <p className="text-xs text-gray-500">FB ROAS</p>
                   <p className="text-lg font-bold text-gray-700">
-                    {store.fb_roas > 0 ? `${store.fb_roas.toFixed(2)}x` : '-'}
+                    {typeof store.fb_roas === 'number' && store.fb_roas > 0 ? `${store.fb_roas.toFixed(2)}x` : '-'}
                   </p>
                 </div>
               </div>
