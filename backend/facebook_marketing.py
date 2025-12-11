@@ -366,13 +366,6 @@ class FacebookMarketingService:
                     'outbound_clicks_ctr',
                     'cost_per_outbound_click',
                 ],
-                    'action_values',
-                    'conversions',
-                    'conversion_values',
-                    'cost_per_action_type',
-                    'purchase_roas',
-                    'frequency'
-                ],
                 params={
                     'date_preset': date_preset
                 }
@@ -390,13 +383,74 @@ class FacebookMarketingService:
             
             # Parse actions to get conversions
             actions = insight.get('actions', [])
+            action_values = insight.get('action_values', [])
+            cost_per_action = insight.get('cost_per_action_type', [])
+            
+            # Initialize action metrics
             purchases = 0
+            purchase_value = 0
             leads = 0
+            link_clicks = 0
+            website_purchases = 0
+            add_to_cart = 0
+            initiate_checkout = 0
+            cost_per_purchase = 0
+            
             for action in actions:
-                if action.get('action_type') == 'purchase':
-                    purchases = int(action.get('value', 0))
-                elif action.get('action_type') == 'lead':
-                    leads = int(action.get('value', 0))
+                action_type = action.get('action_type', '')
+                value = int(action.get('value', 0))
+                
+                if action_type == 'purchase' or action_type == 'omni_purchase':
+                    purchases += value
+                elif action_type == 'offsite_conversion.fb_pixel_purchase':
+                    website_purchases = value
+                elif action_type == 'lead':
+                    leads = value
+                elif action_type == 'link_click':
+                    link_clicks = value
+                elif action_type == 'offsite_conversion.fb_pixel_add_to_cart':
+                    add_to_cart = value
+                elif action_type == 'offsite_conversion.fb_pixel_initiate_checkout':
+                    initiate_checkout = value
+            
+            for action in action_values:
+                action_type = action.get('action_type', '')
+                value = float(action.get('value', 0))
+                
+                if action_type == 'purchase' or action_type == 'omni_purchase':
+                    purchase_value += value
+                elif action_type == 'offsite_conversion.fb_pixel_purchase':
+                    purchase_value += value
+            
+            for action in cost_per_action:
+                action_type = action.get('action_type', '')
+                value = float(action.get('value', 0))
+                
+                if action_type == 'purchase' or action_type == 'omni_purchase':
+                    cost_per_purchase = value
+            
+            # Get ROAS values
+            purchase_roas = 0
+            website_roas = 0
+            if insight.get('purchase_roas'):
+                for roas in insight.get('purchase_roas', []):
+                    if roas.get('action_type') == 'omni_purchase':
+                        purchase_roas = float(roas.get('value', 0))
+            if insight.get('website_purchase_roas'):
+                for roas in insight.get('website_purchase_roas', []):
+                    website_roas = float(roas.get('value', 0))
+            
+            # Get link click metrics
+            inline_link_clicks = 0
+            inline_link_ctr = 0
+            cost_per_inline_link = 0
+            
+            if insight.get('inline_link_clicks'):
+                inline_link_clicks = int(insight.get('inline_link_clicks', 0))
+            if insight.get('inline_link_click_ctr'):
+                inline_link_ctr = float(insight.get('inline_link_click_ctr', 0))
+            if insight.get('cost_per_inline_link_click'):
+                cost_per_inline_link = float(insight.get('cost_per_inline_link_click', 0))
             
             metrics = {
                 "impressions": int(insight.get('impressions', 0)),
@@ -407,9 +461,20 @@ class FacebookMarketingService:
                 "cpm": float(insight.get('cpm', 0)),
                 "ctr": float(insight.get('ctr', 0)),
                 "frequency": float(insight.get('frequency', 0)),
-                "purchases": purchases,
+                # Link metrics
+                "link_clicks": link_clicks or inline_link_clicks,
+                "link_ctr": inline_link_ctr,
+                "cost_per_link_click": cost_per_inline_link,
+                # Purchase metrics
+                "purchases": purchases or website_purchases,
+                "purchase_value": purchase_value,
+                "cost_per_purchase": cost_per_purchase,
+                "purchase_roas": purchase_roas,
+                "website_roas": website_roas,
+                # Other conversions
                 "leads": leads,
-                "roas": insight.get('purchase_roas', [{}])[0].get('value', 0) if insight.get('purchase_roas') else 0
+                "add_to_cart": add_to_cart,
+                "initiate_checkout": initiate_checkout,
             }
             
             return {
