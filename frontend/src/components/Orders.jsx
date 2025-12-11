@@ -184,7 +184,7 @@ const Orders = () => {
   useEffect(() => {
     fetchOrders();
     fetchStores();
-  }, [currentPage, filters]);
+  }, [currentPage, filters, searchQuery]);
 
   const fetchStores = async () => {
     try {
