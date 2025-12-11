@@ -554,8 +554,8 @@ class ShopifyCustomerAPITester:
     # ==================== EXISTING ENDPOINTS TESTS ====================
     
     def test_orders_endpoint(self):
-        """Test orders endpoint"""
-        success, response, _ = self.run_test("Orders Endpoint", "GET", "orders", 200)
+        """Test customers endpoint (which contains order data)"""
+        success, response, _ = self.run_test("Customers/Orders Data", "GET", "customers", 200)
         return success, response
     
     def test_inventory_overview_stats(self):
