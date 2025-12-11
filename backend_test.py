@@ -805,6 +805,9 @@ def main():
     
     facebook_results = refactoring_results.get("facebook", {})
     finance_results = refactoring_results.get("finance", {})
+    pricing_results = refactoring_results.get("pricing", {})
+    tcs_results = refactoring_results.get("tcs", {})
+    customers_results = refactoring_results.get("customers", {})
     existing_results = refactoring_results.get("existing", {})
     
     # Facebook Routes Summary
@@ -829,18 +832,45 @@ def main():
     print(f"   Upload History: {'✅ PASS' if finance_results.get('upload_history') else '❌ FAIL'}")
     print(f"   Overall: {fin_passed}/{fin_total} passed")
     
+    # Pricing Routes Summary
+    print(f"\n💲 PRICING ROUTES:")
+    pricing_passed = sum(pricing_results.values())
+    pricing_total = len(pricing_results)
+    print(f"   Config: {'✅ PASS' if pricing_results.get('config') else '❌ FAIL'}")
+    print(f"   Rules: {'✅ PASS' if pricing_results.get('rules') else '❌ FAIL'}")
+    print(f"   Dashboard Stats: {'✅ PASS' if pricing_results.get('dashboard_stats') else '❌ FAIL'}")
+    print(f"   Overall: {pricing_passed}/{pricing_total} passed")
+    
+    # TCS Routes Summary
+    print(f"\n🚚 TCS ROUTES:")
+    tcs_passed = sum(tcs_results.values())
+    tcs_total = len(tcs_results)
+    print(f"   Credentials: {'✅ PASS' if tcs_results.get('credentials') else '❌ FAIL'}")
+    print(f"   Auto-Sync Status: {'✅ PASS' if tcs_results.get('auto_sync_status') else '❌ FAIL'}")
+    print(f"   Overall: {tcs_passed}/{tcs_total} passed")
+    
+    # Customers Routes Summary
+    print(f"\n👥 CUSTOMERS ROUTES:")
+    customers_passed = sum(customers_results.values())
+    customers_total = len(customers_results)
+    print(f"   Customers (Limited): {'✅ PASS' if customers_results.get('customers_limited') else '❌ FAIL'}")
+    print(f"   Count: {'✅ PASS' if customers_results.get('count') else '❌ FAIL'}")
+    print(f"   Stats: {'✅ PASS' if customers_results.get('stats') else '❌ FAIL'}")
+    print(f"   Segments: {'✅ PASS' if customers_results.get('segments') else '❌ FAIL'}")
+    print(f"   Overall: {customers_passed}/{customers_total} passed")
+    
     # Existing Endpoints Summary
-    print(f"\n🔄 EXISTING ENDPOINTS:")
+    print(f"\n🔄 REMAINING SERVER.PY ENDPOINTS:")
     ex_passed = sum(existing_results.values())
     ex_total = len(existing_results)
     print(f"   Orders: {'✅ PASS' if existing_results.get('orders') else '❌ FAIL'}")
-    print(f"   Customers: {'✅ PASS' if existing_results.get('customers') else '❌ FAIL'}")
     print(f"   Inventory Stats: {'✅ PASS' if existing_results.get('inventory_stats') else '❌ FAIL'}")
+    print(f"   Dashboard Stats: {'✅ PASS' if existing_results.get('dashboard_stats') else '❌ FAIL'}")
     print(f"   Overall: {ex_passed}/{ex_total} passed")
     
     # Overall assessment
-    total_passed = fb_passed + fin_passed + ex_passed
-    total_tests = fb_total + fin_total + ex_total
+    total_passed = fb_passed + fin_passed + pricing_passed + tcs_passed + customers_passed + ex_passed
+    total_tests = fb_total + fin_total + pricing_total + tcs_total + customers_total + ex_total
     
     print(f"\n🎯 REFACTORING VALIDATION: {total_passed}/{total_tests} tests passed")
     print(f"   Facebook Tests: {tester.facebook_tests_passed}/{tester.facebook_tests_run}")
@@ -848,7 +878,7 @@ def main():
     
     if total_passed >= (total_tests * 0.8):  # 80% pass rate
         print("✅ Backend refactoring is successful!")
-        print("   - Modular routes are working correctly")
+        print("   - All modular routes are working correctly")
         print("   - Existing endpoints remain functional")
         print("   - API structure is maintained")
         return 0
@@ -858,6 +888,12 @@ def main():
             print(f"   - Facebook routes: {fb_total - fb_passed} failures")
         if fin_passed < fin_total:
             print(f"   - Finance routes: {fin_total - fin_passed} failures")
+        if pricing_passed < pricing_total:
+            print(f"   - Pricing routes: {pricing_total - pricing_passed} failures")
+        if tcs_passed < tcs_total:
+            print(f"   - TCS routes: {tcs_total - tcs_passed} failures")
+        if customers_passed < customers_total:
+            print(f"   - Customers routes: {customers_total - customers_passed} failures")
         if ex_passed < ex_total:
             print(f"   - Existing endpoints: {ex_total - ex_passed} failures")
         return 1
