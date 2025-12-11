@@ -301,7 +301,10 @@ const PerformanceComparison = () => {
 
       {/* Overall Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-        <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+        <Card 
+          className="bg-gradient-to-br from-green-500 to-green-600 text-white cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
+          onClick={() => navigate('/orders')}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <ShoppingCart className="w-5 h-5 opacity-80" />
@@ -311,7 +314,10 @@ const PerformanceComparison = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+        <Card 
+          className="bg-gradient-to-br from-blue-500 to-blue-600 text-white cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
+          onClick={() => navigate('/facebook-marketing')}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <Facebook className="w-5 h-5 opacity-80" />
@@ -321,7 +327,10 @@ const PerformanceComparison = () => {
           </CardContent>
         </Card>
 
-        <Card className={`bg-gradient-to-br ${totals.profit >= 0 ? 'from-emerald-500 to-emerald-600' : 'from-red-500 to-red-600'} text-white`}>
+        <Card 
+          className={`bg-gradient-to-br ${totals.profit >= 0 ? 'from-emerald-500 to-emerald-600' : 'from-red-500 to-red-600'} text-white cursor-pointer hover:shadow-lg hover:scale-105 transition-all`}
+          onClick={() => navigate('/finance-reconciliation')}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               {totals.profit >= 0 ? <TrendingUp className="w-5 h-5 opacity-80" /> : <TrendingDown className="w-5 h-5 opacity-80" />}
@@ -331,7 +340,10 @@ const PerformanceComparison = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+        <Card 
+          className="bg-gradient-to-br from-purple-500 to-purple-600 text-white cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
+          onClick={() => navigate('/facebook-marketing')}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <Target className="w-5 h-5 opacity-80" />
@@ -341,7 +353,10 @@ const PerformanceComparison = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+        <Card 
+          className="bg-gradient-to-br from-orange-500 to-orange-600 text-white cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
+          onClick={() => navigate('/orders')}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <ShoppingCart className="w-5 h-5 opacity-80" />
@@ -351,7 +366,10 @@ const PerformanceComparison = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-pink-500 to-pink-600 text-white">
+        <Card 
+          className="bg-gradient-to-br from-pink-500 to-pink-600 text-white cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
+          onClick={() => navigate('/facebook-marketing')}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <Eye className="w-5 h-5 opacity-80" />
