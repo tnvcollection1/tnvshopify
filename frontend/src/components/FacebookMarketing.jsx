@@ -468,6 +468,17 @@ const FacebookMarketing = () => {
           </div>
         )}
 
+        {/* AI Optimizer Tab */}
+        {activeTab === 'ai' && (
+          <AICampaignOptimizer 
+            campaigns={campaigns.map(c => ({...c, insights: campaignInsights[c.id] || {}}))} 
+            onRefresh={fetchCampaignsWithInsights}
+          />
+        )}
+
+        {/* Campaigns Tab */}
+        {activeTab === 'campaigns' && (
+          <>
         {/* Toolbar */}
         <div className="bg-white rounded-t-lg border border-b-0 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
