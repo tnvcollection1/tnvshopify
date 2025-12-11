@@ -4533,18 +4533,19 @@ async def get_customers(
     # Get customers with pagination and sorting
     customers = await db.customers.find(query, {"_id": 0}).sort(sort_field, sort_direction).skip(skip).limit(fetch_limit).to_list(fetch_limit)
     
-    # Fetch all inventory items once to calculate cost and profit for each order
-    inventory_items = await db.inventory_v2.find({}, {"_id": 0, "sku": 1, "cost": 1, "profit": 1}).to_list(10000)
-    inventory_map = {item.get("sku", "").upper(): item for item in inventory_items}
+    # PERFORMANCE: Use cached inventory data instead of fetching on every request
+    inv_cache = await get_inventory_cache()
+    inventory_map = inv_cache["data"]
+    stock_skus = inv_cache["stock_skus"]
     
-    # Calculate cost and profit for each customer based on their order SKUs
+    # Calculate cost and profit for each customer based on their order SKUs (using cache)
     for customer in customers:
         order_skus = customer.get('order_skus', [])
         total_cost = 0
         total_profit = 0
         
         for sku in order_skus:
-            sku_upper = sku.upper()
+            sku_upper = sku.upper() if isinstance(sku, str) else str(sku).upper()
             if sku_upper in inventory_map:
                 inv_item = inventory_map[sku_upper]
                 total_cost += inv_item.get('cost', 0) or 0
@@ -4558,31 +4559,7 @@ async def get_customers(
     should_calculate_stock = stock_availability or fulfillment_status == "unfulfilled"
     
     if should_calculate_stock:
-        # Get all stores' inventory if no specific store is selected
-        stock_store = store_name if store_name and store_name != "all" else None
-        
-        # Get stock for the store from inventory_v2 (new) and stock (old) collections
-        inventory_v2_query = {"quantity": {"$gt": 0}}
-        stock_query = {}
-        
-        if stock_store:
-            inventory_v2_query["store_name"] = stock_store
-            stock_query["store_name"] = stock_store
-        
-        # Check inventory_v2 first (new system with quantity tracking)
-        inventory_v2_items = await db.inventory_v2.find(
-            inventory_v2_query, 
-            {"_id": 0, "sku": 1}
-        ).to_list(10000)
-        
-        # Also check old stock collection for backward compatibility
-        stock_items = await db.stock.find(stock_query, {"_id": 0, "sku": 1}).to_list(10000)
-        
-        # Combine SKUs from both collections
-        stock_skus = set()
-        stock_skus.update(item["sku"].upper() for item in inventory_v2_items)
-        stock_skus.update(item["sku"].upper() for item in stock_items)
-        
+        # PERFORMANCE: Use cached stock SKUs instead of DB query
         # Calculate stock status for each customer
         filtered_customers = []
         for customer in customers:
