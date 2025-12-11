@@ -134,7 +134,7 @@ const MarketingDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="border-green-200 shadow-lg bg-gradient-to-br from-green-50 to-green-100 cursor-pointer hover:shadow-xl hover:border-green-400 transition-all" onClick={() => viewCardDetails('today')}>
             <CardHeader className="pb-3">
-              <CardDescription className="text-green-700 font-semibold">Today's Revenue</CardDescription>
+              <CardDescription className="text-green-700 font-semibold">Today&apos;s Revenue</CardDescription>
               <CardTitle className="text-3xl font-bold text-green-600">
                 Rs. {stats.todayRevenue.toLocaleString()}
               </CardTitle>
