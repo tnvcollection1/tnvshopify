@@ -87,9 +87,12 @@ const DashboardOptimized = () => {
           ...(selectedStore !== 'all' && { store_name: selectedStore })
         }
       });
-      setRecentOrders(response.data || []);
+      // Handle the response structure properly
+      const orders = response.data?.customers || response.data || [];
+      setRecentOrders(Array.isArray(orders) ? orders : []);
     } catch (error) {
       console.error('Error fetching recent orders:', error);
+      setRecentOrders([]);
     }
   };
 
