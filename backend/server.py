@@ -341,6 +341,12 @@ class InventoryItemUpdate(BaseModel):
     status: Optional[str] = None
 
 
+class DeliveryStatusUpdate(BaseModel):
+    status: str
+    notes: Optional[str] = None
+    tracking_number: Optional[str] = None
+
+
 class WhatsAppRequest(BaseModel):
     phone: str
     country_code: Optional[str] = None
