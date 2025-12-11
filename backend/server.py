@@ -8311,6 +8311,8 @@ async def ai_diagnose_campaign(campaign_id: str):
 app.include_router(api_router)
 app.include_router(whatsapp_webhook_router)
 app.include_router(tracking_router)
+# Include the new modular routers
+api_router.include_router(facebook_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 app.add_middleware(
