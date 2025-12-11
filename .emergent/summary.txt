@@ -1,223 +1,336 @@
-<analysis>**original_problem_statement**: The user's primary goal is to have a robust CRM and order management system. The initial focus from the previous fork was to build a Finance Management System for the ashmiaa store, which involved reconciling Shopify orders against uploaded Excel files.
-
-In this session, the user's requests pivoted to extensive bug fixing and feature enhancement, primarily focused on the WhatsApp messaging capabilities and order visibility.
+<analysis>**original_problem_statement**: The user's initial goal was to build a CRM with order management, focusing on fixing order visibility and enhancing WhatsApp messaging. The scope has since expanded significantly to include major performance optimizations, UI enhancements like clickable dashboard cards, and a deep integration with the Facebook Marketing API. The user wants a comprehensive in-app tool to manage Facebook ad campaigns, view detailed performance metrics, compare ad spend against Shopify sales, and receive AI-powered recommendations to optimize campaigns for maximum conversion. A critical but currently de-prioritized issue is that the production environment, while accessible, has an empty database.
 
 **PRODUCT REQUIREMENTS**:
-1.  **Order Sync & Visibility (P0)**: The system must correctly sync and display all orders from Shopify. The user is currently unable to see a range of unfulfilled orders (specifically #29351 to #29389) on the Orders page.
-2.  **WhatsApp Bulk Messaging Automation (P1)**: The user wants a one-click solution to send bulk confirmation messages to selected orders. The system should automatically open each chat, pre-fill a randomized message template, and ideally, press Send. The current implementation automates opening chats sequentially but still requires the user to press Enter for each message.
-3.  **Correct WhatsApp Message Content (P1)**: WhatsApp messages must:
-    -   Automatically handle international phone numbers by prepending the correct country code based on the Shopify order's country.
-    -   Display the correct currency symbol (e.g., INR, PKR) based on the order's country, not hardcoded to PKR.
-    -   Use randomized message templates to avoid being flagged as spam by WhatsApp.
-    -   NOT include the internal tracking link.
-4.  **Finance Management System (P2)**: The system needs a way to handle Shopify orders that are missing from the user's uploaded accounting ledger. An Export Missing Orders feature was started but never completed.
-5.  **General Bug Fixes (P2)**:
-    -   The Dispatch Tracker and Confirmation Tracker pages must be functional and not show errors.
-    -   The Purchase Tracker should not display incorrect tracking numbers for the wrong stores.
-    -   The search bar on the main Orders page should work.
+1.  **Facebook Marketing Suite (P0)**:
+    -   Implement full campaign management (create, edit, pause/resume campaigns) from within the app.
+    -   Implement budget management for ad campaigns.
+    -   Implement the ability to create Lookalike Audiences based on CRM customer data.
+    -   Build an AI Campaign Optimizer that analyzes ad performance and provides actionable recommendations to improve ROAS and scale successful campaigns.
+2.  **Production Data Population (P1)**:
+    -   The production database must be populated with data, as it is currently empty, rendering the live application unusable. The user needs to decide between syncing fresh data from Shopify or migrating it from the preview environment.
+3.  **Technical Debt (P2)**:
+    -   Refactor the monolithic  file into a modular, router-based architecture to improve maintainability.
 
 **User's preferred language**: English
 
 **what currently exists?**
-- A full-stack application (React/FastAPI/MongoDB) with a Finance Reconciliation system, Dynamic Pricing dashboard, and several order management trackers.
-- In this session, the agent performed numerous fixes and enhancements:
-    -   **Login Fixed**: A critical login timeout issue was resolved. The agent fixed multiple syntax errors in  and disabled an aggressive, blocking Shopify sync job that was running on startup.
-    -   **Trackers Fixed**: The Dispatch Tracker (Failed to fetch orders) and Confirmation Tracker (Something went wrong) have been repaired and are now functional.
-    -   **Data Integrity Fixed**: Incorrect China Post tracking numbers that were wrongly assigned to  store orders have been removed.
-    -   **WhatsApp Messaging VASTLY Improved**:
-        -   Links now correctly target the WhatsApp Desktop app ().
-        -   Phone numbers are automatically formatted with the correct country code.
-        -   Currency is dynamically set based on the order's country.
-        -   Message templates are randomized to prevent spam detection.
-        -   A bulk-sending mechanism was implemented that sequentially opens chats to work around browser popup blockers.
-    -   **UI/UX Improvements**: A FINANCE section was added to the sidebar. A sort-by-order-number dropdown was added to the Orders page.
+- A React/FastAPI/MongoDB application for CRM and order management.
+- The application's performance has been significantly improved via server-side caching, with API load times reduced from ~4 seconds to under 0.1 seconds.
+- Several UI/UX features have been completed: dashboard cards are now clickable, the main orders search is fixed, and a feature to export missing financial orders has been added.
+- A substantial Facebook Marketing integration has been built:
+    - The app is connected to the user's Facebook account with a valid API token.
+    - A **Facebook Marketing Dashboard** () provides a detailed, Ads Manager-style view of campaigns with over 15 key metrics (ROAS, CPM, CTR, etc.).
+    - A **Performance Comparison Dashboard** () directly compares Shopify store revenue against Facebook ad spend, calculating True ROAS and profit for each linked store.
+    - The backend and frontend skeletons for **Campaign Management** and an **AI Optimizer** have been created.
 
 **Last working item**:
--   **Last item agent was working**: The user reported that a large chunk of unfulfilled orders (from #29351 to #29389) are not visible in the application, even though they exist in Shopify. The system's order view jumps from recent orders (e.g., #29399) to very old ones (e.g., #1895), skipping the entire range in between. The agent had just confirmed the user's observation and was about to investigate if these orders exist in the database.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: Backend testing using a direct database query to check for the existence of the missing order numbers (e.g., , ).
--   **User Testing Done**: Y (User has confirmed the issue persists).
+- **Last item agent was working**: Implementing the **AI Campaign Optimizer** and full **Campaign Management** functionalities for the Facebook Marketing integration. The agent had created the backend services (, ) and API endpoints, installed the usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
+              [-o ORGANIZATION] [-t {openai,azure}]
+              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
+              [--azure-ad-token AZURE_AD_TOKEN] [-V]
+              {api,tools,migrate,grit} ...
+
+positional arguments:
+  {api,tools,migrate,grit}
+    api                 Direct API calls
+    tools               Client side tools for convenience
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Set verbosity.
+  -b API_BASE, --api-base API_BASE
+                        What API base url to use.
+  -k API_KEY, --api-key API_KEY
+                        What API key to use.
+  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
+                        What proxy to use.
+  -o ORGANIZATION, --organization ORGANIZATION
+                        Which organization to run as (will use your default
+                        organization if not specified)
+  -t {openai,azure}, --api-type {openai,azure}
+                        The backend API to call, must be `openai` or `azure`
+  --api-version API_VERSION
+                        The Azure API version, e.g.
+                        'https://learn.microsoft.com/en-us/azure/ai-
+                        services/openai/reference#rest-api-versioning'
+  --azure-endpoint AZURE_ENDPOINT
+                        The Azure endpoint, e.g.
+                        'https://endpoint.openai.azure.com'
+  --azure-ad-token AZURE_AD_TOKEN
+                        A token from Azure Active Directory,
+                        https://www.microsoft.com/en-
+                        us/security/business/identity-access/microsoft-entra-
+                        id
+  -V, --version         show program's version number and exit library, and set up the frontend UI with Campaigns and AI Optimizer tabs in the  component.
+- **Status**: IN PROGRESS
+- **Agent Testing Done**: N (Testing of the new UI tabs was attempted with the screenshot tool but failed due to a timeout. The feature is incomplete.)
+- **Which testing method agent to use?**: Frontend testing agent. The changes are complex, involving new components, backend endpoints, and state management, making it suitable for a comprehensive test script.
+- **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Orders #29351-#29389 are missing from the application view (P0)
--   Issue 2: Randomization of WhatsApp messages is not working as expected (P1)
--   Issue 3: WhatsApp bulk sending is not fully automated (user still has to press Enter) (P1)
--   Issue 4: Provide a way to handle Shopify orders that are missing from the accounting ledger (P2)
--   Issue 5:  requires major refactoring (P2)
--   Issue 6: Search on the main Orders page does not work (P3)
--   Issue 7: Shopify sync does not pull full  data (P4)
+-   Issue 1: Complete Facebook AI Optimizer & Campaign Management (P0)
+-   Issue 2: Production database is empty (P1)
+-   Issue 3: Refactor monolithic  (P2)
 
 **Issues Detail**:
--   **Issue 1: Orders #29351-#29389 are missing from the application view**
-    -   **Description**: The user has shown via Shopify screenshots that there are many unfulfilled orders between #29351 and #29389. However, the application's Orders page skips this range entirely, jumping from newer orders to much older ones.
-    -   **Attempted fixes**: The agent added a Sort by Order Number dropdown, believing it was a pagination/sorting issue. While the feature was added, it did not solve the root problem, confirming that the orders are simply not being fetched or displayed.
+-   **Issue 1: Complete Facebook AI Optimizer & Campaign Management**
+    -   **Attempted fixes**: The agent created the necessary backend files (), service methods (), and API endpoints (). The frontend (, ) was updated with the UI structure. A test of the new UI failed.
     -   **Next debug checklist**:
-        1.  Connect to the  database.
-        2.  Run a query on the  collection to find one of the missing orders, e.g., .
-        3.  If the order exists, investigate the  endpoint in  and the  function in  to understand why it's being filtered out.
-        4.  If the order does NOT exist, the problem lies with the Shopify sync process, which needs to be investigated.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is critical for the user's workflow. They cannot manage or contact customers for orders they cannot see.
+        1.  Resume the implementation of the campaign management features (create/edit/pause) in  and the corresponding frontend controls.
+        2.  Implement the AI analysis logic in  using the installed usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
+              [-o ORGANIZATION] [-t {openai,azure}]
+              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
+              [--azure-ad-token AZURE_AD_TOKEN] [-V]
+              {api,tools,migrate,grit} ...
+
+positional arguments:
+  {api,tools,migrate,grit}
+    api                 Direct API calls
+    tools               Client side tools for convenience
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Set verbosity.
+  -b API_BASE, --api-base API_BASE
+                        What API base url to use.
+  -k API_KEY, --api-key API_KEY
+                        What API key to use.
+  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
+                        What proxy to use.
+  -o ORGANIZATION, --organization ORGANIZATION
+                        Which organization to run as (will use your default
+                        organization if not specified)
+  -t {openai,azure}, --api-type {openai,azure}
+                        The backend API to call, must be `openai` or `azure`
+  --api-version API_VERSION
+                        The Azure API version, e.g.
+                        'https://learn.microsoft.com/en-us/azure/ai-
+                        services/openai/reference#rest-api-versioning'
+  --azure-endpoint AZURE_ENDPOINT
+                        The Azure endpoint, e.g.
+                        'https://endpoint.openai.azure.com'
+  --azure-ad-token AZURE_AD_TOKEN
+                        A token from Azure Active Directory,
+                        https://www.microsoft.com/en-
+                        us/security/business/identity-access/microsoft-entra-
+                        id
+  -V, --version         show program's version number and exit library.
+        3.  Flesh out the  component to display the AI-generated recommendations.
+        4.  Use the frontend testing agent to conduct a thorough test of both the Campaigns tab (toggling campaign status) and the AI Optimizer tab (fetching and displaying recommendations).
+    -   **Why fix this issue and what will be achieved with the fix?**: Fulfills the user's primary request for advanced, in-app ad management and AI-driven optimization capabilities.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on other issue**: None
 
--   **Issue 2: Randomization of WhatsApp messages is not working as expected**
-    -   **Description**: The user reported that when generating bulk messages, the same message template is being used for all customers, defeating the purpose of randomization to avoid spam detection.
-    -   **Attempted fixes**: The agent modified the  function to use the loop index () to deterministically cycle through templates.
+-   **Issue 2: Production database is empty**
+    -   **Attempted fixes**: The agent resolved the production login issue and explained to the user that preview and production environments have separate databases. The agent proposed solutions (Shopify sync or data migration).
     -   **Next debug checklist**:
-        1.  Add  statements inside  and  in  to log the  and the chosen  for each order.
-        2.  Test with 3-4 selected orders and check the browser console to verify that the template index is changing for each message.
-    -   **Why fix this issue and what will be achieved with the fix?**: Prevents the user's WhatsApp account from being banned for sending repetitive messages.
-    -   **Status**: USER VERIFICATION PENDING
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-
--   **Issue 3: WhatsApp bulk sending is not fully automated**
-    -   **Description**: The user wants the application to automatically click the Send button in WhatsApp. The current solution opens the chat with the message pre-filled, but requires manual intervention to send.
-    -   **Attempted fixes**: The agent explained that browser security prevents this and proposed three solutions: a browser console script, a professional WhatsApp Business API integration, or a Python Selenium script. The user has not chosen a path forward.
-    -   **Next debug checklist**: Re-engage with the user to decide on the preferred solution. If they choose the console script, guide them on how to use it.
-    -   **Why fix this issue and what will be achieved with the fix?**: This would provide the one-click fully automated workflow the user desires.
-    -   **Status**: BLOCKED (Awaiting user decision)
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-
--   **Issue 4: Provide a way to handle Shopify orders that are missing from the accounting ledger**
-    -   **Description**: This is the Missing Data issue from the previous fork. The agent was supposed to build an Export Missing Orders feature but got sidetracked by other bug fixes.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: Y
-
--   **Issue 5:  requires major refactoring**
-    -   **Description**:  is a monolith. This is a recurring technical debt item.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: Y
-
--   **Issue 6: Search on Orders page does not work**
-    -   **Description**: The main search bar on the Orders page does not function.
-    -   **Status**: NOT STARTED
+        1.  Once the user is ready to address this, guide them to log into the production environment.
+        2.  Instruct them to navigate to the Settings page and trigger the Shopify sync to populate the database with live data.
+    -   **Why fix this issue and what will be achieved with the fix?**: The production application is currently unusable without data. This is a critical step for go-live.
+    -   **Status**: BLOCKED (on user decision, currently de-prioritized by the user).
     -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on other issue**: None
 
--   **Issue 7: Shopify sync does not pull full  data**
-    -   **Description**: The sync process does not store , limiting detailed analysis.
+-   **Issue 3: Refactor monolithic **
+    -   **Attempted fixes**: None.
+    -   **Next debug checklist**:
+        1.  Propose a plan to the user to break  into smaller routers (e.g., , , , ) inside a  directory.
+        2.  Execute the refactoring by moving endpoint groups into their respective files.
+        3.  Update  to import and include the new routers.
+    -   **Why fix this issue and what will be achieved with the fix?**: To reduce technical debt, improve code maintainability, and make future development faster and safer.
     -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Both (full regression test)
+    -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   **Task 1: Investigate and fix missing Shopify orders**
-    -   **Where to resume**: Executing a database query to check if orders like  exist in the  collection.
-    -   **What will be achieved with this?**: It will determine if the problem is in the data sync or the frontend display logic, unblocking the fix for the user's most critical issue.
+-   **Task 1: Complete Facebook Marketing Integration Suite**
+    -   **Where to resume**: The agent needs to complete the implementation of the backend logic for campaign management and AI analysis, and build out the corresponding frontend components ( and interactive elements in ).
+    -   **What will be achieved with this?**: A complete, in-app Facebook Ads management and optimization tool as requested by the user.
     -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P1) Complete the Export Missing Orders feature for the Finance Reconciliation system.
-    -   (P2) Implement the user's chosen solution for fully automated WhatsApp sending.
-    -   (P3) Add a Sync to Shopify button on the Dynamic Pricing dashboard UI.
+    -   (P0) Finalize and test the AI Campaign Optimizer.
+    -   (P0) Implement Lookalike Audience creation.
+    -   (P0) Implement campaign Budget Management.
+    -   (P1) Populate the production database.
 -   **Future Tasks**:
-    -   Build a Smart Inventory Clearance Engine.
-    -   Build Abandoned Cart Recovery via WhatsApp.
+    -   (P2) Refactor .
+    -   (P3) Build a Smart Inventory Clearance Engine.
+    -   (P3) Build an Abandoned Cart Recovery via WhatsApp feature.
 
 **Completed work in this session**
--   **Login System Restored**: Fixed a hanging login API by resolving multiple syntax errors in  and disabling a problematic startup sync job in .
--   **Data Cleanup**: Cleared all test/old data from the Finance Reconciliation collections (, , ).
--   **Dispatch Tracker Fixed**: Created the missing  endpoint to resolve the Failed to fetch orders error.
--   **Confirmation Tracker Fixed**: Repaired the UI by importing missing  and  components in .
--   **Data Integrity Corrected**: Found and removed incorrect China Post (X-prefix) tracking numbers from  store orders in the database.
--   **Sidebar Navigation Added**: Added a FINANCE section with a link to the reconciliation page in .
--   **Order Page Sorting**: Added a dropdown to sort orders by  (newest/oldest) in  and the corresponding backend logic in .
--   **Comprehensive WhatsApp Overhaul ()**:
-    -   **Desktop App Integration**: Changed URL schemes to  to prioritize opening the desktop app.
-    -   **Internationalization**: Added logic to format phone numbers with the correct country code and to display currency based on the order's country.
-    -   **Spam Avoidance**: Implemented randomization of message templates.
-    -   **Bulk Sending Automation**: Created a sequential, timer-based loop to open WhatsApp chats one-by-one, effectively bypassing browser popup blockers after initial user permission.
+- **Performance Optimization**: Implemented a server-side inventory cache, reducing API response times from ~3.8s to ~0.07s.
+- **Clickable Dashboard Cards**: Made stat cards on the  and  components interactive.
+- **Orders Page Search Fix**: Repaired the broken search functionality on the main orders page and added a debounce mechanism.
+- **Export Missing Orders Feature**: Implemented the export functionality in the finance module.
+- **Facebook Marketing API Integration (Phase 1 & 2)**:
+    - Integrated the Facebook API and built two major dashboards:
+        1.  **Facebook Marketing Dashboard**: An Ads Manager-style view with detailed campaign metrics.
+        2.  **Performance Comparison Dashboard**: Compares Shopify revenue against Facebook ad spend to calculate True ROAS and profit.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1:  requires major refactoring**: This is high-priority technical debt.
--   **Issue 2: Search on Orders page does not work**: The search input on  is not functional.
--   **Issue 3: Shopify sync does not pull **: Limits detailed order analysis.
+-   **Issue 1: Production database is empty**: This critical issue for production usability was acknowledged and explained, but the user chose to prioritize feature development. It remains blocked on the user's decision.
+-   **Issue 2:  requires major refactoring**: This is significant technical debt that the user has deferred. The file is now over 8,200 lines.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**:  requires major refactoring.
--   **Recurrence count**: 4
+-   **Recurrence count**: 8
 -   **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Debugging Race Conditions/Startup Issues**: Identified and resolved a server-hanging issue by disabling long-running background jobs (, ) in the  and FastAPI startup events.
--   **Advanced Frontend Logic**: Implemented complex client-side logic in  for the WhatsApp bulk-sending feature, including a timer-based loop (/ with ) to bypass browser popup restrictions.
--   **Dynamic Content Generation**: Created functions to dynamically generate WhatsApp messages with randomized templates, country-specific currency, and correctly formatted international phone numbers.
--   **API Extension**: Added a new FastAPI endpoint () to provide aggregated data for a UI component, fixing a frontend error.
--   **Data-driven UI**: Created a data-driven sorting feature by adding a UI dropdown and corresponding backend query parameters to sort by different fields ().
+-   **API Caching**: Implemented a server-side inventory cache that warms up on startup to drastically improve API performance.
+-   **Third-Party API Integration**: Integrated the Facebook Marketing API for reading complex data structures (Accounts, Campaigns, Insights).
+-   **AI Integration (Setup)**: Prepared the application for AI features by installing the usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
+              [-o ORGANIZATION] [-t {openai,azure}]
+              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
+              [--azure-ad-token AZURE_AD_TOKEN] [-V]
+              {api,tools,migrate,grit} ...
+
+positional arguments:
+  {api,tools,migrate,grit}
+    api                 Direct API calls
+    tools               Client side tools for convenience
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Set verbosity.
+  -b API_BASE, --api-base API_BASE
+                        What API base url to use.
+  -k API_KEY, --api-key API_KEY
+                        What API key to use.
+  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
+                        What proxy to use.
+  -o ORGANIZATION, --organization ORGANIZATION
+                        Which organization to run as (will use your default
+                        organization if not specified)
+  -t {openai,azure}, --api-type {openai,azure}
+                        The backend API to call, must be `openai` or `azure`
+  --api-version API_VERSION
+                        The Azure API version, e.g.
+                        'https://learn.microsoft.com/en-us/azure/ai-
+                        services/openai/reference#rest-api-versioning'
+  --azure-endpoint AZURE_ENDPOINT
+                        The Azure endpoint, e.g.
+                        'https://endpoint.openai.azure.com'
+  --azure-ad-token AZURE_AD_TOKEN
+                        A token from Azure Active Directory,
+                        https://www.microsoft.com/en-
+                        us/security/business/identity-access/microsoft-entra-
+                        id
+  -V, --version         show program's version number and exit library and creating a dedicated backend service ().
+-   **Data-Driven Dashboards**: Created new React components that fetch data from multiple sources (backend database, Facebook API) and present it in complex, interactive tables and cards.
 
 **key DB schema**
--   No schema changes were made in this session.
+-   No schema changes were made.
 
 **changes in tech stack**
--   None.
+-   **Backend**: Added , usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
+              [-o ORGANIZATION] [-t {openai,azure}]
+              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
+              [--azure-ad-token AZURE_AD_TOKEN] [-V]
+              {api,tools,migrate,grit} ...
+
+positional arguments:
+  {api,tools,migrate,grit}
+    api                 Direct API calls
+    tools               Client side tools for convenience
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Set verbosity.
+  -b API_BASE, --api-base API_BASE
+                        What API base url to use.
+  -k API_KEY, --api-key API_KEY
+                        What API key to use.
+  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
+                        What proxy to use.
+  -o ORGANIZATION, --organization ORGANIZATION
+                        Which organization to run as (will use your default
+                        organization if not specified)
+  -t {openai,azure}, --api-type {openai,azure}
+                        The backend API to call, must be `openai` or `azure`
+  --api-version API_VERSION
+                        The Azure API version, e.g.
+                        'https://learn.microsoft.com/en-us/azure/ai-
+                        services/openai/reference#rest-api-versioning'
+  --azure-endpoint AZURE_ENDPOINT
+                        The Azure endpoint, e.g.
+                        'https://endpoint.openai.azure.com'
+  --azure-ad-token AZURE_AD_TOKEN
+                        A token from Azure Active Directory,
+                        https://www.microsoft.com/en-
+                        us/security/business/identity-access/microsoft-entra-
+                        id
+  -V, --version         show program's version number and exit, and  to .
 
 **All files of reference**
--   : Contains all the new WhatsApp features and the order sorting logic. The primary file for the next agent to review for WhatsApp-related issues.
--   : Contains the login logic, the new  endpoint, and the updated sorting logic for . Critical for understanding data flow.
--   : Shows the disabled startup jobs. Important if any sync issues arise.
--   : File that was fixed for a UI crash.
--   : File that was fixed for a data-fetching error.
--   : Contains the new navigation link.
+-   **/app/backend/ai_campaign_optimizer.py**: New service to house AI logic for ad optimization.
+-   **/app/backend/facebook_marketing.py**: New service for all Facebook API interactions.
+-   **/app/backend/server.py**: The monolithic API server, heavily modified with new endpoints.
+-   **/app/frontend/src/components/FacebookMarketing.jsx**: The main UI for the Facebook Ads dashboard.
+-   **/app/frontend/src/components/PerformanceComparison.jsx**: UI for comparing Shopify vs. Facebook data.
+-   **/app/frontend/src/components/AICampaignOptimizer.jsx**: The UI for the AI feature currently being built.
 
 **Areas that need refactoring**:
--   ****: This component has become extremely bloated. The WhatsApp message generation, country code mapping, currency mapping, and bulk sending logic should be extracted into separate utility files (, ) to improve readability and maintainability.
--   ****: Remains a critical bottleneck for maintainability. It needs to be broken down into feature-based routers.
+-   ****: Critically needs to be refactored. Its size and complexity are a significant risk to future development and stability.
 
 **key api endpoints**
--   : (New) Provides aggregated order statistics for the Dispatch Tracker.
--   : (Modified) The  parameter was updated to support  and .
+-   : (New) To start/stop a campaign.
+-   : (New) To trigger the AI analysis.
+-   , : For reading FB data.
+-   : For exporting financial data.
+-   : To manually refresh the server-side cache.
 
 **Critical Info for New Agent**
--   **Highest Priority (P0)**: The user cannot see orders from #29351 to #29389. Your first action must be to query the database to determine if these orders exist. This will tell you if it's a sync problem or a display problem.
--   **WhatsApp Automation Expectations**: The user is not satisfied with the current bulk-sending automation because they still have to press Enter to send each message. Be prepared to discuss the proposed solutions (console script, API integration) to achieve full automation.
--   **Code Location**: Almost all of the complex WhatsApp logic (bulk sending, randomization, formatting) is packed into . This is the main file to investigate for any related bugs.
--   **Previous Issue Derailment**: The original task from the last fork (Export Missing Orders for the finance module) was completely superseded by the user's stream of bug reports and feature requests. This task is still pending.
+-   **Focus on the AI Optimizer**: The user's most recent and enthusiastic request is for the AI future to optimize their ad campaigns. Your immediate priority is to complete this feature.
+-   **Build on the Existing Structure**: The groundwork for the AI optimizer and campaign management is already in place (backend services, API endpoints, UI tabs). Your task is to implement the core logic.
+-   **Production is Blocked but De-prioritized**: Be aware that the production site is unusable due to an empty database. The user has deferred this, but it must be addressed before they can go live. The recommended solution is to guide the user to perform a Shopify sync on the production environment.
+-   **Push for Refactoring**: The  file is a ticking time bomb. Once the current Facebook tasks are complete, you should strongly advocate for and plan the refactoring task.
 
 **documents created in this job**
--   /tmp/whatsapp_message_example.txt
--   /tmp/whatsapp_message_variations.txt
--   /tmp/whatsapp-bulk-automation-guide.md
--   /app/frontend/public/whatsapp-automation.js
--   /tmp/disable-popup-blocker-guide.md
--   /tmp/automatic-bulk-send-guide.md
+-   None.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: Asks for full automation for bulk WhatsApp messages, including pressing Enter. (IN PROGRESS)
-2.  **User**: Reports that bulk sending is still opening  instead of the desktop app. (RESOLVED - Agent switched to  protocol).
-3.  **User**: Asks what to do next. (Awaiting user testing).
-4.  **User**: Reports that the message randomization is not working. (IN PROGRESS)
-5.  **User**: Reports that orders older than #29399 are not syncing/showing. (IN PROGRESS)
-6.  **User**: Provides a screenshot from Shopify showing the missing unfulfilled orders. (Awaiting agent action).
-7.  **User**: Clarifies the issue: When filtering for Unfulfilled, old orders are not appearing. (Awaiting agent action).
-8.  **User**: Provides another screenshot showing the large gap in order numbers in the app's UI. (Awaiting agent action).
-9.  **User**: Reports the same issue persists after the agent's first attempt to fix it with a sort dropdown. (Awaiting agent action).
-10. **User**: Provides a screenshot showing the sort dropdown is not visible, confirming a browser cache issue. (Agent advised hard refresh).
-11. **User**: Confirms the issue is not resolved and provides side-by-side comparison of Shopify vs the app, proving orders #29351-#29389 are missing from the app. (PENDING - This is the current, active problem).
+1.  **User**: yes these r important also i want to add ai future which could recommend me how to change campaign how to increase maximise conversion can we have ai future to study the ads performance and scale up (IN PROGRESS - This is the current main task).
+2.  **User**: Asks if everything from the Facebook Marketing API docs is integrated. (PENDING - This led to the AI feature request).
+3.  **User**: Provides mappings between Shopify stores and Facebook ad accounts. (COMPLETED - The  dashboard was built).
+4.  **User**: Provides a list of columns wanted for the Ads Manager view. (COMPLETED).
+5.  **User**: go ahead (approving various implementation plans). (COMPLETED).
+6.  **User**: Provided new Facebook access tokens. (COMPLETED).
+7.  **User**: yes guide me step by step (for getting API permissions). (COMPLETED).
+8.  **User**: Confirmed details about their Facebook App and Ad Account setup. (COMPLETED).
+9.  **User**: Asked for clarification on the agent's recommendation to do the  refactor in a separate session. (COMPLETED - Agent clarified it was a caution, not a limitation).
+10. **User**: continue (during a web search). (COMPLETED).
 
 **Project Health Check:**
 -   **Broken**:
-    -   Order sync/display for a specific range of orders (#29351-#29389).
-    -   Search functionality on the  page.
+    -   **Production Data**: Production database is empty.
+    -   **AI Campaign Optimizer**: Feature is a skeleton and not functional.
+    -   **Facebook Campaign Management**: Backend/frontend skeletons exist, but the core create/edit/pause logic is not implemented.
 -   **Mocked**:
     -   None.
 
 **3rd Party Integrations**
--   Shopify Admin API — Functional.
--   Meta WhatsApp Business Platform API — Functional (via user's own client, not API).
--   DTDC Courier API — **DEPRECATED**.
+-   **Shopify Admin API**: Functional — requires User API Key.
+-   **Meta WhatsApp**: Functional (URL scheme) — no key required.
+-   **TCS Courier API**: Integrated — requires User API Key.
+-   **DTDC Courier API**: Integrated — requires User API Key.
+-   **Facebook Marketing API**: Integrated (read-only functional, management in-progress) — requires User API Key.
+-   **OpenAI GPT-4**: Planned for AI Optimizer — uses Emergent LLM Key.
 
 **Testing status**
--   **Testing agent used after significant changes**: NO
--   **Troubleshoot agent used after agent stuck in loop**: YES (Used to diagnose the initial login API timeout).
+-   **Testing agent used after significant changes**: YES
+-   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None.
 -   **Known regressions**: None.
 
@@ -226,6 +339,4 @@ In this session, the user's requests pivoted to extensive bug fixing and feature
 -   **Password**: 
 
 **What agent forgot to execute**
--   The Export Missing Orders feature from the original handoff summary was never implemented.
--   The  refactoring task continues to be postponed.
--   The broken search bar on the  page has not been addressed.</analysis>
+-   The agent was in the middle of a large feature implementation (AI Optimizer and Campaign Management). The core logic for these features is not yet written, and the last UI test failed. The next agent needs to pick this up and complete the implementation and testing.</analysis>
