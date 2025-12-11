@@ -563,6 +563,68 @@ class ShopifyCustomerAPITester:
         success, response, _ = self.run_test("Inventory Overview Stats", "GET", "inventory/v2/overview-stats", 200)
         return success, response
     
+    # ==================== NEW MODULAR ROUTES TESTS ====================
+    
+    def test_pricing_config(self):
+        """Test Pricing config endpoint"""
+        success, response, _ = self.run_test("Pricing Config", "GET", "pricing/config", 200)
+        return success, response
+    
+    def test_pricing_rules(self):
+        """Test Pricing rules endpoint"""
+        success, response, _ = self.run_test("Pricing Rules", "GET", "pricing/rules", 200)
+        return success, response
+    
+    def test_pricing_dashboard_stats(self):
+        """Test Pricing dashboard stats endpoint"""
+        success, response, _ = self.run_test("Pricing Dashboard Stats", "GET", "pricing/dashboard-stats", 200)
+        return success, response
+    
+    def test_tcs_credentials(self):
+        """Test TCS credentials endpoint"""
+        success, response, _ = self.run_test("TCS Credentials", "GET", "tcs/credentials", 200)
+        return success, response
+    
+    def test_tcs_auto_sync_status(self):
+        """Test TCS auto-sync status endpoint"""
+        success, response, _ = self.run_test("TCS Auto-Sync Status", "GET", "tcs/auto-sync-status", 200)
+        return success, response
+    
+    def test_customers_endpoint_new(self):
+        """Test Customers endpoint with limit parameter"""
+        success, response, _ = self.run_test("Customers (Limited)", "GET", "customers?limit=5", 200)
+        return success, response
+    
+    def test_customers_count(self):
+        """Test Customers count endpoint"""
+        success, response, _ = self.run_test("Customers Count", "GET", "customers/count", 200)
+        return success, response
+    
+    def test_customers_stats(self):
+        """Test Customers stats endpoint"""
+        success, response, _ = self.run_test("Customers Stats", "GET", "customers/stats", 200)
+        return success, response
+    
+    def test_customers_segments(self):
+        """Test Customers segments endpoint"""
+        success, response, _ = self.run_test("Customers Segments", "GET", "customers/segments", 200)
+        return success, response
+    
+    def test_orders_endpoint_new(self):
+        """Test Orders endpoint with limit parameter"""
+        success, response, _ = self.run_test("Orders (Limited)", "GET", "orders?limit=5", 200)
+        return success, response
+    
+    def test_inventory_v2_overview_stats(self):
+        """Test Inventory v2 overview stats endpoint"""
+        success, response, _ = self.run_test("Inventory V2 Overview Stats", "GET", "inventory/v2/overview-stats", 200)
+        return success, response
+    
+    def test_dashboard_stats(self):
+        """Test Dashboard stats endpoint"""
+        success, response, _ = self.run_test("Dashboard Stats", "GET", "dashboard/stats?store_name=tnvcollectionpk", 200)
+        return success, response
+    
     # ==================== REFACTORING TESTS ====================
     
     def run_refactoring_tests(self):
@@ -594,13 +656,37 @@ class ShopifyCustomerAPITester:
         fin_missing_success, fin_missing_response = self.test_finance_missing_orders()
         fin_history_success, fin_history_response = self.test_finance_upload_history()
         
-        # Test Existing Endpoints
-        print("\n🔄 EXISTING ENDPOINTS VERIFICATION")
+        # Test Pricing Routes
+        print("\n💰 PRICING ROUTES TESTS")
         print("-" * 40)
         
-        orders_success, orders_response = self.test_orders_endpoint()
-        customers_success, customers_response, _ = self.run_test("Customers Endpoint", "GET", "customers", 200)
-        inventory_success, inventory_response = self.test_inventory_overview_stats()
+        pricing_config_success, pricing_config_response = self.test_pricing_config()
+        pricing_rules_success, pricing_rules_response = self.test_pricing_rules()
+        pricing_dashboard_success, pricing_dashboard_response = self.test_pricing_dashboard_stats()
+        
+        # Test TCS Routes
+        print("\n🚚 TCS ROUTES TESTS")
+        print("-" * 40)
+        
+        tcs_credentials_success, tcs_credentials_response = self.test_tcs_credentials()
+        tcs_auto_sync_success, tcs_auto_sync_response = self.test_tcs_auto_sync_status()
+        
+        # Test Customers Routes
+        print("\n👥 CUSTOMERS ROUTES TESTS")
+        print("-" * 40)
+        
+        customers_new_success, customers_new_response = self.test_customers_endpoint_new()
+        customers_count_success, customers_count_response = self.test_customers_count()
+        customers_stats_success, customers_stats_response = self.test_customers_stats()
+        customers_segments_success, customers_segments_response = self.test_customers_segments()
+        
+        # Test Remaining Server.py Endpoints
+        print("\n🔄 REMAINING SERVER.PY ENDPOINTS VERIFICATION")
+        print("-" * 40)
+        
+        orders_success, orders_response = self.test_orders_endpoint_new()
+        inventory_success, inventory_response = self.test_inventory_v2_overview_stats()
+        dashboard_success, dashboard_response = self.test_dashboard_stats()
         
         # Compile results
         facebook_results = {
@@ -619,15 +705,36 @@ class ShopifyCustomerAPITester:
             "upload_history": fin_history_success
         }
         
+        pricing_results = {
+            "config": pricing_config_success,
+            "rules": pricing_rules_success,
+            "dashboard_stats": pricing_dashboard_success
+        }
+        
+        tcs_results = {
+            "credentials": tcs_credentials_success,
+            "auto_sync_status": tcs_auto_sync_success
+        }
+        
+        customers_results = {
+            "customers_limited": customers_new_success,
+            "count": customers_count_success,
+            "stats": customers_stats_success,
+            "segments": customers_segments_success
+        }
+        
         existing_results = {
             "orders": orders_success,
-            "customers": customers_success,
-            "inventory_stats": inventory_success
+            "inventory_stats": inventory_success,
+            "dashboard_stats": dashboard_success
         }
         
         return {
             "facebook": facebook_results,
             "finance": finance_results,
+            "pricing": pricing_results,
+            "tcs": tcs_results,
+            "customers": customers_results,
             "existing": existing_results
         }
 
