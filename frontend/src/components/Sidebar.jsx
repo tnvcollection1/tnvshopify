@@ -78,6 +78,7 @@ const Sidebar = () => {
       title: 'MARKETING',
       items: [
         { icon: Facebook, label: 'Facebook Ads', path: '/facebook-marketing', highlighted: true, showForDemo: false },
+        { icon: BarChart3, label: 'Performance', path: '/performance-comparison', highlighted: true, showForDemo: false },
         { icon: TrendingUp, label: 'Dynamic Pricing', path: '/dynamic-pricing', highlighted: true, showForDemo: false },
         { icon: Target, label: 'Campaigns', path: '/campaigns', showForDemo: false },
         { icon: Zap, label: 'Flash Sales', path: '/flash-sales', showForDemo: false },
