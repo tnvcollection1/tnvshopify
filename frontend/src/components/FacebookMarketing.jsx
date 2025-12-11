@@ -789,23 +789,201 @@ const FacebookMarketing = () => {
                 <Users className="w-4 h-4" />
                 Custom Audiences
               </CardTitle>
-              <CardDescription className="text-xs">{audiences.length} audiences</CardDescription>
+              <CardDescription className="text-xs">{audiences.length} audiences • Click to create lookalike</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {audiences.slice(0, 8).map(audience => (
-                  <div key={audience.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                  <div key={audience.id} className="flex items-center justify-between p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
                     <div>
-                      <p className="text-sm font-medium truncate max-w-[200px]">{audience.name}</p>
+                      <p className="text-sm font-medium truncate max-w-[180px]">{audience.name}</p>
                       <p className="text-xs text-gray-500">~{formatNumber(audience.approximate_count || 0)} users</p>
                     </div>
-                    <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded">Ready</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded">Ready</span>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="h-7 px-2"
+                        onClick={() => openLookalikeModal(audience)}
+                        title="Create Lookalike Audience"
+                      >
+                        <Copy className="w-3 h-3 mr-1" />
+                        <span className="text-xs">Lookalike</span>
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Budget Edit Modal */}
+        {budgetModalOpen && editingCampaign && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Edit Campaign Budget</h3>
+                <button onClick={() => setBudgetModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <p className="text-sm text-gray-600 mb-4 truncate">{editingCampaign.name}</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Budget Type</Label>
+                  <Select value={budgetType} onValueChange={setBudgetType}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily Budget</SelectItem>
+                      <SelectItem value="lifetime">Lifetime Budget</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium">Amount</Label>
+                  <Input
+                    type="number"
+                    value={newBudget}
+                    onChange={(e) => setNewBudget(e.target.value)}
+                    placeholder="Enter budget amount"
+                    className="mt-1"
+                    min="0"
+                    step="100"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Currency: {adAccounts.find(a => a.id === selectedAccount)?.currency || 'USD'}
+                  </p>
+                </div>
+                
+                <div className="flex gap-2 pt-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => setBudgetModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    onClick={updateCampaignBudget}
+                    disabled={updatingBudget}
+                  >
+                    {updatingBudget ? (
+                      <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <DollarSign className="w-4 h-4 mr-2" />
+                    )}
+                    Update Budget
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Lookalike Audience Modal */}
+        {lookalikeModalOpen && sourceAudience && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Create Lookalike Audience</h3>
+                <button onClick={() => setLookalikeModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <p className="text-sm text-gray-600 mb-4">
+                Source: <span className="font-medium">{sourceAudience.name}</span>
+                <br/>
+                <span className="text-xs">~{formatNumber(sourceAudience.approximate_count || 0)} users</span>
+              </p>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Lookalike Name</Label>
+                  <Input
+                    value={lookalikeConfig.name}
+                    onChange={(e) => setLookalikeConfig({...lookalikeConfig, name: e.target.value})}
+                    placeholder="Enter lookalike audience name"
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium">Country</Label>
+                  <Select 
+                    value={lookalikeConfig.country} 
+                    onValueChange={(val) => setLookalikeConfig({...lookalikeConfig, country: val})}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PK">Pakistan</SelectItem>
+                      <SelectItem value="IN">India</SelectItem>
+                      <SelectItem value="US">United States</SelectItem>
+                      <SelectItem value="GB">United Kingdom</SelectItem>
+                      <SelectItem value="AE">UAE</SelectItem>
+                      <SelectItem value="SA">Saudi Arabia</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium">Audience Size</Label>
+                  <Select 
+                    value={lookalikeConfig.ratio.toString()} 
+                    onValueChange={(val) => setLookalikeConfig({...lookalikeConfig, ratio: parseFloat(val)})}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0.01">1% - Most Similar</SelectItem>
+                      <SelectItem value="0.02">2%</SelectItem>
+                      <SelectItem value="0.03">3%</SelectItem>
+                      <SelectItem value="0.05">5%</SelectItem>
+                      <SelectItem value="0.10">10%</SelectItem>
+                      <SelectItem value="0.20">20% - Largest Reach</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Smaller % = more similar to source audience
+                  </p>
+                </div>
+                
+                <div className="flex gap-2 pt-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => setLookalikeModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                    onClick={createLookalikeAudience}
+                    disabled={creatingLookalike}
+                  >
+                    {creatingLookalike ? (
+                      <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <Copy className="w-4 h-4 mr-2" />
+                    )}
+                    Create Lookalike
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         </>
         )}
       </div>
