@@ -121,7 +121,7 @@ const InventoryClearance = () => {
       toast.loading('Creating clearance campaign...', { id: 'campaign' });
       const response = await axios.post(`${API}/api/clearance/quick-clearance`, null, {
         params: {
-          store_name: selectedStore || undefined,
+          store_name: selectedStore === 'all' ? undefined : selectedStore,
           category: selectedCategory,
           auto_discount: true
         }
