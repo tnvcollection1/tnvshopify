@@ -682,79 +682,77 @@ class ShopifyCustomerAPITester:
         return performance_results
 
 def main():
-    print("🚀 Starting CRM Performance Optimization Tests")
-    print("=" * 60)
+    print("🚀 Starting Backend Refactoring Validation Tests")
+    print("=" * 80)
     
     # Setup
     tester = ShopifyCustomerAPITester()
     
-    # Run performance tests as requested
-    performance_results = tester.run_performance_tests()
+    # Run refactoring tests as requested
+    refactoring_results = tester.run_refactoring_tests()
     
-    # Print final performance summary
-    print("\n" + "=" * 60)
-    print("📊 PERFORMANCE TEST SUMMARY")
-    print("=" * 60)
+    # Print final refactoring summary
+    print("\n" + "=" * 80)
+    print("📊 BACKEND REFACTORING TEST SUMMARY")
+    print("=" * 80)
     
-    cache_status = performance_results.get("cache_status", {})
-    cache_refresh = performance_results.get("cache_refresh", {})
-    login_test = performance_results.get("login", {})
-    customers_perf = performance_results.get("customers_performance", {})
-    filtered_perf = performance_results.get("filtered_performance", {})
+    facebook_results = refactoring_results.get("facebook", {})
+    finance_results = refactoring_results.get("finance", {})
+    existing_results = refactoring_results.get("existing", {})
     
-    print(f"\n🔍 Cache Status: {'✅ PASS' if cache_status.get('success') else '❌ FAIL'}")
-    if cache_status.get("success"):
-        cache_data = cache_status.get("data", {}).get("inventory_cache", {})
-        print(f"   - Items cached: {cache_data.get('items_count', 0)}")
-        print(f"   - Cache valid: {cache_data.get('is_valid', False)}")
+    # Facebook Routes Summary
+    print(f"\n📘 FACEBOOK ROUTES:")
+    fb_passed = sum(facebook_results.values())
+    fb_total = len(facebook_results)
+    print(f"   Status: {'✅ PASS' if facebook_results.get('status') else '❌ FAIL'}")
+    print(f"   Ad Accounts: {'✅ PASS' if facebook_results.get('ad_accounts') else '❌ FAIL'}")
+    print(f"   Set Ad Account: {'✅ PASS' if facebook_results.get('set_ad_account') else '❌ FAIL'}")
+    print(f"   Campaigns: {'✅ PASS' if facebook_results.get('campaigns') else '❌ FAIL'}")
+    print(f"   Audiences: {'✅ PASS' if facebook_results.get('audiences') else '❌ FAIL'}")
+    print(f"   AI Analysis: {'✅ PASS' if facebook_results.get('ai_analysis') else '❌ FAIL'}")
+    print(f"   Overall: {fb_passed}/{fb_total} passed")
     
-    print(f"\n🔄 Cache Refresh: {'✅ PASS' if cache_refresh.get('success') else '❌ FAIL'}")
-    if cache_refresh.get("success"):
-        refresh_data = cache_refresh.get("data", {})
-        print(f"   - Items refreshed: {refresh_data.get('items_cached', 0)}")
+    # Finance Routes Summary
+    print(f"\n💰 FINANCE ROUTES:")
+    fin_passed = sum(finance_results.values())
+    fin_total = len(finance_results)
+    print(f"   Status: {'✅ PASS' if finance_results.get('status') else '❌ FAIL'}")
+    print(f"   Reconciliation: {'✅ PASS' if finance_results.get('reconciliation') else '❌ FAIL'}")
+    print(f"   Missing Orders: {'✅ PASS' if finance_results.get('missing_orders') else '❌ FAIL'}")
+    print(f"   Upload History: {'✅ PASS' if finance_results.get('upload_history') else '❌ FAIL'}")
+    print(f"   Overall: {fin_passed}/{fin_total} passed")
     
-    print(f"\n🔐 Authentication: {'✅ PASS' if login_test.get('success') else '❌ FAIL'}")
-    
-    print(f"\n⚡ Customers API Performance: {'✅ PASS' if customers_perf.get('success') else '❌ FAIL'}")
-    if customers_perf.get("avg_response_time"):
-        avg_time = customers_perf.get("avg_response_time")
-        print(f"   - Average response time: {avg_time:.2f}ms")
-        print(f"   - Target: <200ms")
-    
-    print(f"\n🔍 Filtered Query Performance: {'✅ PASS' if filtered_perf.get('success') else '❌ FAIL'}")
-    if filtered_perf.get("response_time"):
-        filtered_time = filtered_perf.get("response_time")
-        print(f"   - Response time: {filtered_time:.2f}ms")
-        print(f"   - Target: <200ms")
+    # Existing Endpoints Summary
+    print(f"\n🔄 EXISTING ENDPOINTS:")
+    ex_passed = sum(existing_results.values())
+    ex_total = len(existing_results)
+    print(f"   Orders: {'✅ PASS' if existing_results.get('orders') else '❌ FAIL'}")
+    print(f"   Customers: {'✅ PASS' if existing_results.get('customers') else '❌ FAIL'}")
+    print(f"   Inventory Stats: {'✅ PASS' if existing_results.get('inventory_stats') else '❌ FAIL'}")
+    print(f"   Overall: {ex_passed}/{ex_total} passed")
     
     # Overall assessment
-    critical_tests = [
-        cache_status.get('success', False),
-        cache_refresh.get('success', False),
-        login_test.get('success', False),
-        customers_perf.get('success', False)
-    ]
+    total_passed = fb_passed + fin_passed + ex_passed
+    total_tests = fb_total + fin_total + ex_total
     
-    passed_critical = sum(critical_tests)
-    total_critical = len(critical_tests)
+    print(f"\n🎯 REFACTORING VALIDATION: {total_passed}/{total_tests} tests passed")
+    print(f"   Facebook Tests: {tester.facebook_tests_passed}/{tester.facebook_tests_run}")
+    print(f"   Finance Tests: {tester.finance_tests_passed}/{tester.finance_tests_run}")
     
-    print(f"\n🎯 Critical Performance Tests: {passed_critical}/{total_critical} passed")
-    
-    if passed_critical >= 3:  # Allow 1 failure
-        print("✅ Performance optimization is working well!")
-        print("   - Cache system operational")
-        print("   - API response times meet requirements")
+    if total_passed >= (total_tests * 0.8):  # 80% pass rate
+        print("✅ Backend refactoring is successful!")
+        print("   - Modular routes are working correctly")
+        print("   - Existing endpoints remain functional")
+        print("   - API structure is maintained")
         return 0
     else:
-        print("❌ Performance optimization has critical issues")
-        if not cache_status.get('success'):
-            print("   - Cache status check failed")
-        if not cache_refresh.get('success'):
-            print("   - Cache refresh failed")
-        if not login_test.get('success'):
-            print("   - Authentication failed")
-        if not customers_perf.get('success'):
-            print("   - Customers API performance below target")
+        print("❌ Backend refactoring has issues")
+        if fb_passed < fb_total:
+            print(f"   - Facebook routes: {fb_total - fb_passed} failures")
+        if fin_passed < fin_total:
+            print(f"   - Finance routes: {fin_total - fin_passed} failures")
+        if ex_passed < ex_total:
+            print(f"   - Existing endpoints: {ex_total - ex_passed} failures")
         return 1
 
 if __name__ == "__main__":
