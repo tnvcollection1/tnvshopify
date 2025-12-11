@@ -922,6 +922,17 @@ def main():
     print(f"   Segments: {'✅ PASS' if customers_results.get('segments') else '❌ FAIL'}")
     print(f"   Overall: {customers_passed}/{customers_total} passed")
     
+    # Clearance Routes Summary
+    print(f"\n🧹 CLEARANCE ENGINE:")
+    clearance_passed = sum(clearance_results.values())
+    clearance_total = len(clearance_results)
+    print(f"   Stats: {'✅ PASS' if clearance_results.get('stats') else '❌ FAIL'}")
+    print(f"   Health Analysis: {'✅ PASS' if clearance_results.get('health') else '❌ FAIL'}")
+    print(f"   AI Recommendations: {'✅ PASS' if clearance_results.get('ai_recommendations') else '❌ FAIL'}")
+    print(f"   Quick Clearance: {'✅ PASS' if clearance_results.get('quick_clearance') else '❌ FAIL'}")
+    print(f"   Campaigns: {'✅ PASS' if clearance_results.get('campaigns') else '❌ FAIL'}")
+    print(f"   Overall: {clearance_passed}/{clearance_total} passed")
+    
     # Existing Endpoints Summary
     print(f"\n🔄 REMAINING SERVER.PY ENDPOINTS:")
     ex_passed = sum(existing_results.values())
