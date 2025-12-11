@@ -50,6 +50,7 @@ const STORE_AD_ACCOUNT_MAP = {
 };
 
 const PerformanceComparison = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [datePreset, setDatePreset] = useState('last_30d');
   const [storePerformance, setStorePerformance] = useState([]);
