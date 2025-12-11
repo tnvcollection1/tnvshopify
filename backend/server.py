@@ -546,7 +546,7 @@ async def initialize_admin():
             "message": "Admin user created successfully",
             "credentials": {
                 "username": "admin",
-                "password": "admin123"
+                "password": "admin"
             }
         }
     except Exception as e:
