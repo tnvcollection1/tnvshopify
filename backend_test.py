@@ -2,6 +2,7 @@ import requests
 import sys
 from datetime import datetime
 import json
+import time
 
 class ShopifyCustomerAPITester:
     def __init__(self, base_url="https://crm-sync-system.preview.emergentagent.com"):
