@@ -555,12 +555,12 @@ class ShopifyCustomerAPITester:
     
     def test_orders_endpoint(self):
         """Test orders endpoint"""
-        success, response = self.run_test("Orders Endpoint", "GET", "orders", 200)
+        success, response, _ = self.run_test("Orders Endpoint", "GET", "orders", 200)
         return success, response
     
     def test_inventory_overview_stats(self):
         """Test inventory overview stats endpoint"""
-        success, response = self.run_test("Inventory Overview Stats", "GET", "inventory/v2/overview-stats", 200)
+        success, response, _ = self.run_test("Inventory Overview Stats", "GET", "inventory/v2/overview-stats", 200)
         return success, response
     
     # ==================== REFACTORING TESTS ====================
