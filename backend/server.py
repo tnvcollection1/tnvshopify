@@ -42,6 +42,7 @@ db = client[os.environ['DB_NAME']]
 
 # Initialize modular routers with database
 set_facebook_db(db)
+set_finance_db(db)
 
 # Create the main app without a prefix
 app = FastAPI()
