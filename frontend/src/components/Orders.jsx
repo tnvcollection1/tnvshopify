@@ -213,7 +213,7 @@ const Orders = () => {
       if (filters.payment !== "all") params.append("payment_status", filters.payment);
       if (filters.store !== "all") params.append("store_name", filters.store);
       if (filters.sort) params.append("sort_by", filters.sort);
-      if (searchQuery) params.append("search", searchQuery);
+      if (debouncedSearch) params.append("search", debouncedSearch);
       params.append("page", currentPage);
       params.append("limit", "50");
 
@@ -232,7 +232,7 @@ const Orders = () => {
       console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
     } finally {
-      setLoading(false);
+      setLoading(false));
     }
   };
 
