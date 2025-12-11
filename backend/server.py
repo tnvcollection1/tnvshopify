@@ -3464,6 +3464,9 @@ async def add_inventory_item(item: InventoryItemCreate, added_by: str = None):
         item_dict = new_item.model_dump()
         await db.inventory_v2.insert_one(item_dict)
         
+        # Invalidate inventory cache after adding new item
+        asyncio.create_task(invalidate_inventory_cache())
+        
         # Fetch the inserted item without _id
         inserted_item = await db.inventory_v2.find_one({"id": new_item.id}, {"_id": 0})
         
