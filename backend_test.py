@@ -776,6 +776,14 @@ class ShopifyCustomerAPITester:
             "segments": customers_segments_success
         }
         
+        clearance_results = {
+            "stats": clearance_stats_success,
+            "health": clearance_health_success,
+            "ai_recommendations": clearance_ai_success,
+            "quick_clearance": clearance_quick_success,
+            "campaigns": clearance_campaigns_success
+        }
+        
         existing_results = {
             "orders": orders_success,
             "inventory_stats": inventory_success,
