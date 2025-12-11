@@ -625,6 +625,45 @@ class ShopifyCustomerAPITester:
         success, response, _ = self.run_test("Dashboard Stats", "GET", "dashboard/stats?store_name=tnvcollectionpk", 200)
         return success, response
     
+    # ==================== CLEARANCE ENGINE TESTS ====================
+    
+    def test_clearance_stats(self):
+        """Test Clearance dashboard statistics endpoint"""
+        success, response, _ = self.run_test("Clearance Stats", "GET", "clearance/stats", 200)
+        return success, response
+    
+    def test_clearance_health(self):
+        """Test Clearance inventory health analysis endpoint"""
+        success, response, _ = self.run_test("Clearance Health Analysis", "GET", "clearance/health", 200)
+        return success, response
+    
+    def test_clearance_ai_recommendations(self):
+        """Test Clearance AI recommendations endpoint (may take 10-30 seconds)"""
+        success, response, _ = self.run_test(
+            "Clearance AI Recommendations", 
+            "POST", 
+            "clearance/ai-recommendations?category=dead_stock", 
+            200,
+            timeout=60  # Extended timeout for AI analysis
+        )
+        return success, response
+    
+    def test_clearance_quick_clearance(self):
+        """Test Quick clearance campaign creation endpoint"""
+        success, response, _ = self.run_test(
+            "Quick Clearance Campaign", 
+            "POST", 
+            "clearance/quick-clearance?category=dead_stock&auto_discount=true", 
+            200,
+            timeout=60  # Extended timeout for AI + campaign creation
+        )
+        return success, response
+    
+    def test_clearance_campaigns(self):
+        """Test Get clearance campaigns endpoint"""
+        success, response, _ = self.run_test("Get Clearance Campaigns", "GET", "clearance/campaigns", 200)
+        return success, response
+    
     # ==================== REFACTORING TESTS ====================
     
     def run_refactoring_tests(self):
