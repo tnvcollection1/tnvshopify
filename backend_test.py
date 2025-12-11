@@ -11,6 +11,10 @@ class ShopifyCustomerAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.test_results = []
+        self.facebook_tests_run = 0
+        self.facebook_tests_passed = 0
+        self.finance_tests_run = 0
+        self.finance_tests_passed = 0
 
     def run_test(self, name, method, endpoint, expected_status, data=None, timeout=30, measure_time=False):
         """Run a single API test"""
