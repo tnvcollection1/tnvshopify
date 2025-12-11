@@ -870,6 +870,7 @@ def main():
     pricing_results = refactoring_results.get("pricing", {})
     tcs_results = refactoring_results.get("tcs", {})
     customers_results = refactoring_results.get("customers", {})
+    clearance_results = refactoring_results.get("clearance", {})
     existing_results = refactoring_results.get("existing", {})
     
     # Facebook Routes Summary
