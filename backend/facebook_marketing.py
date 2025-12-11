@@ -589,6 +589,169 @@ class FacebookMarketingService:
             logger.error(f"Error getting campaigns with insights: {str(e)}")
             return {"success": False, "error": str(e)}
 
+    # ==================== CAMPAIGN MANAGEMENT ====================
+    
+    def update_campaign_status(self, campaign_id: str, status: str) -> Dict:
+        """
+        Update campaign status (pause/resume/archive)
+        
+        Args:
+            campaign_id: Facebook campaign ID
+            status: One of 'ACTIVE', 'PAUSED', 'ARCHIVED'
+        """
+        try:
+            if not self.initialize():
+                return {"error": "API not initialized"}
+            
+            campaign = Campaign(campaign_id)
+            campaign.update({
+                Campaign.Field.status: status
+            })
+            
+            logger.info(f"✅ Updated campaign {campaign_id} status to {status}")
+            
+            return {
+                "success": True,
+                "campaign_id": campaign_id,
+                "new_status": status
+            }
+            
+        except Exception as e:
+            logger.error(f"Error updating campaign status: {str(e)}")
+            return {"success": False, "error": str(e)}
+    
+    def update_campaign_budget(self, campaign_id: str, daily_budget: float = None, lifetime_budget: float = None) -> Dict:
+        """
+        Update campaign budget
+        
+        Args:
+            campaign_id: Facebook campaign ID
+            daily_budget: New daily budget (in currency units, will be converted to cents)
+            lifetime_budget: New lifetime budget (in currency units)
+        """
+        try:
+            if not self.initialize():
+                return {"error": "API not initialized"}
+            
+            campaign = Campaign(campaign_id)
+            update_params = {}
+            
+            if daily_budget is not None:
+                update_params[Campaign.Field.daily_budget] = int(daily_budget * 100)  # Convert to cents
+            
+            if lifetime_budget is not None:
+                update_params[Campaign.Field.lifetime_budget] = int(lifetime_budget * 100)
+            
+            if not update_params:
+                return {"success": False, "error": "No budget specified"}
+            
+            campaign.update(update_params)
+            
+            logger.info(f"✅ Updated campaign {campaign_id} budget")
+            
+            return {
+                "success": True,
+                "campaign_id": campaign_id,
+                "daily_budget": daily_budget,
+                "lifetime_budget": lifetime_budget
+            }
+            
+        except Exception as e:
+            logger.error(f"Error updating campaign budget: {str(e)}")
+            return {"success": False, "error": str(e)}
+    
+    def create_campaign(self, name: str, objective: str, daily_budget: float = None, 
+                       lifetime_budget: float = None, status: str = 'PAUSED') -> Dict:
+        """
+        Create a new campaign
+        
+        Args:
+            name: Campaign name
+            objective: Campaign objective (OUTCOME_AWARENESS, OUTCOME_ENGAGEMENT, 
+                      OUTCOME_LEADS, OUTCOME_SALES, OUTCOME_TRAFFIC, OUTCOME_APP_PROMOTION)
+            daily_budget: Daily budget in currency units
+            lifetime_budget: Lifetime budget in currency units
+            status: Initial status (PAUSED or ACTIVE)
+        """
+        try:
+            if not self.initialize() or not self.ad_account:
+                return {"error": "Ad account not configured"}
+            
+            params = {
+                Campaign.Field.name: name,
+                Campaign.Field.objective: objective,
+                Campaign.Field.status: status,
+                Campaign.Field.special_ad_categories: [],
+            }
+            
+            if daily_budget:
+                params[Campaign.Field.daily_budget] = int(daily_budget * 100)
+            elif lifetime_budget:
+                params[Campaign.Field.lifetime_budget] = int(lifetime_budget * 100)
+            
+            campaign = self.ad_account.create_campaign(params=params)
+            campaign_id = campaign.get(Campaign.Field.id)
+            
+            logger.info(f"✅ Created campaign: {campaign_id}")
+            
+            return {
+                "success": True,
+                "campaign_id": campaign_id,
+                "name": name,
+                "objective": objective,
+                "status": status
+            }
+            
+        except Exception as e:
+            logger.error(f"Error creating campaign: {str(e)}")
+            return {"success": False, "error": str(e)}
+    
+    # ==================== LOOKALIKE AUDIENCES ====================
+    
+    def create_lookalike_audience(self, source_audience_id: str, name: str, 
+                                  country: str = 'PK', ratio: float = 0.01) -> Dict:
+        """
+        Create a lookalike audience from a custom audience
+        
+        Args:
+            source_audience_id: ID of the source custom audience
+            name: Name for the new lookalike audience
+            country: Target country code (default: PK for Pakistan)
+            ratio: Lookalike ratio (0.01 = 1%, 0.05 = 5%, max 0.20 = 20%)
+        """
+        try:
+            if not self.initialize() or not self.ad_account:
+                return {"error": "Ad account not configured"}
+            
+            params = {
+                'name': name,
+                'subtype': 'LOOKALIKE',
+                'origin_audience_id': source_audience_id,
+                'lookalike_spec': {
+                    'type': 'similarity',
+                    'country': country,
+                    'ratio': ratio
+                }
+            }
+            
+            audience = self.ad_account.create_custom_audience(params=params)
+            audience_id = audience.get('id')
+            
+            logger.info(f"✅ Created lookalike audience: {audience_id}")
+            
+            return {
+                "success": True,
+                "audience_id": audience_id,
+                "name": name,
+                "source_audience_id": source_audience_id,
+                "country": country,
+                "ratio": ratio
+            }
+            
+        except Exception as e:
+            logger.error(f"Error creating lookalike audience: {str(e)}")
+            return {"success": False, "error": str(e)}
+
 
 # Singleton instance
 facebook_marketing = FacebookMarketingService()
