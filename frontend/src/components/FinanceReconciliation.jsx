@@ -198,6 +198,60 @@ const FinanceReconciliation = () => {
     );
   };
 
+  // Export missing orders to CSV
+  const exportMissingOrders = async () => {
+    try {
+      setLoading(true);
+      toast.loading('Fetching missing orders...', { id: 'export' });
+      
+      const response = await axios.get(`${API_URL}/api/finance/missing-orders?store_name=ashmiaa`);
+      
+      if (!response.data.success || response.data.total === 0) {
+        toast.error('No missing orders to export', { id: 'export' });
+        return;
+      }
+      
+      const missingOrders = response.data.missing_orders;
+      
+      // Convert to CSV
+      const headers = ['Order Number', 'Customer Name', 'Delivery Status', 'Amount', 'Tracking Number', 'Order Status', 'Payment Status', 'Store Name'];
+      const csvRows = [headers.join(',')];
+      
+      for (const order of missingOrders) {
+        const row = [
+          order.order_number,
+          `"${order.customer_name || ''}"`,
+          order.delivery_status || '',
+          order.amount || 0,
+          order.tracking_number || '',
+          order.order_status || '',
+          order.payment_status || '',
+          order.store_name || ''
+        ];
+        csvRows.push(row.join(','));
+      }
+      
+      const csvContent = csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `missing_orders_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success(`✅ Exported ${missingOrders.length} missing orders`, { id: 'export' });
+      
+    } catch (error) {
+      console.error('Error exporting missing orders:', error);
+      toast.error('Failed to export missing orders', { id: 'export' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredOrders = reconciliationData?.orders?.filter(order => {
     const matchesFilter = filter === 'all' || order.reconciliation_status.toLowerCase().includes(filter);
     const matchesSearch = order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
