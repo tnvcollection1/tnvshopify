@@ -361,6 +361,32 @@ const FacebookMarketing = () => {
                   <span className="text-sm text-green-700">{connectionStatus.user?.name}</span>
                 </div>
               )}
+
+              {/* Tabs */}
+              <div className="flex items-center gap-1 ml-4 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab('campaigns')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'campaigns' 
+                      ? 'bg-white text-gray-900 shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4 inline mr-2" />
+                  Campaigns
+                </button>
+                <button
+                  onClick={() => setActiveTab('ai')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'ai' 
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Brain className="w-4 h-4 inline mr-2" />
+                  AI Optimizer
+                </button>
+              </div>
             </div>
             
             <div className="flex items-center gap-3">
