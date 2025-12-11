@@ -161,6 +161,7 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [filters, setFilters] = useState({
     fulfillment: "all",
@@ -181,10 +182,18 @@ const Orders = () => {
   const [uploading, setUploading] = useState(false);
   const [stores, setStores] = useState([]);
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500); // 500ms delay
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => {
     fetchOrders();
     fetchStores();
-  }, [currentPage, filters, searchQuery]);
+  }, [currentPage, filters, debouncedSearch]);
 
   const fetchStores = async () => {
     try {
