@@ -159,6 +159,9 @@ const COUNTRY_DIAL_CODES = {
 };
 
 const Orders = () => {
+  const [searchParams] = useSearchParams();
+  const storeFromUrl = searchParams.get('store');
+  
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,7 +171,7 @@ const Orders = () => {
     fulfillment: "all",
     delivery: "all",
     payment: "all",
-    store: "all",
+    store: storeFromUrl || "all",
     sort: "order_desc", // Default: highest order number first
   });
   const [currentPage, setCurrentPage] = useState(1);
