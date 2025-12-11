@@ -898,6 +898,131 @@ const ConfirmationTracker = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Card Details Modal */}
+      {viewingCard && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeCardView}>
+          <div className="bg-white rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {viewingCard === 'total' && '📦 All Orders'}
+                    {viewingCard === 'notCalled' && '📞 Not Called'}
+                    {viewingCard === 'called' && '✅ Called'}
+                    {viewingCard === 'purchased' && '🛒 Purchased'}
+                    {viewingCard === 'notPurchased' && '❌ Not Purchased'}
+                    {viewingCard === 'canceled' && '🚫 Canceled'}
+                    {viewingCard === 'inStock' && '✅ In Stock'}
+                    {viewingCard === 'outOfStock' && '❌ Out of Stock'}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">{cardData.length} orders found</p>
+                </div>
+                <button
+                  onClick={closeCardView}
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors font-medium"
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {cardData.map((order, idx) => (
+                  <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <div className="font-bold text-lg text-gray-900">#{order.order_number}</div>
+                        <div className="text-sm text-gray-600">{order.first_name} {order.last_name}</div>
+                      </div>
+                      <div className={`px-2 py-1 rounded text-xs font-medium ${
+                        order.confirmation_status === 'PURCHASED' ? 'bg-green-100 text-green-800' :
+                        order.confirmation_status === 'NOT_PURCHASED' ? 'bg-red-100 text-red-800' :
+                        order.confirmation_status === 'CANCELED' ? 'bg-orange-100 text-orange-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {order.confirmation_status || 'PENDING'}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mb-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-700">{order.phone || 'N/A'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-gray-400" />
+                        <span className={`font-medium ${
+                          order.stock_status === 'in_stock' ? 'text-green-600' :
+                          order.stock_status === 'out_of_stock' ? 'text-red-600' :
+                          'text-gray-600'
+                        }`}>
+                          {order.stock_status === 'in_stock' ? '✅ In Stock' :
+                           order.stock_status === 'out_of_stock' ? '❌ Out of Stock' :
+                           'Unknown'}
+                        </span>
+                      </div>
+                      <div className="text-gray-600">
+                        Calling: <span className={`font-medium ${
+                          order.calling_status === 'CALLED' || order.calling_status === 'CONFIRMED' ? 'text-green-600' :
+                          order.calling_status === 'NO_ANSWER' ? 'text-yellow-600' :
+                          'text-gray-600'
+                        }`}>{order.calling_status || 'NOT_CALLED'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingOrder(order);
+                          setEditDialog(true);
+                          closeCardView();
+                        }}
+                        className="flex-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                      >
+                        <Edit className="w-3 h-3 inline mr-1" />
+                        Edit
+                      </button>
+                      {order.phone && (
+                        <button
+                          onClick={() => handleSendWhatsApp(order.customer_id, order.first_name)}
+                          className="flex-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
+                        >
+                          <MessageCircle className="w-3 h-3" />
+                          WhatsApp
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {cardData.length === 0 && (
+                <div className="text-center py-12">
+                  <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">No orders found in this category</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Total: <span className="font-bold">{cardData.length}</span> orders
+              </div>
+              <button
+                onClick={closeCardView}
+                className="px-6 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
