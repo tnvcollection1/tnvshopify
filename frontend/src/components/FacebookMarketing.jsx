@@ -78,6 +78,23 @@ const FacebookMarketing = () => {
     ends: true
   });
   const [showColumnSelector, setShowColumnSelector] = useState(false);
+  
+  // Budget Management State
+  const [budgetModalOpen, setBudgetModalOpen] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState(null);
+  const [newBudget, setNewBudget] = useState('');
+  const [budgetType, setBudgetType] = useState('daily');
+  const [updatingBudget, setUpdatingBudget] = useState(false);
+  
+  // Lookalike Audience State
+  const [lookalikeModalOpen, setLookalikeModalOpen] = useState(false);
+  const [sourceAudience, setSourceAudience] = useState(null);
+  const [lookalikeConfig, setLookalikeConfig] = useState({
+    name: '',
+    country: 'PK',
+    ratio: 0.01
+  });
+  const [creatingLookalike, setCreatingLookalike] = useState(false);
 
   useEffect(() => {
     checkConnection();
