@@ -31,11 +31,45 @@ class InventoryClearanceEngine:
             if store_name:
                 query['store_name'] = store_name
             
-            # Get all inventory items
+            # Get all inventory items - try inventory collection first, then fall back to cache
             items = await self.db.inventory.find(query, {'_id': 0}).to_list(10000)
             
             if not items:
-                return {'success': False, 'error': 'No inventory items found'}
+                # Try inventory_cache collection
+                items = await self.db.inventory_cache.find(query, {'_id': 0}).to_list(10000)
+            
+            if not items:
+                # Build inventory from order line items
+                pipeline = [
+                    {'$unwind': '$line_items'},
+                    {'$group': {
+                        '_id': '$line_items.sku',
+                        'title': {'$first': '$line_items.title'},
+                        'quantity': {'$sum': '$line_items.quantity'},
+                        'price': {'$avg': '$line_items.price'},
+                        'last_order_date': {'$max': '$created_at'},
+                        'store_name': {'$first': '$store_name'},
+                        'total_orders': {'$sum': 1}
+                    }},
+                    {'$match': {'_id': {'$ne': None}}},
+                    {'$project': {
+                        '_id': 0,
+                        'sku': '$_id',
+                        'title': 1,
+                        'quantity': 1,
+                        'price': 1,
+                        'last_sale_date': '$last_order_date',
+                        'store_name': 1,
+                        'total_orders': 1
+                    }}
+                ]
+                items = await self.db.customers.aggregate(pipeline).to_list(10000)
+            
+            if not items:
+                return {
+                    'success': False, 
+                    'error': 'No inventory data found. Please sync inventory from Shopify first (Settings > Sync Inventory).'
+                }
             
             now = datetime.now(timezone.utc)
             
