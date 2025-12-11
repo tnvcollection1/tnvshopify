@@ -599,7 +599,7 @@ class ShopifyCustomerAPITester:
         print("-" * 40)
         
         orders_success, orders_response = self.test_orders_endpoint()
-        customers_success, customers_response = self.test_customers_endpoint()
+        customers_success, customers_response, _ = self.run_test("Customers Endpoint", "GET", "customers", 200)
         inventory_success, inventory_response = self.test_inventory_overview_stats()
         
         # Compile results
