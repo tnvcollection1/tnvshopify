@@ -331,7 +331,7 @@ const PerformanceComparison = () => {
               <Target className="w-5 h-5 opacity-80" />
               <span className="text-xs opacity-80">True ROAS</span>
             </div>
-            <p className="text-2xl font-bold">{overallRoas.toFixed(2)}x</p>
+            <p className="text-2xl font-bold">{typeof overallRoas === 'number' ? overallRoas.toFixed(2) : '0.00'}x</p>
           </CardContent>
         </Card>
 
