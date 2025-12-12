@@ -30,6 +30,12 @@ class CustomerUpdate(BaseModel):
     delivery_status: Optional[str] = None
     tracking_number: Optional[str] = None
     notes: Optional[str] = None
+    calling_status: Optional[str] = None
+    return_reason: Optional[str] = None
+    remarks: Optional[str] = None
+    retail_amount: Optional[float] = None
+    cost: Optional[float] = None
+    tcs_charges: Optional[float] = None
 
 
 @customers_router.get("")
@@ -38,31 +44,261 @@ async def get_customers(
     limit: int = 50,
     store_name: str = None,
     delivery_status: str = None,
-    search: str = None
+    payment_status: str = None,
+    fulfillment_status: str = None,
+    search: str = None,
+    year: str = None,
+    start_date: str = None,
+    end_date: str = None,
+    tcs_only: str = None,
+    sort_by: str = None
 ):
-    """Get paginated customers with filters"""
+    """Get paginated customers with filters - supports Dispatch Tracker requirements"""
     try:
         query = {}
-        if store_name:
+        
+        # Basic filters
+        if store_name and store_name != "all":
             query["store_name"] = store_name
-        if delivery_status:
+        if delivery_status and delivery_status != "all":
             query["delivery_status"] = delivery_status
+        if payment_status and payment_status != "all":
+            query["payment_status"] = payment_status
+        if fulfillment_status and fulfillment_status != "all":
+            query["fulfillment_status"] = fulfillment_status
+            
+        # TCS only filter - orders with valid tracking numbers
+        if tcs_only == "true":
+            query['$and'] = [
+                {"tracking_number": {"$exists": True}},
+                {"tracking_number": {"$ne": None}},
+                {"tracking_number": {"$ne": ""}},
+                {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}}
+            ]
+        
+        # Year filter
+        if year and year != "all":
+            try:
+                year_int = int(year)
+                start_date_val = datetime(year_int, 1, 1)
+                end_date_val = datetime(year_int, 12, 31, 23, 59, 59)
+                query['last_order_date'] = {
+                    "$gte": start_date_val.isoformat(),
+                    "$lte": end_date_val.isoformat()
+                }
+            except ValueError:
+                pass
+        
+        # Date range filter
+        if start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter["$gte"] = start_date
+            if end_date:
+                try:
+                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                    end_dt = end_dt.replace(hour=23, minute=59, second=59)
+                    date_filter["$lte"] = end_dt.isoformat()
+                except:
+                    date_filter["$lte"] = end_date
+            if date_filter:
+                query['last_order_date'] = date_filter
+        
+        # Search across multiple fields
         if search:
+            search_regex = {"$regex": search, "$options": "i"}
             query["$or"] = [
-                {"first_name": {"$regex": search, "$options": "i"}},
-                {"last_name": {"$regex": search, "$options": "i"}},
-                {"email": {"$regex": search, "$options": "i"}},
-                {"phone": {"$regex": search, "$options": "i"}},
-                {"order_number": {"$regex": search, "$options": "i"}}
+                {"first_name": search_regex},
+                {"last_name": search_regex},
+                {"email": search_regex},
+                {"phone": search_regex},
+                {"order_number": search_regex},
+                {"tracking_number": search_regex}
             ]
         
         skip = (page - 1) * limit
         total = await db.customers.count_documents(query)
-        customers = await db.customers.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        # Sorting
+        sort_field = "last_order_date"
+        sort_order = -1  # Default descending (newest first)
+        
+        if sort_by:
+            if sort_by == "order_asc":
+                sort_field = "order_number"
+                sort_order = 1
+            elif sort_by == "order_desc":
+                sort_field = "order_number"
+                sort_order = -1
+            elif sort_by == "date_asc":
+                sort_field = "last_order_date"
+                sort_order = 1
+            elif sort_by == "date_desc":
+                sort_field = "last_order_date"
+                sort_order = -1
+            elif sort_by == "amount_desc":
+                sort_field = "total_spent"
+                sort_order = -1
+        
+        customers = await db.customers.find(query, {"_id": 0}).sort(sort_field, sort_order).skip(skip).limit(limit).to_list(limit)
         
         return {"customers": customers, "total": total, "page": page, "pages": (total + limit - 1) // limit}
     except Exception as e:
         logger.error(f"Error getting customers: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@customers_router.get("/stats")
+async def get_customer_stats(
+    store_name: str = None,
+    delivery_status: str = None,
+    payment_status: str = None,
+    fulfillment_status: str = None,
+    search: str = None,
+    year: str = None,
+    start_date: str = None,
+    end_date: str = None,
+    tcs_only: str = None
+):
+    """Get customer statistics with filters - supports Dispatch Tracker stats cards"""
+    try:
+        query = {}
+        
+        # Basic filters
+        if store_name and store_name != "all":
+            query["store_name"] = store_name
+        if delivery_status and delivery_status != "all":
+            query["delivery_status"] = delivery_status
+        if payment_status and payment_status != "all":
+            query["payment_status"] = payment_status
+        if fulfillment_status and fulfillment_status != "all":
+            query["fulfillment_status"] = fulfillment_status
+            
+        # TCS only filter
+        if tcs_only == "true":
+            query['$and'] = [
+                {"tracking_number": {"$exists": True}},
+                {"tracking_number": {"$ne": None}},
+                {"tracking_number": {"$ne": ""}},
+                {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}}
+            ]
+        
+        # Year filter
+        if year and year != "all":
+            try:
+                year_int = int(year)
+                start_date_val = datetime(year_int, 1, 1)
+                end_date_val = datetime(year_int, 12, 31, 23, 59, 59)
+                query['last_order_date'] = {
+                    "$gte": start_date_val.isoformat(),
+                    "$lte": end_date_val.isoformat()
+                }
+            except ValueError:
+                pass
+        
+        # Date range filter
+        if start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter["$gte"] = start_date
+            if end_date:
+                try:
+                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                    end_dt = end_dt.replace(hour=23, minute=59, second=59)
+                    date_filter["$lte"] = end_dt.isoformat()
+                except:
+                    date_filter["$lte"] = end_date
+            if date_filter:
+                query['last_order_date'] = date_filter
+        
+        # Search filter
+        if search:
+            search_regex = {"$regex": search, "$options": "i"}
+            query["$or"] = [
+                {"first_name": search_regex},
+                {"last_name": search_regex},
+                {"email": search_regex},
+                {"phone": search_regex},
+                {"order_number": search_regex},
+                {"tracking_number": search_regex}
+            ]
+        
+        # Use aggregation pipeline for efficient stats calculation
+        pipeline = [
+            {"$match": query},
+            {"$facet": {
+                "total": [{"$count": "count"}],
+                "delivered": [
+                    {"$match": {"delivery_status": "DELIVERED"}},
+                    {"$count": "count"}
+                ],
+                "inTransit": [
+                    {"$match": {"delivery_status": {"$in": ["IN_TRANSIT", "IN TRANSIT", "OUT_FOR_DELIVERY"]}}},
+                    {"$count": "count"}
+                ],
+                "pending": [
+                    {"$match": {
+                        "$or": [
+                            {"delivery_status": {"$exists": False}},
+                            {"delivery_status": None},
+                            {"delivery_status": {"$in": ["PENDING", "UNKNOWN", "NOT_DISPATCHED", ""]}}
+                        ]
+                    }},
+                    {"$count": "count"}
+                ],
+                "returned": [
+                    {"$match": {"delivery_status": {"$in": ["RETURNED", "RETURN_IN_PROCESS"]}}},
+                    {"$count": "count"}
+                ],
+                "paymentReceived": [
+                    {"$match": {
+                        "$or": [
+                            {"cod_payment_status": "RECEIVED"},
+                            {"payment_status": "paid"}
+                        ]
+                    }},
+                    {"$count": "count"}
+                ],
+                "paymentPending": [
+                    {"$match": {
+                        "$or": [
+                            {"cod_payment_status": "PENDING"},
+                            {"payment_status": "pending"},
+                            {"cod_payment_status": {"$exists": False}},
+                            {"cod_payment_status": None}
+                        ]
+                    }},
+                    {"$count": "count"}
+                ]
+            }}
+        ]
+        
+        result = await db.customers.aggregate(pipeline).to_list(1)
+        
+        if not result:
+            return {
+                "total": 0,
+                "delivered": 0,
+                "inTransit": 0,
+                "pending": 0,
+                "returned": 0,
+                "paymentReceived": 0,
+                "paymentPending": 0
+            }
+        
+        stats = result[0]
+        
+        return {
+            "total": stats["total"][0]["count"] if stats["total"] else 0,
+            "delivered": stats["delivered"][0]["count"] if stats["delivered"] else 0,
+            "inTransit": stats["inTransit"][0]["count"] if stats["inTransit"] else 0,
+            "pending": stats["pending"][0]["count"] if stats["pending"] else 0,
+            "returned": stats["returned"][0]["count"] if stats["returned"] else 0,
+            "paymentReceived": stats["paymentReceived"][0]["count"] if stats["paymentReceived"] else 0,
+            "paymentPending": stats["paymentPending"][0]["count"] if stats["paymentPending"] else 0
+        }
+    except Exception as e:
+        logger.error(f"Error getting customer stats: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -97,30 +333,6 @@ async def get_customer_count(store_name: str = None):
         return {"count": count, "store_name": store_name}
     except Exception as e:
         logger.error(f"Error counting customers: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@customers_router.get("/stats")
-async def get_customer_stats():
-    """Get customer statistics by store and status"""
-    try:
-        pipeline = [
-            {"$group": {"_id": {"store": "$store_name", "status": "$delivery_status"}, "count": {"$sum": 1}}},
-            {"$sort": {"_id.store": 1, "count": -1}}
-        ]
-        results = await db.customers.aggregate(pipeline).to_list(100)
-        
-        stats = {}
-        for r in results:
-            store = r["_id"]["store"] or "unknown"
-            status = r["_id"]["status"] or "unknown"
-            if store not in stats:
-                stats[store] = {}
-            stats[store][status] = r["count"]
-        
-        return {"success": True, "stats": stats}
-    except Exception as e:
-        logger.error(f"Error getting stats: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -217,7 +429,9 @@ async def get_customer_segments():
         # Get counts for each segment
         for seg in segments:
             if seg["id"] == "high_value":
-                seg["count"] = await db.customers.count_documents({"total_price": {"$gte": 5000}})
+                seg["count"] = await db.customers.count_documents({"total_spent": {"$gte": 5000}})
+            elif seg["id"] == "repeat":
+                seg["count"] = await db.customers.count_documents({"total_orders": {"$gte": 2}})
             elif seg["id"] == "delivered":
                 seg["count"] = await db.customers.count_documents({"delivery_status": "DELIVERED"})
             elif seg["id"] == "pending":
@@ -239,7 +453,9 @@ async def get_customers_by_segment(segment_type: str, page: int = 1, limit: int 
     try:
         query = {}
         if segment_type == "high_value":
-            query = {"total_price": {"$gte": 5000}}
+            query = {"total_spent": {"$gte": 5000}}
+        elif segment_type == "repeat":
+            query = {"total_orders": {"$gte": 2}}
         elif segment_type == "delivered":
             query = {"delivery_status": "DELIVERED"}
         elif segment_type == "pending":
