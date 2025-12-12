@@ -372,7 +372,33 @@ const DynamicPricingDashboard = () => {
             </thead>
             <tbody className="divide-y divide-gray-700">
               {pricingRules.map((rule) => {
-                const priceChange = rule.percentage_change || 0;
+                // Calculate price change based on category multipliers
+                const basePrice = rule.current_price || 0;
+                const orders7d = rule.order_count || 0; // Using total order count as proxy
+                let multiplier = 1.0;
+                
+                // Apply category-based pricing logic
+                if (rule.category === 'A') {
+                  // Hot products - surge pricing
+                  if (orders7d >= 20) multiplier = 3.0;
+                  else if (orders7d >= 10) multiplier = 2.5;
+                  else if (orders7d >= 5) multiplier = 2.0;
+                  else if (orders7d >= 2) multiplier = 1.5;
+                } else if (rule.category === 'B') {
+                  // Medium products - moderate increase
+                  if (orders7d >= 10) multiplier = 1.2;
+                  else if (orders7d >= 5) multiplier = 1.12;
+                  else if (orders7d >= 2) multiplier = 1.05;
+                } else if (rule.category === 'C') {
+                  // Slow products - discount
+                  if (orders7d >= 10) multiplier = 1.2;
+                  else if (orders7d >= 5) multiplier = 1.1;
+                  else if (orders7d >= 2) multiplier = 1.0;
+                  else multiplier = 0.8; // 20% discount for no recent sales
+                }
+                
+                const suggestedPrice = basePrice * multiplier;
+                const priceChange = ((multiplier - 1) * 100);
                 const isPriceUp = priceChange > 0;
                 const isPriceDown = priceChange < 0;
                 
@@ -382,20 +408,23 @@ const DynamicPricingDashboard = () => {
                       <span className="font-mono text-sm font-semibold">{rule.sku}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-300">{rule.product_name || 'N/A'}</span>
+                      <span className="text-sm text-gray-300">{rule.product_name || rule.sku}</span>
                     </td>
                     <td className="px-6 py-4">
                       {getCategoryBadge(rule.category)}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className="text-gray-400">Rs. {rule.base_price?.toFixed(2) || '0.00'}</span>
+                      <span className="text-gray-400">Rs. {basePrice.toLocaleString()}</span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className="text-lg font-bold text-white">
-                        Rs. {rule.current_price?.toFixed(2) || (rule.base_price || 0).toFixed(2)}
+                        Rs. {suggestedPrice.toLocaleString()}
                       </span>
-                      {rule.is_on_sale && (
+                      {multiplier < 1 && (
                         <span className="ml-2 text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">SALE</span>
+                      )}
+                      {multiplier > 1.5 && (
+                        <span className="ml-2 text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">SURGE</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -403,19 +432,19 @@ const DynamicPricingDashboard = () => {
                         {isPriceUp && <TrendingUp className="w-4 h-4 text-red-400" />}
                         {isPriceDown && <TrendingDown className="w-4 h-4 text-green-400" />}
                         <span className={`font-semibold ${isPriceUp ? 'text-red-400' : isPriceDown ? 'text-green-400' : 'text-gray-400'}`}>
-                          {priceChange > 0 ? '+' : ''}{priceChange.toFixed(1)}%
+                          {priceChange > 0 ? '+' : ''}{priceChange.toFixed(0)}%
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="text-white font-semibold">{rule.rolling_orders || 0}</span>
+                      <span className="text-white font-semibold">{rule.order_count || 0}</span>
                       <span className="text-xs text-gray-500 ml-1">orders</span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {rule.enabled ? (
+                      {rule.order_count > 0 ? (
                         <CheckCircle className="w-5 h-5 text-green-400 inline" />
                       ) : (
-                        <AlertCircle className="w-5 h-5 text-gray-500 inline" />
+                        <AlertCircle className="w-5 h-5 text-yellow-500 inline" />
                       )}
                     </td>
                     <td className="px-6 py-4">
