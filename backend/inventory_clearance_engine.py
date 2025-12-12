@@ -66,6 +66,30 @@ class InventoryClearanceEngine:
             sales_data = await self.db.customers.aggregate(sales_pipeline).to_list(50000)
             sales_lookup = {s['_id']: s for s in sales_data}
             
+            # 2. Also check pricing_order_tracking for additional sales data
+            try:
+                pricing_orders = await self.db.pricing_order_tracking.aggregate([
+                    {'$group': {
+                        '_id': '$sku',
+                        'last_sale_date': {'$max': '$order_date'},
+                        'total_orders': {'$sum': 1},
+                        'total_quantity_sold': {'$sum': '$quantity'}
+                    }}
+                ]).to_list(50000)
+                
+                # Merge with sales_lookup (prefer more recent data)
+                for po in pricing_orders:
+                    sku = po['_id']
+                    if sku:
+                        if sku not in sales_lookup:
+                            sales_lookup[sku] = po
+                        elif po.get('last_sale_date', '') > sales_lookup[sku].get('last_sale_date', ''):
+                            sales_lookup[sku] = po
+                            
+                logger.info(f"Added {len(pricing_orders)} SKUs from pricing_order_tracking")
+            except Exception as e:
+                logger.warning(f"Could not fetch pricing_order_tracking: {e}")
+            
             # Also create a lookup by base SKU (without size suffix) for fuzzy matching
             # Pattern: "product-color-size" -> "product-color"
             base_sku_lookup = {}
