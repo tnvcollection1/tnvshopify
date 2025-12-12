@@ -823,8 +823,8 @@ const Orders = () => {
         // Get order details
         const orderNumber = order.order_number || order.name || "N/A";
         const trackingLink = order.tracking_number 
-          ? `https://footwear-analyzer.emergent.host/tracking/${order.tracking_number}`
-          : `https://footwear-analyzer.emergent.host/tracking/${orderNumber}`;
+          ? `https://track.aftership.com/${order.tracking_number}`
+          : `#`;
 
         // Get store website URL
         const storeUrl = order.store_name === 'tnvcollectionpk' || order.store_name === 'tnvcollection'
