@@ -494,12 +494,18 @@ async def verify_webhook(request: Request):
     token = request.query_params.get("hub.verify_token")
     challenge = request.query_params.get("hub.challenge")
     
-    verify_token = os.environ.get("WHATSAPP_WEBHOOK_VERIFY_TOKEN", "omnisales_whatsapp_webhook")
+    # Use dedicated verify token for embedded signup webhooks
+    verify_token = os.environ.get("META_WEBHOOK_VERIFY_TOKEN", "omnisales_whatsapp_webhook")
+    
+    logger.info(f"Webhook verification: mode={mode}, token={token}, expected={verify_token}")
     
     if mode == "subscribe" and token == verify_token:
         logger.info("Webhook verified successfully")
-        return int(challenge)
+        # Must return plain text response, not JSON
+        from fastapi.responses import PlainTextResponse
+        return PlainTextResponse(content=challenge)
     
+    logger.warning(f"Webhook verification failed: token mismatch")
     raise HTTPException(status_code=403, detail="Verification failed")
 
 @whatsapp_embedded_router.post("/webhook")
