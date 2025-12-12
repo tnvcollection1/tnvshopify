@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -16,6 +15,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Globe,
+  Ship,
+  CheckCircle,
+  Truck,
+  Warehouse,
 } from "lucide-react";
 import {
   Table,
@@ -72,7 +75,6 @@ const PurchaseTracker = () => {
     fetchOrders();
   }, [currentPage, filters, searchQuery, globalStore]);
 
-  // Reset to page 1 when filters or search change
   useEffect(() => {
     if (currentPage > 1) {
       setCurrentPage(1);
@@ -83,11 +85,9 @@ const PurchaseTracker = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // Show orders with tracking numbers starting with 'X' (China Post tracking)
       params.append("china_tracking", "true");
       
       if (filters.purchase_status !== "all") params.append("purchase_status", filters.purchase_status);
-      // Use global store from context
       if (globalStore !== "all") params.append("store_name", globalStore);
       if (filters.year !== "all") params.append("year", filters.year);
       if (filters.sortBy) params.append("sort_by", filters.sortBy);
@@ -95,7 +95,6 @@ const PurchaseTracker = () => {
       params.append("page", currentPage);
       params.append("limit", "100");
 
-      // Fetch both orders and count
       const [ordersResponse, countResponse] = await Promise.all([
         axios.get(`${API}/customers?${params.toString()}`),
         axios.get(`${API}/customers/count?${params.toString()}`)
@@ -106,7 +105,6 @@ const PurchaseTracker = () => {
       
       setOrders(allOrders);
       
-      // Calculate stats - use actual total from database
       setStats({
         total: total,
         ordered: allOrders.filter(c => c.purchase_status === "ORDERED").length,
@@ -170,9 +168,9 @@ const PurchaseTracker = () => {
     const variant = variants[status] || "bg-gray-100 text-gray-800 border-gray-200";
     const labels = {
       ORDERED: "Ordered",
-      SHIPPED: "Shipped from China",
+      SHIPPED: "Shipped",
       IN_TRANSIT: "In Transit",
-      ARRIVED_PAKISTAN: "Arrived Pakistan",
+      ARRIVED_PAKISTAN: "Arrived PK",
       DELIVERED_WAREHOUSE: "At Warehouse",
     };
     return <Badge variant="outline" className={`${variant} font-medium text-xs`}>{labels[status] || status || "ORDERED"}</Badge>;
@@ -181,95 +179,113 @@ const PurchaseTracker = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Purchase Tracker (China Post)</h1>
-            <p className="text-sm text-gray-500 mt-1">Track orders purchased from China with X-prefix tracking numbers (e.g., XM5XFD030626)</p>
+            <h1 className="text-xl font-semibold text-gray-900">Purchase Tracker (China Post)</h1>
+            <p className="text-sm text-gray-500 mt-1">Track orders with X-prefix tracking numbers from China</p>
           </div>
           <div className="flex items-center gap-3">
+            <div className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600">
+              📍 {getStoreName(globalStore)}
+            </div>
             <Button
               variant="outline"
               onClick={fetchOrders}
               disabled={loading}
-              className="border-gray-300 hover:bg-gray-50"
+              className="h-9 text-sm border-gray-300"
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
         </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-6 gap-4 mt-6">
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">Total</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">Ordered</p>
-                <p className="text-2xl font-bold text-blue-600 mt-1">{stats.ordered}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">Shipped</p>
-                <p className="text-2xl font-bold text-purple-600 mt-1">{stats.shipped}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">In Transit</p>
-                <p className="text-2xl font-bold text-cyan-600 mt-1">{stats.inTransit}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">Arrived PK</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">{stats.arrived}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">At Warehouse</p>
-                <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.delivered}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
-      {/* Filters & Search */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4">
-        <div className="flex items-center gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      {/* Stats Cards */}
+      <div className="p-6">
+        <div className="grid grid-cols-6 gap-4 mb-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Package className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Total</p>
+                <p className="text-xl font-semibold text-gray-900">{stats.total}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Ordered</p>
+                <p className="text-xl font-semibold text-blue-600">{stats.ordered}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-50 rounded-lg">
+                <Ship className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Shipped</p>
+                <p className="text-xl font-semibold text-purple-600">{stats.shipped}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-cyan-50 rounded-lg">
+                <Truck className="w-5 h-5 text-cyan-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">In Transit</p>
+                <p className="text-xl font-semibold text-cyan-600">{stats.inTransit}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <MapPin className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Arrived PK</p>
+                <p className="text-xl font-semibold text-green-600">{stats.arrived}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-50 rounded-lg">
+                <Warehouse className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Warehouse</p>
+                <p className="text-xl font-semibold text-emerald-600">{stats.delivered}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search & Filters */}
+        <div className="flex items-center gap-4 mb-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Search by order #, customer name, tracking #..."
+              placeholder="Search by order #, customer, tracking #..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-gray-300"
+              className="pl-10 border-gray-300 bg-white"
             />
           </div>
-          <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-600 min-w-[140px]">
-            📍 {globalStore === 'all' ? 'All Stores' : getStoreName(globalStore)}
-          </div>
           <Select value={filters.purchase_status} onValueChange={(v) => setFilters({ ...filters, purchase_status: v })}>
-            <SelectTrigger className="w-44 border-gray-300">
+            <SelectTrigger className="w-44 border-gray-300 bg-white">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -282,7 +298,7 @@ const PurchaseTracker = () => {
             </SelectContent>
           </Select>
           <Select value={filters.year} onValueChange={(v) => setFilters({ ...filters, year: v })}>
-            <SelectTrigger className="w-32 border-gray-300">
+            <SelectTrigger className="w-28 border-gray-300 bg-white">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent>
@@ -290,11 +306,10 @@ const PurchaseTracker = () => {
               <SelectItem value="2025">2025</SelectItem>
               <SelectItem value="2024">2024</SelectItem>
               <SelectItem value="2023">2023</SelectItem>
-              <SelectItem value="2022">2022</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filters.sortBy} onValueChange={(v) => setFilters({ ...filters, sortBy: v })}>
-            <SelectTrigger className="w-40 border-gray-300">
+            <SelectTrigger className="w-36 border-gray-300 bg-white">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>
@@ -303,120 +318,116 @@ const PurchaseTracker = () => {
             </SelectContent>
           </Select>
         </div>
-      </div>
 
-      {/* Orders Table */}
-      <div className="p-8">
-        <Card className="border-gray-200">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold text-gray-700">Date</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Order #</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Store</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Customer</TableHead>
-                    <TableHead className="font-semibold text-gray-700">China Tracking</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Status</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Purchase Cost</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Shipping</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Customs</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Total Cost</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
-                        Loading orders...
+        {/* Table */}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="font-medium">Date</TableHead>
+                <TableHead className="font-medium">Order #</TableHead>
+                <TableHead className="font-medium">Store</TableHead>
+                <TableHead className="font-medium">Customer</TableHead>
+                <TableHead className="font-medium">China Tracking</TableHead>
+                <TableHead className="font-medium">Status</TableHead>
+                <TableHead className="font-medium">Purchase Cost</TableHead>
+                <TableHead className="font-medium">Shipping</TableHead>
+                <TableHead className="font-medium">Customs</TableHead>
+                <TableHead className="font-medium">Total Cost</TableHead>
+                <TableHead className="font-medium text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center py-12 text-gray-500">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
+                    Loading orders...
+                  </TableCell>
+                </TableRow>
+              ) : orders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center py-12 text-gray-500">
+                    <Globe className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-1">No China orders found</h3>
+                    <p>Orders with China Post tracking (X-prefix) will appear here</p>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                orders.map((order) => {
+                  const totalCost = (order.purchase_cost_pkr || 0) + (order.shipping_cost_pkr || 0) + (order.customs_duty_pkr || 0);
+                  const trackingNum = order.tracking_number || "—";
+                  return (
+                    <TableRow key={order.customer_id} className="hover:bg-gray-50">
+                      <TableCell className="text-sm text-gray-600">
+                        {order.last_order_date
+                          ? new Date(order.last_order_date).toLocaleDateString()
+                          : "N/A"}
                       </TableCell>
-                    </TableRow>
-                  ) : orders.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
+                      <TableCell className="font-medium text-blue-600">
+                        #{order.order_number || "N/A"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-slate-50 text-xs">
+                          {order.store_name || "N/A"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         <div>
-                          <p className="text-lg font-medium">No China purchase orders found</p>
-                          <p className="text-sm mt-2">Orders with China Post tracking numbers (starting with 'X') will appear here</p>
+                          <p className="font-medium text-gray-900 text-sm">
+                            {order.first_name} {order.last_name}
+                          </p>
+                          <p className="text-xs text-gray-500">{order.email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm font-mono text-gray-600">
+                        {trackingNum !== "—" ? (
+                          <div className="flex items-center gap-1">
+                            <Globe className="w-3 h-3 text-blue-500" />
+                            {trackingNum}
+                          </div>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {getPurchaseStatusBadge(order.purchase_status || "ORDERED")}
+                      </TableCell>
+                      <TableCell className="font-medium text-gray-900">
+                        Rs {(order.purchase_cost_pkr || 0).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">
+                        Rs {(order.shipping_cost_pkr || 0).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">
+                        Rs {(order.customs_duty_pkr || 0).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="font-bold text-green-600">
+                        Rs {totalCost.toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditOrder(order)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    orders.map((order) => {
-                      const totalCost = (order.purchase_cost_pkr || 0) + (order.shipping_cost_pkr || 0) + (order.customs_duty_pkr || 0);
-                      const trackingNum = order.tracking_number || "—";
-                      return (
-                        <TableRow key={order.customer_id} className="hover:bg-gray-50">
-                          <TableCell className="text-sm text-gray-600">
-                            {order.last_order_date
-                              ? new Date(order.last_order_date).toLocaleDateString()
-                              : "N/A"}
-                          </TableCell>
-                          <TableCell className="font-medium text-blue-600">
-                            #{order.order_number || "N/A"}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-slate-50">
-                              {order.store_name || "N/A"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium text-gray-900 text-sm">
-                                {order.first_name} {order.last_name}
-                              </p>
-                              <p className="text-xs text-gray-500">{order.email}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-sm font-mono text-gray-600">
-                            {trackingNum !== "—" ? (
-                              <div className="flex items-center gap-1">
-                                <Globe className="w-3 h-3 text-blue-500" />
-                                {trackingNum}
-                              </div>
-                            ) : (
-                              "—"
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {getPurchaseStatusBadge(order.purchase_status || "ORDERED")}
-                          </TableCell>
-                          <TableCell className="font-semibold text-gray-900">
-                            Rs {(order.purchase_cost_pkr || 0).toLocaleString()}
-                          </TableCell>
-                          <TableCell className="text-sm text-gray-600">
-                            Rs {(order.shipping_cost_pkr || 0).toLocaleString()}
-                          </TableCell>
-                          <TableCell className="text-sm text-gray-600">
-                            Rs {(order.customs_duty_pkr || 0).toLocaleString()}
-                          </TableCell>
-                          <TableCell className="font-bold text-green-600">
-                            Rs {totalCost.toLocaleString()}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditOrder(order)}
-                              className="border-gray-300 hover:bg-blue-50"
-                            >
-                              <Edit className="w-3 h-3" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
 
         {/* Pagination */}
         {orders.length > 0 && (
-          <div className="flex items-center justify-between mt-6">
+          <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-gray-500">
               Showing page {currentPage} of {totalPages}
             </p>
@@ -426,16 +437,15 @@ const PurchaseTracker = () => {
                 size="sm"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="border-gray-300"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
+              <span className="text-sm text-gray-600 px-2">Page {currentPage} of {totalPages}</span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="border-gray-300"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
