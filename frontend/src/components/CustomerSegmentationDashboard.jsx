@@ -235,17 +235,9 @@ const CustomerSegmentationDashboard = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            <label className="text-sm text-gray-400">Filter by Store:</label>
-            <select
-              value={selectedStore}
-              onChange={(e) => setSelectedStore(e.target.value)}
-              className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="all">All Stores</option>
-              <option value="tnvcollection">TNC Collection</option>
-              <option value="tnvcollectionpk">TNC Collection PK</option>
-              <option value="ashmiaa">Ashmiaa</option>
-            </select>
+            <div className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white">
+              📍 {getStoreName(globalStore)}
+            </div>
           </div>
         </div>
       </div>
