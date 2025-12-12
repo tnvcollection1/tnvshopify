@@ -153,15 +153,7 @@ const DispatchTracker = () => {
     }
   }, [filters.delivery, filters.payment, filters.store, filters.year, filters.sortBy]);
 
-  const fetchStores = async () => {
-    try {
-      const response = await axios.get(`${API}/stores`);
-      // API returns array directly
-      setStores(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error fetching stores:", error);
-    }
-  };
+  // fetchStores function removed - now using global store context
 
   const handleTCSSync = async () => {
     setSyncingTCS(true);
