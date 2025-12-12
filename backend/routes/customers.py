@@ -369,8 +369,8 @@ async def sync_stock_status(store_name: str = None):
 
 
 @customers_router.get("/export-segment/{segment_type}")
-async def export_segment_customers(segment_type: str, store_name: str = None, limit: int = 100):
-    """Export customers from a specific segment for marketing"""
+async def export_segment_customers(segment_type: str, store_name: str = None, page: int = 1, limit: int = 50):
+    """Export customers from a specific segment for marketing with pagination"""
     try:
         from datetime import timedelta
         
@@ -392,13 +392,20 @@ async def export_segment_customers(segment_type: str, store_name: str = None, li
         else:
             raise HTTPException(status_code=400, detail=f"Invalid segment type: {segment_type}")
         
-        # Get customers sorted by total spent
+        # Get total count for pagination
+        total_count = await db.customers.count_documents(query)
+        total_pages = (total_count + limit - 1) // limit  # Ceiling division
+        
+        # Calculate skip for pagination
+        skip = (page - 1) * limit
+        
+        # Get customers sorted by total spent with pagination
         customers_raw = await db.customers.find(
             query,
             {"_id": 0, "customer_id": 1, "first_name": 1, "last_name": 1, "email": 1, 
              "phone": 1, "total_spent": 1, "country_code": 1, "last_order_date": 1, 
              "store_name": 1, "order_number": 1, "total_orders": 1}
-        ).sort("total_spent", -1).limit(limit).to_list(limit)
+        ).sort("total_spent", -1).skip(skip).limit(limit).to_list(limit)
         
         # Format customers with combined name field
         customers = []
