@@ -67,24 +67,24 @@ const InventoryHealthDashboard = () => {
     }
   };
 
-  const generateAlerts = (categories) => {
+  const generateAlerts = (summary, categories) => {
     const alerts = [];
-    const deadStock = categories.dead_stock || [];
-    const slowMoving = categories.slow_moving || [];
+    const deadStockCount = summary.dead_stock_count || 0;
+    const deadStockValue = summary.dead_stock_value || 0;
+    const slowMovingCount = summary.slow_moving_count || 0;
+    const slowMovingValue = summary.slow_moving_value || 0;
     
-    if (deadStock.length > 0) {
-      const value = deadStock.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
+    if (deadStockCount > 0) {
       alerts.push({
-        message: `${deadStock.length} items are dead stock (360+ days without sale) worth Rs. ${value.toLocaleString()}`,
+        message: `${deadStockCount} items are dead stock (never sold or 360+ days) worth Rs. ${deadStockValue.toLocaleString()}`,
         action: 'Create Clearance Campaign',
         age_threshold: 360
       });
     }
     
-    if (slowMoving.length > 0) {
-      const value = slowMoving.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
+    if (slowMovingCount > 0) {
       alerts.push({
-        message: `${slowMoving.length} items are slow-moving (180-360 days) worth Rs. ${value.toLocaleString()}`,
+        message: `${slowMovingCount} items are slow-moving (180-360 days) worth Rs. ${slowMovingValue.toLocaleString()}`,
         action: 'Review Items',
         age_threshold: 180
       });
@@ -93,32 +93,32 @@ const InventoryHealthDashboard = () => {
     return alerts;
   };
 
-  const generateAgeBuckets = (categories) => {
+  const generateAgeBuckets = (summary, categories) => {
     return [
       {
-        label: '360+ Days (Dead Stock)',
-        count: categories.dead_stock?.length || 0,
-        value: categories.dead_stock?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
+        label: '360+ Days / Never Sold (Dead Stock)',
+        count: summary.dead_stock_count || 0,
+        value: summary.dead_stock_value || 0,
         min_age: 360,
         action: true
       },
       {
         label: '180-360 Days (Slow Moving)',
-        count: categories.slow_moving?.length || 0,
-        value: categories.slow_moving?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
+        count: summary.slow_moving_count || 0,
+        value: summary.slow_moving_value || 0,
         min_age: 180,
         action: true
       },
       {
         label: '90-180 Days (Moderate)',
-        count: categories.moderate?.length || 0,
+        count: summary.moderate_count || 0,
         value: categories.moderate?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
         min_age: 90,
         action: false
       },
       {
         label: '0-90 Days (Healthy)',
-        count: categories.healthy?.length || 0,
+        count: summary.healthy_count || 0,
         value: categories.healthy?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
         min_age: 0,
         action: false
