@@ -637,6 +637,38 @@ class ShopifyCustomerAPITester:
         success, response, _ = self.run_test("Clearance Health Analysis", "GET", "clearance/health", 200)
         return success, response
     
+    def test_clearance_health_with_store_filter(self):
+        """Test Clearance inventory health with store filter - P0 Bug Fix"""
+        success, response, _ = self.run_test(
+            "Clearance Health with Store Filter", 
+            "GET", 
+            "clearance/health?store_name=tnvcollectionpk", 
+            200
+        )
+        
+        if success and response:
+            # Verify response structure for inventory health
+            if "categories" in response:
+                categories = response["categories"]
+                expected_categories = ["dead_stock", "slow_moving", "moderate", "healthy"]
+                
+                print(f"   Found categories: {list(categories.keys())}")
+                
+                # Check if all expected categories exist
+                all_categories_present = all(cat in categories for cat in expected_categories)
+                if all_categories_present:
+                    print(f"   ✅ All expected categories present")
+                    return True, response
+                else:
+                    missing = [cat for cat in expected_categories if cat not in categories]
+                    print(f"   ❌ Missing categories: {missing}")
+                    return False, response
+            else:
+                print(f"   ❌ Response missing 'categories' field")
+                return False, response
+        
+        return success, response
+    
     def test_clearance_ai_recommendations(self):
         """Test Clearance AI recommendations endpoint (may take 10-30 seconds)"""
         success, response, _ = self.run_test(
