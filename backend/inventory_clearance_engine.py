@@ -92,12 +92,14 @@ class InventoryClearanceEngine:
             for item in items:
                 last_sale = item.get('last_sale_date') or item.get('last_sold_at')
                 quantity = item.get('quantity', 0)
-                price = item.get('price', 0) or item.get('compare_at_price', 0)
+                price = item.get('price', 0) or item.get('cost', 0) or item.get('compare_at_price', 0) or item.get('sale_price', 0)
                 
                 if quantity <= 0:
                     continue  # Skip out of stock items
                 
                 item_value = quantity * price
+                item['price'] = price  # Ensure price is set for display
+                item['title'] = item.get('title') or item.get('product_name', item.get('sku', 'Unknown'))
                 
                 if not last_sale:
                     # Check created_at as fallback
