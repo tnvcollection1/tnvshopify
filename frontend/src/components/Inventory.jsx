@@ -92,13 +92,14 @@ const Inventory = () => {
     // Reset selections when filters change
     setSelectedItems([]);
     setSelectAll(false);
-  }, [filters]);
+  }, [filters, globalStore]);
 
   const fetchItems = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (filters.store !== 'all') params.append('store_name', filters.store);
+      // Use global store from context
+      if (globalStore !== 'all') params.append('store_name', globalStore);
       if (filters.status !== 'all') params.append('status', filters.status);
       
       const response = await fetch(`${API}/inventory/v2?${params}`);
