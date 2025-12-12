@@ -357,11 +357,13 @@ function App() {
     <ErrorBoundary>
       <div className="App">
         <AuthProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-          <Toaster position="top-right" />
-          <HotToaster position="top-right" />
+          <StoreProvider>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+            <Toaster position="top-right" />
+            <HotToaster position="top-right" />
+          </StoreProvider>
         </AuthProvider>
       </div>
     </ErrorBoundary>
