@@ -72,11 +72,30 @@ function LoginRoute() {
   return <Login onLoginSuccess={login} />;
 }
 
+// Landing page route - shows landing for non-auth, redirects to dashboard for auth
+function LandingRoute() {
+  const { agent, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
+        <LoadingSpinner text="Loading..." size="large" />
+      </div>
+    );
+  }
+  
+  if (agent) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <LandingPage />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<LandingRoute />} />
       <Route path="/login" element={<LoginRoute />} />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route 
         path="/dashboard" 
         element={
