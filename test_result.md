@@ -1,4 +1,13 @@
 frontend:
+  - task: "Multi-Tenant Landing Page"
+    implemented: true
+    working: pending_test
+    file: "/app/frontend/src/components/LandingPage.jsx"
+    stuck_count: 0
+    priority: "P0"
+    needs_retesting: true
+    notes: "Shopify-inspired dark theme landing page with hero section, features, pricing, testimonials. Added as default route for non-authenticated users."
+
   - task: "Dispatch Tracker Bug Fix"
     implemented: true
     working: true
