@@ -117,6 +117,8 @@ test_plan:
 
 agent_communication:
   - agent: "main"
+    message: "Applied Shopify-style UI to all tracker pages (Dispatch, Confirmation, Purchase, Drafts). All pages now have: clean white headers with title/description, horizontal stats cards with icons, clean search/filter rows, date range selectors, and clean tables. All pages connected to global StoreContext for data filtering. Sync buttons on Drafts page use globally selected store."
+  - agent: "main"
     message: "Built Shopify-inspired Multi-Tenant Landing Page with dark theme, emerald green accents, animated hero text, features grid, pricing section with 3 plans, testimonials, and footer. Landing page is shown to non-authenticated users at root URL (/) and redirects to /dashboard after login."
   - agent: "main"
     message: "Fixed all 4 P0 bugs: Dispatch Tracker (customers endpoint), Inventory Health (store filter), Dynamic Pricing (product details), Customer Segments (API format). Ready for testing."
