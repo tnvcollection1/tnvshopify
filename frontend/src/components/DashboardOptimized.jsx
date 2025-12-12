@@ -160,7 +160,7 @@ const DashboardOptimized = () => {
 
   if (loading && !stats.totalCustomers) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <LoadingSpinner text="Loading dashboard..." size="large" />
       </div>
     );
@@ -198,22 +198,22 @@ const DashboardOptimized = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] p-6 space-y-6">
+    <div className="min-h-screen bg-gray-50 p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <p className="text-gray-400 mt-1">Overview of your business performance</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-500 mt-1">Overview of your business performance</p>
         </div>
         <div className="flex gap-3">
           <Select value={selectedStore} onValueChange={setSelectedStore}>
-            <SelectTrigger className="w-48 bg-[#1a1a1a] border-white/10 text-white hover:bg-[#252525]">
+            <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900">
               <SelectValue placeholder="Select Store" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a1a1a] border-white/10">
-              <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">All Stores</SelectItem>
+            <SelectContent className="bg-white border-gray-200">
+              <SelectItem value="all" className="text-gray-900">All Stores</SelectItem>
               {stores.map((store) => (
-                <SelectItem key={store.id} value={store.store_name} className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">
+                <SelectItem key={store.id} value={store.store_name} className="text-gray-900">
                   {store.store_name}
                 </SelectItem>
               ))}
@@ -222,7 +222,7 @@ const DashboardOptimized = () => {
           <Button 
             onClick={handleShopifySync} 
             disabled={syncing}
-            className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             {syncing ? 'Syncing...' : 'Sync Shopify'}
@@ -237,19 +237,19 @@ const DashboardOptimized = () => {
           return (
             <div 
               key={index}
-              className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6 hover:bg-[#222] transition-colors"
+              className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-emerald-400" />
+                <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <Icon className="w-6 h-6 text-emerald-600" />
                 </div>
-                <div className={`flex items-center gap-1 text-sm ${stat.positive ? 'text-emerald-400' : 'text-red-400'}`}>
+                <div className={`flex items-center gap-1 text-sm ${stat.positive ? 'text-emerald-600' : 'text-red-500'}`}>
                   {stat.positive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
                   {stat.change}
                 </div>
               </div>
-              <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
-              <div className="text-sm text-gray-400">{stat.title}</div>
+              <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
+              <div className="text-sm text-gray-500">{stat.title}</div>
             </div>
           );
         })}
@@ -262,8 +262,8 @@ const DashboardOptimized = () => {
             onClick={() => setActiveTab('overview')}
             className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
               activeTab === 'overview' 
-                ? 'bg-emerald-500 text-black' 
-                : 'bg-[#1a1a1a] text-gray-400 hover:text-white border border-white/10'
+                ? 'bg-emerald-500 text-white' 
+                : 'bg-white text-gray-600 hover:text-gray-900 border border-gray-200'
             }`}
           >
             Overview
@@ -272,8 +272,8 @@ const DashboardOptimized = () => {
             onClick={() => setActiveTab('upload')}
             className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
               activeTab === 'upload' 
-                ? 'bg-emerald-500 text-black' 
-                : 'bg-[#1a1a1a] text-gray-400 hover:text-white border border-white/10'
+                ? 'bg-emerald-500 text-white' 
+                : 'bg-white text-gray-600 hover:text-gray-900 border border-gray-200'
             }`}
           >
             Upload Orders
@@ -281,19 +281,19 @@ const DashboardOptimized = () => {
         </div>
 
         {activeTab === 'overview' && (
-          <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/10">
-              <h2 className="text-lg font-semibold text-white">Recent Orders</h2>
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
             </div>
             <div className="p-6">
               {recentOrders.length === 0 ? (
                 <div className="text-center py-12">
-                  <ShoppingCart className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-300 mb-2">No orders found</h3>
+                  <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No orders found</h3>
                   <p className="text-gray-500 mb-4">Sync orders from Shopify or upload a CSV file</p>
                   <Button 
                     onClick={handleShopifySync}
-                    className="bg-emerald-500 hover:bg-emerald-600 text-black"
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white"
                   >
                     Sync Orders
                   </Button>
@@ -303,19 +303,19 @@ const DashboardOptimized = () => {
                   {recentOrders.map((order) => (
                     <div
                       key={order.customer_id}
-                      className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/[0.07] transition-colors"
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                          <span className="text-emerald-400 font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                          <span className="text-emerald-600 font-semibold">
                             {order.first_name?.charAt(0) || 'O'}
                           </span>
                         </div>
                         <div>
-                          <div className="font-medium text-white">
+                          <div className="font-medium text-gray-900">
                             {order.first_name} {order.last_name}
                           </div>
-                          <div className="text-sm text-gray-400">
+                          <div className="text-sm text-gray-500">
                             Order #{order.order_number} • {order.store_name}
                           </div>
                         </div>
@@ -323,15 +323,15 @@ const DashboardOptimized = () => {
                       <div className="flex items-center gap-2">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                           order.fulfillment_status === 'fulfilled' 
-                            ? 'bg-emerald-500/20 text-emerald-400' 
-                            : 'bg-yellow-500/20 text-yellow-400'
+                            ? 'bg-emerald-100 text-emerald-700' 
+                            : 'bg-yellow-100 text-yellow-700'
                         }`}>
                           {order.fulfillment_status || 'unfulfilled'}
                         </span>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                           order.payment_status === 'paid' 
-                            ? 'bg-emerald-500/20 text-emerald-400' 
-                            : 'bg-gray-500/20 text-gray-400'
+                            ? 'bg-emerald-100 text-emerald-700' 
+                            : 'bg-gray-100 text-gray-600'
                         }`}>
                           {order.payment_status || 'pending'}
                         </span>
@@ -345,28 +345,28 @@ const DashboardOptimized = () => {
         )}
 
         {activeTab === 'upload' && (
-          <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6">
-            <div className="border-2 border-dashed border-white/10 rounded-xl p-12 text-center hover:border-emerald-500/50 transition-colors">
-              <Upload className="h-12 w-12 mx-auto text-gray-500 mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Upload Shopify Orders CSV</h3>
-              <p className="text-sm text-gray-400 mb-6">
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-emerald-500 transition-colors">
+              <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Shopify Orders CSV</h3>
+              <p className="text-sm text-gray-500 mb-6">
                 Export orders from Shopify and upload here to sync your data
               </p>
               <Input
                 type="file"
                 accept=".csv,.xlsx"
                 onChange={handleFileChange}
-                className="max-w-md mx-auto mb-4 bg-[#252525] border-white/10 text-white file:bg-emerald-500 file:text-black file:border-0 file:rounded-lg file:mr-4 file:font-semibold"
+                className="max-w-md mx-auto mb-4 bg-white border-gray-300"
               />
               {selectedFile && (
-                <div className="text-sm text-emerald-400 mb-4">
+                <div className="text-sm text-emerald-600 mb-4">
                   Selected: {selectedFile.name}
                 </div>
               )}
               <Button
                 onClick={handleCSVUpload}
                 disabled={!selectedFile || uploadingCSV}
-                className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 {uploadingCSV ? 'Uploading...' : 'Upload CSV'}
