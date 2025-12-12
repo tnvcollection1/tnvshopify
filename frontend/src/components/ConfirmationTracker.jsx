@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -17,6 +16,12 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageCircle,
+  RefreshCw,
+  PhoneCall,
+  ShoppingCart,
+  X,
+  AlertCircle,
+  Box,
 } from "lucide-react";
 import {
   Table,
@@ -72,7 +77,11 @@ const ConfirmationTracker = () => {
     purchased: 0,
     notPurchased: 0,
     canceled: 0,
-    inTransit: 0,
+    inStock: 0,
+    inStockValue: 0,
+    outOfStock: 0,
+    outOfStockValue: 0,
+    currency: "PKR",
   });
   const [editingOrder, setEditingOrder] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
@@ -80,7 +89,6 @@ const ConfirmationTracker = () => {
   const [bulkWhatsAppDialog, setBulkWhatsAppDialog] = useState(false);
   const [whatsappTemplate, setWhatsappTemplate] = useState("order_ready");
   
-  // Clickable cards states
   const [viewingCard, setViewingCard] = useState(null);
   const [cardData, setCardData] = useState([]);
 
@@ -88,34 +96,21 @@ const ConfirmationTracker = () => {
     fetchOrders();
   }, [currentPage, filters, searchQuery, dateRange, globalStore]);
 
-  // Reset to page 1 when filters or search change
   useEffect(() => {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
   }, [filters.calling_status, filters.confirmation_status, filters.year, filters.sortBy, searchQuery, globalStore]);
 
-  const fetchStores = async () => {
-    try {
-      const response = await axios.get(`${API}/stores`);
-      // API returns array directly
-      setStores(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error fetching stores:", error);
-    }
-  };
-
   const fetchOrders = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // ONLY show unfulfilled orders (need confirmation)
       params.append("fulfillment_status", "unfulfilled");
       
       if (filters.calling_status !== "all") params.append("calling_status", filters.calling_status);
       if (filters.confirmation_status !== "all") params.append("confirmation_status", filters.confirmation_status);
       if (filters.stock_status !== "all") params.append("stock_availability", filters.stock_status);
-      // Use global store from context
       if (globalStore !== "all") params.append("store_name", globalStore);
       if (filters.year !== "all") params.append("year", filters.year);
       if (filters.sortBy) params.append("sort_by", filters.sortBy);
@@ -125,7 +120,6 @@ const ConfirmationTracker = () => {
       params.append("page", currentPage);
       params.append("limit", "100");
 
-      // Fetch orders, count, and stock stats with values
       const [ordersResponse, countResponse, stockStatsResponse] = await Promise.all([
         axios.get(`${API}/customers?${params.toString()}`),
         axios.get(`${API}/customers/count?${params.toString()}`),
@@ -134,30 +128,23 @@ const ConfirmationTracker = () => {
       
       const allOrders = Array.isArray(ordersResponse.data) ? ordersResponse.data : ordersResponse.data.customers || [];
       const total = countResponse.data.total || 0;
+      const stockStats = stockStatsResponse.data || {};
       
       setOrders(allOrders);
       setTotalCount(total);
       
-      // Calculate page-level stats
-      const inStockOrders = allOrders.filter(c => c.stock_status === "in_stock");
-      const outOfStockOrders = allOrders.filter(c => c.stock_status === "out_of_stock");
-      
-      // Get stock stats with SKU-based sale values from backend
-      const stockStats = stockStatsResponse.data || {};
-      
       setStats({
-        total: total,  // Show actual total from database
+        total: total,
         notCalled: allOrders.filter(c => !c.calling_status || c.calling_status === "NOT_CALLED").length,
         called: allOrders.filter(c => c.calling_status === "CALLED" || c.calling_status === "CONFIRMED").length,
         purchased: allOrders.filter(c => c.confirmation_status === "PURCHASED").length,
         notPurchased: allOrders.filter(c => c.confirmation_status === "NOT_PURCHASED").length,
         canceled: allOrders.filter(c => c.confirmation_status === "CANCELED").length,
-        inTransit: allOrders.filter(c => c.dubai_tracking_number).length,
         inStock: stockStats.in_stock || 0,
         inStockValue: stockStats.in_stock_value || 0,
         outOfStock: stockStats.out_of_stock || 0,
         outOfStockValue: stockStats.out_of_stock_value || 0,
-        currency: stockStats.currency || "PKR",  // Store currency from backend
+        currency: stockStats.currency || "PKR",
       });
       
       setTotalPages(Math.ceil(total / 100));
@@ -199,7 +186,6 @@ const ConfirmationTracker = () => {
     }
   };
 
-  // Clickable card functions
   const viewCardDetails = (cardType) => {
     let filtered = orders.filter(order => {
       switch(cardType) {
@@ -232,7 +218,7 @@ const ConfirmationTracker = () => {
         toast.success(
           `Stock status synced! In Stock: ${response.data.in_stock}, Out of Stock: ${response.data.out_of_stock}`
         );
-        await fetchOrders(); // Refresh the orders list
+        await fetchOrders();
       }
     } catch (error) {
       console.error("Error syncing stock status:", error);
@@ -246,7 +232,7 @@ const ConfirmationTracker = () => {
       
       if (response.data.success) {
         toast.success(`WhatsApp message sent to ${customerName}`);
-        await fetchOrders(); // Refresh to show updated messaged status
+        await fetchOrders();
       }
     } catch (error) {
       console.error("Error sending WhatsApp:", error);
@@ -348,109 +334,158 @@ const ConfirmationTracker = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Confirmation Tracker</h1>
+            <h1 className="text-xl font-semibold text-gray-900">Confirmation Tracker</h1>
             <p className="text-sm text-gray-500 mt-1">Call customers and confirm unfulfilled orders before dispatch</p>
           </div>
-          <Button
-            onClick={handleSyncStockStatus}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Package className="w-4 h-4 mr-2" />
-            Sync Stock Status
-          </Button>
-        </div>
-
-        {/* Stats Cards - Clickable */}
-        <div className="grid grid-cols-5 gap-4 mt-6">
-          <Card className="border-gray-200 cursor-pointer hover:shadow-lg hover:border-gray-400 transition-all" onClick={() => viewCardDetails('total')}>
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">Total</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200 cursor-pointer hover:shadow-lg hover:border-gray-400 transition-all" onClick={() => viewCardDetails('notCalled')}>
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">Not Called</p>
-                <p className="text-2xl font-bold text-gray-600 mt-1">{stats.notCalled}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-blue-200 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all" onClick={() => viewCardDetails('called')}>
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">Called</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">{stats.called}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-green-200 cursor-pointer hover:shadow-lg hover:border-green-500 transition-all" onClick={() => viewCardDetails('purchased')}>
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">Purchased</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">{stats.purchased}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-orange-200 cursor-pointer hover:shadow-lg hover:border-orange-500 transition-all" onClick={() => viewCardDetails('canceled')}>
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-gray-500 uppercase">Canceled</p>
-                <p className="text-2xl font-bold text-orange-600 mt-1">{stats.canceled}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Stock Status Cards with Sale Value - Clickable */}
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <Card className="border-green-200 bg-green-50 cursor-pointer hover:shadow-lg hover:border-green-500 transition-all" onClick={() => viewCardDetails('inStock')}>
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-green-700 uppercase">✅ In Stock</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">{stats.inStock || 0}</p>
-                <p className="text-sm text-green-600 mt-1">
-                  Sale Value: {stats.currency || "PKR"} {(stats.inStockValue || 0).toLocaleString()}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-red-200 bg-red-50 cursor-pointer hover:shadow-lg hover:border-red-500 transition-all" onClick={() => viewCardDetails('outOfStock')}>
-            <CardContent className="p-4">
-              <div className="flex flex-col">
-                <p className="text-xs font-medium text-red-700 uppercase">❌ Out of Stock</p>
-                <p className="text-2xl font-bold text-red-600 mt-1">{stats.outOfStock || 0}</p>
-                <p className="text-sm text-red-600 mt-1">
-                  Sale Value: {stats.currency || "PKR"} {(stats.outOfStockValue || 0).toLocaleString()}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-center gap-3">
+            <div className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600">
+              📍 {getStoreName(globalStore)}
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleSyncStockStatus}
+              className="h-9 text-sm border-gray-300"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Sync Stock Status
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Filters & Search */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4">
-        <div className="flex items-center gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      {/* Stats Cards */}
+      <div className="p-6">
+        <div className="grid grid-cols-5 gap-4 mb-4">
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('total')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Package className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Total</p>
+                <p className="text-xl font-semibold text-gray-900">{stats.total}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('notCalled')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Phone className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Not Called</p>
+                <p className="text-xl font-semibold text-gray-600">{stats.notCalled}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('called')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <PhoneCall className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Called</p>
+                <p className="text-xl font-semibold text-blue-600">{stats.called}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('purchased')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <ShoppingCart className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Purchased</p>
+                <p className="text-xl font-semibold text-green-600">{stats.purchased}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('canceled')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-50 rounded-lg">
+                <X className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Canceled</p>
+                <p className="text-xl font-semibold text-orange-600">{stats.canceled}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stock Status Cards */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div 
+            className="bg-white rounded-lg border border-green-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('inStock')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">✅ In Stock</p>
+                <div className="flex items-baseline gap-3">
+                  <p className="text-xl font-semibold text-green-600">{stats.inStock}</p>
+                  <p className="text-sm text-green-600">
+                    {stats.currency} {(stats.inStockValue || 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-red-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('outOfStock')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-50 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">❌ Out of Stock</p>
+                <div className="flex items-baseline gap-3">
+                  <p className="text-xl font-semibold text-red-600">{stats.outOfStock}</p>
+                  <p className="text-sm text-red-600">
+                    {stats.currency} {(stats.outOfStockValue || 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search & Filters */}
+        <div className="flex items-center gap-4 mb-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search by order #, customer name, phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-gray-300"
+              className="pl-10 border-gray-300 bg-white"
             />
           </div>
-          <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-600 min-w-[140px]">
-            📍 {globalStore === 'all' ? 'All Stores' : getStoreName(globalStore)}
-          </div>
           <Select value={filters.calling_status} onValueChange={(v) => setFilters({ ...filters, calling_status: v })}>
-            <SelectTrigger className="w-40 border-gray-300">
+            <SelectTrigger className="w-36 border-gray-300 bg-white">
               <SelectValue placeholder="Calling Status" />
             </SelectTrigger>
             <SelectContent>
@@ -462,7 +497,7 @@ const ConfirmationTracker = () => {
             </SelectContent>
           </Select>
           <Select value={filters.confirmation_status} onValueChange={(v) => setFilters({ ...filters, confirmation_status: v })}>
-            <SelectTrigger className="w-40 border-gray-300">
+            <SelectTrigger className="w-36 border-gray-300 bg-white">
               <SelectValue placeholder="Confirmation" />
             </SelectTrigger>
             <SelectContent>
@@ -474,7 +509,7 @@ const ConfirmationTracker = () => {
             </SelectContent>
           </Select>
           <Select value={filters.stock_status} onValueChange={(v) => setFilters({ ...filters, stock_status: v })}>
-            <SelectTrigger className="w-40 border-gray-300">
+            <SelectTrigger className="w-36 border-gray-300 bg-white">
               <SelectValue placeholder="Stock Status" />
             </SelectTrigger>
             <SelectContent>
@@ -484,7 +519,7 @@ const ConfirmationTracker = () => {
             </SelectContent>
           </Select>
           <Select value={filters.year} onValueChange={(v) => setFilters({ ...filters, year: v })}>
-            <SelectTrigger className="w-32 border-gray-300">
+            <SelectTrigger className="w-28 border-gray-300 bg-white">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent>
@@ -492,11 +527,10 @@ const ConfirmationTracker = () => {
               <SelectItem value="2025">2025</SelectItem>
               <SelectItem value="2024">2024</SelectItem>
               <SelectItem value="2023">2023</SelectItem>
-              <SelectItem value="2022">2022</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filters.sortBy} onValueChange={(v) => setFilters({ ...filters, sortBy: v })}>
-            <SelectTrigger className="w-40 border-gray-300">
+            <SelectTrigger className="w-36 border-gray-300 bg-white">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>
@@ -505,43 +539,37 @@ const ConfirmationTracker = () => {
             </SelectContent>
           </Select>
         </div>
-        
-        {/* Date Range Filter */}
-        <div className="flex items-center gap-3 px-8 py-3 border-t border-gray-200 bg-gray-50">
-          <span className="text-sm font-medium text-gray-600">Filter by Date:</span>
+
+        {/* Date Range */}
+        <div className="flex items-center gap-3 mb-4">
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Start Date</label>
             <input
               type="date"
               value={dateRange.start}
               onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
             />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">End Date</label>
+            <span className="text-gray-400">to</span>
             <input
               type="date"
               value={dateRange.end}
               onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
             />
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setDateRange({ start: '', end: '' })}
-            className="text-gray-600 hover:bg-gray-100"
+            className="text-gray-600"
           >
             Clear Dates
           </Button>
         </div>
-      </div>
 
-      {/* Bulk Actions Bar */}
-      {selectedOrders.length > 0 && (
-        <div className="px-8 py-4 bg-blue-50 border-b border-blue-200">
-          <div className="flex items-center justify-between">
+        {/* Bulk Actions Bar */}
+        {selectedOrders.length > 0 && (
+          <div className="flex items-center justify-between mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center gap-3">
               <span className="font-semibold text-blue-900">
                 {selectedOrders.length} customer{selectedOrders.length > 1 ? 's' : ''} selected
@@ -557,166 +585,164 @@ const ConfirmationTracker = () => {
             </div>
             <Button
               onClick={handleBulkWhatsApp}
+              size="sm"
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               <MessageCircle className="w-4 h-4 mr-2" />
-              Send WhatsApp to Selected ({selectedOrders.length})
+              Send WhatsApp ({selectedOrders.length})
             </Button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Orders Table */}
-      <div className="p-8">
-        <Card className="border-gray-200">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold text-gray-700 w-12">
-                      <input
-                        type="checkbox"
-                        onChange={handleSelectAll}
-                        checked={selectedOrders.length > 0 && selectedOrders.length === orders.filter(o => !o.messaged && o.phone).length}
-                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                      />
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-700">Date</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Order #</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Store</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Customer</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Phone</TableHead>
-                    <TableHead className="font-semibold text-gray-700">WhatsApp</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Stock Status</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Calling Status</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Confirmation</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Dubai Tracking</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Amount</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Actions</TableHead>
+        {/* Table */}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="w-12 font-medium">
+                  <input
+                    type="checkbox"
+                    onChange={handleSelectAll}
+                    checked={selectedOrders.length > 0 && selectedOrders.length === orders.filter(o => !o.messaged && o.phone).length}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  />
+                </TableHead>
+                <TableHead className="font-medium">Date</TableHead>
+                <TableHead className="font-medium">Order #</TableHead>
+                <TableHead className="font-medium">Store</TableHead>
+                <TableHead className="font-medium">Customer</TableHead>
+                <TableHead className="font-medium">Phone</TableHead>
+                <TableHead className="font-medium">WhatsApp</TableHead>
+                <TableHead className="font-medium">Stock</TableHead>
+                <TableHead className="font-medium">Calling</TableHead>
+                <TableHead className="font-medium">Status</TableHead>
+                <TableHead className="font-medium">Dubai Tracking</TableHead>
+                <TableHead className="font-medium">Amount</TableHead>
+                <TableHead className="font-medium text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={13} className="text-center py-12 text-gray-500">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
+                    Loading orders...
+                  </TableCell>
+                </TableRow>
+              ) : orders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={13} className="text-center py-12 text-gray-500">
+                    <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-1">No unfulfilled orders</h3>
+                    <p>All orders have been processed</p>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                orders.map((order) => (
+                  <TableRow key={order.customer_id} className="hover:bg-gray-50">
+                    <TableCell>
+                      {!order.messaged && order.phone && (
+                        <input
+                          type="checkbox"
+                          checked={selectedOrders.includes(order.customer_id)}
+                          onChange={() => handleSelectOrder(order.customer_id)}
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {order.last_order_date
+                        ? new Date(order.last_order_date).toLocaleDateString()
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell className="font-medium text-blue-600">
+                      #{order.order_number || "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="bg-slate-50 text-xs">
+                        {order.store_name || "N/A"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">
+                          {order.first_name} {order.last_name}
+                        </p>
+                        <p className="text-xs text-gray-500">{order.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {order.phone || "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      {order.messaged ? (
+                        <Badge className="bg-green-100 text-green-700 border-green-300 text-xs">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Sent
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-gray-100 text-gray-600 border-gray-300 text-xs">
+                          <XCircle className="w-3 h-3 mr-1" />
+                          Not Sent
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {getStockBadge(order.stock_status || "unknown")}
+                    </TableCell>
+                    <TableCell>
+                      {getCallingBadge(order.calling_status || "NOT_CALLED")}
+                    </TableCell>
+                    <TableCell>
+                      {getConfirmationBadge(order.confirmation_status || "PENDING")}
+                    </TableCell>
+                    <TableCell className="text-sm font-mono text-gray-600">
+                      {order.dubai_tracking_number ? (
+                        <div className="flex items-center gap-1">
+                          <Plane className="w-3 h-3 text-blue-500" />
+                          {order.dubai_tracking_number}
+                        </div>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    <TableCell className="font-semibold text-gray-900">
+                      ${order.total_spent?.toFixed(2) || "0.00"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditOrder(order)}
+                          className="h-8 w-8 p-0"
+                          title="Edit Order"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        {!order.messaged && order.phone && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSendWhatsApp(order.customer_id, `${order.first_name} ${order.last_name}`)}
+                            className="h-8 w-8 p-0 text-green-600"
+                            title="Send WhatsApp Message"
+                          >
+                            <Phone className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={13} className="text-center py-8 text-gray-500">
-                        Loading orders...
-                      </TableCell>
-                    </TableRow>
-                  ) : orders.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={13} className="text-center py-8 text-gray-500">
-                        No unfulfilled orders found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    orders.map((order) => (
-                      <TableRow key={order.customer_id} className="hover:bg-gray-50">
-                        <TableCell>
-                          {!order.messaged && order.phone && (
-                            <input
-                              type="checkbox"
-                              checked={selectedOrders.includes(order.customer_id)}
-                              onChange={() => handleSelectOrder(order.customer_id)}
-                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {order.last_order_date
-                            ? new Date(order.last_order_date).toLocaleDateString()
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell className="font-medium text-blue-600">
-                          #{order.order_number || "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-slate-50">
-                            {order.store_name || "N/A"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium text-gray-900 text-sm">
-                              {order.first_name} {order.last_name}
-                            </p>
-                            <p className="text-xs text-gray-500">{order.email}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {order.phone || "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          {order.messaged ? (
-                            <Badge className="bg-green-100 text-green-700 border-green-300">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Sent
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-gray-100 text-gray-600 border-gray-300">
-                              <XCircle className="w-3 h-3 mr-1" />
-                              Not Sent
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {getStockBadge(order.stock_status || "unknown")}
-                        </TableCell>
-                        <TableCell>
-                          {getCallingBadge(order.calling_status || "NOT_CALLED")}
-                        </TableCell>
-                        <TableCell>
-                          {getConfirmationBadge(order.confirmation_status || "PENDING")}
-                        </TableCell>
-                        <TableCell className="text-sm font-mono text-gray-600">
-                          {order.dubai_tracking_number ? (
-                            <div className="flex items-center gap-1">
-                              <Plane className="w-3 h-3 text-blue-500" />
-                              {order.dubai_tracking_number}
-                            </div>
-                          ) : (
-                            "—"
-                          )}
-                        </TableCell>
-                        <TableCell className="font-semibold text-gray-900">
-                          ${order.total_spent?.toFixed(2) || "0.00"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditOrder(order)}
-                              className="border-gray-300 hover:bg-blue-50"
-                              title="Edit Order"
-                            >
-                              <Edit className="w-3 h-3" />
-                            </Button>
-                            {!order.messaged && order.phone && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleSendWhatsApp(order.customer_id, `${order.first_name} ${order.last_name}`)}
-                                className="border-green-300 hover:bg-green-50 text-green-600"
-                                title="Send WhatsApp Message"
-                              >
-                                <Phone className="w-3 h-3" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
 
         {/* Pagination */}
         {orders.length > 0 && (
-          <div className="flex items-center justify-between mt-6">
+          <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-gray-500">
               Showing {Math.min((currentPage - 1) * 100 + 1, totalCount)} to {Math.min(currentPage * 100, totalCount)} of {totalCount} orders
             </p>
@@ -726,17 +752,15 @@ const ConfirmationTracker = () => {
                 size="sm"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="border-gray-300"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+              <span className="text-sm text-gray-600 px-2">Page {currentPage} of {totalPages}</span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="border-gray-300"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
@@ -799,7 +823,6 @@ const ConfirmationTracker = () => {
                     placeholder="e.g., DXB123456789"
                     className="mt-1"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Enter tracking number when item is in transit to Dubai</p>
                 </div>
               )}
               <div>
@@ -845,43 +868,27 @@ const ConfirmationTracker = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="order_ready">
-                    ✅ Order Ready - Your order is ready! Confirm within 24 hours
-                  </SelectItem>
-                  <SelectItem value="flash_sale">
-                    ⚡ Flash Sale - Limited time: 20% off on your favorites!
-                  </SelectItem>
-                  <SelectItem value="stock_alert">
-                    📦 Stock Alert - Items you wanted are back in stock
-                  </SelectItem>
-                  <SelectItem value="payment_reminder">
-                    💰 Payment Reminder - Complete your pending order
-                  </SelectItem>
-                  <SelectItem value="new_arrivals">
-                    🆕 New Arrivals - Check out our latest collection
-                  </SelectItem>
+                  <SelectItem value="order_ready">✅ Order Ready</SelectItem>
+                  <SelectItem value="flash_sale">⚡ Flash Sale</SelectItem>
+                  <SelectItem value="stock_alert">📦 Stock Alert</SelectItem>
+                  <SelectItem value="payment_reminder">💰 Payment Reminder</SelectItem>
+                  <SelectItem value="new_arrivals">🆕 New Arrivals</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-900">
-                <strong>Note:</strong> Messages will be sent to customers with valid phone numbers who have not been messaged yet.
+                <strong>Note:</strong> Messages will be sent to customers with valid phone numbers.
               </p>
             </div>
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setBulkWhatsAppDialog(false)}
-            >
+            <Button variant="outline" onClick={() => setBulkWhatsAppDialog(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleSendBulkWhatsApp}
-              className="bg-green-600 hover:bg-green-700"
-            >
+            <Button onClick={handleSendBulkWhatsApp} className="bg-green-600 hover:bg-green-700">
               <MessageCircle className="w-4 h-4 mr-2" />
               Send Messages
             </Button>
@@ -891,35 +898,29 @@ const ConfirmationTracker = () => {
 
       {/* Card Details Modal */}
       {viewingCard && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeCardView}>
-          <div className="bg-white rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-            {/* Modal Header */}
-            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {viewingCard === 'total' && '📦 All Orders'}
-                    {viewingCard === 'notCalled' && '📞 Not Called'}
-                    {viewingCard === 'called' && '✅ Called'}
-                    {viewingCard === 'purchased' && '🛒 Purchased'}
-                    {viewingCard === 'notPurchased' && '❌ Not Purchased'}
-                    {viewingCard === 'canceled' && '🚫 Canceled'}
-                    {viewingCard === 'inStock' && '✅ In Stock'}
-                    {viewingCard === 'outOfStock' && '❌ Out of Stock'}
-                  </h2>
-                  <p className="text-sm text-gray-600 mt-1">{cardData.length} orders found</p>
-                </div>
-                <button
-                  onClick={closeCardView}
-                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors font-medium"
-                >
-                  ✕ Close
-                </button>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeCardView}>
+          <div className="bg-white rounded-xl w-full max-w-6xl max-h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {viewingCard === 'total' && '📦 All Orders'}
+                  {viewingCard === 'notCalled' && '📞 Not Called'}
+                  {viewingCard === 'called' && '✅ Called'}
+                  {viewingCard === 'purchased' && '🛒 Purchased'}
+                  {viewingCard === 'notPurchased' && '❌ Not Purchased'}
+                  {viewingCard === 'canceled' && '🚫 Canceled'}
+                  {viewingCard === 'inStock' && '✅ In Stock'}
+                  {viewingCard === 'outOfStock' && '❌ Out of Stock'}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">{cardData.length} orders found</p>
               </div>
+              <Button variant="outline" onClick={closeCardView}>
+                <X className="w-4 h-4 mr-2" />
+                Close
+              </Button>
             </div>
 
-            {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {cardData.map((order, idx) => (
                   <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -928,62 +929,45 @@ const ConfirmationTracker = () => {
                         <div className="font-bold text-lg text-gray-900">#{order.order_number}</div>
                         <div className="text-sm text-gray-600">{order.first_name} {order.last_name}</div>
                       </div>
-                      <div className={`px-2 py-1 rounded text-xs font-medium ${
-                        order.confirmation_status === 'PURCHASED' ? 'bg-green-100 text-green-800' :
-                        order.confirmation_status === 'NOT_PURCHASED' ? 'bg-red-100 text-red-800' :
-                        order.confirmation_status === 'CANCELED' ? 'bg-orange-100 text-orange-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {order.confirmation_status || 'PENDING'}
-                      </div>
+                      {getConfirmationBadge(order.confirmation_status || "PENDING")}
                     </div>
-
-                    <div className="space-y-2 mb-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-700">{order.phone || 'N/A'}</span>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Phone className="w-4 h-4" />
+                        {order.phone || 'N/A'}
                       </div>
                       <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-gray-400" />
-                        <span className={`font-medium ${
-                          order.stock_status === 'in_stock' ? 'text-green-600' :
-                          order.stock_status === 'out_of_stock' ? 'text-red-600' :
-                          'text-gray-600'
-                        }`}>
-                          {order.stock_status === 'in_stock' ? '✅ In Stock' :
-                           order.stock_status === 'out_of_stock' ? '❌ Out of Stock' :
-                           'Unknown'}
-                        </span>
+                        <Box className="w-4 h-4 text-gray-400" />
+                        {getStockBadge(order.stock_status || "unknown")}
                       </div>
                       <div className="text-gray-600">
-                        Calling: <span className={`font-medium ${
-                          order.calling_status === 'CALLED' || order.calling_status === 'CONFIRMED' ? 'text-green-600' :
-                          order.calling_status === 'NO_ANSWER' ? 'text-yellow-600' :
-                          'text-gray-600'
-                        }`}>{order.calling_status || 'NOT_CALLED'}</span>
+                        Calling: {getCallingBadge(order.calling_status || "NOT_CALLED")}
                       </div>
                     </div>
-
-                    <div className="flex gap-2">
-                      <button
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => {
                           setEditingOrder(order);
                           setEditDialog(true);
                           closeCardView();
                         }}
-                        className="flex-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                        className="flex-1"
                       >
-                        <Edit className="w-3 h-3 inline mr-1" />
+                        <Edit className="w-3 h-3 mr-1" />
                         Edit
-                      </button>
+                      </Button>
                       {order.phone && (
-                        <button
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => handleSendWhatsApp(order.customer_id, order.first_name)}
-                          className="flex-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
+                          className="flex-1 text-green-600 border-green-200"
                         >
-                          <MessageCircle className="w-3 h-3" />
+                          <MessageCircle className="w-3 h-3 mr-1" />
                           WhatsApp
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -992,23 +976,10 @@ const ConfirmationTracker = () => {
 
               {cardData.length === 0 && (
                 <div className="text-center py-12">
-                  <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No orders found in this category</p>
+                  <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-600">No orders in this category</p>
                 </div>
               )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                Total: <span className="font-bold">{cardData.length}</span> orders
-              </div>
-              <button
-                onClick={closeCardView}
-                className="px-6 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-medium transition-colors"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
