@@ -116,22 +116,103 @@ const Sidebar = () => {
     { icon: Users, label: 'Users', path: '/users' },
   ];
 
+  const handleSync = async () => {
+    if (selectedStore === 'all') {
+      alert('Please select a specific store to sync');
+      return;
+    }
+    
+    setSyncStatus('syncing');
+    const result = await syncStoreData();
+    
+    if (result.success) {
+      setSyncStatus('success');
+      setTimeout(() => setSyncStatus(null), 3000);
+    } else {
+      setSyncStatus('error');
+      alert(result.message);
+      setTimeout(() => setSyncStatus(null), 3000);
+    }
+  };
+
   const isActive = (path) => location.pathname === path;
   const isSectionActive = (children) => children?.some(child => location.pathname === child.path);
 
   return (
     <div className="w-56 bg-[#1a1a1a] h-screen flex flex-col border-r border-gray-800">
-      {/* Logo */}
+      {/* Store Switcher */}
       <div className="px-4 py-4 border-b border-gray-800">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#95bf47] rounded-md flex items-center justify-center">
-            <Store className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-white font-semibold text-sm">TNC Collection</h1>
-            <p className="text-gray-500 text-xs">Admin</p>
-          </div>
+        <div className="relative">
+          <button
+            onClick={() => setShowStoreDropdown(!showStoreDropdown)}
+            className="w-full flex items-center gap-2 hover:bg-gray-800 rounded-lg p-2 transition-colors"
+          >
+            <div className="w-8 h-8 bg-[#95bf47] rounded-md flex items-center justify-center flex-shrink-0">
+              <Store className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1 text-left min-w-0">
+              <h1 className="text-white font-semibold text-sm truncate">
+                {getStoreName(selectedStore)}
+              </h1>
+              <p className="text-gray-500 text-xs">Click to switch</p>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showStoreDropdown ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Store Dropdown */}
+          {showStoreDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+              {/* All Stores Option */}
+              <button
+                onClick={() => { switchStore('all'); setShowStoreDropdown(false); }}
+                className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm transition-colors ${
+                  selectedStore === 'all' ? 'bg-[#95bf47] text-white' : 'text-gray-300 hover:bg-gray-800'
+                }`}
+              >
+                <Store className="w-4 h-4" />
+                <span>All Stores</span>
+                {selectedStore === 'all' && <Check className="w-4 h-4 ml-auto" />}
+              </button>
+              
+              <div className="border-t border-gray-700" />
+              
+              {/* Individual Stores */}
+              {stores.map((store) => (
+                <button
+                  key={store.id}
+                  onClick={() => { switchStore(store.store_name); setShowStoreDropdown(false); }}
+                  className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm transition-colors ${
+                    selectedStore === store.store_name ? 'bg-[#95bf47] text-white' : 'text-gray-300 hover:bg-gray-800'
+                  }`}
+                >
+                  <Store className="w-4 h-4" />
+                  <span className="truncate">{getStoreName(store.store_name)}</span>
+                  {selectedStore === store.store_name && <Check className="w-4 h-4 ml-auto flex-shrink-0" />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Sync Button */}
+        {selectedStore !== 'all' && (
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className={`w-full mt-2 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+              syncStatus === 'success'
+                ? 'bg-green-600 text-white'
+                : syncStatus === 'error'
+                ? 'bg-red-600 text-white'
+                : syncing
+                ? 'bg-gray-700 text-gray-400 cursor-wait'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
+            }`}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Syncing...' : syncStatus === 'success' ? 'Synced!' : 'Sync Store Data'}
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
