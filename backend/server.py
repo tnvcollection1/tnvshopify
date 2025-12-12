@@ -1768,19 +1768,6 @@ async def sync_pricing_to_shopify(request: ShopifySyncRequest):
     except Exception as e:
         logger.error(f"❌ Error in sync: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-        
-        logger.info("✅ Sync request started in background")
-        
-        return {
-            'success': True,
-            'message': 'Sync started in background. Prices will be updated shortly.',
-            'total_products': total_products,
-            'discounts_applied': request.discounts
-        }
-        
-    except Exception as e:
-        logger.error(f"❌ Error starting sync: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @api_router.post("/orders/{order_id}/manual-delivery-status")
