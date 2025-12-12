@@ -6,10 +6,12 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Badge } from "./ui/badge";
+import { useStore } from "../contexts/StoreContext";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 function DynamicPricing() {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [syncingToShopify, setSyncingToShopify] = useState(false);
@@ -24,13 +26,14 @@ function DynamicPricing() {
 
   useEffect(() => {
     fetchReport();
-  }, []);
+  }, [globalStore]);
 
   const fetchReport = async () => {
     try {
       setLoading(true);
       toast.loading("Loading pricing data... (12,000+ products)", { duration: 10000 });
-      const response = await axios.get(`${API}/api/dynamic-pricing/report`, {
+      const storeParam = globalStore !== 'all' ? `?store_name=${globalStore}` : '';
+      const response = await axios.get(`${API}/api/dynamic-pricing/report${storeParam}`, {
         timeout: 30000 // 30 second timeout
       });
       toast.dismiss();
