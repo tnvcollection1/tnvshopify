@@ -51,28 +51,28 @@ const LandingPage = () => {
     },
     {
       icon: <BarChart3 className="w-6 h-6" />,
-      title: "AI-Powered Analytics",
-      description: "Get intelligent insights on sales trends, customer behavior, and inventory optimization powered by AI."
+      title: "Meta Ads Comparison",
+      description: "Real-time Facebook & Instagram ad performance tracking. Compare campaigns side-by-side and optimize ROAS."
     },
     {
       icon: <MessageSquare className="w-6 h-6" />,
-      title: "WhatsApp Marketing",
+      title: "WhatsApp Business API",
       description: "Send bulk campaigns, automate order updates, and chat with customers directly via WhatsApp Business API."
     },
     {
       icon: <Package className="w-6 h-6" />,
-      title: "Smart Inventory",
-      description: "Dynamic pricing, dead stock identification, and automated clearance campaigns to maximize your profits."
+      title: "Smart Inventory Clearance",
+      description: "AI identifies dead stock and creates automated clearance campaigns. Dynamic pricing to maximize sell-through."
     },
     {
       icon: <TrendingUp className="w-6 h-6" />,
       title: "Dynamic Pricing Engine",
-      description: "AI automatically adjusts prices based on demand, inventory levels, and competitor analysis."
+      description: "AI automatically adjusts prices based on 60-day demand analysis, inventory levels, and sales velocity."
     },
     {
       icon: <Users className="w-6 h-6" />,
       title: "Customer Segmentation",
-      description: "Segment customers by behavior, purchase history, and engagement for targeted marketing."
+      description: "RFM analysis, purchase behavior segmentation, and targeted marketing campaigns for each customer group."
     }
   ];
 
