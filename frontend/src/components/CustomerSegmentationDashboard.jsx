@@ -33,10 +33,6 @@ const CustomerSegmentationDashboard = () => {
   useEffect(() => {
     fetchSegments();
   }, [fetchSegments]);
-      console.error('Error fetching segments:', error);
-      setLoading(false);
-    }
-  };
 
   const getWhatsAppMessage = (segment, customerName = 'Valued Customer') => {
     // Random greeting templates per segment to avoid spam detection
