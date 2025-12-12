@@ -145,7 +145,7 @@ const LandingPage = () => {
               <div className="w-8 h-8 bg-[#95bf47] rounded-md flex items-center justify-center">
                 <Store className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-semibold text-gray-900">Importaba</span>
+              <span className="text-xl font-semibold text-gray-900">OmniSales</span>
             </div>
             
             <div className="hidden md:flex items-center gap-8">
@@ -257,7 +257,7 @@ const LandingPage = () => {
                   <div className="w-6 h-6 bg-[#95bf47] rounded flex items-center justify-center">
                     <Store className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-white text-sm font-medium">Importaba</span>
+                  <span className="text-white text-sm font-medium">OmniSales</span>
                 </div>
                 <div className="space-y-1">
                   <div className="px-3 py-2 bg-gray-800 rounded text-white text-sm">Orders</div>
@@ -451,7 +451,7 @@ const LandingPage = () => {
             Ready to grow your business?
           </h2>
           <p className="text-lg text-gray-400 mb-8">
-            Join thousands of Indian businesses already using Importaba.
+            Join thousands of Indian businesses already using OmniSales.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/login">
@@ -474,7 +474,7 @@ const LandingPage = () => {
                 <div className="w-8 h-8 bg-[#95bf47] rounded-md flex items-center justify-center">
                   <Store className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-lg font-semibold text-gray-900">Importaba</span>
+                <span className="text-lg font-semibold text-gray-900">OmniSales</span>
               </div>
               <p className="text-sm text-gray-500">
                 The commerce platform for Indian businesses.
@@ -509,7 +509,7 @@ const LandingPage = () => {
           </div>
           
           <div className="pt-8 border-t border-gray-200 text-center">
-            <p className="text-sm text-gray-500">© 2025 Importaba. All rights reserved.</p>
+            <p className="text-sm text-gray-500">© 2025 OmniSales. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -119,7 +119,7 @@ const Login = ({ onLoginSuccess }) => {
           <div className="w-10 h-10 bg-[#95bf47] rounded-lg flex items-center justify-center">
             <Store className="w-6 h-6 text-white" />
           </div>
-          <span className="text-2xl font-semibold text-gray-900">Importaba</span>
+          <span className="text-2xl font-semibold text-gray-900">OmniSales</span>
         </div>
 
         {/* Card */}
@@ -129,7 +129,7 @@ const Login = ({ onLoginSuccess }) => {
               {isSignup ? "Create your account" : "Log in"}
             </h1>
             <p className="text-sm text-gray-500">
-              {isSignup ? "Start your free trial" : "Continue to Importaba"}
+              {isSignup ? "Start your free trial" : "Continue to OmniSales"}
             </p>
           </div>
 
@@ -210,7 +210,7 @@ const Login = ({ onLoginSuccess }) => {
               disabled={loading}
               className="text-sm text-gray-600 hover:text-gray-900"
             >
-              {isSignup ? "Already have an account? " : "New to Importaba? "}
+              {isSignup ? "Already have an account? " : "New to OmniSales? "}
               <span className="text-[#008060] font-medium hover:underline">
                 {isSignup ? "Log in" : "Get started"}
               </span>
