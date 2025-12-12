@@ -580,6 +580,63 @@ class ShopifyCustomerAPITester:
         success, response, _ = self.run_test("Pricing Dashboard Stats", "GET", "pricing/dashboard-stats", 200)
         return success, response
     
+    def test_dynamic_pricing_report(self):
+        """Test Dynamic Pricing report endpoint - P0 Bug Fix"""
+        success, response, _ = self.run_test(
+            "Dynamic Pricing Report", 
+            "GET", 
+            "dynamic-pricing/report", 
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "total_products" in response and "categories" in response:
+                total_products = response["total_products"]
+                categories = response["categories"]
+                
+                print(f"   Total products analyzed: {total_products}")
+                print(f"   Categories found: {list(categories.keys())}")
+                
+                # Check for expected categories A, B, C
+                expected_categories = ["A", "B", "C"]
+                categories_present = all(cat in categories for cat in expected_categories)
+                
+                if categories_present:
+                    # Verify each category has product data
+                    valid_structure = True
+                    for cat_name, cat_data in categories.items():
+                        if not isinstance(cat_data, list):
+                            print(f"   ❌ Category {cat_name} is not a list")
+                            valid_structure = False
+                            break
+                        
+                        # Check if products have required fields
+                        if cat_data:  # If category has products
+                            sample_product = cat_data[0]
+                            required_fields = ["sku", "product_name", "current_price", "order_count", "total_revenue", "velocity_score"]
+                            missing_fields = [field for field in required_fields if field not in sample_product]
+                            
+                            if missing_fields:
+                                print(f"   ❌ Category {cat_name} products missing fields: {missing_fields}")
+                                valid_structure = False
+                                break
+                    
+                    if valid_structure:
+                        print(f"   ✅ Dynamic pricing report has valid structure")
+                        return True, response
+                    else:
+                        return False, response
+                else:
+                    missing = [cat for cat in expected_categories if cat not in categories]
+                    print(f"   ❌ Missing categories: {missing}")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
     def test_tcs_credentials(self):
         """Test TCS credentials endpoint"""
         success, response, _ = self.run_test("TCS Credentials", "GET", "tcs/credentials", 200)
