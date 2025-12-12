@@ -3993,22 +3993,6 @@ async def delete_bundle(bundle_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-        
-        return {
-            "success": True,
-            "campaigns": campaigns
-        }
-    
-    except Exception as e:
-        logger.error(f"Error fetching campaigns: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-    except Exception as e:
-        logger.error(f"Error sending bulk WhatsApp: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
     
     if fulfillment_status and fulfillment_status != "all":
         query['fulfillment_status'] = fulfillment_status
