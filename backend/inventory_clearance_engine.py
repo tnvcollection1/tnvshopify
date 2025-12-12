@@ -48,8 +48,8 @@ class InventoryClearanceEngine:
                     'error': 'No inventory data found. Please sync inventory from Shopify first (Settings > Sync Inventory).'
                 }
             
-            # Build a lookup of last sale dates from customer orders
-            # Filter by store_name if specified to match sales with same store's inventory
+            # Build a lookup of last sale dates from multiple sources
+            # 1. Customer orders (primary source)
             sales_match = {'store_name': store_name} if store_name else {}
             sales_pipeline = [
                 {'$match': sales_match},
