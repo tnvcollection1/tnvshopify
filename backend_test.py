@@ -595,6 +595,45 @@ class ShopifyCustomerAPITester:
         success, response, _ = self.run_test("Customers (Limited)", "GET", "customers?limit=5", 200)
         return success, response
     
+    def test_customers_with_fulfillment_filter(self):
+        """Test Customers endpoint with fulfillment_status filter - P0 Bug Fix"""
+        success, response, _ = self.run_test(
+            "Customers with Fulfillment Filter", 
+            "GET", 
+            "customers?fulfillment_status=fulfilled&limit=5", 
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "customers" in response and "total" in response:
+                customers_list = response["customers"]
+                total = response["total"]
+                
+                print(f"   Fulfilled customers found: {total}")
+                print(f"   Customers returned: {len(customers_list)}")
+                
+                # Verify all returned customers have fulfilled status
+                if customers_list:
+                    all_fulfilled = all(
+                        customer.get("fulfillment_status") == "fulfilled" 
+                        for customer in customers_list
+                    )
+                    if all_fulfilled:
+                        print(f"   ✅ All returned customers have fulfilled status")
+                        return True, response
+                    else:
+                        print(f"   ❌ Some customers don't have fulfilled status")
+                        return False, response
+                else:
+                    print(f"   ✅ No fulfilled customers found (valid result)")
+                    return True, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
     def test_customers_count(self):
         """Test Customers count endpoint"""
         success, response, _ = self.run_test("Customers Count", "GET", "customers/count", 200)
