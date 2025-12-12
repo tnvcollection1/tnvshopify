@@ -124,11 +124,6 @@ async def init_default_users():
 # Create the main app without a prefix
 app = FastAPI()
 
-# Startup event to initialize default users
-@app.on_event("startup")
-async def startup_event():
-    await init_default_users()
-
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
