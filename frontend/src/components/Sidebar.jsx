@@ -97,6 +97,7 @@ const Sidebar = () => {
     {
       title: 'SYSTEM',
       items: [
+        { icon: Users, label: 'User Management', path: '/users', showForDemo: false },
         { icon: Settings, label: 'Settings', path: '/settings', showForDemo: false },
       ]
     }
