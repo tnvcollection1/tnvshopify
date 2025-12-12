@@ -146,9 +146,19 @@ agent_communication:
     status_history:
       - working: true
         agent: "testing"
-        comment: "✅ MULTI-TENANT & META ADS APIs: Comprehensive testing completed successfully. All 6 test scenarios passed: 1) Tenant Registration API (POST /api/tenants/register) creates tenant and user with proper structure (id, business_name, subscription_plan), 2) Get Subscription Plans API (GET /api/tenants/plans/all) returns all 4 plans (free, starter, growth, enterprise) with valid structure (id, name, price, features array), 3) Meta Ads Validation API (GET /api/meta-ads/validate) correctly returns connected: false with proper error message when no credentials configured, 4) Meta Ads Campaigns API (GET /api/meta-ads/campaigns) properly returns 400 error when Meta API not configured, 5) Tenant API Keys Update API (PUT /api/tenants/{tenant_id}/api-keys) successfully updates shopify_domain and shopify_token, 6) Tenant Usage API (GET /api/tenants/{tenant_id}/usage) returns proper usage object with orders_this_month, messages_this_month, stores, users counts and plan limits. All endpoints handle authentication, validation, and error cases correctly. Backend APIs are production-ready."
-      - working: true
-        agent: "testing"
-        comment: "✅ MULTI-TENANT FEATURES & META ADS UI COMPREHENSIVE VALIDATION: Successfully tested all 5 requested UI scenarios. LANDING PAGE FEATURES: Perfect display of 6 feature cards including new 'Meta Ads Comparison' feature with proper description 'Real-time Facebook & Instagram ad performance tracking. Compare campaigns side-by-side and optimize ROAS.' LOGIN & META ADS NAVIGATION: Login with admin/admin credentials works correctly, redirects to dashboard. Meta Ads Manager (/meta-ads) shows proper 'Connect Facebook Ads' page with 'Configure in Settings' button (expected behavior since no credentials configured). SIDEBAR NAVIGATION: Meta Ads Manager link found under MARKETING section in sidebar, navigation works correctly. DASHBOARD DISPLAY: Dark theme dashboard loads perfectly with all 4 stats cards (Total Customers, Total Orders, Fulfilled, Unfulfilled) displaying proper data and emerald green accent colors. SETTINGS PAGE: API configuration sections visible with tabs for Shopify, TCS, DTDC, Auto-Sync, and Security. All UI components working as expected with consistent dark theme throughout."
+        comment: "✅ MULTI-TENANT & META ADS APIs: Comprehensive testing completed successfully."
     notes: "Multi-tenant onboarding wizard, Meta Ads comparison dashboard, tenant registration API"
+
+  - task: "Shopify-Style UI Overhaul - Tracker Pages"
+    implemented: true
+    working: pending
+    files:
+      - "/app/frontend/src/components/DispatchTracker.jsx"
+      - "/app/frontend/src/components/ConfirmationTracker.jsx"
+      - "/app/frontend/src/components/PurchaseTracker.jsx"
+      - "/app/frontend/src/components/DraftsPage.jsx"
+    stuck_count: 0
+    priority: "P0"
+    needs_retesting: true
+    notes: "Applied Shopify-style UI to all tracker pages: clean headers, stats cards with icons, clean tables. Pages now use global StoreContext for data filtering."
 
