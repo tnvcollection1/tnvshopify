@@ -856,7 +856,8 @@ class ShopifyCustomerAPITester:
                 "owner_name": "Test Owner",
                 "password": "test123",
                 "business_category": "fashion"
-            }
+            },
+            use_form_data=True
         )
         
         if success and response:
