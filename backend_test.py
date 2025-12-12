@@ -904,6 +904,68 @@ class ShopifyCustomerAPITester:
         success, response, _ = self.run_test("Get Clearance Campaigns", "GET", "clearance/campaigns", 200)
         return success, response
     
+    # ==================== P0 BUG FIX TESTS ====================
+    
+    def run_p0_bug_fix_tests(self):
+        """Run comprehensive tests for P0 bug fixes"""
+        print("\n" + "="*80)
+        print("🐛 P0 BUG FIX VALIDATION TESTS")
+        print("="*80)
+        
+        p0_results = {}
+        
+        # Bug #1: Dispatch Tracker
+        print("\n📋 BUG #1: DISPATCH TRACKER")
+        print("-" * 40)
+        
+        dispatch_customers_success, dispatch_customers_response = self.test_customers_with_fulfillment_filter()
+        dispatch_stats_success, dispatch_stats_response = self.test_customers_stats_with_fulfillment_filter()
+        
+        p0_results["dispatch_tracker"] = {
+            "customers_endpoint": dispatch_customers_success,
+            "stats_endpoint": dispatch_stats_success,
+            "overall": dispatch_customers_success and dispatch_stats_success
+        }
+        
+        # Bug #2: Inventory Health Store Filter
+        print("\n📦 BUG #2: INVENTORY HEALTH STORE FILTER")
+        print("-" * 40)
+        
+        health_basic_success, health_basic_response = self.test_clearance_health()
+        health_filtered_success, health_filtered_response = self.test_clearance_health_with_store_filter()
+        
+        p0_results["inventory_health"] = {
+            "basic_endpoint": health_basic_success,
+            "store_filter": health_filtered_success,
+            "overall": health_basic_success and health_filtered_success
+        }
+        
+        # Bug #3: Dynamic Pricing
+        print("\n💰 BUG #3: DYNAMIC PRICING")
+        print("-" * 40)
+        
+        pricing_report_success, pricing_report_response = self.test_dynamic_pricing_report()
+        
+        p0_results["dynamic_pricing"] = {
+            "report_endpoint": pricing_report_success,
+            "overall": pricing_report_success
+        }
+        
+        # Bug #4: Customer Segments
+        print("\n👥 BUG #4: CUSTOMER SEGMENTS")
+        print("-" * 40)
+        
+        segments_success, segments_response = self.test_customers_segments()
+        export_vip_success, export_vip_response = self.test_customers_export_segment_vip()
+        
+        p0_results["customer_segments"] = {
+            "segments_endpoint": segments_success,
+            "export_vip": export_vip_success,
+            "overall": segments_success and export_vip_success
+        }
+        
+        return p0_results
+    
     # ==================== REFACTORING TESTS ====================
     
     def run_refactoring_tests(self):
