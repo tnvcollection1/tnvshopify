@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { 
   ArrowRight, 
   Check, 
@@ -13,91 +14,71 @@ import {
   Globe, 
   Users,
   TrendingUp,
-  Sparkles,
   ChevronRight,
   Play,
-  Star
+  Star,
+  Menu,
+  X
 } from "lucide-react";
 
-// Animated text rotation for hero
-const rotatingTexts = [
-  "retail empire",
-  "business hub",
-  "sales machine",
-  "growth engine",
-  "command center"
-];
-
 const LandingPage = () => {
-  const [currentTextIndex, setCurrentTextIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsVisible(false);
-      setTimeout(() => {
-        setCurrentTextIndex((prev) => (prev + 1) % rotatingTexts.length);
-        setIsVisible(true);
-      }, 300);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const features = [
     {
       icon: <Store className="w-6 h-6" />,
-      title: "Multi-Store Management",
-      description: "Connect multiple Shopify stores and manage all your inventory, orders, and customers from one dashboard."
+      title: "Multi-store management",
+      description: "Connect and manage multiple Shopify stores from one dashboard. Sync orders, inventory, and customers automatically."
     },
     {
       icon: <BarChart3 className="w-6 h-6" />,
-      title: "Meta Ads Comparison",
-      description: "Real-time Facebook & Instagram ad performance tracking. Compare campaigns side-by-side and optimize ROAS."
+      title: "Advanced analytics",
+      description: "Real-time insights on sales, customer behavior, and inventory performance. Make data-driven decisions."
     },
     {
       icon: <MessageSquare className="w-6 h-6" />,
-      title: "WhatsApp Business API",
-      description: "Send bulk campaigns, automate order updates, and chat with customers directly via WhatsApp Business API."
+      title: "WhatsApp Business",
+      description: "Send automated order updates, marketing campaigns, and chat with customers via WhatsApp Business API."
     },
     {
       icon: <Package className="w-6 h-6" />,
-      title: "Smart Inventory Clearance",
-      description: "AI identifies dead stock and creates automated clearance campaigns. Dynamic pricing to maximize sell-through."
+      title: "Smart inventory",
+      description: "AI-powered inventory management with dead stock detection, dynamic pricing, and automated clearance campaigns."
     },
     {
       icon: <TrendingUp className="w-6 h-6" />,
-      title: "Dynamic Pricing Engine",
-      description: "AI automatically adjusts prices based on 60-day demand analysis, inventory levels, and sales velocity."
+      title: "Dynamic pricing",
+      description: "Automatically adjust prices based on demand, inventory levels, and sales velocity to maximize profits."
     },
     {
       icon: <Users className="w-6 h-6" />,
-      title: "Customer Segmentation",
-      description: "RFM analysis, purchase behavior segmentation, and targeted marketing campaigns for each customer group."
+      title: "Customer segmentation",
+      description: "Segment customers by behavior and purchase history. Create targeted marketing campaigns for each group."
     }
   ];
 
   const stats = [
-    { value: "10K+", label: "Orders Managed" },
-    { value: "₹50L+", label: "Revenue Tracked" },
-    { value: "95%", label: "Delivery Success" },
-    { value: "24/7", label: "Support" }
+    { value: "10K+", label: "Orders managed" },
+    { value: "₹50L+", label: "Revenue tracked" },
+    { value: "95%", label: "Delivery success" },
+    { value: "500+", label: "Happy merchants" }
   ];
 
   const testimonials = [
     {
-      quote: "OmniSales transformed how we manage our multiple stores. The AI insights alone have increased our sales by 40%.",
+      quote: "This platform transformed how we manage our stores. The automation features alone save us hours every day.",
       author: "Priya Sharma",
       role: "Founder, Fashion Hub",
       avatar: "PS"
     },
     {
-      quote: "The WhatsApp integration is a game-changer. Our customer engagement has never been higher.",
+      quote: "The WhatsApp integration is incredible. Our customer engagement has increased by 40% since we started using it.",
       author: "Rahul Verma",
       role: "CEO, TechGadgets India",
       avatar: "RV"
     },
     {
-      quote: "Finally, a platform that understands Indian e-commerce. The inventory management is brilliant.",
+      quote: "Finally, a platform that understands Indian e-commerce. The inventory management is exactly what we needed.",
       author: "Anita Desai",
       role: "Operations Head, StyleKart",
       avatar: "AD"
@@ -109,132 +90,148 @@ const LandingPage = () => {
       name: "Starter",
       price: "₹999",
       period: "/month",
-      description: "Perfect for small businesses just getting started",
+      description: "Perfect for small businesses",
       features: [
-        "1 Store Connection",
+        "1 Store connection",
         "Up to 500 orders/month",
-        "Basic Analytics",
-        "WhatsApp Notifications",
-        "Email Support"
+        "Basic analytics",
+        "WhatsApp notifications",
+        "Email support"
       ],
-      cta: "Start Free Trial",
+      cta: "Start free trial",
       popular: false
     },
     {
       name: "Growth",
       price: "₹2,999",
       period: "/month",
-      description: "For growing businesses ready to scale",
+      description: "For growing businesses",
       features: [
-        "3 Store Connections",
+        "3 Store connections",
         "Up to 5,000 orders/month",
-        "AI Analytics & Insights",
-        "WhatsApp Marketing Campaigns",
-        "Dynamic Pricing Engine",
-        "Priority Support"
+        "Advanced analytics",
+        "WhatsApp campaigns",
+        "Dynamic pricing",
+        "Priority support"
       ],
-      cta: "Start Free Trial",
+      cta: "Start free trial",
       popular: true
     },
     {
       name: "Enterprise",
       price: "₹9,999",
       period: "/month",
-      description: "For large operations with custom needs",
+      description: "For large operations",
       features: [
-        "Unlimited Stores",
-        "Unlimited Orders",
-        "Advanced AI Features",
-        "Custom Integrations",
-        "Dedicated Account Manager",
-        "24/7 Phone Support",
-        "Custom Reports"
+        "Unlimited stores",
+        "Unlimited orders",
+        "Custom integrations",
+        "Dedicated manager",
+        "24/7 phone support",
+        "Custom reports"
       ],
-      cta: "Contact Sales",
+      cta: "Contact sales",
       popular: false
     }
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg border-b border-white/10">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-[#95bf47] rounded-md flex items-center justify-center">
+                <Store className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold">OmniSales</span>
+              <span className="text-xl font-semibold text-gray-900">OmniSales</span>
             </div>
             
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-400 hover:text-white transition-colors text-sm">Features</a>
-              <a href="#pricing" className="text-gray-400 hover:text-white transition-colors text-sm">Pricing</a>
-              <a href="#testimonials" className="text-gray-400 hover:text-white transition-colors text-sm">Testimonials</a>
+              <a href="#features" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Features</a>
+              <a href="#pricing" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Pricing</a>
+              <a href="#testimonials" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Testimonials</a>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
               <Link to="/login">
-                <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-white/10">
+                <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
                   Log in
                 </Button>
               </Link>
               <Link to="/login">
-                <Button className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold">
+                <Button className="bg-gray-900 hover:bg-gray-800 text-white">
+                  Start free trial
+                </Button>
+              </Link>
+            </div>
+
+            <button 
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-t border-gray-200 px-4 py-4">
+            <div className="space-y-4">
+              <a href="#features" className="block text-gray-600 hover:text-gray-900">Features</a>
+              <a href="#pricing" className="block text-gray-600 hover:text-gray-900">Pricing</a>
+              <a href="#testimonials" className="block text-gray-600 hover:text-gray-900">Testimonials</a>
+              <Link to="/login" className="block">
+                <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">
                   Start free trial
                 </Button>
               </Link>
             </div>
           </div>
-        </div>
+        )}
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        {/* Gradient orbs */}
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl" />
-        <div className="absolute top-40 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 mb-8">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm text-gray-300">Now with AI-powered insights</span>
-          </div>
-          
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight mb-6">
-            <span className="text-white">Build your</span>
-            <br />
-            <span 
-              className={`bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
-            >
-              {rotatingTexts[currentTextIndex]}
-            </span>
-          </h1>
-          
-          <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto mb-10">
-            The all-in-one commerce platform that helps Indian businesses manage orders, 
-            inventory, marketing, and customer relationships — all from one powerful dashboard.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Link to="/login">
-              <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold px-8 py-6 text-lg rounded-xl">
-                Start for free
-                <ArrowRight className="w-5 h-5 ml-2" />
+      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-1.5 mb-6">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              <span className="text-sm text-green-700 font-medium">Now with AI-powered insights</span>
+            </div>
+            
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-gray-900 leading-tight mb-6">
+              The commerce platform made for <span className="text-[#95bf47]">Indian businesses</span>
+            </h1>
+            
+            <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+              Manage orders, inventory, and customer relationships from one powerful dashboard. 
+              Built for businesses that want to grow.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+              <Link to="/login">
+                <Button size="lg" className="bg-gray-900 hover:bg-gray-800 text-white px-8 h-12 text-base">
+                  Start free trial
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 px-8 h-12 text-base">
+                <Play className="w-4 h-4 mr-2" />
+                Watch demo
               </Button>
-            </Link>
-            <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 px-8 py-6 text-lg rounded-xl">
-              <Play className="w-5 h-5 mr-2" />
-              Watch demo
-            </Button>
+            </div>
+
+            <p className="text-sm text-gray-500">Free 14-day trial • No credit card required</p>
           </div>
-          
+
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto mt-16 pt-16 border-t border-gray-200">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white mb-1">{stat.value}</div>
+                <div className="text-3xl font-semibold text-gray-900 mb-1">{stat.value}</div>
                 <div className="text-sm text-gray-500">{stat.label}</div>
               </div>
             ))}
@@ -243,108 +240,76 @@ const LandingPage = () => {
       </section>
 
       {/* Dashboard Preview */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-b from-white/5 to-transparent p-1">
-            <div className="bg-[#0f0f0f] rounded-xl overflow-hidden">
-              {/* Browser chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                </div>
-                <div className="flex-1 flex justify-center">
-                  <div className="bg-white/10 rounded-lg px-4 py-1 text-sm text-gray-400">
-                    omnisales.app/dashboard
+          <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200">
+            <div className="flex items-center gap-2 px-4 py-3 bg-gray-100 border-b border-gray-200">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                <div className="w-3 h-3 rounded-full bg-green-400" />
+              </div>
+            </div>
+            <div className="flex">
+              {/* Mini Sidebar */}
+              <div className="w-48 bg-[#1a1a1a] p-4 hidden md:block">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-6 h-6 bg-[#95bf47] rounded flex items-center justify-center">
+                    <Store className="w-4 h-4 text-white" />
                   </div>
+                  <span className="text-white text-sm font-medium">OmniSales</span>
+                </div>
+                <div className="space-y-1">
+                  <div className="px-3 py-2 bg-gray-800 rounded text-white text-sm">Orders</div>
+                  <div className="px-3 py-2 text-gray-400 text-sm">Products</div>
+                  <div className="px-3 py-2 text-gray-400 text-sm">Customers</div>
+                  <div className="px-3 py-2 text-gray-400 text-sm">Analytics</div>
+                  <div className="px-3 py-2 text-gray-400 text-sm">Marketing</div>
                 </div>
               </div>
-              {/* Dashboard preview - realistic mockup */}
-              <div className="flex">
-                {/* Sidebar mockup */}
-                <div className="w-56 bg-[#1a1a1a] border-r border-white/10 p-4 hidden md:block">
-                  <div className="flex items-center gap-2 mb-6">
-                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
-                      <Zap className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="font-bold text-white text-sm">OmniSales</span>
-                  </div>
-                  {/* Menu items */}
-                  <div className="space-y-2">
-                    <div className="px-3 py-2 bg-emerald-500 rounded-lg text-black text-sm font-medium">Dashboard</div>
-                    <div className="px-3 py-2 text-gray-400 text-sm">Orders</div>
-                    <div className="px-3 py-2 text-gray-400 text-sm">Customers</div>
-                    <div className="px-3 py-2 text-gray-400 text-sm">Inventory</div>
-                    <div className="px-3 py-2 text-gray-400 text-sm">Marketing</div>
-                    <div className="px-3 py-2 text-gray-400 text-sm">Analytics</div>
+              {/* Content */}
+              <div className="flex-1 p-6 bg-[#f6f6f7]">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Orders</h3>
+                  <div className="flex gap-2">
+                    <div className="px-3 py-1.5 bg-white border border-gray-300 rounded text-sm text-gray-600">Export</div>
                   </div>
                 </div>
-                {/* Main content mockup */}
-                <div className="flex-1 p-6">
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <div className="text-white font-bold text-lg">Dashboard</div>
-                      <div className="text-gray-500 text-xs">Overview of your business</div>
-                    </div>
-                    <div className="bg-emerald-500 text-black px-3 py-1.5 rounded-lg text-xs font-semibold">
-                      Sync Shopify
-                    </div>
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-500">Total orders</p>
+                    <p className="text-2xl font-semibold text-gray-900">23,421</p>
                   </div>
-                  {/* Stats cards */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                      <div className="text-gray-400 text-xs mb-1">Total Customers</div>
-                      <div className="text-white text-2xl font-bold">23,421</div>
-                      <div className="text-emerald-400 text-xs mt-1">+12%</div>
-                    </div>
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                      <div className="text-gray-400 text-xs mb-1">Total Orders</div>
-                      <div className="text-white text-2xl font-bold">10,931</div>
-                      <div className="text-emerald-400 text-xs mt-1">+8%</div>
-                    </div>
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                      <div className="text-gray-400 text-xs mb-1">Fulfilled</div>
-                      <div className="text-emerald-400 text-2xl font-bold">8,234</div>
-                      <div className="text-emerald-400 text-xs mt-1">+15%</div>
-                    </div>
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                      <div className="text-gray-400 text-xs mb-1">Revenue</div>
-                      <div className="text-white text-2xl font-bold">₹54.2L</div>
-                      <div className="text-emerald-400 text-xs mt-1">+23%</div>
-                    </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-500">Fulfilled</p>
+                    <p className="text-2xl font-semibold text-gray-900">18,234</p>
                   </div>
-                  {/* Recent orders table mockup */}
-                  <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-                    <div className="px-4 py-3 border-b border-white/10">
-                      <div className="text-white font-semibold text-sm">Recent Orders</div>
-                    </div>
-                    <div className="divide-y divide-white/5">
-                      {[
-                        { name: "Priya S.", order: "#29454", status: "fulfilled", amount: "₹2,340" },
-                        { name: "Rahul V.", order: "#29453", status: "pending", amount: "₹1,890" },
-                        { name: "Anita D.", order: "#29452", status: "fulfilled", amount: "₹4,560" },
-                      ].map((order, i) => (
-                        <div key={i} className="flex items-center justify-between px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs font-bold">
-                              {order.name.charAt(0)}
-                            </div>
-                            <div>
-                              <div className="text-white text-sm">{order.name}</div>
-                              <div className="text-gray-500 text-xs">{order.order}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className={`px-2 py-0.5 rounded text-xs ${order.status === 'fulfilled' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                              {order.status}
-                            </span>
-                            <span className="text-white text-sm font-medium">{order.amount}</span>
-                          </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-500">Pending</p>
+                    <p className="text-2xl font-semibold text-gray-900">5,187</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-500">Revenue</p>
+                    <p className="text-2xl font-semibold text-gray-900">₹54.2L</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200">
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <span className="text-sm font-medium text-gray-900">Recent orders</span>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {[1,2,3].map(i => (
+                      <div key={i} className="px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-blue-600">#2950{i}</span>
+                          <span className="text-sm text-gray-600">Customer {i}</span>
                         </div>
-                      ))}
-                    </div>
+                        <div className="flex items-center gap-3">
+                          <span className="px-2 py-0.5 bg-green-50 text-green-700 text-xs rounded">Fulfilled</span>
+                          <span className="text-sm text-gray-900">₹2,340</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -357,70 +322,57 @@ const LandingPage = () => {
       <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Everything you need to
-              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent"> scale your business</span>
+            <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-4">
+              Everything you need to grow
             </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              From order management to AI-powered marketing, OmniSales gives you all the tools to run and grow your e-commerce business.
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              From order management to AI-powered marketing, get all the tools to run your e-commerce business.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="group p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-500/50 transition-all duration-300 hover:bg-white/10"
+                className="p-6 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all"
               >
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4 group-hover:bg-emerald-500/30 transition-colors">
-                  <span className="text-emerald-400">{feature.icon}</span>
+                <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center mb-4">
+                  <span className="text-[#95bf47]">{feature.icon}</span>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{feature.description}</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Social Proof Logos */}
-      <section className="py-16 px-4 border-y border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <p className="text-center text-sm text-gray-500 mb-8">TRUSTED BY LEADING INDIAN BRANDS</p>
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-50">
-            {["Shopify", "Razorpay", "TCS", "DTDC", "WhatsApp", "Facebook"].map((brand) => (
-              <div key={brand} className="text-xl font-bold text-gray-400">{brand}</div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 px-4 sm:px-6 lg:px-8">
+      <section id="testimonials" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Loved by businesses across India</h2>
-            <p className="text-gray-400">See what our customers have to say about OmniSales</p>
+            <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-4">Loved by businesses</h2>
+            <p className="text-lg text-gray-600">See what our customers have to say</p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <div 
                 key={index}
-                className="p-6 rounded-2xl bg-white/5 border border-white/10"
+                className="p-6 rounded-xl bg-white border border-gray-200"
               >
                 <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="w-4 h-4 fill-emerald-400 text-emerald-400" />
+                  {[1,2,3,4,5].map((star) => (
+                    <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-gray-300 mb-6 text-sm leading-relaxed">"{testimonial.quote}"</p>
+                <p className="text-gray-700 mb-6">"{testimonial.quote}"</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-semibold text-sm">
+                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-medium text-sm">
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <div className="font-semibold text-sm">{testimonial.author}</div>
+                    <div className="font-medium text-gray-900 text-sm">{testimonial.author}</div>
                     <div className="text-gray-500 text-xs">{testimonial.role}</div>
                   </div>
                 </div>
@@ -431,46 +383,46 @@ const LandingPage = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent via-emerald-950/20 to-transparent">
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
-            <p className="text-gray-400">Start free, upgrade when you're ready. No hidden fees.</p>
+            <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-4">Simple pricing</h2>
+            <p className="text-lg text-gray-600">Start free, upgrade when you're ready</p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {pricingPlans.map((plan, index) => (
               <div 
                 key={index}
-                className={`relative p-6 rounded-2xl border ${
+                className={`relative p-6 rounded-xl border ${
                   plan.popular 
-                    ? 'bg-emerald-500/10 border-emerald-500/50' 
-                    : 'bg-white/5 border-white/10'
+                    ? 'border-[#95bf47] shadow-lg' 
+                    : 'border-gray-200'
                 }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-emerald-500 text-black text-xs font-semibold px-3 py-1 rounded-full">
-                      Most Popular
+                    <span className="bg-[#95bf47] text-white text-xs font-medium px-3 py-1 rounded-full">
+                      Most popular
                     </span>
                   </div>
                 )}
                 
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-2">{plan.name}</h3>
-                  <p className="text-gray-400 text-sm">{plan.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{plan.name}</h3>
+                  <p className="text-sm text-gray-500">{plan.description}</p>
                 </div>
                 
                 <div className="mb-6">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-gray-400">{plan.period}</span>
+                  <span className="text-4xl font-semibold text-gray-900">{plan.price}</span>
+                  <span className="text-gray-500">{plan.period}</span>
                 </div>
                 
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, fIndex) => (
                     <li key={fIndex} className="flex items-center gap-3 text-sm">
-                      <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span className="text-gray-300">{feature}</span>
+                      <Check className="w-4 h-4 text-[#95bf47]" />
+                      <span className="text-gray-600">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -479,12 +431,11 @@ const LandingPage = () => {
                   <Button 
                     className={`w-full ${
                       plan.popular 
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-black' 
-                        : 'bg-white/10 hover:bg-white/20 text-white'
+                        ? 'bg-gray-900 hover:bg-gray-800 text-white' 
+                        : 'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300'
                     }`}
                   >
                     {plan.cta}
-                    <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
               </div>
@@ -494,82 +445,71 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="relative">
-            {/* Gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 via-teal-600/20 to-emerald-600/20 rounded-3xl blur-xl" />
-            
-            <div className="relative bg-gradient-to-br from-emerald-900/50 to-teal-900/50 rounded-3xl border border-emerald-500/30 p-8 md:p-12">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-                Ready to transform your business?
-              </h2>
-              <p className="text-gray-400 mb-8 max-w-xl mx-auto">
-                Join thousands of Indian businesses already using OmniSales to manage their e-commerce operations.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link to="/login">
-                  <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold px-8">
-                    Start your free trial
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-                <span className="text-gray-500 text-sm">No credit card required</span>
-              </div>
-            </div>
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-semibold text-white mb-4">
+            Ready to grow your business?
+          </h2>
+          <p className="text-lg text-gray-400 mb-8">
+            Join thousands of Indian businesses already using OmniSales.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link to="/login">
+              <Button size="lg" className="bg-white hover:bg-gray-100 text-gray-900 px-8 h-12">
+                Start free trial
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
           </div>
+          <p className="text-sm text-gray-500 mt-4">No credit card required</p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-white/10">
+      <footer className="py-12 px-4 border-t border-gray-200">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 bg-[#95bf47] rounded-md flex items-center justify-center">
+                  <Store className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold">OmniSales</span>
+                <span className="text-lg font-semibold text-gray-900">OmniSales</span>
               </div>
-              <p className="text-gray-400 text-sm">
-                The all-in-one commerce platform for Indian businesses.
+              <p className="text-sm text-gray-500">
+                The commerce platform for Indian businesses.
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
+              <h4 className="font-medium text-gray-900 mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li><a href="#features" className="hover:text-gray-900">Features</a></li>
+                <li><a href="#pricing" className="hover:text-gray-900">Pricing</a></li>
+                <li><a href="#" className="hover:text-gray-900">Integrations</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              <h4 className="font-medium text-gray-900 mb-4">Company</h4>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li><a href="#" className="hover:text-gray-900">About</a></li>
+                <li><a href="#" className="hover:text-gray-900">Blog</a></li>
+                <li><a href="#" className="hover:text-gray-900">Contact</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Cookie Policy</a></li>
+              <h4 className="font-medium text-gray-900 mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li><a href="#" className="hover:text-gray-900">Privacy</a></li>
+                <li><a href="#" className="hover:text-gray-900">Terms</a></li>
               </ul>
             </div>
           </div>
           
-          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-sm">© 2025 OmniSales. All rights reserved.</p>
-            <p className="text-gray-500 text-sm">Made with ❤️ in India</p>
+          <div className="pt-8 border-t border-gray-200 text-center">
+            <p className="text-sm text-gray-500">© 2025 OmniSales. All rights reserved.</p>
           </div>
         </div>
       </footer>
