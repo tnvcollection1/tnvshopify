@@ -1,148 +1,61 @@
 frontend:
-  - task: "Facebook Marketing Dashboard"
+  - task: "Dispatch Tracker Bug Fix"
     implemented: true
     working: true
-    file: "/app/frontend/src/components/FacebookMarketing.jsx"
+    file: "/app/frontend/src/components/DispatchTracker.jsx"
     stuck_count: 0
-    priority: "high"
-    needs_retesting: false
+    priority: "P0"
+    needs_retesting: true
+    notes: "Fixed by updating routes/customers.py to support fulfillment_status, date filters, and proper stats endpoint"
 
-  - task: "AI Campaign Optimizer"
+  - task: "Inventory Health Store Filter Bug Fix"
     implemented: true
     working: true
-    file: "/app/frontend/src/components/AICampaignOptimizer.jsx"
+    file: "/app/frontend/src/components/InventoryHealthDashboard.jsx"
     stuck_count: 0
-    priority: "high"
-    needs_retesting: false
+    priority: "P0"
+    needs_retesting: true
+    notes: "Added store-wise filter dropdown using clearance/health endpoint"
+
+  - task: "Dynamic Pricing Product Details Bug Fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/DynamicPricingDashboard.jsx"
+    stuck_count: 0
+    priority: "P0"
+    needs_retesting: true
+    notes: "Updated modal to display correct fields: order_count, days_since_last_sale, velocity_score"
+
+  - task: "Customer Segments Bug Fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/CustomerSegmentationDashboard.jsx"
+    stuck_count: 0
+    priority: "P0"
+    needs_retesting: true
+    notes: "Updated backend endpoint to return segment data in format expected by frontend (vip, high_value, medium_value, low_value, dormant)"
 
 backend:
-  - task: "server.py refactoring"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    notes: "Reduced from 8371 to 7752 lines. Extracted Facebook (350 lines) and Finance (270 lines) routes."
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ Server.py refactoring validated successfully. All modular routes working correctly."
-      - working: true
-        agent: "testing"
-        comment: "✅ COMPREHENSIVE REFACTORING TEST: 19/22 endpoints passed (86% success rate). All critical modular routes working correctly."
-    
-  - task: "Facebook routes modularization"
-    implemented: true
-    working: true
-    file: "/app/backend/routes/facebook.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ All 6 Facebook API endpoints tested and working: status, ad-accounts, set-ad-account, campaigns, audiences, AI analysis (30-60s response time)."
-      - working: true
-        agent: "testing"
-        comment: "✅ Facebook routes: 6/6 tests passed. All endpoints working correctly including AI campaign analysis."
-    
-  - task: "Finance routes modularization"
-    implemented: true
-    working: true
-    file: "/app/backend/routes/finance.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ All 4 Finance reconciliation endpoints tested and working: status, reconciliation, missing-orders, upload-history."
-      - working: true
-        agent: "testing"
-        comment: "✅ Finance routes: 4/4 tests passed. All reconciliation endpoints working correctly."
-
-  - task: "Pricing routes modularization"
-    implemented: true
-    working: true
-    file: "/app/backend/routes/pricing.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ Pricing routes: 3/3 tests passed. Config, rules, and dashboard-stats endpoints working correctly."
-
-  - task: "TCS routes modularization"
-    implemented: true
-    working: true
-    file: "/app/backend/routes/tcs.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "Minor: TCS routes: 1/2 tests passed. Credentials endpoint working, auto-sync-status has import issue (non-critical)."
-
-  - task: "Customers routes modularization"
+  - task: "Customers routes enhancement"
     implemented: true
     working: true
     file: "/app/backend/routes/customers.py"
     stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "Minor: Customers routes: 3/4 tests passed. Main endpoints working, stats endpoint has minor field reference issue."
-
-  - task: "Smart Inventory Clearance Engine"
-    implemented: true
-    working: true
-    file: "/app/backend/routes/clearance.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ Clearance Engine: 5/5 tests passed. All endpoints working correctly: stats, health analysis, AI recommendations, quick clearance, campaigns. No items meet 360-day threshold (expected behavior)."
+    priority: "P0"
+    needs_retesting: true
+    notes: "Enhanced GET /customers and /stats endpoints with fulfillment_status, date filters, sorting. Updated /segments endpoint to return proper format with counts and total_values."
 
 metadata:
   created_by: "main_agent"
-  version: "1.5"
-  refactoring_stats:
-    original_lines: 8371
-    current_lines: 7752
-    lines_removed: 619
-    percentage_reduction: "7.4%"
-  test_sequence: 3
-  run_ui: false
-  last_tested: "2025-01-11T15:45:00Z"
-  test_results:
-    facebook_routes: "6/6 passed"
-    finance_routes: "4/4 passed"
-    pricing_routes: "3/3 passed"
-    tcs_routes: "1/2 passed (minor import issue)"
-    customers_routes: "3/4 passed (minor field issue)"
-    clearance_routes: "5/5 passed"
-    existing_endpoints: "2/3 passed (orders endpoint not found)"
-    total_success_rate: "89% (24/27 tests passed)"
+  version: "2.0"
+  last_tested: "2025-12-12"
 
 test_plan:
   current_focus:
-    - "Smart Inventory Clearance Engine API testing complete"
-  stuck_tasks: []
-  test_all: false
+    - "P0 Bug Fixes: Dispatch Tracker, Inventory Health, Dynamic Pricing, Customer Segments"
+  test_all: true
+  run_ui: true
 
 agent_communication:
   - agent: "main"
-    message: "Server.py refactoring Phase 2 complete. Facebook and Finance routes extracted to modular files. All endpoints tested and working."
-  - agent: "testing"
-    message: "✅ REFACTORING VALIDATION COMPLETE: All 13/13 tests passed. Facebook routes (6/6), Finance routes (4/4), and existing endpoints (3/3) are fully functional. AI Campaign Analysis working with 30-60s response time. No critical issues found."
-  - agent: "testing"
-    message: "✅ COMPREHENSIVE REFACTORING VALIDATION: 19/22 tests passed (86% success rate). All critical modular routes working correctly. Facebook (6/6), Finance (4/4), Pricing (3/3) routes fully functional. Minor issues: TCS auto-sync import error, customers stats field reference, orders endpoint not found (expected as it's customer data). Refactoring successful!"
-  - agent: "testing"
-    message: "✅ SMART INVENTORY CLEARANCE ENGINE TESTING COMPLETE: All 5/5 clearance API endpoints tested and working correctly. Stats, health analysis, AI recommendations, quick clearance, and campaigns endpoints all functional. No items meet 360-day threshold (expected behavior - all 116 inventory items are healthy). Overall backend success rate: 89% (24/27 tests passed)."
+    message: "Fixed all 4 P0 bugs: Dispatch Tracker (customers endpoint), Inventory Health (store filter), Dynamic Pricing (product details), Customer Segments (API format). Ready for testing."
