@@ -539,7 +539,7 @@ const DynamicPricingDashboard = () => {
                       <div className="text-center">
                         <div className="text-xs text-gray-400">Orders</div>
                         <div className="text-sm font-bold text-white">
-                          {product.order_frequency || 0}
+                          {product.order_count || product.order_frequency || 0}
                         </div>
                       </div>
                       <div className="text-center">
@@ -549,9 +549,9 @@ const DynamicPricingDashboard = () => {
                         </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xs text-gray-400">Margin</div>
+                        <div className="text-xs text-gray-400">Units Sold</div>
                         <div className="text-sm font-bold text-purple-400">
-                          {product.profit_margin?.toFixed(1) || 0}%
+                          {product.total_quantity_sold || 0}
                         </div>
                       </div>
                     </div>
