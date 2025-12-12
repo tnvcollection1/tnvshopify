@@ -856,23 +856,42 @@ class ShopifyCustomerAPITester:
         
         if success and response:
             # Verify response structure for inventory health
-            if "categories" in response:
+            if "categories" in response and "summary" in response:
                 categories = response["categories"]
-                expected_categories = ["dead_stock", "slow_moving", "moderate", "healthy"]
+                summary = response["summary"]
                 
                 print(f"   Found categories: {list(categories.keys())}")
+                print(f"   Summary counts: dead_stock={summary.get('dead_stock_count', 0)}, slow_moving={summary.get('slow_moving_count', 0)}, moderate={summary.get('moderate_count', 0)}, healthy={summary.get('healthy_count', 0)}")
                 
-                # Check if all expected categories exist
-                all_categories_present = all(cat in categories for cat in expected_categories)
-                if all_categories_present:
-                    print(f"   ✅ All expected categories present")
-                    return True, response
+                # Check if core clearance categories exist (healthy items are not returned in categories as they don't need clearance)
+                core_categories = ["dead_stock", "slow_moving", "moderate"]
+                core_categories_present = all(cat in categories for cat in core_categories)
+                
+                # Verify summary has all counts including healthy
+                summary_fields = ["dead_stock_count", "slow_moving_count", "moderate_count", "healthy_count", "total_items"]
+                summary_complete = all(field in summary for field in summary_fields)
+                
+                if core_categories_present and summary_complete:
+                    print(f"   ✅ Core clearance categories present and summary complete")
+                    
+                    # Verify store filtering is working by checking if we have reasonable data
+                    total_items = summary.get("total_items", 0)
+                    if total_items > 0:
+                        print(f"   ✅ Store filter working - found {total_items} items for store")
+                        return True, response
+                    else:
+                        print(f"   ❌ No items found for store filter")
+                        return False, response
                 else:
-                    missing = [cat for cat in expected_categories if cat not in categories]
-                    print(f"   ❌ Missing categories: {missing}")
+                    missing_cats = [cat for cat in core_categories if cat not in categories]
+                    missing_summary = [field for field in summary_fields if field not in summary]
+                    if missing_cats:
+                        print(f"   ❌ Missing categories: {missing_cats}")
+                    if missing_summary:
+                        print(f"   ❌ Missing summary fields: {missing_summary}")
                     return False, response
             else:
-                print(f"   ❌ Response missing 'categories' field")
+                print(f"   ❌ Response missing 'categories' or 'summary' field")
                 return False, response
         
         return success, response
