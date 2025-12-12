@@ -153,31 +153,56 @@ const CustomerSegmentationDashboard = () => {
     window.open(whatsappUrl, '_blank');
   };
 
-  const viewSegmentCustomers = async (segment) => {
+  const viewSegmentCustomers = async (segment, page = 1) => {
     try {
-      setLoading(true);
-      const storeParam = selectedStore !== 'all' ? `?store_name=${selectedStore}` : '';
-      const res = await axios.get(`${API_URL}/api/customers/export-segment/${segment}${storeParam}`);
+      setPageLoading(true);
+      if (page === 1) setLoading(true);
+      
+      const storeParam = selectedStore !== 'all' ? `store_name=${selectedStore}&` : '';
+      const res = await axios.get(`${API_URL}/api/customers/export-segment/${segment}?${storeParam}page=${page}&limit=50`);
       
       if (!res.data.customers || res.data.customers.length === 0) {
-        alert(`No customers found in ${segment} segment`);
+        if (page === 1) {
+          alert(`No customers found in ${segment} segment`);
+        }
         setLoading(false);
+        setPageLoading(false);
         return;
       }
       
       setSegmentCustomers(res.data.customers);
+      setCurrentPage(res.data.page || 1);
+      setTotalPages(res.data.total_pages || 1);
+      setTotalCount(res.data.total_count || res.data.customers.length);
       setViewingSegment(segment);
       setLoading(false);
+      setPageLoading(false);
     } catch (error) {
       console.error('Error fetching customer list:', error);
       alert('❌ Error fetching customer list');
       setLoading(false);
+      setPageLoading(false);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      viewSegmentCustomers(viewingSegment, currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      viewSegmentCustomers(viewingSegment, currentPage - 1);
     }
   };
 
   const closeCustomerView = () => {
     setViewingSegment(null);
     setSegmentCustomers([]);
+    setCurrentPage(1);
+    setTotalPages(1);
+    setTotalCount(0);
   };
 
   if (loading) {
