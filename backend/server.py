@@ -203,6 +203,10 @@ async def invalidate_inventory_cache():
 async def startup_event():
     """Start background scheduler on server startup"""
     logger.info("🚀 Starting server...")
+    
+    # Initialize default users FIRST
+    await init_default_users()
+    
     scheduler = get_scheduler()
     scheduler.start()
     logger.info("✅ Background scheduler initialized")
