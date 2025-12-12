@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -42,17 +42,18 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { Checkbox } from './ui/checkbox';
+import { useStore } from '../contexts/StoreContext';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const Inventory = () => {
   console.log("🔍 LOADING: Inventory.jsx with Store-wise Sync");
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [stores, setStores] = useState([]);
   const [filters, setFilters] = useState({
-    store: 'all',
     status: 'all'
   });
   
