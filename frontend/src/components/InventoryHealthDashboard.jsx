@@ -154,7 +154,7 @@ const InventoryHealthDashboard = () => {
   const getAIRecommendations = async (category = 'dead_stock') => {
     try {
       setAiLoading(true);
-      const params = selectedStore !== 'all' ? `store_name=${selectedStore}&` : '';
+      const params = globalStore !== 'all' ? `store_name=${globalStore}&` : '';
       const res = await axios.post(`${API_URL}/api/clearance/ai-recommendations?${params}category=${category}`);
       
       if (res.data.success) {
