@@ -246,7 +246,7 @@ const LandingPage = () => {
       <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-b from-white/5 to-transparent p-1">
-            <div className="bg-[#1a1a1a] rounded-xl overflow-hidden">
+            <div className="bg-[#0f0f0f] rounded-xl overflow-hidden">
               {/* Browser chrome */}
               <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10">
                 <div className="flex gap-2">
@@ -260,16 +260,91 @@ const LandingPage = () => {
                   </div>
                 </div>
               </div>
-              {/* Dashboard preview image placeholder */}
-              <div className="aspect-video bg-gradient-to-br from-[#1a1a1a] via-[#0f1f0f] to-[#1a1a1a] flex items-center justify-center">
-                <div className="text-center">
-                  <div className="grid grid-cols-3 gap-4 p-8">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                      <div key={i} className="bg-white/5 rounded-lg p-4 backdrop-blur">
-                        <div className="h-3 w-20 bg-white/20 rounded mb-3" />
-                        <div className="h-8 w-full bg-emerald-500/20 rounded" />
-                      </div>
-                    ))}
+              {/* Dashboard preview - realistic mockup */}
+              <div className="flex">
+                {/* Sidebar mockup */}
+                <div className="w-56 bg-[#1a1a1a] border-r border-white/10 p-4 hidden md:block">
+                  <div className="flex items-center gap-2 mb-6">
+                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
+                      <Zap className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="font-bold text-white text-sm">OmniSales</span>
+                  </div>
+                  {/* Menu items */}
+                  <div className="space-y-2">
+                    <div className="px-3 py-2 bg-emerald-500 rounded-lg text-black text-sm font-medium">Dashboard</div>
+                    <div className="px-3 py-2 text-gray-400 text-sm">Orders</div>
+                    <div className="px-3 py-2 text-gray-400 text-sm">Customers</div>
+                    <div className="px-3 py-2 text-gray-400 text-sm">Inventory</div>
+                    <div className="px-3 py-2 text-gray-400 text-sm">Marketing</div>
+                    <div className="px-3 py-2 text-gray-400 text-sm">Analytics</div>
+                  </div>
+                </div>
+                {/* Main content mockup */}
+                <div className="flex-1 p-6">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <div className="text-white font-bold text-lg">Dashboard</div>
+                      <div className="text-gray-500 text-xs">Overview of your business</div>
+                    </div>
+                    <div className="bg-emerald-500 text-black px-3 py-1.5 rounded-lg text-xs font-semibold">
+                      Sync Shopify
+                    </div>
+                  </div>
+                  {/* Stats cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                      <div className="text-gray-400 text-xs mb-1">Total Customers</div>
+                      <div className="text-white text-2xl font-bold">23,421</div>
+                      <div className="text-emerald-400 text-xs mt-1">+12%</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                      <div className="text-gray-400 text-xs mb-1">Total Orders</div>
+                      <div className="text-white text-2xl font-bold">10,931</div>
+                      <div className="text-emerald-400 text-xs mt-1">+8%</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                      <div className="text-gray-400 text-xs mb-1">Fulfilled</div>
+                      <div className="text-emerald-400 text-2xl font-bold">8,234</div>
+                      <div className="text-emerald-400 text-xs mt-1">+15%</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                      <div className="text-gray-400 text-xs mb-1">Revenue</div>
+                      <div className="text-white text-2xl font-bold">₹54.2L</div>
+                      <div className="text-emerald-400 text-xs mt-1">+23%</div>
+                    </div>
+                  </div>
+                  {/* Recent orders table mockup */}
+                  <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                    <div className="px-4 py-3 border-b border-white/10">
+                      <div className="text-white font-semibold text-sm">Recent Orders</div>
+                    </div>
+                    <div className="divide-y divide-white/5">
+                      {[
+                        { name: "Priya S.", order: "#29454", status: "fulfilled", amount: "₹2,340" },
+                        { name: "Rahul V.", order: "#29453", status: "pending", amount: "₹1,890" },
+                        { name: "Anita D.", order: "#29452", status: "fulfilled", amount: "₹4,560" },
+                      ].map((order, i) => (
+                        <div key={i} className="flex items-center justify-between px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs font-bold">
+                              {order.name.charAt(0)}
+                            </div>
+                            <div>
+                              <div className="text-white text-sm">{order.name}</div>
+                              <div className="text-gray-500 text-xs">{order.order}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`px-2 py-0.5 rounded text-xs ${order.status === 'fulfilled' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                              {order.status}
+                            </span>
+                            <span className="text-white text-sm font-medium">{order.amount}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
