@@ -663,7 +663,7 @@ const DispatchTracker = () => {
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4">
+      <div className="bg-[#1a1a1a] border-b border-white/10 px-8 py-4">
         <div className="flex items-center gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -672,54 +672,54 @@ const DispatchTracker = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && fetchOrders()}
-              className="pl-10 border-gray-300"
+              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
             />
           </div>
           <Select value={filters.store} onValueChange={(v) => setFilters({ ...filters, store: v })}>
-            <SelectTrigger className="w-36 border-gray-300">
+            <SelectTrigger className="w-36 bg-white/5 border-white/10 text-white">
               <SelectValue placeholder="Store" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Stores</SelectItem>
+            <SelectContent className="bg-[#1a1a1a] border-white/10">
+              <SelectItem value="all" className="text-white hover:bg-white/10">All Stores</SelectItem>
               {stores.map((store) => (
-                <SelectItem key={store.id} value={store.store_name}>
+                <SelectItem key={store.id} value={store.store_name} className="text-white hover:bg-white/10">
                   {store.store_name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={filters.delivery} onValueChange={(v) => setFilters({ ...filters, delivery: v })}>
-            <SelectTrigger className="w-36 border-gray-300">
+            <SelectTrigger className="w-36 bg-white/5 border-white/10 text-white">
               <SelectValue placeholder="Delivery" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Delivery</SelectItem>
-              <SelectItem value="DELIVERED">Delivered</SelectItem>
-              <SelectItem value="IN_TRANSIT">In Transit</SelectItem>
-              <SelectItem value="OUT_FOR_DELIVERY">Out for Delivery</SelectItem>
-              <SelectItem value="PENDING">Pending</SelectItem>
-              <SelectItem value="RETURNED">Returned</SelectItem>
+            <SelectContent className="bg-[#1a1a1a] border-white/10">
+              <SelectItem value="all" className="text-white hover:bg-white/10">All Delivery</SelectItem>
+              <SelectItem value="DELIVERED" className="text-white hover:bg-white/10">Delivered</SelectItem>
+              <SelectItem value="IN_TRANSIT" className="text-white hover:bg-white/10">In Transit</SelectItem>
+              <SelectItem value="OUT_FOR_DELIVERY" className="text-white hover:bg-white/10">Out for Delivery</SelectItem>
+              <SelectItem value="PENDING" className="text-white hover:bg-white/10">Pending</SelectItem>
+              <SelectItem value="RETURNED" className="text-white hover:bg-white/10">Returned</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filters.payment} onValueChange={(v) => setFilters({ ...filters, payment: v })}>
-            <SelectTrigger className="w-32 border-gray-300">
+            <SelectTrigger className="w-32 bg-white/5 border-white/10 text-white">
               <SelectValue placeholder="Payment" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Payment</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
+            <SelectContent className="bg-[#1a1a1a] border-white/10">
+              <SelectItem value="all" className="text-white hover:bg-white/10">All Payment</SelectItem>
+              <SelectItem value="paid" className="text-white hover:bg-white/10">Paid</SelectItem>
+              <SelectItem value="pending" className="text-white hover:bg-white/10">Pending</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filters.year} onValueChange={(v) => setFilters({ ...filters, year: v })}>
-            <SelectTrigger className="w-32 border-gray-300">
+            <SelectTrigger className="w-32 bg-white/5 border-white/10 text-white">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Years</SelectItem>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2024">2024</SelectItem>
-              <SelectItem value="2023">2023</SelectItem>
+            <SelectContent className="bg-[#1a1a1a] border-white/10">
+              <SelectItem value="all" className="text-white hover:bg-white/10">All Years</SelectItem>
+              <SelectItem value="2025" className="text-white hover:bg-white/10">2025</SelectItem>
+              <SelectItem value="2024" className="text-white hover:bg-white/10">2024</SelectItem>
+              <SelectItem value="2023" className="text-white hover:bg-white/10">2023</SelectItem>
               <SelectItem value="2022">2022</SelectItem>
             </SelectContent>
           </Select>
