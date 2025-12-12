@@ -194,23 +194,11 @@ const InventoryHealthDashboard = () => {
           </p>
         </div>
         
-        {/* Store Filter */}
+        {/* Store Indicator */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700">
             <Store className="w-5 h-5 text-blue-400" />
-            <Select value={selectedStore} onValueChange={setSelectedStore}>
-              <SelectTrigger className="w-[200px] bg-transparent border-none text-white focus:ring-0">
-                <SelectValue placeholder="Select Store" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700">
-                <SelectItem value="all" className="text-white hover:bg-gray-700">All Stores</SelectItem>
-                {stores.map((store) => (
-                  <SelectItem key={store.id} value={store.store_name} className="text-white hover:bg-gray-700">
-                    {store.store_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <span className="text-white font-medium">{getStoreName(globalStore)}</span>
           </div>
           <Button
             onClick={fetchHealthData}
@@ -224,9 +212,9 @@ const InventoryHealthDashboard = () => {
       </div>
 
       {/* Store Badge */}
-      {selectedStore !== 'all' && (
+      {globalStore !== 'all' && (
         <div className="mb-6 inline-block bg-blue-500/20 border border-blue-500/40 text-blue-300 px-4 py-2 rounded-full text-sm">
-          Showing data for: <strong>{selectedStore}</strong>
+          Showing data for: <strong>{getStoreName(globalStore)}</strong>
         </div>
       )}
 
