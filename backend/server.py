@@ -1497,14 +1497,15 @@ async def analyze_product_velocity(days_lookback: int = 60):
 
 
 @api_router.post("/dynamic-pricing/apply")
-async def apply_dynamic_pricing(auto_apply: bool = False, days_lookback: int = 180):
+async def apply_dynamic_pricing(auto_apply: bool = False, days_lookback: int = 60):
     """
-    Apply dynamic pricing based on product velocity analysis
-    - Category A: No discount (fast-moving)
-    - Category B: 10% discount (medium-moving)
-    - Category C: 20% discount (slow-moving)
+    Apply dynamic pricing based on product velocity analysis (last 60 days)
+    - Category A: No discount (fast-moving, 10+ orders)
+    - Category B: 10% discount (medium-moving, 3-9 orders)
+    - Category C: 20% discount (slow-moving, 0-2 orders)
     
-    Set auto_apply=true to automatically update inventory prices
+    Price changes are calculated based on 7-day rolling orders.
+    Set auto_apply=true to automatically update inventory prices.
     """
     try:
         from dynamic_pricing_engine import dynamic_pricing_engine
