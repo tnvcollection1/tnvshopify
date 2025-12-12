@@ -572,27 +572,29 @@ const DynamicPricingDashboard = () => {
                       </div>
                     </div>
 
-                    {/* Price Change Indicator */}
-                    {product.recommended_price && product.current_price && (
-                      <div className="mt-3 pt-3 border-t border-gray-700">
-                        {product.recommended_price > product.current_price ? (
-                          <div className="flex items-center gap-1 text-xs text-green-400">
-                            <TrendingUp className="w-3 h-3" />
-                            Increase by Rs. {(product.recommended_price - product.current_price).toFixed(0)}
-                          </div>
-                        ) : product.recommended_price < product.current_price ? (
-                          <div className="flex items-center gap-1 text-xs text-red-400">
-                            <TrendingDown className="w-3 h-3" />
-                            Reduce by Rs. {(product.current_price - product.recommended_price).toFixed(0)}
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1 text-xs text-gray-400">
-                            <CheckCircle className="w-3 h-3" />
-                            Price is optimal
-                          </div>
-                        )}
+                    {/* Velocity Score Indicator */}
+                    <div className="mt-3 pt-3 border-t border-gray-700">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-400">Velocity Score</span>
+                        <span className={`font-semibold ${
+                          (product.velocity_score || 0) > 0.5 ? 'text-green-400' :
+                          (product.velocity_score || 0) > 0.2 ? 'text-yellow-400' :
+                          'text-red-400'
+                        }`}>
+                          {((product.velocity_score || 0) * 100).toFixed(0)}%
+                        </span>
                       </div>
-                    )}
+                      <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
+                        <div 
+                          className={`h-1.5 rounded-full ${
+                            (product.velocity_score || 0) > 0.5 ? 'bg-green-500' :
+                            (product.velocity_score || 0) > 0.2 ? 'bg-yellow-500' :
+                            'bg-red-500'
+                          }`}
+                          style={{width: `${Math.min((product.velocity_score || 0) * 100, 100)}%`}}
+                        ></div>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
