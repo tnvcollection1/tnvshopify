@@ -182,7 +182,11 @@ const Sidebar = () => {
       {/* User Profile & Logout */}
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3 px-4 py-3 bg-gray-800 rounded-lg mb-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded-full flex items-center justify-center">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+            agent?.role === 'admin' ? 'bg-gradient-to-br from-red-500 to-red-700' :
+            agent?.role === 'manager' ? 'bg-gradient-to-br from-blue-500 to-blue-700' :
+            'bg-gradient-to-br from-green-500 to-green-700'
+          }`}>
             <span className="text-white font-bold">
               {agent?.username?.charAt(0).toUpperCase() || 'A'}
             </span>
@@ -191,9 +195,19 @@ const Sidebar = () => {
             <p className="text-sm font-medium text-white truncate">
               {agent?.full_name || agent?.username || 'Admin'}
             </p>
-            <p className="text-xs text-gray-400 capitalize">
-              {isDemoUser ? 'Demo Reviewer' : (agent?.role || 'Administrator')}
-            </p>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                agent?.role === 'admin' ? 'bg-red-500/20 text-red-300' :
+                agent?.role === 'manager' ? 'bg-blue-500/20 text-blue-300' :
+                agent?.role === 'viewer' ? 'bg-green-500/20 text-green-300' :
+                'bg-gray-500/20 text-gray-300'
+              }`}>
+                {agent?.role === 'admin' ? '🛡️ Admin' :
+                 agent?.role === 'manager' ? '✏️ Manager' :
+                 agent?.role === 'viewer' ? '👁️ Viewer' :
+                 agent?.role || 'User'}
+              </span>
+            </div>
           </div>
         </div>
         
