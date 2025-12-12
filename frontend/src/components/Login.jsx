@@ -4,7 +4,7 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Zap, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Store, Eye, EyeOff } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -27,7 +27,6 @@ const Login = ({ onLoginSuccess }) => {
 
     setLoading(true);
     try {
-      // Try new users API first (returns permissions)
       const response = await axios.post(`${API}/users/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
       
       if (response.data.success) {
@@ -37,7 +36,6 @@ const Login = ({ onLoginSuccess }) => {
         onLoginSuccess(user);
       }
     } catch (error) {
-      // Fallback to old agents API
       try {
         const fallbackResponse = await axios.post(`${API}/agents/login`, {
           username,
@@ -46,7 +44,6 @@ const Login = ({ onLoginSuccess }) => {
         
         if (fallbackResponse.data.success) {
           const agent = fallbackResponse.data.agent;
-          // Add default admin permissions for backward compatibility
           agent.permissions = {
             can_view: true,
             can_edit: true,
@@ -96,7 +93,7 @@ const Login = ({ onLoginSuccess }) => {
       if (response.data.success) {
         const agent = response.data.agent;
         localStorage.setItem("agent", JSON.stringify(agent));
-        toast.success(`Welcome, ${agent.full_name}! Your account has been created.`);
+        toast.success(`Welcome, ${agent.full_name}!`);
         onLoginSuccess(agent);
       }
     } catch (error) {
@@ -115,85 +112,72 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background gradient orbs */}
-      <div className="absolute top-20 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
-      
-      {/* Back to landing */}
-      <Link 
-        to="/" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span className="text-sm">Back to home</span>
-      </Link>
-
-      <div className="w-full max-w-md relative z-10">
+    <div className="min-h-screen bg-[#f6f6f7] flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
-            <Zap className="w-7 h-7 text-white" />
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="w-10 h-10 bg-[#95bf47] rounded-lg flex items-center justify-center">
+            <Store className="w-6 h-6 text-white" />
           </div>
-          <span className="text-2xl font-bold text-white">OmniSales</span>
+          <span className="text-2xl font-semibold text-gray-900">OmniSales</span>
         </div>
 
         {/* Card */}
-        <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-white mb-2">
-              {isSignup ? "Create your account" : "Welcome back"}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <div className="text-center mb-6">
+            <h1 className="text-xl font-semibold text-gray-900 mb-1">
+              {isSignup ? "Create your account" : "Log in"}
             </h1>
-            <p className="text-gray-400">
-              {isSignup ? "Start your free trial today" : "Sign in to your dashboard"}
+            <p className="text-sm text-gray-500">
+              {isSignup ? "Start your free trial" : "Continue to OmniSales"}
             </p>
           </div>
 
-          <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-5">
+          <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
             {isSignup && (
               <div>
-                <label className="text-sm font-medium text-gray-300 block mb-2">Full Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Full name</label>
                 <Input
                   type="text"
                   placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   disabled={loading}
-                  className="w-full bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12"
+                  className="h-11 border-gray-300 focus:border-gray-400 focus:ring-gray-400"
                   data-testid="fullname-input"
                 />
               </div>
             )}
             
             <div>
-              <label className="text-sm font-medium text-gray-300 block mb-2">Username</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email or username</label>
               <Input
                 type="text"
-                placeholder="Enter your username"
+                placeholder="Enter your email or username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={loading}
-                className="w-full bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12"
+                className="h-11 border-gray-300 focus:border-gray-400 focus:ring-gray-400"
                 data-testid="username-input"
               />
             </div>
             
             <div>
-              <label className="text-sm font-medium text-gray-300 block mb-2">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder={isSignup ? "Create a password (min 6 characters)" : "Enter your password"}
+                  placeholder={isSignup ? "Create a password" : "Enter your password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
-                  className="w-full bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12 pr-12"
+                  className="h-11 border-gray-300 focus:border-gray-400 focus:ring-gray-400 pr-11"
                   data-testid="password-input"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -203,19 +187,19 @@ const Login = ({ onLoginSuccess }) => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-semibold h-12 text-base"
+              className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium"
               data-testid={isSignup ? "signup-btn" : "login-btn"}
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  {isSignup ? "Creating Account..." : "Signing in..."}
+                  {isSignup ? "Creating account..." : "Logging in..."}
                 </span>
               ) : (
-                isSignup ? "Create Account" : "Sign In"
+                isSignup ? "Create account" : "Log in"
               )}
             </Button>
           </form>
@@ -224,16 +208,28 @@ const Login = ({ onLoginSuccess }) => {
             <button
               onClick={toggleMode}
               disabled={loading}
-              className="text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+              className="text-sm text-gray-600 hover:text-gray-900"
             >
-              {isSignup ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+              {isSignup ? "Already have an account? " : "New to OmniSales? "}
+              <span className="text-[#008060] font-medium hover:underline">
+                {isSignup ? "Log in" : "Get started"}
+              </span>
             </button>
           </div>
         </div>
 
-        {/* Demo credentials hint */}
+        {/* Help text */}
         <div className="mt-6 text-center">
-          <p className="text-gray-500 text-sm">Demo: <span className="text-gray-400">admin / admin</span></p>
+          <p className="text-sm text-gray-500">
+            Demo credentials: <span className="text-gray-700 font-medium">admin / admin</span>
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 text-center">
+          <Link to="/" className="text-sm text-gray-500 hover:text-gray-700">
+            ← Back to homepage
+          </Link>
         </div>
       </div>
     </div>
