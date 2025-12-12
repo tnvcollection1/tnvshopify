@@ -1355,6 +1355,123 @@ async def sync_abandoned_checkouts(store_name: str, days_back: int = 30):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ========================================
+# DRAFT ORDERS ENDPOINTS
+# ========================================
+
+@api_router.get("/shopify/draft-orders")
+async def get_draft_orders(store_name: str = None):
+    """Get draft orders from database"""
+    try:
+        query = {}
+        if store_name and store_name != 'all':
+            query["store_name"] = store_name
+        
+        drafts = await db.draft_orders.find(query, {"_id": 0}).sort("created_at", -1).limit(100).to_list(100)
+        
+        total_value = sum(float(d.get('total_price', 0) or 0) for d in drafts)
+        
+        return {
+            "success": True,
+            "drafts": drafts,
+            "total": len(drafts),
+            "total_value": total_value
+        }
+    except Exception as e:
+        logger.error(f"Error fetching draft orders: {str(e)}")
+        return {"success": True, "drafts": [], "total": 0, "total_value": 0}
+
+
+@api_router.post("/shopify/sync-drafts/{store_name}")
+async def sync_draft_orders(store_name: str):
+    """
+    Sync draft orders from Shopify
+    """
+    try:
+        # Get store credentials
+        store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
+        
+        if not store:
+            raise HTTPException(status_code=404, detail="Store not found")
+        
+        if not store.get('shopify_domain') or not store.get('shopify_token'):
+            raise HTTPException(status_code=400, detail="Shopify not configured for this store")
+        
+        domain = store['shopify_domain']
+        token = store['shopify_token']
+        
+        # Fetch draft orders from Shopify API
+        import httpx
+        
+        headers = {
+            "X-Shopify-Access-Token": token,
+            "Content-Type": "application/json"
+        }
+        
+        url = f"https://{domain}/admin/api/2024-01/draft_orders.json?status=open&limit=250"
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers, timeout=30.0)
+            
+            if response.status_code != 200:
+                logger.error(f"Shopify API error: {response.status_code} - {response.text}")
+                return {
+                    "success": False,
+                    "message": f"Shopify API error: {response.status_code}",
+                    "drafts_synced": 0
+                }
+            
+            data = response.json()
+            draft_orders = data.get('draft_orders', [])
+        
+        if not draft_orders:
+            return {
+                "success": True,
+                "message": "No draft orders found",
+                "drafts_synced": 0
+            }
+        
+        # Save draft orders to database
+        drafts_saved = 0
+        for draft in draft_orders:
+            draft_doc = {
+                "id": str(draft['id']),
+                "name": draft.get('name', f"D{draft['id']}"),
+                "store_name": store_name,
+                "customer": draft.get('customer', {}),
+                "email": draft.get('email'),
+                "line_items": draft.get('line_items', []),
+                "subtotal_price": draft.get('subtotal_price'),
+                "total_price": draft.get('total_price'),
+                "total_tax": draft.get('total_tax'),
+                "currency": draft.get('currency', 'INR'),
+                "status": draft.get('status', 'open'),
+                "invoice_url": draft.get('invoice_url'),
+                "created_at": draft.get('created_at'),
+                "updated_at": draft.get('updated_at'),
+                "synced_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            await db.draft_orders.update_one(
+                {"id": draft_doc["id"], "store_name": store_name},
+                {"$set": draft_doc},
+                upsert=True
+            )
+            drafts_saved += 1
+        
+        logger.info(f"✅ Synced {drafts_saved} draft orders for {store_name}")
+        
+        return {
+            "success": True,
+            "message": f"Synced {drafts_saved} draft orders",
+            "drafts_synced": drafts_saved
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing draft orders: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 # ========================================
 # DTDC CONFIGURATION ENDPOINTS
