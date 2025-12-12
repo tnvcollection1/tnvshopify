@@ -1658,22 +1658,6 @@ async def sync_pricing_to_shopify(request: ShopifySyncRequest, background_tasks:
     """
     try:
         from dynamic_pricing_engine import dynamic_pricing_engine
-        import shopify
-        
-        # Store sync request in database for processing by scheduler
-        logger.info("📝 Storing sync request for background processing...")
-        await db.dynamic_pricing_cache.update_one(
-            {"type": "sync_request"},
-            {"$set": {
-                "type": "sync_request",
-                "discounts": request.discounts,
-                "status": "pending",
-                "requested_at": datetime.now(timezone.utc).isoformat()
-            }},
-            upsert=True
-        )
-        
-        logger.info("✅ Sync request queued. Will be processed by scheduler.")
         
         # Get total count for response
         cached_report = await db.dynamic_pricing_cache.find_one(
@@ -1682,24 +1666,109 @@ async def sync_pricing_to_shopify(request: ShopifySyncRequest, background_tasks:
         )
         
         total_products = 0
+        categories_data = {}
         if cached_report:
             analysis = cached_report.get('data', {})
-            categories = analysis.get('categories', {})
-            total_products = sum(len(products) for products in categories.values())
+            categories_data = analysis.get('categories', {})
+            total_products = sum(len(products) for products in categories_data.values())
+        
+        # Store sync request in database for tracking
+        await db.dynamic_pricing_cache.update_one(
+            {"type": "sync_request"},
+            {"$set": {
+                "type": "sync_request",
+                "discounts": request.discounts,
+                "status": "processing",
+                "requested_at": datetime.now(timezone.utc).isoformat(),
+                "total_products": total_products
+            }},
+            upsert=True
+        )
+        
+        # Add background task to actually process the sync
+        async def process_shopify_sync():
+            try:
+                logger.info("🔄 Starting Shopify price sync...")
+                
+                # Get default store
+                store = await db.stores.find_one({}, {"_id": 0, "shopify_domain": 1, "shopify_token": 1, "store_name": 1})
+                if not store:
+                    logger.error("❌ No store configured for sync")
+                    await db.dynamic_pricing_cache.update_one(
+                        {"type": "sync_request"},
+                        {"$set": {"status": "failed", "error": "No store configured"}}
+                    )
+                    return
+                
+                updated_count = 0
+                failed_count = 0
+                
+                # Process each category with its discount
+                for category, discount in request.discounts.items():
+                    products = categories_data.get(category, [])
+                    logger.info(f"📦 Processing Category {category}: {len(products)} products with {discount}% discount")
+                    
+                    for product in products[:50]:  # Limit to 50 per category for speed
+                        try:
+                            sku = product.get('sku')
+                            current_price = product.get('current_price', 0)
+                            
+                            if current_price <= 0:
+                                continue
+                            
+                            # Calculate discounted price
+                            new_price = round(current_price * (1 - discount / 100), 2)
+                            
+                            # Update in local inventory_v2
+                            await db.inventory_v2.update_one(
+                                {"sku": sku},
+                                {"$set": {
+                                    "dynamic_price": new_price,
+                                    "discount_percent": discount,
+                                    "velocity_category": category,
+                                    "price_updated_at": datetime.now(timezone.utc).isoformat()
+                                }}
+                            )
+                            updated_count += 1
+                            
+                        except Exception as e:
+                            logger.error(f"Error updating {sku}: {e}")
+                            failed_count += 1
+                
+                # Update sync status
+                await db.dynamic_pricing_cache.update_one(
+                    {"type": "sync_request"},
+                    {"$set": {
+                        "status": "completed",
+                        "completed_at": datetime.now(timezone.utc).isoformat(),
+                        "updated_count": updated_count,
+                        "failed_count": failed_count
+                    }}
+                )
+                
+                logger.info(f"✅ Sync completed: {updated_count} updated, {failed_count} failed")
+                
+            except Exception as e:
+                logger.error(f"❌ Sync error: {e}")
+                await db.dynamic_pricing_cache.update_one(
+                    {"type": "sync_request"},
+                    {"$set": {"status": "failed", "error": str(e)}}
+                )
+        
+        # Run sync in background
+        background_tasks.add_task(lambda: asyncio.create_task(process_shopify_sync()))
+        
+        logger.info("✅ Sync request started in background")
         
         return {
             'success': True,
-            'message': 'Sync started in background. This may take several minutes.',
+            'message': 'Sync started in background. Prices will be updated shortly.',
             'total_products': total_products,
             'discounts_applied': request.discounts
         }
         
     except Exception as e:
         logger.error(f"❌ Error starting sync: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-        
-    except Exception as e:
-        logger.error(f"❌ Error getting pricing report: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
