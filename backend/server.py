@@ -1451,14 +1451,15 @@ async def sync_all_dtdc_tracking():
 
 
 @api_router.post("/dynamic-pricing/analyze")
-async def analyze_product_velocity(days_lookback: int = 180):
+async def analyze_product_velocity(days_lookback: int = 60):
     """
     Analyze product sales velocity and categorize as A/B/C
-    - Category A: Fast-moving (top 20%)
-    - Category B: Medium-moving (next 30%)
-    - Category C: Slow-moving (bottom 50%)
+    - Category A: Fast-moving (top 20% - 10+ orders in last 60 days)
+    - Category B: Medium-moving (next 30% - 3-9 orders in last 60 days)
+    - Category C: Slow-moving (bottom 50% - 0-2 orders in last 60 days)
     
-    This will update the cached report used by the dashboard
+    Price multipliers are calculated based on 7-day rolling orders.
+    This will update the cached report used by the dashboard.
     """
     try:
         from dynamic_pricing_engine import dynamic_pricing_engine
