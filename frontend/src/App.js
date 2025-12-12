@@ -5,6 +5,8 @@ import Dashboard from "@/components/DashboardOptimized";
 import Login from "@/components/Login";
 import Layout from "@/components/Layout";
 import LandingPage from "@/components/LandingPage";
+import OnboardingWizard from "@/components/OnboardingWizard";
+import MetaAdsManager from "@/components/MetaAdsManager";
 import Inventory from "@/components/Inventory";
 import InventoryOverview from "@/components/InventoryOverview";
 import Orders from "@/components/Orders";
@@ -48,7 +50,7 @@ function ProtectedRoute({ children }) {
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f]">
         <LoadingSpinner text="Loading application..." size="large" />
       </div>
     );
