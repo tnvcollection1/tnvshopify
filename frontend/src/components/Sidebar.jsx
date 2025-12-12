@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Home, 
   Users, 
@@ -23,16 +23,22 @@ import {
   PieChart,
   Receipt,
   Tags,
-  Gift
+  Gift,
+  RefreshCw,
+  Check
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useStore } from '../contexts/StoreContext';
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, agent } = useAuth();
+  const { stores, selectedStore, switchStore, syncStoreData, syncing, getStoreName } = useStore();
   const [expandedSections, setExpandedSections] = useState(['orders', 'marketing']);
+  const [showStoreDropdown, setShowStoreDropdown] = useState(false);
+  const [syncStatus, setSyncStatus] = useState(null);
 
   const toggleSection = (section) => {
     setExpandedSections(prev => 
