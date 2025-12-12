@@ -180,6 +180,14 @@ const DynamicPricingDashboard = () => {
             <p className="text-gray-400">
               Intelligent pricing based on demand and stock velocity
             </p>
+            <div className="flex gap-4 mt-2 text-xs">
+              <span className="bg-blue-500/20 text-blue-300 px-2 py-1 rounded">
+                📊 Classification: Last 60 days
+              </span>
+              <span className="bg-purple-500/20 text-purple-300 px-2 py-1 rounded">
+                💰 Price Changes: 7-day rolling
+              </span>
+            </div>
           </div>
           
           <div className="flex gap-3 items-center">
