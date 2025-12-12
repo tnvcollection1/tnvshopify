@@ -606,8 +606,68 @@ class ShopifyCustomerAPITester:
         return success, response
     
     def test_customers_segments(self):
-        """Test Customers segments endpoint"""
+        """Test Customers segments endpoint - P0 Bug Fix"""
         success, response, _ = self.run_test("Customers Segments", "GET", "customers/segments", 200)
+        
+        if success and response:
+            # Verify response structure for customer segments
+            expected_segments = ["vip", "high_value", "medium_value", "low_value", "dormant"]
+            
+            print(f"   Found segments: {list(response.keys())}")
+            
+            # Check if all expected segments exist
+            all_segments_present = all(seg in response for seg in expected_segments)
+            if all_segments_present:
+                print(f"   ✅ All expected segments present")
+                
+                # Verify each segment has count and total_value
+                valid_structure = True
+                for seg_name, seg_data in response.items():
+                    if not isinstance(seg_data, dict) or "count" not in seg_data or "total_value" not in seg_data:
+                        print(f"   ❌ Invalid structure for segment: {seg_name}")
+                        valid_structure = False
+                        break
+                
+                if valid_structure:
+                    print(f"   ✅ All segments have valid structure (count, total_value)")
+                    return True, response
+                else:
+                    return False, response
+            else:
+                missing = [seg for seg in expected_segments if seg not in response]
+                print(f"   ❌ Missing segments: {missing}")
+                return False, response
+        
+        return success, response
+    
+    def test_customers_export_segment_vip(self):
+        """Test Customers export VIP segment endpoint - P0 Bug Fix"""
+        success, response, _ = self.run_test(
+            "Export VIP Customers Segment", 
+            "GET", 
+            "customers/export-segment/vip", 
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "customers" in response and "count" in response:
+                customers_list = response["customers"]
+                count = response["count"]
+                
+                print(f"   VIP customers found: {count}")
+                print(f"   Customers list length: {len(customers_list)}")
+                
+                if isinstance(customers_list, list):
+                    print(f"   ✅ Valid VIP segment export response")
+                    return True, response
+                else:
+                    print(f"   ❌ Customers field is not a list")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
         return success, response
     
     def test_orders_endpoint_new(self):
