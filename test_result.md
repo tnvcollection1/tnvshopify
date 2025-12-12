@@ -112,6 +112,8 @@ test_plan:
 
 agent_communication:
   - agent: "main"
+    message: "Built Shopify-inspired Multi-Tenant Landing Page with dark theme, emerald green accents, animated hero text, features grid, pricing section with 3 plans, testimonials, and footer. Landing page is shown to non-authenticated users at root URL (/) and redirects to /dashboard after login."
+  - agent: "main"
     message: "Fixed all 4 P0 bugs: Dispatch Tracker (customers endpoint), Inventory Health (store filter), Dynamic Pricing (product details), Customer Segments (API format). Ready for testing."
   - agent: "testing"
     message: "✅ ALL P0 BUG FIXES VALIDATED: Completed comprehensive testing of all 4 P0 bug fixes. All endpoints are working correctly: 1) Dispatch Tracker - fulfillment filtering and stats working (10931 fulfilled orders found), 2) Inventory Health - store filtering working (121 items for tnvcollectionpk), 3) Dynamic Pricing - report endpoint working (12081 products analyzed), 4) Customer Segments - segments and VIP export working (all 5 segments present). All backend APIs are functioning as expected. Ready for production use."
