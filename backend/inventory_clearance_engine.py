@@ -65,20 +65,50 @@ class InventoryClearanceEngine:
             
             sales_data = await self.db.customers.aggregate(sales_pipeline).to_list(50000)
             sales_lookup = {s['_id']: s for s in sales_data}
-            logger.info(f"Found {len(sales_lookup)} SKUs with sales data for store: {store_name or 'all'}")
+            
+            # Also create a lookup by base SKU (without size suffix) for fuzzy matching
+            # Pattern: "product-color-size" -> "product-color"
+            base_sku_lookup = {}
+            for sku, data in sales_lookup.items():
+                if sku:
+                    # Try to extract base SKU by removing last part after last hyphen (usually size)
+                    parts = sku.rsplit('-', 1)
+                    if len(parts) == 2 and parts[1].replace('.', '').isdigit():
+                        base_sku = parts[0]
+                        if base_sku not in base_sku_lookup or data.get('last_sale_date', '') > base_sku_lookup.get(base_sku, {}).get('last_sale_date', ''):
+                            base_sku_lookup[base_sku] = data
+            
+            logger.info(f"Found {len(sales_lookup)} exact SKUs and {len(base_sku_lookup)} base SKUs with sales data")
             
             # Enrich inventory items with sales data
             items_with_sales = 0
+            items_with_fuzzy_match = 0
             for item in items:
                 sku = item.get('sku')
-                if sku and sku in sales_lookup:
+                if not sku:
+                    continue
+                    
+                # Try exact match first
+                if sku in sales_lookup:
                     sales_info = sales_lookup[sku]
                     item['last_sale_date'] = sales_info.get('last_sale_date')
                     item['total_orders'] = sales_info.get('total_orders', 0)
                     item['total_quantity_sold'] = sales_info.get('total_quantity_sold', 0)
                     items_with_sales += 1
+                else:
+                    # Try fuzzy match by base SKU
+                    parts = sku.rsplit('-', 1)
+                    if len(parts) == 2:
+                        base_sku = parts[0]
+                        if base_sku in base_sku_lookup:
+                            sales_info = base_sku_lookup[base_sku]
+                            item['last_sale_date'] = sales_info.get('last_sale_date')
+                            item['total_orders'] = sales_info.get('total_orders', 0)
+                            item['total_quantity_sold'] = sales_info.get('total_quantity_sold', 0)
+                            item['fuzzy_match'] = True
+                            items_with_fuzzy_match += 1
             
-            logger.info(f"Enriched {items_with_sales} inventory items with sales data")
+            logger.info(f"Matched {items_with_sales} exact + {items_with_fuzzy_match} fuzzy = {items_with_sales + items_with_fuzzy_match} total items with sales data")
             
             now = datetime.now(timezone.utc)
             
