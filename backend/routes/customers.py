@@ -433,6 +433,12 @@ async def export_segment_customers(segment_type: str, store_name: str = None, pa
             "success": True,
             "segment": segment_type,
             "count": len(customers),
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages,
+            "has_next": page < total_pages,
+            "has_prev": page > 1,
             "customers": customers
         }
     except HTTPException:
