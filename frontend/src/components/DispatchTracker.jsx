@@ -816,13 +816,13 @@ const DispatchTracker = () => {
                     </TableRow>
                   ) : orders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={22} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={11} className="text-center py-8 text-gray-400">
                         No fulfilled orders found
                       </TableCell>
                     </TableRow>
                   ) : (
                     orders.map((order) => (
-                      <TableRow key={order.customer_id} className="hover:bg-gray-50">
+                      <TableRow key={order.customer_id} className="hover:bg-white/5 border-b border-white/5">
                         <TableCell>
                           <input
                             type="checkbox"
@@ -831,80 +831,47 @@ const DispatchTracker = () => {
                             className="w-4 h-4 cursor-pointer"
                           />
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600">
+                        <TableCell className="text-sm text-gray-400">
                           {order.last_order_date
                             ? new Date(order.last_order_date).toLocaleDateString()
                             : "N/A"}
                         </TableCell>
-                        <TableCell className="font-medium text-blue-600">
+                        <TableCell className="font-medium text-emerald-400">
                           #{order.order_number || "N/A"}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="bg-slate-50">
+                          <Badge variant="outline" className="bg-white/5 border-white/20 text-gray-300">
                             {order.store_name || "N/A"}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-gray-900 text-sm">
+                            <p className="font-medium text-white text-sm">
                               {order.first_name} {order.last_name}
                             </p>
                             <p className="text-xs text-gray-500">{order.email}</p>
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600">
+                        <TableCell className="text-sm text-gray-400">
                           {order.phone || "N/A"}
                         </TableCell>
-                        <TableCell className="text-sm font-mono text-gray-600">
+                        <TableCell className="text-sm font-mono text-gray-400">
                           {order.tracking_number || "—"}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(order.calling_status || "NOT_CALLED", "calling")}
                         </TableCell>
                         <TableCell>
                           {getStatusBadge(order.delivery_status || "PENDING", "delivery")}
                         </TableCell>
                         <TableCell>{getStatusBadge(order.payment_status || "pending", "payment")}</TableCell>
-                        <TableCell>
-                          {getStatusBadge(order.cod_payment_status || "N/A", "payment")}
-                        </TableCell>
-                        <TableCell className="font-semibold text-gray-900">
-                          Rs. {order.cod_amount?.toFixed(2) || "0.00"}
-                        </TableCell>
-                        <TableCell className="font-semibold text-green-600">
-                          Rs. {order.amount_paid?.toFixed(2) || "0.00"}
-                        </TableCell>
-                        <TableCell className="font-semibold text-red-600">
-                          Rs. {order.payment_balance?.toFixed(2) || "0.00"}
-                        </TableCell>
-                        <TableCell className="font-semibold text-orange-600">
-                          Rs. {order.cost?.toFixed(2) || "0.00"}
-                        </TableCell>
-                        <TableCell className="font-semibold text-green-700">
-                          Rs. {order.profit?.toFixed(2) || "0.00"}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          Rs. {order.delivery_charges?.toFixed(2) || "0.00"}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {order.parcel_weight || "—"} kg
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {order.booking_date || "—"}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {order.delivery_date || "—"}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {order.payment_date || order.collection_date || "—"}
+                        <TableCell className="font-semibold text-white">
+                          ₹{order.cod_amount?.toFixed(0) || order.total_spent?.toFixed(0) || "0"}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
+                          <div className="flex gap-1">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleEditOrder(order)}
-                              className="border-gray-300 hover:bg-blue-50"
+                              className="border-white/20 hover:bg-white/10 text-gray-300 h-8 w-8 p-0"
                               title="Edit Order"
                             >
                               <Edit className="w-3 h-3" />
@@ -912,12 +879,31 @@ const DispatchTracker = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleOpenManualStatusUpdate(order)}
-                              className="border-green-300 hover:bg-green-50 text-green-700"
-                              title="Manual Status Update"
+                              onClick={() => handleTrackOrder(order)}
+                              className="border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 h-8 w-8 p-0"
+                              title="Track Order"
                             >
-                              <Hand className="w-3 h-3" />
+                              <Eye className="w-3 h-3" />
                             </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleWhatsApp(order)}
+                              className="border-green-500/30 hover:bg-green-500/20 text-green-400 h-8 w-8 p-0"
+                              title="Send WhatsApp"
+                            >
+                              <Send className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </div>
                             <Button
                               size="sm"
                               variant="outline"
