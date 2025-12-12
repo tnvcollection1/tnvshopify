@@ -59,6 +59,7 @@ set_tcs_db(db)
 set_customers_deps(db)
 set_pricing_deps(db, pricing_engine)
 set_clearance_deps(db, clearance_engine)
+set_users_deps(db)
 
 # Create the main app without a prefix
 app = FastAPI()
