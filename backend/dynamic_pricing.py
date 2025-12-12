@@ -57,12 +57,12 @@ class DynamicPricingEngine:
         "max_multiplier": 3.0,   # Max +200% above base
         "min_multiplier": 0.70,  # Min -30% below base
         
-        # Time window for order counting
+        # Time window for order counting (price multiplier calculation)
         "rolling_window_days": 7,
         "reset_day": 0,  # Monday (0=Monday, 6=Sunday)
         
-        # Historical lookback for classification
-        "classification_lookback_days": 5000,  # All historical data
+        # Historical lookback for classification (A/B/C category)
+        "classification_lookback_days": 60,  # Last 60 days for category classification
     }
     
     def __init__(self, db: AsyncIOMotorDatabase):
