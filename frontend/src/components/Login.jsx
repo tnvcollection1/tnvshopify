@@ -25,20 +25,46 @@ const Login = ({ onLoginSuccess }) => {
 
     setLoading(true);
     try {
-      const response = await axios.post(`${API}/agents/login`, {
-        username,
-        password
-      });
+      // Try new users API first (returns permissions)
+      const response = await axios.post(`${API}/users/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
       
       if (response.data.success) {
-        const agent = response.data.agent;
-        localStorage.setItem("agent", JSON.stringify(agent));
-        toast.success(`Welcome back, ${agent.full_name}!`);
-        onLoginSuccess(agent);
+        const user = response.data.user;
+        localStorage.setItem("agent", JSON.stringify(user));
+        toast.success(`Welcome back, ${user.full_name}!`);
+        onLoginSuccess(user);
       }
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error(error.response?.data?.detail || "Invalid username or password");
+      // Fallback to old agents API
+      try {
+        const fallbackResponse = await axios.post(`${API}/agents/login`, {
+          username,
+          password
+        });
+        
+        if (fallbackResponse.data.success) {
+          const agent = fallbackResponse.data.agent;
+          // Add default admin permissions for backward compatibility
+          agent.permissions = {
+            can_view: true,
+            can_edit: true,
+            can_delete: true,
+            can_sync_shopify: true,
+            can_manage_users: true,
+            can_view_revenue: true,
+            can_view_phone: true,
+            can_export: true,
+            can_send_messages: true,
+          };
+          agent.role = 'admin';
+          localStorage.setItem("agent", JSON.stringify(agent));
+          toast.success(`Welcome back, ${agent.full_name}!`);
+          onLoginSuccess(agent);
+        }
+      } catch (fallbackError) {
+        console.error("Login error:", error);
+        toast.error(error.response?.data?.detail || "Invalid username or password");
+      }
     } finally {
       setLoading(false);
     }
