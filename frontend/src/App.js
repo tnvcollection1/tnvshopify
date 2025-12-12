@@ -129,7 +129,15 @@ function AppRoutes() {
         path="/orders" 
         element={
           <ProtectedRoute>
-            <Orders />
+            <DraftsPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/drafts" 
+        element={
+          <ProtectedRoute>
+            <DraftsPage />
           </ProtectedRoute>
         } 
       />
