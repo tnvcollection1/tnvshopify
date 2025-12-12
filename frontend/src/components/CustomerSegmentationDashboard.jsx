@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Users, DollarSign, Crown, TrendingUp, MessageCircle, Mail, AlertCircle } from 'lucide-react';
+import { Users, DollarSign, Crown, TrendingUp, MessageCircle, Mail, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -11,6 +11,10 @@ const CustomerSegmentationDashboard = () => {
   const [selectedStore, setSelectedStore] = useState('all');
   const [viewingSegment, setViewingSegment] = useState(null);
   const [segmentCustomers, setSegmentCustomers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageLoading, setPageLoading] = useState(false);
 
   useEffect(() => {
     fetchSegments();
