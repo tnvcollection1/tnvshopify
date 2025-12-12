@@ -160,6 +160,7 @@ const COUNTRY_DIAL_CODES = {
 };
 
 const Orders = () => {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [searchParams] = useSearchParams();
   const storeFromUrl = searchParams.get('store');
   
@@ -172,7 +173,6 @@ const Orders = () => {
     fulfillment: "all",
     delivery: "all",
     payment: "all",
-    store: storeFromUrl || "all",
     sort: "order_desc", // Default: highest order number first
   });
   const [currentPage, setCurrentPage] = useState(1);
@@ -185,7 +185,6 @@ const Orders = () => {
     returned: 0,
   });
   const [uploading, setUploading] = useState(false);
-  const [stores, setStores] = useState([]);
 
   // Debounce search query
   useEffect(() => {
@@ -195,27 +194,9 @@ const Orders = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Update filter when URL param changes
-  useEffect(() => {
-    if (storeFromUrl && storeFromUrl !== filters.store) {
-      setFilters(prev => ({ ...prev, store: storeFromUrl }));
-    }
-  }, [storeFromUrl]);
-
   useEffect(() => {
     fetchOrders();
-    fetchStores();
-  }, [currentPage, filters, debouncedSearch]);
-
-  const fetchStores = async () => {
-    try {
-      const response = await axios.get(`${API}/stores`);
-      const storesData = response.data?.stores || response.data || [];
-      setStores(Array.isArray(storesData) ? storesData : []);
-    } catch (error) {
-      console.error("Error fetching stores:", error);
-    }
-  };
+  }, [currentPage, filters, debouncedSearch, globalStore]);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -224,7 +205,8 @@ const Orders = () => {
       if (filters.fulfillment !== "all") params.append("fulfillment_status", filters.fulfillment);
       if (filters.delivery !== "all") params.append("delivery_status", filters.delivery);
       if (filters.payment !== "all") params.append("payment_status", filters.payment);
-      if (filters.store !== "all") params.append("store_name", filters.store);
+      // Use global store from context
+      if (globalStore !== "all") params.append("store_name", globalStore);
       if (filters.sort) params.append("sort_by", filters.sort);
       if (debouncedSearch) params.append("search", debouncedSearch);
       params.append("page", currentPage);
