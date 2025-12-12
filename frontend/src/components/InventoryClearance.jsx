@@ -52,15 +52,10 @@ const InventoryClearance = () => {
         axios.get(`${API}/api/clearance/health${storeParam}`),
         axios.get(`${API}/api/clearance/campaigns${storeParam}`)
       ]);
-        axios.get(`${API}/api/clearance/stats`),
-        axios.get(`${API}/api/clearance/campaigns`),
-        axios.get(`${API}/api/stores`)
-      ]);
       
-      setStats(statsRes.data.stats);
+      setStats(statsRes.data.stats || statsRes.data);
+      setHealthData(statsRes.data);
       setCampaigns(campaignsRes.data.campaigns || []);
-      // Stores API returns array directly, not wrapped in .stores
-      setStores(Array.isArray(storesRes.data) ? storesRes.data : storesRes.data.stores || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load clearance data');
@@ -73,9 +68,8 @@ const InventoryClearance = () => {
     setAnalyzing(true);
     try {
       toast.loading('Analyzing inventory health...', { id: 'analyze' });
-      const response = await axios.get(`${API}/api/clearance/health`, {
-        params: { store_name: selectedStore === 'all' ? undefined : selectedStore }
-      });
+      const storeParam = globalStore !== 'all' ? `?store_name=${globalStore}` : '';
+      const response = await axios.get(`${API}/api/clearance/health${storeParam}`);
       
       if (response.data.success) {
         setHealthData(response.data);
