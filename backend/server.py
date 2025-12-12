@@ -5184,6 +5184,38 @@ app.include_router(whatsapp_webhook_router)
 app.include_router(tracking_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
+# ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================
+from fastapi.responses import PlainTextResponse
+
+@app.get("/webhook/whatsapp-business")
+async def meta_whatsapp_webhook_verify(request: Request):
+    """Root-level webhook verification for Meta WhatsApp Embedded Signup"""
+    mode = request.query_params.get("hub.mode")
+    token = request.query_params.get("hub.verify_token")
+    challenge = request.query_params.get("hub.challenge")
+    
+    verify_token = "omnisales_whatsapp_webhook"
+    
+    print(f"[WEBHOOK VERIFY] mode={mode}, token={token}, challenge={challenge}")
+    
+    if mode == "subscribe" and token == verify_token:
+        print("[WEBHOOK VERIFY] Success!")
+        return PlainTextResponse(content=challenge, status_code=200)
+    
+    print(f"[WEBHOOK VERIFY] Failed - expected token: {verify_token}")
+    return PlainTextResponse(content="Verification failed", status_code=403)
+
+@app.post("/webhook/whatsapp-business")
+async def meta_whatsapp_webhook_handler(request: Request):
+    """Root-level webhook handler for Meta WhatsApp events"""
+    try:
+        data = await request.json()
+        print(f"[WEBHOOK EVENT] Received: {data}")
+        return {"status": "ok"}
+    except Exception as e:
+        print(f"[WEBHOOK ERROR] {str(e)}")
+        return {"status": "error"}
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
