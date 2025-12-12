@@ -23,10 +23,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { useStore } from '../contexts/StoreContext';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 const InventoryClearance = () => {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [stats, setStats] = useState(null);
@@ -35,19 +37,21 @@ const InventoryClearance = () => {
   const [aiRecommendations, setAiRecommendations] = useState(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('dead_stock');
-  const [selectedStore, setSelectedStore] = useState('all');
-  const [stores, setStores] = useState([]);
   const [expandedCategory, setExpandedCategory] = useState('dead_stock');
   const [creatingCampaign, setCreatingCampaign] = useState(false);
 
   useEffect(() => {
     fetchInitialData();
-  }, []);
+  }, [globalStore]);
 
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      const [statsRes, campaignsRes, storesRes] = await Promise.all([
+      const storeParam = globalStore !== 'all' ? `?store_name=${globalStore}` : '';
+      const [statsRes, campaignsRes] = await Promise.all([
+        axios.get(`${API}/api/clearance/health${storeParam}`),
+        axios.get(`${API}/api/clearance/campaigns${storeParam}`)
+      ]);
         axios.get(`${API}/api/clearance/stats`),
         axios.get(`${API}/api/clearance/campaigns`),
         axios.get(`${API}/api/stores`)
