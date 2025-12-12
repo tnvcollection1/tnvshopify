@@ -190,7 +190,7 @@ const DashboardOptimized = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-gray-900">Orders</h1>
           <div className="flex items-center gap-3">
-            <Select value={selectedStore} onValueChange={setSelectedStore}>
+            <Select value={selectedStore} onValueChange={switchStore}>
               <SelectTrigger className="w-40 h-9 bg-white border-gray-300 text-sm">
                 <SelectValue placeholder="All stores" />
               </SelectTrigger>
