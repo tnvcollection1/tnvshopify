@@ -557,14 +557,19 @@ const DynamicPricingDashboard = () => {
                     </div>
 
                     {/* Category Badge */}
-                    <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                      viewingCategory === 'A' ? 'bg-red-500/20 text-red-400' :
-                      viewingCategory === 'B' ? 'bg-yellow-500/20 text-yellow-400' :
-                      'bg-green-500/20 text-green-400'
-                    }`}>
-                      {viewingCategory === 'A' && '🔥 Fast Mover'}
-                      {viewingCategory === 'B' && '⚡ Steady Seller'}
-                      {viewingCategory === 'C' && '💰 Needs Boost'}
+                    <div className="flex items-center justify-between">
+                      <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                        viewingCategory === 'A' ? 'bg-red-500/20 text-red-400' :
+                        viewingCategory === 'B' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-green-500/20 text-green-400'
+                      }`}>
+                        {viewingCategory === 'A' && '🔥 Fast Mover'}
+                        {viewingCategory === 'B' && '⚡ Steady Seller'}
+                        {viewingCategory === 'C' && '💰 Needs Boost'}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Stock: {product.current_stock || 0}
+                      </div>
                     </div>
 
                     {/* Price Change Indicator */}
