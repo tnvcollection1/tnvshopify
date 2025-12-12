@@ -1153,14 +1153,80 @@ class ShopifyCustomerAPITester:
         return performance_results
 
 def main():
-    print("🚀 Starting Backend Refactoring Validation Tests")
+    print("🚀 Starting P0 Bug Fix Validation Tests")
     print("=" * 80)
     
     # Setup
     tester = ShopifyCustomerAPITester()
     
-    # Run refactoring tests as requested
-    refactoring_results = tester.run_refactoring_tests()
+    # Run P0 bug fix tests as requested
+    p0_results = tester.run_p0_bug_fix_tests()
+    
+    # Print P0 bug fix summary
+    print("\n" + "=" * 80)
+    print("📊 P0 BUG FIX TEST SUMMARY")
+    print("=" * 80)
+    
+    dispatch_results = p0_results.get("dispatch_tracker", {})
+    inventory_results = p0_results.get("inventory_health", {})
+    pricing_results = p0_results.get("dynamic_pricing", {})
+    segments_results = p0_results.get("customer_segments", {})
+    
+    # Dispatch Tracker Summary
+    print(f"\n📋 DISPATCH TRACKER:")
+    print(f"   Customers Endpoint: {'✅ PASS' if dispatch_results.get('customers_endpoint') else '❌ FAIL'}")
+    print(f"   Stats Endpoint: {'✅ PASS' if dispatch_results.get('stats_endpoint') else '❌ FAIL'}")
+    print(f"   Overall: {'✅ PASS' if dispatch_results.get('overall') else '❌ FAIL'}")
+    
+    # Inventory Health Summary
+    print(f"\n📦 INVENTORY HEALTH STORE FILTER:")
+    print(f"   Basic Endpoint: {'✅ PASS' if inventory_results.get('basic_endpoint') else '❌ FAIL'}")
+    print(f"   Store Filter: {'✅ PASS' if inventory_results.get('store_filter') else '❌ FAIL'}")
+    print(f"   Overall: {'✅ PASS' if inventory_results.get('overall') else '❌ FAIL'}")
+    
+    # Dynamic Pricing Summary
+    print(f"\n💰 DYNAMIC PRICING:")
+    print(f"   Report Endpoint: {'✅ PASS' if pricing_results.get('report_endpoint') else '❌ FAIL'}")
+    print(f"   Overall: {'✅ PASS' if pricing_results.get('overall') else '❌ FAIL'}")
+    
+    # Customer Segments Summary
+    print(f"\n👥 CUSTOMER SEGMENTS:")
+    print(f"   Segments Endpoint: {'✅ PASS' if segments_results.get('segments_endpoint') else '❌ FAIL'}")
+    print(f"   Export VIP: {'✅ PASS' if segments_results.get('export_vip') else '❌ FAIL'}")
+    print(f"   Overall: {'✅ PASS' if segments_results.get('overall') else '❌ FAIL'}")
+    
+    # Overall P0 assessment
+    all_bugs_fixed = all(
+        results.get('overall', False) 
+        for results in [dispatch_results, inventory_results, pricing_results, segments_results]
+    )
+    
+    total_bugs = 4
+    fixed_bugs = sum(
+        1 for results in [dispatch_results, inventory_results, pricing_results, segments_results]
+        if results.get('overall', False)
+    )
+    
+    print(f"\n🎯 P0 BUG FIX VALIDATION: {fixed_bugs}/{total_bugs} bugs fixed")
+    
+    if all_bugs_fixed:
+        print("✅ All P0 bugs have been successfully fixed!")
+        print("   - Dispatch Tracker: Fulfillment status filtering working")
+        print("   - Inventory Health: Store filtering working")
+        print("   - Dynamic Pricing: Report endpoint working")
+        print("   - Customer Segments: Segments and export working")
+        return 0
+    else:
+        print("❌ Some P0 bugs still have issues")
+        if not dispatch_results.get('overall'):
+            print(f"   - Dispatch Tracker: Issues with fulfillment filtering")
+        if not inventory_results.get('overall'):
+            print(f"   - Inventory Health: Issues with store filtering")
+        if not pricing_results.get('overall'):
+            print(f"   - Dynamic Pricing: Issues with report endpoint")
+        if not segments_results.get('overall'):
+            print(f"   - Customer Segments: Issues with segments/export")
+        return 1
     
     # Print final refactoring summary
     print("\n" + "=" * 80)
