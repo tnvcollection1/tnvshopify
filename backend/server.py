@@ -65,6 +65,7 @@ set_clearance_deps(db, clearance_engine)
 set_users_deps(db)
 set_tenants_deps(db)
 set_meta_ads_deps(db)
+set_whatsapp_embedded_db(db)
 
 # Create the main app without a prefix
 app = FastAPI()
