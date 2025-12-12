@@ -1,40 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { AlertTriangle, TrendingDown, TrendingUp, Package, DollarSign, Calendar, Tag, Store, RefreshCw } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { useStore } from '../contexts/StoreContext';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const InventoryHealthDashboard = () => {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [healthData, setHealthData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [stores, setStores] = useState([]);
-  const [selectedStore, setSelectedStore] = useState('all');
   const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
-    fetchStores();
-  }, []);
-
-  useEffect(() => {
     fetchHealthData();
-  }, [selectedStore]);
-
-  const fetchStores = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/api/stores`);
-      setStores(Array.isArray(res.data) ? res.data : []);
-    } catch (error) {
-      console.error('Error fetching stores:', error);
-    }
-  };
+  }, [globalStore]);
 
   const fetchHealthData = async () => {
     try {
       setLoading(true);
       // Use the clearance health endpoint which supports store filtering
-      const params = selectedStore !== 'all' ? `?store_name=${selectedStore}` : '';
+      const params = globalStore !== 'all' ? `?store_name=${globalStore}` : '';
       const res = await axios.get(`${API_URL}/api/clearance/health${params}`);
       
       if (res.data.success) {
