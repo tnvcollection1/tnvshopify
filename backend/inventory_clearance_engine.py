@@ -49,10 +49,10 @@ class InventoryClearanceEngine:
                 }
             
             # Build a lookup of last sale dates from multiple sources
-            # 1. Customer orders (primary source)
+            # 1. Customer orders with line_items (detailed data)
             sales_match = {'store_name': store_name} if store_name else {}
             sales_pipeline = [
-                {'$match': sales_match},
+                {'$match': {**sales_match, 'line_items': {'$exists': True, '$ne': []}}},
                 {'$unwind': '$line_items'},
                 {'$group': {
                     '_id': '$line_items.sku',
@@ -65,8 +65,35 @@ class InventoryClearanceEngine:
             
             sales_data = await self.db.customers.aggregate(sales_pipeline).to_list(50000)
             sales_lookup = {s['_id']: s for s in sales_data}
+            logger.info(f"Found {len(sales_lookup)} SKUs from line_items")
             
-            # 2. Also check pricing_order_tracking for additional sales data
+            # 2. Also use order_skus field (for orders without detailed line_items)
+            try:
+                order_skus_pipeline = [
+                    {'$match': {**sales_match, 'order_skus': {'$exists': True, '$ne': []}}},
+                    {'$unwind': '$order_skus'},
+                    {'$group': {
+                        '_id': '$order_skus',
+                        'last_sale_date': {'$max': '$last_order_date'},
+                        'total_orders': {'$sum': 1}
+                    }},
+                    {'$match': {'_id': {'$ne': None, '$ne': ''}}}
+                ]
+                order_skus_data = await self.db.customers.aggregate(order_skus_pipeline).to_list(50000)
+                
+                # Merge with sales_lookup
+                for item in order_skus_data:
+                    sku = item['_id']
+                    if sku and sku not in sales_lookup:
+                        sales_lookup[sku] = item
+                    elif sku and item.get('last_sale_date', '') > sales_lookup.get(sku, {}).get('last_sale_date', ''):
+                        sales_lookup[sku] = item
+                
+                logger.info(f"Added SKUs from order_skus field, total now: {len(sales_lookup)}")
+            except Exception as e:
+                logger.warning(f"Could not fetch order_skus: {e}")
+            
+            # 3. Also check pricing_order_tracking for additional sales data
             try:
                 pricing_orders = await self.db.pricing_order_tracking.aggregate([
                     {'$group': {
