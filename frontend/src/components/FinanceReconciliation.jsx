@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Upload, FileText, DollarSign, CheckCircle, XCircle, AlertCircle, RefreshCw, Link2, History, RotateCcw, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { useStore } from '../contexts/StoreContext';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const FinanceReconciliation = () => {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [reconciliationData, setReconciliationData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [financeStatus, setFinanceStatus] = useState(null);
@@ -21,11 +23,12 @@ const FinanceReconciliation = () => {
   useEffect(() => {
     fetchFinanceStatus();
     fetchUploadHistory();
-  }, []);
+  }, [globalStore]);
 
   const fetchFinanceStatus = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/finance/status`);
+      const storeParam = globalStore !== 'all' ? `?store_name=${globalStore}` : '';
+      const response = await axios.get(`${API_URL}/api/finance/status${storeParam}`);
       setFinanceStatus(response.data);
     } catch (error) {
       console.error('Error fetching finance status:', error);
