@@ -31,41 +31,46 @@ class InventoryClearanceEngine:
             if store_name:
                 query['store_name'] = store_name
             
-            # Get all inventory items - try inventory collection first, then fall back to cache
-            items = await self.db.inventory.find(query, {'_id': 0}).to_list(10000)
+            # Get all inventory items - try inventory_v2 first (main collection)
+            items = await self.db.inventory_v2.find(query, {'_id': 0}).to_list(10000)
+            
+            if not items:
+                # Try inventory collection as fallback
+                items = await self.db.inventory.find(query, {'_id': 0}).to_list(10000)
             
             if not items:
                 # Try inventory_cache collection
                 items = await self.db.inventory_cache.find(query, {'_id': 0}).to_list(10000)
             
             if not items:
-                # Build inventory from order line items
-                pipeline = [
-                    {'$unwind': '$line_items'},
-                    {'$group': {
-                        '_id': '$line_items.sku',
-                        'title': {'$first': '$line_items.title'},
-                        'quantity': {'$sum': '$line_items.quantity'},
-                        'price': {'$avg': '$line_items.price'},
-                        'last_order_date': {'$max': '$created_at'},
-                        'store_name': {'$first': '$store_name'},
-                        'total_orders': {'$sum': 1}
-                    }},
-                    {'$match': {'_id': {'$ne': None}}},
-                    {'$project': {
-                        '_id': 0,
-                        'sku': '$_id',
-                        'title': 1,
-                        'quantity': 1,
-                        'price': 1,
-                        'last_sale_date': '$last_order_date',
-                        'store_name': 1,
-                        'total_orders': 1
-                    }}
-                ]
-                items = await self.db.customers.aggregate(pipeline).to_list(10000)
+                return {
+                    'success': False, 
+                    'error': 'No inventory data found. Please sync inventory from Shopify first (Settings > Sync Inventory).'
+                }
             
-            if not items:
+            # Build a lookup of last sale dates from customer orders
+            sales_pipeline = [
+                {'$unwind': '$line_items'},
+                {'$group': {
+                    '_id': '$line_items.sku',
+                    'last_sale_date': {'$max': '$last_order_date'},
+                    'total_orders': {'$sum': 1},
+                    'total_quantity_sold': {'$sum': '$line_items.quantity'}
+                }},
+                {'$match': {'_id': {'$ne': None}}}
+            ]
+            
+            sales_data = await self.db.customers.aggregate(sales_pipeline).to_list(50000)
+            sales_lookup = {s['_id']: s for s in sales_data}
+            
+            # Enrich inventory items with sales data
+            for item in items:
+                sku = item.get('sku')
+                if sku and sku in sales_lookup:
+                    sales_info = sales_lookup[sku]
+                    item['last_sale_date'] = sales_info.get('last_sale_date')
+                    item['total_orders'] = sales_info.get('total_orders', 0)
+                    item['total_quantity_sold'] = sales_info.get('total_quantity_sold', 0)
                 return {
                     'success': False, 
                     'error': 'No inventory data found. Please sync inventory from Shopify first (Settings > Sync Inventory).'
