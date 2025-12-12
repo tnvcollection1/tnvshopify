@@ -81,15 +81,6 @@ const DashboardOptimized = () => {
     }
   };
 
-  const fetchStores = async () => {
-    try {
-      const response = await axios.get(`${API}/stores`);
-      setStores(response.data || []);
-    } catch (error) {
-      console.error('Error fetching stores:', error);
-    }
-  };
-
   const fetchRecentOrders = async () => {
     try {
       const response = await axios.get(`${API}/customers`, {
