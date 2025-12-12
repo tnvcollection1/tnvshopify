@@ -54,15 +54,11 @@ export const StoreProvider = ({ children }) => {
 
     setSyncing(true);
     try {
-      // Sync orders
-      const ordersResponse = await axios.post(`${API_URL}/api/sync-shopify`, {
-        store_name: storeToSync
-      });
+      // Sync orders from Shopify - correct endpoint format
+      const ordersResponse = await axios.post(`${API_URL}/api/shopify/sync/${storeToSync}?days_back=30`);
 
-      // Sync inventory
-      const inventoryResponse = await axios.post(`${API_URL}/api/sync-inventory`, {
-        store_name: storeToSync
-      });
+      // Sync inventory from Shopify
+      const inventoryResponse = await axios.post(`${API_URL}/api/inventory/sync/${storeToSync}`);
 
       const syncTime = new Date().toISOString();
       setLastSyncTime(syncTime);
