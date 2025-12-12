@@ -818,13 +818,13 @@ const DispatchTracker = () => {
                     </TableRow>
                   ) : orders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8 text-gray-400">
+                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
                         No fulfilled orders found
                       </TableCell>
                     </TableRow>
                   ) : (
                     orders.map((order) => (
-                      <TableRow key={order.customer_id} className="hover:bg-white/5 border-b border-white/5">
+                      <TableRow key={order.customer_id} className="hover:bg-gray-50">
                         <TableCell>
                           <input
                             type="checkbox"
@@ -833,38 +833,38 @@ const DispatchTracker = () => {
                             className="w-4 h-4 cursor-pointer"
                           />
                         </TableCell>
-                        <TableCell className="text-sm text-gray-400">
+                        <TableCell className="text-sm text-gray-600">
                           {order.last_order_date
                             ? new Date(order.last_order_date).toLocaleDateString()
                             : "N/A"}
                         </TableCell>
-                        <TableCell className="font-medium text-emerald-400">
+                        <TableCell className="font-medium text-blue-600">
                           #{order.order_number || "N/A"}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="bg-white/5 border-white/20 text-gray-300">
+                          <Badge variant="outline" className="bg-slate-50">
                             {order.store_name || "N/A"}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-white text-sm">
+                            <p className="font-medium text-gray-900 text-sm">
                               {order.first_name} {order.last_name}
                             </p>
                             <p className="text-xs text-gray-500">{order.email}</p>
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm text-gray-400">
+                        <TableCell className="text-sm text-gray-600">
                           {order.phone || "N/A"}
                         </TableCell>
-                        <TableCell className="text-sm font-mono text-gray-400">
+                        <TableCell className="text-sm font-mono text-gray-600">
                           {order.tracking_number || "—"}
                         </TableCell>
                         <TableCell>
                           {getStatusBadge(order.delivery_status || "PENDING", "delivery")}
                         </TableCell>
                         <TableCell>{getStatusBadge(order.payment_status || "pending", "payment")}</TableCell>
-                        <TableCell className="font-semibold text-white">
+                        <TableCell className="font-semibold text-gray-900">
                           ₹{order.cod_amount?.toFixed(0) || order.total_spent?.toFixed(0) || "0"}
                         </TableCell>
                         <TableCell>
@@ -873,7 +873,7 @@ const DispatchTracker = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => handleEditOrder(order)}
-                              className="border-white/20 hover:bg-white/10 text-gray-300 h-8 w-8 p-0"
+                              className="border-gray-300 hover:bg-blue-50 h-8 w-8 p-0"
                               title="Edit Order"
                             >
                               <Edit className="w-3 h-3" />
@@ -882,7 +882,7 @@ const DispatchTracker = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => handleShowTracking(order)}
-                              className="border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 h-8 w-8 p-0"
+                              className="border-blue-300 hover:bg-blue-50 text-blue-600 h-8 w-8 p-0"
                               title="Track Order"
                             >
                               <Eye className="w-3 h-3" />
@@ -891,7 +891,7 @@ const DispatchTracker = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => handleOpenWhatsApp(order)}
-                              className="border-green-500/30 hover:bg-green-500/20 text-green-400 h-8 w-8 p-0"
+                              className="border-green-300 hover:bg-green-50 text-green-600 h-8 w-8 p-0"
                               title="Send WhatsApp"
                             >
                               <Send className="w-3 h-3" />
@@ -904,8 +904,8 @@ const DispatchTracker = () => {
                 </TableBody>
               </Table>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Pagination */}
         {orders.length > 0 && (
