@@ -368,6 +368,51 @@ async def sync_stock_status(store_name: str = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@customers_router.get("/export-segment/{segment_type}")
+async def export_segment_customers(segment_type: str, store_name: str = None, limit: int = 100):
+    """Export customers from a specific segment for marketing"""
+    try:
+        from datetime import timedelta
+        
+        # Base query for store
+        query = {"store_name": store_name} if store_name and store_name != "all" else {}
+        
+        # Add segment-specific query
+        if segment_type == "vip":
+            query["total_spent"] = {"$gte": 10000}
+        elif segment_type == "high_value":
+            query["total_spent"] = {"$gte": 5000, "$lt": 10000}
+        elif segment_type == "medium_value":
+            query["total_spent"] = {"$gte": 2000, "$lt": 5000}
+        elif segment_type == "low_value":
+            query["total_spent"] = {"$lt": 2000}
+        elif segment_type == "dormant":
+            cutoff_date = (datetime.now(timezone.utc) - timedelta(days=90)).isoformat()
+            query["last_order_date"] = {"$lt": cutoff_date}
+        else:
+            raise HTTPException(status_code=400, detail=f"Invalid segment type: {segment_type}")
+        
+        # Get customers sorted by total spent
+        customers = await db.customers.find(
+            query,
+            {"_id": 0, "customer_id": 1, "first_name": 1, "last_name": 1, "email": 1, 
+             "phone": 1, "total_spent": 1, "country_code": 1, "last_order_date": 1, "store_name": 1}
+        ).sort("total_spent", -1).limit(limit).to_list(limit)
+        
+        return {
+            "success": True,
+            "segment": segment_type,
+            "count": len(customers),
+            "customers": customers
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error exporting segment: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @customers_router.post("/{customer_id}/send-whatsapp")
 async def send_whatsapp_to_customer(customer_id: str, message: str):
     """Send WhatsApp message to a customer"""
