@@ -52,7 +52,6 @@ const PurchaseTracker = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     purchase_status: "all",
-    store: "all",
     year: "all",
     sortBy: "date_desc",
   });
@@ -66,31 +65,19 @@ const PurchaseTracker = () => {
     arrived: 0,
     delivered: 0,
   });
-  const [stores, setStores] = useState([]);
   const [editingOrder, setEditingOrder] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
 
   useEffect(() => {
     fetchOrders();
-    fetchStores();
-  }, [currentPage, filters, searchQuery]);
+  }, [currentPage, filters, searchQuery, globalStore]);
 
   // Reset to page 1 when filters or search change
   useEffect(() => {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
-  }, [filters.purchase_status, filters.store, filters.year, filters.sortBy, searchQuery]);
-
-  const fetchStores = async () => {
-    try {
-      const response = await axios.get(`${API}/stores`);
-      // API returns array directly
-      setStores(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error fetching stores:", error);
-    }
-  };
+  }, [filters.purchase_status, filters.year, filters.sortBy, searchQuery, globalStore]);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -100,7 +87,8 @@ const PurchaseTracker = () => {
       params.append("china_tracking", "true");
       
       if (filters.purchase_status !== "all") params.append("purchase_status", filters.purchase_status);
-      if (filters.store !== "all") params.append("store_name", filters.store);
+      // Use global store from context
+      if (globalStore !== "all") params.append("store_name", globalStore);
       if (filters.year !== "all") params.append("year", filters.year);
       if (filters.sortBy) params.append("sort_by", filters.sortBy);
       if (searchQuery) params.append("search", searchQuery);
