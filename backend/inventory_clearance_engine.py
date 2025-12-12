@@ -98,33 +98,50 @@ class InventoryClearanceEngine:
                 item['title'] = item.get('title') or item.get('product_name', item.get('sku', 'Unknown'))
                 
                 if not last_sale:
-                    # Check created_at as fallback
-                    created = item.get('created_at') or item.get('synced_at')
-                    if created:
-                        try:
-                            if isinstance(created, str):
-                                created_date = datetime.fromisoformat(created.replace('Z', '+00:00'))
-                            else:
-                                created_date = created
-                            days_since = (now - created_date).days
-                            if days_since >= DEAD_STOCK_DAYS:
-                                item['days_without_sale'] = days_since
-                                item['category'] = 'dead_stock'
-                                item['inventory_value'] = item_value
-                                categories['dead_stock'].append(item)
-                                total_dead_value += item_value
-                            elif days_since >= SLOW_MOVING_DAYS:
-                                item['days_without_sale'] = days_since
-                                item['category'] = 'slow_moving'
-                                item['inventory_value'] = item_value
-                                categories['slow_moving'].append(item)
-                                total_slow_value += item_value
-                            else:
-                                categories['no_data'].append(item)
-                        except:
-                            categories['no_data'].append(item)
+                    # Items with no sales history - check if they've ever been ordered
+                    total_orders = item.get('total_orders', 0)
+                    
+                    if total_orders == 0:
+                        # Never sold - consider as dead stock (needing clearance)
+                        item['days_without_sale'] = 999  # Mark as never sold
+                        item['category'] = 'dead_stock'
+                        item['inventory_value'] = item_value
+                        item['never_sold'] = True
+                        categories['dead_stock'].append(item)
+                        total_dead_value += item_value
                     else:
-                        categories['no_data'].append(item)
+                        # Has sales but no recent date - check created_at
+                        created = item.get('created_at') or item.get('synced_at')
+                        if created:
+                            try:
+                                if isinstance(created, str):
+                                    created_date = datetime.fromisoformat(created.replace('Z', '+00:00'))
+                                else:
+                                    created_date = created
+                                days_since = (now - created_date).days
+                                if days_since >= DEAD_STOCK_DAYS:
+                                    item['days_without_sale'] = days_since
+                                    item['category'] = 'dead_stock'
+                                    item['inventory_value'] = item_value
+                                    categories['dead_stock'].append(item)
+                                    total_dead_value += item_value
+                                elif days_since >= SLOW_MOVING_DAYS:
+                                    item['days_without_sale'] = days_since
+                                    item['category'] = 'slow_moving'
+                                    item['inventory_value'] = item_value
+                                    categories['slow_moving'].append(item)
+                                    total_slow_value += item_value
+                                elif days_since >= MODERATE_DAYS:
+                                    item['days_without_sale'] = days_since
+                                    item['category'] = 'moderate'
+                                    item['inventory_value'] = item_value
+                                    categories['moderate'].append(item)
+                                else:
+                                    categories['no_data'].append(item)
+                            except:
+                                categories['no_data'].append(item)
+                        else:
+                            categories['no_data'].append(item)
                     continue
                 
                 try:
