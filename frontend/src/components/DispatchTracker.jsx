@@ -880,7 +880,7 @@ const DispatchTracker = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleTrackOrder(order)}
+                              onClick={() => handleShowTracking(order)}
                               className="border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 h-8 w-8 p-0"
                               title="Track Order"
                             >
@@ -889,7 +889,7 @@ const DispatchTracker = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleWhatsApp(order)}
+                              onClick={() => handleOpenWhatsApp(order)}
                               className="border-green-500/30 hover:bg-green-500/20 text-green-400 h-8 w-8 p-0"
                               title="Send WhatsApp"
                             >
