@@ -177,8 +177,9 @@ async def create_user(
         await db.users.insert_one(user)
         logger.info(f"✅ New user created: {username} with role {role}")
         
-        # Return without password
-        del user["password"]
+        # Return without password and _id
+        user.pop("password", None)
+        user.pop("_id", None)
         user["permissions"] = get_permissions(role)
         
         return {"success": True, "user": user, "message": f"User {username} created successfully"}
