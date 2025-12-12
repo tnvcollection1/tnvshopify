@@ -21,11 +21,13 @@ import {
 import { toast } from 'sonner';
 import axios from 'axios';
 import LoadingSpinner from './LoadingSpinner';
+import { useStore } from '../contexts/StoreContext';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const DashboardOptimized = () => {
+  const { selectedStore, stores, switchStore } = useStore();
   const [stats, setStats] = useState({
     totalCustomers: 0,
     totalOrders: 0,
@@ -35,8 +37,6 @@ const DashboardOptimized = () => {
   });
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
-  const [stores, setStores] = useState([]);
-  const [selectedStore, setSelectedStore] = useState('all');
   const [recentOrders, setRecentOrders] = useState([]);
   const [uploadingCSV, setUploadingCSV] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -45,8 +45,16 @@ const DashboardOptimized = () => {
 
   useEffect(() => {
     fetchStats();
-    fetchStores();
     fetchRecentOrders();
+    
+    // Listen for store changes from sidebar
+    const handleStoreChange = () => {
+      fetchStats();
+      fetchRecentOrders();
+    };
+    
+    window.addEventListener('storeChanged', handleStoreChange);
+    return () => window.removeEventListener('storeChanged', handleStoreChange);
   }, [selectedStore]);
 
   const fetchStats = async () => {
