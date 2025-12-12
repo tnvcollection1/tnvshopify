@@ -43,19 +43,21 @@ const InventoryHealthDashboard = () => {
         const categories = res.data.categories || {};
         
         setHealthData({
-          dead_stock_count: categories.dead_stock?.length || 0,
-          dead_stock_value: categories.dead_stock?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
+          // Use summary counts for accurate totals (categories are limited to 50 items)
+          dead_stock_count: summary.dead_stock_count || 0,
+          dead_stock_value: summary.dead_stock_value || 0,
           dead_stock_items: categories.dead_stock || [],
-          slow_moving_count: categories.slow_moving?.length || 0,
-          slow_moving_value: categories.slow_moving?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
-          fast_moving_count: categories.healthy?.length || 0,
+          slow_moving_count: summary.slow_moving_count || 0,
+          slow_moving_value: summary.slow_moving_value || 0,
+          fast_moving_count: summary.healthy_count || 0,
           fast_moving_value: categories.healthy?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
           total_items: summary.total_items || 0,
-          total_value: summary.total_value || 0,
-          alerts: generateAlerts(categories),
-          age_buckets: generateAgeBuckets(categories),
-          margin_analysis: [], // Not available from this endpoint
-          raw_categories: categories
+          total_value: summary.dead_stock_value + summary.slow_moving_value || 0,
+          alerts: generateAlerts(summary, categories),
+          age_buckets: generateAgeBuckets(summary, categories),
+          margin_analysis: [],
+          raw_categories: categories,
+          raw_summary: summary
         });
       }
       setLoading(false);
