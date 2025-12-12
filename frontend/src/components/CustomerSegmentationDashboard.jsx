@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Users, DollarSign, Crown, TrendingUp, MessageCircle, Mail, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useStore } from '../contexts/StoreContext';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const CustomerSegmentationDashboard = () => {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [segments, setSegments] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedSegment, setSelectedSegment] = useState('all');
-  const [selectedStore, setSelectedStore] = useState('all');
   const [viewingSegment, setViewingSegment] = useState(null);
   const [segmentCustomers, setSegmentCustomers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,18 +17,22 @@ const CustomerSegmentationDashboard = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [pageLoading, setPageLoading] = useState(false);
 
-  useEffect(() => {
-    fetchSegments();
-  }, [selectedStore]);
-
-  const fetchSegments = async () => {
+  const fetchSegments = useCallback(async () => {
     try {
       setLoading(true);
-      const storeParam = selectedStore !== 'all' ? `?store_name=${selectedStore}` : '';
+      const storeParam = globalStore !== 'all' ? `?store_name=${globalStore}` : '';
       const res = await axios.get(`${API_URL}/api/customers/segments${storeParam}`);
       setSegments(res.data);
       setLoading(false);
     } catch (error) {
+      console.error('Error fetching segments:', error);
+      setLoading(false);
+    }
+  }, [globalStore]);
+
+  useEffect(() => {
+    fetchSegments();
+  }, [fetchSegments]);
       console.error('Error fetching segments:', error);
       setLoading(false);
     }
