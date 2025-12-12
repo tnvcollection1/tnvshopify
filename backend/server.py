@@ -1487,6 +1487,33 @@ async def analyze_product_velocity(days_lookback: int = 60):
             )
             logger.info("✅ Cached report updated")
             
+            # Also update pricing_rules collection with the new categories
+            logger.info("📊 Syncing analysis to pricing_rules collection...")
+            updated_count = 0
+            for cat, products in categories.items():
+                for product in products:
+                    sku = product.get('sku')
+                    if sku:
+                        await db.pricing_rules.update_one(
+                            {"sku": sku},
+                            {"$set": {
+                                "sku": sku,
+                                "category": cat,
+                                "historical_orders": product.get('order_count', 0),
+                                "base_price": product.get('current_price', 0),
+                                "product_name": product.get('product_name', sku),
+                                "velocity_score": product.get('velocity_score', 0),
+                                "total_revenue": product.get('total_revenue', 0),
+                                "days_since_last_sale": product.get('days_since_last_sale', 0),
+                                "classified_at": datetime.now(timezone.utc).isoformat(),
+                                "enabled": True
+                            }},
+                            upsert=True
+                        )
+                        updated_count += 1
+            
+            logger.info(f"✅ Updated {updated_count} pricing rules")
+            
             return result
         else:
             raise HTTPException(status_code=500, detail=result.get('error', 'Analysis failed'))
