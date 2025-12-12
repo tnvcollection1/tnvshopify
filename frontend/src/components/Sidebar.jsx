@@ -27,7 +27,8 @@ import {
   Target,
   Zap,
   Gift,
-  FileText
+  FileText,
+  Link2
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
