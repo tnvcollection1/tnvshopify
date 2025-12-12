@@ -34,6 +34,7 @@ import InventoryHealthDashboard from "@/components/InventoryHealthDashboard";
 import FinanceReconciliation from "@/components/FinanceReconciliation";
 import WhatsAppInboxStandalone from "@/components/WhatsAppInboxStandalone";
 import InventoryClearance from "@/components/InventoryClearance";
+import UserManagement from "@/components/UserManagement";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
