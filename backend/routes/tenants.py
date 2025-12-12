@@ -309,7 +309,7 @@ async def get_plans():
         {
             "id": "free",
             "name": "Free",
-            "description": "Try OmniSales with limited features",
+            "description": "Try Importaba with limited features",
             "price": 0,
             "currency": "INR",
             "billing_period": "month",
