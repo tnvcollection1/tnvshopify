@@ -71,10 +71,6 @@ class InventoryClearanceEngine:
                     item['last_sale_date'] = sales_info.get('last_sale_date')
                     item['total_orders'] = sales_info.get('total_orders', 0)
                     item['total_quantity_sold'] = sales_info.get('total_quantity_sold', 0)
-                return {
-                    'success': False, 
-                    'error': 'No inventory data found. Please sync inventory from Shopify first (Settings > Sync Inventory).'
-                }
             
             now = datetime.now(timezone.utc)
             
