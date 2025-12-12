@@ -251,7 +251,8 @@ const DispatchTracker = () => {
       
       if (filters.delivery !== "all") params.append("delivery_status", filters.delivery);
       if (filters.payment !== "all") params.append("payment_status", filters.payment);
-      if (filters.store !== "all") params.append("store_name", filters.store);
+      // Use global store from context
+      if (globalStore !== "all") params.append("store_name", globalStore);
       if (filters.year !== "all") params.append("year", filters.year);
       if (dateRange.start) params.append("start_date", dateRange.start);
       if (dateRange.end) params.append("end_date", dateRange.end);
