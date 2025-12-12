@@ -8,7 +8,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  background: #0f0f0f;
   min-height: 100vh;
 }
 
@@ -18,4 +18,5 @@ h1, h2, h3, h4, h5, h6 {
 
 .App {
   min-height: 100vh;
+  background: #0f0f0f;
 }
