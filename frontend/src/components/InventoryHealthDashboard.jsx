@@ -73,12 +73,25 @@ const InventoryHealthDashboard = () => {
     const deadStockValue = summary.dead_stock_value || 0;
     const slowMovingCount = summary.slow_moving_count || 0;
     const slowMovingValue = summary.slow_moving_value || 0;
+    const totalItems = summary.total_items || 1;
+    const healthyCount = summary.healthy_count || 0;
+    
+    // Check if most items have no sales data (suggests order sync needed)
+    const deadStockPercentage = (deadStockCount / totalItems) * 100;
     
     if (deadStockCount > 0) {
+      let message = `${deadStockCount} items are dead stock (never sold or 360+ days) worth Rs. ${deadStockValue.toLocaleString()}`;
+      
+      // Add sync hint if >80% items show as dead stock with few healthy items
+      if (deadStockPercentage > 80 && healthyCount < 200) {
+        message += ` ⚠️ High dead stock may indicate orders need syncing from Shopify.`;
+      }
+      
       alerts.push({
-        message: `${deadStockCount} items are dead stock (never sold or 360+ days) worth Rs. ${deadStockValue.toLocaleString()}`,
+        message,
         action: 'Create Clearance Campaign',
-        age_threshold: 360
+        age_threshold: 360,
+        syncHint: deadStockPercentage > 80
       });
     }
     
