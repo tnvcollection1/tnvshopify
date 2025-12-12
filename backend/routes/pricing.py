@@ -78,10 +78,10 @@ async def get_pricing_rules():
 
 
 @pricing_router.get("/calculate/{sku}")
-async def calculate_price(sku: str):
+async def calculate_price(sku: str, store_name: str = None):
     """Calculate dynamic price for a specific SKU"""
     try:
-        result = await pricing_engine.calculate_price(db, sku)
+        result = await pricing_engine.calculate_dynamic_price(sku, store_name)
         return result
     except Exception as e:
         logger.error(f"Error calculating price for {sku}: {e}")
