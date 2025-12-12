@@ -197,9 +197,6 @@ const DashboardOptimized = () => {
     }
   ];
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState('overview');
-
   return (
     <div className="min-h-screen bg-[#0f0f0f] p-6 space-y-6">
       {/* Header */}
