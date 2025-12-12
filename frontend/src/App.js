@@ -10,6 +10,7 @@ import MetaAdsManager from "@/components/MetaAdsManager";
 import Inventory from "@/components/Inventory";
 import InventoryOverview from "@/components/InventoryOverview";
 import Orders from "@/components/Orders";
+import DraftsPage from "@/components/DraftsPage";
 import DispatchTracker from "@/components/DispatchTracker";
 import ConfirmationTracker from "@/components/ConfirmationTracker";
 import PurchaseTracker from "@/components/PurchaseTracker";
