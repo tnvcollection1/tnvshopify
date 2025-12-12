@@ -1001,13 +1001,8 @@ class ShopifyCustomerAPITester:
         success, response, _ = self.run_test(
             "Tenant API Keys Update",
             "PUT",
-            f"tenants/{tenant_id}/api-keys",
-            200,
-            data={
-                "shopify_domain": "test-store.myshopify.com",
-                "shopify_token": "test_token_12345"
-            },
-            use_form_data=True
+            f"tenants/{tenant_id}/api-keys?shopify_domain=test-store.myshopify.com&shopify_token=test_token_12345",
+            200
         )
         
         if success and response:
