@@ -92,7 +92,7 @@ const DynamicPricingDashboard = () => {
   const handleAnalyze = async () => {
     try {
       setLoading(true);
-      const res = await axios.post(`${API_URL}/api/dynamic-pricing/analyze?days_lookback=365`);
+      const res = await axios.post(`${API_URL}/api/dynamic-pricing/analyze?days_lookback=60`);
       alert(`✅ Analyzed ${res.data.total_products} products!\nCategory A: ${res.data.categories.A.length}\nCategory B: ${res.data.categories.B.length}\nCategory C: ${res.data.categories.C.length}`);
       fetchReport();
     } catch (error) {
