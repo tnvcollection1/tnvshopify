@@ -131,7 +131,7 @@ const InventoryHealthDashboard = () => {
       const category = ageThreshold >= 360 ? 'dead_stock' : 
                        ageThreshold >= 180 ? 'slow_moving' : 'moderate';
       
-      const params = selectedStore !== 'all' ? `store_name=${selectedStore}&` : '';
+      const params = globalStore !== 'all' ? `store_name=${globalStore}&` : '';
       const res = await axios.post(`${API_URL}/api/clearance/quick-clearance?${params}category=${category}&auto_discount=true`);
       
       if (res.data.success) {
