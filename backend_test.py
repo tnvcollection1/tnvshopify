@@ -1488,65 +1488,71 @@ def main():
     print("📊 MULTI-TENANT & META ADS TEST SUMMARY")
     print("=" * 80)
     
-    dispatch_results = p0_results.get("dispatch_tracker", {})
-    inventory_results = p0_results.get("inventory_health", {})
-    pricing_results = p0_results.get("dynamic_pricing", {})
-    segments_results = p0_results.get("customer_segments", {})
+    # Multi-Tenant & Meta Ads Results
+    tenant_reg_results = mt_results.get("tenant_registration", {})
+    plans_results = mt_results.get("subscription_plans", {})
+    meta_validation_results = mt_results.get("meta_ads_validation", {})
+    meta_campaigns_results = mt_results.get("meta_ads_campaigns", {})
+    api_keys_results = mt_results.get("tenant_api_keys", {})
+    usage_results = mt_results.get("tenant_usage", {})
     
-    # Dispatch Tracker Summary
-    print(f"\n📋 DISPATCH TRACKER:")
-    print(f"   Customers Endpoint: {'✅ PASS' if dispatch_results.get('customers_endpoint') else '❌ FAIL'}")
-    print(f"   Stats Endpoint: {'✅ PASS' if dispatch_results.get('stats_endpoint') else '❌ FAIL'}")
-    print(f"   Overall: {'✅ PASS' if dispatch_results.get('overall') else '❌ FAIL'}")
+    # Tenant Registration Summary
+    print(f"\n🏢 TENANT REGISTRATION:")
+    print(f"   Registration API: {'✅ PASS' if tenant_reg_results.get('success') else '❌ FAIL'}")
     
-    # Inventory Health Summary
-    print(f"\n📦 INVENTORY HEALTH STORE FILTER:")
-    print(f"   Basic Endpoint: {'✅ PASS' if inventory_results.get('basic_endpoint') else '❌ FAIL'}")
-    print(f"   Store Filter: {'✅ PASS' if inventory_results.get('store_filter') else '❌ FAIL'}")
-    print(f"   Overall: {'✅ PASS' if inventory_results.get('overall') else '❌ FAIL'}")
+    # Subscription Plans Summary
+    print(f"\n📋 SUBSCRIPTION PLANS:")
+    print(f"   Plans API: {'✅ PASS' if plans_results.get('success') else '❌ FAIL'}")
     
-    # Dynamic Pricing Summary
-    print(f"\n💰 DYNAMIC PRICING:")
-    print(f"   Report Endpoint: {'✅ PASS' if pricing_results.get('report_endpoint') else '❌ FAIL'}")
-    print(f"   Overall: {'✅ PASS' if pricing_results.get('overall') else '❌ FAIL'}")
+    # Meta Ads Summary
+    print(f"\n📱 META ADS VALIDATION:")
+    print(f"   Validation API: {'✅ PASS' if meta_validation_results.get('success') else '❌ FAIL'}")
+    print(f"   Campaigns API (No Auth): {'✅ PASS' if meta_campaigns_results.get('success') else '❌ FAIL'}")
     
-    # Customer Segments Summary
-    print(f"\n👥 CUSTOMER SEGMENTS:")
-    print(f"   Segments Endpoint: {'✅ PASS' if segments_results.get('segments_endpoint') else '❌ FAIL'}")
-    print(f"   Export VIP: {'✅ PASS' if segments_results.get('export_vip') else '❌ FAIL'}")
-    print(f"   Overall: {'✅ PASS' if segments_results.get('overall') else '❌ FAIL'}")
+    # Tenant Management Summary
+    print(f"\n⚙️ TENANT MANAGEMENT:")
+    print(f"   API Keys Update: {'✅ PASS' if api_keys_results.get('success') else '❌ FAIL'}")
+    print(f"   Usage Statistics: {'✅ PASS' if usage_results.get('success') else '❌ FAIL'}")
     
-    # Overall P0 assessment
-    all_bugs_fixed = all(
-        results.get('overall', False) 
-        for results in [dispatch_results, inventory_results, pricing_results, segments_results]
+    # Overall Multi-Tenant & Meta Ads assessment
+    all_tests_passed = all(
+        results.get('success', False) 
+        for results in [tenant_reg_results, plans_results, meta_validation_results, 
+                       meta_campaigns_results, api_keys_results, usage_results]
     )
     
-    total_bugs = 4
-    fixed_bugs = sum(
-        1 for results in [dispatch_results, inventory_results, pricing_results, segments_results]
-        if results.get('overall', False)
+    total_tests = 6
+    passed_tests = sum(
+        1 for results in [tenant_reg_results, plans_results, meta_validation_results,
+                         meta_campaigns_results, api_keys_results, usage_results]
+        if results.get('success', False)
     )
     
-    print(f"\n🎯 P0 BUG FIX VALIDATION: {fixed_bugs}/{total_bugs} bugs fixed")
+    print(f"\n🎯 MULTI-TENANT & META ADS VALIDATION: {passed_tests}/{total_tests} tests passed")
     
-    if all_bugs_fixed:
-        print("✅ All P0 bugs have been successfully fixed!")
-        print("   - Dispatch Tracker: Fulfillment status filtering working")
-        print("   - Inventory Health: Store filtering working")
-        print("   - Dynamic Pricing: Report endpoint working")
-        print("   - Customer Segments: Segments and export working")
+    if all_tests_passed:
+        print("✅ All Multi-Tenant & Meta Ads APIs are working correctly!")
+        print("   - Tenant Registration: Creates tenant and user successfully")
+        print("   - Subscription Plans: Returns all 4 plans with proper structure")
+        print("   - Meta Ads Validation: Handles missing credentials gracefully")
+        print("   - Meta Ads Campaigns: Returns proper error when not configured")
+        print("   - API Keys Update: Successfully updates tenant API keys")
+        print("   - Usage Statistics: Returns proper usage data with limits")
         return 0
     else:
-        print("❌ Some P0 bugs still have issues")
-        if not dispatch_results.get('overall'):
-            print(f"   - Dispatch Tracker: Issues with fulfillment filtering")
-        if not inventory_results.get('overall'):
-            print(f"   - Inventory Health: Issues with store filtering")
-        if not pricing_results.get('overall'):
-            print(f"   - Dynamic Pricing: Issues with report endpoint")
-        if not segments_results.get('overall'):
-            print(f"   - Customer Segments: Issues with segments/export")
+        print("❌ Some Multi-Tenant & Meta Ads APIs have issues")
+        if not tenant_reg_results.get('success'):
+            print(f"   - Tenant Registration: Issues with registration API")
+        if not plans_results.get('success'):
+            print(f"   - Subscription Plans: Issues with plans API")
+        if not meta_validation_results.get('success'):
+            print(f"   - Meta Ads Validation: Issues with validation API")
+        if not meta_campaigns_results.get('success'):
+            print(f"   - Meta Ads Campaigns: Issues with campaigns API error handling")
+        if not api_keys_results.get('success'):
+            print(f"   - API Keys Update: Issues with API keys update")
+        if not usage_results.get('success'):
+            print(f"   - Usage Statistics: Issues with usage statistics API")
         return 1
     
     # Print final refactoring summary
