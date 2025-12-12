@@ -55,7 +55,6 @@ const ConfirmationTracker = () => {
     calling_status: "all",
     confirmation_status: "all",
     stock_status: "all",
-    store: "all",
     year: "all",
     sortBy: "date_desc",
   });
@@ -75,7 +74,6 @@ const ConfirmationTracker = () => {
     canceled: 0,
     inTransit: 0,
   });
-  const [stores, setStores] = useState([]);
   const [editingOrder, setEditingOrder] = useState(null);
   const [editDialog, setEditDialog] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState([]);
@@ -88,15 +86,14 @@ const ConfirmationTracker = () => {
 
   useEffect(() => {
     fetchOrders();
-    fetchStores();
-  }, [currentPage, filters, searchQuery, dateRange]);
+  }, [currentPage, filters, searchQuery, dateRange, globalStore]);
 
   // Reset to page 1 when filters or search change
   useEffect(() => {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
-  }, [filters.calling_status, filters.confirmation_status, filters.store, filters.year, filters.sortBy, searchQuery]);
+  }, [filters.calling_status, filters.confirmation_status, filters.year, filters.sortBy, searchQuery, globalStore]);
 
   const fetchStores = async () => {
     try {
