@@ -11,6 +11,7 @@ import os
 import logging
 import hashlib
 import hmac
+import uuid
 
 logger = logging.getLogger(__name__)
 
