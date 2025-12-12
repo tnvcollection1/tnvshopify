@@ -43,30 +43,14 @@ const DashboardOptimized = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetchStats();
-    fetchRecentOrders();
-    
-    // Listen for store changes from sidebar
-    const handleStoreChange = () => {
-      fetchStats();
-      fetchRecentOrders();
-    };
-    
-    window.addEventListener('storeChanged', handleStoreChange);
-    return () => window.removeEventListener('storeChanged', handleStoreChange);
-  }, [selectedStore]);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
+      const storeParam = selectedStore !== 'all' ? { store_name: selectedStore } : {};
+      
       const [customersRes, statsRes] = await Promise.all([
-        axios.get(`${API}/customers/count`, {
-          params: selectedStore !== 'all' ? { store_name: selectedStore } : {}
-        }),
-        axios.get(`${API}/dashboard/stats`, {
-          params: selectedStore !== 'all' ? { store_name: selectedStore } : {}
-        })
+        axios.get(`${API}/customers/count`, { params: storeParam }),
+        axios.get(`${API}/dashboard/stats`, { params: storeParam })
       ]);
 
       setStats({
@@ -79,23 +63,28 @@ const DashboardOptimized = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedStore]);
 
-  const fetchRecentOrders = async () => {
+  const fetchRecentOrders = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/customers`, {
-        params: {
-          limit: 20,
-          ...(selectedStore !== 'all' && { store_name: selectedStore })
-        }
-      });
+      const params = { limit: 20 };
+      if (selectedStore !== 'all') {
+        params.store_name = selectedStore;
+      }
+      
+      const response = await axios.get(`${API}/customers`, { params });
       const orders = response.data?.customers || response.data || [];
       setRecentOrders(Array.isArray(orders) ? orders : []);
     } catch (error) {
       console.error('Error fetching recent orders:', error);
       setRecentOrders([]);
     }
-  };
+  }, [selectedStore]);
+
+  useEffect(() => {
+    fetchStats();
+    fetchRecentOrders();
+  }, [fetchStats, fetchRecentOrders]);
 
   const handleShopifySync = async () => {
     if (!stores.length) {
