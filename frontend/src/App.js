@@ -315,6 +315,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/whatsapp-business" 
+        element={
+          <ProtectedRoute>
+            <WhatsAppEmbeddedSignup />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/tracking/:identifier" 
         element={<TrackingPage />}
       />
