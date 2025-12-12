@@ -49,7 +49,10 @@ class InventoryClearanceEngine:
                 }
             
             # Build a lookup of last sale dates from customer orders
+            # Filter by store_name if specified to match sales with same store's inventory
+            sales_match = {'store_name': store_name} if store_name else {}
             sales_pipeline = [
+                {'$match': sales_match},
                 {'$unwind': '$line_items'},
                 {'$group': {
                     '_id': '$line_items.sku',
@@ -62,8 +65,10 @@ class InventoryClearanceEngine:
             
             sales_data = await self.db.customers.aggregate(sales_pipeline).to_list(50000)
             sales_lookup = {s['_id']: s for s in sales_data}
+            logger.info(f"Found {len(sales_lookup)} SKUs with sales data for store: {store_name or 'all'}")
             
             # Enrich inventory items with sales data
+            items_with_sales = 0
             for item in items:
                 sku = item.get('sku')
                 if sku and sku in sales_lookup:
@@ -71,6 +76,9 @@ class InventoryClearanceEngine:
                     item['last_sale_date'] = sales_info.get('last_sale_date')
                     item['total_orders'] = sales_info.get('total_orders', 0)
                     item['total_quantity_sold'] = sales_info.get('total_quantity_sold', 0)
+                    items_with_sales += 1
+            
+            logger.info(f"Enriched {items_with_sales} inventory items with sales data")
             
             now = datetime.now(timezone.utc)
             
