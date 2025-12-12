@@ -1,322 +1,196 @@
-<analysis>**original_problem_statement**: The user's initial goal was to build a CRM with order management, focusing on fixing order visibility and enhancing WhatsApp messaging. The scope has since expanded significantly to include major performance optimizations, UI enhancements like clickable dashboard cards, and a deep integration with the Facebook Marketing API. The user wants a comprehensive in-app tool to manage Facebook ad campaigns, view detailed performance metrics, compare ad spend against Shopify sales, and receive AI-powered recommendations to optimize campaigns for maximum conversion. A critical but currently de-prioritized issue is that the production environment, while accessible, has an empty database.
+<analysis>**original_problem_statement**: The user's initial goal was to build a CRM with order management, focusing on order visibility and WhatsApp messaging. This has evolved into a sophisticated business intelligence and marketing automation platform. Key features include major performance optimizations, a full-featured Facebook Marketing Suite (including an AI Campaign Optimizer), a Smart Inventory Clearance engine, and a dynamic pricing tool. The user has recently provided a comprehensive list of bugs and new feature requests across the entire application, which now forms the immediate backlog.
 
 **PRODUCT REQUIREMENTS**:
-1.  **Facebook Marketing Suite (P0)**:
-    -   Implement full campaign management (create, edit, pause/resume campaigns) from within the app.
-    -   Implement budget management for ad campaigns.
-    -   Implement the ability to create Lookalike Audiences based on CRM customer data.
-    -   Build an AI Campaign Optimizer that analyzes ad performance and provides actionable recommendations to improve ROAS and scale successful campaigns.
-2.  **Production Data Population (P1)**:
-    -   The production database must be populated with data, as it is currently empty, rendering the live application unusable. The user needs to decide between syncing fresh data from Shopify or migrating it from the preview environment.
-3.  **Technical Debt (P2)**:
-    -   Refactor the monolithic  file into a modular, router-based architecture to improve maintainability.
+1.  **Bug Fixes (P0)**:
+    -   Fix the **Dispatch Tracker**, which currently fails to fetch orders.
+    -   Fix the **Inventory Health** page by adding a mandatory store-wise filter.
+    -   Fix the **Dynamic Pricing** tool to show detailed product data and sync price changes to Shopify.
+    -   Fix the **Customer Segments** page, which incorrectly shows 0 segments.
+2.  **New AI Features (P1)**:
+    -   Integrate AI to assist in creating new **Campaigns, Product Bundles, and Offers**.
+    -   Create a universal AI analytics feature, adding an AI analysis button to every section to provide improvement recommendations.
+3.  **Feature Guidance (P2)**:
+    -   Provide guides or improve the UI to explain how to use the **Campaign Manager** and **Flash Sale** features.
+4.  **Technical Debt (P3)**:
+    -   Complete the refactoring of the monolithic  file.
 
 **User's preferred language**: English
 
 **what currently exists?**
-- A React/FastAPI/MongoDB application for CRM and order management.
-- The application's performance has been significantly improved via server-side caching, with API load times reduced from ~4 seconds to under 0.1 seconds.
-- Several UI/UX features have been completed: dashboard cards are now clickable, the main orders search is fixed, and a feature to export missing financial orders has been added.
-- A substantial Facebook Marketing integration has been built:
-    - The app is connected to the user's Facebook account with a valid API token.
-    - A **Facebook Marketing Dashboard** () provides a detailed, Ads Manager-style view of campaigns with over 15 key metrics (ROAS, CPM, CTR, etc.).
-    - A **Performance Comparison Dashboard** () directly compares Shopify store revenue against Facebook ad spend, calculating True ROAS and profit for each linked store.
-    - The backend and frontend skeletons for **Campaign Management** and an **AI Optimizer** have been created.
+- A full-stack React/FastAPI/MongoDB application for CRM, order management, and marketing automation.
+- **Performance**: Server-side caching is implemented, significantly speeding up API responses.
+- **Facebook Marketing Suite**: Fully functional integration including an Ads Manager-style dashboard, a Performance Comparison tool, and a working **AI Campaign Optimizer** that provides actionable recommendations. Campaign budget and lookalike audience creation UIs are also in place.
+- **Server Refactoring**: A major refactoring of  is in progress. The file has been reduced by 38% (from 8,371 to 5,160 lines) by moving endpoints for Facebook, Finance, TCS, Pricing, and Customers into modular routers.
+- **Smart Inventory Clearance Engine**: A dashboard to identify dead and slow-moving stock with AI recommendations and a 360-day threshold is implemented and functional.
+- **Bug Fixes**: Multiple critical bugs reported by the user during the session were fixed, including a broken main dashboard, incorrect data on the performance comparison page, and non-functional filtered views on the orders page.
 
 **Last working item**:
-- **Last item agent was working**: Implementing the **AI Campaign Optimizer** and full **Campaign Management** functionalities for the Facebook Marketing integration. The agent had created the backend services (, ) and API endpoints, installed the usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
-              [-o ORGANIZATION] [-t {openai,azure}]
-              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
-              [--azure-ad-token AZURE_AD_TOKEN] [-V]
-              {api,tools,migrate,grit} ...
-
-positional arguments:
-  {api,tools,migrate,grit}
-    api                 Direct API calls
-    tools               Client side tools for convenience
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         Set verbosity.
-  -b API_BASE, --api-base API_BASE
-                        What API base url to use.
-  -k API_KEY, --api-key API_KEY
-                        What API key to use.
-  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
-                        What proxy to use.
-  -o ORGANIZATION, --organization ORGANIZATION
-                        Which organization to run as (will use your default
-                        organization if not specified)
-  -t {openai,azure}, --api-type {openai,azure}
-                        The backend API to call, must be `openai` or `azure`
-  --api-version API_VERSION
-                        The Azure API version, e.g.
-                        'https://learn.microsoft.com/en-us/azure/ai-
-                        services/openai/reference#rest-api-versioning'
-  --azure-endpoint AZURE_ENDPOINT
-                        The Azure endpoint, e.g.
-                        'https://endpoint.openai.azure.com'
-  --azure-ad-token AZURE_AD_TOKEN
-                        A token from Azure Active Directory,
-                        https://www.microsoft.com/en-
-                        us/security/business/identity-access/microsoft-entra-
-                        id
-  -V, --version         show program's version number and exit library, and set up the frontend UI with Campaigns and AI Optimizer tabs in the  component.
-- **Status**: IN PROGRESS
-- **Agent Testing Done**: N (Testing of the new UI tabs was attempted with the screenshot tool but failed due to a timeout. The feature is incomplete.)
-- **Which testing method agent to use?**: Frontend testing agent. The changes are complex, involving new components, backend endpoints, and state management, making it suitable for a comprehensive test script.
-- **User Testing Done**: N
+- **Last item agent was working**: The agent received a comprehensive list of bug reports and feature requests from the user. The agent was about to begin fixing the highest priority bug: the **Dispatch Tracker**, which is failing to fetch any order data.
+- **Status**: NOT STARTED
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: backend testing agent (to diagnose the API endpoint) and frontend testing agent (to confirm the UI fix).
+- **User Testing Done**: Y (User reported the feature is broken).
 
 **All Pending/In progress Issue list**:
--   Issue 1: Complete Facebook AI Optimizer & Campaign Management (P0)
--   Issue 2: Production database is empty (P1)
--   Issue 3: Refactor monolithic  (P2)
+-   Issue 1: Dispatch Tracker page is broken and fails to fetch orders (P0)
+-   Issue 2: Inventory Health page is missing a store-wise filter, making it unusable (P0)
+-   Issue 3: Dynamic Pricing tool is not showing product details or syncing price changes to Shopify (P0)
+-   Issue 4: Customer Segments page incorrectly shows 0 (P0)
+-   Issue 5: Complete the refactoring of  (P2)
 
 **Issues Detail**:
--   **Issue 1: Complete Facebook AI Optimizer & Campaign Management**
-    -   **Attempted fixes**: The agent created the necessary backend files (), service methods (), and API endpoints (). The frontend (, ) was updated with the UI structure. A test of the new UI failed.
-    -   **Next debug checklist**:
-        1.  Resume the implementation of the campaign management features (create/edit/pause) in  and the corresponding frontend controls.
-        2.  Implement the AI analysis logic in  using the installed usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
-              [-o ORGANIZATION] [-t {openai,azure}]
-              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
-              [--azure-ad-token AZURE_AD_TOKEN] [-V]
-              {api,tools,migrate,grit} ...
-
-positional arguments:
-  {api,tools,migrate,grit}
-    api                 Direct API calls
-    tools               Client side tools for convenience
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         Set verbosity.
-  -b API_BASE, --api-base API_BASE
-                        What API base url to use.
-  -k API_KEY, --api-key API_KEY
-                        What API key to use.
-  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
-                        What proxy to use.
-  -o ORGANIZATION, --organization ORGANIZATION
-                        Which organization to run as (will use your default
-                        organization if not specified)
-  -t {openai,azure}, --api-type {openai,azure}
-                        The backend API to call, must be `openai` or `azure`
-  --api-version API_VERSION
-                        The Azure API version, e.g.
-                        'https://learn.microsoft.com/en-us/azure/ai-
-                        services/openai/reference#rest-api-versioning'
-  --azure-endpoint AZURE_ENDPOINT
-                        The Azure endpoint, e.g.
-                        'https://endpoint.openai.azure.com'
-  --azure-ad-token AZURE_AD_TOKEN
-                        A token from Azure Active Directory,
-                        https://www.microsoft.com/en-
-                        us/security/business/identity-access/microsoft-entra-
-                        id
-  -V, --version         show program's version number and exit library.
-        3.  Flesh out the  component to display the AI-generated recommendations.
-        4.  Use the frontend testing agent to conduct a thorough test of both the Campaigns tab (toggling campaign status) and the AI Optimizer tab (fetching and displaying recommendations).
-    -   **Why fix this issue and what will be achieved with the fix?**: Fulfills the user's primary request for advanced, in-app ad management and AI-driven optimization capabilities.
-    -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: None
-
--   **Issue 2: Production database is empty**
-    -   **Attempted fixes**: The agent resolved the production login issue and explained to the user that preview and production environments have separate databases. The agent proposed solutions (Shopify sync or data migration).
-    -   **Next debug checklist**:
-        1.  Once the user is ready to address this, guide them to log into the production environment.
-        2.  Instruct them to navigate to the Settings page and trigger the Shopify sync to populate the database with live data.
-    -   **Why fix this issue and what will be achieved with the fix?**: The production application is currently unusable without data. This is a critical step for go-live.
-    -   **Status**: BLOCKED (on user decision, currently de-prioritized by the user).
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: None
-
--   **Issue 3: Refactor monolithic **
+-   **Issue 1: Dispatch Tracker fails to fetch orders**
     -   **Attempted fixes**: None.
     -   **Next debug checklist**:
-        1.  Propose a plan to the user to break  into smaller routers (e.g., , , , ) inside a  directory.
-        2.  Execute the refactoring by moving endpoint groups into their respective files.
-        3.  Update  to import and include the new routers.
-    -   **Why fix this issue and what will be achieved with the fix?**: To reduce technical debt, improve code maintainability, and make future development faster and safer.
+        1.  Check the browser's developer console on the  page for any frontend errors.
+        2.  Identify the API endpoint being called by the Dispatch Tracker component.
+        3.  Test the identified endpoint directly with  to check the API response and identify any backend errors.
+        4.  Inspect the backend endpoint logic (likely in  or a related router file) to debug the data fetching process.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a core operational feature for tracking dispatched orders and is currently completely broken.
     -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both
+
+-   **Issue 2: Inventory Health page is missing a store-wise filter**
+    -   **Attempted fixes**: None.
+    -   **Next debug checklist**:
+        1.  Examine the  component.
+        2.  Add a store selector dropdown component, similar to the one used on the main dashboard.
+        3.  Modify the data-fetching function within the component to include the selected  as a query parameter in the API call.
+        4.  Update the corresponding backend endpoint to accept and use the  parameter to filter the inventory health data.
+    -   **Why fix this issue and what will be achieved with the fix?**: The user needs to analyze inventory health on a per-store basis, and the page is not functional for them without this filter.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both
+
+-   **Issue 3: Dynamic Pricing tool is not working correctly**
+    -   **Attempted fixes**: None.
+    -   **Next debug checklist**:
+        1.  Review the backend logic in  and  to understand how it processes data and if the Shopify sync function is implemented.
+        2.  Inspect the API response from  to see if it provides the detailed product-level data the frontend needs.
+        3.  Update the  component to correctly display the detailed product information from the API.
+        4.  Implement or fix the function that pushes the calculated price changes to the Shopify API.
+    -   **Why fix this issue and what will be achieved with the fix?**: A key automated marketing feature is incomplete. Fixing it will allow the user to automate pricing strategies.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both
+
+-   **Issue 4: Customer Segments page incorrectly shows 0**
+    -   **Attempted fixes**: None.
+    -   **Next debug checklist**:
+        1.  Debug the  endpoint located in .
+        2.  Analyze the segmentation logic to determine why no customers are matching the defined segment criteria.
+        3.  Verify that the customer data in the database has the necessary fields (e.g., tags, order history) that the segmentation logic relies on.
+    -   **Why fix this issue and what will be achieved with the fix?**: This marketing feature is intended for targeted campaigns but is currently non-functional.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both
+
+-   **Issue 5: Complete the refactoring of **
+    -   **Attempted fixes**: Significant progress has been made. Routes for Facebook, Finance, Customers, Pricing, and TCS have been moved to dedicated files.  line count is down 38%.
+    -   **Next debug checklist**:
+        1.  Identify the next logical group of endpoints to move (e.g.,  or ).
+        2.  Create the new router file (e.g., ).
+        3.  Move the related endpoints, models, and dependencies from  to the new file.
+        4.  Import and include the new router in  and remove the now-redundant code.
+    -   **Why fix this issue and what will be achieved with the fix?**: Reduces critical technical debt, making the backend more modular, maintainable, and easier to develop for in the future.
+    -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Both (full regression test)
-    -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   **Task 1: Complete Facebook Marketing Integration Suite**
-    -   **Where to resume**: The agent needs to complete the implementation of the backend logic for campaign management and AI analysis, and build out the corresponding frontend components ( and interactive elements in ).
-    -   **What will be achieved with this?**: A complete, in-app Facebook Ads management and optimization tool as requested by the user.
+-   **Task 1: Refactor **
+    -   **Where to resume**: Continue extracting modules like  (27 endpoints) and  from  into their own files inside .
+    -   **What will be achieved with this?**: A more stable, modular, and maintainable backend codebase.
     -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on something**: None
+    -   **Blocked on something**: High-priority user-reported bugs should be addressed first.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P0) Finalize and test the AI Campaign Optimizer.
-    -   (P0) Implement Lookalike Audience creation.
-    -   (P0) Implement campaign Budget Management.
-    -   (P1) Populate the production database.
+    -   (P1) **AI-Assisted Creation Tools**: Build AI features to help create campaigns, product bundles, and promotional offers.
+    -   (P1) **Universal AI Analytics**: Add an AI Analysis button to all major sections of the app to provide contextual improvement suggestions.
+    -   (P2) **Feature Guides**: Create simple user guides or improve UI/UX for the Campaign Manager and Flash Sale features.
+    -   (P2) **Smart Clearance Enhancement**: Add a store-wise filter to the Smart Clearance page.
 -   **Future Tasks**:
-    -   (P2) Refactor .
-    -   (P3) Build a Smart Inventory Clearance Engine.
-    -   (P3) Build an Abandoned Cart Recovery via WhatsApp feature.
+    -   (P3) **Abandoned Cart Recovery via WhatsApp**.
 
 **Completed work in this session**
-- **Performance Optimization**: Implemented a server-side inventory cache, reducing API response times from ~3.8s to ~0.07s.
-- **Clickable Dashboard Cards**: Made stat cards on the  and  components interactive.
-- **Orders Page Search Fix**: Repaired the broken search functionality on the main orders page and added a debounce mechanism.
-- **Export Missing Orders Feature**: Implemented the export functionality in the finance module.
-- **Facebook Marketing API Integration (Phase 1 & 2)**:
-    - Integrated the Facebook API and built two major dashboards:
-        1.  **Facebook Marketing Dashboard**: An Ads Manager-style view with detailed campaign metrics.
-        2.  **Performance Comparison Dashboard**: Compares Shopify revenue against Facebook ad spend to calculate True ROAS and profit.
+- **Facebook AI Optimizer & Campaign Management**: Implemented end-to-end, including UI for budget/lookalike actions and backend bug fixes.
+- **Major  Refactoring**: Moved Facebook, Finance, TCS, Pricing, and Customers routes to modular files, reducing  size by 38% (3,211 lines).
+- **Smart Inventory Clearance Engine**: Built and deployed the full feature, including backend engine, API, and frontend dashboard.
+- **Critical Bug Fixes**:
+  - Fixed main dashboard crash ().
+  - Corrected data calculation on the Performance Comparison page, which was showing  revenue.
+  - Resolved  on the Orders page and enabled filtering by store via URL parameters.
+- **UI/UX Enhancements**:
+  - Made all summary and store-specific cards on the Performance Comparison page clickable, linking to filtered data views.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Production database is empty**: This critical issue for production usability was acknowledged and explained, but the user chose to prioritize feature development. It remains blocked on the user's decision.
--   **Issue 2:  requires major refactoring**: This is significant technical debt that the user has deferred. The file is now over 8,200 lines.
+-   All known issues are captured in the **All Pending/In progress Issue list** section based on the user's latest feedback.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**:  requires major refactoring.
--   **Recurrence count**: 8
--   **Status**: NOT STARTED
+-   **Recurrence count**: 9
+-   **Status**: IN PROGRESS
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **API Caching**: Implemented a server-side inventory cache that warms up on startup to drastically improve API performance.
--   **Third-Party API Integration**: Integrated the Facebook Marketing API for reading complex data structures (Accounts, Campaigns, Insights).
--   **AI Integration (Setup)**: Prepared the application for AI features by installing the usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
-              [-o ORGANIZATION] [-t {openai,azure}]
-              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
-              [--azure-ad-token AZURE_AD_TOKEN] [-V]
-              {api,tools,migrate,grit} ...
-
-positional arguments:
-  {api,tools,migrate,grit}
-    api                 Direct API calls
-    tools               Client side tools for convenience
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         Set verbosity.
-  -b API_BASE, --api-base API_BASE
-                        What API base url to use.
-  -k API_KEY, --api-key API_KEY
-                        What API key to use.
-  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
-                        What proxy to use.
-  -o ORGANIZATION, --organization ORGANIZATION
-                        Which organization to run as (will use your default
-                        organization if not specified)
-  -t {openai,azure}, --api-type {openai,azure}
-                        The backend API to call, must be `openai` or `azure`
-  --api-version API_VERSION
-                        The Azure API version, e.g.
-                        'https://learn.microsoft.com/en-us/azure/ai-
-                        services/openai/reference#rest-api-versioning'
-  --azure-endpoint AZURE_ENDPOINT
-                        The Azure endpoint, e.g.
-                        'https://endpoint.openai.azure.com'
-  --azure-ad-token AZURE_AD_TOKEN
-                        A token from Azure Active Directory,
-                        https://www.microsoft.com/en-
-                        us/security/business/identity-access/microsoft-entra-
-                        id
-  -V, --version         show program's version number and exit library and creating a dedicated backend service ().
--   **Data-Driven Dashboards**: Created new React components that fetch data from multiple sources (backend database, Facebook API) and present it in complex, interactive tables and cards.
+-   **Modular API Routing (FastAPI)**: A significant effort to break down a monolithic  into a modular structure using  for different domains (Facebook, Finance, etc.).
+-   **Dependency Injection (FastAPI)**: Correctly passing shared resources like the database connection () into the new, modular routers.
+-   **URL-driven State (React)**: Enhanced the  component to use  to read filter criteria from the URL, enabling linkable, pre-filtered pages.
+-   **AI Integration (OpenAI)**: Successfully used OpenAI's API for complex analysis in the Facebook Campaign Optimizer and the Inventory Clearance engine.
 
 **key DB schema**
--   No schema changes were made.
+-   No schema changes were made. A fallback was added to use customer  from the  collection when the  collection is empty.
 
 **changes in tech stack**
--   **Backend**: Added , usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
-              [-o ORGANIZATION] [-t {openai,azure}]
-              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
-              [--azure-ad-token AZURE_AD_TOKEN] [-V]
-              {api,tools,migrate,grit} ...
-
-positional arguments:
-  {api,tools,migrate,grit}
-    api                 Direct API calls
-    tools               Client side tools for convenience
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         Set verbosity.
-  -b API_BASE, --api-base API_BASE
-                        What API base url to use.
-  -k API_KEY, --api-key API_KEY
-                        What API key to use.
-  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
-                        What proxy to use.
-  -o ORGANIZATION, --organization ORGANIZATION
-                        Which organization to run as (will use your default
-                        organization if not specified)
-  -t {openai,azure}, --api-type {openai,azure}
-                        The backend API to call, must be `openai` or `azure`
-  --api-version API_VERSION
-                        The Azure API version, e.g.
-                        'https://learn.microsoft.com/en-us/azure/ai-
-                        services/openai/reference#rest-api-versioning'
-  --azure-endpoint AZURE_ENDPOINT
-                        The Azure endpoint, e.g.
-                        'https://endpoint.openai.azure.com'
-  --azure-ad-token AZURE_AD_TOKEN
-                        A token from Azure Active Directory,
-                        https://www.microsoft.com/en-
-                        us/security/business/identity-access/microsoft-entra-
-                        id
-  -V, --version         show program's version number and exit, and  to .
+-   No new dependencies were added. The focus was on implementation and refactoring.
 
 **All files of reference**
--   **/app/backend/ai_campaign_optimizer.py**: New service to house AI logic for ad optimization.
--   **/app/backend/facebook_marketing.py**: New service for all Facebook API interactions.
--   **/app/backend/server.py**: The monolithic API server, heavily modified with new endpoints.
--   **/app/frontend/src/components/FacebookMarketing.jsx**: The main UI for the Facebook Ads dashboard.
--   **/app/frontend/src/components/PerformanceComparison.jsx**: UI for comparing Shopify vs. Facebook data.
--   **/app/frontend/src/components/AICampaignOptimizer.jsx**: The UI for the AI feature currently being built.
+-   **/app/backend/server.py**: The main server file, which is the subject of ongoing refactoring.
+-   **/app/backend/routes/**: The directory containing all newly created modular router files.
+-   **/app/frontend/src/components/DispatchTracker.jsx**: The next component to investigate for bug fixing.
+-   **/app/frontend/src/components/InventoryHealth.jsx**: The component requiring a new store filter.
+-   **/app/frontend/src/components/DynamicPricing.jsx**: The component for the broken dynamic pricing tool.
+-   **/app/frontend/src/components/CustomerSegmentation.jsx**: The component for the broken segmentation feature.
 
 **Areas that need refactoring**:
--   ****: Critically needs to be refactored. Its size and complexity are a significant risk to future development and stability.
+-   ****: Still over 5,000 lines. The , , , and  modules are prime candidates for the next round of refactoring.
 
 **key api endpoints**
--   : (New) To start/stop a campaign.
--   : (New) To trigger the AI analysis.
--   , : For reading FB data.
--   : For exporting financial data.
--   : To manually refresh the server-side cache.
+-   **/api/clearance/**: A new set of endpoints for the Smart Inventory Clearance engine.
+-   **/api/facebook/**, **/api/finance/**, **/api/tcs/**, **/api/pricing/**, **/api/customers/**: Endpoints that were successfully moved from  into modular routers.
 
 **Critical Info for New Agent**
--   **Focus on the AI Optimizer**: The user's most recent and enthusiastic request is for the AI future to optimize their ad campaigns. Your immediate priority is to complete this feature.
--   **Build on the Existing Structure**: The groundwork for the AI optimizer and campaign management is already in place (backend services, API endpoints, UI tabs). Your task is to implement the core logic.
--   **Production is Blocked but De-prioritized**: Be aware that the production site is unusable due to an empty database. The user has deferred this, but it must be addressed before they can go live. The recommended solution is to guide the user to perform a Shopify sync on the production environment.
--   **Push for Refactoring**: The  file is a ticking time bomb. Once the current Facebook tasks are complete, you should strongly advocate for and plan the refactoring task.
+-   **User Feedback is Priority #1**: The user has provided a clear, prioritized list of bugs. You must address these before any new development. Start with the broken **Dispatch Tracker**.
+-   **Facebook Token Expires**: The Facebook Marketing API token is short-lived and will expire. When Facebook API calls fail with an auth error, you must ask the user for a new token.
+-   **Follow the Refactoring Pattern**: When working on the backend, adhere to the new modular router structure in . Once critical bugs are squashed, continue the refactoring of .
+-   **Acknowledge New Features**: The user has requested several new AI features. Acknowledge these requests in your plan, but clearly state that bug fixes are the top priority.
 
 **documents created in this job**
 -   None.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: yes these r important also i want to add ai future which could recommend me how to change campaign how to increase maximise conversion can we have ai future to study the ads performance and scale up (IN PROGRESS - This is the current main task).
-2.  **User**: Asks if everything from the Facebook Marketing API docs is integrated. (PENDING - This led to the AI feature request).
-3.  **User**: Provides mappings between Shopify stores and Facebook ad accounts. (COMPLETED - The  dashboard was built).
-4.  **User**: Provides a list of columns wanted for the Ads Manager view. (COMPLETED).
-5.  **User**: go ahead (approving various implementation plans). (COMPLETED).
-6.  **User**: Provided new Facebook access tokens. (COMPLETED).
-7.  **User**: yes guide me step by step (for getting API permissions). (COMPLETED).
-8.  **User**: Confirmed details about their Facebook App and Ad Account setup. (COMPLETED).
-9.  **User**: Asked for clarification on the agent's recommendation to do the  refactor in a separate session. (COMPLETED - Agent clarified it was a caution, not a limitation).
-10. **User**: continue (during a web search). (COMPLETED).
+1.  **User**: Provided a detailed list of bugs and feature requests across the app, including the broken Dispatch Tracker, issues with Inventory Health, Dynamic Pricing, and Customer Segments. (PENDING - This forms the current work backlog).
+2.  **User**: Reported that clicking on store cards on the Performance Comparison page leads to a broken Orders page. (COMPLETED - Agent fixed the Orders page).
+3.  **User**: make the cards clickable on the Performance Comparison page. (COMPLETED - Agent implemented this).
+4.  **User**: Reported the Performance Comparison page shows Rs. 0 for Shopify Revenue. (COMPLETED - Agent fixed the data parsing).
+5.  **User**: Reported that the Facebook Marketing page was not displaying ad accounts. (COMPLETED - Agent resolved with a new token).
+6.  **User**: Reported the main Dashboard was broken with a map is not a function error. (COMPLETED - Agent fixed it).
+7.  **User**: yes apply only apply threshhold 360 days rest all confirmed - Approved the plan for the Smart Inventory Clearance Engine. (COMPLETED).
+8.  **User**: go ahead fix it all - Approved the continuation of the  refactoring. (IN PROGRESS).
+9.  **User**: production database is synced u can go ahead for rest - Confirmed a major blocker was resolved. (COMPLETED).
+10. **User**: Provided new Facebook access tokens upon request. (COMPLETED).
 
 **Project Health Check:**
 -   **Broken**:
-    -   **Production Data**: Production database is empty.
-    -   **AI Campaign Optimizer**: Feature is a skeleton and not functional.
-    -   **Facebook Campaign Management**: Backend/frontend skeletons exist, but the core create/edit/pause logic is not implemented.
+    -   **Dispatch Tracker**: Fails to fetch orders, making the page unusable.
+    -   **Inventory Health Page**: Lacks a store filter, making it unusable for the user.
+    -   **Dynamic Pricing**: Core functionality (displaying products, syncing to Shopify) is missing.
+    -   **Customer Segments**: Feature is not working and shows 0.
 -   **Mocked**:
     -   None.
 
@@ -325,18 +199,18 @@ options:
 -   **Meta WhatsApp**: Functional (URL scheme) — no key required.
 -   **TCS Courier API**: Integrated — requires User API Key.
 -   **DTDC Courier API**: Integrated — requires User API Key.
--   **Facebook Marketing API**: Integrated (read-only functional, management in-progress) — requires User API Key.
--   **OpenAI GPT-4**: Planned for AI Optimizer — uses Emergent LLM Key.
+-   **Facebook Marketing API**: Integrated (Read, AI analysis, budget/lookalike management are functional) — requires User API Key (short-lived).
+-   **OpenAI GPT-4**: Functional (used in AI Optimizer & Clearance Engine) — uses Emergent LLM Key.
 
 **Testing status**
 -   **Testing agent used after significant changes**: YES
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None.
--   **Known regressions**: None.
+-   **Known regressions**: Yes, the user's last message reported several broken features which are now the top priority.
 
 **Credentials to test flow:**
 -   **Username**: 
 -   **Password**: 
 
 **What agent forgot to execute**
--   The agent was in the middle of a large feature implementation (AI Optimizer and Campaign Management). The core logic for these features is not yet written, and the last UI test failed. The next agent needs to pick this up and complete the implementation and testing.</analysis>
+- The agent has not forgotten any tasks. It was about to begin working through the comprehensive list of issues and feature requests provided by the user in their last message, starting with the highest priority bug (the broken Dispatch Tracker).</analysis>
