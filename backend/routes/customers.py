@@ -500,17 +500,42 @@ async def get_customer_segments(store_name: str = None):
             total_result = await db.customers.aggregate(pipeline).to_list(1)
             total_value = total_result[0]["total"] if total_result else 0
             
-            # Get top customers for this segment
-            top_customers = await db.customers.find(
+            # Get top customers for this segment with proper fields
+            top_customers_raw = await db.customers.find(
                 query, 
-                {"_id": 0, "customer_id": 1, "first_name": 1, "last_name": 1, "email": 1, "phone": 1, "total_spent": 1, "country_code": 1}
+                {"_id": 0, "customer_id": 1, "first_name": 1, "last_name": 1, "email": 1, 
+                 "phone": 1, "total_spent": 1, "country_code": 1, "order_number": 1, 
+                 "total_orders": 1, "last_order_date": 1, "store_name": 1}
             ).sort("total_spent", -1).limit(10).to_list(10)
+            
+            # Format customers with combined name field
+            top_customers = []
+            for c in top_customers_raw:
+                first_name = c.get("first_name", "") or ""
+                last_name = c.get("last_name", "") or ""
+                name = f"{first_name} {last_name}".strip() or c.get("phone", "Unknown")
+                
+                top_customers.append({
+                    "customer_id": c.get("customer_id"),
+                    "name": name,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "email": c.get("email"),
+                    "phone": c.get("phone"),
+                    "total_spent": c.get("total_spent", 0),
+                    "country_code": c.get("country_code", "PK"),
+                    "order_number": c.get("order_number", "N/A"),
+                    "order_count": c.get("total_orders", 1),
+                    "last_order_date": c.get("last_order_date"),
+                    "store_name": c.get("store_name")
+                })
             
             result[seg_id] = {
                 "count": count,
                 "total_value": total_value,
                 "description": seg_config.get("description", ""),
-                "top_customers": top_customers
+                "top_customers": top_customers,
+                "customers": top_customers  # Also include as 'customers' for compatibility
             }
         
         return result
