@@ -163,7 +163,7 @@ const CustomerSegmentationDashboard = () => {
       setPageLoading(true);
       if (page === 1) setLoading(true);
       
-      const storeParam = selectedStore !== 'all' ? `store_name=${selectedStore}&` : '';
+      const storeParam = globalStore !== 'all' ? `store_name=${globalStore}&` : '';
       const res = await axios.get(`${API_URL}/api/customers/export-segment/${segment}?${storeParam}page=${page}&limit=50`);
       
       if (!res.data.customers || res.data.customers.length === 0) {
