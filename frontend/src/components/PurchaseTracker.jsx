@@ -40,11 +40,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useStore } from "../contexts/StoreContext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const PurchaseTracker = () => {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
