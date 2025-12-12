@@ -1651,10 +1651,10 @@ async def get_sync_status():
 
 
 @api_router.post("/dynamic-pricing/sync-to-shopify")
-async def sync_pricing_to_shopify(request: ShopifySyncRequest, background_tasks: BackgroundTasks):
+async def sync_pricing_to_shopify(request: ShopifySyncRequest):
     """
     Sync dynamic pricing to Shopify with custom discount percentages
-    Runs in background and returns immediately
+    Processes synchronously with progress updates
     """
     try:
         from dynamic_pricing_engine import dynamic_pricing_engine
@@ -1672,6 +1672,13 @@ async def sync_pricing_to_shopify(request: ShopifySyncRequest, background_tasks:
             categories_data = analysis.get('categories', {})
             total_products = sum(len(products) for products in categories_data.values())
         
+        if total_products == 0:
+            return {
+                'success': False,
+                'message': 'No products found. Please run "Re-Analyze Products" first.',
+                'total_products': 0
+            }
+        
         # Store sync request in database for tracking
         await db.dynamic_pricing_cache.update_one(
             {"type": "sync_request"},
@@ -1685,78 +1692,82 @@ async def sync_pricing_to_shopify(request: ShopifySyncRequest, background_tasks:
             upsert=True
         )
         
-        # Add background task to actually process the sync
-        async def process_shopify_sync():
-            try:
-                logger.info("🔄 Starting Shopify price sync...")
-                
-                # Get default store
-                store = await db.stores.find_one({}, {"_id": 0, "shopify_domain": 1, "shopify_token": 1, "store_name": 1})
-                if not store:
-                    logger.error("❌ No store configured for sync")
-                    await db.dynamic_pricing_cache.update_one(
-                        {"type": "sync_request"},
-                        {"$set": {"status": "failed", "error": "No store configured"}}
-                    )
-                    return
-                
-                updated_count = 0
-                failed_count = 0
-                
-                # Process each category with its discount
-                for category, discount in request.discounts.items():
-                    products = categories_data.get(category, [])
-                    logger.info(f"📦 Processing Category {category}: {len(products)} products with {discount}% discount")
-                    
-                    for product in products[:50]:  # Limit to 50 per category for speed
-                        try:
-                            sku = product.get('sku')
-                            current_price = product.get('current_price', 0)
-                            
-                            if current_price <= 0:
-                                continue
-                            
-                            # Calculate discounted price
-                            new_price = round(current_price * (1 - discount / 100), 2)
-                            
-                            # Update in local inventory_v2
-                            await db.inventory_v2.update_one(
-                                {"sku": sku},
-                                {"$set": {
-                                    "dynamic_price": new_price,
-                                    "discount_percent": discount,
-                                    "velocity_category": category,
-                                    "price_updated_at": datetime.now(timezone.utc).isoformat()
-                                }}
-                            )
-                            updated_count += 1
-                            
-                        except Exception as e:
-                            logger.error(f"Error updating {sku}: {e}")
-                            failed_count += 1
-                
-                # Update sync status
-                await db.dynamic_pricing_cache.update_one(
-                    {"type": "sync_request"},
-                    {"$set": {
-                        "status": "completed",
-                        "completed_at": datetime.now(timezone.utc).isoformat(),
-                        "updated_count": updated_count,
-                        "failed_count": failed_count
-                    }}
-                )
-                
-                logger.info(f"✅ Sync completed: {updated_count} updated, {failed_count} failed")
-                
-            except Exception as e:
-                logger.error(f"❌ Sync error: {e}")
-                await db.dynamic_pricing_cache.update_one(
-                    {"type": "sync_request"},
-                    {"$set": {"status": "failed", "error": str(e)}}
-                )
+        logger.info("🔄 Starting Shopify price sync...")
         
-        # Run sync in background
-        background_tasks.add_task(lambda: asyncio.create_task(process_shopify_sync()))
+        updated_count = 0
+        failed_count = 0
+        
+        # Process each category with its discount
+        for category, discount in request.discounts.items():
+            products = categories_data.get(category, [])
+            logger.info(f"📦 Processing Category {category}: {len(products)} products with {discount}% discount")
+            
+            # Process up to 100 products per category
+            for product in products[:100]:
+                try:
+                    sku = product.get('sku')
+                    current_price = product.get('current_price', 0)
+                    
+                    if current_price <= 0:
+                        continue
+                    
+                    # Calculate discounted price
+                    new_price = round(current_price * (1 - discount / 100), 2)
+                    
+                    # Update in local inventory_v2
+                    result = await db.inventory_v2.update_one(
+                        {"sku": sku},
+                        {"$set": {
+                            "dynamic_price": new_price,
+                            "original_price": current_price,
+                            "discount_percent": discount,
+                            "velocity_category": category,
+                            "price_updated_at": datetime.now(timezone.utc).isoformat()
+                        }},
+                        upsert=True
+                    )
+                    updated_count += 1
+                    
+                except Exception as e:
+                    logger.error(f"Error updating {sku}: {e}")
+                    failed_count += 1
+        
+        # Update sync status and save to last_sync_result for status endpoint
+        sync_result = {
+            "status": "completed",
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "updated_count": updated_count,
+            "failed_count": failed_count,
+            "total_products": total_products,
+            "discounts_applied": request.discounts
+        }
+        
+        await db.dynamic_pricing_cache.update_one(
+            {"type": "sync_request"},
+            {"$set": sync_result},
+            upsert=True
+        )
+        
+        await db.dynamic_pricing_cache.update_one(
+            {"type": "last_sync_result"},
+            {"$set": {**sync_result, "type": "last_sync_result"}},
+            upsert=True
+        )
+        
+        logger.info(f"✅ Sync completed: {updated_count} updated, {failed_count} failed")
+        
+        return {
+            'success': True,
+            'message': f'Successfully updated {updated_count} products with dynamic pricing!',
+            'updated_count': updated_count,
+            'failed_count': failed_count,
+            'total_products': total_products,
+            'discounts_applied': request.discounts
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error in sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
         
         logger.info("✅ Sync request started in background")
         
