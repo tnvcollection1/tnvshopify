@@ -933,7 +933,6 @@ const DispatchTracker = () => {
           </div>
         </div>
         )}
-      </div>
 
       {/* Edit Dialog */}
       <Dialog open={editDialog} onOpenChange={setEditDialog}>
