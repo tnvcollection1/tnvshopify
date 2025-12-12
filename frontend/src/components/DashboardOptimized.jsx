@@ -12,7 +12,11 @@ import {
   CheckCircle2,
   Clock,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -37,6 +41,7 @@ const DashboardOptimized = () => {
   const [uploadingCSV, setUploadingCSV] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchStats();
@@ -81,11 +86,10 @@ const DashboardOptimized = () => {
     try {
       const response = await axios.get(`${API}/customers`, {
         params: {
-          limit: 10,
+          limit: 20,
           ...(selectedStore !== 'all' && { store_name: selectedStore })
         }
       });
-      // Handle the response structure properly
       const orders = response.data?.customers || response.data || [];
       setRecentOrders(Array.isArray(orders) ? orders : []);
     } catch (error) {
@@ -158,223 +162,301 @@ const DashboardOptimized = () => {
     }
   };
 
+  const getStatusStyle = (status, type) => {
+    if (type === 'fulfillment') {
+      if (status === 'fulfilled') return 'bg-green-50 text-green-700 border-green-200';
+      if (status === 'unfulfilled') return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      return 'bg-gray-50 text-gray-600 border-gray-200';
+    }
+    if (type === 'payment') {
+      if (status === 'paid') return 'bg-green-50 text-green-700 border-green-200';
+      if (status === 'pending') return 'bg-orange-50 text-orange-700 border-orange-200';
+      return 'bg-gray-50 text-gray-600 border-gray-200';
+    }
+    return 'bg-gray-50 text-gray-600 border-gray-200';
+  };
+
   if (loading && !stats.totalCustomers) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f6f6f7] flex items-center justify-center">
         <LoadingSpinner text="Loading dashboard..." size="large" />
       </div>
     );
   }
 
-  const statsCards = [
-    {
-      title: 'Total Customers',
-      value: stats.totalCustomers?.toLocaleString() || '0',
-      icon: Users,
-      change: '+12%',
-      positive: true
-    },
-    {
-      title: 'Total Orders',
-      value: stats.totalOrders?.toLocaleString() || '0',
-      icon: ShoppingCart,
-      change: '+8%',
-      positive: true
-    },
-    {
-      title: 'Fulfilled',
-      value: (stats.fulfillmentStatus?.fulfilled || 0).toLocaleString(),
-      icon: CheckCircle2,
-      change: '+15%',
-      positive: true
-    },
-    {
-      title: 'Unfulfilled',
-      value: (stats.fulfillmentStatus?.unfulfilled || 0).toLocaleString(),
-      icon: Clock,
-      change: '-5%',
-      positive: false
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 p-6 space-y-6">
+    <div className="min-h-screen bg-[#f6f6f7]">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 mt-1">Overview of your business performance</p>
-        </div>
-        <div className="flex gap-3">
-          <Select value={selectedStore} onValueChange={setSelectedStore}>
-            <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900">
-              <SelectValue placeholder="Select Store" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-gray-200">
-              <SelectItem value="all" className="text-gray-900">All Stores</SelectItem>
-              {stores.map((store) => (
-                <SelectItem key={store.id} value={store.store_name} className="text-gray-900">
-                  {store.store_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button 
-            onClick={handleShopifySync} 
-            disabled={syncing}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing...' : 'Sync Shopify'}
-          </Button>
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-gray-900">Orders</h1>
+          <div className="flex items-center gap-3">
+            <Select value={selectedStore} onValueChange={setSelectedStore}>
+              <SelectTrigger className="w-40 h-9 bg-white border-gray-300 text-sm">
+                <SelectValue placeholder="All stores" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All stores</SelectItem>
+                {stores.map((store) => (
+                  <SelectItem key={store.id} value={store.store_name}>
+                    {store.store_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button 
+              variant="outline"
+              onClick={handleShopifySync} 
+              disabled={syncing}
+              className="h-9 text-sm border-gray-300"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Syncing...' : 'Sync'}
+            </Button>
+            <Button className="h-9 text-sm bg-gray-900 hover:bg-gray-800 text-white">
+              Export
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div 
-              key={index}
-              className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-emerald-600" />
-                </div>
-                <div className={`flex items-center gap-1 text-sm ${stat.positive ? 'text-emerald-600' : 'text-red-500'}`}>
-                  {stat.positive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                  {stat.change}
-                </div>
-              </div>
-              <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-              <div className="text-sm text-gray-500">{stat.title}</div>
+      <div className="px-6 py-4">
+        <div className="grid grid-cols-4 gap-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">Total orders</span>
+              <span className="text-xs text-green-600 flex items-center">
+                <ArrowUpRight className="w-3 h-3 mr-1" />8%
+              </span>
             </div>
-          );
-        })}
+            <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.totalOrders?.toLocaleString() || '0'}</p>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">Fulfilled</span>
+              <span className="text-xs text-green-600 flex items-center">
+                <ArrowUpRight className="w-3 h-3 mr-1" />15%
+              </span>
+            </div>
+            <p className="text-2xl font-semibold text-gray-900 mt-1">{(stats.fulfillmentStatus?.fulfilled || 0).toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">Unfulfilled</span>
+              <span className="text-xs text-red-500 flex items-center">
+                <ArrowDownRight className="w-3 h-3 mr-1" />5%
+              </span>
+            </div>
+            <p className="text-2xl font-semibold text-gray-900 mt-1">{(stats.fulfillmentStatus?.unfulfilled || 0).toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">Customers</span>
+              <span className="text-xs text-green-600 flex items-center">
+                <ArrowUpRight className="w-3 h-3 mr-1" />12%
+              </span>
+            </div>
+            <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.totalCustomers?.toLocaleString() || '0'}</p>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="w-full">
-        <div className="flex gap-2 mb-4">
+      <div className="px-6">
+        <div className="flex items-center gap-6 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'overview' 
-                ? 'bg-emerald-500 text-white' 
-                : 'bg-white text-gray-600 hover:text-gray-900 border border-gray-200'
+                ? 'border-gray-900 text-gray-900' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            Overview
+            All orders
+          </button>
+          <button
+            onClick={() => setActiveTab('unfulfilled')}
+            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'unfulfilled' 
+                ? 'border-gray-900 text-gray-900' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Unfulfilled
           </button>
           <button
             onClick={() => setActiveTab('upload')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+            className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'upload' 
-                ? 'bg-emerald-500 text-white' 
-                : 'bg-white text-gray-600 hover:text-gray-900 border border-gray-200'
+                ? 'border-gray-900 text-gray-900' 
+                : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            Upload Orders
+            Import
           </button>
         </div>
+      </div>
 
-        {activeTab === 'overview' && (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+      {/* Search and Filters */}
+      {activeTab !== 'upload' && (
+        <div className="px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Search orders"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-9 bg-white border-gray-300 text-sm"
+              />
             </div>
-            <div className="p-6">
-              {recentOrders.length === 0 ? (
-                <div className="text-center py-12">
-                  <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No orders found</h3>
-                  <p className="text-gray-500 mb-4">Sync orders from Shopify or upload a CSV file</p>
-                  <Button 
-                    onClick={handleShopifySync}
-                    className="bg-emerald-500 hover:bg-emerald-600 text-white"
-                  >
-                    Sync Orders
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {recentOrders.map((order) => (
-                    <div
-                      key={order.customer_id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                          <span className="text-emerald-600 font-semibold">
-                            {order.first_name?.charAt(0) || 'O'}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {order.first_name} {order.last_name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            Order #{order.order_number} • {order.store_name}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          order.fulfillment_status === 'fulfilled' 
-                            ? 'bg-emerald-100 text-emerald-700' 
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {order.fulfillment_status || 'unfulfilled'}
-                        </span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          order.payment_status === 'paid' 
-                            ? 'bg-emerald-100 text-emerald-700' 
-                            : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {order.payment_status || 'pending'}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <Button variant="outline" className="h-9 text-sm border-gray-300">
+              <Filter className="w-4 h-4 mr-2" />
+              Filters
+            </Button>
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === 'upload' && (
-          <div className="bg-white border border-gray-200 rounded-xl p-6">
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-emerald-500 transition-colors">
-              <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Shopify Orders CSV</h3>
+      {/* Orders Table */}
+      {(activeTab === 'overview' || activeTab === 'unfulfilled') && (
+        <div className="px-6 pb-6">
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            {/* Table Header */}
+            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <div className="col-span-1">
+                <input type="checkbox" className="rounded border-gray-300" />
+              </div>
+              <div className="col-span-2">Order</div>
+              <div className="col-span-2">Date</div>
+              <div className="col-span-2">Customer</div>
+              <div className="col-span-2">Fulfillment</div>
+              <div className="col-span-2">Payment</div>
+              <div className="col-span-1 text-right">Total</div>
+            </div>
+
+            {/* Table Body */}
+            {recentOrders.length === 0 ? (
+              <div className="text-center py-16">
+                <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-base font-medium text-gray-900 mb-1">No orders yet</h3>
+                <p className="text-sm text-gray-500 mb-4">Sync orders from Shopify or upload a CSV file</p>
+                <Button 
+                  onClick={handleShopifySync}
+                  className="bg-gray-900 hover:bg-gray-800 text-white"
+                >
+                  Sync Orders
+                </Button>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {recentOrders
+                  .filter(order => activeTab === 'overview' || order.fulfillment_status !== 'fulfilled')
+                  .map((order) => (
+                  <div 
+                    key={order.customer_id} 
+                    className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer items-center"
+                  >
+                    <div className="col-span-1">
+                      <input type="checkbox" className="rounded border-gray-300" />
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-sm font-medium text-blue-600 hover:underline">
+                        #{order.order_number || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="col-span-2 text-sm text-gray-600">
+                      {order.last_order_date
+                        ? new Date(order.last_order_date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })
+                        : 'N/A'}
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-sm text-gray-900">{order.first_name} {order.last_name}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${getStatusStyle(order.fulfillment_status, 'fulfillment')}`}>
+                        {order.fulfillment_status === 'fulfilled' ? (
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                        ) : (
+                          <Clock className="w-3 h-3 mr-1" />
+                        )}
+                        {order.fulfillment_status || 'Unfulfilled'}
+                      </span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${getStatusStyle(order.payment_status, 'payment')}`}>
+                        {order.payment_status || 'Pending'}
+                      </span>
+                    </div>
+                    <div className="col-span-1 text-right">
+                      <span className="text-sm font-medium text-gray-900">
+                        ₹{order.total_spent?.toFixed(0) || '0'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {recentOrders.length > 0 && (
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-gray-500">
+                Showing {recentOrders.length} orders
+              </p>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="h-8 text-sm border-gray-300" disabled>
+                  Previous
+                </Button>
+                <Button variant="outline" size="sm" className="h-8 text-sm border-gray-300">
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Upload Tab */}
+      {activeTab === 'upload' && (
+        <div className="px-6 py-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <div className="max-w-md mx-auto text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Upload className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Import orders</h3>
               <p className="text-sm text-gray-500 mb-6">
-                Export orders from Shopify and upload here to sync your data
+                Upload a CSV or Excel file with your orders data
               </p>
               <Input
                 type="file"
                 accept=".csv,.xlsx"
                 onChange={handleFileChange}
-                className="max-w-md mx-auto mb-4 bg-white border-gray-300"
+                className="mb-4"
               />
               {selectedFile && (
-                <div className="text-sm text-emerald-600 mb-4">
+                <p className="text-sm text-green-600 mb-4">
                   Selected: {selectedFile.name}
-                </div>
+                </p>
               )}
               <Button
                 onClick={handleCSVUpload}
                 disabled={!selectedFile || uploadingCSV}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold"
+                className="bg-gray-900 hover:bg-gray-800 text-white"
               >
-                <Upload className="h-4 w-4 mr-2" />
-                {uploadingCSV ? 'Uploading...' : 'Upload CSV'}
+                {uploadingCSV ? 'Uploading...' : 'Upload file'}
               </Button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
