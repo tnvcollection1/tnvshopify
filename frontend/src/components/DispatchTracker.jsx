@@ -86,7 +86,7 @@ const getCourierName = (order) => {
 };
 
 const DispatchTracker = () => {
-  const { selectedStore: globalStore } = useStore();
+  const { selectedStore: globalStore, stores } = useStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
