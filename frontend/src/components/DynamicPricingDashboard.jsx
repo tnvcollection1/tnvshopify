@@ -80,11 +80,21 @@ const DynamicPricingDashboard = () => {
     const categories = reportData.categories;
     let allProducts = [];
     
+    // Add category label to each product
+    const addCategory = (products, cat) => products.map(p => ({...p, category: cat}));
+    
     if (currentFilter === 'all') {
-      allProducts = [...(categories.A || []), ...(categories.B || []), ...(categories.C || [])];
+      allProducts = [
+        ...addCategory(categories.A || [], 'A'), 
+        ...addCategory(categories.B || [], 'B'), 
+        ...addCategory(categories.C || [], 'C')
+      ];
     } else {
-      allProducts = categories[currentFilter] || [];
+      allProducts = addCategory(categories[currentFilter] || [], currentFilter);
     }
+    
+    // Sort by order_count descending
+    allProducts.sort((a, b) => (b.order_count || 0) - (a.order_count || 0));
     
     setPricingRules(allProducts.slice(0, 50));
   };
