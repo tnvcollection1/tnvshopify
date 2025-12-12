@@ -109,6 +109,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Multi-Tenant Landing Page: Complete"
     - "P0 Bug Fixes: All Complete"
   stuck_tasks: []
   test_all: false
