@@ -171,34 +171,33 @@ const DashboardOptimized = () => {
       value: stats.totalCustomers?.toLocaleString() || '0',
       icon: Users,
       change: '+12%',
-      positive: true,
-      color: 'emerald'
+      positive: true
     },
     {
       title: 'Total Orders',
       value: stats.totalOrders?.toLocaleString() || '0',
       icon: ShoppingCart,
       change: '+8%',
-      positive: true,
-      color: 'blue'
+      positive: true
     },
     {
       title: 'Fulfilled',
       value: (stats.fulfillmentStatus?.fulfilled || 0).toLocaleString(),
       icon: CheckCircle2,
       change: '+15%',
-      positive: true,
-      color: 'green'
+      positive: true
     },
     {
       title: 'Unfulfilled',
       value: (stats.fulfillmentStatus?.unfulfilled || 0).toLocaleString(),
       icon: Clock,
       change: '-5%',
-      positive: false,
-      color: 'yellow'
+      positive: false
     }
   ];
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState('overview');
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] p-6 space-y-6">
@@ -210,13 +209,13 @@ const DashboardOptimized = () => {
         </div>
         <div className="flex gap-3">
           <Select value={selectedStore} onValueChange={setSelectedStore}>
-            <SelectTrigger className="w-48 bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="w-48 bg-[#1a1a1a] border-white/10 text-white hover:bg-[#252525]">
               <SelectValue placeholder="Select Store" />
             </SelectTrigger>
             <SelectContent className="bg-[#1a1a1a] border-white/10">
-              <SelectItem value="all" className="text-white hover:bg-white/10">All Stores</SelectItem>
+              <SelectItem value="all" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">All Stores</SelectItem>
               {stores.map((store) => (
-                <SelectItem key={store.id} value={store.store_name} className="text-white hover:bg-white/10">
+                <SelectItem key={store.id} value={store.store_name} className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">
                   {store.store_name}
                 </SelectItem>
               ))}
@@ -240,11 +239,11 @@ const DashboardOptimized = () => {
           return (
             <div 
               key={index}
-              className="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/[0.07] transition-colors"
+              className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6 hover:bg-[#222] transition-colors"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 rounded-xl bg-${stat.color}-500/20 flex items-center justify-center`}>
-                  <Icon className={`w-6 h-6 text-${stat.color}-400`} />
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                  <Icon className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className={`flex items-center gap-1 text-sm ${stat.positive ? 'text-emerald-400' : 'text-red-400'}`}>
                   {stat.positive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
@@ -259,14 +258,32 @@ const DashboardOptimized = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="bg-white/5 border border-white/10">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-black">Overview</TabsTrigger>
-          <TabsTrigger value="upload" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-black">Upload Orders</TabsTrigger>
-        </TabsList>
+      <div className="w-full">
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+              activeTab === 'overview' 
+                ? 'bg-emerald-500 text-black' 
+                : 'bg-[#1a1a1a] text-gray-400 hover:text-white border border-white/10'
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('upload')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+              activeTab === 'upload' 
+                ? 'bg-emerald-500 text-black' 
+                : 'bg-[#1a1a1a] text-gray-400 hover:text-white border border-white/10'
+            }`}
+          >
+            Upload Orders
+          </button>
+        </div>
 
-        <TabsContent value="overview" className="space-y-4 mt-4">
-          <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+        {activeTab === 'overview' && (
+          <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
             <div className="px-6 py-4 border-b border-white/10">
               <h2 className="text-lg font-semibold text-white">Recent Orders</h2>
             </div>
@@ -327,10 +344,10 @@ const DashboardOptimized = () => {
               )}
             </div>
           </div>
-        </TabsContent>
+        )}
 
-        <TabsContent value="upload" className="mt-4">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+        {activeTab === 'upload' && (
+          <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-6">
             <div className="border-2 border-dashed border-white/10 rounded-xl p-12 text-center hover:border-emerald-500/50 transition-colors">
               <Upload className="h-12 w-12 mx-auto text-gray-500 mb-4" />
               <h3 className="text-lg font-semibold text-white mb-2">Upload Shopify Orders CSV</h3>
@@ -341,7 +358,7 @@ const DashboardOptimized = () => {
                 type="file"
                 accept=".csv,.xlsx"
                 onChange={handleFileChange}
-                className="max-w-md mx-auto mb-4 bg-white/5 border-white/10 text-white file:bg-emerald-500 file:text-black file:border-0 file:rounded-lg file:mr-4 file:font-semibold"
+                className="max-w-md mx-auto mb-4 bg-[#252525] border-white/10 text-white file:bg-emerald-500 file:text-black file:border-0 file:rounded-lg file:mr-4 file:font-semibold"
               />
               {selectedFile && (
                 <div className="text-sm text-emerald-400 mb-4">
@@ -358,8 +375,8 @@ const DashboardOptimized = () => {
               </Button>
             </div>
           </div>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </div>
   );
 };
