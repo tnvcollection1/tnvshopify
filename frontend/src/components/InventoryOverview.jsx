@@ -5,10 +5,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import axios from 'axios';
+import { useStore } from '../contexts/StoreContext';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 const InventoryOverview = () => {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [dateRange, setDateRange] = useState({
     start: '',
     end: ''
@@ -40,12 +42,13 @@ const InventoryOverview = () => {
 
   useEffect(() => {
     fetchInventoryStats();
-  }, [dateRange]);
+  }, [dateRange, globalStore]);
 
   const fetchInventoryStats = async () => {
     try {
       let url = `${API}/api/inventory/v2/overview-stats`;
       const params = new URLSearchParams();
+      if (globalStore !== 'all') params.append('store_name', globalStore);
       if (dateRange.start) params.append('start_date', dateRange.start);
       if (dateRange.end) params.append('end_date', dateRange.end);
       if (params.toString()) url += `?${params.toString()}`;
