@@ -128,6 +128,7 @@ const Sidebar = () => {
         { icon: FileText, label: 'Templates', path: '/whatsapp-templates' },
         { icon: Megaphone, label: 'Campaigns', path: '/whatsapp-campaigns' },
         { icon: BarChart3, label: 'Analytics', path: '/whatsapp-analytics' },
+        { icon: Link2, label: 'Business Platform', path: '/whatsapp-business' },
       ]
     },
   ];
