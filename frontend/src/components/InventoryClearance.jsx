@@ -55,7 +55,8 @@ const InventoryClearance = () => {
       
       setStats(statsRes.data.stats);
       setCampaigns(campaignsRes.data.campaigns || []);
-      setStores(storesRes.data.stores || []);
+      // Stores API returns array directly, not wrapped in .stores
+      setStores(Array.isArray(storesRes.data) ? storesRes.data : storesRes.data.stores || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load clearance data');
