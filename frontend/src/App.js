@@ -37,6 +37,7 @@ import DynamicPricingDashboard from "@/components/DynamicPricingDashboard";
 import InventoryHealthDashboard from "@/components/InventoryHealthDashboard";
 import FinanceReconciliation from "@/components/FinanceReconciliation";
 import WhatsAppInboxStandalone from "@/components/WhatsAppInboxStandalone";
+import WhatsAppEmbeddedSignup from "@/components/WhatsAppEmbeddedSignup";
 import InventoryClearance from "@/components/InventoryClearance";
 import UserManagement from "@/components/UserManagement";
 import { Toaster } from "@/components/ui/sonner";
