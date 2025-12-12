@@ -17,10 +17,12 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { useStore } from '../contexts/StoreContext';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 const MarketingDashboard = () => {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [stats, setStats] = useState({
     totalRevenue: 0,
     todayRevenue: 0,
@@ -43,11 +45,12 @@ const MarketingDashboard = () => {
   useEffect(() => {
     fetchMarketingStats();
     fetchCampaigns();
-  }, []);
+  }, [globalStore]);
 
   const fetchMarketingStats = async () => {
     try {
-      const response = await axios.get(`${API}/api/marketing/stats`);
+      const storeParam = globalStore !== 'all' ? `?store_name=${globalStore}` : '';
+      const response = await axios.get(`${API}/api/marketing/stats${storeParam}`);
       if (response.data.success) {
         setStats(response.data.stats);
       }
