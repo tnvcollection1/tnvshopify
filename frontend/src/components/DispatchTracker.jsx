@@ -549,24 +549,24 @@ const DispatchTracker = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f]">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-[#1a1a1a] border-b border-white/10 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-white">Dispatch Tracker</h1>
-              <p className="text-sm text-gray-400 mt-1">Track dispatched orders - Monitor delivery and COD payment status</p>
+              <h1 className="text-2xl font-semibold text-gray-900">Dispatch Tracker</h1>
+              <p className="text-sm text-gray-500 mt-1">Track dispatched orders - Monitor delivery and COD payment status</p>
             </div>
             
             {/* Auto-Sync Status Badge */}
             {autoSyncStatus && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 rounded-lg ml-6">
+              <div className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg ml-6">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-semibold text-emerald-400">Auto-Sync Active</span>
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-semibold text-green-800">Auto-Sync Active</span>
                 </div>
-                <div className="text-xs text-emerald-300 ml-2 border-l border-emerald-500/30 pl-2">
+                <div className="text-xs text-green-700 ml-2 border-l border-green-300 pl-2">
                   <div>Synced today: <span className="font-semibold">{autoSyncStatus.synced_today}</span></div>
                   <div>Pending: <span className="font-semibold">{autoSyncStatus.pending_sync}</span></div>
                 </div>
@@ -578,7 +578,7 @@ const DispatchTracker = () => {
               variant="outline"
               onClick={handleSyncTCS}
               disabled={loading}
-              className="border-white/20 text-white hover:bg-white/10"
+              className="border-gray-300 hover:bg-gray-50"
               title="Fast batch sync (100 orders)"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
@@ -588,7 +588,7 @@ const DispatchTracker = () => {
               variant="outline"
               onClick={handleSyncTCSOneByOne}
               disabled={loading}
-              className="border-blue-500/30 hover:bg-blue-500/20 text-blue-400"
+              className="border-blue-300 hover:bg-blue-50 text-blue-700"
               title="Slower but more reliable - syncs one by one with 2s delay"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
@@ -598,7 +598,7 @@ const DispatchTracker = () => {
               variant="outline"
               onClick={handleSyncPayment}
               disabled={loading}
-              className="border-white/20 text-white hover:bg-white/10"
+              className="border-gray-300 hover:bg-gray-50"
             >
               <DollarSign className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
               Sync Payment Status
@@ -606,7 +606,7 @@ const DispatchTracker = () => {
             <label htmlFor="tcs-payment-upload">
               <Button
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
+                className="border-gray-300 hover:bg-gray-50"
                 onClick={() => document.getElementById("tcs-payment-upload").click()}
               >
                 <Upload className="w-4 h-4 mr-2" />
@@ -625,40 +625,40 @@ const DispatchTracker = () => {
 
         {/* Stats Cards - Now Clickable */}
         <div className="grid grid-cols-7 gap-4 mt-6">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 cursor-pointer hover:bg-white/10 transition-all" onClick={() => viewCardDetails('total')}>
-            <p className="text-xs font-medium text-gray-400 uppercase">Total</p>
-            <p className="text-2xl font-bold text-white mt-1">{stats.total}</p>
-            <p className="text-xs text-gray-500 mt-1">Click to view</p>
+          <div className="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-gray-400 transition-all" onClick={() => viewCardDetails('total')}>
+            <p className="text-xs font-medium text-gray-500 uppercase">Total</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+            <p className="text-xs text-gray-400 mt-1">Click to view</p>
           </div>
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 cursor-pointer hover:bg-emerald-500/20 transition-all" onClick={() => viewCardDetails('delivered')}>
-            <p className="text-xs font-medium text-gray-400 uppercase">Delivered</p>
-            <p className="text-2xl font-bold text-emerald-400 mt-1">{stats.delivered}</p>
-            <p className="text-xs text-gray-500 mt-1">Click to view</p>
+          <div className="bg-white border border-green-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-green-500 transition-all" onClick={() => viewCardDetails('delivered')}>
+            <p className="text-xs font-medium text-gray-500 uppercase">Delivered</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{stats.delivered}</p>
+            <p className="text-xs text-gray-400 mt-1">Click to view</p>
           </div>
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 cursor-pointer hover:bg-blue-500/20 transition-all" onClick={() => viewCardDetails('inTransit')}>
-            <p className="text-xs font-medium text-gray-400 uppercase">In Transit</p>
-            <p className="text-2xl font-bold text-blue-400 mt-1">{stats.inTransit}</p>
-            <p className="text-xs text-gray-500 mt-1">Click to view</p>
+          <div className="bg-white border border-blue-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all" onClick={() => viewCardDetails('inTransit')}>
+            <p className="text-xs font-medium text-gray-500 uppercase">In Transit</p>
+            <p className="text-2xl font-bold text-blue-600 mt-1">{stats.inTransit}</p>
+            <p className="text-xs text-gray-400 mt-1">Click to view</p>
           </div>
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 cursor-pointer hover:bg-yellow-500/20 transition-all" onClick={() => viewCardDetails('pending')}>
-            <p className="text-xs font-medium text-gray-400 uppercase">Pending</p>
-            <p className="text-2xl font-bold text-yellow-400 mt-1">{stats.pending}</p>
-            <p className="text-xs text-gray-500 mt-1">Click to view</p>
+          <div className="bg-white border border-yellow-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-yellow-500 transition-all" onClick={() => viewCardDetails('pending')}>
+            <p className="text-xs font-medium text-gray-500 uppercase">Pending</p>
+            <p className="text-2xl font-bold text-yellow-600 mt-1">{stats.pending}</p>
+            <p className="text-xs text-gray-400 mt-1">Click to view</p>
           </div>
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 cursor-pointer hover:bg-red-500/20 transition-all" onClick={() => viewCardDetails('returned')}>
-            <p className="text-xs font-medium text-gray-400 uppercase">Returned</p>
-            <p className="text-2xl font-bold text-red-400 mt-1">{stats.returned}</p>
-            <p className="text-xs text-gray-500 mt-1">Click to view</p>
+          <div className="bg-white border border-red-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-red-500 transition-all" onClick={() => viewCardDetails('returned')}>
+            <p className="text-xs font-medium text-gray-500 uppercase">Returned</p>
+            <p className="text-2xl font-bold text-red-600 mt-1">{stats.returned}</p>
+            <p className="text-xs text-gray-400 mt-1">Click to view</p>
           </div>
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 cursor-pointer hover:bg-emerald-500/20 transition-all" onClick={() => viewCardDetails('paymentReceived')}>
-            <p className="text-xs font-medium text-gray-400 uppercase">Paid</p>
-            <p className="text-2xl font-bold text-emerald-400 mt-1">{stats.paymentReceived}</p>
-            <p className="text-xs text-gray-500 mt-1">Click to view</p>
+          <div className="bg-white border border-green-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-green-500 transition-all" onClick={() => viewCardDetails('paymentReceived')}>
+            <p className="text-xs font-medium text-gray-500 uppercase">Paid</p>
+            <p className="text-2xl font-bold text-green-600 mt-1">{stats.paymentReceived}</p>
+            <p className="text-xs text-gray-400 mt-1">Click to view</p>
           </div>
-          <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 cursor-pointer hover:bg-orange-500/20 transition-all" onClick={() => viewCardDetails('paymentPending')}>
-            <p className="text-xs font-medium text-gray-400 uppercase">Due</p>
-            <p className="text-2xl font-bold text-orange-400 mt-1">{stats.paymentPending}</p>
-            <p className="text-xs text-gray-500 mt-1">Click to view</p>
+          <div className="bg-white border border-orange-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-orange-500 transition-all" onClick={() => viewCardDetails('paymentPending')}>
+            <p className="text-xs font-medium text-gray-500 uppercase">Due</p>
+            <p className="text-2xl font-bold text-orange-600 mt-1">{stats.paymentPending}</p>
+            <p className="text-xs text-gray-400 mt-1">Click to view</p>
           </div>
         </div>
       </div>
