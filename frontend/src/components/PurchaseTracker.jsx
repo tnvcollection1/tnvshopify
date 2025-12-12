@@ -265,19 +265,9 @@ const PurchaseTracker = () => {
               className="pl-10 border-gray-300"
             />
           </div>
-          <Select value={filters.store} onValueChange={(v) => setFilters({ ...filters, store: v })}>
-            <SelectTrigger className="w-36 border-gray-300">
-              <SelectValue placeholder="Store" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Stores</SelectItem>
-              {stores.map((store) => (
-                <SelectItem key={store.id} value={store.store_name}>
-                  {store.store_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-600 min-w-[140px]">
+            📍 {globalStore === 'all' ? 'All Stores' : getStoreName(globalStore)}
+          </div>
           <Select value={filters.purchase_status} onValueChange={(v) => setFilters({ ...filters, purchase_status: v })}>
             <SelectTrigger className="w-44 border-gray-300">
               <SelectValue placeholder="Status" />
