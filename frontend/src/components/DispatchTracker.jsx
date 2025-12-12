@@ -904,52 +904,11 @@ const DispatchTracker = () => {
             </div>
           </div>
         </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleOpenWhatsApp(order)}
-                              className="border-green-500 hover:bg-green-50 text-green-600"
-                              title="Send WhatsApp"
-                            >
-                              <MessageCircle className="w-3 h-3" />
-                            </Button>
-                            {order.tracking_number && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleShowTracking(order)}
-                                className="border-blue-500 hover:bg-blue-50 text-blue-600"
-                                title="Track Order (TCS/DTDC)"
-                              >
-                                <Truck className="w-3 h-3" />
-                              </Button>
-                            )}
-                            {order.delivery_status === 'RETURN_IN_PROCESS' && !order.return_received && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleMarkReturnReceived(order, true)}
-                                className="border-purple-300 hover:bg-purple-50 text-purple-700"
-                                title="Mark Return Received"
-                              >
-                                <Package className="w-3 h-3" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Pagination */}
         {orders.length > 0 && (
         <div className="flex items-center justify-between mt-6">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-400">
             Showing {Math.min((currentPage - 1) * 100 + 1, stats.total)} to {Math.min(currentPage * 100, stats.total)} of {stats.total} orders
           </p>
           <div className="flex items-center gap-2">
@@ -958,6 +917,7 @@ const DispatchTracker = () => {
               size="sm"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
+              className="border-white/20 text-white hover:bg-white/10"
               className="border-gray-300"
             >
               <ChevronLeft className="w-4 h-4" />
