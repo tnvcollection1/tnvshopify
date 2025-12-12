@@ -12,9 +12,10 @@ import {
   TrendingUp,
   RefreshCw,
   Upload,
-  Search,
-  Filter,
-  Download
+  CheckCircle2,
+  Clock,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -162,35 +163,74 @@ const DashboardOptimized = () => {
 
   if (loading && !stats.totalCustomers) {
     return (
-      <div className="p-6">
+      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
         <LoadingSpinner text="Loading dashboard..." size="large" />
       </div>
     );
   }
 
+  const statsCards = [
+    {
+      title: 'Total Customers',
+      value: stats.totalCustomers?.toLocaleString() || '0',
+      icon: Users,
+      change: '+12%',
+      positive: true,
+      color: 'emerald'
+    },
+    {
+      title: 'Total Orders',
+      value: stats.totalOrders?.toLocaleString() || '0',
+      icon: ShoppingCart,
+      change: '+8%',
+      positive: true,
+      color: 'blue'
+    },
+    {
+      title: 'Fulfilled',
+      value: (stats.fulfillmentStatus?.fulfilled || 0).toLocaleString(),
+      icon: CheckCircle2,
+      change: '+15%',
+      positive: true,
+      color: 'green'
+    },
+    {
+      title: 'Unfulfilled',
+      value: (stats.fulfillmentStatus?.unfulfilled || 0).toLocaleString(),
+      icon: Clock,
+      change: '-5%',
+      positive: false,
+      color: 'yellow'
+    }
+  ];
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen bg-[#0f0f0f] p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Customer Dashboard</h1>
-          <p className="text-gray-500 mt-1">Overview of orders and customers</p>
+          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+          <p className="text-gray-400 mt-1">Overview of your business performance</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Select value={selectedStore} onValueChange={setSelectedStore}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-48 bg-white/5 border-white/10 text-white">
               <SelectValue placeholder="Select Store" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Stores</SelectItem>
+            <SelectContent className="bg-[#1a1a1a] border-white/10">
+              <SelectItem value="all" className="text-white hover:bg-white/10">All Stores</SelectItem>
               {stores.map((store) => (
-                <SelectItem key={store.id} value={store.store_name}>
+                <SelectItem key={store.id} value={store.store_name} className="text-white hover:bg-white/10">
                   {store.store_name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={handleShopifySync} disabled={syncing}>
+          <Button 
+            onClick={handleShopifySync} 
+            disabled={syncing}
+            className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold"
+          >
             <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             {syncing ? 'Syncing...' : 'Sync Shopify'}
           </Button>
@@ -198,129 +238,130 @@ const DashboardOptimized = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Customers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.totalCustomers}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.totalOrders}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Fulfilled</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600">
-              {stats.fulfillmentStatus?.fulfilled || 0}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {statsCards.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <div 
+              key={index}
+              className="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/[0.07] transition-colors"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className={`w-12 h-12 rounded-xl bg-${stat.color}-500/20 flex items-center justify-center`}>
+                  <Icon className={`w-6 h-6 text-${stat.color}-400`} />
+                </div>
+                <div className={`flex items-center gap-1 text-sm ${stat.positive ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {stat.positive ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                  {stat.change}
+                </div>
+              </div>
+              <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
+              <div className="text-sm text-gray-400">{stat.title}</div>
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Unfulfilled</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-yellow-600">
-              {stats.fulfillmentStatus?.unfulfilled || 0}
-            </div>
-          </CardContent>
-        </Card>
+          );
+        })}
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="upload">Upload Orders</TabsTrigger>
+        <TabsList className="bg-white/5 border border-white/10">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-black">Overview</TabsTrigger>
+          <TabsTrigger value="upload" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-black">Upload Orders</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
-            </CardHeader>
-            <CardContent>
+        <TabsContent value="overview" className="space-y-4 mt-4">
+          <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/10">
+              <h2 className="text-lg font-semibold text-white">Recent Orders</h2>
+            </div>
+            <div className="p-6">
               {recentOrders.length === 0 ? (
-                <EmptyState
-                  title="No orders found"
-                  description="Sync orders from Shopify or upload a CSV file"
-                  actionLabel="Sync Orders"
-                  onAction={handleShopifySync}
-                />
+                <div className="text-center py-12">
+                  <ShoppingCart className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-300 mb-2">No orders found</h3>
+                  <p className="text-gray-500 mb-4">Sync orders from Shopify or upload a CSV file</p>
+                  <Button 
+                    onClick={handleShopifySync}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-black"
+                  >
+                    Sync Orders
+                  </Button>
+                </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {recentOrders.map((order) => (
                     <div
                       key={order.customer_id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                      className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/[0.07] transition-colors"
                     >
-                      <div>
-                        <div className="font-medium">
-                          {order.first_name} {order.last_name}
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                          <span className="text-emerald-400 font-semibold">
+                            {order.first_name?.charAt(0) || 'O'}
+                          </span>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          Order #{order.order_number} • {order.store_name}
+                        <div>
+                          <div className="font-medium text-white">
+                            {order.first_name} {order.last_name}
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            Order #{order.order_number} • {order.store_name}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={order.fulfillment_status === 'fulfilled' ? 'success' : 'secondary'}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          order.fulfillment_status === 'fulfilled' 
+                            ? 'bg-emerald-500/20 text-emerald-400' 
+                            : 'bg-yellow-500/20 text-yellow-400'
+                        }`}>
                           {order.fulfillment_status || 'unfulfilled'}
-                        </Badge>
-                        <Badge variant={order.payment_status === 'paid' ? 'success' : 'secondary'}>
+                        </span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          order.payment_status === 'paid' 
+                            ? 'bg-emerald-500/20 text-emerald-400' 
+                            : 'bg-gray-500/20 text-gray-400'
+                        }`}>
                           {order.payment_status || 'pending'}
-                        </Badge>
+                        </span>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
-        <TabsContent value="upload">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Orders CSV</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Upload Shopify Orders CSV</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Export orders from Shopify and upload here
-                </p>
-                <Input
-                  type="file"
-                  accept=".csv,.xlsx"
-                  onChange={handleFileChange}
-                  className="max-w-md mx-auto mb-4"
-                />
-                {selectedFile && (
-                  <div className="text-sm text-gray-600 mb-4">
-                    Selected: {selectedFile.name}
-                  </div>
-                )}
-                <Button
-                  onClick={handleCSVUpload}
-                  disabled={!selectedFile || uploadingCSV}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {uploadingCSV ? 'Uploading...' : 'Upload CSV'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="upload" className="mt-4">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+            <div className="border-2 border-dashed border-white/10 rounded-xl p-12 text-center hover:border-emerald-500/50 transition-colors">
+              <Upload className="h-12 w-12 mx-auto text-gray-500 mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">Upload Shopify Orders CSV</h3>
+              <p className="text-sm text-gray-400 mb-6">
+                Export orders from Shopify and upload here to sync your data
+              </p>
+              <Input
+                type="file"
+                accept=".csv,.xlsx"
+                onChange={handleFileChange}
+                className="max-w-md mx-auto mb-4 bg-white/5 border-white/10 text-white file:bg-emerald-500 file:text-black file:border-0 file:rounded-lg file:mr-4 file:font-semibold"
+              />
+              {selectedFile && (
+                <div className="text-sm text-emerald-400 mb-4">
+                  Selected: {selectedFile.name}
+                </div>
+              )}
+              <Button
+                onClick={handleCSVUpload}
+                disabled={!selectedFile || uploadingCSV}
+                className="bg-emerald-500 hover:bg-emerald-600 text-black font-semibold"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {uploadingCSV ? 'Uploading...' : 'Upload CSV'}
+              </Button>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
