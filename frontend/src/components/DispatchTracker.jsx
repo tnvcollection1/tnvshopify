@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -24,6 +23,8 @@ import {
   MessageCircle,
   Send,
   Eye,
+  RotateCcw,
+  CreditCard,
 } from "lucide-react";
 import {
   Table,
@@ -57,20 +58,16 @@ const API = `${BACKEND_URL}/api`;
 const getCourierName = (order) => {
   if (!order) return 'TCS';
   
-  // Check tracking_company field first
   if (order.tracking_company) {
     if (order.tracking_company.toUpperCase().includes('DTDC')) return 'DTDC';
     if (order.tracking_company.toUpperCase().includes('TCS')) return 'TCS';
   }
   
-  // Check tracking number pattern
   const tracking = order.tracking_number || '';
-  // DTDC tracking numbers typically start with I, D, or are numeric
   if (tracking.match(/^[ID]\d{8}/)) {
     return 'DTDC';
   }
   
-  // Check store name - India stores use DTDC
   if (order.store_name) {
     const store = order.store_name.toLowerCase();
     if (store === 'tnvcollection' || store === 'ashmiaa' || store === 'asmia') {
@@ -81,12 +78,11 @@ const getCourierName = (order) => {
     }
   }
   
-  // Default to TCS for Pakistan orders
   return 'TCS';
 };
 
 const DispatchTracker = () => {
-  const { selectedStore: globalStore, stores } = useStore();
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -141,19 +137,15 @@ const DispatchTracker = () => {
     fetchOrders();
     fetchAutoSyncStatus();
     
-    // Refresh auto-sync status every 30 seconds
     const interval = setInterval(fetchAutoSyncStatus, 30000);
     return () => clearInterval(interval);
   }, [currentPage, filters, dateRange, globalStore]);
 
-  // Reset to page 1 when filters change (but not on initial load)
   useEffect(() => {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
   }, [filters.delivery, filters.payment, filters.store, filters.year, filters.sortBy]);
-
-  // fetchStores function removed - now using global store context
 
   const handleTCSSync = async () => {
     setSyncingTCS(true);
@@ -162,7 +154,7 @@ const DispatchTracker = () => {
       const response = await axios.post(`${API}/tcs/sync-all`);
       if (response.data.success) {
         toast.success(`TCS sync complete! Updated ${response.data.synced_count || 0} orders`);
-        fetchOrders(); // Refresh orders
+        fetchOrders();
       } else {
         toast.warning('TCS sync completed with some issues');
       }
@@ -185,7 +177,6 @@ const DispatchTracker = () => {
     }
   };
 
-  // Selection handlers
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
     if (checked) {
@@ -231,11 +222,8 @@ const DispatchTracker = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // Show ONLY fulfilled orders from all stores (both TCS and DTDC)
-      // Removed tcs_only filter to show fulfilled orders from ALL stores regardless of courier
       params.append("fulfillment_status", "fulfilled");
       
-      // Default to showing all orders from 2016 onwards unless user filters differently
       if (!dateRange.start && filters.year === "all") {
         const startDate = new Date('2016-01-01').toISOString().split('T')[0];
         params.append("start_date", startDate);
@@ -243,13 +231,11 @@ const DispatchTracker = () => {
       
       if (filters.delivery !== "all") params.append("delivery_status", filters.delivery);
       if (filters.payment !== "all") params.append("payment_status", filters.payment);
-      // Use global store from context
       if (globalStore !== "all") params.append("store_name", globalStore);
       if (filters.year !== "all") params.append("year", filters.year);
       if (dateRange.start) params.append("start_date", dateRange.start);
       if (dateRange.end) params.append("end_date", dateRange.end);
       
-      // Always sort by order number descending (newest first) if no specific sort selected
       const sortBy = filters.sortBy || "order_desc";
       params.append("sort_by", sortBy);
       
@@ -257,7 +243,6 @@ const DispatchTracker = () => {
       params.append("page", currentPage);
       params.append("limit", "100");
 
-      // Fetch orders, count, and stats
       const [ordersResponse, statsResponse] = await Promise.all([
         axios.get(`${API}/customers?${params.toString()}`),
         axios.get(`${API}/customers/stats?${params.toString()}`)
@@ -268,7 +253,6 @@ const DispatchTracker = () => {
       
       setOrders(allOrders);
       
-      // Use stats from backend (calculated from ALL filtered orders)
       setStats({
         total: statsData.total || 0,
         delivered: statsData.delivered || 0,
@@ -361,10 +345,8 @@ const DispatchTracker = () => {
     }
   };
 
-  // WhatsApp Functions
   const handleOpenWhatsApp = (order) => {
     setSelectedWhatsappOrder(order);
-    // Pre-fill with a default message
     const defaultMessage = `Hello ${order.first_name},\n\nYour order #${order.order_number} update:\nTracking: ${order.tracking_number}\nStatus: ${order.delivery_status}\n\nThank you for shopping with us!`;
     setWhatsappMessage(defaultMessage);
     setWhatsappDialog(true);
@@ -398,7 +380,6 @@ const DispatchTracker = () => {
       setSendingWhatsapp(false);
     }
   };
-
 
   const handleSyncTCSOneByOne = async () => {
     try {
@@ -543,136 +524,146 @@ const DispatchTracker = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Dispatch Tracker</h1>
-              <p className="text-sm text-gray-500 mt-1">Track dispatched orders - Monitor delivery and COD payment status</p>
-            </div>
-            
-            {/* Auto-Sync Status Badge */}
-            {autoSyncStatus && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg ml-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-semibold text-green-800">Auto-Sync Active</span>
-                </div>
-                <div className="text-xs text-green-700 ml-2 border-l border-green-300 pl-2">
-                  <div>Synced today: <span className="font-semibold">{autoSyncStatus.synced_today}</span></div>
-                  <div>Pending: <span className="font-semibold">{autoSyncStatus.pending_sync}</span></div>
-                </div>
-              </div>
-            )}
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">Dispatch Tracker</h1>
+            <p className="text-sm text-gray-500 mt-1">Track dispatched orders and monitor delivery & COD payment status</p>
           </div>
           <div className="flex items-center gap-3">
+            <div className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600">
+              📍 {getStoreName(globalStore)}
+            </div>
             <Button
               variant="outline"
               onClick={handleSyncTCS}
-              disabled={loading}
-              className="border-gray-300 hover:bg-gray-50"
-              title="Fast batch sync (100 orders)"
+              disabled={syncingTCS}
+              className="h-9 text-sm border-gray-300"
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              Sync TCS (Batch)
+              <RefreshCw className={`h-4 w-4 mr-2 ${syncingTCS ? 'animate-spin' : ''}`} />
+              {syncingTCS ? 'Syncing...' : 'Sync TCS'}
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleSyncTCSOneByOne}
-              disabled={loading}
-              className="border-blue-300 hover:bg-blue-50 text-blue-700"
-              title="Slower but more reliable - syncs one by one with 2s delay"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              Sync TCS (One-by-One)
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleSyncPayment}
-              disabled={loading}
-              className="border-gray-300 hover:bg-gray-50"
-            >
-              <DollarSign className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              Sync Payment Status
-            </Button>
-            <label htmlFor="tcs-payment-upload">
-              <Button
-                variant="outline"
-                className="border-gray-300 hover:bg-gray-50"
-                onClick={() => document.getElementById("tcs-payment-upload").click()}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload TCS Payment
-              </Button>
-            </label>
-            <input
-              id="tcs-payment-upload"
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleTCSPaymentUpload}
-              className="hidden"
-            />
-          </div>
-        </div>
-
-        {/* Stats Cards - Now Clickable */}
-        <div className="grid grid-cols-7 gap-4 mt-6">
-          <div className="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-gray-400 transition-all" onClick={() => viewCardDetails('total')}>
-            <p className="text-xs font-medium text-gray-500 uppercase">Total</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
-            <p className="text-xs text-gray-400 mt-1">Click to view</p>
-          </div>
-          <div className="bg-white border border-green-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-green-500 transition-all" onClick={() => viewCardDetails('delivered')}>
-            <p className="text-xs font-medium text-gray-500 uppercase">Delivered</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{stats.delivered}</p>
-            <p className="text-xs text-gray-400 mt-1">Click to view</p>
-          </div>
-          <div className="bg-white border border-blue-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all" onClick={() => viewCardDetails('inTransit')}>
-            <p className="text-xs font-medium text-gray-500 uppercase">In Transit</p>
-            <p className="text-2xl font-bold text-blue-600 mt-1">{stats.inTransit}</p>
-            <p className="text-xs text-gray-400 mt-1">Click to view</p>
-          </div>
-          <div className="bg-white border border-yellow-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-yellow-500 transition-all" onClick={() => viewCardDetails('pending')}>
-            <p className="text-xs font-medium text-gray-500 uppercase">Pending</p>
-            <p className="text-2xl font-bold text-yellow-600 mt-1">{stats.pending}</p>
-            <p className="text-xs text-gray-400 mt-1">Click to view</p>
-          </div>
-          <div className="bg-white border border-red-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-red-500 transition-all" onClick={() => viewCardDetails('returned')}>
-            <p className="text-xs font-medium text-gray-500 uppercase">Returned</p>
-            <p className="text-2xl font-bold text-red-600 mt-1">{stats.returned}</p>
-            <p className="text-xs text-gray-400 mt-1">Click to view</p>
-          </div>
-          <div className="bg-white border border-green-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-green-500 transition-all" onClick={() => viewCardDetails('paymentReceived')}>
-            <p className="text-xs font-medium text-gray-500 uppercase">Paid</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{stats.paymentReceived}</p>
-            <p className="text-xs text-gray-400 mt-1">Click to view</p>
-          </div>
-          <div className="bg-white border border-orange-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-orange-500 transition-all" onClick={() => viewCardDetails('paymentPending')}>
-            <p className="text-xs font-medium text-gray-500 uppercase">Due</p>
-            <p className="text-2xl font-bold text-orange-600 mt-1">{stats.paymentPending}</p>
-            <p className="text-xs text-gray-400 mt-1">Click to view</p>
           </div>
         </div>
       </div>
 
-      {/* Filters & Search */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4">
-        <div className="flex items-center gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      {/* Stats Cards */}
+      <div className="p-6">
+        <div className="grid grid-cols-7 gap-4 mb-6">
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('total')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Package className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Total</p>
+                <p className="text-xl font-semibold text-gray-900">{stats.total}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('delivered')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <Check className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Delivered</p>
+                <p className="text-xl font-semibold text-green-600">{stats.delivered}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('inTransit')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Truck className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">In Transit</p>
+                <p className="text-xl font-semibold text-blue-600">{stats.inTransit}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('pending')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-yellow-50 rounded-lg">
+                <Clock className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Pending</p>
+                <p className="text-xl font-semibold text-yellow-600">{stats.pending}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('returned')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-50 rounded-lg">
+                <RotateCcw className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Returned</p>
+                <p className="text-xl font-semibold text-red-600">{stats.returned}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('paymentReceived')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-50 rounded-lg">
+                <CreditCard className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Paid</p>
+                <p className="text-xl font-semibold text-emerald-600">{stats.paymentReceived}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('paymentPending')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-50 rounded-lg">
+                <DollarSign className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Due</p>
+                <p className="text-xl font-semibold text-orange-600">{stats.paymentPending}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search & Filters */}
+        <div className="flex items-center gap-4 mb-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Search by order #, customer name, tracking #, phone..."
+              placeholder="Search by order #, customer, tracking..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && fetchOrders()}
-              className="pl-10 border-gray-300"
+              className="pl-10 border-gray-300 bg-white"
             />
           </div>
-          <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-600 min-w-[140px]">
-            📍 {globalStore === 'all' ? 'All Stores' : stores.find(s => s.store_name === globalStore)?.store_name || globalStore}
-          </div>
           <Select value={filters.delivery} onValueChange={(v) => setFilters({ ...filters, delivery: v })}>
-            <SelectTrigger className="w-36 border-gray-300">
+            <SelectTrigger className="w-36 border-gray-300 bg-white">
               <SelectValue placeholder="Delivery" />
             </SelectTrigger>
             <SelectContent>
@@ -685,7 +676,7 @@ const DispatchTracker = () => {
             </SelectContent>
           </Select>
           <Select value={filters.payment} onValueChange={(v) => setFilters({ ...filters, payment: v })}>
-            <SelectTrigger className="w-32 border-gray-300">
+            <SelectTrigger className="w-32 border-gray-300 bg-white">
               <SelectValue placeholder="Payment" />
             </SelectTrigger>
             <SelectContent>
@@ -695,7 +686,7 @@ const DispatchTracker = () => {
             </SelectContent>
           </Select>
           <Select value={filters.year} onValueChange={(v) => setFilters({ ...filters, year: v })}>
-            <SelectTrigger className="w-32 border-gray-300">
+            <SelectTrigger className="w-28 border-gray-300 bg-white">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent>
@@ -703,11 +694,10 @@ const DispatchTracker = () => {
               <SelectItem value="2025">2025</SelectItem>
               <SelectItem value="2024">2024</SelectItem>
               <SelectItem value="2023">2023</SelectItem>
-              <SelectItem value="2022">2022</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filters.sortBy} onValueChange={(v) => setFilters({ ...filters, sortBy: v })}>
-            <SelectTrigger className="w-40 border-gray-300">
+            <SelectTrigger className="w-36 border-gray-300 bg-white">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>
@@ -716,206 +706,232 @@ const DispatchTracker = () => {
             </SelectContent>
           </Select>
         </div>
-        
-        {/* Date Filters & TCS Sync */}
-        <div className="flex items-center gap-4 mt-4">
-          <div>
-            <label className="text-xs text-gray-600 block mb-1">Start Date</label>
+
+        {/* Date Range & Sync Actions */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-2">
             <input
               type="date"
               value={dateRange.start}
               onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
             />
-          </div>
-          <div>
-            <label className="text-xs text-gray-600 block mb-1">End Date</label>
+            <span className="text-gray-400">to</span>
             <input
               type="date"
               value={dateRange.end}
               onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
             />
           </div>
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setDateRange({start: '', end: ''})}
-            className="mt-5 px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300"
+            className="text-gray-600"
           >
             Clear Dates
-          </button>
-          <Button
-            onClick={handleTCSSync}
-            disabled={syncingTCS}
-            className="mt-5 bg-blue-600 hover:bg-blue-700"
-          >
-            {syncingTCS ? (
-              <>
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                Syncing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Sync TCS Tracking
-              </>
-            )}
           </Button>
+          <div className="flex-1" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSyncTCSOneByOne}
+            disabled={loading}
+            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Sync One-by-One
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSyncPayment}
+            disabled={loading}
+          >
+            <DollarSign className="w-4 h-4 mr-2" />
+            Sync Payments
+          </Button>
+          <label htmlFor="tcs-payment-upload">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => document.getElementById("tcs-payment-upload").click()}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload TCS
+            </Button>
+          </label>
+          <input
+            id="tcs-payment-upload"
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleTCSPaymentUpload}
+            className="hidden"
+          />
         </div>
-      </div>
 
-      {/* Orders Table */}
-      <div className="p-6">
-        <Card className="border-gray-200">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="font-semibold text-gray-700 w-12">
+        {/* Auto-Sync Status */}
+        {autoSyncStatus && (
+          <div className="flex items-center gap-2 mb-4 px-4 py-2 bg-green-50 border border-green-200 rounded-lg w-fit">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-sm font-medium text-green-800">Auto-Sync Active</span>
+            <span className="text-sm text-green-700 ml-2">
+              Synced today: {autoSyncStatus.synced_today} | Pending: {autoSyncStatus.pending_sync}
+            </span>
+          </div>
+        )}
+
+        {/* Table */}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="w-12 font-medium">
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    className="w-4 h-4 cursor-pointer"
+                  />
+                </TableHead>
+                <TableHead className="font-medium">Date</TableHead>
+                <TableHead className="font-medium">Order #</TableHead>
+                <TableHead className="font-medium">Store</TableHead>
+                <TableHead className="font-medium">Customer</TableHead>
+                <TableHead className="font-medium">Phone</TableHead>
+                <TableHead className="font-medium">Tracking #</TableHead>
+                <TableHead className="font-medium">Delivery</TableHead>
+                <TableHead className="font-medium">Payment</TableHead>
+                <TableHead className="font-medium">COD Amount</TableHead>
+                <TableHead className="font-medium text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center py-12 text-gray-500">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
+                    Loading orders...
+                  </TableCell>
+                </TableRow>
+              ) : orders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center py-12 text-gray-500">
+                    <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-1">No orders found</h3>
+                    <p>Try adjusting your filters or search</p>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                orders.map((order) => (
+                  <TableRow key={order.customer_id} className="hover:bg-gray-50">
+                    <TableCell>
                       <input
                         type="checkbox"
-                        checked={selectAll}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        checked={selectedOrders.includes(order.customer_id)}
+                        onChange={() => handleSelectOrder(order.customer_id)}
                         className="w-4 h-4 cursor-pointer"
                       />
-                    </TableHead>
-                    <TableHead className="font-semibold text-gray-700">Date</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Order #</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Store</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Customer</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Phone</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Tracking #</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Delivery</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Payment</TableHead>
-                    <TableHead className="font-semibold text-gray-700">COD Amount</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Actions</TableHead>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {order.last_order_date
+                        ? new Date(order.last_order_date).toLocaleDateString()
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell className="font-medium text-blue-600">
+                      #{order.order_number || "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="bg-slate-50 text-xs">
+                        {order.store_name || "N/A"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">
+                          {order.first_name} {order.last_name}
+                        </p>
+                        <p className="text-xs text-gray-500">{order.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {order.phone || "N/A"}
+                    </TableCell>
+                    <TableCell className="text-sm font-mono text-gray-600">
+                      {order.tracking_number || "—"}
+                    </TableCell>
+                    <TableCell>
+                      {getStatusBadge(order.delivery_status || "PENDING", "delivery")}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(order.payment_status || "pending", "payment")}</TableCell>
+                    <TableCell className="font-semibold text-gray-900">
+                      ₹{order.cod_amount?.toFixed(0) || order.total_spent?.toFixed(0) || "0"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditOrder(order)}
+                          className="h-8 w-8 p-0"
+                          title="Edit Order"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleShowTracking(order)}
+                          className="h-8 w-8 p-0 text-blue-600"
+                          title="Track Order"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleOpenWhatsApp(order)}
+                          className="h-8 w-8 p-0 text-green-600"
+                          title="Send WhatsApp"
+                        >
+                          <Send className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={22} className="text-center py-8 text-gray-500">
-                        Loading orders...
-                      </TableCell>
-                    </TableRow>
-                  ) : orders.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8 text-gray-500">
-                        No fulfilled orders found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    orders.map((order) => (
-                      <TableRow key={order.customer_id} className="hover:bg-gray-50">
-                        <TableCell>
-                          <input
-                            type="checkbox"
-                            checked={selectedOrders.includes(order.customer_id)}
-                            onChange={() => handleSelectOrder(order.customer_id)}
-                            className="w-4 h-4 cursor-pointer"
-                          />
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {order.last_order_date
-                            ? new Date(order.last_order_date).toLocaleDateString()
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell className="font-medium text-blue-600">
-                          #{order.order_number || "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-slate-50">
-                            {order.store_name || "N/A"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium text-gray-900 text-sm">
-                              {order.first_name} {order.last_name}
-                            </p>
-                            <p className="text-xs text-gray-500">{order.email}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {order.phone || "N/A"}
-                        </TableCell>
-                        <TableCell className="text-sm font-mono text-gray-600">
-                          {order.tracking_number || "—"}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(order.delivery_status || "PENDING", "delivery")}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(order.payment_status || "pending", "payment")}</TableCell>
-                        <TableCell className="font-semibold text-gray-900">
-                          ₹{order.cod_amount?.toFixed(0) || order.total_spent?.toFixed(0) || "0"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEditOrder(order)}
-                              className="border-gray-300 hover:bg-blue-50 h-8 w-8 p-0"
-                              title="Edit Order"
-                            >
-                              <Edit className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleShowTracking(order)}
-                              className="border-blue-300 hover:bg-blue-50 text-blue-600 h-8 w-8 p-0"
-                              title="Track Order"
-                            >
-                              <Eye className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleOpenWhatsApp(order)}
-                              className="border-green-300 hover:bg-green-50 text-green-600 h-8 w-8 p-0"
-                              title="Send WhatsApp"
-                            >
-                              <Send className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
 
         {/* Pagination */}
         {orders.length > 0 && (
-        <div className="flex items-center justify-between mt-6">
-          <p className="text-sm text-gray-500">
-            Showing {Math.min((currentPage - 1) * 100 + 1, stats.total)} to {Math.min(currentPage * 100, stats.total)} of {stats.total} orders
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="border-gray-300"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="border-gray-300"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-sm text-gray-500">
+              Showing {Math.min((currentPage - 1) * 100 + 1, stats.total)} to {Math.min(currentPage * 100, stats.total)} of {stats.total} orders
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <span className="text-sm text-gray-600 px-2">Page {currentPage} of {totalPages}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-        </div>
         )}
       </div>
 
@@ -1015,7 +1031,7 @@ const DispatchTracker = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Real-Time Tracking Dialog */}
+      {/* Tracking Dialog */}
       <Dialog open={trackingDialog} onOpenChange={setTrackingDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -1027,8 +1043,7 @@ const DispatchTracker = () => {
           
           {selectedOrder && (
             <div className="space-y-4">
-              {/* Order Info */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="font-semibold text-blue-900">Order:</span>
@@ -1049,115 +1064,21 @@ const DispatchTracker = () => {
                 </div>
               </div>
 
-              {/* Loading State */}
               {loadingTracking && (
                 <div className="flex flex-col items-center justify-center py-12">
                   <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mb-4" />
-                  <p className="text-gray-600">Fetching real-time tracking data from {getCourierName(selectedOrder)}...</p>
+                  <p className="text-gray-600">Fetching real-time tracking data...</p>
                 </div>
               )}
 
-              {/* Error State */}
               {trackingData?.error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
                   <p className="text-red-800">{trackingData.error}</p>
                 </div>
               )}
 
-              {/* Tracking Data */}
               {trackingData && !trackingData.error && !loadingTracking && (
                 <div className="space-y-4">
-                  {/* UNKNOWN Status Warning */}
-                  {trackingData && trackingData.normalized_status === 'UNKNOWN' && selectedOrder && (
-                    <div>
-                      {(() => {
-                        // Calculate order age - try multiple date fields
-                        let orderDate;
-                        if (selectedOrder.last_order_date) {
-                          orderDate = new Date(selectedOrder.last_order_date);
-                        } else if (selectedOrder.created_at) {
-                          orderDate = new Date(selectedOrder.created_at);
-                        } else if (selectedOrder.order_date) {
-                          orderDate = new Date(selectedOrder.order_date);
-                        } else {
-                          orderDate = new Date(); // Default to today if no date found
-                        }
-                        
-                        const now = new Date();
-                        const daysDiff = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
-                        
-                        // Last 7 days = Waiting to be picked up
-                        if (daysDiff <= 7) {
-                          return (
-                            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
-                              <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 text-blue-600">
-                                  <Clock className="w-6 h-6" />
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold text-blue-900 mb-1">⏳ Waiting to be Picked Up</h4>
-                                  <p className="text-sm text-blue-800">
-                                    This order was placed {daysDiff} day{daysDiff !== 1 ? 's' : ''} ago. {getCourierName(selectedOrder)} has not yet picked up the shipment.
-                                  </p>
-                                  <p className="text-xs text-blue-700 mt-2">
-                                    ℹ️ Tracking will activate once {getCourierName(selectedOrder)} scans the package at pickup.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        }
-                        
-                        // 30+ days = Expired/Old
-                        if (daysDiff >= 30) {
-                          return (
-                            <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
-                              <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 text-red-600">
-                                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                  </svg>
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold text-red-900 mb-1">❌ Tracking Expired/Invalid</h4>
-                                  <p className="text-sm text-red-800">
-                                    This order is {daysDiff} days old. {getCourierName(selectedOrder)} tracking data is no longer available (expired after 30-60 days).
-                                  </p>
-                                  <p className="text-xs text-red-700 mt-2">
-                                    💡 Use the <strong>green hand icon</strong> to manually update the delivery status.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        }
-                        
-                        // 8-29 days = In between
-                        return (
-                          <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                              <div className="flex-shrink-0 text-amber-600">
-                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                </svg>
-                              </div>
-                              <div>
-                                <h4 className="font-semibold text-amber-900 mb-1">⚠️ Tracking Not Available</h4>
-                                <p className="text-sm text-amber-800">
-                                  This order is {daysDiff} days old. Tracking number not found in {getCourierName(selectedOrder)} system.
-                                </p>
-                                <p className="text-xs text-amber-700 mt-2">
-                                  💡 Use the <strong>green hand icon</strong> to manually update the delivery status.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  )}
-
-                  {/* Current Status */}
                   {trackingData.normalized_status !== 'UNKNOWN' && (
                     <div className="bg-white border-2 border-blue-300 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-3">
@@ -1178,76 +1099,22 @@ const DispatchTracker = () => {
                           <p className="font-semibold text-gray-900">{trackingData.current_location || 'N/A'}</p>
                         </div>
                       </div>
-                      {trackingData.receiver && (
-                        <div className="mt-3 pt-3 border-t border-gray-200">
-                          <p className="text-sm text-gray-500">Received By</p>
-                          <p className="font-semibold text-gray-900">{trackingData.receiver}</p>
-                        </div>
-                      )}
                     </div>
                   )}
 
-                  {/* COD Payment Status */}
-                  {trackingData.payment_info && trackingData.payment_info.payment_status && (
-                    <div className="bg-white border-2 border-purple-300 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-semibold text-lg text-gray-900 flex items-center gap-2">
-                          <DollarSign className="w-5 h-5 text-purple-600" />
-                          COD Payment Status
-                        </h3>
-                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          trackingData.payment_info.payment_status === 'PAID' 
-                            ? 'bg-green-100 text-green-800' 
-                            : trackingData.payment_info.payment_status === 'PARTIAL'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {trackingData.payment_info.payment_status}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <p className="text-sm text-gray-500">COD Amount</p>
-                          <p className="font-semibold text-gray-900">Rs. {trackingData.payment_info.cod_amount?.toFixed(2) || '0.00'}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Paid Amount</p>
-                          <p className="font-semibold text-green-600">Rs. {trackingData.payment_info.paid_amount?.toFixed(2) || '0.00'}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Balance Due</p>
-                          <p className="font-semibold text-red-600">Rs. {trackingData.payment_info.balance?.toFixed(2) || '0.00'}</p>
-                        </div>
-                      </div>
-                      {trackingData.payment_info.payment_date && (
-                        <div className="mt-3 pt-3 border-t border-gray-200">
-                          <p className="text-sm text-gray-500">Payment Date</p>
-                          <p className="font-semibold text-gray-900">{trackingData.payment_info.payment_date}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Tracking Timeline */}
                   {trackingData.checkpoints && trackingData.checkpoints.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900 mb-3">Tracking Timeline</h3>
                       <div className="relative">
-                        {/* Vertical Line */}
                         <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300"></div>
-                        
-                        {/* Checkpoints */}
                         <div className="space-y-4">
                           {trackingData.checkpoints.map((checkpoint, index) => (
                             <div key={index} className="relative pl-12">
-                              {/* Dot */}
                               <div className={`absolute left-2 w-4 h-4 rounded-full border-2 ${
                                 index === 0 
                                   ? 'bg-blue-600 border-blue-600' 
                                   : 'bg-white border-gray-400'
                               }`}></div>
-                              
-                              {/* Content */}
                               <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
@@ -1267,14 +1134,6 @@ const DispatchTracker = () => {
                       </div>
                     </div>
                   )}
-
-                  {/* No Checkpoints */}
-                  {(!trackingData.checkpoints || trackingData.checkpoints.length === 0) && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                      <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                      <p className="text-gray-600">No tracking checkpoints available</p>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -1288,111 +1147,7 @@ const DispatchTracker = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Manual Delivery Status Update Dialog */}
-      <Dialog open={manualStatusDialog} onOpenChange={setManualStatusDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Manual Delivery Status Update</DialogTitle>
-          </DialogHeader>
-          {selectedOrder && (
-            <div className="space-y-4 py-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-sm text-blue-900">
-                  <span className="font-semibold">Order:</span> #{selectedOrder.order_number}
-                </p>
-                <p className="text-sm text-blue-900">
-                  <span className="font-semibold">Customer:</span> {selectedOrder.first_name} {selectedOrder.last_name}
-                </p>
-                <p className="text-sm text-blue-900">
-                  <span className="font-semibold">Tracking:</span> {selectedOrder.tracking_number}
-                </p>
-                <p className="text-sm text-blue-900">
-                  <span className="font-semibold">Current Status:</span> {selectedOrder.delivery_status || 'N/A'}
-                </p>
-              </div>
-
-              {/* Special message for UNKNOWN orders */}
-              {selectedOrder.delivery_status === 'UNKNOWN' && (() => {
-                const orderDate = new Date(selectedOrder.last_order_date || selectedOrder.created_at);
-                const now = new Date();
-                const daysDiff = Math.floor((now - orderDate) / (1000 * 60 * 60 * 24));
-                
-                if (daysDiff <= 7) {
-                  return (
-                    <div className="bg-blue-50 border border-blue-300 rounded-lg p-3">
-                      <p className="text-sm font-semibold text-blue-900 mb-1">⏳ Recent Order ({daysDiff} days old)</p>
-                      <p className="text-xs text-blue-800">
-                        This order is waiting to be picked up. You can update the status once you have confirmation.
-                      </p>
-                    </div>
-                  );
-                } else if (daysDiff >= 30) {
-                  return (
-                    <div className="bg-amber-50 border border-amber-300 rounded-lg p-3">
-                      <p className="text-sm font-semibold text-amber-900 mb-1">📦 Old Order ({daysDiff} days)</p>
-                      <p className="text-xs text-amber-800">
-                        This tracking is expired. Please manually confirm the delivery status with customer or records.
-                      </p>
-                    </div>
-                  );
-                }
-              })()}
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">
-                  Delivery Status <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={manualStatus.status}
-                  onChange={(e) => setManualStatus({...manualStatus, status: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select Status</option>
-                  <option value="PENDING">PENDING</option>
-                  <option value="IN_TRANSIT">IN TRANSIT</option>
-                  <option value="OUT_FOR_DELIVERY">OUT FOR DELIVERY</option>
-                  <option value="DELIVERED">DELIVERED</option>
-                  <option value="RETURN_IN_PROCESS">RETURN IN PROCESS</option>
-                  <option value="RETURNED">RETURNED (Received)</option>
-                  <option value="UNKNOWN">UNKNOWN</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">
-                  Location (Optional)
-                </label>
-                <Input
-                  value={manualStatus.location}
-                  onChange={(e) => setManualStatus({...manualStatus, location: e.target.value})}
-                  placeholder="Enter city or location"
-                />
-              </div>
-
-              {(manualStatus.status === 'RETURN_IN_PROCESS' || manualStatus.status === 'RETURNED') && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                  <p className="text-sm text-amber-900 font-semibold mb-2">Return Information:</p>
-                  <p className="text-xs text-amber-800">
-                    • RETURN_IN_PROCESS: Item is in transit back to you<br/>
-                    • RETURNED: Item has been received at your location
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setManualStatusDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleManualStatusUpdate} className="bg-blue-600 hover:bg-blue-700">
-              <Save className="w-4 h-4 mr-2" />
-              Update Status
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* WhatsApp Message Dialog */}
+      {/* WhatsApp Dialog */}
       <Dialog open={whatsappDialog} onOpenChange={setWhatsappDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -1427,9 +1182,6 @@ const DispatchTracker = () => {
                   rows={6}
                   className="resize-none"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  {whatsappMessage.length} characters
-                </p>
               </div>
             </div>
           )}
@@ -1444,8 +1196,8 @@ const DispatchTracker = () => {
             </Button>
             <Button
               onClick={handleSendWhatsApp}
-              disabled={sendingWhatsapp || !whatsappMessage.trim()}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={sendingWhatsapp}
+              className="bg-green-600 hover:bg-green-700"
             >
               {sendingWhatsapp ? (
                 <>
@@ -1455,7 +1207,7 @@ const DispatchTracker = () => {
               ) : (
                 <>
                   <Send className="w-4 h-4 mr-2" />
-                  Send WhatsApp
+                  Send Message
                 </>
               )}
             </Button>
@@ -1465,34 +1217,28 @@ const DispatchTracker = () => {
 
       {/* Card Details Modal */}
       {viewingCard && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeCardView}>
-          <div className="bg-white rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-            {/* Modal Header */}
-            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {viewingCard === 'total' && '📦 All Orders'}
-                    {viewingCard === 'delivered' && '✅ Delivered Orders'}
-                    {viewingCard === 'inTransit' && '🚚 In Transit Orders'}
-                    {viewingCard === 'pending' && '⏳ Pending Orders'}
-                    {viewingCard === 'returned' && '↩️ Returned Orders'}
-                    {viewingCard === 'paymentReceived' && '💰 Paid Orders'}
-                    {viewingCard === 'paymentPending' && '⚠️ Payment Pending'}
-                  </h2>
-                  <p className="text-sm text-gray-600 mt-1">{cardData.length} orders found</p>
-                </div>
-                <button
-                  onClick={closeCardView}
-                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors font-medium"
-                >
-                  ✕ Close
-                </button>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeCardView}>
+          <div className="bg-white rounded-xl w-full max-w-6xl max-h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {viewingCard === 'total' && '📦 All Orders'}
+                  {viewingCard === 'delivered' && '✅ Delivered Orders'}
+                  {viewingCard === 'inTransit' && '🚚 In Transit'}
+                  {viewingCard === 'pending' && '⏳ Pending Orders'}
+                  {viewingCard === 'returned' && '↩️ Returned Orders'}
+                  {viewingCard === 'paymentReceived' && '💳 Paid Orders'}
+                  {viewingCard === 'paymentPending' && '💰 Payment Due'}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">{cardData.length} orders found</p>
               </div>
+              <Button variant="outline" onClick={closeCardView}>
+                <X className="w-4 h-4 mr-2" />
+                Close
+              </Button>
             </div>
 
-            {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {cardData.map((order, idx) => (
                   <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -1501,51 +1247,45 @@ const DispatchTracker = () => {
                         <div className="font-bold text-lg text-gray-900">#{order.order_number}</div>
                         <div className="text-sm text-gray-600">{order.first_name} {order.last_name}</div>
                       </div>
-                      <div className={`px-2 py-1 rounded text-xs font-medium ${
-                        order.delivery_status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
-                        order.delivery_status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-800' :
-                        order.delivery_status === 'RETURNED' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {order.delivery_status || 'PENDING'}
+                      {getStatusBadge(order.delivery_status || "PENDING", "delivery")}
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Phone className="w-4 h-4" />
+                        {order.phone || 'N/A'}
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Package className="w-4 h-4" />
+                        {order.tracking_number || 'No tracking'}
+                      </div>
+                      <div className="flex items-center gap-2 font-semibold">
+                        <DollarSign className="w-4 h-4" />
+                        ₹{order.cod_amount?.toFixed(0) || order.total_spent?.toFixed(0) || "0"}
                       </div>
                     </div>
-
-                    <div className="space-y-2 mb-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-700">{order.phone || 'N/A'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-700">{order.tracking_number || 'No tracking'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-gray-400" />
-                        <span className="font-bold text-green-600">Rs. {order.total_spent?.toLocaleString() || 0}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEditOrder(order)}
-                        className="flex-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingOrder(order);
+                          setEditDialog(true);
+                          closeCardView();
+                        }}
+                        className="flex-1"
                       >
+                        <Edit className="w-3 h-3 mr-1" />
                         Edit
-                      </button>
-                      {order.phone && (
-                        <button
-                          onClick={() => {
-                            setSelectedWhatsappOrder(order);
-                            setWhatsappMessage(`Hi ${order.first_name}, your order #${order.order_number} status: ${order.delivery_status || 'PENDING'}`);
-                            setWhatsappDialog(true);
-                          }}
-                          className="flex-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
-                        >
-                          <MessageCircle className="w-3 h-3" />
-                          WhatsApp
-                        </button>
-                      )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenWhatsApp(order)}
+                        className="flex-1 text-green-600 border-green-200"
+                      >
+                        <MessageCircle className="w-3 h-3 mr-1" />
+                        WhatsApp
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -1553,23 +1293,10 @@ const DispatchTracker = () => {
 
               {cardData.length === 0 && (
                 <div className="text-center py-12">
-                  <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No orders found in this category</p>
+                  <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-600">No orders in this category</p>
                 </div>
               )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                Total: <span className="font-bold">{cardData.length}</span> orders
-              </div>
-              <button
-                onClick={closeCardView}
-                className="px-6 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-medium transition-colors"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
