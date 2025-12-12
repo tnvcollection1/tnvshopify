@@ -35,6 +35,8 @@ from routes.tcs import tcs_router, set_database as set_tcs_db
 from routes.customers import customers_router, set_dependencies as set_customers_deps
 from routes.clearance import clearance_router, set_dependencies as set_clearance_deps
 from routes.users import users_router, set_dependencies as set_users_deps
+from routes.tenants import tenants_router, set_dependencies as set_tenants_deps
+from routes.meta_ads import meta_ads_router, set_dependencies as set_meta_ads_deps
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
@@ -60,6 +62,8 @@ set_customers_deps(db)
 set_pricing_deps(db, pricing_engine)
 set_clearance_deps(db, clearance_engine)
 set_users_deps(db)
+set_tenants_deps(db)
+set_meta_ads_deps(db)
 
 # Create the main app without a prefix
 app = FastAPI()
