@@ -86,13 +86,13 @@ const getCourierName = (order) => {
 };
 
 const DispatchTracker = () => {
+  const { selectedStore: globalStore } = useStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     delivery: "all",
     payment: "all",
-    store: "all",
     year: "all",
     sortBy: "order_desc",
   });
@@ -114,7 +114,6 @@ const DispatchTracker = () => {
   });
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [stores, setStores] = useState([]);
   const [autoSyncStatus, setAutoSyncStatus] = useState(null);
   const [manualStatusDialog, setManualStatusDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -140,13 +139,12 @@ const DispatchTracker = () => {
 
   useEffect(() => {
     fetchOrders();
-    fetchStores();
     fetchAutoSyncStatus();
     
     // Refresh auto-sync status every 30 seconds
     const interval = setInterval(fetchAutoSyncStatus, 30000);
     return () => clearInterval(interval);
-  }, [currentPage, filters, dateRange]);
+  }, [currentPage, filters, dateRange, globalStore]);
 
   // Reset to page 1 when filters change (but not on initial load)
   useEffect(() => {
