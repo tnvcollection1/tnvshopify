@@ -601,8 +601,60 @@ class ShopifyCustomerAPITester:
         return success, response
     
     def test_customers_stats(self):
-        """Test Customers stats endpoint"""
+        """Test Customers stats endpoint - P0 Bug Fix"""
         success, response, _ = self.run_test("Customers Stats", "GET", "customers/stats", 200)
+        
+        if success and response:
+            # Verify response structure for dispatch tracker stats
+            expected_fields = ["total", "delivered", "inTransit", "pending", "returned", "paymentReceived", "paymentPending"]
+            
+            print(f"   Found stats fields: {list(response.keys())}")
+            
+            # Check if all expected fields exist
+            all_fields_present = all(field in response for field in expected_fields)
+            if all_fields_present:
+                print(f"   ✅ All expected stats fields present")
+                
+                # Verify all values are numbers
+                valid_values = all(isinstance(response[field], (int, float)) for field in expected_fields)
+                if valid_values:
+                    print(f"   ✅ All stats values are numeric")
+                    return True, response
+                else:
+                    print(f"   ❌ Some stats values are not numeric")
+                    return False, response
+            else:
+                missing = [field for field in expected_fields if field not in response]
+                print(f"   ❌ Missing stats fields: {missing}")
+                return False, response
+        
+        return success, response
+    
+    def test_customers_stats_with_fulfillment_filter(self):
+        """Test Customers stats with fulfillment_status filter - P0 Bug Fix"""
+        success, response, _ = self.run_test(
+            "Customers Stats with Fulfillment Filter", 
+            "GET", 
+            "customers/stats?fulfillment_status=fulfilled", 
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            expected_fields = ["total", "delivered", "inTransit", "pending", "returned", "paymentReceived", "paymentPending"]
+            
+            print(f"   Fulfilled orders stats: {response}")
+            
+            # Check if all expected fields exist
+            all_fields_present = all(field in response for field in expected_fields)
+            if all_fields_present:
+                print(f"   ✅ Fulfillment filtered stats have all required fields")
+                return True, response
+            else:
+                missing = [field for field in expected_fields if field not in response]
+                print(f"   ❌ Missing stats fields: {missing}")
+                return False, response
+        
         return success, response
     
     def test_customers_segments(self):
