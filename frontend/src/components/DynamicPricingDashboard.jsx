@@ -627,9 +627,9 @@ const DynamicPricingDashboard = () => {
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-400">Avg Margin</div>
+                  <div className="text-xs text-gray-400">Total Units Sold</div>
                   <div className="text-xl font-bold text-purple-400">
-                    {(categoryProducts.reduce((sum, p) => sum + (p.profit_margin || 0), 0) / categoryProducts.length || 0).toFixed(1)}%
+                    {categoryProducts.reduce((sum, p) => sum + (p.total_quantity_sold || 0), 0).toLocaleString()}
                   </div>
                 </div>
               </div>
