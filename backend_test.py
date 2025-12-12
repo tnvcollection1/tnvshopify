@@ -833,6 +833,308 @@ class ShopifyCustomerAPITester:
         success, response, _ = self.run_test("Dashboard Stats", "GET", "dashboard/stats?store_name=tnvcollectionpk", 200)
         return success, response
     
+    # ==================== MULTI-TENANT & META ADS TESTS ====================
+    
+    def test_tenant_registration(self):
+        """Test Tenant Registration API - P0 Multi-Tenant Feature"""
+        success, response, _ = self.run_test(
+            "Tenant Registration",
+            "POST",
+            "tenants/register",
+            200,
+            data={
+                "business_name": "Test Store",
+                "business_email": "test@example.com",
+                "owner_name": "Test Owner",
+                "password": "test123",
+                "business_category": "fashion"
+            }
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "tenant" in response and "user" in response:
+                tenant = response["tenant"]
+                user = response["user"]
+                
+                # Check tenant fields
+                required_tenant_fields = ["id", "business_name", "subscription_plan"]
+                tenant_valid = all(field in tenant for field in required_tenant_fields)
+                
+                # Check user creation
+                user_valid = "id" in user and "email" in user
+                
+                if tenant_valid and user_valid:
+                    print(f"   ✅ Tenant created: {tenant.get('business_name')} (ID: {tenant.get('id')})")
+                    print(f"   ✅ User created: {user.get('email')} (ID: {user.get('id')})")
+                    print(f"   ✅ Subscription plan: {tenant.get('subscription_plan')}")
+                    
+                    # Store tenant_id for subsequent tests
+                    self.test_tenant_id = tenant.get('id')
+                    return True, response
+                else:
+                    print(f"   ❌ Invalid tenant or user structure")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_get_subscription_plans(self):
+        """Test Get Subscription Plans API - P0 Multi-Tenant Feature"""
+        success, response, _ = self.run_test(
+            "Get Subscription Plans",
+            "GET",
+            "tenants/plans/all",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "plans" in response:
+                plans = response["plans"]
+                
+                # Check for expected plans
+                expected_plans = ["free", "starter", "growth", "enterprise"]
+                plan_ids = [plan.get("id") for plan in plans]
+                
+                all_plans_present = all(plan_id in plan_ids for plan_id in expected_plans)
+                
+                if all_plans_present and len(plans) == 4:
+                    print(f"   ✅ All 4 subscription plans found: {plan_ids}")
+                    
+                    # Verify each plan has required fields
+                    valid_structure = True
+                    for plan in plans:
+                        required_fields = ["id", "name", "price", "features"]
+                        if not all(field in plan for field in required_fields):
+                            print(f"   ❌ Plan {plan.get('id')} missing required fields")
+                            valid_structure = False
+                            break
+                        
+                        # Verify features is an array
+                        if not isinstance(plan.get("features"), list):
+                            print(f"   ❌ Plan {plan.get('id')} features is not an array")
+                            valid_structure = False
+                            break
+                    
+                    if valid_structure:
+                        print(f"   ✅ All plans have valid structure (id, name, price, features)")
+                        return True, response
+                    else:
+                        return False, response
+                else:
+                    missing = [plan for plan in expected_plans if plan not in plan_ids]
+                    print(f"   ❌ Missing plans: {missing}")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_meta_ads_validation_no_auth(self):
+        """Test Meta Ads Validation without credentials - P0 Meta Ads Feature"""
+        success, response, _ = self.run_test(
+            "Meta Ads Validation (No Auth)",
+            "GET",
+            "meta-ads/validate?tenant_id=test",
+            200
+        )
+        
+        if success and response:
+            # Should return connected: false since no credentials configured
+            if "connected" in response:
+                connected = response["connected"]
+                
+                if not connected:
+                    print(f"   ✅ Correctly returns connected: false")
+                    
+                    # Check for proper error message
+                    if "message" in response:
+                        message = response["message"]
+                        if "not configured" in message.lower():
+                            print(f"   ✅ Proper error message: {message}")
+                            return True, response
+                        else:
+                            print(f"   ❌ Unexpected message: {message}")
+                            return False, response
+                    else:
+                        print(f"   ❌ Missing error message")
+                        return False, response
+                else:
+                    print(f"   ❌ Should return connected: false when no credentials")
+                    return False, response
+            else:
+                print(f"   ❌ Missing 'connected' field in response")
+                return False, response
+        
+        return success, response
+    
+    def test_meta_ads_campaigns_no_auth(self):
+        """Test Get Campaigns without Meta API configured - P0 Meta Ads Feature"""
+        success, response, _ = self.run_test(
+            "Meta Ads Campaigns (No Auth)",
+            "GET",
+            "meta-ads/campaigns?tenant_id=test",
+            400  # Should return error
+        )
+        
+        if success:  # success means we got the expected 400 status
+            print(f"   ✅ Correctly returns 400 error when Meta API not configured")
+            return True, response
+        else:
+            print(f"   ❌ Should return 400 error when Meta API not configured")
+            return False, response
+    
+    def test_tenant_api_keys_update(self):
+        """Test Tenant API Keys Update - P0 Multi-Tenant Feature"""
+        # Use tenant_id from registration test if available
+        tenant_id = getattr(self, 'test_tenant_id', 'test')
+        
+        success, response, _ = self.run_test(
+            "Tenant API Keys Update",
+            "PUT",
+            f"tenants/{tenant_id}/api-keys",
+            200,
+            data={
+                "shopify_domain": "test-store.myshopify.com",
+                "shopify_token": "test_token_12345"
+            }
+        )
+        
+        if success and response:
+            # Verify success response
+            if "success" in response and response["success"]:
+                if "message" in response:
+                    print(f"   ✅ API keys updated successfully: {response['message']}")
+                    return True, response
+                else:
+                    print(f"   ❌ Missing success message")
+                    return False, response
+            else:
+                print(f"   ❌ Update failed or success not true")
+                return False, response
+        
+        return success, response
+    
+    def test_tenant_usage(self):
+        """Test Tenant Usage Statistics - P0 Multi-Tenant Feature"""
+        # Use tenant_id from registration test if available
+        tenant_id = getattr(self, 'test_tenant_id', 'test')
+        
+        success, response, _ = self.run_test(
+            "Tenant Usage Statistics",
+            "GET",
+            f"tenants/{tenant_id}/usage",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "usage" in response:
+                usage = response["usage"]
+                
+                # Check for expected usage fields
+                expected_fields = ["orders_this_month", "messages_this_month", "stores", "users"]
+                usage_valid = all(field in usage for field in expected_fields)
+                
+                # Check for limits and plan
+                limits_present = "limits" in response
+                plan_present = "plan" in response
+                
+                if usage_valid and limits_present and plan_present:
+                    print(f"   ✅ Usage stats: orders={usage.get('orders_this_month')}, messages={usage.get('messages_this_month')}")
+                    print(f"   ✅ Resources: stores={usage.get('stores')}, users={usage.get('users')}")
+                    print(f"   ✅ Plan: {response.get('plan')}")
+                    return True, response
+                else:
+                    missing = []
+                    if not usage_valid:
+                        missing.append("usage fields")
+                    if not limits_present:
+                        missing.append("limits")
+                    if not plan_present:
+                        missing.append("plan")
+                    print(f"   ❌ Missing: {missing}")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def run_multi_tenant_meta_ads_tests(self):
+        """Run comprehensive tests for Multi-Tenant and Meta Ads APIs"""
+        print("\n" + "="*80)
+        print("🏢 MULTI-TENANT & META ADS API VALIDATION TESTS")
+        print("="*80)
+        
+        mt_results = {}
+        
+        # Test 1: Tenant Registration
+        print("\n📋 TEST 1: TENANT REGISTRATION")
+        print("-" * 40)
+        
+        registration_success, registration_response = self.test_tenant_registration()
+        mt_results["tenant_registration"] = {
+            "success": registration_success,
+            "response": registration_response
+        }
+        
+        # Test 2: Get Subscription Plans
+        print("\n📋 TEST 2: SUBSCRIPTION PLANS")
+        print("-" * 40)
+        
+        plans_success, plans_response = self.test_get_subscription_plans()
+        mt_results["subscription_plans"] = {
+            "success": plans_success,
+            "response": plans_response
+        }
+        
+        # Test 3: Meta Ads Validation (No Auth)
+        print("\n📋 TEST 3: META ADS VALIDATION (NO AUTH)")
+        print("-" * 40)
+        
+        meta_validation_success, meta_validation_response = self.test_meta_ads_validation_no_auth()
+        mt_results["meta_ads_validation"] = {
+            "success": meta_validation_success,
+            "response": meta_validation_response
+        }
+        
+        # Test 4: Meta Ads Campaigns (No Auth)
+        print("\n📋 TEST 4: META ADS CAMPAIGNS (NO AUTH)")
+        print("-" * 40)
+        
+        meta_campaigns_success, meta_campaigns_response = self.test_meta_ads_campaigns_no_auth()
+        mt_results["meta_ads_campaigns"] = {
+            "success": meta_campaigns_success,
+            "response": meta_campaigns_response
+        }
+        
+        # Test 5: Tenant API Keys Update
+        print("\n📋 TEST 5: TENANT API KEYS UPDATE")
+        print("-" * 40)
+        
+        api_keys_success, api_keys_response = self.test_tenant_api_keys_update()
+        mt_results["tenant_api_keys"] = {
+            "success": api_keys_success,
+            "response": api_keys_response
+        }
+        
+        # Test 6: Tenant Usage Statistics
+        print("\n📋 TEST 6: TENANT USAGE STATISTICS")
+        print("-" * 40)
+        
+        usage_success, usage_response = self.test_tenant_usage()
+        mt_results["tenant_usage"] = {
+            "success": usage_success,
+            "response": usage_response
+        }
+        
+        return mt_results
+
     # ==================== CLEARANCE ENGINE TESTS ====================
     
     def test_clearance_stats(self):
