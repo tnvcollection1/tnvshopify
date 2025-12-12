@@ -36,6 +36,7 @@ const DashboardOptimized = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [uploadingCSV, setUploadingCSV] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     fetchStats();
