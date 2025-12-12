@@ -4988,6 +4988,8 @@ api_router.include_router(tcs_router)
 api_router.include_router(customers_router)
 api_router.include_router(clearance_router)
 api_router.include_router(users_router)
+api_router.include_router(tenants_router)
+api_router.include_router(meta_ads_router)
 
 # Include the router in the main app
 app.include_router(api_router)
