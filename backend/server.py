@@ -202,8 +202,8 @@ async def startup_event():
             # Check if cache exists
             cached = await db.dynamic_pricing_cache.find_one({"type": "analysis_report"})
             if not cached:
-                logger.info("📊 Running initial pricing analysis...")
-                result = await dynamic_pricing_engine.analyze_product_velocity(db, days_lookback=365)
+                logger.info("📊 Running initial pricing analysis (60-day lookback)...")
+                result = await dynamic_pricing_engine.analyze_product_velocity(db, days_lookback=60)
                 if result.get('success'):
                     await db.dynamic_pricing_cache.update_one(
                         {"type": "analysis_report"},
