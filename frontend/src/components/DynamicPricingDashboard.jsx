@@ -523,13 +523,13 @@ const DynamicPricingDashboard = () => {
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-gray-400">Recommended</div>
+                        <div className="text-xs text-gray-400">Days Since Sale</div>
                         <div className={`text-lg font-bold ${
-                          viewingCategory === 'A' ? 'text-red-400' :
-                          viewingCategory === 'B' ? 'text-yellow-400' :
-                          'text-green-400'
+                          (product.days_since_last_sale || 0) < 30 ? 'text-green-400' :
+                          (product.days_since_last_sale || 0) < 90 ? 'text-yellow-400' :
+                          'text-red-400'
                         }`}>
-                          Rs. {product.recommended_price?.toLocaleString() || 0}
+                          {product.days_since_last_sale || 0} days
                         </div>
                       </div>
                     </div>
