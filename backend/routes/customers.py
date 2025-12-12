@@ -415,33 +415,60 @@ async def bulk_whatsapp(customer_ids: List[str], message: str):
 
 
 @customers_router.get("/segments")
-async def get_customer_segments():
-    """Get available customer segments"""
+async def get_customer_segments(store_name: str = None):
+    """Get customer segments with counts and total values - supports frontend dashboard"""
     try:
-        segments = [
-            {"id": "high_value", "name": "High Value", "description": "Orders > 5000"},
-            {"id": "repeat", "name": "Repeat Customers", "description": "Multiple orders"},
-            {"id": "delivered", "name": "Delivered", "description": "Completed deliveries"},
-            {"id": "pending", "name": "Pending", "description": "Awaiting delivery"},
-            {"id": "cod_pending", "name": "COD Pending", "description": "COD not received"}
-        ]
+        # Base query filter for store
+        base_query = {"store_name": store_name} if store_name and store_name != "all" else {}
         
-        # Get counts for each segment
-        for seg in segments:
-            if seg["id"] == "high_value":
-                seg["count"] = await db.customers.count_documents({"total_spent": {"$gte": 5000}})
-            elif seg["id"] == "repeat":
-                seg["count"] = await db.customers.count_documents({"total_orders": {"$gte": 2}})
-            elif seg["id"] == "delivered":
-                seg["count"] = await db.customers.count_documents({"delivery_status": "DELIVERED"})
-            elif seg["id"] == "pending":
-                seg["count"] = await db.customers.count_documents({"delivery_status": {"$in": ["PENDING", "IN_TRANSIT"]}})
-            elif seg["id"] == "cod_pending":
-                seg["count"] = await db.customers.count_documents({"delivery_status": "DELIVERED", "cod_payment_status": {"$ne": "RECEIVED"}})
+        # Define segment thresholds
+        segments = {
+            "vip": {"query": {"total_spent": {"$gte": 10000}}, "description": "Rs. 10K+ spent"},
+            "high_value": {"query": {"total_spent": {"$gte": 5000, "$lt": 10000}}, "description": "Rs. 5-10K spent"},
+            "medium_value": {"query": {"total_spent": {"$gte": 2000, "$lt": 5000}}, "description": "Rs. 2-5K spent"},
+            "low_value": {"query": {"total_spent": {"$lt": 2000}}, "description": "Under Rs. 2K spent"},
+            "dormant": {"description": "90+ days inactive"}
+        }
+        
+        result = {}
+        
+        # Calculate counts and values for each segment
+        for seg_id, seg_config in segments.items():
+            query = {**base_query}
+            
+            if seg_id == "dormant":
+                # 90 days ago
+                from datetime import datetime, timezone, timedelta
+                cutoff_date = (datetime.now(timezone.utc) - timedelta(days=90)).isoformat()
+                query["last_order_date"] = {"$lt": cutoff_date}
             else:
-                seg["count"] = 0
+                query.update(seg_config.get("query", {}))
+            
+            # Get count
+            count = await db.customers.count_documents(query)
+            
+            # Get total value
+            pipeline = [
+                {"$match": query},
+                {"$group": {"_id": None, "total": {"$sum": "$total_spent"}}}
+            ]
+            total_result = await db.customers.aggregate(pipeline).to_list(1)
+            total_value = total_result[0]["total"] if total_result else 0
+            
+            # Get top customers for this segment
+            top_customers = await db.customers.find(
+                query, 
+                {"_id": 0, "customer_id": 1, "first_name": 1, "last_name": 1, "email": 1, "phone": 1, "total_spent": 1, "country_code": 1}
+            ).sort("total_spent", -1).limit(10).to_list(10)
+            
+            result[seg_id] = {
+                "count": count,
+                "total_value": total_value,
+                "description": seg_config.get("description", ""),
+                "top_customers": top_customers
+            }
         
-        return {"success": True, "segments": segments}
+        return result
     except Exception as e:
         logger.error(f"Error getting segments: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
