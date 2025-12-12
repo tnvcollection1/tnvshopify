@@ -161,6 +161,26 @@ async def initialize_admin():
         
         await db.agents.insert_one(admin_user)
         
+        # Also create in users collection for new user management system
+        admin_user_v2 = {
+            "id": "admin-default-user",
+            "username": "admin",
+            "password": hashed_password,
+            "full_name": "Administrator",
+            "email": None,
+            "role": "admin",
+            "status": "active",
+            "stores": [],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_by": "system",
+            "last_login": None
+        }
+        await db.users.update_one(
+            {"username": "admin"},
+            {"$set": admin_user_v2},
+            upsert=True
+        )
+        
         logger.info("✅ Default admin user initialized")
         
         return {
