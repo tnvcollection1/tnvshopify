@@ -1474,18 +1474,18 @@ class ShopifyCustomerAPITester:
         return performance_results
 
 def main():
-    print("🚀 Starting P0 Bug Fix Validation Tests")
+    print("🚀 Starting Multi-Tenant & Meta Ads API Validation Tests")
     print("=" * 80)
     
     # Setup
     tester = ShopifyCustomerAPITester()
     
-    # Run P0 bug fix tests as requested
-    p0_results = tester.run_p0_bug_fix_tests()
+    # Run Multi-Tenant and Meta Ads tests as requested
+    mt_results = tester.run_multi_tenant_meta_ads_tests()
     
-    # Print P0 bug fix summary
+    # Print Multi-Tenant & Meta Ads test summary
     print("\n" + "=" * 80)
-    print("📊 P0 BUG FIX TEST SUMMARY")
+    print("📊 MULTI-TENANT & META ADS TEST SUMMARY")
     print("=" * 80)
     
     dispatch_results = p0_results.get("dispatch_tracker", {})
