@@ -845,19 +845,15 @@ class ShopifyCustomerAPITester:
     
     def test_tenant_registration(self):
         """Test Tenant Registration API - P0 Multi-Tenant Feature"""
+        # Use unique email to avoid conflicts
+        import time
+        unique_email = f"test{int(time.time())}@example.com"
+        
         success, response, _ = self.run_test(
             "Tenant Registration",
             "POST",
-            "tenants/register",
-            200,
-            data={
-                "business_name": "Test Store",
-                "business_email": "test@example.com",
-                "owner_name": "Test Owner",
-                "password": "test123",
-                "business_category": "fashion"
-            },
-            use_form_data=True
+            f"tenants/register?business_name=Test%20Store&business_email={unique_email}&owner_name=Test%20Owner&password=test123&business_category=fashion",
+            200
         )
         
         if success and response:
