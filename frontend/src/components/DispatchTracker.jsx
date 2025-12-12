@@ -752,19 +752,19 @@ const DispatchTracker = () => {
               type="date"
               value={dateRange.end}
               onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
-              className="px-3 py-2 bg-white/5 border border-white/10 rounded-md text-sm text-white"
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
             />
           </div>
           <button
             onClick={() => setDateRange({start: '', end: ''})}
-            className="mt-5 px-4 py-2 bg-white/10 text-gray-300 rounded-md text-sm hover:bg-white/20"
+            className="mt-5 px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300"
           >
             Clear Dates
           </button>
           <Button
             onClick={handleTCSSync}
             disabled={syncingTCS}
-            className="mt-5 bg-emerald-500 hover:bg-emerald-600 text-black"
+            className="mt-5 bg-blue-600 hover:bg-blue-700"
           >
             {syncingTCS ? (
               <>
@@ -783,30 +783,31 @@ const DispatchTracker = () => {
 
       {/* Orders Table */}
       <div className="p-6">
-        <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-white/5 border-b border-white/10">
-                  <TableHead className="font-semibold text-gray-300 w-12">
-                    <input
-                      type="checkbox"
-                      checked={selectAll}
-                      onChange={(e) => handleSelectAll(e.target.checked)}
-                      className="w-4 h-4 cursor-pointer"
-                    />
-                  </TableHead>
-                  <TableHead className="font-semibold text-gray-300">Date</TableHead>
-                  <TableHead className="font-semibold text-gray-300">Order #</TableHead>
-                  <TableHead className="font-semibold text-gray-300">Store</TableHead>
-                  <TableHead className="font-semibold text-gray-300">Customer</TableHead>
-                  <TableHead className="font-semibold text-gray-300">Phone</TableHead>
-                  <TableHead className="font-semibold text-gray-300">Tracking #</TableHead>
-                  <TableHead className="font-semibold text-gray-300">Delivery</TableHead>
-                  <TableHead className="font-semibold text-gray-300">Payment</TableHead>
-                  <TableHead className="font-semibold text-gray-300">COD Amount</TableHead>
-                  <TableHead className="font-semibold text-gray-300">Actions</TableHead>
-                </TableRow>
+        <Card className="border-gray-200">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold text-gray-700 w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectAll}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        className="w-4 h-4 cursor-pointer"
+                      />
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700">Date</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Order #</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Store</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Customer</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Phone</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Tracking #</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Delivery</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Payment</TableHead>
+                    <TableHead className="font-semibold text-gray-700">COD Amount</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Actions</TableHead>
+                  </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
