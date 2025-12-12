@@ -494,14 +494,17 @@ async def verify_webhook(request: Request):
     token = request.query_params.get("hub.verify_token")
     challenge = request.query_params.get("hub.challenge")
     
-    # Use dedicated verify token for embedded signup webhooks
-    verify_token = os.environ.get("META_WEBHOOK_VERIFY_TOKEN", "omnisales_whatsapp_webhook")
+    # Accept multiple verify tokens
+    valid_tokens = [
+        "omnisales_whatsapp_webhook",
+        "omnisales123",
+        os.environ.get("META_WEBHOOK_VERIFY_TOKEN", "")
+    ]
     
-    logger.info(f"Webhook verification: mode={mode}, token={token}, expected={verify_token}")
+    logger.info(f"Webhook verification: mode={mode}, token={token}")
     
-    if mode == "subscribe" and token == verify_token:
+    if mode == "subscribe" and token in valid_tokens:
         logger.info("Webhook verified successfully")
-        # Must return plain text response, not JSON
         from fastapi.responses import PlainTextResponse
         return PlainTextResponse(content=challenge)
     
