@@ -1,23 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { AlertTriangle, TrendingDown, TrendingUp, Package, DollarSign, Calendar, Tag } from 'lucide-react';
+import { AlertTriangle, TrendingDown, TrendingUp, Package, DollarSign, Calendar, Tag, Store, RefreshCw } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const InventoryHealthDashboard = () => {
   const [healthData, setHealthData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [stores, setStores] = useState([]);
+  const [selectedStore, setSelectedStore] = useState('all');
+  const [aiLoading, setAiLoading] = useState(false);
+
+  useEffect(() => {
+    fetchStores();
+  }, []);
 
   useEffect(() => {
     fetchHealthData();
-  }, []);
+  }, [selectedStore]);
+
+  const fetchStores = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/stores`);
+      setStores(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error('Error fetching stores:', error);
+    }
+  };
 
   const fetchHealthData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/api/inventory/health-analysis`);
-      setHealthData(res.data);
+      // Use the clearance health endpoint which supports store filtering
+      const params = selectedStore !== 'all' ? `?store_name=${selectedStore}` : '';
+      const res = await axios.get(`${API_URL}/api/clearance/health${params}`);
+      
+      if (res.data.success) {
+        // Transform data for the dashboard
+        const summary = res.data.summary || {};
+        const categories = res.data.categories || {};
+        
+        setHealthData({
+          dead_stock_count: categories.dead_stock?.length || 0,
+          dead_stock_value: categories.dead_stock?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
+          dead_stock_items: categories.dead_stock || [],
+          slow_moving_count: categories.slow_moving?.length || 0,
+          slow_moving_value: categories.slow_moving?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
+          fast_moving_count: categories.healthy?.length || 0,
+          fast_moving_value: categories.healthy?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
+          total_items: summary.total_items || 0,
+          total_value: summary.total_value || 0,
+          alerts: generateAlerts(categories),
+          age_buckets: generateAgeBuckets(categories),
+          margin_analysis: [], // Not available from this endpoint
+          raw_categories: categories
+        });
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error fetching health data:', error);
@@ -25,17 +65,108 @@ const InventoryHealthDashboard = () => {
     }
   };
 
+  const generateAlerts = (categories) => {
+    const alerts = [];
+    const deadStock = categories.dead_stock || [];
+    const slowMoving = categories.slow_moving || [];
+    
+    if (deadStock.length > 0) {
+      const value = deadStock.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
+      alerts.push({
+        message: `${deadStock.length} items are dead stock (360+ days without sale) worth Rs. ${value.toLocaleString()}`,
+        action: 'Create Clearance Campaign',
+        age_threshold: 360
+      });
+    }
+    
+    if (slowMoving.length > 0) {
+      const value = slowMoving.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
+      alerts.push({
+        message: `${slowMoving.length} items are slow-moving (180-360 days) worth Rs. ${value.toLocaleString()}`,
+        action: 'Review Items',
+        age_threshold: 180
+      });
+    }
+    
+    return alerts;
+  };
+
+  const generateAgeBuckets = (categories) => {
+    return [
+      {
+        label: '360+ Days (Dead Stock)',
+        count: categories.dead_stock?.length || 0,
+        value: categories.dead_stock?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
+        min_age: 360,
+        action: true
+      },
+      {
+        label: '180-360 Days (Slow Moving)',
+        count: categories.slow_moving?.length || 0,
+        value: categories.slow_moving?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
+        min_age: 180,
+        action: true
+      },
+      {
+        label: '90-180 Days (Moderate)',
+        count: categories.moderate?.length || 0,
+        value: categories.moderate?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
+        min_age: 90,
+        action: false
+      },
+      {
+        label: '0-90 Days (Healthy)',
+        count: categories.healthy?.length || 0,
+        value: categories.healthy?.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0) || 0,
+        min_age: 0,
+        action: false
+      }
+    ];
+  };
+
   const createClearanceCampaign = async (ageThreshold) => {
     try {
-      const res = await axios.post(`${API_URL}/api/inventory/create-clearance-campaign`, {
-        age_days: ageThreshold,
-        discount_percentage: ageThreshold >= 180 ? 30 : ageThreshold >= 90 ? 20 : 10
-      });
-      alert(`✅ ${res.data.message}\nCreated campaign for ${res.data.items_count} items`);
-      fetchHealthData();
+      setAiLoading(true);
+      const category = ageThreshold >= 360 ? 'dead_stock' : 
+                       ageThreshold >= 180 ? 'slow_moving' : 'moderate';
+      
+      const params = selectedStore !== 'all' ? `store_name=${selectedStore}&` : '';
+      const res = await axios.post(`${API_URL}/api/clearance/quick-clearance?${params}category=${category}&auto_discount=true`);
+      
+      if (res.data.success) {
+        alert(`✅ Clearance campaign created!\n\n` +
+              `Campaign: ${res.data.campaign?.name || 'Quick Clearance'}\n` +
+              `Items: ${res.data.campaign?.items_count || 0}\n` +
+              `Total Value: Rs. ${res.data.campaign?.total_value?.toLocaleString() || 0}`);
+        fetchHealthData();
+      } else {
+        alert(`⚠️ ${res.data.error || 'No items found for clearance'}`);
+      }
     } catch (error) {
       console.error('Error creating campaign:', error);
       alert('❌ Error creating clearance campaign');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const getAIRecommendations = async (category = 'dead_stock') => {
+    try {
+      setAiLoading(true);
+      const params = selectedStore !== 'all' ? `store_name=${selectedStore}&` : '';
+      const res = await axios.post(`${API_URL}/api/clearance/ai-recommendations?${params}category=${category}`);
+      
+      if (res.data.success) {
+        alert(`🤖 AI Recommendations:\n\n${res.data.overall_strategy || 'Analysis complete'}\n\n` +
+              `Recommendations: ${res.data.recommendations?.length || 0} items analyzed`);
+      } else {
+        alert(`⚠️ ${res.data.error || 'No recommendations available'}`);
+      }
+    } catch (error) {
+      console.error('Error getting AI recommendations:', error);
+      alert('❌ Error getting AI recommendations');
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -52,34 +183,81 @@ const InventoryHealthDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
-          📊 Inventory Health Dashboard
-        </h1>
-        <p className="text-gray-400">
-          Real-time insights on stock health, dead stock, and profit margins
-        </p>
+      <div className="mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
+            📊 Inventory Health Dashboard
+          </h1>
+          <p className="text-gray-400">
+            Real-time insights on stock health, dead stock, and clearance opportunities
+          </p>
+        </div>
+        
+        {/* Store Filter */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700">
+            <Store className="w-5 h-5 text-blue-400" />
+            <Select value={selectedStore} onValueChange={setSelectedStore}>
+              <SelectTrigger className="w-[200px] bg-transparent border-none text-white focus:ring-0">
+                <SelectValue placeholder="Select Store" />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectItem value="all" className="text-white hover:bg-gray-700">All Stores</SelectItem>
+                {stores.map((store) => (
+                  <SelectItem key={store.id} value={store.store_name} className="text-white hover:bg-gray-700">
+                    {store.store_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            onClick={fetchHealthData}
+            variant="outline"
+            className="border-gray-700 hover:bg-gray-700 text-gray-300"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
+
+      {/* Store Badge */}
+      {selectedStore !== 'all' && (
+        <div className="mb-6 inline-block bg-blue-500/20 border border-blue-500/40 text-blue-300 px-4 py-2 rounded-full text-sm">
+          Showing data for: <strong>{selectedStore}</strong>
+        </div>
+      )}
 
       {/* Critical Alerts */}
       {healthData?.alerts && healthData.alerts.length > 0 && (
         <div className="mb-8 bg-red-500/10 border border-red-500/30 rounded-xl p-6">
           <div className="flex items-start gap-3 mb-4">
             <AlertTriangle className="w-6 h-6 text-red-400 mt-1" />
-            <div>
+            <div className="flex-1">
               <h2 className="text-xl font-bold text-red-400 mb-2">🚨 Critical Alerts</h2>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {healthData.alerts.map((alert, idx) => (
-                  <div key={idx} className="text-gray-300">
-                    • {alert.message} 
-                    {alert.action && (
+                  <div key={idx} className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-gray-300">• {alert.message}</span>
+                    <div className="flex gap-2">
+                      {alert.action && (
+                        <button
+                          onClick={() => createClearanceCampaign(alert.age_threshold)}
+                          disabled={aiLoading}
+                          className="text-sm px-3 py-1 bg-red-600 hover:bg-red-700 rounded transition-colors disabled:opacity-50"
+                        >
+                          {aiLoading ? 'Processing...' : alert.action}
+                        </button>
+                      )}
                       <button
-                        onClick={() => createClearanceCampaign(alert.age_threshold)}
-                        className="ml-3 text-sm px-3 py-1 bg-red-600 hover:bg-red-700 rounded transition-colors"
+                        onClick={() => getAIRecommendations(alert.age_threshold >= 360 ? 'dead_stock' : 'slow_moving')}
+                        disabled={aiLoading}
+                        className="text-sm px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded transition-colors disabled:opacity-50"
                       >
-                        {alert.action}
+                        🤖 AI Analysis
                       </button>
-                    )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -90,43 +268,43 @@ const InventoryHealthDashboard = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 hover:border-red-500/60 transition-colors">
           <div className="flex items-center justify-between mb-4">
             <TrendingDown className="w-8 h-8 text-red-400" />
             <span className="text-3xl font-bold">{healthData?.dead_stock_count || 0}</span>
           </div>
           <h3 className="text-gray-400 text-sm mb-1">Dead Stock</h3>
-          <p className="text-xs text-red-400">0 orders in 180+ days</p>
+          <p className="text-xs text-red-400">360+ days without sale</p>
           <p className="text-lg font-semibold text-red-300 mt-2">
             Rs. {healthData?.dead_stock_value?.toLocaleString() || 0}
           </p>
         </div>
 
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6">
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 hover:border-yellow-500/60 transition-colors">
           <div className="flex items-center justify-between mb-4">
             <Package className="w-8 h-8 text-yellow-400" />
             <span className="text-3xl font-bold">{healthData?.slow_moving_count || 0}</span>
           </div>
           <h3 className="text-gray-400 text-sm mb-1">Slow Moving</h3>
-          <p className="text-xs text-yellow-400">90-180 days old</p>
+          <p className="text-xs text-yellow-400">180-360 days old</p>
           <p className="text-lg font-semibold text-yellow-300 mt-2">
             Rs. {healthData?.slow_moving_value?.toLocaleString() || 0}
           </p>
         </div>
 
-        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6">
+        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6 hover:border-green-500/60 transition-colors">
           <div className="flex items-center justify-between mb-4">
             <TrendingUp className="w-8 h-8 text-green-400" />
             <span className="text-3xl font-bold">{healthData?.fast_moving_count || 0}</span>
           </div>
-          <h3 className="text-gray-400 text-sm mb-1">Fast Moving</h3>
-          <p className="text-xs text-green-400">Sold in last 30 days</p>
+          <h3 className="text-gray-400 text-sm mb-1">Healthy Stock</h3>
+          <p className="text-xs text-green-400">0-90 days old</p>
           <p className="text-lg font-semibold text-green-300 mt-2">
             Rs. {healthData?.fast_moving_value?.toLocaleString() || 0}
           </p>
         </div>
 
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
+        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6 hover:border-blue-500/60 transition-colors">
           <div className="flex items-center justify-between mb-4">
             <DollarSign className="w-8 h-8 text-blue-400" />
             <span className="text-3xl font-bold">{healthData?.total_items || 0}</span>
@@ -148,17 +326,20 @@ const InventoryHealthDashboard = () => {
           </h2>
           <div className="space-y-3">
             {healthData?.age_buckets?.map((bucket, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
+              <div key={idx} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg hover:bg-gray-700/50 transition-colors">
                 <div>
                   <div className="font-semibold">{bucket.label}</div>
                   <div className="text-sm text-gray-400">{bucket.count} items</div>
                 </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold">Rs. {bucket.value?.toLocaleString()}</div>
-                  {bucket.action && (
+                <div className="text-right flex items-center gap-3">
+                  <div>
+                    <div className="text-lg font-bold">Rs. {bucket.value?.toLocaleString()}</div>
+                  </div>
+                  {bucket.action && bucket.count > 0 && (
                     <button
                       onClick={() => createClearanceCampaign(bucket.min_age)}
-                      className="mt-1 text-xs px-2 py-1 bg-purple-600 hover:bg-purple-700 rounded transition-colors"
+                      disabled={aiLoading}
+                      className="text-xs px-2 py-1 bg-purple-600 hover:bg-purple-700 rounded transition-colors disabled:opacity-50"
                     >
                       Create Campaign
                     </button>
@@ -172,21 +353,35 @@ const InventoryHealthDashboard = () => {
         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
             <Tag className="w-5 h-5 text-green-400" />
-            Profit Margin Analysis
+            Quick Actions
           </h2>
           <div className="space-y-3">
-            {healthData?.margin_analysis?.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
-                <div>
-                  <div className="font-semibold">{item.category}</div>
-                  <div className="text-sm text-gray-400">{item.count} items</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-green-400">{item.avg_margin}%</div>
-                  <div className="text-xs text-gray-400">Avg Margin</div>
-                </div>
-              </div>
-            ))}
+            <button
+              onClick={() => createClearanceCampaign(360)}
+              disabled={aiLoading || (healthData?.dead_stock_count || 0) === 0}
+              className="w-full p-4 bg-red-600/20 hover:bg-red-600/40 border border-red-500/30 rounded-lg text-left transition-colors disabled:opacity-50"
+            >
+              <div className="font-semibold text-red-300">🗑️ Clear Dead Stock</div>
+              <div className="text-sm text-gray-400">Create clearance campaign for 360+ day items</div>
+            </button>
+            
+            <button
+              onClick={() => createClearanceCampaign(180)}
+              disabled={aiLoading || (healthData?.slow_moving_count || 0) === 0}
+              className="w-full p-4 bg-yellow-600/20 hover:bg-yellow-600/40 border border-yellow-500/30 rounded-lg text-left transition-colors disabled:opacity-50"
+            >
+              <div className="font-semibold text-yellow-300">⏳ Clear Slow Moving</div>
+              <div className="text-sm text-gray-400">Create clearance campaign for 180-360 day items</div>
+            </button>
+            
+            <button
+              onClick={() => getAIRecommendations('dead_stock')}
+              disabled={aiLoading}
+              className="w-full p-4 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/30 rounded-lg text-left transition-colors disabled:opacity-50"
+            >
+              <div className="font-semibold text-purple-300">🤖 Get AI Recommendations</div>
+              <div className="text-sm text-gray-400">AI-powered discount suggestions for dead stock</div>
+            </button>
           </div>
         </div>
       </div>
@@ -194,11 +389,12 @@ const InventoryHealthDashboard = () => {
       {/* Dead Stock Details */}
       {healthData?.dead_stock_items && healthData.dead_stock_items.length > 0 && (
         <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden">
-          <div className="p-6 border-b border-gray-700">
+          <div className="p-6 border-b border-gray-700 flex items-center justify-between">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <AlertTriangle className="w-6 h-6 text-red-400" />
-              Dead Stock Items (Need Immediate Action)
+              Dead Stock Items (360+ Days - Need Immediate Action)
             </h2>
+            <span className="text-gray-400">{healthData.dead_stock_items.length} items</span>
           </div>
           
           <div className="overflow-x-auto">
@@ -207,43 +403,55 @@ const InventoryHealthDashboard = () => {
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">SKU</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Product</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-400">Age (Days)</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-400">Cost</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-400">Sale Price</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">Store</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-400">Days Without Sale</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-400">Price</th>
                   <th className="px-6 py-4 text-right text-sm font-semibold text-gray-400">Quantity</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-400">Action</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-400">Total Value</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {healthData.dead_stock_items.slice(0, 20).map((item) => (
+                {healthData.dead_stock_items.slice(0, 30).map((item) => (
                   <tr key={item.sku} className="hover:bg-gray-700/30 transition-colors">
                     <td className="px-6 py-4">
                       <span className="font-mono text-sm font-semibold">{item.sku}</span>
                     </td>
-                    <td className="px-6 py-4 text-gray-300">{item.product_name || 'N/A'}</td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-red-400 font-semibold">{item.age_days}</span>
+                    <td className="px-6 py-4 text-gray-300">{item.title || item.product_name || 'N/A'}</td>
+                    <td className="px-6 py-4">
+                      <span className="text-xs px-2 py-1 bg-gray-700 rounded">{item.store_name || 'N/A'}</span>
                     </td>
-                    <td className="px-6 py-4 text-right text-gray-400">
-                      Rs. {item.cost?.toLocaleString()}
+                    <td className="px-6 py-4 text-right">
+                      <span className="text-red-400 font-semibold">{item.days_without_sale || 0}</span>
                     </td>
                     <td className="px-6 py-4 text-right font-semibold">
-                      Rs. {item.sale_price?.toLocaleString()}
+                      Rs. {item.price?.toLocaleString() || 0}
                     </td>
-                    <td className="px-6 py-4 text-right">{item.quantity}</td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => createClearanceCampaign(180)}
-                        className="text-xs px-3 py-1 bg-red-600 hover:bg-red-700 rounded transition-colors"
-                      >
-                        Add to Clearance
-                      </button>
+                    <td className="px-6 py-4 text-right">{item.quantity || 1}</td>
+                    <td className="px-6 py-4 text-right text-red-300 font-semibold">
+                      Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          
+          {healthData.dead_stock_items.length > 30 && (
+            <div className="p-4 text-center text-gray-400 border-t border-gray-700">
+              Showing 30 of {healthData.dead_stock_items.length} items
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* No Dead Stock Message */}
+      {(!healthData?.dead_stock_items || healthData.dead_stock_items.length === 0) && (
+        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-8 text-center">
+          <TrendingUp className="w-12 h-12 text-green-400 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-green-400 mb-2">🎉 Great News!</h3>
+          <p className="text-gray-400">
+            No dead stock items found{selectedStore !== 'all' ? ` for ${selectedStore}` : ''}. Your inventory is healthy!
+          </p>
         </div>
       )}
     </div>
