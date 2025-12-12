@@ -122,7 +122,7 @@ async def exchange_token(callback: EmbeddedSignupCallback, tenant_id: str = Quer
             
             # Store credentials in database
             credentials = {
-                "id": str(uuid.uuid4()) if 'uuid' in dir() else callback.waba_id,
+                "id": str(uuid.uuid4()),
                 "tenant_id": tenant_id,
                 "waba_id": callback.waba_id,
                 "phone_number_id": callback.phone_number_id,
