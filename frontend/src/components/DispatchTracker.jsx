@@ -676,19 +676,9 @@ const DispatchTracker = () => {
               className="pl-10 border-gray-300"
             />
           </div>
-          <Select value={filters.store} onValueChange={(v) => setFilters({ ...filters, store: v })}>
-            <SelectTrigger className="w-36 border-gray-300">
-              <SelectValue placeholder="Store" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Stores</SelectItem>
-              {stores.map((store) => (
-                <SelectItem key={store.id} value={store.store_name}>
-                  {store.store_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-600 min-w-[140px]">
+            📍 {globalStore === 'all' ? 'All Stores' : stores.find(s => s.store_name === globalStore)?.store_name || globalStore}
+          </div>
           <Select value={filters.delivery} onValueChange={(v) => setFilters({ ...filters, delivery: v })}>
             <SelectTrigger className="w-36 border-gray-300">
               <SelectValue placeholder="Delivery" />
