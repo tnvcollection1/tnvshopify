@@ -16,10 +16,10 @@ class ShopifyCustomerAPITester:
         self.finance_tests_run = 0
         self.finance_tests_passed = 0
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, timeout=30, measure_time=False):
+    def run_test(self, name, method, endpoint, expected_status, data=None, timeout=30, measure_time=False, use_form_data=False):
         """Run a single API test"""
         url = f"{self.api_url}/{endpoint}"
-        headers = {'Content-Type': 'application/json'}
+        headers = {'Content-Type': 'application/json'} if not use_form_data else {}
 
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
@@ -31,7 +31,15 @@ class ShopifyCustomerAPITester:
             if method == 'GET':
                 response = requests.get(url, headers=headers, timeout=timeout)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers, timeout=timeout)
+                if use_form_data:
+                    response = requests.post(url, data=data, timeout=timeout)
+                else:
+                    response = requests.post(url, json=data, headers=headers, timeout=timeout)
+            elif method == 'PUT':
+                if use_form_data:
+                    response = requests.put(url, data=data, timeout=timeout)
+                else:
+                    response = requests.put(url, json=data, headers=headers, timeout=timeout)
 
             end_time = time.time()
             response_time = (end_time - start_time) * 1000  # Convert to milliseconds
