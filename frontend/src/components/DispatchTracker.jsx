@@ -918,7 +918,6 @@ const DispatchTracker = () => {
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
               className="border-white/20 text-white hover:bg-white/10"
-              className="border-gray-300"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -927,7 +926,7 @@ const DispatchTracker = () => {
               size="sm"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="border-gray-300"
+              className="border-white/20 text-white hover:bg-white/10"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
