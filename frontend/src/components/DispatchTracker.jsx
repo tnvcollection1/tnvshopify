@@ -23,6 +23,7 @@ import {
   Hand,
   MessageCircle,
   Send,
+  Eye,
 } from "lucide-react";
 import {
   Table,
