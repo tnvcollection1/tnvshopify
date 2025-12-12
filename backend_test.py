@@ -1010,7 +1010,8 @@ class ShopifyCustomerAPITester:
             data={
                 "shopify_domain": "test-store.myshopify.com",
                 "shopify_token": "test_token_12345"
-            }
+            },
+            use_form_data=True
         )
         
         if success and response:
