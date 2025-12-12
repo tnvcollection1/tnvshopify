@@ -551,6 +551,44 @@ const CustomerSegmentationDashboard = () => {
                 </div>
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="p-4 border-t border-gray-700 bg-gray-900/50 flex items-center justify-between">
+                <div className="text-sm text-gray-400">
+                  Showing {((currentPage - 1) * 50) + 1} - {Math.min(currentPage * 50, totalCount)} of {totalCount.toLocaleString()} customers
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handlePrevPage}
+                    disabled={currentPage <= 1 || pageLoading}
+                    className={`px-4 py-2 rounded-lg flex items-center gap-1 transition-colors ${
+                      currentPage <= 1 || pageLoading
+                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                        : 'bg-purple-600 hover:bg-purple-700 text-white'
+                    }`}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </button>
+                  <span className="px-4 py-2 bg-gray-800 rounded-lg text-white font-medium">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={handleNextPage}
+                    disabled={currentPage >= totalPages || pageLoading}
+                    className={`px-4 py-2 rounded-lg flex items-center gap-1 transition-colors ${
+                      currentPage >= totalPages || pageLoading
+                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                        : 'bg-purple-600 hover:bg-purple-700 text-white'
+                    }`}
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
