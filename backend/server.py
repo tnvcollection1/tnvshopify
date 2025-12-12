@@ -34,6 +34,7 @@ from routes.pricing import pricing_router, set_dependencies as set_pricing_deps
 from routes.tcs import tcs_router, set_database as set_tcs_db
 from routes.customers import customers_router, set_dependencies as set_customers_deps
 from routes.clearance import clearance_router, set_dependencies as set_clearance_deps
+from routes.users import users_router, set_dependencies as set_users_deps
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
