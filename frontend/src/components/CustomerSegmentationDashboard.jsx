@@ -482,7 +482,7 @@ const CustomerSegmentationDashboard = () => {
                   {viewingSegment.replace('_', ' ').toUpperCase()} Customers
                 </h2>
                 <p className="text-sm text-gray-400 mt-1">
-                  {segmentCustomers.length} customers • Click WhatsApp to message with random greeting
+                  {totalCount.toLocaleString()} total customers • Showing page {currentPage} of {totalPages}
                 </p>
               </div>
               <button
