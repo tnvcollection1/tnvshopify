@@ -916,7 +916,7 @@ const WhatsAppEmbeddedSignup = () => {
                 <p>3. Add <strong>Facebook Login for Business</strong> product</p>
                 <p>4. In Facebook Login → Settings, add these OAuth redirect URIs:</p>
                 <code className="block bg-gray-100 p-2 rounded text-xs mt-2">
-                  {`${BACKEND_URL}/api/whatsapp-business/callback`}
+                  {`${PRODUCTION_DOMAIN}/api/whatsapp-business/callback`}
                 </code>
               </div>
             </div>
