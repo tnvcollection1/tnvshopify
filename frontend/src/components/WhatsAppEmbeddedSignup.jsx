@@ -350,9 +350,9 @@ const WhatsAppEmbeddedSignup = () => {
     // https://developers.facebook.com/docs/facebook-login/facebook-login-for-business/#invoke-a-login-dialog
     // https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/onboarding-business-app-users
     window.FB.login(fbLoginCallback, {
-      config_id: '1202735115144355', // Facebook Login for Business configuration ID
-      response_type: 'code', // Required for system user access tokens
-      override_default_response_type: true, // Must be true when using response_type: 'code'
+      config_id: '1354082849829675', // WhatsApp Embedded Signup configuration ID
+      response_type: 'code',
+      override_default_response_type: true,
       extras: {
         featureType: 'whatsapp_business_app_onboarding', // Triggers WhatsApp Business App onboarding (Coexistence)
         sessionInfoVersion: '3'
