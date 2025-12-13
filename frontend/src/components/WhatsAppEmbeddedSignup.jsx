@@ -169,6 +169,8 @@ const WhatsAppEmbeddedSignup = () => {
     
     try {
       const data = JSON.parse(event.data);
+      
+      // Handle WA_EMBEDDED_SIGNUP message type
       if (data.type === 'WA_EMBEDDED_SIGNUP') {
         console.log('WhatsApp Embedded Signup message event:', data);
         
@@ -218,6 +220,20 @@ const WhatsAppEmbeddedSignup = () => {
           }
           setConnecting(false);
         }
+      }
+      
+      // Alternative event format (direct event property)
+      if (data.event === 'FINISH' || data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING') {
+        console.log('Direct event - WABA ID:', data.data?.waba_id);
+        console.log('Direct event - Phone Number ID:', data.data?.phone_number_id);
+        console.log('Direct event - Business ID:', data.data?.business_id);
+        
+        window.waEmbeddedSignupData = {
+          phone_number_id: data.data?.phone_number_id,
+          waba_id: data.data?.waba_id,
+          business_id: data.data?.business_id,
+          event_type: data.event
+        };
       }
     } catch (e) {
       // Non-JSON message or not our message type
