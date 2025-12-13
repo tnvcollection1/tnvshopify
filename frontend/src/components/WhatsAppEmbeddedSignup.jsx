@@ -340,8 +340,8 @@ const WhatsAppEmbeddedSignup = () => {
     }
   };
 
-  // Launch WhatsApp Embedded Signup (as per official docs)
-  const launchWhatsAppSignup = () => {
+  // Launch WhatsApp Embedded Signup with selected configuration
+  const launchWhatsAppSignup = (type = 'embedded') => {
     if (!config?.is_configured) {
       setSetupGuideDialog(true);
       return;
@@ -357,18 +357,49 @@ const WhatsAppEmbeddedSignup = () => {
     // Clear any previous session data
     window.waEmbeddedSignupData = null;
 
-    // Launch Facebook Login for Business with WhatsApp Embedded Signup configuration
+    // Select configuration based on type
+    let configId;
+    let extras = {};
+
+    switch(type) {
+      case 'embedded':
+        // WhatsApp Embedded Signup with Coexistence (WhatsApp Business App onboarding)
+        configId = CONFIG_IDS.WHATSAPP_EMBEDDED_SIGNUP;
+        extras = {
+          featureType: 'whatsapp_business_app_onboarding', // Enables Coexistence for WhatsApp Business App users
+          sessionInfoVersion: '3'
+        };
+        break;
+      case 'measurement':
+        // WhatsApp Measurement Partner (read-only access)
+        configId = CONFIG_IDS.WHATSAPP_MEASUREMENT_PARTNER;
+        extras = {
+          sessionInfoVersion: '2' // Measurement partner uses version 2
+        };
+        break;
+      case 'instagram':
+        // Instagram Onboarding
+        configId = CONFIG_IDS.INSTAGRAM_ONBOARDING;
+        extras = {};
+        break;
+      default:
+        configId = CONFIG_IDS.WHATSAPP_EMBEDDED_SIGNUP;
+        extras = {
+          featureType: 'whatsapp_business_app_onboarding',
+          sessionInfoVersion: '3'
+        };
+    }
+
+    console.log('Launching FB.login with config:', { configId, type, extras });
+
+    // Launch Facebook Login for Business
     // Based on official Meta documentation:
     // https://developers.facebook.com/docs/facebook-login/facebook-login-for-business/#invoke-a-login-dialog
-    // https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/onboarding-business-app-users
     window.FB.login(fbLoginCallback, {
-      config_id: '1354082849829675', // WhatsApp Embedded Signup configuration ID
+      config_id: configId,
       response_type: 'code',
       override_default_response_type: true,
-      extras: {
-        featureType: 'whatsapp_business_app_onboarding', // Triggers WhatsApp Business App onboarding (Coexistence)
-        sessionInfoVersion: '3'
-      }
+      extras: extras
     });
   };
 
