@@ -693,16 +693,30 @@ async def get_analytics(tenant_id: str, days: int = Query(30, ge=1, le=90)):
 # ==================== Configuration Endpoint ====================
 
 @whatsapp_embedded_router.get("/config")
-async def get_embedded_signup_config():
+async def get_embedded_signup_config(request: Request):
     """Get configuration for Embedded Signup (frontend)"""
     config = get_meta_config()
+    
+    # Dynamically determine the webhook URL from the request origin
+    origin = request.headers.get("origin", "")
+    referer = request.headers.get("referer", "")
+    
+    # Determine base URL from request
+    if "importbaba.com" in origin or "importbaba.com" in referer:
+        base_url = "https://importbaba.com"
+    elif origin:
+        base_url = origin
+    else:
+        # Fallback to environment variable
+        base_url = os.environ.get("REACT_APP_BACKEND_URL", "")
     
     # Only return non-sensitive config
     return {
         "app_id": config["app_id"],
         "graph_api_version": config["graph_api_version"],
         "is_configured": bool(config["app_id"] and config["app_secret"]),
-        "webhook_url": os.environ.get("REACT_APP_BACKEND_URL", "") + "/api/whatsapp-business/webhook",
+        "webhook_url": f"{base_url}/api/whatsapp-business/webhook",
+        "callback_url": f"{base_url}/api/whatsapp-business/callback",
         "permissions": [
             "whatsapp_business_management",
             "whatsapp_business_messaging"
