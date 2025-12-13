@@ -171,10 +171,10 @@ const WhatsAppEmbeddedSignup = () => {
       if (data.type === 'WA_EMBEDDED_SIGNUP') {
         console.log('WhatsApp Embedded Signup message event:', data);
         
-        if (data.event === 'FINISH' || data.event === 'FINISH_ONLY_WABA') {
-          // Successful flow completion
+        if (data.event === 'FINISH' || data.event === 'FINISH_ONLY_WABA' || data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING') {
+          // Successful flow completion (including WhatsApp Business App Coexistence)
           const { phone_number_id, waba_id, business_id } = data.data;
-          console.log('Signup completed:', { phone_number_id, waba_id, business_id });
+          console.log('Signup completed:', { phone_number_id, waba_id, business_id, event: data.event });
           
           // Store the session data for later use with token exchange
           window.waEmbeddedSignupData = {
