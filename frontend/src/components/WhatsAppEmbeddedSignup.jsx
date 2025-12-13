@@ -345,17 +345,17 @@ const WhatsAppEmbeddedSignup = () => {
     // Clear any previous session data
     window.waEmbeddedSignupData = null;
 
-    // Launch Facebook Login with WhatsApp Embedded Signup configuration
-    // Based on official Meta documentation for Coexistence/WhatsApp Business App onboarding
+    // Launch Facebook Login for Business with WhatsApp Embedded Signup configuration
+    // Based on official Meta documentation:
+    // https://developers.facebook.com/docs/facebook-login/facebook-login-for-business/#invoke-a-login-dialog
     // https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/onboarding-business-app-users
     window.FB.login(fbLoginCallback, {
-      config_id: '1354082849829675', // Your Facebook Login for Business configuration ID
-      response_type: 'code',
-      override_default_response_type: true,
+      config_id: '1202735115144355', // Facebook Login for Business configuration ID
+      response_type: 'code', // Required for system user access tokens
+      override_default_response_type: true, // Must be true when using response_type: 'code'
       extras: {
-        version: '3', // sessionInfoVersion for coexistence flow (use '3' not 'v3')
         featureType: 'whatsapp_business_app_onboarding', // Triggers WhatsApp Business App onboarding (Coexistence)
-        setup: {}
+        sessionInfoVersion: '3'
       }
     });
   };
