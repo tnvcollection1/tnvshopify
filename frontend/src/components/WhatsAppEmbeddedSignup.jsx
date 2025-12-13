@@ -76,6 +76,7 @@ const WhatsAppEmbeddedSignup = () => {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
+  const [sdkLoaded, setSdkLoaded] = useState(false);
   
   // Dialog states
   const [sendMessageDialog, setSendMessageDialog] = useState(false);
@@ -104,6 +105,13 @@ const WhatsAppEmbeddedSignup = () => {
   useEffect(() => {
     loadConfig();
     loadAccounts();
+    loadFacebookSDK();
+    setupMessageEventListener();
+    
+    return () => {
+      // Cleanup message event listener
+      window.removeEventListener('message', handleMessageEvent);
+    };
   }, []);
 
   useEffect(() => {
@@ -111,6 +119,92 @@ const WhatsAppEmbeddedSignup = () => {
       loadTemplates(selectedAccount.waba_id);
     }
   }, [selectedAccount]);
+
+  // Load Facebook SDK according to official documentation
+  const loadFacebookSDK = () => {
+    // Check if SDK is already loaded
+    if (window.FB) {
+      setSdkLoaded(true);
+      return;
+    }
+
+    // SDK initialization function
+    window.fbAsyncInit = function() {
+      window.FB.init({
+        appId: config?.app_id || '1242155554406508', // Your App ID
+        autoLogAppEvents: true,
+        xfbml: true,
+        version: 'v21.0' // Graph API version
+      });
+      setSdkLoaded(true);
+      console.log('Facebook SDK initialized');
+    };
+
+    // Load SDK script asynchronously
+    const script = document.createElement('script');
+    script.src = 'https://connect.facebook.net/en_US/sdk.js';
+    script.async = true;
+    script.defer = true;
+    script.crossOrigin = 'anonymous';
+    document.body.appendChild(script);
+  };
+
+  // Re-initialize SDK when config is loaded
+  useEffect(() => {
+    if (config?.app_id && window.FB) {
+      window.FB.init({
+        appId: config.app_id,
+        autoLogAppEvents: true,
+        xfbml: true,
+        version: config.graph_api_version || 'v21.0'
+      });
+    }
+  }, [config]);
+
+  // Session logging message event listener (as per official docs)
+  const handleMessageEvent = (event) => {
+    // Only accept messages from Facebook
+    if (!event.origin.endsWith('facebook.com')) return;
+    
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'WA_EMBEDDED_SIGNUP') {
+        console.log('WhatsApp Embedded Signup message event:', data);
+        
+        if (data.event === 'FINISH' || data.event === 'FINISH_ONLY_WABA') {
+          // Successful flow completion
+          const { phone_number_id, waba_id, business_id } = data.data;
+          console.log('Signup completed:', { phone_number_id, waba_id, business_id });
+          
+          // Store the session data for later use with token exchange
+          window.waEmbeddedSignupData = {
+            phone_number_id,
+            waba_id,
+            business_id
+          };
+          
+          toast.success("WhatsApp Business signup completed! Processing...");
+        } else if (data.event === 'CANCEL') {
+          // Flow was cancelled
+          if (data.data?.current_step) {
+            console.log('Signup cancelled at step:', data.data.current_step);
+            toast.info(`Signup cancelled at: ${data.data.current_step}`);
+          } else if (data.data?.error_message) {
+            console.error('Signup error:', data.data.error_message);
+            toast.error(`Error: ${data.data.error_message}`);
+          }
+          setConnecting(false);
+        }
+      }
+    } catch (e) {
+      // Not a JSON message or not our message type
+      console.log('Non-JSON message event:', event.data);
+    }
+  };
+
+  const setupMessageEventListener = () => {
+    window.addEventListener('message', handleMessageEvent);
+  };
 
   const loadConfig = async () => {
     try {
@@ -161,121 +255,80 @@ const WhatsAppEmbeddedSignup = () => {
     }
   };
 
-  // Facebook Login SDK Integration
-  const initFacebookSDK = useCallback(() => {
-    return new Promise((resolve) => {
-      // Load Facebook SDK
-      if (window.FB) {
-        resolve(window.FB);
-        return;
+  // Response callback (as per official docs)
+  const fbLoginCallback = (response) => {
+    if (response.authResponse) {
+      const code = response.authResponse.code;
+      console.log('Facebook login response - code:', code);
+      
+      // Get the session data from the message event
+      const sessionData = window.waEmbeddedSignupData;
+      
+      if (sessionData && code) {
+        // Exchange the code for access token
+        exchangeToken(code, sessionData.waba_id, sessionData.phone_number_id);
+      } else if (code) {
+        // We have the code but need to wait for session data
+        toast.info("Processing WhatsApp connection...");
+        
+        // Wait a bit for the message event to arrive
+        setTimeout(() => {
+          const delayedSessionData = window.waEmbeddedSignupData;
+          if (delayedSessionData) {
+            exchangeToken(code, delayedSessionData.waba_id, delayedSessionData.phone_number_id);
+          } else {
+            toast.error("Could not complete signup. Please try again.");
+            setConnecting(false);
+          }
+        }, 2000);
       }
+    } else {
+      console.log('Facebook login cancelled or failed:', response);
+      toast.error("Connection cancelled or failed");
+      setConnecting(false);
+    }
+  };
 
-      window.fbAsyncInit = function() {
-        window.FB.init({
-          appId: config?.app_id,
-          cookie: true,
-          xfbml: true,
-          version: config?.graph_api_version || 'v21.0'
-        });
-        resolve(window.FB);
-      };
-
-      // Load SDK script
-      const script = document.createElement('script');
-      script.src = 'https://connect.facebook.net/en_US/sdk.js';
-      script.async = true;
-      script.defer = true;
-      document.body.appendChild(script);
-    });
-  }, [config]);
-
-  const launchEmbeddedSignup = async () => {
+  // Launch WhatsApp Embedded Signup (as per official docs)
+  const launchWhatsAppSignup = () => {
     if (!config?.is_configured) {
       setSetupGuideDialog(true);
       return;
     }
 
+    if (!window.FB) {
+      toast.error("Facebook SDK not loaded. Please refresh the page.");
+      return;
+    }
+
     setConnecting(true);
+    
+    // Clear any previous session data
+    window.waEmbeddedSignupData = null;
 
-    try {
-      const FB = await initFacebookSDK();
-
-      // Launch Facebook Login with WhatsApp Business permissions
-      FB.login(
-        (response) => {
-          if (response.authResponse) {
-            handleEmbeddedSignupCallback(response.authResponse);
-          } else {
-            toast.error("Connection cancelled");
-            setConnecting(false);
-          }
+    // Launch Facebook Login with WhatsApp Embedded Signup configuration
+    // This follows the official Meta documentation exactly
+    window.FB.login(fbLoginCallback, {
+      config_id: '1242155554406508', // Your Facebook Login for Business configuration ID
+      response_type: 'code',
+      override_default_response_type: true,
+      extras: {
+        setup: {
+          // Optional: Pre-fill business information
+          // business: {
+          //   name: 'Business Name',
+          //   email: 'business@example.com',
+          //   phone: {
+          //     code: 1,
+          //     number: '9999999999'
+          //   },
+          //   website: 'https://example.com'
+          // }
         },
-        {
-          config_id: config?.config_id, // Optional: Facebook Login Configuration ID
-          response_type: 'code',
-          override_default_response_type: true,
-          extras: {
-            setup: {
-              // Embedded Signup specific configuration
-              feature: 'whatsapp_embedded_signup',
-              sessionInfoVersion: 3
-            },
-            featureType: 'only_waba_sharing',
-            version: 2
-          },
-          scope: 'whatsapp_business_management,whatsapp_business_messaging'
-        }
-      );
-    } catch (error) {
-      console.error("Error launching embedded signup:", error);
-      toast.error("Failed to launch WhatsApp connection");
-      setConnecting(false);
-    }
-  };
-
-  const handleEmbeddedSignupCallback = async (authResponse) => {
-    try {
-      // Listen for the session info message from Facebook
-      const sessionInfoListener = (event) => {
-        if (event.origin !== 'https://www.facebook.com') return;
-        
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'WA_EMBEDDED_SIGNUP') {
-            // Extract WABA ID and Phone Number ID from the session
-            const { waba_id, phone_number_id } = data.data;
-            
-            // Exchange code for token
-            exchangeToken(authResponse.code, waba_id, phone_number_id);
-          }
-        } catch (e) {
-          // Not our message
-        }
-      };
-
-      window.addEventListener('message', sessionInfoListener);
-
-      // For development/testing, also try to extract from auth response
-      // In production, the data comes from the postMessage event
-      if (authResponse.code) {
-        // We need to wait for the embedded signup session info
-        // This typically comes via postMessage from Facebook
-        toast.info("Processing WhatsApp connection...");
-        
-        // Set a timeout to handle cases where we don't get the session info
-        setTimeout(() => {
-          window.removeEventListener('message', sessionInfoListener);
-          if (connecting) {
-            // For demo purposes, prompt user for WABA details
-            toast.info("Please complete the WhatsApp Business setup in the popup");
-          }
-        }, 30000);
+        featureType: '', // Empty for default flow, 'only_waba_sharing' for WABA sharing only
+        sessionInfoVersion: '3'
       }
-    } catch (error) {
-      console.error("Error handling callback:", error);
-      toast.error("Failed to process WhatsApp connection");
-      setConnecting(false);
-    }
+    });
   };
 
   const exchangeToken = async (code, wabaId, phoneNumberId) => {
@@ -289,6 +342,8 @@ const WhatsAppEmbeddedSignup = () => {
       if (response.data.success) {
         toast.success("WhatsApp Business connected successfully!");
         loadAccounts();
+        // Clear session data
+        window.waEmbeddedSignupData = null;
       } else {
         throw new Error(response.data.message || "Connection failed");
       }
@@ -461,7 +516,7 @@ const WhatsAppEmbeddedSignup = () => {
               Setup Guide
             </Button>
             <Button
-              onClick={launchEmbeddedSignup}
+              onClick={launchWhatsAppSignup}
               disabled={connecting || !config?.is_configured}
               className="h-9 text-sm bg-green-600 hover:bg-green-700"
             >
@@ -565,7 +620,7 @@ const WhatsAppEmbeddedSignup = () => {
                     <MessageCircle className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No WhatsApp accounts connected</h3>
                     <p className="text-gray-500 mb-4">Connect your first WhatsApp Business account to start sending messages</p>
-                    <Button onClick={launchEmbeddedSignup} disabled={!config?.is_configured} className="bg-green-600 hover:bg-green-700">
+                    <Button onClick={launchWhatsAppSignup} disabled={!config?.is_configured} className="bg-green-600 hover:bg-green-700">
                       <Link2 className="w-4 h-4 mr-2" />
                       Connect WhatsApp Business
                     </Button>
@@ -914,10 +969,20 @@ const WhatsAppEmbeddedSignup = () => {
                 <p>1. In your app, go to <strong>App Settings → Basic</strong></p>
                 <p>2. Copy your <strong>App ID</strong> and <strong>App Secret</strong></p>
                 <p>3. Add <strong>Facebook Login for Business</strong> product</p>
-                <p>4. In Facebook Login → Settings, add these OAuth redirect URIs:</p>
-                <code className="block bg-gray-100 p-2 rounded text-xs mt-2">
-                  {`${PRODUCTION_DOMAIN}/api/whatsapp-business/callback`}
-                </code>
+                <p>4. In Facebook Login → Settings, configure:</p>
+                <div className="bg-gray-100 p-3 rounded mt-2 space-y-2">
+                  <p><strong>Client OAuth Login:</strong> Yes</p>
+                  <p><strong>Web OAuth Login:</strong> Yes</p>
+                  <p><strong>Enforce HTTPS:</strong> Yes</p>
+                  <p><strong>Valid OAuth Redirect URIs:</strong></p>
+                  <code className="block text-xs break-all bg-white p-2 rounded">
+                    {`${PRODUCTION_DOMAIN}/api/whatsapp-business/callback`}
+                  </code>
+                  <p><strong>Allowed Domains for the JavaScript SDK:</strong></p>
+                  <code className="block text-xs break-all bg-white p-2 rounded">
+                    {PRODUCTION_DOMAIN}
+                  </code>
+                </div>
               </div>
             </div>
 
@@ -947,6 +1012,20 @@ const WhatsAppEmbeddedSignup = () => {
             <div className="border rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-green-100 text-green-700 text-sm flex items-center justify-center">4</span>
+                Create Facebook Login Configuration
+              </h3>
+              <div className="mt-3 space-y-2 text-sm text-gray-600">
+                <p>1. Go to <strong>Facebook Login for Business → Configurations</strong></p>
+                <p>2. Click <strong>"Create from template"</strong></p>
+                <p>3. Select <strong>"WhatsApp Embedded Signup Configuration"</strong></p>
+                <p>4. Copy the <strong>Configuration ID</strong> - you'll need this</p>
+              </div>
+            </div>
+
+            {/* Step 5 */}
+            <div className="border rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-green-100 text-green-700 text-sm flex items-center justify-center">5</span>
                 Add Environment Variables
               </h3>
               <div className="mt-3 space-y-2 text-sm text-gray-600">
@@ -958,10 +1037,10 @@ const WhatsAppEmbeddedSignup = () => {
               </div>
             </div>
 
-            {/* Step 5 */}
+            {/* Step 6 */}
             <div className="border rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-green-100 text-green-700 text-sm flex items-center justify-center">5</span>
+                <span className="w-6 h-6 rounded-full bg-green-100 text-green-700 text-sm flex items-center justify-center">6</span>
                 Complete App Review (for Production)
               </h3>
               <div className="mt-3 space-y-2 text-sm text-gray-600">
@@ -988,7 +1067,7 @@ const WhatsAppEmbeddedSignup = () => {
                 <li>• In Development Mode, only app admins and testers can connect</li>
                 <li>• You can onboard up to 10 businesses per week (200 after verification)</li>
                 <li>• Customers will own their WhatsApp assets and can access WhatsApp Manager</li>
-                <li>• Customers pay Meta directly for message costs (Tech Provider model)</li>
+                <li>• The exchangeable token code expires in 30 seconds</li>
               </ul>
             </div>
           </div>
