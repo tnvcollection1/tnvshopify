@@ -161,7 +161,8 @@ const WhatsAppEmbeddedSignup = () => {
     }
   }, [config]);
 
-  // Session logging message event listener (as per official docs)
+  // Session logging message event listener (as per official Meta docs)
+  // This captures: asset IDs on success, abandoned screen name, or error details
   const handleMessageEvent = (event) => {
     // Only accept messages from Facebook
     if (!event.origin.endsWith('facebook.com')) return;
@@ -171,33 +172,55 @@ const WhatsAppEmbeddedSignup = () => {
       if (data.type === 'WA_EMBEDDED_SIGNUP') {
         console.log('WhatsApp Embedded Signup message event:', data);
         
+        // Handle different flow completion types
         if (data.event === 'FINISH' || data.event === 'FINISH_ONLY_WABA' || data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING') {
-          // Successful flow completion (including WhatsApp Business App Coexistence)
+          // Successful flow completion
+          // FINISH = Cloud API flow completed
+          // FINISH_ONLY_WABA = Completed without phone number
+          // FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING = Coexistence - user completed with WhatsApp Business App number
           const { phone_number_id, waba_id, business_id } = data.data;
-          console.log('Signup completed:', { phone_number_id, waba_id, business_id, event: data.event });
+          console.log('Signup completed:', { 
+            phone_number_id, 
+            waba_id, 
+            business_id, 
+            event: data.event,
+            isCoexistence: data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING'
+          });
           
           // Store the session data for later use with token exchange
           window.waEmbeddedSignupData = {
             phone_number_id,
             waba_id,
-            business_id
+            business_id,
+            event_type: data.event
           };
           
-          toast.success("WhatsApp Business signup completed! Processing...");
+          if (data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING') {
+            toast.success("WhatsApp Business App connected via Coexistence!");
+          } else {
+            toast.success("WhatsApp Business signup completed! Processing...");
+          }
         } else if (data.event === 'CANCEL') {
-          // Flow was cancelled
+          // Flow was cancelled or error occurred
           if (data.data?.current_step) {
+            // User abandoned the flow
             console.log('Signup cancelled at step:', data.data.current_step);
             toast.info(`Signup cancelled at: ${data.data.current_step}`);
           } else if (data.data?.error_message) {
-            console.error('Signup error:', data.data.error_message);
+            // User reported an error
+            console.error('Signup error:', {
+              message: data.data.error_message,
+              error_id: data.data.error_id,
+              session_id: data.data.session_id,
+              timestamp: data.data.timestamp
+            });
             toast.error(`Error: ${data.data.error_message}`);
           }
           setConnecting(false);
         }
       }
     } catch (e) {
-      // Not a JSON message or not our message type
+      // Non-JSON message or not our message type
       console.log('Non-JSON message event:', event.data);
     }
   };
