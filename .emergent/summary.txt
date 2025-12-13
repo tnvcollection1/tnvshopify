@@ -1,195 +1,212 @@
 <analysis>**original_problem_statement**: The user's initial goal was to build a CRM with order management, focusing on order visibility and WhatsApp messaging. This has evolved into a sophisticated business intelligence and marketing automation platform. Key features include major performance optimizations, a full-featured Facebook Marketing Suite (including an AI Campaign Optimizer), a Smart Inventory Clearance engine, and a dynamic pricing tool.
 
-The current focus is a major architectural shift to a multi-tenant SaaS platform, accompanied by a complete UI/UX overhaul to mimic Shopify's design language. The user has also requested the parallel development of a Meta Ads (Facebook Ads) integration with real-time comparison capabilities and an abandoned cart recovery feature.
+The current focus is a major architectural shift to a multi-tenant SaaS platform, accompanied by a complete UI/UX overhaul to mimic Shopify's design language. The user has also requested the parallel development of a Meta Ads (Facebook Ads) integration and a WhatsApp Business Platform Embedded Signup feature.
 
 **PRODUCT REQUIREMENTS**:
 1.  **Shopify UI/UX Overhaul & Store-Specific Data (P0)**:
     -   Redesign all pages (Landing, Login, Dashboard, Sidebar, Trackers, etc.) to match Shopify's clean, white, professional aesthetic. (In Progress)
-    -   Ensure all data displayed throughout the application (Dashboards, Trackers, Reports) is filtered based on a globally selected store. (In Progress)
-2.  **Multi-Tenant SaaS Platform (P1)**:
+    -   Ensure all data displayed throughout the application is filtered based on a globally selected store. (Mostly Complete)
+2.  **WhatsApp Business Platform Integration (P0)**:
+    -   Integrate Embedded Signup for customers to connect their WhatsApp Business Accounts. (In Progress / Blocked)
+    -   Support marketing messages, templates, and webhooks. (In Progress / Blocked)
+3.  **Multi-Tenant SaaS Platform (P1)**:
     -   Build a marketing landing page. (Completed)
-    -   Create an onboarding flow/store setup wizard for new tenants. (Backend/Frontend stubs created)
-    -   Implement data isolation between tenants. (Backend stubs created)
+    -   Create an onboarding flow/store setup wizard for new tenants. (Stubs created)
+    -   Implement data isolation between tenants. (Stubs created)
     -   Mock a subscription flow. (Requested)
-3.  **New Features (P1)**:
+4.  **New Features (P1)**:
     -   Add a feature to view and sync Shopify Abandoned Carts. (In Progress)
     -   Add a feature to view and sync Shopify Draft Orders. (In Progress)
-4.  **Meta Ads Integration (P2)**:
-    -   Integrate Facebook Ads Manager API for real-time ad comparison. (Backend/Frontend stubs created)
+5.  **Meta Ads Integration (P2)**:
+    -   Integrate Facebook Ads Manager API for real-time ad comparison. (Stubs created)
     -   Create a settings page for users to enter their own API keys. (Requested)
-5.  **Future Features (P2)**:
-    -   AI-assisted creation tools (Campaigns, Bundles, Offers).
-    -   Universal AI analytics feature.
-    -   Abandoned Cart Recovery via WhatsApp.
 
 **User's preferred language**: English
 
 **what currently exists?**
-- A full-stack React/FastAPI/MongoDB application with a Shopify-like UI theme applied to most major pages.
-- A global store switcher in the sidebar, managed by a new . This context controls data filtering across the application.
-- Pages like the main Dashboard, Dispatch Tracker, Confirmation Tracker, Purchase Tracker, Customer Segmentation, and Inventory Health are now connected to the global store context and reflect data for the selected store only.
-- A new  has been created with a Shopify-style UI, featuring tabs for Draft Orders and Abandoned Checkouts. Backend endpoints have been added to sync and retrieve this data from Shopify.
-- RBAC is functional (Admin, Manager, Viewer).
-- Backend endpoints for most features are functional, including fixes for dynamic pricing sync and customer segmentation queries.
+- A full-stack React/FastAPI/MongoDB application with a Shopify-like UI theme applied to the main dashboard, trackers, and a new Drafts/Orders page.
+- A global store switcher () filters data on most pages.
+- A new feature for WhatsApp Business Platform Embedded Signup has been implemented, including backend routes, a frontend component, and a sidebar link. The user has provided Meta App credentials.
+- A login issue on the deployed application was diagnosed and fixed by implementing a default user creation function on backend startup. Multiple startup events were merged to ensure this function runs.
 
 **Last working item**:
-- **Last item agent was working**: The agent was systematically applying the Shopify-style UI and connecting all pages to the new global store context to ensure proper data isolation per store, as requested by the user. The last major action was creating the new Drafts/Abandoned Carts page and ensuring all tracker pages (Dispatch, Confirmation, Purchase) had the correct Shopify UI and were properly filtering data.
-- **Status**: IN PROGRESS
-- **Agent Testing Done**: Y (Agent has visually verified the UI and data filtering on all updated pages using screenshots.)
-- **Which testing method agent to use?**: screenshot tool to visually verify the remaining pages that need UI updates (e.g., Reports, Finance pages).
-- **User Testing Done**: N (User has not yet verified the latest UI updates on all tracker pages or the new Drafts page.)
+- **Last item agent was working**: The agent was troubleshooting a critical production deployment failure. The user was unable to log in on the deployed custom domain (). The root cause was identified as a platform-level issue where the deployment system was using a cached, incorrect configuration from a different app (), leading to database authorization errors.
+- **Status**: BLOCKED
+- **Agent Testing Done**: N (The deployment issue prevents testing on the target environment.)
+- **Which testing method agent to use?**: N/A (The issue is not with the code but with the deployment platform's configuration. The next agent must not attempt to fix this with code, but guide the user to resolve the platform issue.)
+- **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-- **Issue 1: Inconsistent SKU formats between inventory and order data (P2)**
-  - **Description**:  and  collections use different SKU formats, causing inaccurate Dead Stock classification. A UI warning was previously added as a temporary measure.
-  - **Attempted fixes**: Fuzzy matching and combining data sources were tried in previous sessions. No new fixes were attempted in this session.
-  - **Next debug checklist**:
-      1. After the UI overhaul is complete, propose a SKU Mapping tool to the user to allow manual mapping of inconsistent SKUs.
-  - **Why fix this issue and what will be achieved with the fix?**: To provide accurate inventory health analysis, which is a core feature of the application.
-  - **Status**: NOT STARTED
-  - **Is recurring issue?**: Y
-  - **Should Test frontend/backend/both after fix?**: Backend
-  - **Blocked on other issue**: None
+- **Issue 1: Production Deployment Fails Due to Stale Platform Cache (P0)**
+- **Issue 2: Inconsistent SKU formats between inventory and order data (P2)**
+- **Issue 3: WhatsApp Integration Blocked by Domain Issues (P0)**
+
+**Issues Detail**:
+- **Issue 1: Production Deployment Fails Due to Stale Platform Cache (P0)**
+    - **Description**: When deploying the  app, the build logs show it's using configurations (database name, URLs) from another app, . This causes a  error during backend startup, as it tries to access the wrong database.
+    - **Attempted fixes**:
+        - Merged multiple  decorators into a single one to ensure default users are created.
+        - Wrapped the user creation logic in a  block to prevent startup crashes.
+        - Corrected  to ensure  files are deployed.
+        - Updated CORS and  for the custom domain.
+        - **Conclusion**: These code fixes were correct but did not solve the root problem, which is a platform configuration issue.
+    - **Next debug checklist**:
+        1. **Do NOT attempt further code fixes for this issue.**
+        2. Re-explain to the user that this is a platform-level problem with cached deployment settings.
+        3. Strongly advise the user to contact Emergent Support (via Discord or email support@emergent.sh) with the provided Job ID () and the pre-written message explaining the issue.
+        4. As an alternative, guide the user through the Create a Fresh App workaround: save the code to GitHub, create a new app in Emergent, import the code, deploy, and then link the domain.
+    - **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker preventing the user from using their application on their custom domain. Resolving it will enable production deployment.
+    - **Status**: BLOCKED
+    - **Is recurring issue?**: Y
+    - **Should Test frontend/backend/both after fix?**: Both
+    - **Blocked on other issue**: None. This is the main blocking issue.
+
+- **Issue 2: Inconsistent SKU formats between inventory and order data (P2)**
+    - **Description**:  and  collections use different SKU formats, causing inaccurate Dead Stock classification. A UI warning was previously added as a temporary measure.
+    - **Attempted fixes**: Fuzzy matching was tried in previous sessions. No new fixes were attempted.
+    - **Next debug checklist**:
+        1. After the UI overhaul and deployment issues are resolved, propose a SKU Mapping tool to the user.
+    - **Why fix this issue and what will be achieved with the fix?**: To provide accurate inventory health analysis.
+    - **Status**: NOT STARTED
+    - **Is recurring issue?**: Y
+    - **Should Test frontend/backend/both after fix?**: Backend
+    - **Blocked on other issue**: Issue 1
+
+- **Issue 3: WhatsApp Integration Blocked by Domain Issues (P0)**
+    - **Description**: The WhatsApp Embedded Signup flow is blocked. Meta is flagging the preview domain as malicious and/or abusive, preventing the OAuth flow. When attempting to use the custom domain , the user faced various Invalid App ID and JSSDK unknown host domain errors, which are tied to the main deployment issue. The webhook verification also failed.
+    - **Attempted fixes**:
+        - Guided user through setting up App Domains, Site URL, and OAuth Redirect URIs in the Meta Dev Console.
+        - Fixed the webhook verification logic in the backend.
+        - Changed the App ID in  to the correct one.
+    - **Next debug checklist**:
+        1. This issue cannot be resolved until Issue 1 (Deployment) is fixed and the app is correctly running on .
+        2. Once the app is live, verify all Meta App settings (App Domains, JS SDK Domains, OAuth URIs) are correctly set to .
+        3. Retry the webhook verification with the  token.
+    - **Why fix this issue and what will be achieved with the fix?**: Enables the core WhatsApp Business signup feature.
+    - **Status**: BLOCKED
+    - **Is recurring issue?**: Y
+    - **Should Test frontend/backend/both after fix?**: Both
+    - **Blocked on other issue**: Issue 1
 
 **In progress Task List**:
-- **Task 1: Complete Shopify UI Overhaul & Data Integration (P0)**
-    - **Description**: The user wants all sections of the application to have a Shopify-like UI and be connected to the global store switcher.
-    - **Where to resume**: The agent has updated the main dashboard and the Order, Customer, and Inventory sub-pages. The agent needs to continue this process for the remaining pages listed by the user, such as , , and .
-    - **What will be achieved with this?**: A modern, professional, and consistent UI/UX across the entire application, with reliable data filtering for each store.
-    - **Status**: IN PROGRESS
-    - **Should Test frontend/backend/both after fix?**: Frontend
-    - **Blocked on something**: None
-
-- **Task 2: Implement Drafts & Abandoned Carts Sync (P1)**
-    - **Description**: The UI and backend endpoints for syncing and viewing Shopify Draft Orders and Abandoned Checkouts have been created. The sync functionality needs to be triggered from the frontend and tested.
-    - **Where to resume**: On the , implement the  handlers for the Sync Draft Orders and Sync Abandoned Checkouts buttons to call the newly created backend APIs.
-    - **What will be achieved with this?**: Users will be able to see their Shopify draft orders and abandoned carts directly within the application.
-    - **Status**: IN PROGRESS
+- **Task 1: Implement WhatsApp Business Platform Integration (P0)**
+    - **Description**: User wants to integrate WhatsApp Embedded Signup.
+    - **Where to resume**: The basic frontend and backend are in place. The task is blocked pending resolution of the deployment and domain issues. Once unblocked, the agent needs to guide the user to complete the setup in the Meta Dev Console and test the end-to-end signup flow.
+    - **What will be achieved with this?**: Customers can connect their WhatsApp Business accounts directly through the app.
+    - **Status**: BLOCKED
     - **Should Test frontend/backend/both after fix?**: Both
-    - **Blocked on something**: None
+    - **Blocked on something**: Issue 1 and Issue 3.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks**:
-    - (P0) **Onboarding & Data Isolation**:
-        - Implement the frontend logic for the .
-        - Implement the backend logic in  to create new tenants.
-        - Refactor all backend endpoints to be tenant-aware, using a  for data isolation.
+    - (P1) **Complete Shopify UI Overhaul**: Apply the Shopify theme and global store context to the remaining pages (, , ).
+    - (P1) **Implement Drafts & Abandoned Carts Sync**: Implement the  handlers for the sync buttons on  to call the backend APIs and display the data.
+    - (P1) **Onboarding & Data Isolation**:
+        - Implement frontend logic for .
+        - Implement backend logic in  to create new tenants.
+        - Refactor all backend endpoints to be tenant-aware.
     - (P1) **Meta Ads Integration**:
-        - Implement the frontend  to fetch and display ad campaign data.
-        - Implement the backend  to connect to the Facebook Marketing API using user-provided keys.
-        - Create a new Settings page where users can input and save their API keys (for Meta, Shopify, etc.).
-    - (P1) **Mock Subscriptions**: Implement a placeholder subscription flow as requested.
-
+        - Implement  and backend .
+        - Create a Settings page for user API keys.
+    - (P1) **Mock Subscriptions**: Implement a placeholder subscription flow.
 - **Future Tasks**:
-    - (P2) AI-Assisted Creation Tools (Campaigns, Product Bundles, Offers).
+    - (P2) AI-Assisted Creation Tools (Campaigns, Bundles, Offers).
     - (P2) Universal AI Analytics feature.
     - (P3) Abandoned Cart Recovery via WhatsApp.
-    - (P3) Feature Guides for complex modules.
 
 **Completed work in this session**
-- **Brand Management**:
-  - Rebranded the app from Omnisales to Importaba and then reverted back to Omnisales per user's request.
-  - Removed user-facing emergent branding from a tracking URL.
-- **Global Store Switcher**:
-  - Implemented a global store context () to manage the currently selected store.
-  - Added a store switcher dropdown to the new Shopify-style sidebar.
-  - Fixed the store data sync functionality, which was previously failing due to incorrect API endpoints.
-- **Data Isolation Fix**:
-  - Refactored multiple components (, , , , , , etc.) to use the global , fixing the data mixing issue reported by the user.
-- **Shopify-Style UI Overhaul**:
-  - Implemented a new, clean, Shopify-style .
-  - Applied the Shopify-style white theme to , , , , , and .
-- **Bug Fixes & Feature Enhancements**:
-  - **Dynamic Pricing Sync**: Fixed the background task execution, making the Sync to Shopify feature functional.
-  - **Customer Segmentation**:
-      - Fixed a bug where customer names and order numbers were showing as N/A.
-      - Implemented pagination in the View Customers modal to display all customers, not just the first 100.
-      - Ensured the store filter works correctly for segment data.
-- **New Drafts/Abandoned Carts Page**:
-  - Created a new  with tabs and a Shopify-style UI.
-  - Added backend endpoints (, ) to support this feature.
+- **Shopify UI Overhaul**:
+  - Applied a consistent, clean Shopify-style UI to , , and .
+  - Verified UI consistency across all updated tracker pages and the  using screenshots.
+  - Used the frontend testing agent to confirm no regressions were introduced by the UI changes.
+- **WhatsApp Business Platform Integration**:
+  - Created backend infrastructure () for Embedded Signup, including config, callback, and webhook endpoints.
+  - Created a frontend component () with a setup guide and connection flow.
+  - Added a new route () and a link in the sidebar.
+  - Guided the user through creating a Meta Developer App and configured the provided App ID and Secret in the backend .
+- **Deployment & Login Bug Fixes**:
+  - Identified and merged three conflicting  decorators into one in  to fix an issue where default users weren't being created on startup.
+  - Added an  function to  to ensure , , and  are present in the database, resolving login failures on fresh deployments.
+  - Diagnosed that production deployment failures were due to a platform-level stale cache issue, not a code issue.
 
 **Earlier issues found/mentioned but not fixed**
-- **Issue 1: Inconsistent SKU formats** (Captured in All Pending/In progress Issue list).
+- **Issue 1**: Inconsistent SKU formats (Captured in All Pending/In progress Issue list).
 
 **Known issue recurrence from previous fork**
 - **Issue recurrence in previous fork**:  requires major refactoring.
-- **Recurrence count**: 12
-- **Status**: IN PROGRESS (Agent added several new routers and endpoints but has not performed a deep refactor into separate files for each feature area).
+- **Recurrence count**: 13
+- **Status**: IN PROGRESS (Agent added several new routers and endpoints (), further increasing the complexity of  and the urgency of a refactor.)
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Global State Management (React Context)**: A  was introduced to manage the selected store globally, ensuring all components react to changes and display filtered data. This was critical to solving the data mixing issue.
-- **UI/UX Overhaul**: A systematic redesign of frontend components to match a specific design language (Shopify), involving changes to CSS (Tailwind), component structure, and layout.
-- **Asynchronous Task Handling (Backend)**: Fixed a bug in the FastAPI backend where a background task for syncing prices was not executing correctly. The solution involved using  properly with an  function.
-- **API Pagination**: Implemented pagination on a backend endpoint () and the corresponding frontend modal to handle large datasets (thousands of customers).
+- **Meta/Facebook API Integration**: Implemented Facebook's JavaScript SDK for Embedded Signup OAuth flow. Created backend endpoints for config, callback, and webhook verification.
+- **FastAPI Startup Events**: Debugged and consolidated multiple  decorators to ensure critical initialization logic (like creating default users) runs reliably.
+- **Deployment Troubleshooting**: Diagnosed a platform-level deployment issue caused by a stale configuration cache, differentiating it from code-level bugs. Guided user towards platform support.
+- **CORS Configuration**: Updated backend CORS settings to allow requests from the new custom domain.
 
 **key DB schema**
-- **tenants**: 
-- **users**:  (Note:  will need to be added for multi-tenancy)
-- **draft_orders**:  (New implicit collection)
-- **abandoned_checkouts**:  (New implicit collection)
+- **whatsapp_accounts**:  (New implicit collection)
 
 **changes in tech stack**
-- No new dependencies were added.
+- None.
 
 **All files of reference**
-- **/app/frontend/src/contexts/StoreContext.jsx**: New file. The heart of the global store switching feature.
-- **/app/frontend/src/components/Sidebar.jsx**: Heavily modified. The main navigation component, now with a Shopify theme and store switcher UI.
-- **/app/frontend/src/components/DraftsPage.jsx**: New file. The UI for the Drafts and Abandoned Carts feature.
-- **/app/frontend/src/components/CustomerSegmentationDashboard.jsx**: Heavily modified to add pagination and connect to the global store.
-- **/app/frontend/src/components/DashboardOptimized.jsx**: Modified to remove local state and use the global store context.
-- **/app/backend/server.py**: Modified to fix the dynamic pricing sync and add new endpoints for draft orders.
-- **/app/backend/routes/customers.py**: Modified to fix data fields in the response and add pagination logic.
-- **/app/frontend/src/App.js**: Modified to wrap the application in the new .
+- **/app/backend/routes/whatsapp_embedded.py**: New file for all WhatsApp Business Platform logic.
+- **/app/frontend/src/components/WhatsAppEmbeddedSignup.jsx**: New frontend component for the integration.
+- **/app/backend/server.py**: Heavily modified to fix startup event conflicts and add the new WhatsApp router.
+- **/app/frontend/src/components/DispatchTracker.jsx**: Updated with Shopify UI.
+- **/app/frontend/src/components/ConfirmationTracker.jsx**: Updated with Shopify UI.
+- **/app/frontend/src/components/PurchaseTracker.jsx**: Updated with Shopify UI.
+- **/app/frontend/src/App.js**: Modified to add the new  route.
+- **/app/frontend/src/components/Sidebar.jsx**: Modified to add the link to the new WhatsApp page.
+
+**Areas that need refactoring**:
+- **/app/backend/server.py**: This file is critically oversized. The agent added more routes and logic, making it more urgent to break down routes, models, and services into separate, feature-specific files (e.g., , ).
 
 **key api endpoints**
-- : Fixed to correctly run as a background task.
-- : Modified to include , ,  and support / parameters.
-- : Endpoint for syncing store orders and customers. Now correctly called from the frontend.
-- : New endpoint to sync draft orders from Shopify.
-- : New endpoint to retrieve synced draft orders.
-- : Existing endpoint that will be used for the new UI.
+- : **NEW** endpoint to provide frontend with Meta App ID.
+- : **NEW** endpoint to handle OAuth callback from Facebook.
+- : **NEW** endpoint for Meta to verify and send events.
+- : This endpoint works locally but was failing on deployment due to the database issue.
 
 **Critical Info for New Agent**
-- **The Global  is the Source of Truth**: All pages that display store-specific data MUST use the  hook from . Do not implement local store selection state. The context provides , , , , and .
-- **UI Must Match Shopify**: The user is very specific about the UI. All new or modified components should follow the clean, white, professional aesthetic of the updated  and . Use , , and other  components consistently.
-- **Data Syncing is Key**: The user expects to be able to pull the latest data from Shopify for each store. The Sync buttons are a critical part of the workflow.
-- **Finish the UI Overhaul**: The immediate next step should be to continue applying the Shopify theme and global store context to the remaining pages (, , etc.) as requested by the user.
+- **DEPLOYMENT IS BLOCKED**: The most critical issue is that production deployment is failing due to a platform-level configuration problem (stale cache). Do not waste time trying to fix this with code changes. Your first action must be to guide the user to contact Emergent Support or use the create a fresh app workaround. All work on the custom domain () is blocked until this is resolved.
+- **WHATSAPP INTEGRATION IS BLOCKED**: The WhatsApp Embedded Signup flow is blocked by both the deployment issue and Meta flagging the preview domain. Do not attempt to debug this until the deployment to  is successful.
+- ** is fragile**: This file has had multiple conflicting startup events. Be extremely cautious when adding any new app-level logic. The file desperately needs to be refactored.
 
 **documents created in this job**
 - None.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: When applying enable and sync pricing, it's not working. (RESOLVED)
-2.  **User**: Dormant customers have no name or order #, and segments aren't working per store. (RESOLVED)
-3.  **User**: Dormant customers only show 100 results. (RESOLVED)
-4.  **User**: Can you add a store switching option? Data is getting mixed. (RESOLVED)
-5.  **User**: When I click sync for a store, it says Not Found. (RESOLVED)
-6.  **User**: All sections should show data for the selected store and the UI should be like Shopify. (IN PROGRESS)
-7.  **User**: Sync should work for the selected store. (RESOLVED)
-8.  **User**: What about the ashmiaa store? (RESOLVED - Agent verified it works)
-9.  **User**: The UI isn't applied to Drafts, and the tracker pages. Also add abandoned carts. (IN PROGRESS - Agent created Drafts/Abandoned Carts page and fixed tracker UI).
-10. **User**: Final confirmation that all tracker pages should have the Shopify UI. (IN PROGRESS - Agent has done this, pending user verification).
+1.  **User**: Deployed site  not working. (IN PROGRESS - Diagnosed as platform issue)
+2.  **User**: Redirecting to  app. (RESOLVED - Explained domain is linked to wrong app)
+3.  **User**: Domain was linked last session. (RESOLVED - Explained domain links don't persist across forks)
+4.  **User**: Can't log in on deployed site. (IN PROGRESS - Diagnosed as deployment DB issue)
+5.  **User**: Still can't log in after fix. (IN PROGRESS - Root cause identified as platform cache)
+6.  **User**: How to deploy on my own hosting? (RESOLVED - Provided instructions)
+7.  **User**: Confirm which app  is linked to. (RESOLVED - Identified )
+8.  **User**: I have linked the domain to this app, will it deploy? (RESOLVED - Confirmed yes, after redeploy)
+9.  **User**: Redeploy?. (RESOLVED - Instructed user to proceed)
+10. **User**: *Shares deployment error logs*. (IN PROGRESS - Diagnosed as platform cache issue, told user to contact support)
 
 **Project Health Check:**
-- **Broken**: None. The components that were causing errors (, ) have been fixed.
+- **Broken**: Production Deployment, Login on deployed custom domain, WhatsApp Business Integration.
 - **Mocked**: Subscription flow is planned to be mocked.
 
 **3rd Party Integrations**
-- **Shopify Admin API**: Functional — requires User API Key. Used for syncing orders, customers, inventory, and now draft orders/abandoned checkouts.
+- **Shopify Admin API**: Functional — requires User API Key.
+- **Facebook Marketing API / WhatsApp Business Platform**: **In Progress / BLOCKED** — requires User API Key and resolution of platform deployment/domain issues.
 - **Meta WhatsApp**: Functional (URL scheme) — no key required.
 - **TCS/DTDC Courier API**: Integrated — requires User API Key.
-- **Facebook Marketing API**: **In Progress** — will require User API Key via a new Settings page.
 - **OpenAI GPT-4**: Functional — uses Emergent LLM Key.
 
 **Testing status**
-- **Testing agent used after significant changes**: NO
+- **Testing agent used after significant changes**: YES (Frontend agent was used to verify UI updates on tracker pages).
 - **Troubleshoot agent used after agent stuck in loop**: NO
 - **Test files created**: None.
-- **Known regressions**: None. The data mixing issue was a regression that has now been fixed.
+- **Known regressions**: Production deployment is non-functional.
 
 **Credentials to test flow:**
 - **Admin**:  / 
@@ -197,4 +214,4 @@ The current focus is a major architectural shift to a multi-tenant SaaS platform
 - **Viewer**:  / 
 
 **What agent forgot to execute**
-- All user requests from this session were addressed. The primary remaining work is to complete the tasks from the initial plan (finishing the full UI overhaul, Multi-Tenancy, Meta Ads integration).</analysis>
+- The agent correctly prioritized user-reported issues (WhatsApp integration and deployment failures). All planned tasks from the start of the session were either completed or blocked by the deployment issue. No tasks were forgotten.</analysis>
