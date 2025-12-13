@@ -330,18 +330,16 @@ const WhatsAppEmbeddedSignup = () => {
     window.waEmbeddedSignupData = null;
 
     // Launch Facebook Login with WhatsApp Embedded Signup configuration
-    // Based on official Meta documentation: https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/onboarding-business-app-users
-    // 
-    // featureType: 'whatsapp_business_app_onboarding' enables Coexistence
-    // This allows users with existing WhatsApp Business App numbers to onboard
+    // Based on official Meta documentation for Coexistence/WhatsApp Business App onboarding
+    // https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/onboarding-business-app-users
     window.FB.login(fbLoginCallback, {
       config_id: '1354082849829675', // Your Facebook Login for Business configuration ID
       response_type: 'code',
       override_default_response_type: true,
       extras: {
-        setup: {},
-        featureType: 'whatsapp_business_app_onboarding', // Enables Coexistence for WhatsApp Business App users
-        sessionInfoVersion: '3'
+        version: '3', // sessionInfoVersion for coexistence flow (use '3' not 'v3')
+        featureType: 'whatsapp_business_app_onboarding', // Triggers WhatsApp Business App onboarding (Coexistence)
+        setup: {}
       }
     });
   };
