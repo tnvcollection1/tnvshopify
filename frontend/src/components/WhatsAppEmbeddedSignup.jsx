@@ -364,10 +364,13 @@ const WhatsAppEmbeddedSignup = () => {
     switch(type) {
       case 'embedded':
         // WhatsApp Embedded Signup with Coexistence (WhatsApp Business App onboarding)
+        // Based on: https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/onboarding-business-app-users
         configId = CONFIG_IDS.WHATSAPP_EMBEDDED_SIGNUP;
         extras = {
-          featureType: 'whatsapp_business_app_onboarding', // Enables Coexistence for WhatsApp Business App users
-          sessionInfoVersion: '3'
+          feature_type: 'whatsapp_business_app_onboarding', // Try snake_case
+          featureType: 'whatsapp_business_app_onboarding', // Also camelCase for compatibility
+          sessionInfoVersion: '3',
+          setup: {}
         };
         break;
       case 'measurement':
@@ -385,8 +388,10 @@ const WhatsAppEmbeddedSignup = () => {
       default:
         configId = CONFIG_IDS.WHATSAPP_EMBEDDED_SIGNUP;
         extras = {
+          feature_type: 'whatsapp_business_app_onboarding',
           featureType: 'whatsapp_business_app_onboarding',
-          sessionInfoVersion: '3'
+          sessionInfoVersion: '3',
+          setup: {}
         };
     }
 
