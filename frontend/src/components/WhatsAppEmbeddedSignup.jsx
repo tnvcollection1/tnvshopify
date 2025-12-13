@@ -309,7 +309,7 @@ const WhatsAppEmbeddedSignup = () => {
     // Launch Facebook Login with WhatsApp Embedded Signup configuration
     // This follows the official Meta documentation exactly
     window.FB.login(fbLoginCallback, {
-      config_id: '1242155554406508', // Your Facebook Login for Business configuration ID
+      config_id: '1354082849829675', // Your Facebook Login for Business configuration ID
       response_type: 'code',
       override_default_response_type: true,
       extras: {
