@@ -692,23 +692,16 @@ async def get_analytics(tenant_id: str, days: int = Query(30, ge=1, le=90)):
 
 # ==================== Configuration Endpoint ====================
 
+# Production domain for WhatsApp Business callbacks
+PRODUCTION_DOMAIN = "https://importbaba.com"
+
 @whatsapp_embedded_router.get("/config")
-async def get_embedded_signup_config(request: Request):
+async def get_embedded_signup_config():
     """Get configuration for Embedded Signup (frontend)"""
     config = get_meta_config()
     
-    # Dynamically determine the webhook URL from the request origin
-    origin = request.headers.get("origin", "")
-    referer = request.headers.get("referer", "")
-    
-    # Determine base URL from request
-    if "importbaba.com" in origin or "importbaba.com" in referer:
-        base_url = "https://importbaba.com"
-    elif origin:
-        base_url = origin
-    else:
-        # Fallback to environment variable
-        base_url = os.environ.get("REACT_APP_BACKEND_URL", "")
+    # Always use production domain for webhooks/callbacks
+    base_url = PRODUCTION_DOMAIN
     
     # Only return non-sensitive config
     return {
