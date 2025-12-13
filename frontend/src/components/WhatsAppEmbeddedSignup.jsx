@@ -330,29 +330,18 @@ const WhatsAppEmbeddedSignup = () => {
     window.waEmbeddedSignupData = null;
 
     // Launch Facebook Login with WhatsApp Embedded Signup configuration
-    // Based on official Meta documentation: https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/implementation
+    // Based on official Meta documentation: https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/onboarding-business-app-users
     // 
-    // IMPORTANT: Coexistence (WhatsApp Business App onboarding) is AUTOMATIC
-    // - If a user's phone number is already on WhatsApp Business App, Meta will show the Coexistence option
-    // - When completed via Coexistence, the event will be 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING'
-    // - No special code parameter is needed to enable Coexistence
+    // featureType: 'whatsapp_business_app_onboarding' enables Coexistence
+    // This allows users with existing WhatsApp Business App numbers to onboard
     window.FB.login(fbLoginCallback, {
       config_id: '1354082849829675', // Your Facebook Login for Business configuration ID
       response_type: 'code',
       override_default_response_type: true,
       extras: {
-        setup: {
-          // Optional: Pre-fill business information to speed up onboarding
-          // business: {
-          //   name: 'Your Business Name',
-          //   email: 'business@example.com',
-          //   phone: {
-          //     code: 91, // Country code
-          //     number: '9999999999'
-          //   },
-          //   website: 'https://example.com'
-          // }
-        }
+        setup: {},
+        featureType: 'whatsapp_business_app_onboarding', // Enables Coexistence for WhatsApp Business App users
+        sessionInfoVersion: '3'
       }
     });
   };
