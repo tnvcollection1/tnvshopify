@@ -72,54 +72,58 @@ async def init_default_users():
     """Create default admin user if not exists"""
     import hashlib
     
-    def hash_password(password: str) -> str:
-        return hashlib.sha256(password.encode()).hexdigest()
-    
-    # Check if admin user exists
-    admin_user = await db.users.find_one({"username": "admin"})
-    if not admin_user:
-        default_users = [
-            {
-                "id": "admin-default-user",
-                "username": "admin",
-                "password": hash_password("admin"),
-                "full_name": "Administrator",
-                "role": "admin",
-                "status": "active",
-                "stores": [],
-                "created_at": datetime.now(timezone.utc).isoformat()
-            },
-            {
-                "id": "manager-default-user",
-                "username": "manager1",
-                "password": hash_password("password"),
-                "full_name": "Manager",
-                "role": "manager",
-                "status": "active",
-                "stores": [],
-                "created_at": datetime.now(timezone.utc).isoformat()
-            },
-            {
-                "id": "viewer-default-user",
-                "username": "viewer1",
-                "password": hash_password("password"),
-                "full_name": "Viewer",
-                "role": "viewer",
-                "status": "active",
-                "stores": [],
-                "created_at": datetime.now(timezone.utc).isoformat()
-            }
-        ]
+    try:
+        def hash_password(password: str) -> str:
+            return hashlib.sha256(password.encode()).hexdigest()
         
-        for user in default_users:
-            await db.users.update_one(
-                {"username": user["username"]},
-                {"$setOnInsert": user},
-                upsert=True
-            )
-        print("✅ Default users created: admin, manager1, viewer1")
-    else:
-        print("✅ Default users already exist")
+        # Check if admin user exists
+        admin_user = await db.users.find_one({"username": "admin"})
+        if not admin_user:
+            default_users = [
+                {
+                    "id": "admin-default-user",
+                    "username": "admin",
+                    "password": hash_password("admin"),
+                    "full_name": "Administrator",
+                    "role": "admin",
+                    "status": "active",
+                    "stores": [],
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                },
+                {
+                    "id": "manager-default-user",
+                    "username": "manager1",
+                    "password": hash_password("password"),
+                    "full_name": "Manager",
+                    "role": "manager",
+                    "status": "active",
+                    "stores": [],
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                },
+                {
+                    "id": "viewer-default-user",
+                    "username": "viewer1",
+                    "password": hash_password("password"),
+                    "full_name": "Viewer",
+                    "role": "viewer",
+                    "status": "active",
+                    "stores": [],
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+            ]
+            
+            for user in default_users:
+                await db.users.update_one(
+                    {"username": user["username"]},
+                    {"$setOnInsert": user},
+                    upsert=True
+                )
+            print("✅ Default users created: admin, manager1, viewer1")
+        else:
+            print("✅ Default users already exist")
+    except Exception as e:
+        print(f"⚠️ Could not initialize default users: {str(e)}")
+        print("⚠️ Users may need to be created manually or database permissions need to be checked")
 
 # Create the main app without a prefix
 app = FastAPI()
