@@ -307,8 +307,8 @@ const WhatsAppEmbeddedSignup = () => {
     window.waEmbeddedSignupData = null;
 
     // Launch Facebook Login with WhatsApp Embedded Signup configuration
-    // This follows the official Meta documentation exactly
-    // Includes support for WhatsApp Business App Coexistence
+    // Coexistence is controlled by the Facebook Login Configuration in Meta Developer Portal
+    // To enable Coexistence: Meta Developer Portal → Facebook Login for Business → Configurations → Enable "WhatsApp Business App Coexistence"
     window.FB.login(fbLoginCallback, {
       config_id: '1354082849829675', // Your Facebook Login for Business configuration ID
       response_type: 'code',
@@ -320,16 +320,14 @@ const WhatsAppEmbeddedSignup = () => {
           //   name: 'Business Name',
           //   email: 'business@example.com',
           //   phone: {
-          //     code: 1,
+          //     code: 91,
           //     number: '9999999999'
           //   },
           //   website: 'https://example.com'
           // }
         },
-        featureType: '', // Empty for default flow, 'only_waba_sharing' for WABA sharing only
-        sessionInfoVersion: '3',
-        // Enable WhatsApp Business App Coexistence (allows users with existing WhatsApp Business App numbers)
-        solutionType: 'COEX' // Enables Coexistence flow for WhatsApp Business App users
+        featureType: '', // Empty for default flow with coexistence (if enabled in config)
+        sessionInfoVersion: '3'
       }
     });
   };
