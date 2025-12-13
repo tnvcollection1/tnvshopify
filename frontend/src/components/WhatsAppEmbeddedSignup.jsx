@@ -111,6 +111,9 @@ const WhatsAppEmbeddedSignup = () => {
   const [signupType, setSignupType] = useState('embedded'); // 'embedded', 'measurement', 'instagram'
   const [showSignupOptions, setShowSignupOptions] = useState(false);
 
+  // Tenant ID (in production, get from auth context)
+  const tenantId = "default-tenant";
+
   useEffect(() => {
     loadConfig();
     loadAccounts();
