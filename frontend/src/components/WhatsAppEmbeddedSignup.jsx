@@ -307,26 +307,16 @@ const WhatsAppEmbeddedSignup = () => {
     window.waEmbeddedSignupData = null;
 
     // Launch Facebook Login with WhatsApp Embedded Signup configuration
-    // Coexistence is controlled by the Facebook Login Configuration in Meta Developer Portal
-    // To enable Coexistence: Meta Developer Portal → Facebook Login for Business → Configurations → Enable "WhatsApp Business App Coexistence"
+    // IMPORTANT: Coexistence is enabled through the Facebook Login Configuration in Meta Developer Portal:
+    // 1. Go to Facebook Login for Business → Configurations
+    // 2. Create/Edit configuration with "WhatsApp Embedded Signup" login variation
+    // 3. The Coexistence option will appear automatically in the signup flow
     window.FB.login(fbLoginCallback, {
       config_id: '1354082849829675', // Your Facebook Login for Business configuration ID
       response_type: 'code',
       override_default_response_type: true,
       extras: {
-        setup: {
-          // Optional: Pre-fill business information
-          // business: {
-          //   name: 'Business Name',
-          //   email: 'business@example.com',
-          //   phone: {
-          //     code: 91,
-          //     number: '9999999999'
-          //   },
-          //   website: 'https://example.com'
-          // }
-        },
-        featureType: '', // Empty for default flow with coexistence (if enabled in config)
+        featureType: '', // Empty for default flow with all options including coexistence
         sessionInfoVersion: '3'
       }
     });
