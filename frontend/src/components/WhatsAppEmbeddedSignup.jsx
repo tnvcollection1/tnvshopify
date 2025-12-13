@@ -64,6 +64,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+// Production domain for setup guide
+const PRODUCTION_DOMAIN = "https://importbaba.com";
 
 const WhatsAppEmbeddedSignup = () => {
   // State
