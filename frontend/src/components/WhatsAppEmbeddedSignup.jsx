@@ -934,10 +934,10 @@ const WhatsAppEmbeddedSignup = () => {
                 <div className="bg-gray-100 p-3 rounded mt-2 space-y-2">
                   <p><strong>Callback URL:</strong></p>
                   <code className="block text-xs break-all">
-                    {`${BACKEND_URL}/api/whatsapp-business/webhook`}
+                    {`${PRODUCTION_DOMAIN}/api/whatsapp-business/webhook`}
                   </code>
                   <p className="mt-2"><strong>Verify Token:</strong></p>
-                  <code className="block text-xs">omnisales_whatsapp_webhook</code>
+                  <code className="block text-xs">omnisales123</code>
                 </div>
                 <p className="mt-2">4. Subscribe to: <strong>messages</strong>, <strong>message_template_status_update</strong></p>
               </div>
