@@ -99,8 +99,17 @@ const WhatsAppEmbeddedSignup = () => {
     buttonText: ""
   });
 
-  // Tenant ID (in production, get from auth context)
-  const tenantId = "default-tenant";
+  // Configuration IDs for different features
+  const CONFIG_IDS = {
+    WHATSAPP_EMBEDDED_SIGNUP: '1354082849829675', // WhatsApp embedded sign-up with 60-day expiry
+    WHATSAPP_MEASUREMENT_PARTNER: '1202735115144355', // WhatsApp measurement partner (read-only)
+    WHATSAPP_MEASUREMENT_PARTNER_2: '2518614531733292', // WhatsApp measurement partner alternate
+    INSTAGRAM_ONBOARDING: '786585054404607' // Instagram onboarding
+  };
+
+  // State for selected signup type
+  const [signupType, setSignupType] = useState('embedded'); // 'embedded', 'measurement', 'instagram'
+  const [showSignupOptions, setShowSignupOptions] = useState(false);
 
   useEffect(() => {
     loadConfig();
