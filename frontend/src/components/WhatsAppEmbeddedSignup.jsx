@@ -587,23 +587,70 @@ const WhatsAppEmbeddedSignup = () => {
               <Settings className="w-4 h-4 mr-2" />
               Setup Guide
             </Button>
-            <Button
-              onClick={launchWhatsAppSignup}
-              disabled={connecting || !config?.is_configured}
-              className="h-9 text-sm bg-green-600 hover:bg-green-700"
-            >
-              {connecting ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <Link2 className="w-4 h-4 mr-2" />
-                  Connect WhatsApp
-                </>
+            <div className="relative">
+              <Button
+                onClick={() => setShowSignupOptions(!showSignupOptions)}
+                disabled={connecting || !config?.is_configured}
+                className="h-9 text-sm bg-green-600 hover:bg-green-700"
+              >
+                {connecting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <Link2 className="w-4 h-4 mr-2" />
+                    Connect Account ▼
+                  </>
+                )}
+              </Button>
+              {showSignupOptions && !connecting && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border z-50">
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        setShowSignupOptions(false);
+                        launchWhatsAppSignup('embedded');
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
+                    >
+                      <MessageCircle className="w-4 h-4 text-green-600" />
+                      <div>
+                        <div className="font-medium">WhatsApp Business</div>
+                        <div className="text-xs text-gray-500">Connect with Coexistence (QR Code)</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowSignupOptions(false);
+                        launchWhatsAppSignup('measurement');
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
+                    >
+                      <BarChart3 className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <div className="font-medium">WhatsApp Analytics</div>
+                        <div className="text-xs text-gray-500">Measurement Partner (Read-only)</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowSignupOptions(false);
+                        launchWhatsAppSignup('instagram');
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
+                    >
+                      <ExternalLink className="w-4 h-4 text-purple-600" />
+                      <div>
+                        <div className="font-medium">Instagram Business</div>
+                        <div className="text-xs text-gray-500">Connect Instagram account</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
               )}
-            </Button>
+            </div>
           </div>
         </div>
       </div>
