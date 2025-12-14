@@ -1008,7 +1008,7 @@ const WhatsAppEmbeddedSignup = () => {
             <Button variant="outline" onClick={() => setSendMessageDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={sendMarketingMessage} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={sendMarketingMessage} className="bg-[#25D366] hover:bg-[#128C7E] text-white">
               <Send className="w-4 h-4 mr-2" />
               Send Messages
             </Button>
