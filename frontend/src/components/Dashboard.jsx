@@ -1294,6 +1294,7 @@ const Dashboard = () => {
                         />
                       </TableHead>
                       <TableHead>Name</TableHead>
+                      <TableHead>Products</TableHead>
                       <TableHead>Phone / Email</TableHead>
                       <TableHead>Sizes</TableHead>
                       <TableHead>Orders</TableHead>
