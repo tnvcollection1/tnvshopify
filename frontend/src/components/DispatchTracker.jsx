@@ -207,7 +207,7 @@ const DispatchTracker = () => {
   };
 
   const viewCardDetails = (cardType) => {
-    // Instead of filtering locally, set the delivery filter to fetch from API
+    // Set the delivery filter to fetch from API - this updates the main table
     let deliveryFilter = "all";
     switch(cardType) {
       case 'delivered': 
@@ -237,9 +237,8 @@ const DispatchTracker = () => {
   };
 
   const closeCardView = () => {
-    // Reset delivery filter to show all
-    setFilters(prev => ({ ...prev, delivery: "all" }));
-    setCurrentPage(1);
+    setViewingCard(null);
+    setCardData([]);
   };
 
   const fetchOrders = async () => {
