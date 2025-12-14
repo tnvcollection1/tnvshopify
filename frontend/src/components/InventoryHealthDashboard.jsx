@@ -11,6 +11,7 @@ const InventoryHealthDashboard = () => {
   const [healthData, setHealthData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null); // 'dead_stock', 'slow_moving', 'healthy', 'all'
 
   useEffect(() => {
     fetchHealthData();
