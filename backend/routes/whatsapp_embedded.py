@@ -236,11 +236,16 @@ async def get_connected_accounts(tenant_id: str, store_id: str = Query(None)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @whatsapp_embedded_router.delete("/accounts/{tenant_id}/{waba_id}")
-async def disconnect_account(tenant_id: str, waba_id: str):
-    """Disconnect a WhatsApp Business account"""
+async def disconnect_account(tenant_id: str, waba_id: str, store_id: str = Query(None)):
+    """Disconnect a WhatsApp Business account from a specific store"""
     try:
+        # Build query - if store_id provided, disconnect only for that store
+        query = {"tenant_id": tenant_id, "waba_id": waba_id}
+        if store_id and store_id != 'all':
+            query["store_id"] = store_id
+        
         result = await db.whatsapp_business_accounts.update_one(
-            {"tenant_id": tenant_id, "waba_id": waba_id},
+            query,
             {"$set": {"is_active": False, "disconnected_at": datetime.now(timezone.utc).isoformat()}}
         )
         
