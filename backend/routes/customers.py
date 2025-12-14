@@ -341,23 +341,42 @@ async def sync_stock_status(store_name: str = None):
     """Sync stock status for customers based on inventory"""
     try:
         query = {"store_name": store_name} if store_name else {}
-        customers = await db.customers.find(query, {"_id": 0, "customer_id": 1, "line_items": 1}).to_list(10000)
+        customers = await db.customers.find(query, {"_id": 0, "customer_id": 1, "line_items": 1, "order_skus": 1}).to_list(10000)
         
         updated = 0
         for customer in customers:
-            # Check stock for line items
+            # Check stock for line items or order_skus
             in_stock = True
-            for item in customer.get("line_items", []):
+            items_to_check = customer.get("line_items", [])
+            
+            # If no line_items, check order_skus
+            if not items_to_check and customer.get("order_skus"):
+                items_to_check = [{"sku": sku, "quantity": 1} for sku in customer.get("order_skus", [])]
+            
+            for item in items_to_check:
                 sku = item.get("sku")
                 if sku:
-                    inv = await db.inventory.find_one({"sku": sku}, {"quantity": 1})
-                    if not inv or inv.get("quantity", 0) < item.get("quantity", 1):
+                    # Check inventory_v2 first, then inventory
+                    inv = await db.inventory_v2.find_one({"sku": sku}, {"quantity": 1, "stock": 1})
+                    if not inv:
+                        inv = await db.inventory.find_one({"sku": sku}, {"quantity": 1, "stock": 1})
+                    
+                    if inv:
+                        qty = inv.get("quantity") or inv.get("stock") or 0
+                        if qty < item.get("quantity", 1):
+                            in_stock = False
+                            break
+                    else:
+                        # SKU not found in inventory - mark as out of stock
                         in_stock = False
                         break
             
             result = await db.customers.update_one(
                 {"customer_id": customer["customer_id"]},
-                {"$set": {"stock_status": "IN_STOCK" if in_stock else "OUT_OF_STOCK"}}
+                {"$set": {
+                    "stock_status": "IN_STOCK" if in_stock else "OUT_OF_STOCK",
+                    "stock_checked_at": datetime.now(timezone.utc).isoformat()
+                }}
             )
             if result.modified_count > 0:
                 updated += 1
