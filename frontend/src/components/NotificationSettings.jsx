@@ -467,67 +467,143 @@ const NotificationSettings = () => {
 
           {/* Webhooks Tab */}
           <TabsContent value="webhooks">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Shopify Webhook Configuration</CardTitle>
-                <CardDescription>
-                  Configure these webhooks in your Shopify Admin to enable automatic notifications
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {webhookUrls ? (
-                  <div className="space-y-6">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h4 className="font-medium text-blue-900 mb-2">Setup Instructions</h4>
-                      <ol className="text-sm text-blue-800 space-y-1">
-                        {webhookUrls.instructions?.map((instruction, idx) => (
-                          <li key={idx}>{instruction}</li>
-                        ))}
-                      </ol>
+            <div className="space-y-6">
+              {/* Auto Registration Card */}
+              <Card className="border-green-200 bg-green-50">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-green-600" />
+                    Auto-Register Webhooks
+                  </CardTitle>
+                  <CardDescription>
+                    Automatically configure webhooks in Shopify using the Admin API
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-600 mb-3">
+                        Click to automatically register all required webhooks for this store. 
+                        This requires Shopify API credentials to be configured.
+                      </p>
+                      {webhookStatus && (
+                        <div className="mb-3">
+                          {webhookStatus.configured ? (
+                            <Badge className="bg-green-100 text-green-800">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              {webhookStatus.total_webhooks} webhooks active
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-yellow-100 text-yellow-800">
+                              <AlertCircle className="w-3 h-3 mr-1" />
+                              No webhooks configured
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </div>
-
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Event</TableHead>
-                          <TableHead>Webhook URL</TableHead>
-                          <TableHead className="w-20">Copy</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {Object.entries(webhookUrls.webhooks || {}).map(([event, url]) => (
-                          <TableRow key={event}>
-                            <TableCell className="font-medium">
-                              {event.replace('/', ' → ')}
-                            </TableCell>
-                            <TableCell>
-                              <code className="text-xs bg-gray-100 px-2 py-1 rounded break-all">
-                                {url}
-                              </code>
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => copyToClipboard(url)}
-                              >
-                                <Copy className="w-4 h-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-
-                    <div className="flex justify-end">
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        onClick={registerWebhooks}
+                        disabled={registering}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        {registering ? (
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Zap className="w-4 h-4 mr-2" />
+                        )}
+                        Register for This Store
+                      </Button>
                       <Button
                         variant="outline"
-                        onClick={() => window.open('https://admin.shopify.com', '_blank')}
+                        onClick={registerAllWebhooks}
+                        disabled={registeringAll}
                       >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Open Shopify Admin
+                        {registeringAll ? (
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Store className="w-4 h-4 mr-2" />
+                        )}
+                        Register for All Stores
                       </Button>
+                      {webhookStatus?.configured && (
+                        <Button
+                          variant="ghost"
+                          onClick={removeWebhooks}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Remove Webhooks
+                        </Button>
+                      )}
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Manual Setup Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Manual Webhook Configuration</CardTitle>
+                  <CardDescription>
+                    Or configure these webhooks manually in your Shopify Admin
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {webhookUrls ? (
+                    <div className="space-y-6">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 className="font-medium text-blue-900 mb-2">Manual Setup Instructions</h4>
+                        <ol className="text-sm text-blue-800 space-y-1">
+                          {webhookUrls.instructions?.map((instruction, idx) => (
+                            <li key={idx}>{instruction}</li>
+                          ))}
+                        </ol>
+                      </div>
+
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Event</TableHead>
+                            <TableHead>Webhook URL</TableHead>
+                            <TableHead className="w-20">Copy</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Object.entries(webhookUrls.webhooks || {}).map(([event, url]) => (
+                            <TableRow key={event}>
+                              <TableCell className="font-medium">
+                                {event.replace('/', ' → ')}
+                              </TableCell>
+                              <TableCell>
+                                <code className="text-xs bg-gray-100 px-2 py-1 rounded break-all">
+                                  {url}
+                                </code>
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => copyToClipboard(url)}
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+
+                      <div className="flex justify-end">
+                        <Button
+                          variant="outline"
+                          onClick={() => window.open('https://admin.shopify.com', '_blank')}
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Open Shopify Admin
+                        </Button>
+                      </div>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
