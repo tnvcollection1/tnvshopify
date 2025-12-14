@@ -1096,7 +1096,7 @@ const WhatsAppEmbeddedSignup = () => {
             <Button variant="outline" onClick={() => setCreateTemplateDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={createTemplate} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={createTemplate} className="bg-[#25D366] hover:bg-[#128C7E] text-white">
               <Plus className="w-4 h-4 mr-2" />
               Submit for Review
             </Button>
