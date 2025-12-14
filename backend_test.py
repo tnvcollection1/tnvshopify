@@ -1802,14 +1802,14 @@ class ShopifyCustomerAPITester:
         return performance_results
 
 def main():
-    print("🚀 Starting Multi-Tenant & Meta Ads API Validation Tests")
+    print("🚀 Starting API Keys Management Validation Tests")
     print("=" * 80)
     
     # Setup
     tester = ShopifyCustomerAPITester()
     
-    # Run Multi-Tenant and Meta Ads tests as requested
-    mt_results = tester.run_multi_tenant_meta_ads_tests()
+    # Run API Keys Management tests as requested
+    api_keys_results = tester.run_api_keys_management_tests()
     
     # Print Multi-Tenant & Meta Ads test summary
     print("\n" + "=" * 80)
