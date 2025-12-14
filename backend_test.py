@@ -2206,7 +2206,7 @@ class ShopifyCustomerAPITester:
         print("\n🔍 Step 1: Determining current admin password...")
         
         # Try admin/admin first
-        success_admin, _ = self.run_test(
+        success_admin, _, _ = self.run_test(
             "Login Test (admin/admin)",
             "POST",
             "agents/login",
@@ -2215,7 +2215,7 @@ class ShopifyCustomerAPITester:
         )
         
         # Try admin/admin123 
-        success_admin123, _ = self.run_test(
+        success_admin123, _, _ = self.run_test(
             "Login Test (admin/admin123)",
             "POST", 
             "agents/login",
