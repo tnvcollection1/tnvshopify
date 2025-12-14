@@ -2275,7 +2275,7 @@ class ShopifyCustomerAPITester:
         # Step 4: Verify old password no longer works
         print(f"\n🔍 Step 4: Verifying old password '{current_password}' no longer works...")
         
-        verify_old_fail, _ = self.run_test(
+        verify_old_fail, _, _ = self.run_test(
             "Login with Old Password (Should Fail)",
             "POST",
             "agents/login",
