@@ -322,9 +322,47 @@ async def cleanup_invalid_tcs_orders():
 async def sync_cod_payments():
     """Sync COD payments from TCS"""
     try:
-        from auto_tcs_sync import auto_tcs_sync
-        result = await auto_tcs_sync.sync_cod_payments(db)
-        return result
+        from tcs_payment import TCSPaymentAPI
+        
+        config = await db.tcs_config.find_one({'service': 'tcs_pakistan'}, {'_id': 0})
+        if not config:
+            return {"success": False, "error": "TCS not configured"}
+        
+        # Use TCS Payment API if available
+        payment_api = TCSPaymentAPI(
+            username=config.get('username'),
+            password=config.get('password'),
+            customer_no=config.get('customer_no')
+        )
+        
+        # Find delivered orders with pending COD payment
+        query = {
+            'delivery_status': 'DELIVERED',
+            'cod_payment_status': {'$ne': 'PAID'}
+        }
+        
+        orders = await db.customers.find(query, {'_id': 0}).limit(50).to_list(50)
+        synced = 0
+        
+        for order in orders:
+            try:
+                payment_status = payment_api.get_payment_status(order['tracking_number'])
+                if payment_status:
+                    await db.customers.update_one(
+                        {'customer_id': order['customer_id'], 'store_name': order['store_name']},
+                        {'$set': {
+                            'cod_payment_status': payment_status.get('status', 'PENDING'),
+                            'cod_payment_date': payment_status.get('payment_date'),
+                            'cod_amount_received': payment_status.get('amount')
+                        }}
+                    )
+                    synced += 1
+            except Exception as e:
+                logger.error(f"Error syncing COD for {order.get('tracking_number')}: {e}")
+        
+        return {"success": True, "synced_count": synced}
+    except ImportError:
+        return {"success": False, "error": "TCS Payment module not available"}
     except Exception as e:
         logger.error(f"Error syncing COD payments: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
