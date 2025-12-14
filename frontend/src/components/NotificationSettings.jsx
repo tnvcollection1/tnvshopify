@@ -126,6 +126,62 @@ const NotificationSettings = () => {
     }
   };
 
+  const loadWebhookStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/shopify/webhook-status/${selectedStore}`);
+      setWebhookStatus(response.data);
+    } catch (error) {
+      console.error("Error loading webhook status:", error);
+    }
+  };
+
+  const registerWebhooks = async () => {
+    if (!selectedStore || selectedStore === 'all') {
+      toast.error("Please select a specific store");
+      return;
+    }
+
+    setRegistering(true);
+    try {
+      const response = await axios.post(`${API}/shopify/register-webhooks/${selectedStore}`);
+      if (response.data.success) {
+        toast.success(`Webhooks registered: ${response.data.summary.successful}/${response.data.summary.total}`);
+        loadWebhookStatus();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to register webhooks");
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const registerAllWebhooks = async () => {
+    setRegisteringAll(true);
+    try {
+      const response = await axios.post(`${API}/shopify/register-webhooks-all`);
+      if (response.data.success) {
+        toast.success(`Webhooks registered for ${response.data.successful}/${response.data.total_stores} stores`);
+        loadWebhookStatus();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to register webhooks");
+    } finally {
+      setRegisteringAll(false);
+    }
+  };
+
+  const removeWebhooks = async () => {
+    if (!confirm("Are you sure you want to remove all webhooks for this store?")) return;
+    
+    try {
+      await axios.delete(`${API}/shopify/webhooks/${selectedStore}`);
+      toast.success("Webhooks removed");
+      loadWebhookStatus();
+    } catch (error) {
+      toast.error("Failed to remove webhooks");
+    }
+  };
+
   const saveSettings = async () => {
     if (!selectedStore || selectedStore === 'all') {
       toast.error("Please select a specific store");
@@ -142,6 +198,7 @@ const NotificationSettings = () => {
       setSaving(false);
     }
   };
+
 
   const sendTestNotification = async () => {
     if (!testPhone) {
