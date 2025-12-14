@@ -131,6 +131,49 @@ const FacebookLeadAds = () => {
     }
   };
 
+  const fetchSyncStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/lead-ads/sync-status`);
+      setSyncStatus(response.data);
+    } catch (error) {
+      console.error('Error fetching sync status:', error);
+    }
+  };
+
+  const fetchForms = async () => {
+    try {
+      const response = await axios.get(`${API}/lead-ads/forms`);
+      if (response.data.success) {
+        setForms(response.data.forms || []);
+      }
+    } catch (error) {
+      console.error('Error fetching forms:', error);
+    }
+  };
+
+  const handleSyncLeads = async () => {
+    setSyncing(true);
+    try {
+      const response = await axios.post(`${API}/lead-ads/sync?days=${daysFilter}`);
+      if (response.data.success) {
+        toast.success(`✅ Synced ${response.data.synced} new leads!`);
+        if (response.data.skipped > 0) {
+          toast.info(`Skipped ${response.data.skipped} existing leads`);
+        }
+        fetchLeads();
+        fetchStats();
+        fetchSyncStatus();
+      } else {
+        toast.error(response.data.error || 'Sync failed');
+      }
+    } catch (error) {
+      console.error('Error syncing leads:', error);
+      toast.error(error.response?.data?.detail || 'Failed to sync leads');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const handleUpdateLead = async (leadgenId, updates) => {
     try {
       await axios.patch(`${API}/lead-ads/leads/${leadgenId}`, updates);
