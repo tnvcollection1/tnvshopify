@@ -539,19 +539,35 @@ async def register_agent(agent: AgentCreate):
 @api_router.post("/agents/login")
 async def login_agent(credentials: AgentLogin):
     """
-    Agent login
+    Agent login with bcrypt password verification
     """
     try:
+        import bcrypt
         import hashlib
-        hashed_password = hashlib.sha256(credentials.password.encode()).hexdigest()
         
-        agent = await db.agents.find_one({
-            "username": credentials.username,
-            "password": hashed_password
-        })
+        def verify_password(password: str, hashed: str) -> bool:
+            """Verify password against bcrypt or SHA256 hash"""
+            try:
+                return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+            except Exception:
+                # Fallback for old SHA256 hashes
+                sha256_hash = hashlib.sha256(password.encode()).hexdigest()
+                return sha256_hash == hashed
+        
+        agent = await db.agents.find_one({"username": credentials.username})
         
         if not agent:
             raise HTTPException(status_code=401, detail="Invalid username or password")
+        
+        # Verify password (supports both bcrypt and legacy SHA256)
+        if not verify_password(credentials.password, agent["password"]):
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+        
+        # Update last login
+        await db.agents.update_one(
+            {"username": credentials.username},
+            {"$set": {"last_login": datetime.now(timezone.utc).isoformat()}}
+        )
         
         return {
             "success": True,
