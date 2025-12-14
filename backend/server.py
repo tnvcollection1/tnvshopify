@@ -3283,7 +3283,7 @@ async def sync_shopify_prices_to_inventory(store_name: str = None):
         skipped_count = 0
         
         for item in inventory_items:
-            sku = item.get('sku', '').upper().strip()
+            sku = item.get('sku', '').strip()
             if not sku:
                 skipped_count += 1
                 continue
@@ -3305,7 +3305,8 @@ async def sync_shopify_prices_to_inventory(store_name: str = None):
             if customer and customer.get('line_items'):
                 # Find the matching line item
                 for line_item in customer['line_items']:
-                    if line_item.get('sku', '').upper().strip() == sku:
+                    item_sku = line_item.get('sku', '').strip()
+                    if item_sku.lower() == sku.lower():
                         sale_price = float(line_item.get('price', 0) or 0)
                         break
             
@@ -3313,9 +3314,9 @@ async def sync_shopify_prices_to_inventory(store_name: str = None):
             cost = float(item.get('cost', 0) or 0)
             profit = sale_price - cost
             
-            # Update inventory item
+            # Update inventory item using SKU as identifier
             await db.inventory_v2.update_one(
-                {"id": item['id']},
+                {"sku": sku, "store_name": item.get('store_name')},
                 {"$set": {
                     "sale_price": sale_price,
                     "profit": profit,
