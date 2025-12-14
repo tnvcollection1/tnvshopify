@@ -582,33 +582,36 @@ const WhatsAppEmbeddedSignup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+    <div className="min-h-screen bg-[#f6f6f7]">
+      {/* Header - Shopify Style */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-              <MessageCircle className="w-6 h-6 text-green-600" />
+              <MessageCircle className="w-6 h-6 text-[#25D366]" />
               WhatsApp Business Platform
             </h1>
             <p className="text-sm text-gray-500 mt-1">
               Connect WhatsApp Business accounts and send marketing messages
-              {selectedStore && selectedStore !== 'all' && (
-                <span className="ml-2 inline-flex items-center gap-1 text-green-600 font-medium">
-                  <Store className="w-3 h-3" />
-                  {getStoreName(selectedStore)}
-                </span>
-              )}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Store Warning */}
-            {(!selectedStore || selectedStore === 'all') && (
-              <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-                <AlertCircle className="w-3 h-3 mr-1" />
-                Select a Store
-              </Badge>
-            )}
+            {/* Store Selector - More Prominent */}
+            <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
+              <Store className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-600">Store:</span>
+              {selectedStore && selectedStore !== 'all' ? (
+                <Badge className="bg-green-100 text-green-800 border-green-200">
+                  {getStoreName(selectedStore)}
+                </Badge>
+              ) : (
+                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                  Select a Store
+                </Badge>
+              )}
+            </div>
+            
             {config?.is_configured ? (
               <Badge className="bg-green-100 text-green-800 border-green-200">
                 <CheckCircle className="w-3 h-3 mr-1" />
@@ -632,7 +635,7 @@ const WhatsAppEmbeddedSignup = () => {
               <Button
                 onClick={() => setShowSignupOptions(!showSignupOptions)}
                 disabled={connecting || !config?.is_configured || !selectedStore || selectedStore === 'all'}
-                className="h-9 text-sm bg-green-600 hover:bg-green-700"
+                className="h-9 text-sm bg-[#25D366] hover:bg-[#128C7E] text-white"
               >
                 {connecting ? (
                   <>
@@ -656,7 +659,7 @@ const WhatsAppEmbeddedSignup = () => {
                       }}
                       className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded flex items-center gap-2"
                     >
-                      <MessageCircle className="w-4 h-4 text-green-600" />
+                      <MessageCircle className="w-4 h-4 text-[#25D366]" />
                       <div>
                         <div className="font-medium">WhatsApp Business</div>
                         <div className="text-xs text-gray-500">Connect with Coexistence (QR Code)</div>
@@ -697,13 +700,13 @@ const WhatsAppEmbeddedSignup = () => {
       </div>
 
       <div className="p-6">
-        {/* Stats Cards */}
+        {/* Stats Cards - Shopify Style */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          <Card>
+          <Card className="bg-white shadow-sm border-gray-200">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-50 rounded-lg">
-                  <Smartphone className="w-5 h-5 text-green-600" />
+                <div className="p-2 bg-[#25D366]/10 rounded-lg">
+                  <Smartphone className="w-5 h-5 text-[#25D366]" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Connected Accounts</p>
@@ -712,7 +715,7 @@ const WhatsAppEmbeddedSignup = () => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white shadow-sm border-gray-200">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-50 rounded-lg">
@@ -725,7 +728,7 @@ const WhatsAppEmbeddedSignup = () => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white shadow-sm border-gray-200">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-50 rounded-lg">
@@ -738,7 +741,7 @@ const WhatsAppEmbeddedSignup = () => {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white shadow-sm border-gray-200">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-emerald-50 rounded-lg">
@@ -754,7 +757,7 @@ const WhatsAppEmbeddedSignup = () => {
         </div>
 
         <Tabs defaultValue="accounts" className="space-y-4">
-          <TabsList className="bg-white border">
+          <TabsList className="bg-white border shadow-sm">
             <TabsTrigger value="accounts">Connected Accounts</TabsTrigger>
             <TabsTrigger value="templates">Message Templates</TabsTrigger>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
@@ -762,7 +765,7 @@ const WhatsAppEmbeddedSignup = () => {
 
           {/* Connected Accounts Tab */}
           <TabsContent value="accounts">
-            <Card>
+            <Card className="bg-white shadow-sm border-gray-200">
               <CardHeader>
                 <CardTitle className="text-lg">WhatsApp Business Accounts</CardTitle>
                 <CardDescription>
@@ -777,87 +780,81 @@ const WhatsAppEmbeddedSignup = () => {
                   </div>
                 ) : accounts.length === 0 ? (
                   <div className="text-center py-12">
-                    <MessageCircle className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      {selectedStore && selectedStore !== 'all' 
-                        ? `No WhatsApp accounts for ${getStoreName(selectedStore)}`
-                        : "No WhatsApp accounts connected"}
-                    </h3>
-                    <p className="text-gray-500 mb-4">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-[#25D366]/10 rounded-full flex items-center justify-center">
+                      <MessageCircle className="w-10 h-10 text-[#25D366]" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Connected Accounts</h3>
+                    <p className="text-gray-500 mb-4 max-w-md mx-auto">
                       {selectedStore && selectedStore !== 'all'
-                        ? "Connect a WhatsApp Business account to this store"
+                        ? `Connect a WhatsApp Business account to ${getStoreName(selectedStore)}`
                         : "Select a store and connect your first WhatsApp Business account"}
                     </p>
                     <Button 
                       onClick={() => launchWhatsAppSignup('embedded')} 
                       disabled={!config?.is_configured || !selectedStore || selectedStore === 'all'} 
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-[#25D366] hover:bg-[#128C7E] text-white"
                     >
                       <Link2 className="w-4 h-4 mr-2" />
                       Connect WhatsApp Business
                     </Button>
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead>Phone Number</TableHead>
-                        <TableHead>Display Name</TableHead>
-                        <TableHead>Store</TableHead>
-                        <TableHead>Quality Rating</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Connected</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {accounts.map((account) => (
-                        <TableRow key={account.waba_id + (account.store_id || '')} className="hover:bg-gray-50">
-                          <TableCell className="font-medium">
+                  <div className="space-y-4">
+                    {accounts.map((account) => (
+                      <div 
+                        key={account.waba_id + (account.store_id || '')} 
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-[#25D366] rounded-lg flex items-center justify-center">
+                            <MessageCircle className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
                             <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4 text-green-600" />
+                              <h4 className="font-semibold text-gray-900">
+                                {account.verified_name || account.phone_number || "WhatsApp Account"}
+                              </h4>
+                              {getStatusBadge("connected")}
+                            </div>
+                            <p className="text-sm text-gray-500 flex items-center gap-1">
+                              <Phone className="w-3 h-3" />
                               {account.phone_number || "Not verified"}
+                            </p>
+                            <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                              <span className="flex items-center gap-1">
+                                <Store className="w-3 h-3" />
+                                {getStoreName(account.store_id) || "No store"}
+                              </span>
+                              <span>Quality: {account.quality_rating || "GREEN"}</span>
+                              <span>Connected: {account.connected_at ? new Date(account.connected_at).toLocaleDateString() : "—"}</span>
                             </div>
-                          </TableCell>
-                          <TableCell>{account.verified_name || "—"}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
-                              <Store className="w-3 h-3 mr-1" />
-                              {getStoreName(account.store_id) || "—"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{getStatusBadge(account.quality_rating || "GREEN")}</TableCell>
-                          <TableCell>{getStatusBadge("connected")}</TableCell>
-                          <TableCell className="text-sm text-gray-500">
-                            {account.connected_at ? new Date(account.connected_at).toLocaleDateString() : "—"}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setSelectedAccount(account);
-                                  setSendMessageDialog(true);
-                                }}
-                              >
-                                <Send className="w-4 h-4 mr-1" />
-                                Send
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => disconnectAccount(account.waba_id)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedAccount(account);
+                              setSendMessageDialog(true);
+                            }}
+                          >
+                            <Send className="w-4 h-4 mr-1" />
+                            Send
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                            onClick={() => disconnectAccount(account.waba_id)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Disconnect
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>
