@@ -135,6 +135,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Shopify OAuth One-Click Connection: Complete"
     - "API Keys Management: Complete"
     - "Multi-Tenant Landing Page: Complete"
     - "P0 Bug Fixes: All Complete"
