@@ -140,13 +140,13 @@ const DispatchTracker = () => {
     
     const interval = setInterval(fetchAutoSyncStatus, 30000);
     return () => clearInterval(interval);
-  }, [currentPage, filters, dateRange, globalStore]);
+  }, [currentPage, filters, dateRange, globalStore, searchQuery]);
 
   useEffect(() => {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
-  }, [filters.delivery, filters.payment, filters.store, filters.year, filters.sortBy]);
+  }, [filters.delivery, filters.payment, filters.year, filters.sortBy, globalStore, searchQuery]);
 
   const handleTCSSync = async () => {
     setSyncingTCS(true);
