@@ -291,6 +291,15 @@ const Sidebar = () => {
       {/* Bottom Section */}
       <div className="border-t border-gray-800 p-2">
         <button
+          onClick={() => navigate('/pricing')}
+          className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
+            isActive('/pricing') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+          }`}
+        >
+          <CreditCard className="w-[18px] h-[18px]" />
+          <span className="font-medium">Subscription</span>
+        </button>
+        <button
           onClick={() => navigate('/settings')}
           className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
             isActive('/settings') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
