@@ -413,8 +413,12 @@ const Settings = () => {
       </div>
       
       <div className="p-8">
-        <Tabs defaultValue="shopify" className="space-y-6">
-          <TabsList className="grid w-full max-w-4xl grid-cols-6">
+        <Tabs defaultValue="connect" className="space-y-6">
+          <TabsList className="grid w-full max-w-5xl grid-cols-7">
+            <TabsTrigger value="connect" className="flex items-center gap-2">
+              <Link2 className="w-4 h-4" />
+              Connect
+            </TabsTrigger>
             <TabsTrigger value="shopify" className="flex items-center gap-2">
               <Store className="w-4 h-4" />
               Shopify
@@ -440,6 +444,11 @@ const Settings = () => {
               Security
             </TabsTrigger>
           </TabsList>
+
+          {/* One-Click Connect Tab (OAuth) */}
+          <TabsContent value="connect" className="space-y-6">
+            <ShopifyOAuthConnect onConnectionChange={() => fetchStores()} />
+          </TabsContent>
 
           {/* Shopify Integration Tab */}
           <TabsContent value="shopify" className="space-y-6">
