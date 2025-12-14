@@ -105,6 +105,7 @@ const DispatchTracker = () => {
     inTransit: 0,
     pending: 0,
     returned: 0,
+    returnInProcess: 0,
     paymentReceived: 0,
     paymentPending: 0,
   });
