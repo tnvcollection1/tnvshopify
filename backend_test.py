@@ -1825,39 +1825,37 @@ def main():
     delete_results = api_keys_results.get("delete", {})
     bulk_update_results = api_keys_results.get("bulk_update", {})
     
-    # Tenant Registration Summary
-    print(f"\n🏢 TENANT REGISTRATION:")
-    print(f"   Registration API: {'✅ PASS' if tenant_reg_results.get('success') else '❌ FAIL'}")
+    # API Keys Definitions Summary
+    print(f"\n🔑 API KEYS DEFINITIONS:")
+    print(f"   Definitions API: {'✅ PASS' if definitions_results.get('success') else '❌ FAIL'}")
     
-    # Subscription Plans Summary
-    print(f"\n📋 SUBSCRIPTION PLANS:")
-    print(f"   Plans API: {'✅ PASS' if plans_results.get('success') else '❌ FAIL'}")
+    # API Keys CRUD Operations Summary
+    print(f"\n📝 API KEYS CRUD OPERATIONS:")
+    print(f"   Get Empty Keys: {'✅ PASS' if get_empty_results.get('success') else '❌ FAIL'}")
+    print(f"   Update Single Key: {'✅ PASS' if update_single_results.get('success') else '❌ FAIL'}")
+    print(f"   Get After Update: {'✅ PASS' if get_after_results.get('success') else '❌ FAIL'}")
+    print(f"   Delete Key: {'✅ PASS' if delete_results.get('success') else '❌ FAIL'}")
+    print(f"   Bulk Update: {'✅ PASS' if bulk_update_results.get('success') else '❌ FAIL'}")
     
-    # Meta Ads Summary
-    print(f"\n📱 META ADS VALIDATION:")
-    print(f"   Validation API: {'✅ PASS' if meta_validation_results.get('success') else '❌ FAIL'}")
-    print(f"   Campaigns API (No Auth): {'✅ PASS' if meta_campaigns_results.get('success') else '❌ FAIL'}")
+    # API Keys Status Summary
+    print(f"\n📊 API KEYS STATUS:")
+    print(f"   Status API: {'✅ PASS' if status_results.get('success') else '❌ FAIL'}")
     
-    # Tenant Management Summary
-    print(f"\n⚙️ TENANT MANAGEMENT:")
-    print(f"   API Keys Update: {'✅ PASS' if api_keys_results.get('success') else '❌ FAIL'}")
-    print(f"   Usage Statistics: {'✅ PASS' if usage_results.get('success') else '❌ FAIL'}")
-    
-    # Overall Multi-Tenant & Meta Ads assessment
+    # Overall API Keys Management assessment
     all_tests_passed = all(
         results.get('success', False) 
-        for results in [tenant_reg_results, plans_results, meta_validation_results, 
-                       meta_campaigns_results, api_keys_results, usage_results]
+        for results in [definitions_results, get_empty_results, update_single_results, 
+                       get_after_results, status_results, delete_results, bulk_update_results]
     )
     
-    total_tests = 6
+    total_tests = 7
     passed_tests = sum(
-        1 for results in [tenant_reg_results, plans_results, meta_validation_results,
-                         meta_campaigns_results, api_keys_results, usage_results]
+        1 for results in [definitions_results, get_empty_results, update_single_results,
+                         get_after_results, status_results, delete_results, bulk_update_results]
         if results.get('success', False)
     )
     
-    print(f"\n🎯 MULTI-TENANT & META ADS VALIDATION: {passed_tests}/{total_tests} tests passed")
+    print(f"\n🎯 API KEYS MANAGEMENT VALIDATION: {passed_tests}/{total_tests} tests passed")
     
     if all_tests_passed:
         print("✅ All Multi-Tenant & Meta Ads APIs are working correctly!")
