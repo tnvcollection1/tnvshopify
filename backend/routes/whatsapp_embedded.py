@@ -35,6 +35,7 @@ class EmbeddedSignupCallback(BaseModel):
 class WhatsAppCredentials(BaseModel):
     """Stored credentials for a customer's WhatsApp Business"""
     tenant_id: str
+    store_id: str  # NEW: Store-specific WhatsApp account
     waba_id: str
     phone_number_id: str
     access_token: str
