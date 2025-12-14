@@ -164,11 +164,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Purchase Tracker - China Post Orders API"
-    - "Purchase Tracker - China Post Count API"
-    - "Smart Clearance - Inventory Health API"
-    - "Smart Clearance - Campaigns API"
-    - "Dynamic Pricing Engine - Report API"
+    - "WhatsApp CRM Rebranding - Landing Page"
+    - "WhatsApp CRM Rebranding - Login Page"
+    - "WhatsApp CRM Rebranding - Admin Dashboard"
+    - "WhatsApp CRM Rebranding - Regular User Experience"
+    - "WhatsApp CRM Rebranding - Case Study Page"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
