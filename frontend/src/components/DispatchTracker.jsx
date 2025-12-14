@@ -664,7 +664,7 @@ const DispatchTracker = () => {
             />
           </div>
           <Select value={filters.delivery} onValueChange={(v) => setFilters({ ...filters, delivery: v })}>
-            <SelectTrigger className="w-36 border-gray-300 bg-white">
+            <SelectTrigger className="w-40 border-gray-300 bg-white">
               <SelectValue placeholder="Delivery" />
             </SelectTrigger>
             <SelectContent>
@@ -674,6 +674,7 @@ const DispatchTracker = () => {
               <SelectItem value="OUT_FOR_DELIVERY">Out for Delivery</SelectItem>
               <SelectItem value="PENDING">Pending</SelectItem>
               <SelectItem value="RETURNED">Returned</SelectItem>
+              <SelectItem value="RETURN_IN_PROCESS">Return in Process</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filters.payment} onValueChange={(v) => setFilters({ ...filters, payment: v })}>
