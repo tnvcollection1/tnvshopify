@@ -394,6 +394,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/super-admin" 
+        element={
+          <ProtectedRoute>
+            <SuperAdminDashboard />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
