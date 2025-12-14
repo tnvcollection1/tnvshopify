@@ -87,6 +87,11 @@ const Inventory = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStore, setUploadStore] = useState('tnvcollectionpk'); // Store selection for upload
 
+  // Sync local store filter with global store
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, store: globalStore }));
+  }, [globalStore]);
+
   useEffect(() => {
     fetchItems();
     fetchStores();
