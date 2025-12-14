@@ -40,6 +40,7 @@ from routes.meta_ads import meta_ads_router, set_dependencies as set_meta_ads_de
 from routes.whatsapp_embedded import whatsapp_embedded_router, set_database as set_whatsapp_embedded_db
 from routes.subscriptions import subscriptions_router
 from routes.shopify_webhooks import shopify_webhooks_router
+from routes.api_keys import api_keys_router, set_database as set_api_keys_db
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
@@ -68,6 +69,7 @@ set_users_deps(db)
 set_tenants_deps(db)
 set_meta_ads_deps(db)
 set_whatsapp_embedded_db(db)
+set_api_keys_db(db)
 
 # ==================== Initialize Default Users ====================
 async def init_default_users():
