@@ -261,6 +261,7 @@ const DispatchTracker = () => {
         inTransit: statsData.inTransit || 0,
         pending: statsData.pending || 0,
         returned: statsData.returned || 0,
+        returnInProcess: statsData.returnInProcess || 0,
         paymentReceived: statsData.paymentReceived || 0,
         paymentPending: statsData.paymentPending || 0,
       });
