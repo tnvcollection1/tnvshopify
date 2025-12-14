@@ -77,9 +77,21 @@ const DashboardOptimized = () => {
 
   const fetchRecentOrders = useCallback(async () => {
     try {
-      const params = { limit: 20 };
+      const params = { limit: 50 };
       if (selectedStore !== 'all') {
         params.store_name = selectedStore;
+      }
+      if (filters.fulfillmentStatus !== 'all') {
+        params.fulfillment_status = filters.fulfillmentStatus;
+      }
+      if (filters.paymentStatus !== 'all') {
+        params.payment_status = filters.paymentStatus;
+      }
+      if (filters.deliveryStatus !== 'all') {
+        params.delivery_status = filters.deliveryStatus;
+      }
+      if (searchQuery) {
+        params.search = searchQuery;
       }
       
       const response = await axios.get(`${API}/customers`, { params });
@@ -89,7 +101,7 @@ const DashboardOptimized = () => {
       console.error('Error fetching recent orders:', error);
       setRecentOrders([]);
     }
-  }, [selectedStore]);
+  }, [selectedStore, filters, searchQuery]);
 
   useEffect(() => {
     fetchStats();
