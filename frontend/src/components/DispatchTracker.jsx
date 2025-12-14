@@ -626,6 +626,20 @@ const DispatchTracker = () => {
           </div>
           <div 
             className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => viewCardDetails('returnInProcess')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-50 rounded-lg">
+                <Hand className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Return Process</p>
+                <p className="text-xl font-semibold text-amber-600">{stats.returnInProcess}</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => viewCardDetails('paymentReceived')}
           >
             <div className="flex items-center gap-3">
