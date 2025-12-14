@@ -269,7 +269,7 @@ const FacebookLeadAds = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {setupInfo?.is_configured ? (
+            {syncStatus?.is_configured ? (
               <Badge className="bg-green-100 text-green-800 border-green-200">
                 <CheckCircle className="w-3 h-3 mr-1" />
                 Connected
@@ -288,9 +288,22 @@ const FacebookLeadAds = () => {
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button onClick={() => { fetchLeads(); fetchStats(); }} className="bg-[#1877F2] hover:bg-[#166FE5]">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
+            <Button 
+              onClick={handleSyncLeads} 
+              disabled={syncing || !syncStatus?.is_configured}
+              className="bg-[#1877F2] hover:bg-[#166FE5]"
+            >
+              {syncing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Sync from Facebook
+                </>
+              )}
             </Button>
           </div>
         </div>
