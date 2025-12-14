@@ -5245,6 +5245,7 @@ api_router.include_router(whatsapp_embedded_router)
 app.include_router(api_router)
 app.include_router(whatsapp_webhook_router)
 app.include_router(tracking_router)
+app.include_router(subscriptions_router, prefix="/api")
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 # ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================
