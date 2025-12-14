@@ -86,6 +86,7 @@ const DispatchTracker = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filters, setFilters] = useState({
     delivery: "all",
     payment: "all",
