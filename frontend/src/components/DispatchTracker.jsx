@@ -207,26 +207,39 @@ const DispatchTracker = () => {
   };
 
   const viewCardDetails = (cardType) => {
-    let filtered = orders.filter(order => {
-      switch(cardType) {
-        case 'delivered': return order.delivery_status === 'DELIVERED';
-        case 'inTransit': return order.delivery_status === 'IN_TRANSIT' || order.delivery_status === 'IN TRANSIT';
-        case 'pending': return !order.delivery_status || order.delivery_status === 'PENDING' || order.delivery_status === 'NOT_DISPATCHED';
-        case 'returned': return order.delivery_status === 'RETURNED';
-        case 'returnInProcess': return order.delivery_status === 'RETURN_IN_PROCESS';
-        case 'paymentReceived': return order.payment_status === 'paid';
-        case 'paymentPending': return order.payment_status !== 'paid';
-        case 'total': return true;
-        default: return false;
-      }
-    });
-    setCardData(filtered);
-    setViewingCard(cardType);
+    // Instead of filtering locally, set the delivery filter to fetch from API
+    let deliveryFilter = "all";
+    switch(cardType) {
+      case 'delivered': 
+        deliveryFilter = "DELIVERED";
+        break;
+      case 'inTransit': 
+        deliveryFilter = "IN_TRANSIT";
+        break;
+      case 'pending': 
+        deliveryFilter = "PENDING";
+        break;
+      case 'returned': 
+        deliveryFilter = "RETURNED";
+        break;
+      case 'returnInProcess': 
+        deliveryFilter = "RETURN_IN_PROCESS";
+        break;
+      case 'total':
+      default:
+        deliveryFilter = "all";
+        break;
+    }
+    
+    // Update the filter which will trigger a new API call via useEffect
+    setFilters(prev => ({ ...prev, delivery: deliveryFilter }));
+    setCurrentPage(1);
   };
 
   const closeCardView = () => {
-    setViewingCard(null);
-    setCardData([]);
+    // Reset delivery filter to show all
+    setFilters(prev => ({ ...prev, delivery: "all" }));
+    setCurrentPage(1);
   };
 
   const fetchOrders = async () => {
