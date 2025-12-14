@@ -1136,6 +1136,333 @@ class ShopifyCustomerAPITester:
         
         return mt_results
 
+    # ==================== API KEYS MANAGEMENT TESTS ====================
+    
+    def test_api_keys_definitions(self):
+        """Test API Keys definitions endpoint"""
+        success, response, _ = self.run_test("API Keys Definitions", "GET", "api-keys/definitions", 200)
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "definitions" in response:
+                definitions = response["definitions"]
+                
+                # Check for expected integrations
+                expected_integrations = ["razorpay", "whatsapp", "meta", "dtdc", "openai"]
+                integrations_present = all(integration in definitions for integration in expected_integrations)
+                
+                if integrations_present:
+                    print(f"   ✅ All 5 integrations found: {list(definitions.keys())}")
+                    
+                    # Verify each integration has required structure
+                    valid_structure = True
+                    for integration_name, integration_data in definitions.items():
+                        required_fields = ["name", "description", "keys", "docs_url"]
+                        if not all(field in integration_data for field in required_fields):
+                            print(f"   ❌ Integration {integration_name} missing required fields")
+                            valid_structure = False
+                            break
+                        
+                        # Verify keys array structure
+                        keys = integration_data.get("keys", [])
+                        if not isinstance(keys, list) or not keys:
+                            print(f"   ❌ Integration {integration_name} has invalid keys structure")
+                            valid_structure = False
+                            break
+                        
+                        # Check key structure
+                        for key in keys:
+                            key_fields = ["key", "label", "placeholder"]
+                            if not all(field in key for field in key_fields):
+                                print(f"   ❌ Integration {integration_name} key missing required fields")
+                                valid_structure = False
+                                break
+                    
+                    if valid_structure:
+                        print(f"   ✅ All integrations have valid structure")
+                        return True, response
+                    else:
+                        return False, response
+                else:
+                    missing = [integration for integration in expected_integrations if integration not in definitions]
+                    print(f"   ❌ Missing integrations: {missing}")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_api_keys_get_empty(self):
+        """Test GET API Keys endpoint - should return empty initially"""
+        success, response, _ = self.run_test("Get API Keys (Empty)", "GET", "api-keys/", 200)
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "keys" in response and "configured" in response:
+                keys = response["keys"]
+                configured = response["configured"]
+                
+                print(f"   Keys found: {len(keys)}")
+                print(f"   Configured keys: {len(configured)}")
+                
+                # Should be empty initially or have masked values
+                if isinstance(keys, dict) and isinstance(configured, list):
+                    print(f"   ✅ Valid empty/initial API keys response")
+                    return True, response
+                else:
+                    print(f"   ❌ Invalid response structure")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_api_keys_update_single(self):
+        """Test POST API Keys update endpoint"""
+        success, response, _ = self.run_test(
+            "Update Single API Key",
+            "POST",
+            "api-keys/update",
+            200,
+            data={"key_name": "razorpay_key_id", "key_value": "rzp_test_12345678"}
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "message" in response and "masked_value" in response:
+                masked_value = response["masked_value"]
+                message = response["message"]
+                
+                print(f"   Update message: {message}")
+                print(f"   Masked value: {masked_value}")
+                
+                # Verify masking (should show last 4 chars)
+                if masked_value.endswith("5678") and "*" in masked_value:
+                    print(f"   ✅ Key encrypted and saved with proper masking")
+                    return True, response
+                else:
+                    print(f"   ❌ Masking not working correctly")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_api_keys_get_after_update(self):
+        """Test GET API Keys after update - should show masked value"""
+        success, response, _ = self.run_test("Get API Keys After Update", "GET", "api-keys/", 200)
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "keys" in response and "configured" in response:
+                keys = response["keys"]
+                configured = response["configured"]
+                
+                print(f"   Keys found: {len(keys)}")
+                print(f"   Configured keys: {configured}")
+                
+                # Should have razorpay_key_id configured
+                if "razorpay_key_id" in keys and "razorpay_key_id" in configured:
+                    masked_value = keys["razorpay_key_id"]
+                    if masked_value.endswith("5678") and "*" in masked_value:
+                        print(f"   ✅ Key is configured with proper masking: {masked_value}")
+                        return True, response
+                    else:
+                        print(f"   ❌ Key masking not correct: {masked_value}")
+                        return False, response
+                else:
+                    print(f"   ❌ razorpay_key_id not found in configured keys")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_api_keys_status(self):
+        """Test API Keys status endpoint"""
+        success, response, _ = self.run_test("API Keys Status", "GET", "api-keys/status", 200)
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "status" in response:
+                status = response["status"]
+                
+                print(f"   Status for integrations: {list(status.keys())}")
+                
+                # Check razorpay status (should be partially configured - 1/2 keys)
+                if "razorpay" in status:
+                    razorpay_status = status["razorpay"]
+                    configured_count = razorpay_status.get("configured_count", 0)
+                    total_keys = razorpay_status.get("total_keys", 0)
+                    partial = razorpay_status.get("partial", False)
+                    
+                    print(f"   Razorpay: {configured_count}/{total_keys} keys configured, partial={partial}")
+                    
+                    if configured_count == 1 and total_keys == 2 and partial:
+                        print(f"   ✅ Razorpay shows as partially configured (1/2 keys)")
+                        return True, response
+                    else:
+                        print(f"   ❌ Razorpay status not correct")
+                        return False, response
+                else:
+                    print(f"   ❌ Razorpay not found in status")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_api_keys_delete(self):
+        """Test DELETE API Key endpoint"""
+        success, response, _ = self.run_test(
+            "Delete API Key",
+            "DELETE",
+            "api-keys/razorpay_key_id",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "message" in response:
+                message = response["message"]
+                print(f"   Delete message: {message}")
+                
+                if "deleted successfully" in message.lower():
+                    print(f"   ✅ Key deleted successfully")
+                    return True, response
+                else:
+                    print(f"   ❌ Unexpected delete message")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_api_keys_bulk_update(self):
+        """Test POST API Keys bulk update endpoint"""
+        success, response, _ = self.run_test(
+            "Bulk Update API Keys",
+            "POST",
+            "api-keys/bulk-update",
+            200,
+            data={
+                "keys": {
+                    "razorpay_key_id": "rzp_test_87654321",
+                    "razorpay_key_secret": "secret_test_12345678",
+                    "whatsapp_access_token": "EAA_test_token_123"
+                }
+            }
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "message" in response and "updated_keys" in response:
+                updated_keys = response["updated_keys"]
+                message = response["message"]
+                
+                print(f"   Bulk update message: {message}")
+                print(f"   Updated keys: {updated_keys}")
+                
+                expected_keys = ["razorpay_key_id", "razorpay_key_secret", "whatsapp_access_token"]
+                if all(key in updated_keys for key in expected_keys):
+                    print(f"   ✅ All 3 keys updated successfully")
+                    return True, response
+                else:
+                    missing = [key for key in expected_keys if key not in updated_keys]
+                    print(f"   ❌ Missing keys in update: {missing}")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def run_api_keys_management_tests(self):
+        """Run comprehensive tests for API Keys Management feature"""
+        print("\n" + "="*80)
+        print("🔐 API KEYS MANAGEMENT VALIDATION TESTS")
+        print("="*80)
+        
+        api_keys_results = {}
+        
+        # Test 1: Get API Key Definitions
+        print("\n📋 TEST 1: API KEY DEFINITIONS")
+        print("-" * 40)
+        
+        definitions_success, definitions_response = self.test_api_keys_definitions()
+        api_keys_results["definitions"] = {
+            "success": definitions_success,
+            "response": definitions_response
+        }
+        
+        # Test 2: Get Empty API Keys
+        print("\n📋 TEST 2: GET EMPTY API KEYS")
+        print("-" * 40)
+        
+        empty_success, empty_response = self.test_api_keys_get_empty()
+        api_keys_results["get_empty"] = {
+            "success": empty_success,
+            "response": empty_response
+        }
+        
+        # Test 3: Update Single API Key
+        print("\n📋 TEST 3: UPDATE SINGLE API KEY")
+        print("-" * 40)
+        
+        update_success, update_response = self.test_api_keys_update_single()
+        api_keys_results["update_single"] = {
+            "success": update_success,
+            "response": update_response
+        }
+        
+        # Test 4: Get API Keys After Update
+        print("\n📋 TEST 4: GET API KEYS AFTER UPDATE")
+        print("-" * 40)
+        
+        get_after_success, get_after_response = self.test_api_keys_get_after_update()
+        api_keys_results["get_after_update"] = {
+            "success": get_after_success,
+            "response": get_after_response
+        }
+        
+        # Test 5: API Keys Status
+        print("\n📋 TEST 5: API KEYS STATUS")
+        print("-" * 40)
+        
+        status_success, status_response = self.test_api_keys_status()
+        api_keys_results["status"] = {
+            "success": status_success,
+            "response": status_response
+        }
+        
+        # Test 6: Delete API Key
+        print("\n📋 TEST 6: DELETE API KEY")
+        print("-" * 40)
+        
+        delete_success, delete_response = self.test_api_keys_delete()
+        api_keys_results["delete"] = {
+            "success": delete_success,
+            "response": delete_response
+        }
+        
+        # Test 7: Bulk Update API Keys
+        print("\n📋 TEST 7: BULK UPDATE API KEYS")
+        print("-" * 40)
+        
+        bulk_success, bulk_response = self.test_api_keys_bulk_update()
+        api_keys_results["bulk_update"] = {
+            "success": bulk_success,
+            "response": bulk_response
+        }
+        
+        return api_keys_results
+
     # ==================== CLEARANCE ENGINE TESTS ====================
     
     def test_clearance_stats(self):
