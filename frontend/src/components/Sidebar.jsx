@@ -29,7 +29,6 @@ import {
   Gift,
   FileText,
   CreditCard,
-  Link2,
   Link2
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
