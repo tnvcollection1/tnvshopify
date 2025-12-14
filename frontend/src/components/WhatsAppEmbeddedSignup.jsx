@@ -430,14 +430,15 @@ const WhatsAppEmbeddedSignup = () => {
 
   const exchangeToken = async (code, wabaId, phoneNumberId) => {
     try {
-      const response = await axios.post(`${API}/whatsapp-business/exchange-token?tenant_id=${tenantId}`, {
+      // Include store_id in the token exchange request
+      const response = await axios.post(`${API}/whatsapp-business/exchange-token?tenant_id=${tenantId}&store_id=${selectedStore}`, {
         code,
         waba_id: wabaId,
         phone_number_id: phoneNumberId
       });
 
       if (response.data.success) {
-        toast.success("WhatsApp Business connected successfully!");
+        toast.success(`WhatsApp Business connected to ${getStoreName(selectedStore)}!`);
         loadAccounts();
         // Clear session data
         window.waEmbeddedSignupData = null;
@@ -453,11 +454,14 @@ const WhatsAppEmbeddedSignup = () => {
   };
 
   const disconnectAccount = async (wabaId) => {
-    if (!confirm("Are you sure you want to disconnect this WhatsApp Business account?")) {
+    if (!confirm("Are you sure you want to disconnect this WhatsApp Business account from this store?")) {
       return;
     }
 
     try {
+      // Include store_id in disconnect request
+      const storeParam = selectedStore && selectedStore !== 'all' ? `?store_id=${selectedStore}` : '';
+      await axios.delete(`${API}/whatsapp-business/accounts/${tenantId}/${wabaId}${storeParam}`);
       await axios.delete(`${API}/whatsapp-business/accounts/${tenantId}/${wabaId}`);
       toast.success("Account disconnected");
       loadAccounts();
