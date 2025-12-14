@@ -243,7 +243,9 @@ const Sidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-1">
-        {menuItems.map((item, index) => {
+        {menuItems
+          .filter(item => !item.adminOnly || agent?.role === 'admin')
+          .map((item, index) => {
           const Icon = item.icon;
           const hasChildren = item.children && item.children.length > 0;
           const isExpanded = expandedSections.includes(item.section);
