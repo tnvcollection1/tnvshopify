@@ -1246,6 +1246,7 @@ const Dashboard = () => {
               </div>
             </div>
           </CardContent>
+          )}
         </Card>
 
         {/* Customers Table */}
