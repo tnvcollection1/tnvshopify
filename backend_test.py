@@ -2291,7 +2291,7 @@ class ShopifyCustomerAPITester:
         # Step 5: Change password back to original
         print(f"\n🔄 Step 5: Changing password back to '{current_password}'...")
         
-        restore_success, restore_response = self.run_test(
+        restore_success, restore_response, _ = self.run_test(
             f"Restore Password (back to {current_password})",
             "POST",
             "agents/change-password",
