@@ -685,7 +685,6 @@ const DispatchTracker = () => {
               placeholder="Search by order #, customer, tracking..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && fetchOrders()}
               className="pl-10 border-gray-300 bg-white"
             />
           </div>
