@@ -2197,6 +2197,138 @@ class ShopifyCustomerAPITester:
         
         return performance_results
 
+    def test_password_change_functionality(self):
+        """Test password change functionality for admin user"""
+        print("\n🔐 PASSWORD CHANGE FUNCTIONALITY TESTS")
+        print("-" * 50)
+        
+        # First, determine current admin password
+        print("\n🔍 Step 1: Determining current admin password...")
+        
+        # Try admin/admin first
+        success_admin, _ = self.run_test(
+            "Login Test (admin/admin)",
+            "POST",
+            "agents/login",
+            200,
+            data={"username": "admin", "password": "admin"}
+        )
+        
+        # Try admin/admin123 
+        success_admin123, _ = self.run_test(
+            "Login Test (admin/admin123)",
+            "POST", 
+            "agents/login",
+            200,
+            data={"username": "admin", "password": "admin123"}
+        )
+        
+        current_password = None
+        if success_admin:
+            current_password = "admin"
+            print("   ✅ Current admin password is: admin")
+        elif success_admin123:
+            current_password = "admin123"
+            print("   ✅ Current admin password is: admin123")
+        else:
+            print("   ❌ Could not determine current admin password")
+            return False
+        
+        # Step 2: Test password change from current to newtest123
+        print(f"\n🔄 Step 2: Changing password from '{current_password}' to 'newtest123'...")
+        
+        change_success, change_response = self.run_test(
+            "Change Password (to newtest123)",
+            "POST",
+            "agents/change-password",
+            200,
+            data={
+                "username": "admin",
+                "current_password": current_password,
+                "new_password": "newtest123"
+            }
+        )
+        
+        if not change_success:
+            print("   ❌ Password change failed")
+            return False
+        
+        print("   ✅ Password change request successful")
+        
+        # Step 3: Verify login with new password
+        print("\n🔍 Step 3: Verifying login with new password 'newtest123'...")
+        
+        verify_new_success, _ = self.run_test(
+            "Login with New Password",
+            "POST",
+            "agents/login", 
+            200,
+            data={"username": "admin", "password": "newtest123"}
+        )
+        
+        if not verify_new_success:
+            print("   ❌ Login with new password failed")
+            return False
+        
+        print("   ✅ Login with new password successful")
+        
+        # Step 4: Verify old password no longer works
+        print(f"\n🔍 Step 4: Verifying old password '{current_password}' no longer works...")
+        
+        verify_old_fail, _ = self.run_test(
+            "Login with Old Password (Should Fail)",
+            "POST",
+            "agents/login",
+            401,  # Expecting failure
+            data={"username": "admin", "password": current_password}
+        )
+        
+        if verify_old_fail:
+            print("   ✅ Old password correctly rejected")
+        else:
+            print("   ❌ Old password still works (security issue)")
+            
+        # Step 5: Change password back to original
+        print(f"\n🔄 Step 5: Changing password back to '{current_password}'...")
+        
+        restore_success, restore_response = self.run_test(
+            f"Restore Password (back to {current_password})",
+            "POST",
+            "agents/change-password",
+            200,
+            data={
+                "username": "admin", 
+                "current_password": "newtest123",
+                "new_password": current_password
+            }
+        )
+        
+        if not restore_success:
+            print("   ❌ Password restore failed")
+            return False
+            
+        print("   ✅ Password restore request successful")
+        
+        # Step 6: Verify login with restored password
+        print(f"\n🔍 Step 6: Verifying login with restored password '{current_password}'...")
+        
+        verify_restore_success, _ = self.run_test(
+            "Login with Restored Password",
+            "POST",
+            "agents/login",
+            200,
+            data={"username": "admin", "password": current_password}
+        )
+        
+        if not verify_restore_success:
+            print("   ❌ Login with restored password failed")
+            return False
+            
+        print("   ✅ Login with restored password successful")
+        print("   ✅ Password change functionality working correctly")
+        
+        return True
+
 def main():
     print("🔥 Starting P0 Bug Fix Validation Tests")
     print("=" * 80)
