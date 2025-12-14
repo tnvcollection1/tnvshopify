@@ -778,9 +778,21 @@ const WhatsAppEmbeddedSignup = () => {
                 ) : accounts.length === 0 ? (
                   <div className="text-center py-12">
                     <MessageCircle className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No WhatsApp accounts connected</h3>
-                    <p className="text-gray-500 mb-4">Connect your first WhatsApp Business account to start sending messages</p>
-                    <Button onClick={() => launchWhatsAppSignup('embedded')} disabled={!config?.is_configured} className="bg-green-600 hover:bg-green-700">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      {selectedStore && selectedStore !== 'all' 
+                        ? `No WhatsApp accounts for ${getStoreName(selectedStore)}`
+                        : "No WhatsApp accounts connected"}
+                    </h3>
+                    <p className="text-gray-500 mb-4">
+                      {selectedStore && selectedStore !== 'all'
+                        ? "Connect a WhatsApp Business account to this store"
+                        : "Select a store and connect your first WhatsApp Business account"}
+                    </p>
+                    <Button 
+                      onClick={() => launchWhatsAppSignup('embedded')} 
+                      disabled={!config?.is_configured || !selectedStore || selectedStore === 'all'} 
+                      className="bg-green-600 hover:bg-green-700"
+                    >
                       <Link2 className="w-4 h-4 mr-2" />
                       Connect WhatsApp Business
                     </Button>
@@ -791,6 +803,7 @@ const WhatsAppEmbeddedSignup = () => {
                       <TableRow className="bg-gray-50">
                         <TableHead>Phone Number</TableHead>
                         <TableHead>Display Name</TableHead>
+                        <TableHead>Store</TableHead>
                         <TableHead>Quality Rating</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Connected</TableHead>
