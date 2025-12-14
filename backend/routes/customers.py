@@ -191,12 +191,16 @@ async def get_customer_stats(
             
         # TCS only filter
         if tcs_only == "true":
-            query['$and'] = [
+            tcs_filter = [
                 {"tracking_number": {"$exists": True}},
                 {"tracking_number": {"$ne": None}},
                 {"tracking_number": {"$ne": ""}},
                 {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}}
             ]
+            if "$and" in query:
+                query["$and"].extend(tcs_filter)
+            else:
+                query["$and"] = tcs_filter
         
         # Year filter
         if year and year != "all":
