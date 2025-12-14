@@ -556,6 +556,11 @@ const Settings = () => {
             )}
           </TabsContent>
 
+          {/* API Keys Tab */}
+          <TabsContent value="api-keys" className="space-y-6">
+            <APIKeysSettings />
+          </TabsContent>
+
           {/* TCS API Integration Tab */}
           <TabsContent value="tcs" className="space-y-6">
             {/* Info Banner */}
