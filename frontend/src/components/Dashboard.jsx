@@ -81,6 +81,7 @@ const Dashboard = () => {
   const [syncing, setSyncing] = useState(false);
   const [schedulerStatus, setSchedulerStatus] = useState(null);
   const [isResetting, setIsResetting] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   
   const handleLogout = () => {
     logout();
