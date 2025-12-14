@@ -614,7 +614,8 @@ const NotificationSettings = () => {
                   )}
                 </CardContent>
               </Card>
-            </TabsContent>
+            </div>
+          </TabsContent>
 
           {/* Logs Tab */}
           <TabsContent value="logs">
