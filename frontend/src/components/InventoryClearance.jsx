@@ -95,7 +95,7 @@ const InventoryClearance = () => {
       toast.loading('Getting AI recommendations...', { id: 'ai' });
       const response = await axios.post(`${API}/api/clearance/ai-recommendations`, null, {
         params: { 
-          store_name: selectedStore === 'all' ? undefined : selectedStore,
+          store_name: globalStore === 'all' ? undefined : globalStore,
           category: selectedCategory
         }
       });
@@ -120,7 +120,7 @@ const InventoryClearance = () => {
       toast.loading('Creating clearance campaign...', { id: 'campaign' });
       const response = await axios.post(`${API}/api/clearance/quick-clearance`, null, {
         params: {
-          store_name: selectedStore === 'all' ? undefined : selectedStore,
+          store_name: globalStore === 'all' ? undefined : globalStore,
           category: selectedCategory,
           auto_discount: true
         }
@@ -141,7 +141,7 @@ const InventoryClearance = () => {
   };
 
   const syncToShopify = async (campaignId) => {
-    if (selectedStore === 'all') {
+    if (globalStore === 'all') {
       toast.error('Please select a specific store first');
       return;
     }
@@ -151,7 +151,7 @@ const InventoryClearance = () => {
       const response = await axios.post(
         `${API}/api/clearance/campaigns/${campaignId}/sync`,
         null,
-        { params: { store_name: selectedStore } }
+        { params: { store_name: globalStore } }
       );
       
       if (response.data.success) {
@@ -221,19 +221,9 @@ const InventoryClearance = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            <Select value={selectedStore} onValueChange={setSelectedStore}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="All Stores" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Stores</SelectItem>
-                {stores.map(store => (
-                  <SelectItem key={store.store_name} value={store.store_name}>
-                    {store.store_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600">
+              📍 {getStoreName(globalStore)}
+            </div>
             
             <Button onClick={analyzeInventory} disabled={analyzing}>
               {analyzing ? (
