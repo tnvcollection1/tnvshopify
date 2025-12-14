@@ -313,6 +313,7 @@ async def get_customer_stats(
             "inTransit": stats["inTransit"][0]["count"] if stats["inTransit"] else 0,
             "pending": stats["pending"][0]["count"] if stats["pending"] else 0,
             "returned": stats["returned"][0]["count"] if stats["returned"] else 0,
+            "returnInProcess": stats["returnInProcess"][0]["count"] if stats.get("returnInProcess") else 0,
             "paymentReceived": stats["paymentReceived"][0]["count"] if stats["paymentReceived"] else 0,
             "paymentPending": stats["paymentPending"][0]["count"] if stats["paymentPending"] else 0
         }
