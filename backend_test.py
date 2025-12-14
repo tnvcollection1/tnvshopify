@@ -1235,6 +1235,66 @@ class ShopifyCustomerAPITester:
         
         return success, response
     
+    def run_p0_bug_fix_tests(self):
+        """Run P0 Bug Fix Tests for Purchase Tracker, Smart Clearance, and Dynamic Pricing"""
+        print("\n" + "="*80)
+        print("🔥 P0 BUG FIX VALIDATION TESTS")
+        print("="*80)
+        
+        p0_results = {}
+        
+        # Test 1: Purchase Tracker - China Post Orders
+        print("\n📋 TEST 1: PURCHASE TRACKER - CHINA POST ORDERS")
+        print("-" * 40)
+        
+        china_orders_success, china_orders_response = self.test_purchase_tracker_china_orders()
+        p0_results["china_orders"] = {
+            "success": china_orders_success,
+            "response": china_orders_response
+        }
+        
+        # Test 2: Purchase Tracker - China Post Count
+        print("\n📋 TEST 2: PURCHASE TRACKER - CHINA POST COUNT")
+        print("-" * 40)
+        
+        china_count_success, china_count_response = self.test_purchase_tracker_china_count()
+        p0_results["china_count"] = {
+            "success": china_count_success,
+            "response": china_count_response
+        }
+        
+        # Test 3: Smart Clearance - Inventory Health
+        print("\n📋 TEST 3: SMART CLEARANCE - INVENTORY HEALTH")
+        print("-" * 40)
+        
+        clearance_health_success, clearance_health_response = self.test_smart_clearance_health()
+        p0_results["clearance_health"] = {
+            "success": clearance_health_success,
+            "response": clearance_health_response
+        }
+        
+        # Test 4: Smart Clearance - Campaigns
+        print("\n📋 TEST 4: SMART CLEARANCE - CAMPAIGNS")
+        print("-" * 40)
+        
+        clearance_campaigns_success, clearance_campaigns_response = self.test_smart_clearance_campaigns()
+        p0_results["clearance_campaigns"] = {
+            "success": clearance_campaigns_success,
+            "response": clearance_campaigns_response
+        }
+        
+        # Test 5: Dynamic Pricing - Report
+        print("\n📋 TEST 5: DYNAMIC PRICING - REPORT")
+        print("-" * 40)
+        
+        pricing_report_success, pricing_report_response = self.test_dynamic_pricing_report()
+        p0_results["pricing_report"] = {
+            "success": pricing_report_success,
+            "response": pricing_report_response
+        }
+        
+        return p0_results
+    
     def run_multi_tenant_meta_ads_tests(self):
         """Run comprehensive tests for Multi-Tenant and Meta Ads APIs"""
         print("\n" + "="*80)
