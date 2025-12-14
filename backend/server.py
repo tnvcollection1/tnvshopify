@@ -874,18 +874,24 @@ async def reset_admin_password():
 @api_router.post("/agents/signup")
 async def signup_agent(agent_data: AgentCreate):
     """
-    Agent registration/signup
+    Agent registration/signup with bcrypt encrypted password
+    Your password is securely encrypted using industry-standard bcrypt hashing.
     """
     try:
-        import hashlib
+        import bcrypt
+        
+        def hash_password(password: str) -> str:
+            """Hash password using bcrypt"""
+            salt = bcrypt.gensalt(rounds=12)
+            return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
         
         # Check if username already exists
         existing_agent = await db.agents.find_one({"username": agent_data.username})
         if existing_agent:
             raise HTTPException(status_code=400, detail="Username already exists")
         
-        # Hash password
-        hashed_password = hashlib.sha256(agent_data.password.encode()).hexdigest()
+        # Hash password with bcrypt (secure encryption)
+        hashed_password = hash_password(agent_data.password)
         
         # Create new agent
         new_agent = {
@@ -893,17 +899,18 @@ async def signup_agent(agent_data: AgentCreate):
             "username": agent_data.username,
             "password": hashed_password,
             "full_name": agent_data.full_name,
-            "role": "agent",  # Default role
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "role": "agent",  # Default role - only WhatsApp CRM + Shopify access
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "password_encrypted": True  # Flag to indicate bcrypt encryption
         }
         
         await db.agents.insert_one(new_agent)
         
-        logger.info(f"✅ New agent registered: {agent_data.username}")
+        logger.info(f"✅ New agent registered with encrypted password: {agent_data.username}")
         
         return {
             "success": True,
-            "message": "Agent registered successfully",
+            "message": "Account created successfully. Your password is securely encrypted.",
             "agent": {
                 "id": new_agent["id"],
                 "username": new_agent["username"],
