@@ -2204,8 +2204,62 @@ def main():
     # Setup
     tester = ShopifyCustomerAPITester()
     
-    # Run P0 Bug Fix tests as requested
-    p0_results = tester.run_p0_bug_fix_tests()
+    # Run P0 Bug Fix tests as requested (the new ones for Purchase Tracker, Smart Clearance, Dynamic Pricing)
+    print("\n" + "="*80)
+    print("🔥 P0 BUG FIX VALIDATION TESTS")
+    print("="*80)
+    
+    p0_results = {}
+    
+    # Test 1: Purchase Tracker - China Post Orders
+    print("\n📋 TEST 1: PURCHASE TRACKER - CHINA POST ORDERS")
+    print("-" * 40)
+    
+    china_orders_success, china_orders_response = tester.test_purchase_tracker_china_orders()
+    p0_results["china_orders"] = {
+        "success": china_orders_success,
+        "response": china_orders_response
+    }
+    
+    # Test 2: Purchase Tracker - China Post Count
+    print("\n📋 TEST 2: PURCHASE TRACKER - CHINA POST COUNT")
+    print("-" * 40)
+    
+    china_count_success, china_count_response = tester.test_purchase_tracker_china_count()
+    p0_results["china_count"] = {
+        "success": china_count_success,
+        "response": china_count_response
+    }
+    
+    # Test 3: Smart Clearance - Inventory Health
+    print("\n📋 TEST 3: SMART CLEARANCE - INVENTORY HEALTH")
+    print("-" * 40)
+    
+    clearance_health_success, clearance_health_response = tester.test_smart_clearance_health()
+    p0_results["clearance_health"] = {
+        "success": clearance_health_success,
+        "response": clearance_health_response
+    }
+    
+    # Test 4: Smart Clearance - Campaigns
+    print("\n📋 TEST 4: SMART CLEARANCE - CAMPAIGNS")
+    print("-" * 40)
+    
+    clearance_campaigns_success, clearance_campaigns_response = tester.test_smart_clearance_campaigns()
+    p0_results["clearance_campaigns"] = {
+        "success": clearance_campaigns_success,
+        "response": clearance_campaigns_response
+    }
+    
+    # Test 5: Dynamic Pricing - Report
+    print("\n📋 TEST 5: DYNAMIC PRICING - REPORT")
+    print("-" * 40)
+    
+    pricing_report_success, pricing_report_response = tester.test_dynamic_pricing_report()
+    p0_results["pricing_report"] = {
+        "success": pricing_report_success,
+        "response": pricing_report_response
+    }
     
     # Print P0 Bug Fix test summary
     print("\n" + "=" * 80)
