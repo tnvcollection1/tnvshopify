@@ -570,7 +570,8 @@ async def login_agent(credentials: AgentLogin):
 
 
 class PasswordChange(BaseModel):
-    old_password: str
+    username: str
+    current_password: str
     new_password: str
 
 
