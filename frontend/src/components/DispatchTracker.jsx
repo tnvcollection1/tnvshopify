@@ -553,7 +553,7 @@ const DispatchTracker = () => {
 
       {/* Stats Cards */}
       <div className="p-6">
-        <div className="grid grid-cols-7 gap-4 mb-6">
+        <div className="grid grid-cols-8 gap-4 mb-6">
           <div 
             className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => viewCardDetails('total')}
