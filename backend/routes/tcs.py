@@ -178,17 +178,32 @@ async def track_tcs_consignment(tracking_number: str):
 async def get_tcs_auto_sync_status():
     """Get TCS auto-sync status"""
     try:
-        from auto_tcs_sync import auto_tcs_sync
+        # Auto-sync is a separate background service - return status based on config
+        config = await db.tcs_config.find_one({'service': 'tcs_pakistan'}, {'_id': 0})
+        
+        # Check if there's a recent sync record
+        last_sync = await db.customers.find_one(
+            {'last_auto_sync': {'$exists': True}},
+            {'_id': 0, 'last_auto_sync': 1},
+            sort=[('last_auto_sync', -1)]
+        )
+        
         return {
             "success": True,
-            "running": auto_tcs_sync.is_running,
-            "last_sync": auto_tcs_sync.last_sync_time,
-            "orders_synced": auto_tcs_sync.orders_synced_count,
-            "errors": auto_tcs_sync.error_count
+            "configured": config is not None,
+            "running": False,  # Background service status
+            "last_sync": last_sync.get('last_auto_sync') if last_sync else None,
+            "message": "TCS sync available via manual trigger"
         }
     except Exception as e:
         logger.error(f"Error getting auto-sync status: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "success": True,
+            "configured": False,
+            "running": False,
+            "last_sync": None,
+            "message": "TCS auto-sync not configured"
+        }
 
 
 @tcs_router.post("/sync-one-by-one")
