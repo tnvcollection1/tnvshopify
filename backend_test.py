@@ -2258,7 +2258,7 @@ class ShopifyCustomerAPITester:
         # Step 3: Verify login with new password
         print("\n🔍 Step 3: Verifying login with new password 'newtest123'...")
         
-        verify_new_success, _ = self.run_test(
+        verify_new_success, _, _ = self.run_test(
             "Login with New Password",
             "POST",
             "agents/login", 
