@@ -42,6 +42,7 @@ from routes.subscriptions import subscriptions_router
 from routes.shopify_webhooks import shopify_webhooks_router
 from routes.api_keys import api_keys_router, set_database as set_api_keys_db
 from routes.shopify_oauth import shopify_oauth_router, set_database as set_shopify_oauth_db
+from routes.lead_ads import lead_ads_router, set_database as set_lead_ads_db
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
