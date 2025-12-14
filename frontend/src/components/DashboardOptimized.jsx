@@ -42,6 +42,16 @@ const DashboardOptimized = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Filter states
+  const [filters, setFilters] = useState({
+    fulfillmentStatus: 'all',
+    paymentStatus: 'all',
+    deliveryStatus: 'all',
+    dateRange: 'all',
+    channel: 'all'
+  });
 
   const fetchStats = useCallback(async () => {
     try {
