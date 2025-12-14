@@ -39,6 +39,7 @@ from routes.tenants import tenants_router, set_dependencies as set_tenants_deps
 from routes.meta_ads import meta_ads_router, set_dependencies as set_meta_ads_deps
 from routes.whatsapp_embedded import whatsapp_embedded_router, set_database as set_whatsapp_embedded_db
 from routes.subscriptions import subscriptions_router
+from routes.shopify_webhooks import shopify_webhooks_router
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
