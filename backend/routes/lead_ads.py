@@ -613,6 +613,26 @@ async def get_sync_status():
     access_token = await get_facebook_access_token()
     page_id = await get_facebook_page_id()
     
+    # Check if token is valid by making a simple API call
+    token_valid = False
+    token_error = None
+    
+    if access_token:
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    "https://graph.facebook.com/v20.0/me",
+                    params={"access_token": access_token},
+                    timeout=5.0
+                )
+                data = response.json()
+                if "error" in data:
+                    token_error = data["error"].get("message", "Token invalid")
+                else:
+                    token_valid = True
+            except Exception as e:
+                token_error = str(e)
+    
     # Get last synced lead
     last_lead = await db.facebook_leads.find_one(
         {},
@@ -625,13 +645,40 @@ async def get_sync_status():
     
     return {
         "success": True,
-        "is_configured": bool(access_token and page_id),
+        "is_configured": bool(access_token and page_id and token_valid),
         "has_access_token": bool(access_token),
+        "token_valid": token_valid,
+        "token_error": token_error,
         "has_page_id": bool(page_id),
         "page_id": page_id,
         "total_leads": total_leads,
         "last_sync": last_lead.get("stored_at") if last_lead else None
     }
+
+class PageIdUpdate(BaseModel):
+    page_id: str
+
+@lead_ads_router.post("/set-page-id")
+async def set_page_id(data: PageIdUpdate):
+    """Manually set the Facebook Page ID for lead ads"""
+    page_id = data.page_id.strip()
+    
+    if not page_id:
+        raise HTTPException(status_code=400, detail="Page ID cannot be empty")
+    
+    # Store in a dedicated collection
+    await db.lead_ads_config.update_one(
+        {"type": "config"},
+        {"$set": {
+            "page_id": page_id,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    
+    logger.info(f"✅ Page ID set to: {page_id}")
+    
+    return {"success": True, "message": "Page ID saved", "page_id": page_id}
 
 # ==================== Setup Info ====================
 
