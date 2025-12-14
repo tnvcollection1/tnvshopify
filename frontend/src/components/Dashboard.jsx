@@ -964,11 +964,37 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Filters - Collapsible Shopify Style */}
         <Card className="mb-8 border-none shadow-lg bg-white/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-2xl" style={{ fontFamily: 'Space Grotesk' }}>Filter Customers</CardTitle>
+          <CardHeader 
+            className="cursor-pointer hover:bg-slate-50 transition-colors"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl flex items-center gap-2" style={{ fontFamily: 'Space Grotesk' }}>
+                <Filter className="w-5 h-5" />
+                Filter Orders
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                {/* Active filters count */}
+                {(selectedStore !== 'all' || selectedCountry !== 'all' || selectedSize !== 'all' || 
+                  messagedFilter !== 'all' || stockFilter !== 'all' || fulfillmentFilter !== 'all' || 
+                  deliveryFilter !== 'all' || paymentFilter !== 'all' || codPaymentFilter !== 'all' || 
+                  yearFilter !== 'all') && (
+                  <Badge className="bg-indigo-100 text-indigo-700">
+                    {[selectedStore !== 'all', selectedCountry !== 'all', selectedSize !== 'all',
+                      messagedFilter !== 'all', stockFilter !== 'all', fulfillmentFilter !== 'all',
+                      deliveryFilter !== 'all', paymentFilter !== 'all', codPaymentFilter !== 'all',
+                      yearFilter !== 'all'].filter(Boolean).length} active
+                  </Badge>
+                )}
+                <Button variant="ghost" size="sm">
+                  {showFilters ? '▲ Hide' : '▼ Show'}
+                </Button>
+              </div>
+            </div>
           </CardHeader>
+          {showFilters && (
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
               <div>
