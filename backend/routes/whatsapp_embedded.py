@@ -80,10 +80,11 @@ def get_meta_config():
 # ==================== Token Exchange ====================
 
 @whatsapp_embedded_router.post("/exchange-token")
-async def exchange_token(callback: EmbeddedSignupCallback, tenant_id: str = Query(...)):
+async def exchange_token(callback: EmbeddedSignupCallback, tenant_id: str = Query(...), store_id: str = Query(...)):
     """
     Exchange the code from Embedded Signup for a long-lived access token.
     This is called after a customer completes the signup flow.
+    Now store-specific: each store can have its own WhatsApp number.
     """
     config = get_meta_config()
     
@@ -91,6 +92,12 @@ async def exchange_token(callback: EmbeddedSignupCallback, tenant_id: str = Quer
         raise HTTPException(
             status_code=400,
             detail="Meta App credentials not configured. Please set META_APP_ID and META_APP_SECRET in environment variables."
+        )
+    
+    if not store_id or store_id == 'all':
+        raise HTTPException(
+            status_code=400,
+            detail="Please select a specific store before connecting WhatsApp"
         )
     
     try:
