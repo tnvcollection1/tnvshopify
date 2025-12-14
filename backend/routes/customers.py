@@ -626,15 +626,64 @@ async def get_customers_by_segment(segment_type: str, page: int = 1, limit: int 
 
 
 @customers_router.get("/stock-stats")
-async def get_stock_stats():
-    """Get stock status statistics"""
+async def get_stock_stats(store_name: str = None):
+    """Get stock status statistics with values"""
     try:
+        # Build base query
+        match_stage = {}
+        if store_name and store_name != "all":
+            match_stage["store_name"] = store_name
+        
+        # Get counts and values by stock status
         pipeline = [
-            {"$group": {"_id": "$stock_status", "count": {"$sum": 1}}}
+            {"$match": match_stage} if match_stage else {"$match": {}},
+            {"$group": {
+                "_id": "$stock_status",
+                "count": {"$sum": 1},
+                "total_value": {"$sum": {"$ifNull": ["$total_price", 0]}}
+            }}
         ]
+        
         results = await db.customers.aggregate(pipeline).to_list(10)
-        stats = {r["_id"] or "UNKNOWN": r["count"] for r in results}
-        return {"success": True, "stats": stats}
+        
+        # Build response
+        stats = {
+            "in_stock": 0,
+            "in_stock_value": 0,
+            "out_of_stock": 0,
+            "out_of_stock_value": 0,
+            "unknown": 0,
+            "unknown_value": 0,
+            "currency": "PKR"
+        }
+        
+        for r in results:
+            status = r.get("_id") or "UNKNOWN"
+            count = r.get("count", 0)
+            value = r.get("total_value", 0)
+            
+            if status == "IN_STOCK":
+                stats["in_stock"] = count
+                stats["in_stock_value"] = value
+            elif status == "OUT_OF_STOCK":
+                stats["out_of_stock"] = count
+                stats["out_of_stock_value"] = value
+            else:
+                stats["unknown"] += count
+                stats["unknown_value"] += value
+        
+        # Also get stats by confirmation status
+        conf_pipeline = [
+            {"$match": match_stage} if match_stage else {"$match": {}},
+            {"$group": {
+                "_id": "$confirmation_status",
+                "count": {"$sum": 1}
+            }}
+        ]
+        conf_results = await db.customers.aggregate(conf_pipeline).to_list(10)
+        stats["by_confirmation"] = {r["_id"] or "NONE": r["count"] for r in conf_results}
+        
+        return {"success": True, **stats}
     except Exception as e:
         logger.error(f"Error getting stock stats: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
