@@ -121,7 +121,6 @@ const WhatsAppEmbeddedSignup = () => {
 
   useEffect(() => {
     loadConfig();
-    loadAccounts();
     loadFacebookSDK();
     setupMessageEventListener();
     
@@ -130,6 +129,12 @@ const WhatsAppEmbeddedSignup = () => {
       window.removeEventListener('message', handleMessageEvent);
     };
   }, []);
+
+  // Reload accounts when store changes
+  useEffect(() => {
+    loadAccounts();
+    setSelectedAccount(null); // Reset selected account when store changes
+  }, [selectedStore]);
 
   useEffect(() => {
     if (selectedAccount) {
