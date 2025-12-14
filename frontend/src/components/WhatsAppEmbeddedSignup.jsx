@@ -283,12 +283,16 @@ const WhatsAppEmbeddedSignup = () => {
   const loadAccounts = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API}/whatsapp-business/accounts/${tenantId}`);
+      // Filter accounts by selected store
+      const storeParam = selectedStore && selectedStore !== 'all' ? `&store_id=${selectedStore}` : '';
+      const response = await axios.get(`${API}/whatsapp-business/accounts/${tenantId}?${storeParam}`);
       setAccounts(response.data.accounts || []);
       
       if (response.data.accounts?.length > 0) {
         setSelectedAccount(response.data.accounts[0]);
         loadAnalytics();
+      } else {
+        setSelectedAccount(null);
       }
     } catch (error) {
       console.error("Error loading accounts:", error);
