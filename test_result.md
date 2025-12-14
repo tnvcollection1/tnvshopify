@@ -116,9 +116,9 @@ backend:
 
 metadata:
   created_by: "main_agent"
-  version: "2.2"
+  version: "2.3"
   last_tested: "2025-12-12"
-  test_sequence: 2
+  test_sequence: 3
 
 test_plan:
   current_focus:
