@@ -218,6 +218,10 @@ const SettingsOptimized = () => {
           </div>
         </TabsContent>
 
+        <TabsContent value="api-keys" className="space-y-4">
+          <APIKeysSettings />
+        </TabsContent>
+
         <TabsContent value="shopify" className="space-y-4">
           <Card>
             <CardHeader>
