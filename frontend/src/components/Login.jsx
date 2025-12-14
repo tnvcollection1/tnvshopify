@@ -4,7 +4,7 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Store, Eye, EyeOff } from "lucide-react";
+import { MessageCircle, Eye, EyeOff } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -116,10 +116,10 @@ const Login = ({ onLoginSuccess }) => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-[#95bf47] rounded-lg flex items-center justify-center">
-            <Store className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 bg-[#25d366] rounded-full flex items-center justify-center">
+            <MessageCircle className="w-6 h-6 text-white" />
           </div>
-          <span className="text-2xl font-semibold text-gray-900">OmniSales</span>
+          <span className="text-2xl font-semibold text-gray-900">WhatsApp CRM</span>
         </div>
 
         {/* Card */}
@@ -129,7 +129,7 @@ const Login = ({ onLoginSuccess }) => {
               {isSignup ? "Create your account" : "Log in"}
             </h1>
             <p className="text-sm text-gray-500">
-              {isSignup ? "Start your free trial" : "Continue to OmniSales"}
+              {isSignup ? "Start your free trial" : "Continue to WhatsApp CRM"}
             </p>
           </div>
 
@@ -210,7 +210,7 @@ const Login = ({ onLoginSuccess }) => {
               disabled={loading}
               className="text-sm text-gray-600 hover:text-gray-900"
             >
-              {isSignup ? "Already have an account? " : "New to OmniSales? "}
+              {isSignup ? "Already have an account? " : "New to WhatsApp CRM? "}
               <span className="text-[#008060] font-medium hover:underline">
                 {isSignup ? "Log in" : "Get started"}
               </span>
