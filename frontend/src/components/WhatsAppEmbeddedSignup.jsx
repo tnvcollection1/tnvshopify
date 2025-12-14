@@ -366,6 +366,12 @@ const WhatsAppEmbeddedSignup = () => {
       return;
     }
 
+    // Check if a specific store is selected
+    if (!selectedStore || selectedStore === 'all') {
+      toast.error("Please select a specific store before connecting WhatsApp");
+      return;
+    }
+
     setConnecting(true);
     
     // Clear any previous session data
