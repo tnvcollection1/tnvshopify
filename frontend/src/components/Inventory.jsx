@@ -425,7 +425,7 @@ const Inventory = () => {
         {/* Filters */}
         <Card className="mb-6">
           <CardContent className="pt-6">
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-end">
               <div className="w-48">
                 <Label>Store</Label>
                 <Select value={filters.store} onValueChange={(val) => setFilters({...filters, store: val})}>
@@ -457,6 +457,17 @@ const Inventory = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <Button 
+                onClick={syncShopifyPrices}
+                disabled={syncingPrices}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {syncingPrices ? (
+                  <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Syncing...</>
+                ) : (
+                  <><RefreshCw className="w-4 h-4 mr-2" /> Sync Shopify Prices</>
+                )}
+              </Button>
             </div>
           </CardContent>
         </Card>
