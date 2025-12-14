@@ -135,19 +135,27 @@ const DispatchTracker = () => {
   const [viewingCard, setViewingCard] = useState(null);
   const [cardData, setCardData] = useState([]);
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500); // 500ms delay
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => {
     fetchOrders();
     fetchAutoSyncStatus();
     
     const interval = setInterval(fetchAutoSyncStatus, 30000);
     return () => clearInterval(interval);
-  }, [currentPage, filters, dateRange, globalStore, searchQuery]);
+  }, [currentPage, filters, dateRange, globalStore, debouncedSearch]);
 
   useEffect(() => {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
-  }, [filters.delivery, filters.payment, filters.year, filters.sortBy, globalStore, searchQuery]);
+  }, [filters.delivery, filters.payment, filters.year, filters.sortBy, globalStore, debouncedSearch]);
 
   const handleTCSSync = async () => {
     setSyncingTCS(true);
