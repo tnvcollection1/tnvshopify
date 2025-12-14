@@ -53,6 +53,7 @@ const Inventory = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [stores, setStores] = useState([]);
+  const [syncingPrices, setSyncingPrices] = useState(false);
   const [filters, setFilters] = useState({
     status: 'all',
     store: 'all'
