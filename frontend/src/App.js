@@ -376,6 +376,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/notifications" 
+        element={
+          <ProtectedRoute>
+            <NotificationSettings />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
