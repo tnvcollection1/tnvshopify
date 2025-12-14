@@ -56,6 +56,9 @@ const FacebookLeadAds = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [setupInfo, setSetupInfo] = useState(null);
+  const [syncStatus, setSyncStatus] = useState(null);
+  const [syncing, setSyncing] = useState(false);
+  const [forms, setForms] = useState([]);
   
   // Filters
   const [statusFilter, setStatusFilter] = useState('all');
@@ -78,6 +81,8 @@ const FacebookLeadAds = () => {
     fetchLeads();
     fetchStats();
     fetchSetupInfo();
+    fetchSyncStatus();
+    fetchForms();
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
