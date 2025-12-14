@@ -340,10 +340,13 @@ async def get_customer_count(store_name: str = None):
 async def sync_stock_status(store_name: str = None):
     """Sync stock status for customers based on inventory"""
     try:
-        query = {"store_name": store_name} if store_name else {}
+        query = {"store_name": store_name} if store_name and store_name != "all" else {}
         customers = await db.customers.find(query, {"_id": 0, "customer_id": 1, "line_items": 1, "order_skus": 1}).to_list(10000)
         
         updated = 0
+        in_stock_count = 0
+        out_of_stock_count = 0
+        
         for customer in customers:
             # Check stock for line items or order_skus
             in_stock = True
@@ -371,6 +374,12 @@ async def sync_stock_status(store_name: str = None):
                         in_stock = False
                         break
             
+            # Track counts
+            if in_stock:
+                in_stock_count += 1
+            else:
+                out_of_stock_count += 1
+            
             result = await db.customers.update_one(
                 {"customer_id": customer["customer_id"]},
                 {"$set": {
@@ -381,7 +390,13 @@ async def sync_stock_status(store_name: str = None):
             if result.modified_count > 0:
                 updated += 1
         
-        return {"success": True, "updated": updated, "total": len(customers)}
+        return {
+            "success": True, 
+            "updated": updated, 
+            "total": len(customers),
+            "in_stock": in_stock_count,
+            "out_of_stock": out_of_stock_count
+        }
     except Exception as e:
         logger.error(f"Error syncing stock status: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
