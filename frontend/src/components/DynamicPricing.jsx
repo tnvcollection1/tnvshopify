@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Badge } from "./ui/badge";
 import { useStore } from "../contexts/StoreContext";
+import { RefreshCw, TrendingUp, Zap, DollarSign, Package } from "lucide-react";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
