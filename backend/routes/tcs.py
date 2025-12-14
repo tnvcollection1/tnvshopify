@@ -210,9 +210,41 @@ async def get_tcs_auto_sync_status():
 async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
     """Sync TCS tracking one order at a time with delay"""
     try:
-        from auto_tcs_sync import auto_tcs_sync
-        result = await auto_tcs_sync.sync_orders_one_by_one(db, limit=limit, delay_seconds=delay)
-        return result
+        # Use TCS tracker directly instead of auto_tcs_sync module
+        from tcs_tracking import TCSTracker
+        
+        config = await db.tcs_config.find_one({'service': 'tcs_pakistan'}, {'_id': 0})
+        if not config:
+            return {"success": False, "error": "TCS not configured"}
+        
+        tracker = TCSTracker(config)
+        
+        # Find orders needing sync
+        query = {
+            'fulfillment_status': 'fulfilled',
+            'tracking_number': {'$exists': True, '$ne': None, '$ne': ''},
+            'delivery_status': {'$nin': ['DELIVERED', 'RETURNED']}
+        }
+        
+        orders = await db.customers.find(query, {'_id': 0}).limit(limit).to_list(limit)
+        synced = 0
+        
+        for order in orders:
+            try:
+                tracking_data = tracker.track_consignment(order['tracking_number'])
+                if tracking_data and tracking_data.get('normalized_status'):
+                    await db.customers.update_one(
+                        {'customer_id': order['customer_id'], 'store_name': order['store_name']},
+                        {'$set': {
+                            'delivery_status': tracking_data['normalized_status'],
+                            'last_auto_sync': datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    synced += 1
+            except Exception as e:
+                logger.error(f"Error syncing order {order.get('tracking_number')}: {e}")
+        
+        return {"success": True, "synced_count": synced, "total_checked": len(orders)}
     except Exception as e:
         logger.error(f"Error in one-by-one sync: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -222,9 +254,51 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
 async def sync_all_tcs_deliveries():
     """Sync all TCS deliveries"""
     try:
-        from auto_tcs_sync import auto_tcs_sync
-        result = await auto_tcs_sync.sync_all_pending_orders(db)
-        return result
+        from tcs_tracking import TCSTracker
+        
+        config = await db.tcs_config.find_one({'service': 'tcs_pakistan'}, {'_id': 0})
+        if not config:
+            return {"success": False, "error": "TCS not configured. Please configure TCS credentials in Settings."}
+        
+        tracker = TCSTracker(config)
+        
+        # Find orders needing sync (TCS orders only, not China Post)
+        query = {
+            'fulfillment_status': 'fulfilled',
+            'tracking_number': {'$exists': True, '$ne': None, '$ne': ''},
+            'tracking_number': {'$not': {'$regex': '^X', '$options': 'i'}},
+            'delivery_status': {'$nin': ['DELIVERED', 'RETURNED']}
+        }
+        
+        orders = await db.customers.find(query, {'_id': 0}).limit(100).to_list(100)
+        synced = 0
+        errors = 0
+        
+        for order in orders:
+            try:
+                tracking_data = tracker.track_consignment(order['tracking_number'])
+                if tracking_data and tracking_data.get('normalized_status'):
+                    new_status = tracking_data['normalized_status']
+                    if new_status not in ['UNKNOWN', 'NOT_FOUND']:
+                        await db.customers.update_one(
+                            {'customer_id': order['customer_id'], 'store_name': order['store_name']},
+                            {'$set': {
+                                'delivery_status': new_status,
+                                'current_location': tracking_data.get('current_location'),
+                                'last_auto_sync': datetime.now(timezone.utc).isoformat()
+                            }}
+                        )
+                        synced += 1
+            except Exception as e:
+                errors += 1
+                logger.error(f"Error syncing {order.get('tracking_number')}: {e}")
+        
+        return {
+            "success": True, 
+            "synced_count": synced, 
+            "errors": errors,
+            "total_checked": len(orders)
+        }
     except Exception as e:
         logger.error(f"Error syncing all TCS: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
