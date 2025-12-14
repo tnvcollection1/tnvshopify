@@ -54,7 +54,8 @@ const Inventory = () => {
   const [loading, setLoading] = useState(false);
   const [stores, setStores] = useState([]);
   const [filters, setFilters] = useState({
-    status: 'all'
+    status: 'all',
+    store: 'all'
   });
   
   // Selection state
