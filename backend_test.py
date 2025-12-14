@@ -40,6 +40,8 @@ class ShopifyCustomerAPITester:
                     response = requests.put(url, data=data, timeout=timeout)
                 else:
                     response = requests.put(url, json=data, headers=headers, timeout=timeout)
+            elif method == 'DELETE':
+                response = requests.delete(url, headers=headers, timeout=timeout)
 
             end_time = time.time()
             response_time = (end_time - start_time) * 1000  # Convert to milliseconds
