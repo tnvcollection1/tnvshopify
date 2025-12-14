@@ -646,6 +646,173 @@ class ShopifyCustomerAPITester:
                 return False, response
         
         return success, response
+
+    # ==================== P0 BUG FIX TESTS ====================
+    
+    def test_purchase_tracker_china_orders(self):
+        """Test Purchase Tracker - China Post Orders API - P0 Bug Fix"""
+        success, response, _ = self.run_test(
+            "Purchase Tracker - China Post Orders",
+            "GET",
+            "customers?china_tracking=true&limit=10",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "customers" in response and "total" in response:
+                customers_list = response["customers"]
+                total = response["total"]
+                
+                print(f"   China Post orders found: {total}")
+                print(f"   Orders returned: {len(customers_list)}")
+                
+                # Verify all returned customers have X-prefix tracking numbers
+                if customers_list:
+                    all_china_post = True
+                    for customer in customers_list:
+                        tracking_number = customer.get("tracking_number", "")
+                        if not tracking_number or not tracking_number.upper().startswith("X"):
+                            print(f"   ❌ Customer {customer.get('customer_id')} has invalid tracking: {tracking_number}")
+                            all_china_post = False
+                            break
+                    
+                    if all_china_post:
+                        print(f"   ✅ All returned customers have X-prefix tracking numbers")
+                        return True, response
+                    else:
+                        print(f"   ❌ Some customers don't have X-prefix tracking numbers")
+                        return False, response
+                else:
+                    print(f"   ✅ No China Post orders found (valid result)")
+                    return True, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_purchase_tracker_china_count(self):
+        """Test Purchase Tracker - China Post Count API - P0 Bug Fix"""
+        success, response, _ = self.run_test(
+            "Purchase Tracker - China Post Count",
+            "GET",
+            "customers/count?china_tracking=true",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "total" in response or "count" in response:
+                count = response.get("total", response.get("count", 0))
+                
+                print(f"   China Post orders count: {count}")
+                
+                # Verify count is a number
+                if isinstance(count, (int, float)):
+                    print(f"   ✅ Valid count returned: {count}")
+                    return True, response
+                else:
+                    print(f"   ❌ Count is not a number: {count}")
+                    return False, response
+            else:
+                print(f"   ❌ Missing count field in response")
+                return False, response
+        
+        return success, response
+    
+    def test_smart_clearance_health(self):
+        """Test Smart Clearance - Inventory Health API - P0 Bug Fix"""
+        success, response, _ = self.run_test(
+            "Smart Clearance - Inventory Health",
+            "GET",
+            "clearance/health",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response:
+                success_flag = response["success"]
+                
+                print(f"   Health analysis success: {success_flag}")
+                
+                if success_flag:
+                    # Check for categories
+                    if "categories" in response:
+                        categories = response["categories"]
+                        expected_categories = ["dead_stock", "slow_moving", "moderate"]
+                        
+                        print(f"   Categories found: {list(categories.keys())}")
+                        
+                        # Verify expected categories exist
+                        categories_present = all(cat in categories for cat in expected_categories)
+                        
+                        if categories_present:
+                            print(f"   ✅ All expected categories present")
+                            
+                            # Check if categories have items
+                            total_items = sum(len(categories[cat]) for cat in expected_categories)
+                            print(f"   Total items across categories: {total_items}")
+                            
+                            return True, response
+                        else:
+                            missing = [cat for cat in expected_categories if cat not in categories]
+                            print(f"   ❌ Missing categories: {missing}")
+                            return False, response
+                    else:
+                        print(f"   ❌ Missing categories in response")
+                        return False, response
+                else:
+                    print(f"   ❌ Health analysis failed")
+                    return False, response
+            else:
+                print(f"   ❌ Missing success field in response")
+                return False, response
+        
+        return success, response
+    
+    def test_smart_clearance_campaigns(self):
+        """Test Smart Clearance - Campaigns API - P0 Bug Fix"""
+        success, response, _ = self.run_test(
+            "Smart Clearance - Campaigns",
+            "GET",
+            "clearance/campaigns",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response:
+                success_flag = response["success"]
+                
+                print(f"   Campaigns fetch success: {success_flag}")
+                
+                if success_flag:
+                    # Check for campaigns list
+                    if "campaigns" in response:
+                        campaigns = response["campaigns"]
+                        
+                        print(f"   Campaigns found: {len(campaigns)}")
+                        
+                        # Verify campaigns is a list
+                        if isinstance(campaigns, list):
+                            print(f"   ✅ Valid campaigns list returned")
+                            return True, response
+                        else:
+                            print(f"   ❌ Campaigns is not a list")
+                            return False, response
+                    else:
+                        print(f"   ❌ Missing campaigns in response")
+                        return False, response
+                else:
+                    print(f"   ❌ Campaigns fetch failed")
+                    return False, response
+            else:
+                print(f"   ❌ Missing success field in response")
+                return False, response
+        
+        return success, response
     
     def test_tcs_credentials(self):
         """Test TCS credentials endpoint"""
