@@ -212,15 +212,21 @@ const ConfirmationTracker = () => {
   const handleSyncStockStatus = async () => {
     try {
       toast.loading("Syncing stock status for all unfulfilled orders...");
-      const response = await axios.post(`${API}/customers/sync-stock-status`);
+      const params = new URLSearchParams();
+      if (globalStore && globalStore !== 'all') {
+        params.append('store_name', globalStore);
+      }
+      const response = await axios.post(`${API}/customers/sync-stock-status?${params.toString()}`);
       
       if (response.data.success) {
+        toast.dismiss();
         toast.success(
-          `Stock status synced! In Stock: ${response.data.in_stock}, Out of Stock: ${response.data.out_of_stock}`
+          `Stock status synced! Updated: ${response.data.updated}, In Stock: ${response.data.in_stock}, Out of Stock: ${response.data.out_of_stock}`
         );
         await fetchOrders();
       }
     } catch (error) {
+      toast.dismiss();
       console.error("Error syncing stock status:", error);
       toast.error("Failed to sync stock status");
     }
