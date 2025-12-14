@@ -494,7 +494,7 @@ const DashboardOptimized = () => {
                   .map((order) => (
                   <div 
                     key={order.customer_id} 
-                    className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer items-center"
+                    className="grid grid-cols-14 gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer items-center"
                   >
                     <div className="col-span-1">
                       <input type="checkbox" className="rounded border-gray-300" />
@@ -516,14 +516,40 @@ const DashboardOptimized = () => {
                     <div className="col-span-2">
                       <p className="text-sm text-gray-900">{order.first_name} {order.last_name}</p>
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-3">
+                      {order.line_items && order.line_items.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <div className="flex -space-x-2">
+                            {order.line_items.slice(0, 3).map((item, idx) => (
+                              <div 
+                                key={idx}
+                                className="w-8 h-8 rounded bg-gray-100 border-2 border-white flex items-center justify-center text-xs overflow-hidden"
+                                title={item.name || item.sku}
+                              >
+                                {item.image_url ? (
+                                  <img src={item.image_url} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <Package className="w-4 h-4 text-gray-400" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-gray-900 truncate">
+                              {order.line_items[0]?.name || order.line_items[0]?.sku || 'Product'}
+                            </p>
+                            {order.line_items.length > 1 && (
+                              <p className="text-xs text-gray-500">+{order.line_items.length - 1} more</p>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">No items</span>
+                      )}
+                    </div>
+                    <div className="col-span-1">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${getStatusStyle(order.fulfillment_status, 'fulfillment')}`}>
-                        {order.fulfillment_status === 'fulfilled' ? (
-                          <CheckCircle2 className="w-3 h-3 mr-1" />
-                        ) : (
-                          <Clock className="w-3 h-3 mr-1" />
-                        )}
-                        {order.fulfillment_status || 'Unfulfilled'}
+                        {order.fulfillment_status === 'fulfilled' ? '✅' : '⏳'}
                       </span>
                     </div>
                     <div className="col-span-2">
