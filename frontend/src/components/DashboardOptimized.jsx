@@ -315,17 +315,144 @@ const DashboardOptimized = () => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
-                placeholder="Search orders"
+                placeholder="Search orders by name, order #, phone..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-9 bg-white border-gray-300 text-sm"
               />
             </div>
-            <Button variant="outline" className="h-9 text-sm border-gray-300">
+            <Button 
+              variant="outline" 
+              className={`h-9 text-sm border-gray-300 ${showFilters ? 'bg-gray-100' : ''}`}
+              onClick={() => setShowFilters(!showFilters)}
+            >
               <Filter className="w-4 h-4 mr-2" />
               Filters
+              {Object.values(filters).filter(v => v !== 'all').length > 0 && (
+                <span className="ml-2 bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded text-xs">
+                  {Object.values(filters).filter(v => v !== 'all').length}
+                </span>
+              )}
             </Button>
           </div>
+          
+          {/* Expanded Filter Panel - Shopify Style */}
+          {showFilters && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {/* Fulfillment Status */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Fulfillment status</label>
+                  <Select value={filters.fulfillmentStatus} onValueChange={(v) => setFilters({...filters, fulfillmentStatus: v})}>
+                    <SelectTrigger className="h-9 text-sm bg-white">
+                      <SelectValue placeholder="Any" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any</SelectItem>
+                      <SelectItem value="fulfilled">✅ Fulfilled</SelectItem>
+                      <SelectItem value="unfulfilled">⏳ Unfulfilled</SelectItem>
+                      <SelectItem value="partially_fulfilled">⚠️ Partially fulfilled</SelectItem>
+                      <SelectItem value="scheduled">📅 Scheduled</SelectItem>
+                      <SelectItem value="on_hold">🛑 On hold</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Payment Status */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Payment status</label>
+                  <Select value={filters.paymentStatus} onValueChange={(v) => setFilters({...filters, paymentStatus: v})}>
+                    <SelectTrigger className="h-9 text-sm bg-white">
+                      <SelectValue placeholder="Any" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any</SelectItem>
+                      <SelectItem value="paid">💰 Paid</SelectItem>
+                      <SelectItem value="pending">⏳ Pending</SelectItem>
+                      <SelectItem value="authorized">🔐 Authorized</SelectItem>
+                      <SelectItem value="partially_refunded">↩️ Partially refunded</SelectItem>
+                      <SelectItem value="refunded">🔄 Refunded</SelectItem>
+                      <SelectItem value="voided">❌ Voided</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Delivery Status */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Delivery status</label>
+                  <Select value={filters.deliveryStatus} onValueChange={(v) => setFilters({...filters, deliveryStatus: v})}>
+                    <SelectTrigger className="h-9 text-sm bg-white">
+                      <SelectValue placeholder="Any" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any</SelectItem>
+                      <SelectItem value="DELIVERED">✅ Delivered</SelectItem>
+                      <SelectItem value="IN_TRANSIT">🚚 In transit</SelectItem>
+                      <SelectItem value="OUT_FOR_DELIVERY">📦 Out for delivery</SelectItem>
+                      <SelectItem value="PENDING">⏳ Pending</SelectItem>
+                      <SelectItem value="RETURNED">↩️ Returned</SelectItem>
+                      <SelectItem value="RETURN_IN_PROCESS">🔄 Return in process</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Date Range */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Date</label>
+                  <Select value={filters.dateRange} onValueChange={(v) => setFilters({...filters, dateRange: v})}>
+                    <SelectTrigger className="h-9 text-sm bg-white">
+                      <SelectValue placeholder="Any time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any time</SelectItem>
+                      <SelectItem value="today">Today</SelectItem>
+                      <SelectItem value="yesterday">Yesterday</SelectItem>
+                      <SelectItem value="last7days">Last 7 days</SelectItem>
+                      <SelectItem value="last30days">Last 30 days</SelectItem>
+                      <SelectItem value="last90days">Last 90 days</SelectItem>
+                      <SelectItem value="thisYear">This year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Channel/Store */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Channel</label>
+                  <Select value={filters.channel} onValueChange={(v) => setFilters({...filters, channel: v})}>
+                    <SelectTrigger className="h-9 text-sm bg-white">
+                      <SelectValue placeholder="All channels" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All channels</SelectItem>
+                      <SelectItem value="online_store">🌐 Online Store</SelectItem>
+                      <SelectItem value="pos">🏪 POS</SelectItem>
+                      <SelectItem value="draft_orders">📝 Draft Orders</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {/* Clear Filters */}
+              {Object.values(filters).some(v => v !== 'all') && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setFilters({
+                      fulfillmentStatus: 'all',
+                      paymentStatus: 'all',
+                      deliveryStatus: 'all',
+                      dateRange: 'all',
+                      channel: 'all'
+                    })}
+                    className="text-indigo-600 hover:text-indigo-700"
+                  >
+                    Clear all filters
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
