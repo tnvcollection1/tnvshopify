@@ -128,10 +128,11 @@ async def exchange_token(callback: EmbeddedSignupCallback, tenant_id: str = Quer
             if phone_response.status_code == 200:
                 phone_data = phone_response.json()
             
-            # Store credentials in database
+            # Store credentials in database - NOW STORE-SPECIFIC
             credentials = {
                 "id": str(uuid.uuid4()),
                 "tenant_id": tenant_id,
+                "store_id": store_id,  # NEW: Link to specific store
                 "waba_id": callback.waba_id,
                 "phone_number_id": callback.phone_number_id,
                 "access_token": access_token,
@@ -142,9 +143,9 @@ async def exchange_token(callback: EmbeddedSignupCallback, tenant_id: str = Quer
                 "is_active": True
             }
             
-            # Upsert credentials
+            # Upsert credentials - unique by store_id + waba_id
             await db.whatsapp_business_accounts.update_one(
-                {"tenant_id": tenant_id, "waba_id": callback.waba_id},
+                {"store_id": store_id, "waba_id": callback.waba_id},
                 {"$set": credentials},
                 upsert=True
             )
