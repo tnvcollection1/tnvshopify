@@ -119,17 +119,21 @@ async def get_customers(
             if date_filter:
                 query['last_order_date'] = date_filter
         
-        # Search across multiple fields
+        # Search across multiple fields - combine with $and for compatibility with tcs_only filter
         if search:
             search_regex = {"$regex": search, "$options": "i"}
-            query["$or"] = [
+            search_conditions = {"$or": [
                 {"first_name": search_regex},
                 {"last_name": search_regex},
                 {"email": search_regex},
                 {"phone": search_regex},
                 {"order_number": search_regex},
                 {"tracking_number": search_regex}
-            ]
+            ]}
+            if "$and" in query:
+                query["$and"].append(search_conditions)
+            else:
+                query["$and"] = [search_conditions]
         
         skip = (page - 1) * limit
         total = await db.customers.count_documents(query)
