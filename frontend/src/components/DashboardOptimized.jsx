@@ -501,8 +501,30 @@ const DashboardOptimized = () => {
             ) : (
               <div className="divide-y divide-gray-100">
                 {recentOrders
-                  .filter(order => activeTab === 'overview' || order.fulfillment_status !== 'fulfilled')
-                  .map((order) => (
+                  .filter(order => {
+                    if (activeTab === 'overview') return true;
+                    if (activeTab === 'unfulfilled') return order.fulfillment_status !== 'fulfilled';
+                    if (activeTab === 'cancelled') return order.fulfillment_status === 'cancelled' || order.financial_status === 'refunded';
+                    return true;
+                  })
+                  .map((order) => {
+                    // Generate product color based on name
+                    const getProductColor = (name) => {
+                      const colors = ['bg-blue-100 text-blue-700', 'bg-green-100 text-green-700', 'bg-purple-100 text-purple-700', 'bg-orange-100 text-orange-700', 'bg-pink-100 text-pink-700'];
+                      const hash = (name || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                      return colors[hash % colors.length];
+                    };
+                    
+                    const getProductInitials = (name) => {
+                      if (!name) return '?';
+                      const words = name.split(' ').filter(w => w.length > 0);
+                      if (words.length >= 2) {
+                        return (words[0][0] + words[1][0]).toUpperCase();
+                      }
+                      return name.substring(0, 2).toUpperCase();
+                    };
+                    
+                    return (
                   <div 
                     key={order.customer_id} 
                     className="grid grid-cols-14 gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer items-center"
@@ -534,13 +556,13 @@ const DashboardOptimized = () => {
                             {order.line_items.slice(0, 3).map((item, idx) => (
                               <div 
                                 key={idx}
-                                className="w-8 h-8 rounded bg-gray-100 border-2 border-white flex items-center justify-center text-xs overflow-hidden"
+                                className={`w-8 h-8 rounded border-2 border-white flex items-center justify-center text-xs font-medium overflow-hidden ${getProductColor(item.name || item.sku)}`}
                                 title={item.name || item.sku}
                               >
                                 {item.image_url ? (
                                   <img src={item.image_url} alt="" className="w-full h-full object-cover" />
                                 ) : (
-                                  <Package className="w-4 h-4 text-gray-400" />
+                                  getProductInitials(item.name || item.sku)
                                 )}
                               </div>
                             ))}
