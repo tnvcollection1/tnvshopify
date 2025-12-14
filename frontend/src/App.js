@@ -403,6 +403,10 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/whatsapp-case-study" 
+        element={<WhatsAppCaseStudy />}
+      />
     </Routes>
   );
 }
