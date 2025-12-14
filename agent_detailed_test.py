@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://marketsync-dash.preview.emergentagent.com/api'
+base_url = 'https://b2b-saas.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
