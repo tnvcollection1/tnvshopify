@@ -230,17 +230,21 @@ async def get_customer_stats(
             if date_filter:
                 query['last_order_date'] = date_filter
         
-        # Search filter
+        # Search filter - needs to be combined with $and to work with tcs_only
         if search:
             search_regex = {"$regex": search, "$options": "i"}
-            query["$or"] = [
+            search_conditions = {"$or": [
                 {"first_name": search_regex},
                 {"last_name": search_regex},
                 {"email": search_regex},
                 {"phone": search_regex},
                 {"order_number": search_regex},
                 {"tracking_number": search_regex}
-            ]
+            ]}
+            if "$and" in query:
+                query["$and"].append(search_conditions)
+            else:
+                query["$and"] = [search_conditions]
         
         # Use aggregation pipeline for efficient stats calculation
         pipeline = [
