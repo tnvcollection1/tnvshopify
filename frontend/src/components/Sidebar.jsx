@@ -29,7 +29,8 @@ import {
   Gift,
   FileText,
   CreditCard,
-  Link2
+  Link2,
+  Shield
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
