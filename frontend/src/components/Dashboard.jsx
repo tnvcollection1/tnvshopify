@@ -1334,6 +1334,28 @@ const Dashboard = () => {
                             <span className="text-slate-400">N/A</span>
                           }
                         </TableCell>
+                        <TableCell className="max-w-xs">
+                          {customer.line_items && customer.line_items.length > 0 ? (
+                            <div className="space-y-1">
+                              {customer.line_items.slice(0, 2).map((item, idx) => (
+                                <div key={idx} className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center text-xs">
+                                    📦
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-medium truncate">{item.name || item.sku || 'Product'}</p>
+                                    <p className="text-xs text-slate-500">Qty: {item.quantity} • Rs. {item.price}</p>
+                                  </div>
+                                </div>
+                              ))}
+                              {customer.line_items.length > 2 && (
+                                <span className="text-xs text-slate-500">+{customer.line_items.length - 2} more</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 text-xs">No items</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-slate-600 font-mono">
                           {customer.phone ? (
                             <div className="flex items-center gap-1">
