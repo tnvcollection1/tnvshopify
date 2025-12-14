@@ -130,6 +130,31 @@ const Inventory = () => {
     }
   };
 
+  const syncShopifyPrices = async () => {
+    setSyncingPrices(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.store !== 'all') params.append('store_name', filters.store);
+      
+      const response = await fetch(`${API}/inventory/v2/sync-shopify-prices?${params}`, {
+        method: 'POST'
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(`Synced prices for ${data.updated_count} items. Profit calculated!`);
+        fetchItems(); // Refresh inventory
+      } else {
+        toast.error(data.message || 'Failed to sync prices');
+      }
+    } catch (error) {
+      console.error('Error syncing prices:', error);
+      toast.error('Failed to sync Shopify prices');
+    } finally {
+      setSyncingPrices(false);
+    }
+  };
+
   // Selection handlers
   const handleSelectAll = () => {
     if (selectAll) {
