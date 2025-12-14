@@ -115,9 +115,13 @@ const SettingsOptimized = () => {
             <Store className="h-4 w-4 mr-2" />
             Stores
           </TabsTrigger>
+          <TabsTrigger value="api-keys">
+            <Key className="h-4 w-4 mr-2" />
+            API Keys
+          </TabsTrigger>
           <TabsTrigger value="shopify">
             <SettingsIcon className="h-4 w-4 mr-2" />
-            Shopify Configuration
+            Shopify Guide
           </TabsTrigger>
         </TabsList>
 
