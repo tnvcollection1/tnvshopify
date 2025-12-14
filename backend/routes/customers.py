@@ -340,12 +340,72 @@ async def update_customer(customer_id: str, update: CustomerUpdate):
 
 
 @customers_router.get("/count")
-async def get_customer_count(store_name: str = None):
-    """Get total customer count"""
+async def get_customer_count(
+    store_name: str = None,
+    china_tracking: str = None,
+    purchase_status: str = None,
+    tcs_only: str = None,
+    year: str = None,
+    search: str = None,
+    fulfillment_status: str = None
+):
+    """Get total customer count with filters"""
     try:
-        query = {"store_name": store_name} if store_name else {}
+        query = {}
+        
+        if store_name and store_name != "all":
+            query["store_name"] = store_name
+            
+        if fulfillment_status and fulfillment_status != "all":
+            query["fulfillment_status"] = fulfillment_status
+        
+        # TCS only filter
+        if tcs_only == "true":
+            query['$and'] = [
+                {"tracking_number": {"$exists": True}},
+                {"tracking_number": {"$ne": None}},
+                {"tracking_number": {"$ne": ""}},
+                {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}}
+            ]
+        
+        # China Post tracking filter
+        if china_tracking == "true":
+            query['$and'] = [
+                {"tracking_number": {"$exists": True}},
+                {"tracking_number": {"$ne": None}},
+                {"tracking_number": {"$ne": ""}},
+                {"tracking_number": {"$regex": "^X", "$options": "i"}}
+            ]
+        
+        # Purchase status filter
+        if purchase_status and purchase_status != "all":
+            query["purchase_status"] = purchase_status
+            
+        # Year filter
+        if year and year != "all":
+            try:
+                year_int = int(year)
+                start_date_val = datetime(year_int, 1, 1)
+                end_date_val = datetime(year_int, 12, 31, 23, 59, 59)
+                query['last_order_date'] = {
+                    "$gte": start_date_val.isoformat(),
+                    "$lte": end_date_val.isoformat()
+                }
+            except ValueError:
+                pass
+        
+        # Search filter
+        if search:
+            search_regex = {"$regex": search, "$options": "i"}
+            query["$or"] = [
+                {"first_name": search_regex},
+                {"last_name": search_regex},
+                {"order_number": search_regex},
+                {"tracking_number": search_regex}
+            ]
+            
         count = await db.customers.count_documents(query)
-        return {"count": count, "store_name": store_name}
+        return {"total": count, "count": count, "store_name": store_name}
     except Exception as e:
         logger.error(f"Error counting customers: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
