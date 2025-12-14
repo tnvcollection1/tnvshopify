@@ -1871,18 +1871,20 @@ def main():
         return 0
     else:
         print("❌ Some API Keys Management APIs have issues")
-        if not tenant_reg_results.get('success'):
-            print(f"   - Tenant Registration: Issues with registration API")
-        if not plans_results.get('success'):
-            print(f"   - Subscription Plans: Issues with plans API")
-        if not meta_validation_results.get('success'):
-            print(f"   - Meta Ads Validation: Issues with validation API")
-        if not meta_campaigns_results.get('success'):
-            print(f"   - Meta Ads Campaigns: Issues with campaigns API error handling")
-        if not api_keys_results.get('success'):
-            print(f"   - API Keys Update: Issues with API keys update")
-        if not usage_results.get('success'):
-            print(f"   - Usage Statistics: Issues with usage statistics API")
+        if not definitions_results.get('success'):
+            print(f"   - Definitions API: Issues with getting API key definitions")
+        if not get_empty_results.get('success'):
+            print(f"   - Get Empty Keys: Issues with getting empty keys")
+        if not update_single_results.get('success'):
+            print(f"   - Update Single Key: Issues with updating single key")
+        if not get_after_results.get('success'):
+            print(f"   - Get After Update: Issues with getting keys after update")
+        if not status_results.get('success'):
+            print(f"   - Status API: Issues with getting API keys status")
+        if not delete_results.get('success'):
+            print(f"   - Delete Key: Issues with deleting API key")
+        if not bulk_update_results.get('success'):
+            print(f"   - Bulk Update: Issues with bulk updating keys")
         return 1
 
 if __name__ == "__main__":
