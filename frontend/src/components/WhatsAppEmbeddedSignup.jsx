@@ -862,7 +862,7 @@ const WhatsAppEmbeddedSignup = () => {
 
           {/* Templates Tab */}
           <TabsContent value="templates">
-            <Card>
+            <Card className="bg-white shadow-sm border-gray-200">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-lg">Message Templates</CardTitle>
@@ -873,7 +873,7 @@ const WhatsAppEmbeddedSignup = () => {
                 <Button
                   onClick={() => setCreateTemplateDialog(true)}
                   disabled={!selectedAccount}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-[#25D366] hover:bg-[#128C7E] text-white"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Create Template
@@ -886,54 +886,50 @@ const WhatsAppEmbeddedSignup = () => {
                   </div>
                 ) : templates.length === 0 ? (
                   <div className="text-center py-12">
-                    <FileText className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                    <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                      <FileText className="w-10 h-10 text-gray-400" />
+                    </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No templates yet</h3>
                     <p className="text-gray-500 mb-4">Create your first message template to start campaigns</p>
-                    <Button onClick={() => setCreateTemplateDialog(true)} className="bg-green-600 hover:bg-green-700">
+                    <Button onClick={() => setCreateTemplateDialog(true)} className="bg-[#25D366] hover:bg-[#128C7E] text-white">
                       <Plus className="w-4 h-4 mr-2" />
                       Create Template
                     </Button>
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead>Template Name</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Language</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {templates.map((template, idx) => (
-                        <TableRow key={idx} className="hover:bg-gray-50">
-                          <TableCell className="font-medium">{template.name}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-blue-50 text-blue-800">
-                              {template.category}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{template.language}</TableCell>
-                          <TableCell>{getStatusBadge(template.status)}</TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setMessageForm({ ...messageForm, templateName: template.name });
-                                setSendMessageDialog(true);
-                              }}
-                              disabled={template.status !== "APPROVED"}
-                            >
-                              <Send className="w-4 h-4 mr-1" />
-                              Use
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <div className="space-y-3">
+                    {templates.map((template, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-900">{template.name}</h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="bg-blue-50 text-blue-800 text-xs">
+                                {template.category}
+                              </Badge>
+                              <span className="text-xs text-gray-500">{template.language}</span>
+                              {getStatusBadge(template.status)}
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setMessageForm({ ...messageForm, templateName: template.name });
+                            setSendMessageDialog(true);
+                          }}
+                          disabled={template.status !== "APPROVED"}
+                        >
+                          <Send className="w-4 h-4 mr-1" />
+                          Use Template
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -941,7 +937,7 @@ const WhatsAppEmbeddedSignup = () => {
 
           {/* Campaigns Tab */}
           <TabsContent value="campaigns">
-            <Card>
+            <Card className="bg-white shadow-sm border-gray-200">
               <CardHeader>
                 <CardTitle className="text-lg">Campaign History</CardTitle>
                 <CardDescription>
@@ -949,10 +945,12 @@ const WhatsAppEmbeddedSignup = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-gray-500">
-                  <Zap className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Campaign analytics coming soon</h3>
-                  <p>Detailed campaign tracking will be available here</p>
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Zap className="w-10 h-10 text-purple-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Campaign Analytics Coming Soon</h3>
+                  <p className="text-gray-500">Detailed campaign tracking will be available here</p>
                 </div>
               </CardContent>
             </Card>
