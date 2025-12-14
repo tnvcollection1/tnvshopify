@@ -383,21 +383,22 @@ async def delete_lead(leadgen_id: str):
 @lead_ads_router.get("/forms")
 async def get_lead_forms(page_id: Optional[str] = None):
     """Get list of lead forms from Facebook"""
-    if not FACEBOOK_ACCESS_TOKEN:
-        raise HTTPException(status_code=400, detail="Facebook access token not configured")
+    # Try to get access token from database first
+    access_token = await get_facebook_access_token()
+    
+    if not access_token:
+        return {"success": False, "error": "Facebook access token not configured. Please connect your Facebook account first."}
     
     # Get page ID from stored accounts if not provided
     if not page_id:
-        wa_account = await db.whatsapp_accounts.find_one({}, {"page_id": 1})
-        if wa_account:
-            page_id = wa_account.get("page_id")
+        page_id = await get_facebook_page_id()
     
     if not page_id:
-        return {"success": True, "forms": [], "message": "No page ID configured"}
+        return {"success": False, "error": "No Facebook Page connected. Please connect your WhatsApp Business account first."}
     
     url = f"https://graph.facebook.com/v20.0/{page_id}/leadgen_forms"
     params = {
-        "access_token": FACEBOOK_ACCESS_TOKEN,
+        "access_token": access_token,
         "fields": "id,name,status,leads_count,created_time"
     }
     
@@ -412,11 +413,225 @@ async def get_lead_forms(page_id: Optional[str] = None):
             
             return {
                 "success": True,
-                "forms": data.get("data", [])
+                "forms": data.get("data", []),
+                "page_id": page_id
             }
         except Exception as e:
             logger.error(f"Error fetching forms: {str(e)}")
             return {"success": False, "error": str(e)}
+
+# ==================== Auto-Sync / Pull Leads ====================
+
+async def get_facebook_access_token() -> Optional[str]:
+    """Get Facebook access token from stored WhatsApp accounts or env"""
+    # First try from WhatsApp accounts (which use the same Meta token)
+    try:
+        wa_account = await db.whatsapp_accounts.find_one(
+            {"access_token": {"$exists": True, "$ne": ""}},
+            {"access_token": 1}
+        )
+        if wa_account and wa_account.get("access_token"):
+            return wa_account["access_token"]
+    except Exception as e:
+        logger.error(f"Error getting token from DB: {e}")
+    
+    # Fallback to environment variable
+    return FACEBOOK_ACCESS_TOKEN or None
+
+async def get_facebook_page_id() -> Optional[str]:
+    """Get Facebook Page ID from stored accounts"""
+    try:
+        wa_account = await db.whatsapp_accounts.find_one(
+            {"page_id": {"$exists": True, "$ne": ""}},
+            {"page_id": 1}
+        )
+        if wa_account:
+            return wa_account.get("page_id")
+    except Exception as e:
+        logger.error(f"Error getting page ID: {e}")
+    return None
+
+@lead_ads_router.post("/sync")
+async def sync_leads_from_facebook(
+    form_id: Optional[str] = None,
+    days: int = Query(30, ge=1, le=90, description="Sync leads from last N days")
+):
+    """
+    Pull leads directly from Facebook Lead Ads API.
+    Can sync from a specific form or all forms.
+    """
+    access_token = await get_facebook_access_token()
+    
+    if not access_token:
+        raise HTTPException(
+            status_code=400, 
+            detail="Facebook access token not found. Please connect your WhatsApp Business account first."
+        )
+    
+    page_id = await get_facebook_page_id()
+    
+    if not page_id:
+        raise HTTPException(
+            status_code=400,
+            detail="No Facebook Page connected. Please connect your WhatsApp Business account first."
+        )
+    
+    synced_count = 0
+    skipped_count = 0
+    errors = []
+    
+    try:
+        # If specific form ID provided, sync only that form
+        if form_id:
+            form_ids = [form_id]
+        else:
+            # Get all lead forms for the page
+            forms_response = await get_lead_forms(page_id)
+            if not forms_response.get("success"):
+                raise HTTPException(status_code=400, detail=forms_response.get("error", "Failed to fetch forms"))
+            form_ids = [f["id"] for f in forms_response.get("forms", [])]
+        
+        if not form_ids:
+            return {
+                "success": True,
+                "message": "No lead forms found on your Facebook Page",
+                "synced": 0,
+                "skipped": 0
+            }
+        
+        logger.info(f"📥 Syncing leads from {len(form_ids)} forms...")
+        
+        # Sync leads from each form
+        async with httpx.AsyncClient() as client:
+            for fid in form_ids:
+                try:
+                    # Get leads from this form
+                    url = f"https://graph.facebook.com/v20.0/{fid}/leads"
+                    params = {
+                        "access_token": access_token,
+                        "fields": "id,created_time,ad_id,form_id,field_data,campaign_id,adset_id",
+                        "limit": 500  # Max per request
+                    }
+                    
+                    # Handle pagination
+                    while url:
+                        response = await client.get(url, params=params, timeout=30.0)
+                        data = response.json()
+                        
+                        if "error" in data:
+                            errors.append(f"Form {fid}: {data['error'].get('message')}")
+                            break
+                        
+                        leads = data.get("data", [])
+                        
+                        for lead_data in leads:
+                            leadgen_id = lead_data.get("id")
+                            
+                            # Check if lead already exists
+                            existing = await db.facebook_leads.find_one({"leadgen_id": leadgen_id})
+                            if existing:
+                                skipped_count += 1
+                                continue
+                            
+                            # Transform and store the lead
+                            transformed_lead = transform_lead_data(lead_data, page_id)
+                            await db.facebook_leads.insert_one(transformed_lead)
+                            synced_count += 1
+                        
+                        # Check for next page
+                        paging = data.get("paging", {})
+                        url = paging.get("next")
+                        params = {}  # Clear params for next page URL
+                        
+                except Exception as e:
+                    errors.append(f"Form {fid}: {str(e)}")
+                    logger.error(f"Error syncing form {fid}: {e}")
+        
+        logger.info(f"✅ Sync complete: {synced_count} new, {skipped_count} skipped")
+        
+        return {
+            "success": True,
+            "message": f"Synced {synced_count} new leads, skipped {skipped_count} existing",
+            "synced": synced_count,
+            "skipped": skipped_count,
+            "forms_processed": len(form_ids),
+            "errors": errors if errors else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Sync error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@lead_ads_router.get("/pages")
+async def get_connected_pages():
+    """Get list of Facebook Pages from connected accounts"""
+    access_token = await get_facebook_access_token()
+    
+    if not access_token:
+        return {"success": False, "error": "No Facebook access token found"}
+    
+    url = "https://graph.facebook.com/v20.0/me/accounts"
+    params = {
+        "access_token": access_token,
+        "fields": "id,name,access_token,category"
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, params=params, timeout=10.0)
+            data = response.json()
+            
+            if "error" in data:
+                return {"success": False, "error": data["error"].get("message")}
+            
+            pages = data.get("data", [])
+            
+            # Also get from stored WhatsApp accounts
+            stored_pages = []
+            async for account in db.whatsapp_accounts.find({}, {"page_id": 1, "page_name": 1, "_id": 0}):
+                if account.get("page_id"):
+                    stored_pages.append({
+                        "id": account.get("page_id"),
+                        "name": account.get("page_name", "Connected Page"),
+                        "source": "whatsapp_account"
+                    })
+            
+            return {
+                "success": True,
+                "pages": pages,
+                "stored_pages": stored_pages
+            }
+        except Exception as e:
+            logger.error(f"Error fetching pages: {str(e)}")
+            return {"success": False, "error": str(e)}
+
+@lead_ads_router.get("/sync-status")
+async def get_sync_status():
+    """Get current sync status and configuration"""
+    access_token = await get_facebook_access_token()
+    page_id = await get_facebook_page_id()
+    
+    # Get last synced lead
+    last_lead = await db.facebook_leads.find_one(
+        {},
+        {"stored_at": 1, "_id": 0},
+        sort=[("stored_at", -1)]
+    )
+    
+    # Count leads by source
+    total_leads = await db.facebook_leads.count_documents({})
+    
+    return {
+        "success": True,
+        "is_configured": bool(access_token and page_id),
+        "has_access_token": bool(access_token),
+        "has_page_id": bool(page_id),
+        "page_id": page_id,
+        "total_leads": total_leads,
+        "last_sync": last_lead.get("stored_at") if last_lead else None
+    }
 
 # ==================== Setup Info ====================
 
