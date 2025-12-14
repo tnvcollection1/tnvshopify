@@ -413,10 +413,14 @@ const Settings = () => {
       
       <div className="p-8">
         <Tabs defaultValue="shopify" className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-5">
+          <TabsList className="grid w-full max-w-4xl grid-cols-6">
             <TabsTrigger value="shopify" className="flex items-center gap-2">
               <Store className="w-4 h-4" />
               Shopify
+            </TabsTrigger>
+            <TabsTrigger value="api-keys" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              API Keys
             </TabsTrigger>
             <TabsTrigger value="tcs" className="flex items-center gap-2">
               <Truck className="w-4 h-4" />
