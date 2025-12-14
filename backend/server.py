@@ -3262,6 +3262,82 @@ async def sync_inventory_with_store(store_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/inventory/v2/sync-shopify-prices")
+async def sync_shopify_prices_to_inventory(store_name: str = None):
+    """
+    Sync sale prices from Shopify orders (line_items) to inventory.
+    Updates sale_price and calculates profit for each inventory item.
+    """
+    try:
+        query = {}
+        if store_name and store_name != 'all':
+            query['store_name'] = store_name
+            
+        # Get all inventory items
+        inventory_items = await db.inventory_v2.find(query, {"_id": 0}).to_list(50000)
+        
+        if not inventory_items:
+            return {"success": False, "message": "No inventory items found"}
+        
+        updated_count = 0
+        skipped_count = 0
+        
+        for item in inventory_items:
+            sku = item.get('sku', '').upper().strip()
+            if not sku:
+                skipped_count += 1
+                continue
+            
+            # Find orders with this SKU to get the sale price
+            customer_query = {
+                "line_items.sku": {"$regex": f"^{sku}$", "$options": "i"}
+            }
+            if store_name and store_name != 'all':
+                customer_query["store_name"] = store_name
+                
+            customer = await db.customers.find_one(
+                customer_query,
+                {"_id": 0, "line_items": 1}
+            )
+            
+            sale_price = item.get('sale_price', 0) or 0
+            
+            if customer and customer.get('line_items'):
+                # Find the matching line item
+                for line_item in customer['line_items']:
+                    if line_item.get('sku', '').upper().strip() == sku:
+                        sale_price = float(line_item.get('price', 0) or 0)
+                        break
+            
+            # Calculate profit
+            cost = float(item.get('cost', 0) or 0)
+            profit = sale_price - cost
+            
+            # Update inventory item
+            await db.inventory_v2.update_one(
+                {"id": item['id']},
+                {"$set": {
+                    "sale_price": sale_price,
+                    "profit": profit,
+                    "shopify_synced": True,
+                    "last_price_sync": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            updated_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Synced prices for {updated_count} items",
+            "updated_count": updated_count,
+            "skipped_count": skipped_count,
+            "total_items": len(inventory_items)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing Shopify prices: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ========================================
 # OLD INVENTORY ENDPOINTS (KEPT FOR BACKWARD COMPATIBILITY)
 # ========================================
