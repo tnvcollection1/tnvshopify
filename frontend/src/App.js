@@ -367,6 +367,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/pricing" 
+        element={
+          <ProtectedRoute>
+            <PricingPage />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
