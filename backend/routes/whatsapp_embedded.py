@@ -210,18 +210,26 @@ async def register_phone_number(phone_number_id: str, access_token: str):
 # ==================== Account Management ====================
 
 @whatsapp_embedded_router.get("/accounts/{tenant_id}")
-async def get_connected_accounts(tenant_id: str):
-    """Get all WhatsApp Business accounts connected by a tenant"""
+async def get_connected_accounts(tenant_id: str, store_id: str = Query(None)):
+    """Get all WhatsApp Business accounts connected by a tenant, filtered by store"""
     try:
+        # Build query filter
+        query = {"tenant_id": tenant_id, "is_active": True}
+        
+        # Filter by store_id if provided (not 'all')
+        if store_id and store_id != 'all':
+            query["store_id"] = store_id
+        
         accounts = await db.whatsapp_business_accounts.find(
-            {"tenant_id": tenant_id, "is_active": True},
+            query,
             {"_id": 0, "access_token": 0}  # Don't return sensitive token
         ).to_list(100)
         
         return {
             "success": True,
             "accounts": accounts,
-            "count": len(accounts)
+            "count": len(accounts),
+            "store_id": store_id
         }
     except Exception as e:
         logger.error(f"Error fetching accounts: {str(e)}")
