@@ -131,6 +131,7 @@ const Sidebar = () => {
         { icon: Megaphone, label: 'Campaigns', path: '/whatsapp-campaigns' },
         { icon: BarChart3, label: 'Analytics', path: '/whatsapp-analytics' },
         { icon: Link2, label: 'Business Platform', path: '/whatsapp-business' },
+        { icon: Bell, label: 'Order Notifications', path: '/notifications' },
       ]
     },
   ];
