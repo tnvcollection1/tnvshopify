@@ -2237,7 +2237,7 @@ class ShopifyCustomerAPITester:
         # Step 2: Test password change from current to newtest123
         print(f"\n🔄 Step 2: Changing password from '{current_password}' to 'newtest123'...")
         
-        change_success, change_response = self.run_test(
+        change_success, change_response, _ = self.run_test(
             "Change Password (to newtest123)",
             "POST",
             "agents/change-password",
