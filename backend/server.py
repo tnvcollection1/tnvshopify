@@ -71,6 +71,7 @@ set_tenants_deps(db)
 set_meta_ads_deps(db)
 set_whatsapp_embedded_db(db)
 set_api_keys_db(db)
+set_shopify_oauth_db(db)
 
 # ==================== Initialize Default Users ====================
 async def init_default_users():
