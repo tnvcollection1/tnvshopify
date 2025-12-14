@@ -135,6 +135,9 @@ const Sidebar = () => {
         { icon: Bell, label: 'Order Notifications', path: '/notifications' },
       ]
     },
+    { icon: Users, label: 'User Management', path: '/users' },
+    { icon: CreditCard, label: 'Subscription', path: '/pricing' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
   const isActive = (path) => location.pathname === path;
