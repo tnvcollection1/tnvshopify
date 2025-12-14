@@ -24,6 +24,7 @@ import {
   Truck,
   XCircle,
   Store,
+  Zap,
 } from "lucide-react";
 import {
   Card,
