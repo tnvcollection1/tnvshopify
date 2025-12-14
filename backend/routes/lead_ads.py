@@ -177,7 +177,7 @@ async def verify_webhook(
         raise HTTPException(status_code=403, detail="Invalid verify token")
     
     logger.info("✅ Webhook verified successfully")
-    return int(hub_challenge) if hub_challenge else ""
+    return hub_challenge
 
 @lead_ads_router.post("/webhook")
 async def handle_webhook(request: Request):
