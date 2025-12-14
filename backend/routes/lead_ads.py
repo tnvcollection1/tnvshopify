@@ -439,8 +439,17 @@ async def get_facebook_access_token() -> Optional[str]:
     return FACEBOOK_ACCESS_TOKEN or None
 
 async def get_facebook_page_id() -> Optional[str]:
-    """Get Facebook Page ID from stored accounts"""
+    """Get Facebook Page ID from stored accounts or config"""
     try:
+        # First check lead_ads_config
+        config = await db.lead_ads_config.find_one(
+            {"type": "config", "page_id": {"$exists": True}},
+            {"page_id": 1}
+        )
+        if config and config.get("page_id"):
+            return config["page_id"]
+        
+        # Fallback to WhatsApp accounts
         wa_account = await db.whatsapp_accounts.find_one(
             {"page_id": {"$exists": True, "$ne": ""}},
             {"page_id": 1}
