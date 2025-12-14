@@ -129,9 +129,18 @@ const Login = ({ onLoginSuccess }) => {
               {isSignup ? "Create your account" : "Log in"}
             </h1>
             <p className="text-sm text-gray-500">
-              {isSignup ? "Start your free trial" : "Continue to WhatsApp CRM"}
+              {isSignup ? "Your data is securely encrypted" : "Continue to WhatsApp CRM"}
             </p>
           </div>
+
+          {isSignup && (
+            <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg mb-4">
+              <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span className="text-xs text-green-700">Your password is encrypted with industry-standard bcrypt hashing</span>
+            </div>
+          )}
 
           <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
             {isSignup && (
