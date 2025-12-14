@@ -28,6 +28,7 @@ import {
   Zap,
   Gift,
   FileText,
+  CreditCard,
   Link2
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
