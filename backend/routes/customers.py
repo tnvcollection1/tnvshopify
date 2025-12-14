@@ -51,9 +51,11 @@ async def get_customers(
     start_date: str = None,
     end_date: str = None,
     tcs_only: str = None,
+    china_tracking: str = None,
+    purchase_status: str = None,
     sort_by: str = None
 ):
-    """Get paginated customers with filters - supports Dispatch Tracker requirements"""
+    """Get paginated customers with filters - supports Dispatch Tracker and Purchase Tracker requirements"""
     try:
         query = {}
         
