@@ -258,7 +258,14 @@ const InventoryHealthDashboard = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 hover:border-red-500/60 transition-colors">
+        <div 
+          className={`bg-red-500/10 border rounded-xl p-6 cursor-pointer transition-all ${
+            selectedCategory === 'dead_stock' 
+              ? 'border-red-500 ring-2 ring-red-500/50' 
+              : 'border-red-500/30 hover:border-red-500/60'
+          }`}
+          onClick={() => setSelectedCategory(selectedCategory === 'dead_stock' ? null : 'dead_stock')}
+        >
           <div className="flex items-center justify-between mb-4">
             <TrendingDown className="w-8 h-8 text-red-400" />
             <span className="text-3xl font-bold">{healthData?.dead_stock_count || 0}</span>
@@ -270,7 +277,14 @@ const InventoryHealthDashboard = () => {
           </p>
         </div>
 
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 hover:border-yellow-500/60 transition-colors">
+        <div 
+          className={`bg-yellow-500/10 border rounded-xl p-6 cursor-pointer transition-all ${
+            selectedCategory === 'slow_moving' 
+              ? 'border-yellow-500 ring-2 ring-yellow-500/50' 
+              : 'border-yellow-500/30 hover:border-yellow-500/60'
+          }`}
+          onClick={() => setSelectedCategory(selectedCategory === 'slow_moving' ? null : 'slow_moving')}
+        >
           <div className="flex items-center justify-between mb-4">
             <Package className="w-8 h-8 text-yellow-400" />
             <span className="text-3xl font-bold">{healthData?.slow_moving_count || 0}</span>
@@ -282,7 +296,14 @@ const InventoryHealthDashboard = () => {
           </p>
         </div>
 
-        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6 hover:border-green-500/60 transition-colors">
+        <div 
+          className={`bg-green-500/10 border rounded-xl p-6 cursor-pointer transition-all ${
+            selectedCategory === 'healthy' 
+              ? 'border-green-500 ring-2 ring-green-500/50' 
+              : 'border-green-500/30 hover:border-green-500/60'
+          }`}
+          onClick={() => setSelectedCategory(selectedCategory === 'healthy' ? null : 'healthy')}
+        >
           <div className="flex items-center justify-between mb-4">
             <TrendingUp className="w-8 h-8 text-green-400" />
             <span className="text-3xl font-bold">{healthData?.fast_moving_count || 0}</span>
@@ -294,7 +315,14 @@ const InventoryHealthDashboard = () => {
           </p>
         </div>
 
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6 hover:border-blue-500/60 transition-colors">
+        <div 
+          className={`bg-blue-500/10 border rounded-xl p-6 cursor-pointer transition-all ${
+            selectedCategory === 'all' 
+              ? 'border-blue-500 ring-2 ring-blue-500/50' 
+              : 'border-blue-500/30 hover:border-blue-500/60'
+          }`}
+          onClick={() => setSelectedCategory(selectedCategory === 'all' ? null : 'all')}
+        >
           <div className="flex items-center justify-between mb-4">
             <DollarSign className="w-8 h-8 text-blue-400" />
             <span className="text-3xl font-bold">{healthData?.total_items || 0}</span>
@@ -306,6 +334,62 @@ const InventoryHealthDashboard = () => {
           </p>
         </div>
       </div>
+
+      {/* Selected Category Items Table */}
+      {selectedCategory && (
+        <div className="mb-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              {selectedCategory === 'dead_stock' && <><TrendingDown className="w-5 h-5 text-red-400" /> Dead Stock Items</>}
+              {selectedCategory === 'slow_moving' && <><Package className="w-5 h-5 text-yellow-400" /> Slow Moving Items</>}
+              {selectedCategory === 'healthy' && <><TrendingUp className="w-5 h-5 text-green-400" /> Healthy Stock Items</>}
+              {selectedCategory === 'all' && <><DollarSign className="w-5 h-5 text-blue-400" /> All Inventory Items</>}
+            </h2>
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              ✕ Close
+            </button>
+          </div>
+          
+          <div className="overflow-x-auto max-h-96 overflow-y-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-700/50 sticky top-0">
+                <tr>
+                  <th className="text-left p-3 text-gray-400">SKU</th>
+                  <th className="text-left p-3 text-gray-400">Product</th>
+                  <th className="text-right p-3 text-gray-400">Quantity</th>
+                  <th className="text-right p-3 text-gray-400">Price</th>
+                  <th className="text-right p-3 text-gray-400">Value</th>
+                  <th className="text-right p-3 text-gray-400">Days Old</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(selectedCategory === 'all' 
+                  ? [...(healthData?.raw_categories?.dead_stock || []), ...(healthData?.raw_categories?.slow_moving || []), ...(healthData?.raw_categories?.healthy || [])]
+                  : healthData?.raw_categories?.[selectedCategory] || []
+                ).slice(0, 100).map((item, idx) => (
+                  <tr key={idx} className="border-b border-gray-700/50 hover:bg-gray-700/30">
+                    <td className="p-3 font-mono text-xs">{item.sku}</td>
+                    <td className="p-3">{item.title || item.product_name || '-'}</td>
+                    <td className="p-3 text-right">{item.quantity || 0}</td>
+                    <td className="p-3 text-right">Rs. {(item.price || 0).toLocaleString()}</td>
+                    <td className="p-3 text-right">Rs. {((item.price || 0) * (item.quantity || 1)).toLocaleString()}</td>
+                    <td className="p-3 text-right">{item.days_since_last_sale || 'N/A'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {(selectedCategory === 'all' 
+              ? [...(healthData?.raw_categories?.dead_stock || []), ...(healthData?.raw_categories?.slow_moving || []), ...(healthData?.raw_categories?.healthy || [])]
+              : healthData?.raw_categories?.[selectedCategory] || []
+            ).length === 0 && (
+              <div className="text-center py-8 text-gray-500">No items found in this category</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Age-Based Analysis */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
