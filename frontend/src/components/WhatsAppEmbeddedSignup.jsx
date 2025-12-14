@@ -593,9 +593,22 @@ const WhatsAppEmbeddedSignup = () => {
             </h1>
             <p className="text-sm text-gray-500 mt-1">
               Connect WhatsApp Business accounts and send marketing messages
+              {selectedStore && selectedStore !== 'all' && (
+                <span className="ml-2 inline-flex items-center gap-1 text-green-600 font-medium">
+                  <Store className="w-3 h-3" />
+                  {getStoreName(selectedStore)}
+                </span>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {/* Store Warning */}
+            {(!selectedStore || selectedStore === 'all') && (
+              <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                Select a Store
+              </Badge>
+            )}
             {config?.is_configured ? (
               <Badge className="bg-green-100 text-green-800 border-green-200">
                 <CheckCircle className="w-3 h-3 mr-1" />
@@ -618,7 +631,7 @@ const WhatsAppEmbeddedSignup = () => {
             <div className="relative">
               <Button
                 onClick={() => setShowSignupOptions(!showSignupOptions)}
-                disabled={connecting || !config?.is_configured}
+                disabled={connecting || !config?.is_configured || !selectedStore || selectedStore === 'all'}
                 className="h-9 text-sm bg-green-600 hover:bg-green-700"
               >
                 {connecting ? (
