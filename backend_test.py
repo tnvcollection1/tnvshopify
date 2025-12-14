@@ -1967,87 +1967,73 @@ class ShopifyCustomerAPITester:
         return performance_results
 
 def main():
-    print("🚀 Starting API Keys Management Validation Tests")
+    print("🚀 Starting Shopify OAuth One-Click Connection Tests")
     print("=" * 80)
     
     # Setup
     tester = ShopifyCustomerAPITester()
     
-    # Run API Keys Management tests as requested
-    api_keys_results = tester.run_api_keys_management_tests()
+    # Run Shopify OAuth tests as requested
+    oauth_results = tester.run_shopify_oauth_tests()
     
-    # Print API Keys Management test summary
+    # Print Shopify OAuth test summary
     print("\n" + "=" * 80)
-    print("📊 API KEYS MANAGEMENT TEST SUMMARY")
+    print("📊 SHOPIFY OAUTH TEST SUMMARY")
     print("=" * 80)
     
-    # API Keys Management Results
-    definitions_results = api_keys_results.get("definitions", {})
-    get_empty_results = api_keys_results.get("get_empty", {})
-    update_single_results = api_keys_results.get("update_single", {})
-    get_after_results = api_keys_results.get("get_after_update", {})
-    status_results = api_keys_results.get("status", {})
-    delete_results = api_keys_results.get("delete", {})
-    bulk_update_results = api_keys_results.get("bulk_update", {})
+    # Shopify OAuth Results
+    auth_url_results = oauth_results.get("auth_url", {})
+    connections_results = oauth_results.get("connections", {})
+    status_results = oauth_results.get("status", {})
+    error_handling_results = oauth_results.get("error_handling", {})
     
-    # API Keys Definitions Summary
-    print(f"\n🔑 API KEYS DEFINITIONS:")
-    print(f"   Definitions API: {'✅ PASS' if definitions_results.get('success') else '❌ FAIL'}")
+    # Auth URL Generation Summary
+    print(f"\n🔗 AUTH URL GENERATION:")
+    print(f"   GET /api/shopify/oauth/auth-url?shop=teststore: {'✅ PASS' if auth_url_results.get('success') else '❌ FAIL'}")
     
-    # API Keys CRUD Operations Summary
-    print(f"\n📝 API KEYS CRUD OPERATIONS:")
-    print(f"   Get Empty Keys: {'✅ PASS' if get_empty_results.get('success') else '❌ FAIL'}")
-    print(f"   Update Single Key: {'✅ PASS' if update_single_results.get('success') else '❌ FAIL'}")
-    print(f"   Get After Update: {'✅ PASS' if get_after_results.get('success') else '❌ FAIL'}")
-    print(f"   Delete Key: {'✅ PASS' if delete_results.get('success') else '❌ FAIL'}")
-    print(f"   Bulk Update: {'✅ PASS' if bulk_update_results.get('success') else '❌ FAIL'}")
+    # Connections List Summary
+    print(f"\n📋 CONNECTIONS LIST:")
+    print(f"   GET /api/shopify/oauth/connections: {'✅ PASS' if connections_results.get('success') else '❌ FAIL'}")
     
-    # API Keys Status Summary
-    print(f"\n📊 API KEYS STATUS:")
-    print(f"   Status API: {'✅ PASS' if status_results.get('success') else '❌ FAIL'}")
+    # Connection Status Summary
+    print(f"\n📊 CONNECTION STATUS:")
+    print(f"   GET /api/shopify/oauth/status/teststore: {'✅ PASS' if status_results.get('success') else '❌ FAIL'}")
     
-    # Overall API Keys Management assessment
+    # Error Handling Summary
+    print(f"\n⚠️ ERROR HANDLING:")
+    print(f"   Empty shop parameter: {'✅ PASS' if error_handling_results.get('success') else '❌ FAIL'}")
+    
+    # Overall Shopify OAuth assessment
     all_tests_passed = all(
         results.get('success', False) 
-        for results in [definitions_results, get_empty_results, update_single_results, 
-                       get_after_results, status_results, delete_results, bulk_update_results]
+        for results in [auth_url_results, connections_results, status_results, error_handling_results]
     )
     
-    total_tests = 7
+    total_tests = 4
     passed_tests = sum(
-        1 for results in [definitions_results, get_empty_results, update_single_results,
-                         get_after_results, status_results, delete_results, bulk_update_results]
+        1 for results in [auth_url_results, connections_results, status_results, error_handling_results]
         if results.get('success', False)
     )
     
-    print(f"\n🎯 API KEYS MANAGEMENT VALIDATION: {passed_tests}/{total_tests} tests passed")
+    print(f"\n🎯 SHOPIFY OAUTH VALIDATION: {passed_tests}/{total_tests} tests passed")
     
     if all_tests_passed:
-        print("✅ All API Keys Management APIs are working correctly!")
-        print("   - Definitions: Returns all 5 integration types (razorpay, whatsapp, meta, dtdc, openai)")
-        print("   - Get Keys: Returns empty keys initially with proper structure")
-        print("   - Update Key: Encrypts and saves keys with proper masking")
-        print("   - Get After Update: Shows masked values (last 4 chars visible)")
-        print("   - Status: Shows configuration status (partial/complete)")
-        print("   - Delete Key: Removes keys successfully")
-        print("   - Bulk Update: Updates multiple keys at once")
+        print("✅ All Shopify OAuth APIs are working correctly!")
+        print("   - Auth URL: Returns valid OAuth URL with correct shop domain")
+        print("   - Connections: Returns list of connected stores (empty initially)")
+        print("   - Status: Returns connection status (connected: false for non-connected stores)")
+        print("   - Error Handling: Gracefully handles empty shop parameter")
         return 0
     else:
-        print("❌ Some API Keys Management APIs have issues")
-        if not definitions_results.get('success'):
-            print(f"   - Definitions API: Issues with getting API key definitions")
-        if not get_empty_results.get('success'):
-            print(f"   - Get Empty Keys: Issues with getting empty keys")
-        if not update_single_results.get('success'):
-            print(f"   - Update Single Key: Issues with updating single key")
-        if not get_after_results.get('success'):
-            print(f"   - Get After Update: Issues with getting keys after update")
+        print("❌ Some Shopify OAuth APIs have issues")
+        if not auth_url_results.get('success'):
+            print(f"   - Auth URL API: Issues with generating OAuth URL")
+        if not connections_results.get('success'):
+            print(f"   - Connections API: Issues with listing connections")
         if not status_results.get('success'):
-            print(f"   - Status API: Issues with getting API keys status")
-        if not delete_results.get('success'):
-            print(f"   - Delete Key: Issues with deleting API key")
-        if not bulk_update_results.get('success'):
-            print(f"   - Bulk Update: Issues with bulk updating keys")
+            print(f"   - Status API: Issues with checking connection status")
+        if not error_handling_results.get('success'):
+            print(f"   - Error Handling: Issues with handling empty shop parameter")
         return 1
 
 if __name__ == "__main__":
