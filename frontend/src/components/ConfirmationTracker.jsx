@@ -195,8 +195,8 @@ const ConfirmationTracker = () => {
         case 'purchased': return order.confirmation_status === 'PURCHASED';
         case 'notPurchased': return order.confirmation_status === 'NOT_PURCHASED';
         case 'canceled': return order.confirmation_status === 'CANCELED';
-        case 'inStock': return order.stock_status === 'in_stock';
-        case 'outOfStock': return order.stock_status === 'out_of_stock';
+        case 'inStock': return order.stock_status === 'IN_STOCK';
+        case 'outOfStock': return order.stock_status === 'OUT_OF_STOCK';
         default: return false;
       }
     });
