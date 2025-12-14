@@ -362,6 +362,7 @@ const DashboardOptimized = () => {
                       <SelectItem value="fulfilled">✅ Fulfilled</SelectItem>
                       <SelectItem value="unfulfilled">⏳ Unfulfilled</SelectItem>
                       <SelectItem value="partially_fulfilled">⚠️ Partially fulfilled</SelectItem>
+                      <SelectItem value="cancelled">❌ Cancelled</SelectItem>
                       <SelectItem value="scheduled">📅 Scheduled</SelectItem>
                       <SelectItem value="on_hold">🛑 On hold</SelectItem>
                     </SelectContent>
