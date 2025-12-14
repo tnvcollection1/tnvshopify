@@ -812,7 +812,7 @@ const WhatsAppEmbeddedSignup = () => {
                     </TableHeader>
                     <TableBody>
                       {accounts.map((account) => (
-                        <TableRow key={account.waba_id} className="hover:bg-gray-50">
+                        <TableRow key={account.waba_id + (account.store_id || '')} className="hover:bg-gray-50">
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <Phone className="w-4 h-4 text-green-600" />
@@ -820,6 +820,12 @@ const WhatsAppEmbeddedSignup = () => {
                             </div>
                           </TableCell>
                           <TableCell>{account.verified_name || "—"}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
+                              <Store className="w-3 h-3 mr-1" />
+                              {getStoreName(account.store_id) || "—"}
+                            </Badge>
+                          </TableCell>
                           <TableCell>{getStatusBadge(account.quality_rating || "GREEN")}</TableCell>
                           <TableCell>{getStatusBadge("connected")}</TableCell>
                           <TableCell className="text-sm text-gray-500">
