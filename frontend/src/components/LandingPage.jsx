@@ -7,7 +7,7 @@ import {
   Check, 
   Store, 
   BarChart3, 
-  MessageSquare, 
+  MessageCircle, 
   Package, 
   Zap, 
   Shield, 
@@ -18,7 +18,16 @@ import {
   Play,
   Star,
   Menu,
-  X
+  X,
+  Send,
+  Inbox,
+  Radio,
+  Bell,
+  LayoutTemplate,
+  UserPlus,
+  Bot,
+  Clock,
+  CheckCircle2
 } from "lucide-react";
 
 const LandingPage = () => {
@@ -26,59 +35,59 @@ const LandingPage = () => {
 
   const features = [
     {
+      icon: <Inbox className="w-6 h-6" />,
+      title: "Unified Inbox",
+      description: "Manage all your WhatsApp conversations from one powerful inbox. Never miss a customer message again."
+    },
+    {
+      icon: <Radio className="w-6 h-6" />,
+      title: "Broadcast Campaigns",
+      description: "Send personalized messages to thousands of customers instantly. 98% open rate guaranteed."
+    },
+    {
+      icon: <LayoutTemplate className="w-6 h-6" />,
+      title: "Message Templates",
+      description: "Create and manage approved WhatsApp templates for quick, professional responses."
+    },
+    {
+      icon: <Bot className="w-6 h-6" />,
+      title: "Auto-replies",
+      description: "Set up intelligent auto-responses for FAQs, order status, and more. Work 24/7 automatically."
+    },
+    {
       icon: <Store className="w-6 h-6" />,
-      title: "Multi-store management",
-      description: "Connect and manage multiple Shopify stores from one dashboard. Sync orders, inventory, and customers automatically."
+      title: "Shopify Integration",
+      description: "Connect your Shopify store. Auto-sync orders, send updates, and recover abandoned carts via WhatsApp."
     },
     {
       icon: <BarChart3 className="w-6 h-6" />,
-      title: "Advanced analytics",
-      description: "Real-time insights on sales, customer behavior, and inventory performance. Make data-driven decisions."
-    },
-    {
-      icon: <MessageSquare className="w-6 h-6" />,
-      title: "WhatsApp Business",
-      description: "Send automated order updates, marketing campaigns, and chat with customers via WhatsApp Business API."
-    },
-    {
-      icon: <Package className="w-6 h-6" />,
-      title: "Smart inventory",
-      description: "AI-powered inventory management with dead stock detection, dynamic pricing, and automated clearance campaigns."
-    },
-    {
-      icon: <TrendingUp className="w-6 h-6" />,
-      title: "Dynamic pricing",
-      description: "Automatically adjust prices based on demand, inventory levels, and sales velocity to maximize profits."
-    },
-    {
-      icon: <Users className="w-6 h-6" />,
-      title: "Customer segmentation",
-      description: "Segment customers by behavior and purchase history. Create targeted marketing campaigns for each group."
+      title: "Analytics Dashboard",
+      description: "Track message delivery, response rates, and campaign performance in real-time."
     }
   ];
 
   const stats = [
-    { value: "10K+", label: "Orders managed" },
-    { value: "₹50L+", label: "Revenue tracked" },
-    { value: "95%", label: "Delivery success" },
-    { value: "500+", label: "Happy merchants" }
+    { value: "98%", label: "Open rate" },
+    { value: "50M+", label: "Messages sent" },
+    { value: "10K+", label: "Businesses" },
+    { value: "340%", label: "Avg. ROI" }
   ];
 
   const testimonials = [
     {
-      quote: "This platform transformed how we manage our stores. The automation features alone save us hours every day.",
+      quote: "WhatsApp CRM transformed how we engage customers. Our response time dropped from hours to minutes.",
       author: "Priya Sharma",
       role: "Founder, Fashion Hub",
       avatar: "PS"
     },
     {
-      quote: "The WhatsApp integration is incredible. Our customer engagement has increased by 40% since we started using it.",
+      quote: "The broadcast feature is incredible. We recovered ₹12 lakhs in abandoned carts in just 3 months.",
       author: "Rahul Verma",
       role: "CEO, TechGadgets India",
       avatar: "RV"
     },
     {
-      quote: "Finally, a platform that understands Indian e-commerce. The inventory management is exactly what we needed.",
+      quote: "Finally, a platform that makes WhatsApp marketing easy. Our sales have increased by 340%.",
       author: "Anita Desai",
       role: "Operations Head, StyleKart",
       avatar: "AD"
@@ -92,10 +101,10 @@ const LandingPage = () => {
       period: "/month",
       description: "Perfect for small businesses",
       features: [
-        "1 Store connection",
-        "Up to 500 orders/month",
-        "Basic analytics",
-        "WhatsApp notifications",
+        "1,000 contacts",
+        "5,000 messages/month",
+        "Basic templates",
+        "Inbox & Auto-replies",
         "Email support"
       ],
       cta: "Start free trial",
@@ -107,11 +116,11 @@ const LandingPage = () => {
       period: "/month",
       description: "For growing businesses",
       features: [
-        "3 Store connections",
-        "Up to 5,000 orders/month",
-        "Advanced analytics",
-        "WhatsApp campaigns",
-        "Dynamic pricing",
+        "10,000 contacts",
+        "50,000 messages/month",
+        "Unlimited templates",
+        "Shopify integration",
+        "Broadcast campaigns",
         "Priority support"
       ],
       cta: "Start free trial",
@@ -123,16 +132,25 @@ const LandingPage = () => {
       period: "/month",
       description: "For large operations",
       features: [
-        "Unlimited stores",
-        "Unlimited orders",
-        "Custom integrations",
+        "Unlimited contacts",
+        "Unlimited messages",
+        "API access",
+        "Multiple stores",
         "Dedicated manager",
-        "24/7 phone support",
-        "Custom reports"
+        "24/7 phone support"
       ],
       cta: "Contact sales",
       popular: false
     }
+  ];
+
+  const useCases = [
+    { icon: "🍕", title: "Restaurants", desc: "Take orders & send updates" },
+    { icon: "👗", title: "Fashion", desc: "Share catalogs & offers" },
+    { icon: "💇", title: "Salons", desc: "Bookings & reminders" },
+    { icon: "🏥", title: "Healthcare", desc: "Appointments & reports" },
+    { icon: "🎓", title: "Education", desc: "Student & parent comms" },
+    { icon: "🏠", title: "Real Estate", desc: "Lead follow-ups" },
   ];
 
   return (
@@ -142,16 +160,17 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#95bf47] rounded-md flex items-center justify-center">
-                <Store className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-[#25d366] rounded-full flex items-center justify-center">
+                <MessageCircle className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-semibold text-gray-900">OmniSales</span>
+              <span className="text-xl font-semibold text-gray-900">WhatsApp CRM</span>
             </div>
             
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Features</a>
               <a href="#pricing" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Pricing</a>
               <a href="#testimonials" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Testimonials</a>
+              <Link to="/whatsapp-case-study" className="text-gray-600 hover:text-gray-900 text-sm font-medium">Case Studies</Link>
             </div>
             
             <div className="hidden md:flex items-center gap-4">
@@ -161,7 +180,7 @@ const LandingPage = () => {
                 </Button>
               </Link>
               <Link to="/login">
-                <Button className="bg-gray-900 hover:bg-gray-800 text-white">
+                <Button className="bg-[#25d366] hover:bg-[#128c7e] text-white">
                   Start free trial
                 </Button>
               </Link>
@@ -183,8 +202,9 @@ const LandingPage = () => {
               <a href="#features" className="block text-gray-600 hover:text-gray-900">Features</a>
               <a href="#pricing" className="block text-gray-600 hover:text-gray-900">Pricing</a>
               <a href="#testimonials" className="block text-gray-600 hover:text-gray-900">Testimonials</a>
+              <Link to="/whatsapp-case-study" className="block text-gray-600 hover:text-gray-900">Case Studies</Link>
               <Link to="/login" className="block">
-                <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                <Button className="w-full bg-[#25d366] hover:bg-[#128c7e] text-white">
                   Start free trial
                 </Button>
               </Link>
@@ -194,126 +214,103 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[#075e54] via-[#128c7e] to-[#25d366]">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-1.5 mb-6">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              <span className="text-sm text-green-700 font-medium">Now with AI-powered insights</span>
-            </div>
-            
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-gray-900 leading-tight mb-6">
-              The commerce platform made for <span className="text-[#95bf47]">Indian businesses</span>
-            </h1>
-            
-            <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-              Manage orders, inventory, and customer relationships from one powerful dashboard. 
-              Built for businesses that want to grow.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <Link to="/login">
-                <Button size="lg" className="bg-gray-900 hover:bg-gray-800 text-white px-8 h-12 text-base">
-                  Start free trial
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 px-8 h-12 text-base">
-                <Play className="w-4 h-4 mr-2" />
-                Watch demo
-              </Button>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="text-left">
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                <span className="text-sm text-white font-medium">Official WhatsApp Business API</span>
+              </div>
+              
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+                Turn WhatsApp into Your <span className="text-yellow-300">#1 Sales Channel</span>
+              </h1>
+              
+              <p className="text-lg text-green-100 mb-8 max-w-xl">
+                The complete WhatsApp CRM for modern businesses. Send broadcasts, manage conversations, 
+                and grow sales—all from one powerful dashboard.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-start gap-4 mb-8">
+                <Link to="/login">
+                  <Button size="lg" className="bg-white text-[#075e54] hover:bg-green-50 px-8 h-12 text-base font-semibold">
+                    Start free trial
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+                <Link to="/whatsapp-case-study">
+                  <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 px-8 h-12 text-base">
+                    <Play className="w-4 h-4 mr-2" />
+                    View case studies
+                  </Button>
+                </Link>
+              </div>
+
+              <p className="text-sm text-green-200">Free 14-day trial • No credit card required</p>
             </div>
 
-            <p className="text-sm text-gray-500">Free 14-day trial • No credit card required</p>
+            {/* Phone Mockup */}
+            <div className="relative hidden lg:block">
+              <div className="bg-gray-900 rounded-[3rem] p-3 shadow-2xl max-w-sm mx-auto">
+                <div className="bg-white rounded-[2.5rem] overflow-hidden">
+                  {/* WhatsApp Header */}
+                  <div className="bg-[#075e54] text-white px-4 py-3 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                      <MessageCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Your Business</p>
+                      <p className="text-xs text-green-200">Online • Instant Replies</p>
+                    </div>
+                  </div>
+                  {/* Chat Messages */}
+                  <div className="p-4 space-y-3 bg-[#e5ddd5] min-h-[300px]">
+                    <div className="bg-white rounded-lg p-3 max-w-[80%] shadow-sm">
+                      <p className="text-sm">Hi! I'd like to place an order 🛍️</p>
+                      <p className="text-xs text-gray-400 text-right mt-1">10:30 AM</p>
+                    </div>
+                    <div className="bg-[#dcf8c6] rounded-lg p-3 max-w-[80%] ml-auto shadow-sm">
+                      <p className="text-sm">Welcome! 🎉 Here's our catalog. What would you like?</p>
+                      <p className="text-xs text-gray-500 text-right mt-1">10:30 AM ✓✓</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 max-w-[80%] shadow-sm">
+                      <p className="text-sm">I'll take the blue sneakers, size 42</p>
+                      <p className="text-xs text-gray-400 text-right mt-1">10:31 AM</p>
+                    </div>
+                    <div className="bg-[#dcf8c6] rounded-lg p-3 max-w-[80%] ml-auto shadow-sm">
+                      <p className="text-sm">Order confirmed! ✅<br/>Total: ₹2,499<br/>Delivery: 2-3 days 📦</p>
+                      <p className="text-xs text-gray-500 text-right mt-1">10:31 AM ✓✓</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto mt-16 pt-16 border-t border-gray-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto mt-16 pt-12 border-t border-white/20">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-3xl font-semibold text-gray-900 mb-1">{stat.value}</div>
-                <div className="text-sm text-gray-500">{stat.label}</div>
+                <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
+                <div className="text-sm text-green-200">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Dashboard Preview */}
+      {/* Use Cases */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200">
-            <div className="flex items-center gap-2 px-4 py-3 bg-gray-100 border-b border-gray-200">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400" />
-                <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                <div className="w-3 h-3 rounded-full bg-green-400" />
+          <p className="text-center text-sm text-gray-500 mb-6">TRUSTED BY BUSINESSES IN</p>
+          <div className="flex flex-wrap justify-center gap-6">
+            {useCases.map((useCase, index) => (
+              <div key={index} className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
+                <span className="text-xl">{useCase.icon}</span>
+                <span className="text-sm font-medium text-gray-700">{useCase.title}</span>
               </div>
-            </div>
-            <div className="flex">
-              {/* Mini Sidebar */}
-              <div className="w-48 bg-[#1a1a1a] p-4 hidden md:block">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-6 h-6 bg-[#95bf47] rounded flex items-center justify-center">
-                    <Store className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-white text-sm font-medium">OmniSales</span>
-                </div>
-                <div className="space-y-1">
-                  <div className="px-3 py-2 bg-gray-800 rounded text-white text-sm">Orders</div>
-                  <div className="px-3 py-2 text-gray-400 text-sm">Products</div>
-                  <div className="px-3 py-2 text-gray-400 text-sm">Customers</div>
-                  <div className="px-3 py-2 text-gray-400 text-sm">Analytics</div>
-                  <div className="px-3 py-2 text-gray-400 text-sm">Marketing</div>
-                </div>
-              </div>
-              {/* Content */}
-              <div className="flex-1 p-6 bg-[#f6f6f7]">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Orders</h3>
-                  <div className="flex gap-2">
-                    <div className="px-3 py-1.5 bg-white border border-gray-300 rounded text-sm text-gray-600">Export</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 gap-4 mb-6">
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-500">Total orders</p>
-                    <p className="text-2xl font-semibold text-gray-900">23,421</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-500">Fulfilled</p>
-                    <p className="text-2xl font-semibold text-gray-900">18,234</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-500">Pending</p>
-                    <p className="text-2xl font-semibold text-gray-900">5,187</p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-500">Revenue</p>
-                    <p className="text-2xl font-semibold text-gray-900">₹54.2L</p>
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg border border-gray-200">
-                  <div className="px-4 py-3 border-b border-gray-200">
-                    <span className="text-sm font-medium text-gray-900">Recent orders</span>
-                  </div>
-                  <div className="divide-y divide-gray-100">
-                    {[1,2,3].map(i => (
-                      <div key={i} className="px-4 py-3 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm text-blue-600">#2950{i}</span>
-                          <span className="text-sm text-gray-600">Customer {i}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="px-2 py-0.5 bg-green-50 text-green-700 text-xs rounded">Fulfilled</span>
-                          <span className="text-sm text-gray-900">₹2,340</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -322,58 +319,83 @@ const LandingPage = () => {
       <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-4">
-              Everything you need to grow
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Everything you need to sell on WhatsApp
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              From order management to AI-powered marketing, get all the tools to run your e-commerce business.
+              Powerful features designed for every business. Start selling in minutes, not months.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div 
-                key={index}
-                className="p-6 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all"
-              >
-                <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center mb-4">
-                  <span className="text-[#95bf47]">{feature.icon}</span>
+              <div key={index} className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-shadow">
+                <div className="w-12 h-12 bg-[#25d366]/10 text-[#25d366] rounded-xl flex items-center justify-center mb-4">
+                  {feature.icon}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
+                <p className="text-gray-600">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      {/* How it Works */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Get started in 3 simple steps
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { step: "1", title: "Connect WhatsApp", desc: "Link your WhatsApp Business account in minutes with our easy setup wizard." },
+              { step: "2", title: "Import Contacts", desc: "Sync your customer database or upload contacts from your existing CRM or Shopify." },
+              { step: "3", title: "Start Messaging", desc: "Send broadcasts, manage conversations, and watch your sales grow." }
+            ].map((item, index) => (
+              <div key={index} className="text-center">
+                <div className="w-12 h-12 bg-[#25d366] text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                  {item.step}
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-gray-600">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section id="testimonials" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-4">Loved by businesses</h2>
-            <p className="text-lg text-gray-600">See what our customers have to say</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Loved by businesses everywhere
+            </h2>
+            <p className="text-lg text-gray-600">
+              See what our customers have to say about WhatsApp CRM
+            </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <div 
-                key={index}
-                className="p-6 rounded-xl bg-white border border-gray-200"
-              >
-                <div className="flex gap-1 mb-4">
-                  {[1,2,3,4,5].map((star) => (
-                    <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              <div key={index} className="bg-white p-6 rounded-xl border border-gray-200">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-gray-700 mb-6">"{testimonial.quote}"</p>
+                <p className="text-gray-600 mb-6">{testimonial.quote}</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-medium text-sm">
+                  <div className="w-10 h-10 bg-[#25d366] rounded-full flex items-center justify-center text-white font-semibold">
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900 text-sm">{testimonial.author}</div>
-                    <div className="text-gray-500 text-xs">{testimonial.role}</div>
+                    <p className="font-semibold text-gray-900">{testimonial.author}</p>
+                    <p className="text-sm text-gray-500">{testimonial.role}</p>
                   </div>
                 </div>
               </div>
@@ -382,57 +404,53 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8">
+      {/* Pricing */}
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-4">Simple pricing</h2>
-            <p className="text-lg text-gray-600">Start free, upgrade when you're ready</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Simple, transparent pricing
+            </h2>
+            <p className="text-lg text-gray-600">
+              Start free, upgrade when you're ready. No hidden fees.
+            </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {pricingPlans.map((plan, index) => (
               <div 
-                key={index}
-                className={`relative p-6 rounded-xl border ${
+                key={index} 
+                className={`bg-white rounded-xl p-8 ${
                   plan.popular 
-                    ? 'border-[#95bf47] shadow-lg' 
-                    : 'border-gray-200'
+                    ? 'ring-2 ring-[#25d366] shadow-lg relative' 
+                    : 'border border-gray-200'
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-[#95bf47] text-white text-xs font-medium px-3 py-1 rounded-full">
-                      Most popular
-                    </span>
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#25d366] text-white text-xs font-semibold px-3 py-1 rounded-full">
+                    Most Popular
                   </div>
                 )}
-                
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{plan.name}</h3>
+                <p className="text-sm text-gray-500 mb-4">{plan.description}</p>
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{plan.name}</h3>
-                  <p className="text-sm text-gray-500">{plan.description}</p>
-                </div>
-                
-                <div className="mb-6">
-                  <span className="text-4xl font-semibold text-gray-900">{plan.price}</span>
+                  <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
                   <span className="text-gray-500">{plan.period}</span>
                 </div>
-                
                 <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, fIndex) => (
-                    <li key={fIndex} className="flex items-center gap-3 text-sm">
-                      <Check className="w-4 h-4 text-[#95bf47]" />
-                      <span className="text-gray-600">{feature}</span>
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-center gap-2 text-gray-600">
+                      <Check className="w-5 h-5 text-[#25d366]" />
+                      {feature}
                     </li>
                   ))}
                 </ul>
-                
                 <Link to="/login">
                   <Button 
                     className={`w-full ${
                       plan.popular 
-                        ? 'bg-gray-900 hover:bg-gray-800 text-white' 
-                        : 'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300'
+                        ? 'bg-[#25d366] hover:bg-[#128c7e] text-white' 
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
                     }`}
                   >
                     {plan.cta}
@@ -445,71 +463,69 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-semibold text-white mb-4">
-            Ready to grow your business?
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-[#075e54] to-[#25d366]">
+        <div className="max-w-4xl mx-auto text-center">
+          <MessageCircle className="w-16 h-16 text-white/80 mx-auto mb-6" />
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+            Ready to transform your business?
           </h2>
-          <p className="text-lg text-gray-400 mb-8">
-            Join thousands of Indian businesses already using OmniSales.
+          <p className="text-lg text-green-100 mb-8">
+            Join 10,000+ businesses already growing with WhatsApp CRM. Start your free trial today.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/login">
-              <Button size="lg" className="bg-white hover:bg-gray-100 text-gray-900 px-8 h-12">
-                Start free trial
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-          <p className="text-sm text-gray-500 mt-4">No credit card required</p>
+          <Link to="/login">
+            <Button size="lg" className="bg-white text-[#075e54] hover:bg-green-50 px-8 h-12 text-base font-semibold">
+              Start free trial
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-gray-200">
+      <footer className="bg-gray-900 text-gray-400 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-[#95bf47] rounded-md flex items-center justify-center">
-                  <Store className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-2 text-white mb-4">
+                <div className="w-8 h-8 bg-[#25d366] rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-lg font-semibold text-gray-900">OmniSales</span>
+                <span className="font-semibold">WhatsApp CRM</span>
               </div>
-              <p className="text-sm text-gray-500">
-                The commerce platform for Indian businesses.
+              <p className="text-sm">
+                The complete WhatsApp Business solution for modern businesses.
               </p>
             </div>
-            
             <div>
-              <h4 className="font-medium text-gray-900 mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="#features" className="hover:text-gray-900">Features</a></li>
-                <li><a href="#pricing" className="hover:text-gray-900">Pricing</a></li>
-                <li><a href="#" className="hover:text-gray-900">Integrations</a></li>
+              <h4 className="text-white font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#features" className="hover:text-white">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
+                <li><Link to="/whatsapp-case-study" className="hover:text-white">Case Studies</Link></li>
+                <li><a href="#" className="hover:text-white">API Docs</a></li>
               </ul>
             </div>
-            
             <div>
-              <h4 className="font-medium text-gray-900 mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-gray-900">About</a></li>
-                <li><a href="#" className="hover:text-gray-900">Blog</a></li>
-                <li><a href="#" className="hover:text-gray-900">Contact</a></li>
+              <h4 className="text-white font-semibold mb-4">Integrations</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:text-white">Shopify</a></li>
+                <li><a href="#" className="hover:text-white">WooCommerce</a></li>
+                <li><a href="#" className="hover:text-white">Zapier</a></li>
+                <li><a href="#" className="hover:text-white">Custom API</a></li>
               </ul>
             </div>
-            
             <div>
-              <h4 className="font-medium text-gray-900 mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-gray-900">Privacy</a></li>
-                <li><a href="#" className="hover:text-gray-900">Terms</a></li>
+              <h4 className="text-white font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:text-white">About Us</a></li>
+                <li><a href="#" className="hover:text-white">Contact</a></li>
+                <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-white">Terms of Service</a></li>
               </ul>
             </div>
           </div>
-          
-          <div className="pt-8 border-t border-gray-200 text-center">
-            <p className="text-sm text-gray-500">© 2025 OmniSales. All rights reserved.</p>
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
+            <p>© 2024 WhatsApp CRM. All rights reserved.</p>
           </div>
         </div>
       </footer>
