@@ -41,6 +41,7 @@ import WhatsAppEmbeddedSignup from "@/components/WhatsAppEmbeddedSignup";
 import InventoryClearance from "@/components/InventoryClearance";
 import UserManagement from "@/components/UserManagement";
 import PricingPage from "@/components/PricingPage";
+import NotificationSettings from "@/components/NotificationSettings";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
