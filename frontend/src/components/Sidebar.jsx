@@ -115,6 +115,7 @@ const Sidebar = () => {
         { icon: PieChart, label: 'Dashboard', path: '/marketing' },
         { icon: Target, label: 'Meta Ads', path: '/meta-ads' },
         { icon: Megaphone, label: 'Facebook Ads', path: '/facebook-marketing' },
+        { icon: Users, label: 'Lead Ads', path: '/lead-ads' },
         { icon: Zap, label: 'Campaigns', path: '/campaigns' },
         { icon: Zap, label: 'Flash Sales', path: '/flash-sales' },
         { icon: Users, label: 'Customer Segments', path: '/segments' },
