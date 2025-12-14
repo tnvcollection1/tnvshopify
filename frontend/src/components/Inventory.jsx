@@ -104,8 +104,8 @@ const Inventory = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // Use global store from context
-      if (globalStore !== 'all') params.append('store_name', globalStore);
+      // Use store from filters (synced with global store)
+      if (filters.store !== 'all') params.append('store_name', filters.store);
       if (filters.status !== 'all') params.append('status', filters.status);
       
       const response = await fetch(`${API}/inventory/v2?${params}`);
