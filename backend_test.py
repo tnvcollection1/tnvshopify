@@ -1858,16 +1858,17 @@ def main():
     print(f"\n🎯 API KEYS MANAGEMENT VALIDATION: {passed_tests}/{total_tests} tests passed")
     
     if all_tests_passed:
-        print("✅ All Multi-Tenant & Meta Ads APIs are working correctly!")
-        print("   - Tenant Registration: Creates tenant and user successfully")
-        print("   - Subscription Plans: Returns all 4 plans with proper structure")
-        print("   - Meta Ads Validation: Handles missing credentials gracefully")
-        print("   - Meta Ads Campaigns: Returns proper error when not configured")
-        print("   - API Keys Update: Successfully updates tenant API keys")
-        print("   - Usage Statistics: Returns proper usage data with limits")
+        print("✅ All API Keys Management APIs are working correctly!")
+        print("   - Definitions: Returns all 5 integration types (razorpay, whatsapp, meta, dtdc, openai)")
+        print("   - Get Keys: Returns empty keys initially with proper structure")
+        print("   - Update Key: Encrypts and saves keys with proper masking")
+        print("   - Get After Update: Shows masked values (last 4 chars visible)")
+        print("   - Status: Shows configuration status (partial/complete)")
+        print("   - Delete Key: Removes keys successfully")
+        print("   - Bulk Update: Updates multiple keys at once")
         return 0
     else:
-        print("❌ Some Multi-Tenant & Meta Ads APIs have issues")
+        print("❌ Some API Keys Management APIs have issues")
         if not tenant_reg_results.get('success'):
             print(f"   - Tenant Registration: Issues with registration API")
         if not plans_results.get('success'):
