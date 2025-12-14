@@ -715,3 +715,306 @@ async def get_webhook_urls():
             "5. Save the webhook"
         ]
     }
+
+# ==================== Auto Webhook Registration ====================
+
+SHOPIFY_API_VERSION = "2024-01"
+
+async def register_shopify_webhook(
+    shop_domain: str,
+    access_token: str,
+    topic: str,
+    address: str
+) -> Dict:
+    """Register a single webhook with Shopify"""
+    url = f"https://{shop_domain}/admin/api/{SHOPIFY_API_VERSION}/webhooks.json"
+    
+    headers = {
+        "X-Shopify-Access-Token": access_token,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "webhook": {
+            "topic": topic,
+            "address": address,
+            "format": "json"
+        }
+    }
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=payload)
+        return {
+            "status_code": response.status_code,
+            "data": response.json() if response.status_code < 500 else {"error": response.text}
+        }
+
+async def get_existing_webhooks(shop_domain: str, access_token: str) -> List[Dict]:
+    """Get existing webhooks from Shopify"""
+    url = f"https://{shop_domain}/admin/api/{SHOPIFY_API_VERSION}/webhooks.json"
+    
+    headers = {
+        "X-Shopify-Access-Token": access_token,
+        "Content-Type": "application/json"
+    }
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json().get("webhooks", [])
+        return []
+
+async def delete_shopify_webhook(shop_domain: str, access_token: str, webhook_id: int) -> bool:
+    """Delete a webhook from Shopify"""
+    url = f"https://{shop_domain}/admin/api/{SHOPIFY_API_VERSION}/webhooks/{webhook_id}.json"
+    
+    headers = {
+        "X-Shopify-Access-Token": access_token
+    }
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.delete(url, headers=headers)
+        return response.status_code == 200
+
+@shopify_webhooks_router.post("/register-webhooks/{store_id}")
+async def register_webhooks_for_store(store_id: str):
+    """Register all order webhooks for a specific store"""
+    
+    # Get store details
+    store = await db.stores.find_one({"id": store_id}, {"_id": 0})
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    shop_domain = store.get("shopify_domain")
+    access_token = store.get("shopify_access_token")
+    
+    if not shop_domain or not access_token:
+        raise HTTPException(
+            status_code=400, 
+            detail="Store missing Shopify domain or access token. Please configure Shopify API credentials first."
+        )
+    
+    base_url = os.environ.get("REACT_APP_BACKEND_URL", "https://importbaba.com")
+    
+    # Webhook topics and their addresses
+    webhooks_to_register = {
+        "orders/create": f"{base_url}/api/shopify/webhook/orders/create",
+        "orders/paid": f"{base_url}/api/shopify/webhook/orders/paid",
+        "orders/fulfilled": f"{base_url}/api/shopify/webhook/orders/fulfilled",
+        "orders/cancelled": f"{base_url}/api/shopify/webhook/orders/cancelled"
+    }
+    
+    results = []
+    
+    # Get existing webhooks to avoid duplicates
+    existing_webhooks = await get_existing_webhooks(shop_domain, access_token)
+    existing_topics = {wh.get("topic"): wh.get("id") for wh in existing_webhooks}
+    
+    for topic, address in webhooks_to_register.items():
+        try:
+            # Check if webhook already exists
+            if topic in existing_topics:
+                # Delete existing and re-register to update URL
+                await delete_shopify_webhook(shop_domain, access_token, existing_topics[topic])
+                logger.info(f"Deleted existing webhook for {topic}")
+            
+            # Register webhook
+            result = await register_shopify_webhook(shop_domain, access_token, topic, address)
+            
+            if result["status_code"] == 201:
+                results.append({
+                    "topic": topic,
+                    "status": "registered",
+                    "webhook_id": result["data"].get("webhook", {}).get("id")
+                })
+            elif result["status_code"] == 422:
+                # Already exists
+                results.append({
+                    "topic": topic,
+                    "status": "already_exists",
+                    "message": result["data"].get("errors", "Webhook already exists")
+                })
+            else:
+                results.append({
+                    "topic": topic,
+                    "status": "failed",
+                    "error": result["data"]
+                })
+        except Exception as e:
+            results.append({
+                "topic": topic,
+                "status": "error",
+                "error": str(e)
+            })
+    
+    # Update store with webhook status
+    await db.stores.update_one(
+        {"id": store_id},
+        {"$set": {
+            "webhooks_configured": True,
+            "webhooks_configured_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    success_count = sum(1 for r in results if r["status"] in ["registered", "already_exists"])
+    
+    return {
+        "success": True,
+        "store_id": store_id,
+        "shop_domain": shop_domain,
+        "results": results,
+        "summary": {
+            "total": len(webhooks_to_register),
+            "successful": success_count,
+            "failed": len(webhooks_to_register) - success_count
+        }
+    }
+
+@shopify_webhooks_router.post("/register-webhooks-all")
+async def register_webhooks_for_all_stores():
+    """Register webhooks for ALL stores that have Shopify credentials"""
+    
+    # Get all stores with Shopify credentials
+    stores = await db.stores.find(
+        {
+            "shopify_domain": {"$exists": True, "$ne": None},
+            "shopify_access_token": {"$exists": True, "$ne": None}
+        },
+        {"_id": 0}
+    ).to_list(100)
+    
+    if not stores:
+        return {
+            "success": False,
+            "message": "No stores found with Shopify credentials configured"
+        }
+    
+    results = []
+    
+    for store in stores:
+        try:
+            store_result = await register_webhooks_for_store(store["id"])
+            results.append({
+                "store_id": store["id"],
+                "store_name": store.get("name", "Unknown"),
+                "shop_domain": store.get("shopify_domain"),
+                "status": "success",
+                "details": store_result
+            })
+        except HTTPException as e:
+            results.append({
+                "store_id": store["id"],
+                "store_name": store.get("name", "Unknown"),
+                "shop_domain": store.get("shopify_domain"),
+                "status": "failed",
+                "error": e.detail
+            })
+        except Exception as e:
+            results.append({
+                "store_id": store["id"],
+                "store_name": store.get("name", "Unknown"),
+                "shop_domain": store.get("shopify_domain"),
+                "status": "error",
+                "error": str(e)
+            })
+    
+    success_count = sum(1 for r in results if r["status"] == "success")
+    
+    return {
+        "success": True,
+        "total_stores": len(stores),
+        "successful": success_count,
+        "failed": len(stores) - success_count,
+        "results": results
+    }
+
+@shopify_webhooks_router.get("/webhook-status/{store_id}")
+async def get_webhook_status(store_id: str):
+    """Get webhook registration status for a store"""
+    
+    store = await db.stores.find_one({"id": store_id}, {"_id": 0})
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    shop_domain = store.get("shopify_domain")
+    access_token = store.get("shopify_access_token")
+    
+    if not shop_domain or not access_token:
+        return {
+            "success": True,
+            "configured": False,
+            "message": "Shopify credentials not configured",
+            "webhooks": []
+        }
+    
+    try:
+        existing_webhooks = await get_existing_webhooks(shop_domain, access_token)
+        
+        # Filter to only our webhooks
+        base_url = os.environ.get("REACT_APP_BACKEND_URL", "https://importbaba.com")
+        our_webhooks = [
+            wh for wh in existing_webhooks 
+            if base_url in wh.get("address", "")
+        ]
+        
+        return {
+            "success": True,
+            "configured": len(our_webhooks) > 0,
+            "store_id": store_id,
+            "shop_domain": shop_domain,
+            "webhooks": [
+                {
+                    "id": wh.get("id"),
+                    "topic": wh.get("topic"),
+                    "address": wh.get("address"),
+                    "created_at": wh.get("created_at")
+                }
+                for wh in our_webhooks
+            ],
+            "total_webhooks": len(our_webhooks)
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@shopify_webhooks_router.delete("/webhooks/{store_id}")
+async def remove_all_webhooks(store_id: str):
+    """Remove all our webhooks from a store"""
+    
+    store = await db.stores.find_one({"id": store_id}, {"_id": 0})
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    shop_domain = store.get("shopify_domain")
+    access_token = store.get("shopify_access_token")
+    
+    if not shop_domain or not access_token:
+        raise HTTPException(status_code=400, detail="Shopify credentials not configured")
+    
+    base_url = os.environ.get("REACT_APP_BACKEND_URL", "https://importbaba.com")
+    existing_webhooks = await get_existing_webhooks(shop_domain, access_token)
+    
+    removed = []
+    for wh in existing_webhooks:
+        if base_url in wh.get("address", ""):
+            success = await delete_shopify_webhook(shop_domain, access_token, wh["id"])
+            removed.append({
+                "id": wh["id"],
+                "topic": wh["topic"],
+                "removed": success
+            })
+    
+    # Update store
+    await db.stores.update_one(
+        {"id": store_id},
+        {"$set": {"webhooks_configured": False}}
+    )
+    
+    return {
+        "success": True,
+        "removed_count": len(removed),
+        "details": removed
+    }
+
