@@ -32,18 +32,16 @@ function DynamicPricing() {
   const fetchReport = async () => {
     try {
       setLoading(true);
-      toast.loading("Loading pricing data... (12,000+ products)", { duration: 10000 });
+      toast.loading("Loading pricing data... (12,000+ products)", { id: 'fetch-report' });
       const storeParam = globalStore !== 'all' ? `?store_name=${globalStore}` : '';
       const response = await axios.get(`${API}/api/dynamic-pricing/report${storeParam}`, {
         timeout: 30000 // 30 second timeout
       });
-      toast.dismiss();
+      toast.success(`Loaded ${response.data.total_products} products!`, { id: 'fetch-report' });
       setReport(response.data);
-      toast.success(`Loaded ${response.data.total_products} products!`);
     } catch (error) {
       console.error("Error fetching report:", error);
-      toast.dismiss();
-      toast.error("Failed to load pricing report. Try clicking 'Analyze Products'.");
+      toast.error("Failed to load pricing report. Try clicking 'Analyze Products'.", { id: 'fetch-report' });
     } finally {
       setLoading(false);
     }
@@ -52,14 +50,12 @@ function DynamicPricing() {
   const analyzeProducts = async () => {
     try {
       setAnalyzing(true);
-      toast.loading("Analyzing product velocity...");
+      toast.loading("Analyzing product velocity...", { id: 'analyze' });
       const response = await axios.post(`${API}/api/dynamic-pricing/analyze?days_lookback=365`);
-      toast.dismiss();
-      toast.success(`Analyzed ${response.data.total_products} products!`);
+      toast.success(`Analyzed ${response.data.total_products} products!`, { id: 'analyze' });
       setReport(response.data);
     } catch (error) {
-      toast.dismiss();
-      toast.error(error.response?.data?.detail || "Failed to analyze products");
+      toast.error(error.response?.data?.detail || "Failed to analyze products", { id: 'analyze' });
     } finally {
       setAnalyzing(false);
     }
@@ -68,17 +64,15 @@ function DynamicPricing() {
   const syncToShopify = async () => {
     try {
       setSyncingToShopify(true);
-      toast.loading("Syncing prices to Shopify...");
+      toast.loading("Syncing prices to Shopify...", { id: 'sync' });
       
       const response = await axios.post(`${API}/api/dynamic-pricing/sync-to-shopify`, {
         discounts: editingDiscounts
       });
       
-      toast.dismiss();
-      toast.success(`Synced ${response.data.updated_count} products to Shopify!`);
+      toast.success(`Synced ${response.data.updated_count} products to Shopify!`, { id: 'sync' });
     } catch (error) {
-      toast.dismiss();
-      toast.error(error.response?.data?.detail || "Failed to sync to Shopify");
+      toast.error(error.response?.data?.detail || "Failed to sync to Shopify", { id: 'sync' });
     } finally {
       setSyncingToShopify(false);
     }
@@ -86,14 +80,12 @@ function DynamicPricing() {
 
   const applyPricingLocally = async () => {
     try {
-      toast.loading("Applying pricing to local inventory...");
+      toast.loading("Applying pricing to local inventory...", { id: 'apply' });
       const response = await axios.post(`${API}/api/dynamic-pricing/apply?auto_apply=true&days_lookback=365`);
-      toast.dismiss();
-      toast.success(`Updated ${response.data.updated_count} products!`);
+      toast.success(`Updated ${response.data.updated_count} products!`, { id: 'apply' });
       fetchReport();
     } catch (error) {
-      toast.dismiss();
-      toast.error(error.response?.data?.detail || "Failed to apply pricing");
+      toast.error(error.response?.data?.detail || "Failed to apply pricing", { id: 'apply' });
     }
   };
 
