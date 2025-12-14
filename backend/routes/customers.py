@@ -262,7 +262,11 @@ async def get_customer_stats(
                     {"$count": "count"}
                 ],
                 "returned": [
-                    {"$match": {"delivery_status": {"$in": ["RETURNED", "RETURN_IN_PROCESS"]}}},
+                    {"$match": {"delivery_status": "RETURNED"}},
+                    {"$count": "count"}
+                ],
+                "returnInProcess": [
+                    {"$match": {"delivery_status": "RETURN_IN_PROCESS"}},
                     {"$count": "count"}
                 ],
                 "paymentReceived": [
