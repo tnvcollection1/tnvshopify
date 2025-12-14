@@ -44,6 +44,7 @@ import PricingPage from "@/components/PricingPage";
 import NotificationSettings from "@/components/NotificationSettings";
 import FacebookLeadAds from "@/components/FacebookLeadAds";
 import SuperAdminDashboard from "@/components/SuperAdminDashboard";
+import WhatsAppCaseStudy from "@/components/WhatsAppCaseStudy";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
