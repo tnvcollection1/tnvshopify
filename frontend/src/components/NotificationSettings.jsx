@@ -606,15 +606,15 @@ const NotificationSettings = () => {
                         </Button>
                       </div>
                     </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    Loading webhook URLs...
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
+                      Loading webhook URLs...
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
           {/* Logs Tab */}
           <TabsContent value="logs">
