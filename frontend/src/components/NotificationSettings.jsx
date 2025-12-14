@@ -605,7 +605,7 @@ const NotificationSettings = () => {
                           Open Shopify Admin
                         </Button>
                       </div>
-                  </div>
+                    </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
