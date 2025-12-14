@@ -462,8 +462,7 @@ const WhatsAppEmbeddedSignup = () => {
       // Include store_id in disconnect request
       const storeParam = selectedStore && selectedStore !== 'all' ? `?store_id=${selectedStore}` : '';
       await axios.delete(`${API}/whatsapp-business/accounts/${tenantId}/${wabaId}${storeParam}`);
-      await axios.delete(`${API}/whatsapp-business/accounts/${tenantId}/${wabaId}`);
-      toast.success("Account disconnected");
+      toast.success("Account disconnected from this store");
       loadAccounts();
     } catch (error) {
       toast.error("Failed to disconnect account");
