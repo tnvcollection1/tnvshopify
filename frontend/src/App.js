@@ -385,6 +385,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/lead-ads" 
+        element={
+          <ProtectedRoute>
+            <FacebookLeadAds />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
