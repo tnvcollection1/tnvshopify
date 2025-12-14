@@ -248,10 +248,10 @@ const DispatchTracker = () => {
       if (dateRange.start) params.append("start_date", dateRange.start);
       if (dateRange.end) params.append("end_date", dateRange.end);
       
-      const sortBy = filters.sortBy || "order_desc";
+      const sortBy = filters.sortBy || "date_desc";
       params.append("sort_by", sortBy);
       
-      if (searchQuery) params.append("search", searchQuery);
+      if (debouncedSearch) params.append("search", debouncedSearch);
       params.append("page", currentPage);
       params.append("limit", "100");
 
