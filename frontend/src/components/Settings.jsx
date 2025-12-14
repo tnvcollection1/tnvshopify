@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Store, CheckCircle, XCircle, Loader2, AlertCircle, Truck, Package, Key, RefreshCw, Clock } from 'lucide-react';
+import { Store, CheckCircle, XCircle, Loader2, AlertCircle, Truck, Package, Key, RefreshCw, Clock, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -7,6 +7,7 @@ import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import APIKeysSettings from './APIKeysSettings';
 
 const Settings = () => {
   const { agent } = useAuth();
