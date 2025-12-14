@@ -41,6 +41,7 @@ from routes.whatsapp_embedded import whatsapp_embedded_router, set_database as s
 from routes.subscriptions import subscriptions_router
 from routes.shopify_webhooks import shopify_webhooks_router
 from routes.api_keys import api_keys_router, set_database as set_api_keys_db
+from routes.shopify_oauth import shopify_oauth_router, set_database as set_shopify_oauth_db
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
