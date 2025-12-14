@@ -176,6 +176,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Admin Password Change Functionality"
     - "WhatsApp CRM Rebranding - Landing Page"
     - "WhatsApp CRM Rebranding - Login Page"
     - "WhatsApp CRM Rebranding - Admin Dashboard"
