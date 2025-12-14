@@ -114,6 +114,19 @@ backend:
         comment: "✅ API KEYS MANAGEMENT: Comprehensive testing completed successfully. All 7 test scenarios passed: 1) GET /api/api-keys/definitions returns all 5 integration types (razorpay, whatsapp, meta, dtdc, openai) with proper structure (name, description, keys array, docs_url), 2) GET /api/api-keys/ returns empty keys initially with proper response structure (success, keys, configured, last_updated), 3) POST /api/api-keys/update encrypts and saves keys with proper masking (rzp_test_12345678 → *************5678), 4) GET /api/api-keys/ after update shows masked values with last 4 chars visible, 5) GET /api/api-keys/status shows configuration status correctly (razorpay 2/2 keys configured, partial=false), 6) DELETE /api/api-keys/razorpay_key_id removes keys successfully, 7) POST /api/api-keys/bulk-update handles multiple keys at once (razorpay_key_id, razorpay_key_secret, whatsapp_access_token). All endpoints use AES-256 encryption for secure storage and proper masking for frontend display."
     notes: "Secure API Keys management with AES-256 encryption, masking, and comprehensive CRUD operations for 5 integration types."
 
+  - task: "Shopify OAuth One-Click Connection"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/shopify_oauth.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ SHOPIFY OAUTH ONE-CLICK CONNECTION: Comprehensive testing completed successfully. All 4 test scenarios passed: 1) GET /api/shopify/oauth/auth-url?shop=teststore returns success: true, auth_url starting with 'https://teststore.myshopify.com/admin/oauth/authorize', and shop: 'teststore.myshopify.com', 2) GET /api/shopify/oauth/connections returns list of connected stores (empty initially) with proper structure (success, connections, total), 3) GET /api/shopify/oauth/status/teststore returns connected: false for non-connected store, 4) Error handling for empty shop parameter works gracefully by appending .myshopify.com. All endpoints handle OAuth flow correctly with proper URL generation, state management, and connection tracking."
+    notes: "Shopify OAuth 2.0 integration with one-click store connection, automatic token exchange, and secure credential storage with AES-256 encryption."
+
 metadata:
   created_by: "main_agent"
   version: "2.3"
