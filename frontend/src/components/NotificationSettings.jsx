@@ -76,8 +76,11 @@ const NotificationSettings = () => {
   });
   const [logs, setLogs] = useState([]);
   const [webhookUrls, setWebhookUrls] = useState(null);
+  const [webhookStatus, setWebhookStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [registering, setRegistering] = useState(false);
+  const [registeringAll, setRegisteringAll] = useState(false);
   const [testDialog, setTestDialog] = useState(false);
   const [testPhone, setTestPhone] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
@@ -86,6 +89,7 @@ const NotificationSettings = () => {
     if (selectedStore && selectedStore !== 'all') {
       loadSettings();
       loadLogs();
+      loadWebhookStatus();
     }
     loadWebhookUrls();
   }, [selectedStore]);
