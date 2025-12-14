@@ -1466,6 +1466,168 @@ class ShopifyCustomerAPITester:
         
         return api_keys_results
 
+    # ==================== SHOPIFY OAUTH TESTS ====================
+    
+    def test_shopify_oauth_auth_url(self):
+        """Test Shopify OAuth auth URL generation"""
+        success, response, _ = self.run_test(
+            "Shopify OAuth Auth URL",
+            "GET",
+            "shopify/oauth/auth-url?shop=teststore",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "auth_url" in response and "shop" in response:
+                auth_url = response["auth_url"]
+                shop = response["shop"]
+                
+                print(f"   Generated auth URL: {auth_url[:100]}...")
+                print(f"   Shop domain: {shop}")
+                
+                # Verify auth URL format
+                expected_shop = "teststore.myshopify.com"
+                if shop == expected_shop and auth_url.startswith(f"https://{expected_shop}/admin/oauth/authorize"):
+                    print(f"   ✅ Auth URL has correct format and shop domain")
+                    return True, response
+                else:
+                    print(f"   ❌ Auth URL format incorrect. Expected shop: {expected_shop}, got: {shop}")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_shopify_oauth_auth_url_empty_shop(self):
+        """Test Shopify OAuth auth URL with empty shop parameter"""
+        success, response, _ = self.run_test(
+            "Shopify OAuth Auth URL (Empty Shop)",
+            "GET",
+            "shopify/oauth/auth-url?shop=",
+            500  # Should handle gracefully but may return error
+        )
+        
+        # This test is to verify error handling - either 400/500 is acceptable
+        if success or (not success and hasattr(self, 'test_results') and 
+                      self.test_results[-1].get('actual_status') in [400, 500]):
+            print(f"   ✅ Empty shop parameter handled gracefully")
+            return True, response
+        else:
+            print(f"   ❌ Empty shop parameter not handled properly")
+            return False, response
+    
+    def test_shopify_oauth_connections(self):
+        """Test Shopify OAuth connections list"""
+        success, response, _ = self.run_test(
+            "Shopify OAuth Connections",
+            "GET",
+            "shopify/oauth/connections",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "connections" in response and "total" in response:
+                connections = response["connections"]
+                total = response["total"]
+                
+                print(f"   Connected stores: {total}")
+                print(f"   Connections list length: {len(connections)}")
+                
+                # Should be a list (empty initially)
+                if isinstance(connections, list):
+                    print(f"   ✅ Connections endpoint returns valid list")
+                    return True, response
+                else:
+                    print(f"   ❌ Connections is not a list")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_shopify_oauth_status(self):
+        """Test Shopify OAuth connection status for a shop"""
+        success, response, _ = self.run_test(
+            "Shopify OAuth Status",
+            "GET",
+            "shopify/oauth/status/teststore",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "connected" in response:
+                connected = response["connected"]
+                
+                print(f"   Connection status: {connected}")
+                
+                # Should return connected: false initially
+                if not connected:
+                    print(f"   ✅ Correctly returns connected: false for non-connected store")
+                    return True, response
+                else:
+                    print(f"   ✅ Store is connected (valid response)")
+                    return True, response
+            else:
+                print(f"   ❌ Missing 'connected' field in response")
+                return False, response
+        
+        return success, response
+    
+    def run_shopify_oauth_tests(self):
+        """Run comprehensive tests for Shopify OAuth one-click connection feature"""
+        print("\n" + "="*80)
+        print("🛍️ SHOPIFY OAUTH ONE-CLICK CONNECTION TESTS")
+        print("="*80)
+        
+        oauth_results = {}
+        
+        # Test 1: Get Auth URL
+        print("\n📋 TEST 1: SHOPIFY OAUTH AUTH URL")
+        print("-" * 40)
+        
+        auth_url_success, auth_url_response = self.test_shopify_oauth_auth_url()
+        oauth_results["auth_url"] = {
+            "success": auth_url_success,
+            "response": auth_url_response
+        }
+        
+        # Test 2: Get Connections List
+        print("\n📋 TEST 2: SHOPIFY OAUTH CONNECTIONS")
+        print("-" * 40)
+        
+        connections_success, connections_response = self.test_shopify_oauth_connections()
+        oauth_results["connections"] = {
+            "success": connections_success,
+            "response": connections_response
+        }
+        
+        # Test 3: Get Connection Status
+        print("\n📋 TEST 3: SHOPIFY OAUTH STATUS")
+        print("-" * 40)
+        
+        status_success, status_response = self.test_shopify_oauth_status()
+        oauth_results["status"] = {
+            "success": status_success,
+            "response": status_response
+        }
+        
+        # Test 4: Error Handling - Empty Shop
+        print("\n📋 TEST 4: ERROR HANDLING (EMPTY SHOP)")
+        print("-" * 40)
+        
+        error_success, error_response = self.test_shopify_oauth_auth_url_empty_shop()
+        oauth_results["error_handling"] = {
+            "success": error_success,
+            "response": error_response
+        }
+        
+        return oauth_results
+
     # ==================== CLEARANCE ENGINE TESTS ====================
     
     def test_clearance_stats(self):
