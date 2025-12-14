@@ -648,31 +648,47 @@ async def create_demo_user_endpoint():
 @api_router.post("/agents/change-password")
 async def change_agent_password(password_data: PasswordChange):
     """
-    Change agent password
+    Change agent password with bcrypt encryption
     """
     try:
+        import bcrypt
         import hashlib
         
-        # Verify current password
-        current_hashed = hashlib.sha256(password_data.current_password.encode()).hexdigest()
-        agent = await db.agents.find_one({
-            "username": password_data.username,
-            "password": current_hashed
-        })
+        def verify_password(password: str, hashed: str) -> bool:
+            """Verify password against bcrypt or SHA256 hash"""
+            try:
+                return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+            except Exception:
+                # Fallback for old SHA256 hashes
+                sha256_hash = hashlib.sha256(password.encode()).hexdigest()
+                return sha256_hash == hashed
+        
+        def hash_password(password: str) -> str:
+            """Hash password using bcrypt"""
+            salt = bcrypt.gensalt(rounds=12)
+            return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+        
+        # Find agent
+        agent = await db.agents.find_one({"username": password_data.username})
         
         if not agent:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Verify current password
+        if not verify_password(password_data.current_password, agent["password"]):
             raise HTTPException(status_code=401, detail="Current password is incorrect")
         
         # Validate new password
         if len(password_data.new_password) < 6:
             raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
         
-        # Update password
-        new_hashed = hashlib.sha256(password_data.new_password.encode()).hexdigest()
+        # Update password with bcrypt encryption
+        new_hashed = hash_password(password_data.new_password)
         result = await db.agents.update_one(
             {"username": password_data.username},
             {"$set": {
                 "password": new_hashed,
+                "password_encrypted": True,
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }}
         )
@@ -684,7 +700,7 @@ async def change_agent_password(password_data: PasswordChange):
         
         return {
             "success": True,
-            "message": "Password changed successfully"
+            "message": "Password changed successfully. Your new password is securely encrypted."
         }
         
     except HTTPException:
