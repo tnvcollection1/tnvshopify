@@ -223,6 +223,7 @@ const DispatchTracker = () => {
     try {
       const params = new URLSearchParams();
       params.append("fulfillment_status", "fulfilled");
+      params.append("tcs_only", "true"); // Exclude China Post orders (shown in Purchase Tracker)
       
       if (!dateRange.start && filters.year === "all") {
         const startDate = new Date('2016-01-01').toISOString().split('T')[0];
