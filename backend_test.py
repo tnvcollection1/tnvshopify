@@ -2312,7 +2312,7 @@ class ShopifyCustomerAPITester:
         # Step 6: Verify login with restored password
         print(f"\n🔍 Step 6: Verifying login with restored password '{current_password}'...")
         
-        verify_restore_success, _ = self.run_test(
+        verify_restore_success, _, _ = self.run_test(
             "Login with Restored Password",
             "POST",
             "agents/login",
