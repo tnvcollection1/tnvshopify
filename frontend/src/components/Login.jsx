@@ -221,7 +221,7 @@ const Login = ({ onLoginSuccess }) => {
         {/* Help text */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            Demo credentials: <span className="text-gray-700 font-medium">admin / admin</span>
+            Demo credentials: <span className="text-gray-700 font-medium">admin / admin123</span>
           </p>
         </div>
 
