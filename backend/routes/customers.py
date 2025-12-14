@@ -69,7 +69,7 @@ async def get_customers(
         if fulfillment_status and fulfillment_status != "all":
             query["fulfillment_status"] = fulfillment_status
             
-        # TCS only filter - orders with valid tracking numbers
+        # TCS only filter - orders with valid tracking numbers (excludes China Post/X-prefix)
         if tcs_only == "true":
             query['$and'] = [
                 {"tracking_number": {"$exists": True}},
@@ -77,6 +77,19 @@ async def get_customers(
                 {"tracking_number": {"$ne": ""}},
                 {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}}
             ]
+        
+        # China Post tracking filter - orders with X-prefix tracking numbers
+        if china_tracking == "true":
+            query['$and'] = [
+                {"tracking_number": {"$exists": True}},
+                {"tracking_number": {"$ne": None}},
+                {"tracking_number": {"$ne": ""}},
+                {"tracking_number": {"$regex": "^X", "$options": "i"}}
+            ]
+        
+        # Purchase status filter (for Purchase Tracker)
+        if purchase_status and purchase_status != "all":
+            query["purchase_status"] = purchase_status
         
         # Year filter
         if year and year != "all":
