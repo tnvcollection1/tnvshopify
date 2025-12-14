@@ -1,214 +1,271 @@
 <analysis>**original_problem_statement**: The user's initial goal was to build a CRM with order management, focusing on order visibility and WhatsApp messaging. This has evolved into a sophisticated business intelligence and marketing automation platform. Key features include major performance optimizations, a full-featured Facebook Marketing Suite (including an AI Campaign Optimizer), a Smart Inventory Clearance engine, and a dynamic pricing tool.
 
-The current focus is a major architectural shift to a multi-tenant SaaS platform, accompanied by a complete UI/UX overhaul to mimic Shopify's design language. The user has also requested the parallel development of a Meta Ads (Facebook Ads) integration and a WhatsApp Business Platform Embedded Signup feature.
+The current focus is a major architectural shift to a multi-tenant SaaS platform, accompanied by a complete UI/UX overhaul to mimic Shopify's design language. The user has also requested the parallel development of a Meta Ads (Facebook Ads) integration, a Facebook Lead Ads integration, a WhatsApp Business Platform Embedded Signup feature, a Super Admin dashboard for tenant management, and OAuth-based connections for integrations like Shopify.
 
 **PRODUCT REQUIREMENTS**:
 1.  **Shopify UI/UX Overhaul & Store-Specific Data (P0)**:
     -   Redesign all pages to match Shopify's aesthetic. (In Progress)
     -   Ensure all data is filtered based on a globally selected store. (Mostly Complete)
 2.  **WhatsApp Business Platform Integration (P0)**:
-    -   Integrate Embedded Signup for customers to connect their WhatsApp Business Accounts, specifically with the Coexistence feature (allowing use of the WhatsApp Business App alongside the API). (In Progress / Blocked)
-    -   Make WhatsApp account connections store-specific. (Completed)
-    -   Support marketing messages, templates, and webhooks. (In Progress)
+    -   Integrate Embedded Signup for customers to connect their WhatsApp Business Accounts. (Completed, UI improved)
 3.  **Multi-Tenant SaaS Platform (P1)**:
     -   Build a marketing landing page. (Completed)
-    -   Implement a subscription billing system using Razorpay to charge platform users. (Completed)
+    -   Implement a subscription billing system using Razorpay. (Completed)
+    -   **NEW**: Build a Super Admin dashboard to monitor tenant usage and manage subscriptions. (Completed)
 4.  **Shopify Integration (P1)**:
+    -   **NEW**: Implement a one-click OAuth connection flow. (Completed)
     -   Add a feature to view and sync Shopify Abandoned Carts. (Not Started)
     -   Add a feature to view and sync Shopify Draft Orders. (Not Started)
-    -   Implement a system for sending automated WhatsApp notifications for Shopify order events. (Completed)
+    -   Implement automated WhatsApp notifications for Shopify order events. (Completed)
     -   Automate Shopify webhook configuration via API. (Completed)
-5.  **Meta Ads Integration (P2)**:
+5.  **Meta (Facebook) Integrations (P2)**:
+    -   **NEW**: Integrate Facebook Lead Ads to capture and sync leads into the CRM. (Completed, but sync is blocked)
     -   Integrate Facebook Ads Manager API for real-time ad comparison. (Not Started)
-    -   Create a settings page for users to enter their own API keys. (Not Started)
+    -   Create a settings page for users to enter their own API keys. (Replaced by a new secure, encrypted API Key Management system)
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack React/FastAPI/MongoDB application with a Shopify-like UI. The app now features a complete subscription billing system powered by Razorpay, including a pricing page and backend logic. A Shopify order notification system has been built, allowing for automated WhatsApp messages on order events, with a settings page that can automatically configure the necessary webhooks for all connected stores. The WhatsApp integration has been significantly enhanced to be store-specific and now presents a dropdown menu for connecting different Meta services (WhatsApp Business, WhatsApp Analytics, Instagram). The Emergent branding has been successfully removed from the entire frontend.
+The application is a multi-tenant SaaS platform with a Shopify-like UI. It has a full suite of features including Razorpay subscription billing, Shopify order notifications, and store-specific WhatsApp integration.
+
+In this session, several major features were added:
+1.  **Secure API Key Management**: A new settings page allows users to securely save API keys (for Razorpay, WhatsApp, Meta, etc.), which are encrypted at rest using AES-256.
+2.  **Shopify OAuth Integration**: A one-click connection flow for Shopify stores has been implemented, removing the need for manual API key entry.
+3.  **Facebook Lead Ads Integration**: A new dashboard to view and manage Facebook Lead Ads has been created. It supports webhook for real-time updates and includes a feature to manually sync/pull existing leads from the Facebook API.
+4.  **Super Admin Dashboard**: A new admin-only dashboard provides tenant usage metrics (MRR, orders, stores), plan distribution, and a list of tenants with management controls (e.g., suspend).
+5.  **UI/Bug Fixes**: The WhatsApp Business page UI was overhauled to match the Shopify theme. A critical bug preventing stock status sync in the Confirmation Tracker was fixed. The missing User Management link in the sidebar was restored.
 
 **Last working item**:
-- **Last item agent was working**: The agent implemented a feature to automatically register Shopify webhooks for all connected stores via the Shopify Admin API. This was a user request to avoid manual setup. A backend endpoint () was created, and the frontend  page was updated with Register Webhooks and Check Status buttons.
-- **Status**: USER VERIFICATION PENDING
-- **Agent Testing Done**: Y
-- **Which testing method agent to use?**: Manual testing. The user should be instructed to select a store, click the Register Webhooks for All Stores button, and confirm it works. The agent can use the Check Status for This Store button to verify the webhooks are active.
+- **Last item agent was working**: The agent was investigating a batch of four new issues reported by the user related to the Purchase Tracker, Smart Clearance, and Dynamic Pricing features. The agent had just started debugging by examining the relevant backend files (, , ) and confirmed the backend APIs for Smart Clearance and Dynamic Pricing were functional, suggesting the errors are on the frontend.
+- **Status**: IN PROGRESS
+- **Agent Testing Done**: N (Investigation just started)
+- **Which testing method agent to use?**: Manual testing. The agent needs to examine the frontend components (, , ) and browser console logs to reproduce and debug the user-reported errors.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: WhatsApp Business Coexistence Flow Not Working as Expected (P0)**
--   **Issue 2: Live Razorpay Keys in Environment File (P1)**
--   **Issue 3: Inconsistent SKU formats between inventory and order data (P2)**
+-   **Issue 1: Purchase Tracker Sync Failure (P0)**
+-   **Issue 2: Smart Clearance Error on Frontend (P0)**
+-   **Issue 3: Dynamic Pricing Sync/Enable Failure on Frontend (P0)**
+-   **Issue 4: Facebook Lead Ads Sync Blocked by Expired Token (P1)**
+-   **Issue 5: Critical  Refactoring Needed (P1)**
+-   **Issue 6: Live Razorpay Keys Still in Environment File (P2)**
+-   **Issue 7: Inconsistent SKU formats (P2)**
 
 **Issues Detail**:
--   **Issue 1: WhatsApp Business Coexistence Flow Not Working as Expected (P0)**
-    -   **Description**: When the user tries to connect their WhatsApp number using the Coexistence flow (), the UI shows the standard Cloud API migration flow instead of the expected QR code scan option.
-    -   **Attempted fixes**: The agent correctly implemented the  parameter in the  call. The root cause was investigated and likely points to external factors, not a code bug.
+-   **Issue 1: Purchase Tracker Sync Failure (P0)**
+    -   **Description**: User reported that the Purchase Tracker is not syncing orders from china post and orders with tracking numbers starting with x.
+    -   **Attempted fixes**: Agent located the  script.
     -   **Next debug checklist**:
-        1.  Re-confirm with the user that the issue is not with the code but likely due to one of two reasons:
-            -   **Regional Limitation**: The Coexistence feature may not be fully supported by Meta in Pakistan ().
-            -   **Previous BSP Registration**: The number was previously linked to another BSP (). Even if disconnected, Meta's systems might still see it as a Cloud API number, preventing the Coexistence flow which is for migrating from the *WhatsApp Business App*.
-        2.  Guide the user to test with a number from a fully supported region (e.g., India, US) to confirm the code works.
-        3.  Advise the user that to use Coexistence with their current number, they may need to completely de-register it from all Cloud APIs, register it on the standard WhatsApp Business App, use it for a period (e.g., a week), and then try the onboarding again.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical feature for the user, allowing them to use the WhatsApp Business App and the API simultaneously.
-    -   **Status**: BLOCKED (on user testing/Meta platform limitations)
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: None
-
--   **Issue 2: Live Razorpay Keys in Environment File (P1)**
-    -   **Description**: The user provided live Razorpay API keys ( and ), which were added directly to the  file. This is a security risk as environment files are not suitable for storing live production secrets.
-    -   **Attempted fixes**: None.
-    -   **Next debug checklist**:
-        1.  Propose a plan to the user to enhance security.
-        2.  Create a Settings page where the user can securely input and save their Razorpay keys.
-        3.  Store the keys encrypted in the database, associated with the tenant.
-        4.  Remove the hardcoded keys from the  file.
-    -   **Why fix this issue and what will be achieved with the fix?**: Prevents exposure of live payment credentials, securing the user's Razorpay account.
+        1.  Examine the  script to understand its logic for fetching and updating orders.
+        2.  Inspect the  frontend component to see how the sync is triggered and data is displayed.
+        3.  Check the database for sample china post orders to understand their structure.
+        4.  Reproduce the issue by attempting to sync a relevant order.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a core feature for tracking order fulfillment. Fixing it will restore visibility into the purchasing pipeline.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Both
 
--   **Issue 3: Inconsistent SKU formats between inventory and order data (P2)**
-    -   **Description**:  and  collections use different SKU formats, causing inaccurate Dead Stock classification. A UI warning was previously added as a temporary measure.
-    -   **Attempted fixes**: None in this session.
+-   **Issue 2: Smart Clearance Error on Frontend (P0)**
+    -   **Description**: User is getting an error when using the Smart Clearance feature.
+    -   **Attempted fixes**: Agent tested the backend API endpoint () and confirmed it returns a successful response. This indicates the issue is on the frontend.
     -   **Next debug checklist**:
-        1.  After higher priority tasks are resolved, propose a SKU Mapping tool to the user.
-    -   **Why fix this issue and what will be achieved with the fix?**: To provide accurate inventory health analysis.
+        1.  Examine the  file.
+        2.  Use the browser's developer tools to check for console errors when interacting with the Smart Clearance page.
+        3.  Verify the frontend is correctly calling the API and handling the response.
+    -   **Why fix this issue and what will be achieved with the fix?**: Restores functionality of the inventory clearance engine, a key business intelligence tool.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+
+-   **Issue 3: Dynamic Pricing Sync/Enable Failure on Frontend (P0)**
+    -   **Description**: User reported that the enable and sync pricing functionality in the Dynamic Pricing feature is not working.
+    -   **Attempted fixes**: Agent tested the backend API endpoint () and confirmed it returns a successful response, pointing to a frontend issue.
+    -   **Next debug checklist**:
+        1.  Examine the  file.
+        2.  Check the browser console for errors when the user tries to enable or sync pricing.
+        3.  Investigate the state management and API call logic within the component.
+    -   **Why fix this issue and what will be achieved with the fix?**: Enables the dynamic pricing engine, allowing the user to optimize product prices based on sales velocity.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+
+-   **Issue 4: Facebook Lead Ads Sync Blocked by Expired Token (P1)**
+    -   **Description**: The Sync from Facebook feature for Lead Ads is failing because the Meta access token has expired. The agent confirmed this by testing the API connection.
+    -   **Attempted fixes**: The agent updated the frontend UI to show a Setup Required state and prompt the user to reconnect their WhatsApp/Facebook account to refresh the token.
+    -   **Next debug checklist**:
+        1.  Guide the user to navigate to the WhatsApp Business connection page.
+        2.  Instruct them to reconnect their account, which will generate a new, valid access token.
+        3.  Once reconnected, test the Sync from Facebook button on the Lead Ads page again.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will unblock the ability to pull existing leads from Facebook, a key requirement for the user.
+    -   **Status**: BLOCKED (on user action)
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both
+
+-   **Issue 5: Critical  Refactoring Needed (P1)**
+    -   **Description**: The  file is a monolith containing all router includes, CORS settings, and startup events. It is becoming increasingly difficult to maintain.
+    -   **Attempted fixes**: None. The issue was worsened by adding four new routers (, , , ) to the file.
+    -   **Next debug checklist**:
+        1.  Propose a plan to the user to refactor .
+        2.  Create a dedicated  or  for FastAPI app creation.
+        3.  Move router includes into a central router management file.
+        4.  Break down the logic into smaller, more manageable modules.
+    -   **Why fix this issue and what will be achieved with the fix?**: Improves code maintainability, scalability, and reduces the risk of introducing bugs.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: None
+
+-   **Issue 6: Live Razorpay Keys Still in Environment File (P2)**
+    -   **Description**: Live Razorpay API keys are hardcoded in . While a secure API Key Management page has been built, the keys have not been migrated.
+    -   **Attempted fixes**: A secure storage system was built, but the migration step was missed.
+    -   **Next debug checklist**:
+        1.  Create a script or backend function to migrate the keys from  to the new encrypted  database collection.
+        2.  Update the backend code that uses Razorpay to fetch the keys from the new secure storage instead of .
+        3.  Remove the  and  from the  file.
+    -   **Why fix this issue and what will be achieved with the fix?**: Removes a significant security vulnerability by not storing live secrets in environment files.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Backend
+
+-   **Issue 7: Inconsistent SKU formats (P2)**
+    -   **Description**:  and  collections use different SKU formats, causing inaccurate Dead Stock classification.
+    -   **Attempted fixes**: A UI warning was previously added.
+    -   **Next debug checklist**: Propose a SKU Mapping tool to the user after higher priority tasks are complete.
+    -   **Why fix this issue and what will be achieved with the fix?**: Provides accurate inventory health analysis.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Backend
 
 **In progress Task List**:
--   **Task 1: Complete WhatsApp Business Platform Integration (P0)**
-    -   **Description**: User wants to integrate WhatsApp Embedded Signup with the Coexistence feature.
-    -   **Where to resume**: The frontend UI is built to handle multiple connection types (Coexistence, Analytics, Instagram) and is now store-specific. The backend is also updated. The task is blocked waiting for the user to resolve the external issue with their number/region (see Issue 1). The next step is to guide the user through testing with a different number or migrating their current one correctly.
-    -   **What will be achieved with this?**: Customers can connect their WhatsApp Business accounts directly through the app, per store, and use the phone app and API simultaneously.
-    -   **Status**: BLOCKED
+-   **Task 1: Debug User-Reported Issues (P0)**
+    -   **Description**: The agent is in the initial phase of investigating four new issues related to Purchase Tracker, Smart Clearance, and Dynamic Pricing.
+    -   **Where to resume**: The agent has confirmed backend APIs for two of the issues are working. The next step is to investigate the frontend components and browser console logs to reproduce the errors.
+    -   **What will be achieved with this?**: Resolve critical bugs reported by the user, restoring core functionality.
+    -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on something**: Issue 1
+    -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P1) **Complete Shopify UI Overhaul**: Apply the Shopify theme and global store context to the remaining pages (, , ).
+    -   (P0) **Add AI Recommendations**: Implement AI-powered suggestions for the Smart Clearance and Dynamic Pricing tools, as requested by the user.
+    -   (P1) **Implement Razorpay OAuth**: User requested a one-click OAuth connection for Razorpay, similar to the Shopify implementation.
+    -   (P1) **Complete Shopify UI Overhaul**: Apply the Shopify theme to remaining pages (, , ).
     -   (P1) **Implement Drafts & Abandoned Carts Sync**: Implement the  handlers for the sync buttons on .
-    -   (P1) **Onboarding & Data Isolation**: Implement the frontend logic for  and refactor backend endpoints to be fully tenant-aware.
-    -   (P1) **Implement Incoming WhatsApp Webhook**: Create a handler to receive and store incoming WhatsApp messages in the database so they can be viewed in an inbox within OmniSales.
-    -   (P2) **Meta Ads Integration**: Implement  and backend .
+    -   (P1) **Implement Incoming WhatsApp Webhook**: Create a handler to receive and store incoming WhatsApp messages.
 -   **Future Tasks**:
     -   (P2) AI-Assisted Creation Tools (Campaigns, Bundles, Offers).
     -   (P2) Universal AI Analytics feature.
     -   (P3) Abandoned Cart Recovery via WhatsApp.
 
 **Completed work in this session**
--   **SaaS Subscription Billing (Razorpay)**:
-    -   Integrated Razorpay for SaaS billing.
-    -   Created backend routes () for managing plans, creating subscriptions, and verifying payments.
-    -   Built a new frontend pricing page () with a monthly/annual toggle.
-    -   Added a Subscription link to the sidebar.
--   **Shopify Order Notifications**:
-    -   Created a backend webhook handler () to receive Shopify order events.
-    -   Implemented a feature to **automatically register webhooks** for all stores via Shopify's API, removing the need for manual setup.
-    -   Built a frontend settings page () to manage notification settings and trigger the auto-registration.
--   **WhatsApp Integration Enhancements**:
-    -   Made the entire WhatsApp connection flow **store-specific**, linking accounts to the currently selected store.
-    -   Implemented a UI dropdown to handle multiple Meta connection types: **WhatsApp Business (Coexistence)**, **WhatsApp Analytics (Measurement Partner)**, and **Instagram Onboarding**.
-    -   Spent significant time debugging the Coexistence flow, ultimately identifying it as a likely platform/regional issue.
--   **Branding Removal**:
-    -   Scanned the entire frontend and removed all instances of Emergent branding from  and other files. The application is now fully branded as OmniSales.
--   **Deployment Issue Resolution**:
-    -   The critical deployment blocker from the previous session, where the user couldn't log in, appears to be resolved. The agent successfully tested login on the  domain.
+-   **API Key Management System**: Implemented a full-stack feature to securely encrypt (AES-256) and store third-party API keys in the database, with a dedicated settings UI.
+-   **Shopify OAuth Integration**: Built a one-click Shopify store connection flow using OAuth, removing the need for manual key entry.
+-   **Facebook Lead Ads Integration**: Added a new dashboard to view, manage, and sync Facebook leads directly into the CRM, with support for both webhooks and manual API pulls.
+-   **Super Admin Dashboard**: Created a new admin-only dashboard to monitor tenant usage (MRR, activity) and manage subscription plans.
+-   **Confirmation Tracker Bug Fix**: Fixed a critical bug preventing stock status from syncing and displaying correctly by correcting the database collection name and data casing.
+-   **UI Overhaul & Fixes**:
+    -   Redesigned the  page to align with the Shopify theme (light background, branded colors).
+    -   Restored the User Management link to the main sidebar.
+    -   Fixed a JSX syntax error in  that was breaking the frontend build.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1**: Inconsistent SKU formats (Captured in All Pending/In progress Issue list).
--   **Issue 2**: The  file is a monolith and urgently needs refactoring. This issue has recurred and worsened as more routers (, ) were added.
+-   **Issue 1**: Critical  Refactoring Needed (Captured in All Pending/In progress Issue list).
+-   **Issue 2**: Live Razorpay Keys Still in Environment File (Captured in All Pending/In progress Issue list).
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**:  requires major refactoring.
--   **Recurrence count**: 14+
--   **Status**: IN PROGRESS (The problem has been made more severe by the addition of new routers in this session, increasing the urgency of a refactor.)
+-   **Recurrence count**: 15+
+-   **Status**: IN PROGRESS (The problem was exacerbated this session with the addition of four new routers, making a refactor critically urgent).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Payment Gateway Integration**: Implemented Razorpay Subscriptions API for SaaS billing, including creating plans, initiating checkout, and verifying payments.
--   **Webhook Automation**: Used the Shopify Admin API to programmatically create and register webhooks, removing the need for manual user configuration.
--   **Store-Specific Integrations**: Refactored the WhatsApp integration to be tied to a , ensuring data isolation between different stores managed by the user.
--   **Multi-Configuration Login**: Enhanced the Facebook Login flow to support multiple s, allowing the user to initiate different onboarding flows (Coexistence, Analytics, Instagram) from a single UI.
--   **Frontend State Management**: Utilized  to pass the  to various components, enabling store-specific API calls and UI states.
+-   **Symmetric Encryption**: Used  library (AES-256) to encrypt and decrypt API keys for secure storage at rest.
+-   **OAuth 2.0 Flow**: Implemented the full client-side and server-side flow for Shopify OAuth to securely obtain store access tokens.
+-   **Webhook Processing**: Built endpoints to handle real-time webhook payloads from Facebook Lead Ads, including signature verification.
+-   **Role-Based Access Control (RBAC)**: Implemented simple RBAC on the frontend to show the Super Admin link only to users with the 'admin' role.
+-   **API Data Sync**: Added functionality to pull historical/existing data (Facebook Leads) directly from a third-party API, complementing the webhook approach.
 
 **key DB schema**
--   **whatsapp_accounts**: Modified to include  to link each WhatsApp Business Account to a specific user store.
--   **subscriptions**: New implicit collection to track user subscriptions, plans, and payment status.
--   **notification_settings**: New implicit collection to store notification preferences per store.
+-   **api_keys**: New collection to store encrypted third-party credentials, linked to the user/tenant. 
+-   **shopify_connections**: New collection to store Shopify OAuth access tokens and shop details. 
+-   **leads**: New collection to store leads synced from Facebook Lead Ads.
+-   **customers**: Modified to include  field on orders.
+-   **inventory_v2**: Now used as the source of truth for stock status checks.
 
 **changes in tech stack**
--   **Backend**: Added ,  to .
+-   **Backend**: The  library is now a core dependency for the API key management feature.
 
 **All files of reference**
--   **/app/backend/routes/subscriptions.py**: New file for Razorpay subscription logic.
--   **/app/backend/routes/shopify_webhooks.py**: New file for handling Shopify order notifications and webhook registration.
--   **/app/frontend/src/components/PricingPage.jsx**: New frontend component for displaying subscription plans.
--   **/app/frontend/src/components/NotificationSettings.jsx**: New frontend component for managing notification settings.
--   **/app/frontend/src/components/WhatsAppEmbeddedSignup.jsx**: Heavily modified to be store-specific and handle multiple connection types.
--   **/app/backend/routes/whatsapp_embedded.py**: Modified to save and retrieve accounts based on .
--   **/app/frontend/public/index.html**: Modified to remove all Emergent branding and update the site metadata for OmniSales.
--   **/app/backend/server.py**: Modified to include the new  and .
--   **/app/frontend/src/App.js**: Modified to add routes for  and .
--   **/app/frontend/src/components/Sidebar.jsx**: Modified to add links for Subscription and Notifications.
+-   New Backend Routes: , , , 
+-   New Frontend Components: , , , 
+-   Modified Core Backend: , 
+-   Modified Core Frontend: , , 
+-   Fixed Components: , 
+-   UI Overhaul: 
 
 **Areas that need refactoring**:
--   **/app/backend/server.py**: This file is now critically oversized and complex. It is the highest priority for refactoring. All route includes, CORS settings, and startup events are in one massive file, making it hard to maintain.
+-   **/app/backend/server.py**: **CRITICAL PRIORITY**. This file is a severe monolith and must be broken down. Its complexity is now a major liability for future development.
+-   **/app/frontend/src/components/SettingsOptimized.jsx**: This file was created but is not used in the application ( is used instead). It should be deleted to remove dead code.
 
 **key api endpoints**
--   : Creates a Razorpay subscription order.
--   : Verifies a successful Razorpay payment.
--   : Retrieves the list of available subscription plans.
--   : Receives  events from Shopify.
--   : Automatically registers all required webhooks for all user stores.
--   : Checks the status of webhooks for a specific store.
--   : Modified to accept a  query parameter.
--   : Modified to accept a  in the body.
+-   : Get the structure of required keys for all services.
+-   : Save and encrypt a set of API keys.
+-   : Get the authorization URL for Shopify OAuth.
+-   : Handles the OAuth callback from Shopify to exchange code for a token.
+-   : Handles Facebook webhook verification.
+-   : Receives new lead data from Facebook.
+-   : Pull all lead forms from the connected Facebook Page.
+-   : Pull all leads for a specific form.
+-   : Get aggregated usage stats for the admin dashboard.
+-   : Get a list of all tenants and their usage data.
+-   : Triggers a sync to update stock status on all orders.
+-   : Gets statistics on in-stock vs. out-of-stock orders.
 
 **Critical Info for New Agent**
--   **Focus on WhatsApp Coexistence Issue**: The user's primary blocker is the WhatsApp Coexistence flow not showing a QR code. Your first priority should be to guide the user in understanding that this is likely a Meta platform/regional issue, not a code bug. Suggest they test with a number from a supported region (like India or the US) to prove the code is correct.
--   **Address Razorpay Security Risk**: The live Razorpay keys are in the  file. You must flag this as a security risk and propose a plan to move them to a secure settings page, storing them encrypted in the database.
--   ** MUST be refactored**: The main backend file is unmanageable. Before adding any new major backend features, propose a refactoring plan to break out routes, models, and services into a proper directory structure.
--   **User has Multiple Meta Configs**: The user has created several Facebook Login for Business configurations. The code now supports this with a dropdown. Be aware of which  is being used for each feature (Coexistence, Analytics, Instagram).
+-   **Prioritize User Bugs**: The user's top priority is fixing the four issues with Purchase Tracker, Smart Clearance, and Dynamic Pricing. These are all core features. The agent has already determined that the latter two are likely frontend issues.
+-   **Lead Ads is Blocked**: The manual sync for Facebook Lead Ads will not work until the user reconnects their Facebook/WhatsApp account to refresh the expired access token. You must guide the user to do this.
+-   ** Must Be Refactored**: Do not add any more routes to . The next major backend task should be proposing and executing a refactor of this file. It is a recurring issue and a major source of technical debt.
+-   **Migrate Razorpay Keys**: The new API Key management system is complete, but the live Razorpay keys are still in the  file. This is a security risk that must be addressed by migrating the keys to the new encrypted storage.
 
 **documents created in this job**
 -   None.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: Remove Emergent branding from the frontend. (Completed)
-2.  **User**: Make WhatsApp number connections store-specific. (Completed)
-3.  **User**: Will chats sync with the Coexistence app? (Answered - Yes, real-time sync for new messages)
-4.  **User**: ...chats will sync to whatsapp inbox (Confirmation - Yes)
-5.  **User**: How will Shopify order notifications be triggered? (Answered - Via Shopify Webhooks)
-6.  **User**: Integrate Razorpay API. (In Progress - Clarification requested)
-7.  **User**: Use Razorpay to charge OmniSales platform users. (Completed)
-8.  **User**: Provides Razorpay live keys. (Completed - Keys added to .env)
-9.  **User**: Asks to proceed with Shopify webhook integration. (Completed)
-10. **User**: Can you configure the webhooks automatically via API for all stores? (Completed)
+1.  **User**: Requested OAuth-based login for Shopify and other integrations like Razorpay. (Shopify OAuth implemented)
+2.  **User**: Provided a long list of potential Shopify permission scopes. (Agent selected essential scopes)
+3.  **User**: Asked if legacy scopes are needed for Shopify. (Agent correctly advised using modern, granular scopes)
+4.  **User**: Provided Shopify App API Key and Secret. (Implemented)
+5.  **User**: Provided feedback on the WhatsApp Business page: no disconnect option, black background, UI not like Shopify. (Agent fixed UI, disconnect button appears when accounts are connected)
+6.  **User**: Requested integration for Facebook Lead Ads. (Implemented)
+7.  **User**: Specified that he wants to automatically pull existing leads, not just rely on webhooks. (Manual sync feature implemented)
+8.  **User**: Asked where the User Management icon went. (Agent found it was missing and restored it to the sidebar)
+9.  **User**: Asked for a backend feature to monitor tenant usage for his SaaS resale model. (Super Admin Dashboard implemented)
+10. **User**: Reported four new bugs: Confirmation Track not syncing, Smart Clearance error, Dynamic Pricing error, and requested AI recommendations. (In Progress)
 
 **Project Health Check:**
--   **Broken**: The WhatsApp Coexistence flow is not working as the user expects (no QR code is displayed), likely due to external factors (region/number history).
+-   **Broken**:
+    -   **Purchase Tracker Sync**: Not syncing china post orders as per user report.
+    -   **Smart Clearance**: User reports an error, likely on the frontend.
+    -   **Dynamic Pricing**: User reports enable/sync not working, likely a frontend issue.
+    -   **Facebook Lead Ads Sync**: Blocked due to an expired Meta API access token.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
--   **Shopify Admin API**: Functional — requires User API Key.
--   **Facebook Marketing API / WhatsApp Business Platform**: **In Progress / Partially BLOCKED** — Implemented Coexistence, Analytics, and Instagram flows. Coexistence is blocked by suspected platform/regional issues. Requires User API Key.
--   **Razorpay**: **Functional (Live Keys)** — Implemented for SaaS subscription billing. Uses user-provided LIVE API keys.
+-   **Shopify Admin API**: **Functional (OAuth)** — Now uses a one-click OAuth connection.
+-   **Facebook Marketing API / WhatsApp Business Platform**: **Functional / Partially BLOCKED** — Coexistence flow is working. Lead Ads sync is BLOCKED on user reconnecting account to refresh an expired token.
+-   **Razorpay**: **Functional (Live Keys)** — Implemented for SaaS billing. Uses user-provided LIVE API keys which are still insecurely stored in .
+-   **Facebook Lead Ads API**: **NEW & Partially BLOCKED** — Integration is built, but manual sync is blocked by the expired token.
 -   **OpenAI GPT-4**: Functional — uses Emergent LLM Key.
 -   **TCS/DTDC Courier API**: Integrated — requires User API Key.
 -   **Meta WhatsApp**: Functional (URL scheme) — no key required.
 
 **Testing status**
--   **Testing agent used after significant changes**: NO (Agent used manual testing via curl and screenshots for this session).
+-   **Testing agent used after significant changes**: NO (Agent relied on manual testing:  for backend, yarn run v1.22.22
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command. for frontend syntax, and  for UI verification).
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None.
--   **Known regressions**: None in this session. The previous production login issue appears resolved.
+-   **Known regressions**: None.
 
 **Credentials to test flow:**
 -   **Admin**:  / 
@@ -216,5 +273,5 @@ A full-stack React/FastAPI/MongoDB application with a Shopify-like UI. The app n
 -   **Viewer**:  / 
 
 **What agent forgot to execute**
--   The agent did not address the security implications of putting live Razorpay keys directly into the  file. This is a significant oversight and should be the next agent's first point of discussion after clarifying the WhatsApp issue.
--   The recurring issue of refactoring  was acknowledged but not acted upon, and in fact, was made worse by adding more routers to the monolithic file.</analysis>
+-   **Migrate Live Secrets**: The agent successfully built a secure API key management system but failed to complete the process. The live Razorpay keys are still in the  file, posing a security risk. The agent should have migrated them to the new encrypted storage and removed them from the environment file.
+-   **Refactor **: Despite this being a recurring, critical issue noted in the initial handoff, the agent did not address it. Instead, the problem was made worse by adding four new routers to the monolithic file, increasing the technical debt.</analysis>
