@@ -2198,73 +2198,73 @@ class ShopifyCustomerAPITester:
         return performance_results
 
 def main():
-    print("🚀 Starting Shopify OAuth One-Click Connection Tests")
+    print("🔥 Starting P0 Bug Fix Validation Tests")
     print("=" * 80)
     
     # Setup
     tester = ShopifyCustomerAPITester()
     
-    # Run Shopify OAuth tests as requested
-    oauth_results = tester.run_shopify_oauth_tests()
+    # Run P0 Bug Fix tests as requested
+    p0_results = tester.run_p0_bug_fix_tests()
     
-    # Print Shopify OAuth test summary
+    # Print P0 Bug Fix test summary
     print("\n" + "=" * 80)
-    print("📊 SHOPIFY OAUTH TEST SUMMARY")
+    print("📊 P0 BUG FIX TEST SUMMARY")
     print("=" * 80)
     
-    # Shopify OAuth Results
-    auth_url_results = oauth_results.get("auth_url", {})
-    connections_results = oauth_results.get("connections", {})
-    status_results = oauth_results.get("status", {})
-    error_handling_results = oauth_results.get("error_handling", {})
+    # P0 Bug Fix Results
+    china_orders_results = p0_results.get("china_orders", {})
+    china_count_results = p0_results.get("china_count", {})
+    clearance_health_results = p0_results.get("clearance_health", {})
+    clearance_campaigns_results = p0_results.get("clearance_campaigns", {})
+    pricing_report_results = p0_results.get("pricing_report", {})
     
-    # Auth URL Generation Summary
-    print(f"\n🔗 AUTH URL GENERATION:")
-    print(f"   GET /api/shopify/oauth/auth-url?shop=teststore: {'✅ PASS' if auth_url_results.get('success') else '❌ FAIL'}")
+    # Purchase Tracker Summary
+    print(f"\n📦 PURCHASE TRACKER (CHINA POST):")
+    print(f"   GET /api/customers?china_tracking=true: {'✅ PASS' if china_orders_results.get('success') else '❌ FAIL'}")
+    print(f"   GET /api/customers/count?china_tracking=true: {'✅ PASS' if china_count_results.get('success') else '❌ FAIL'}")
     
-    # Connections List Summary
-    print(f"\n📋 CONNECTIONS LIST:")
-    print(f"   GET /api/shopify/oauth/connections: {'✅ PASS' if connections_results.get('success') else '❌ FAIL'}")
+    # Smart Clearance Summary
+    print(f"\n🧹 SMART CLEARANCE (INVENTORY CLEARANCE):")
+    print(f"   GET /api/clearance/health: {'✅ PASS' if clearance_health_results.get('success') else '❌ FAIL'}")
+    print(f"   GET /api/clearance/campaigns: {'✅ PASS' if clearance_campaigns_results.get('success') else '❌ FAIL'}")
     
-    # Connection Status Summary
-    print(f"\n📊 CONNECTION STATUS:")
-    print(f"   GET /api/shopify/oauth/status/teststore: {'✅ PASS' if status_results.get('success') else '❌ FAIL'}")
+    # Dynamic Pricing Summary
+    print(f"\n💰 DYNAMIC PRICING ENGINE:")
+    print(f"   GET /api/dynamic-pricing/report: {'✅ PASS' if pricing_report_results.get('success') else '❌ FAIL'}")
     
-    # Error Handling Summary
-    print(f"\n⚠️ ERROR HANDLING:")
-    print(f"   Empty shop parameter: {'✅ PASS' if error_handling_results.get('success') else '❌ FAIL'}")
-    
-    # Overall Shopify OAuth assessment
+    # Overall P0 Bug Fix assessment
     all_tests_passed = all(
         results.get('success', False) 
-        for results in [auth_url_results, connections_results, status_results, error_handling_results]
+        for results in [china_orders_results, china_count_results, clearance_health_results, clearance_campaigns_results, pricing_report_results]
     )
     
-    total_tests = 4
+    total_tests = 5
     passed_tests = sum(
-        1 for results in [auth_url_results, connections_results, status_results, error_handling_results]
+        1 for results in [china_orders_results, china_count_results, clearance_health_results, clearance_campaigns_results, pricing_report_results]
         if results.get('success', False)
     )
     
-    print(f"\n🎯 SHOPIFY OAUTH VALIDATION: {passed_tests}/{total_tests} tests passed")
+    print(f"\n🎯 P0 BUG FIX VALIDATION: {passed_tests}/{total_tests} tests passed")
     
     if all_tests_passed:
-        print("✅ All Shopify OAuth APIs are working correctly!")
-        print("   - Auth URL: Returns valid OAuth URL with correct shop domain")
-        print("   - Connections: Returns list of connected stores (empty initially)")
-        print("   - Status: Returns connection status (connected: false for non-connected stores)")
-        print("   - Error Handling: Gracefully handles empty shop parameter")
+        print("✅ All P0 Bug Fixes are working correctly!")
+        print("   - Purchase Tracker: China Post orders filtering and counting works")
+        print("   - Smart Clearance: Inventory health analysis and campaigns work")
+        print("   - Dynamic Pricing: Report generation works with proper categories")
         return 0
     else:
-        print("❌ Some Shopify OAuth APIs have issues")
-        if not auth_url_results.get('success'):
-            print(f"   - Auth URL API: Issues with generating OAuth URL")
-        if not connections_results.get('success'):
-            print(f"   - Connections API: Issues with listing connections")
-        if not status_results.get('success'):
-            print(f"   - Status API: Issues with checking connection status")
-        if not error_handling_results.get('success'):
-            print(f"   - Error Handling: Issues with handling empty shop parameter")
+        print("❌ Some P0 Bug Fixes have issues")
+        if not china_orders_results.get('success'):
+            print(f"   - Purchase Tracker Orders: Issues with china_tracking=true filter")
+        if not china_count_results.get('success'):
+            print(f"   - Purchase Tracker Count: Issues with china_tracking=true count")
+        if not clearance_health_results.get('success'):
+            print(f"   - Smart Clearance Health: Issues with inventory health analysis")
+        if not clearance_campaigns_results.get('success'):
+            print(f"   - Smart Clearance Campaigns: Issues with campaigns endpoint")
+        if not pricing_report_results.get('success'):
+            print(f"   - Dynamic Pricing Report: Issues with report generation")
         return 1
 
 if __name__ == "__main__":
