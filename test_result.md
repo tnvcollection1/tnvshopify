@@ -122,6 +122,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "API Keys Management: Complete"
     - "Multi-Tenant Landing Page: Complete"
     - "P0 Bug Fixes: All Complete"
   stuck_tasks: []
