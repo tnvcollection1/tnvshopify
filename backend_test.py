@@ -1811,18 +1811,19 @@ def main():
     # Run API Keys Management tests as requested
     api_keys_results = tester.run_api_keys_management_tests()
     
-    # Print Multi-Tenant & Meta Ads test summary
+    # Print API Keys Management test summary
     print("\n" + "=" * 80)
-    print("📊 MULTI-TENANT & META ADS TEST SUMMARY")
+    print("📊 API KEYS MANAGEMENT TEST SUMMARY")
     print("=" * 80)
     
-    # Multi-Tenant & Meta Ads Results
-    tenant_reg_results = mt_results.get("tenant_registration", {})
-    plans_results = mt_results.get("subscription_plans", {})
-    meta_validation_results = mt_results.get("meta_ads_validation", {})
-    meta_campaigns_results = mt_results.get("meta_ads_campaigns", {})
-    api_keys_results = mt_results.get("tenant_api_keys", {})
-    usage_results = mt_results.get("tenant_usage", {})
+    # API Keys Management Results
+    definitions_results = api_keys_results.get("definitions", {})
+    get_empty_results = api_keys_results.get("get_empty", {})
+    update_single_results = api_keys_results.get("update_single", {})
+    get_after_results = api_keys_results.get("get_after_update", {})
+    status_results = api_keys_results.get("status", {})
+    delete_results = api_keys_results.get("delete", {})
+    bulk_update_results = api_keys_results.get("bulk_update", {})
     
     # Tenant Registration Summary
     print(f"\n🏢 TENANT REGISTRATION:")
