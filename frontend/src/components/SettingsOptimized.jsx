@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Store, Plus, Trash2, CheckCircle, XCircle, Settings as SettingsIcon } from 'lucide-react';
+import { Store, Plus, Trash2, CheckCircle, XCircle, Settings as SettingsIcon, Key, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import LoadingSpinner from './LoadingSpinner';
+import APIKeysSettings from './APIKeysSettings';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
