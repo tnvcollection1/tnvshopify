@@ -70,6 +70,9 @@ const API = `${BACKEND_URL}/api`;
 const PRODUCTION_DOMAIN = "https://importbaba.com";
 
 const WhatsAppEmbeddedSignup = () => {
+  // Store context for store-specific WhatsApp accounts
+  const { selectedStore, getStoreName } = useStore();
+  
   // State
   const [config, setConfig] = useState(null);
   const [accounts, setAccounts] = useState([]);
