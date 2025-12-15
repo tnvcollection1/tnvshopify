@@ -435,11 +435,11 @@ class ShopifyCustomerAPITester:
     def test_login_with_correct_credentials(self):
         """Test agent login with correct admin credentials"""
         success, response, response_time = self.run_test(
-            "Agent Login (admin/admin)",
+            "Agent Login (admin/admin123)",
             "POST",
             "agents/login",
             200,
-            data={"username": "admin", "password": "admin"}
+            data={"username": "admin", "password": "admin123"}
         )
         
         if success and response:
