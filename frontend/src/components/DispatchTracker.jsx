@@ -480,7 +480,9 @@ const DispatchTracker = () => {
 
     try {
       const response = await axios.post(`${API}/tcs/track/${order.tracking_number}`);
-      if (response.data && response.data.tracking_data) {
+      if (response.data && response.data.success && response.data.tracking) {
+        setTrackingData(response.data.tracking);
+      } else if (response.data && response.data.tracking_data) {
         setTrackingData(response.data.tracking_data);
       } else if (response.data) {
         setTrackingData(response.data);
