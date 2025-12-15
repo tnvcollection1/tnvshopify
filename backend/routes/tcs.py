@@ -265,9 +265,13 @@ async def sync_all_tcs_deliveries():
         # Find orders needing sync (TCS orders only, not China Post)
         query = {
             'fulfillment_status': 'fulfilled',
-            'tracking_number': {'$exists': True, '$ne': None, '$ne': ''},
-            'tracking_number': {'$not': {'$regex': '^X', '$options': 'i'}},
-            'delivery_status': {'$nin': ['DELIVERED', 'RETURNED']}
+            'delivery_status': {'$nin': ['DELIVERED', 'RETURNED']},
+            '$and': [
+                {'tracking_number': {'$exists': True}},
+                {'tracking_number': {'$ne': None}},
+                {'tracking_number': {'$ne': ''}},
+                {'tracking_number': {'$not': {'$regex': '^X', '$options': 'i'}}}
+            ]
         }
         
         orders = await db.customers.find(query, {'_id': 0}).limit(100).to_list(100)
