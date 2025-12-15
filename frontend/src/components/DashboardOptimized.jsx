@@ -22,7 +22,8 @@ import {
   Mail,
   MapPin,
   MessageCircle,
-  DollarSign
+  DollarSign,
+  Truck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
