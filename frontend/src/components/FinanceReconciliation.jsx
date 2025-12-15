@@ -382,24 +382,24 @@ const FinanceReconciliation = () => {
         </Card>
 
         {/* Instructions */}
-        {records.length === 0 && !loading && (
+        {records.length === 0 && !loading && globalStore !== 'all' && (
           <Card className="mb-6 bg-white border border-gray-200 shadow-sm">
             <CardContent className="pt-6">
               <div className="text-center py-8">
                 <FileSpreadsheet className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Purchase Order Sheet</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Purchase Order Sheet for {globalStore}</h3>
                 <p className="text-gray-600 mb-4">
                   Upload your Excel file with these columns to reconcile with Shopify orders:
                 </p>
-                <div className="flex justify-center gap-3 flex-wrap">
-                  <Badge variant="outline" className="text-sm bg-blue-50 text-blue-700 border-blue-200">SHOPIFY ID / ORDER #</Badge>
-                  <Badge variant="outline" className="text-sm bg-purple-50 text-purple-700 border-purple-200">SKU</Badge>
-                  <Badge variant="outline" className="text-sm bg-orange-50 text-orange-700 border-orange-200">AWB / DTDC TRACKING</Badge>
-                  <Badge variant="outline" className="text-sm bg-green-50 text-green-700 border-green-200">SELL AMOUNT</Badge>
-                  <Badge variant="outline" className="text-sm bg-red-50 text-red-700 border-red-200">COST</Badge>
+                <div className="flex justify-center gap-3 flex-wrap mb-4">
+                  <Badge variant="outline" className="text-sm bg-blue-50 text-blue-700 border-blue-200">SHOPIFY ID → Order # in Shopify</Badge>
+                  <Badge variant="outline" className="text-sm bg-purple-50 text-purple-700 border-purple-200">SKU → SKU in order line items</Badge>
+                  <Badge variant="outline" className="text-sm bg-orange-50 text-orange-700 border-orange-200">AWB → DTDC Tracking Number</Badge>
+                  <Badge variant="outline" className="text-sm bg-green-50 text-green-700 border-green-200">SELL AMOUNT → Total Sale Price</Badge>
+                  <Badge variant="outline" className="text-sm bg-red-50 text-red-700 border-red-200">COST (optional)</Badge>
                 </div>
-                <p className="text-xs text-gray-500 mt-4">
-                  Matching is done by: Order # → Tracking Number → Amount verification
+                <p className="text-xs text-gray-500">
+                  <strong>Matching Logic:</strong> Order # → AWB/Tracking → SKU verification → Amount verification (5% tolerance)
                 </p>
               </div>
             </CardContent>
