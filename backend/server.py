@@ -3520,6 +3520,82 @@ async def import_shopify_product_prices(store_name: str = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+@api_router.post("/inventory/v2/sync-orders")
+async def sync_inventory_orders(store_name: str = None):
+    """
+    Sync Order# column by matching inventory SKUs with orders.
+    Finds orders containing each SKU and updates the order_number field.
+    """
+    try:
+        if not store_name or store_name == 'all':
+            return {"success": False, "message": "Please select a specific store"}
+        
+        # Get all inventory items
+        inventory_items = await db.inventory_v2.find(
+            {"store_name": store_name},
+            {"_id": 0}
+        ).to_list(50000)
+        
+        # Get all orders with line items
+        orders = await db.customers.find(
+            {"store_name": store_name, "line_items": {"$exists": True}},
+            {"_id": 0, "name": 1, "line_items.sku": 1, "fulfillment_status": 1, "financial_status": 1}
+        ).to_list(100000)
+        
+        # Build SKU to order mapping
+        sku_order_map = {}
+        for order in orders:
+            order_name = order.get("name", "")
+            for li in order.get("line_items", []):
+                sku = (li.get("sku") or "").strip().lower()
+                if sku:
+                    if sku not in sku_order_map:
+                        sku_order_map[sku] = []
+                    sku_order_map[sku].append({
+                        "order_number": order_name,
+                        "fulfillment_status": order.get("fulfillment_status"),
+                        "financial_status": order.get("financial_status")
+                    })
+        
+        logger.info(f"Built order map with {len(sku_order_map)} SKUs from {len(orders)} orders")
+        
+        # Update inventory items with order numbers
+        updated_count = 0
+        for item in inventory_items:
+            sku = (item.get("sku") or "").strip().lower()
+            if not sku:
+                continue
+            
+            order_info = sku_order_map.get(sku)
+            if order_info:
+                # Get the most recent order
+                latest_order = order_info[-1]
+                await db.inventory_v2.update_one(
+                    {"id": item.get("id")},
+                    {"$set": {
+                        "order_number": latest_order["order_number"],
+                        "order_fulfillment_status": latest_order["fulfillment_status"],
+                        "order_financial_status": latest_order["financial_status"],
+                        "total_orders": len(order_info),
+                        "last_order_sync": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                updated_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Synced orders for {updated_count} inventory items",
+            "updated_count": updated_count,
+            "total_orders": len(orders),
+            "total_inventory_items": len(inventory_items)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing inventory orders: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ========================================
 # OLD INVENTORY ENDPOINTS (KEPT FOR BACKWARD COMPATIBILITY)
 # ========================================
