@@ -320,7 +320,7 @@ const FinanceReconciliation = () => {
                   <div>
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Profit</p>
                     <p className={`text-2xl font-bold ${summary.total_profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                      ₹{summary.total_profit?.toLocaleString()}
+                      {formatCurrency(summary.total_profit, globalStore)}
                     </p>
                   </div>
                 </div>
