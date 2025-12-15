@@ -63,7 +63,20 @@ const Inventory = () => {
   const [filters, setFilters] = useState({
     status: 'all',
     store: 'all',
-    search: ''
+    search: '',
+    profitFilter: 'all' // 'all', 'positive', 'negative', 'zero'
+  });
+  
+  // Stats state
+  const [stats, setStats] = useState({
+    totalItems: 0,
+    totalCost: 0,
+    totalSaleValue: 0,
+    totalProfit: 0,
+    profitMargin: 0,
+    positiveProfit: 0,
+    negativeProfit: 0,
+    zeroProfit: 0
   });
   
   // Selection state
