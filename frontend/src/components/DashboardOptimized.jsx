@@ -247,7 +247,7 @@ const DashboardOptimized = () => {
           <button 
             type="button"
             onClick={() => {
-              setFilters({...filters, fulfillmentStatus: 'all'});
+              setFilters({...filters, fulfillmentStatus: 'cancelled'});
               setActiveTab('cancelled');
             }}
             className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:shadow-lg hover:border-red-300 transition-all"
