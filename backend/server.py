@@ -2976,15 +2976,22 @@ async def get_all_inventory_items(store_name: str = None, status: str = None, se
         if status and status != "all":
             query["status"] = status
         
-        # Add search filter
+        # Add search filter using $and to combine with other filters
         if search and search.strip():
             search_regex = {"$regex": search.strip(), "$options": "i"}
-            query["$or"] = [
-                {"sku": search_regex},
-                {"product_name": search_regex},
-                {"collection": search_regex},
-                {"order_number": search_regex}
-            ]
+            search_conditions = {
+                "$or": [
+                    {"sku": search_regex},
+                    {"product_name": search_regex},
+                    {"collection": search_regex},
+                    {"order_number": search_regex}
+                ]
+            }
+            # Combine existing query with search using $and
+            if query:
+                query = {"$and": [query, search_conditions]}
+            else:
+                query = search_conditions
         
         items = await db.inventory_v2.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
         return {"success": True, "items": items, "total": len(items)}
