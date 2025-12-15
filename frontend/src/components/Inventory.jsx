@@ -144,7 +144,7 @@ const Inventory = () => {
 
   const syncShopifyPrices = async () => {
     if (filters.store === 'all') {
-      toast.error('Please select a specific store to import prices');
+      toast.error('Please select a specific store to sync prices');
       return;
     }
     
@@ -153,25 +153,21 @@ const Inventory = () => {
       const params = new URLSearchParams();
       params.append('store_name', filters.store);
       
-      // Use the new import-shopify-products endpoint
-      const response = await fetch(`${API}/inventory/v2/import-shopify-products?${params}`, {
+      // Use sync-shopify-prices endpoint (syncs from orders)
+      const response = await fetch(`${API}/inventory/v2/sync-shopify-prices?${params}`, {
         method: 'POST'
       });
       const data = await response.json();
       
       if (data.success) {
-        toast.success(
-          `✅ Imported ${data.updated_count} prices from Shopify!\n` +
-          `📦 Total products: ${data.total_shopify_products}\n` +
-          `⚠️ Not found: ${data.not_found_in_shopify}`
-        );
+        toast.success(`✅ Synced prices for ${data.updated_count} items!`);
         fetchItems(); // Refresh inventory
       } else {
-        toast.error(data.message || 'Failed to import prices');
+        toast.error(data.message || 'Failed to sync prices');
       }
     } catch (error) {
-      console.error('Error importing prices:', error);
-      toast.error('Failed to import Shopify prices');
+      console.error('Error syncing prices:', error);
+      toast.error('Failed to sync prices');
     } finally {
       setSyncingPrices(false);
     }
