@@ -1016,7 +1016,8 @@ class ShopifyCustomerAPITester:
             "Sync Order Costs",
             "POST",
             "customers/sync-order-costs?store_name=tnvcollectionpk",
-            200
+            200,
+            timeout=120  # Increased timeout for large dataset processing
         )
         
         if success and response:
