@@ -2993,7 +2993,7 @@ async def get_all_inventory_items(store_name: str = None, status: str = None, se
             else:
                 query = search_conditions
         
-        items = await db.inventory_v2.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+        items = await db.inventory_v2.find(query, {"_id": 0}).sort("created_at", -1).to_list(50000)
         return {"success": True, "items": items, "total": len(items)}
     except Exception as e:
         logger.error(f"Error fetching inventory: {str(e)}")
