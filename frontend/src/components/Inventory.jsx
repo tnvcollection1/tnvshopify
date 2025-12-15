@@ -90,7 +90,6 @@ const Inventory = () => {
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStore, setUploadStore] = useState('tnvcollectionpk'); // Store selection for upload
-  const [searchTimeout, setSearchTimeout] = useState(null);
 
   // Sync local store filter with global store
   useEffect(() => {
