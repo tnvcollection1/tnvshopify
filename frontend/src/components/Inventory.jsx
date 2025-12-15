@@ -36,12 +36,16 @@ import {
   Package, 
   DollarSign,
   TrendingUp,
+  TrendingDown,
   Clock,
   Truck,
   CheckCircle,
   RefreshCw,
   Search,
-  Download
+  Download,
+  AlertTriangle,
+  BarChart3,
+  FileSpreadsheet
 } from 'lucide-react';
 import { Checkbox } from './ui/checkbox';
 import { useStore } from '../contexts/StoreContext';
