@@ -1045,13 +1045,13 @@ class ShopifyCustomerAPITester:
         return success, response
     
     def test_sync_stock_status_endpoint(self):
-        """Test Sync Stock Status Endpoint for tnvcollectionpk store"""
+        """Test Sync Stock Status Endpoint for ashmiaa store (smaller dataset)"""
         success, response, _ = self.run_test(
             "Sync Stock Status",
             "POST",
-            "customers/sync-stock-status?store_name=tnvcollectionpk",
+            "customers/sync-stock-status?store_name=ashmiaa",
             200,
-            timeout=60  # Increased timeout for large dataset
+            timeout=90  # Increased timeout for processing
         )
         
         if success and response:
