@@ -402,13 +402,14 @@ const DashboardOptimized = () => {
               <div className="col-span-1">
                 <input type="checkbox" className="rounded border-gray-300" />
               </div>
-              <div className="col-span-2">Order</div>
-              <div className="col-span-2">Date</div>
+              <div className="col-span-1">Order #</div>
               <div className="col-span-2">Customer</div>
-              <div className="col-span-2">Products</div>
-              <div className="col-span-1">Status</div>
+              <div className="col-span-2">Product / SKU</div>
+              <div className="col-span-1">Date</div>
+              <div className="col-span-1">Fulfillment</div>
               <div className="col-span-1">Payment</div>
-              <div className="col-span-1 text-right">Total</div>
+              <div className="col-span-1">Tracking</div>
+              <div className="col-span-2 text-right">Sale Price</div>
             </div>
 
             {/* Table Body */}
@@ -427,46 +428,55 @@ const DashboardOptimized = () => {
                     <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
                       <input type="checkbox" className="rounded border-gray-300" />
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-1">
                       <span className="text-sm font-medium text-blue-600 hover:underline">
-                        #{order.order_number || 'N/A'}
+                        #{order.order_number || order.name || 'N/A'}
                       </span>
                     </div>
-                    <div className="col-span-2 text-sm text-gray-600">
-                      {formatDate(order.last_order_date)}
-                    </div>
                     <div className="col-span-2">
-                      <p className="text-sm text-gray-900 truncate">
-                        {order.first_name} {order.last_name}
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {order.first_name || order.customer?.first_name || ''} {order.last_name || order.customer?.last_name || ''}
                       </p>
+                      <p className="text-xs text-gray-500 truncate">{order.phone || order.email || ''}</p>
                     </div>
                     <div className="col-span-2">
                       {order.line_items?.length > 0 ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center text-xs font-medium">
-                            {(order.line_items[0]?.name || 'P').substring(0, 2).toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-gray-900 truncate">
-                              {order.line_items[0]?.name || 'Product'}
-                            </p>
-                            {order.line_items.length > 1 && (
-                              <p className="text-xs text-gray-500">+{order.line_items.length - 1} more</p>
-                            )}
-                          </div>
+                        <div>
+                          <p className="text-xs text-gray-900 truncate font-medium">
+                            {order.line_items[0]?.title || order.line_items[0]?.name || 'Product'}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            SKU: {order.line_items[0]?.sku || order.order_skus?.[0] || '-'}
+                          </p>
+                          {order.line_items.length > 1 && (
+                            <p className="text-xs text-blue-500">+{order.line_items.length - 1} more</p>
+                          )}
                         </div>
+                      ) : order.order_skus?.length > 0 ? (
+                        <p className="text-xs text-gray-500">SKU: {order.order_skus.join(', ')}</p>
                       ) : (
                         <span className="text-xs text-gray-400">No items</span>
                       )}
+                    </div>
+                    <div className="col-span-1 text-xs text-gray-600">
+                      {formatDate(order.last_order_date || order.created_at)}
                     </div>
                     <div className="col-span-1">
                       {getStatusBadge(order.fulfillment_status, 'fulfillment')}
                     </div>
                     <div className="col-span-1">
-                      {getStatusBadge(order.payment_status, 'payment')}
+                      {getStatusBadge(order.payment_status || order.financial_status, 'payment')}
                     </div>
-                    <div className="col-span-1 text-right">
-                      <span className="text-sm font-medium">₹{order.total_spent?.toFixed(0) || '0'}</span>
+                    <div className="col-span-1">
+                      <p className="text-xs text-gray-600 truncate" title={order.tracking_number}>
+                        {order.tracking_number || '-'}
+                      </p>
+                      {order.tracking_company && (
+                        <p className="text-xs text-gray-400">{order.tracking_company}</p>
+                      )}
+                    </div>
+                    <div className="col-span-2 text-right">
+                      <span className="text-sm font-semibold text-gray-900">₹{(order.total_spent || order.total_price || 0).toLocaleString()}</span>
                     </div>
                   </div>
                 ))
