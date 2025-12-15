@@ -52,6 +52,8 @@ import { useStore } from "../contexts/StoreContext";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+import { formatCurrency, getCurrency } from '../utils/currency';
+
 const ConfirmationTracker = () => {
   const { selectedStore: globalStore, getStoreName } = useStore();
   const [orders, setOrders] = useState([]);
