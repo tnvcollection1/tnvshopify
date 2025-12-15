@@ -116,13 +116,18 @@ const DashboardOptimized = () => {
   }, [fetchStats, fetchRecentOrders]);
 
   const handleSync = async () => {
+    if (selectedStore === 'all') {
+      toast.error('Please select a specific store to sync');
+      return;
+    }
     setSyncing(true);
     try {
-      await axios.post(`${API}/shopify/sync`);
+      await axios.post(`${API}/shopify/sync/${selectedStore}`);
       toast.success('Sync started successfully');
       await fetchStats();
       await fetchRecentOrders();
     } catch (error) {
+      console.error('Sync error:', error);
       toast.error(error.response?.data?.detail || 'Sync failed');
     } finally {
       setSyncing(false);
