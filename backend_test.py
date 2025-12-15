@@ -1138,7 +1138,7 @@ class ShopifyCustomerAPITester:
         print("\n🔐 PREREQUISITE: ADMIN LOGIN TEST")
         print("-" * 50)
         
-        login_success, login_response = self.test_agent_login()
+        login_success, login_response = self.test_login_with_correct_credentials()
         if not login_success:
             print("❌ Admin login failed - cannot proceed with Orders page tests")
             return {"login_failed": True}
