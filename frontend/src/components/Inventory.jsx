@@ -234,6 +234,50 @@ const Inventory = () => {
     }
   };
 
+  // Export to Excel/CSV
+  const exportToExcel = () => {
+    if (items.length === 0) {
+      toast.error('No items to export');
+      return;
+    }
+    
+    // Create CSV content
+    const headers = ['SKU', 'Product Name', 'Collection', 'Cost', 'Sale Price', 'Profit', 'Profit %', 'Status', 'Store', 'Order #'];
+    const rows = items.map(item => {
+      const cost = parseFloat(item.cost) || 0;
+      const salePrice = parseFloat(item.sale_price) || 0;
+      const profit = parseFloat(item.profit) || (salePrice - cost);
+      const profitPct = salePrice > 0 ? ((profit / salePrice) * 100).toFixed(1) : '0';
+      
+      return [
+        item.sku || '',
+        item.product_name || '',
+        item.collection || '',
+        cost.toFixed(2),
+        salePrice.toFixed(2),
+        profit.toFixed(2),
+        profitPct + '%',
+        item.status || '',
+        item.store_name || '',
+        item.order_number || ''
+      ].map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',');
+    });
+    
+    const csv = [headers.join(','), ...rows].join('\n');
+    
+    // Download file
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `inventory_${filters.store}_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success(`Exported ${items.length} items to CSV`);
+  };
+
   // Selection handlers
   const handleSelectAll = () => {
     if (selectAll) {
