@@ -42,6 +42,7 @@ const DashboardOptimized = () => {
   });
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [syncingCosts, setSyncingCosts] = useState(false);
   const [recentOrders, setRecentOrders] = useState([]);
   const [uploadingCSV, setUploadingCSV] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
