@@ -340,6 +340,7 @@ const ConfirmationTracker = () => {
   };
 
   const getStockBadge = (status) => {
+    const normalizedStatus = (status || '').toLowerCase().replace('_', '_');
     const variants = {
       in_stock: "bg-green-100 text-green-800 border-green-200",
       partial: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -352,8 +353,8 @@ const ConfirmationTracker = () => {
       out_of_stock: "❌ Out of Stock",
       unknown: "Unknown",
     };
-    const variant = variants[status] || variants.unknown;
-    const label = labels[status] || "Unknown";
+    const variant = variants[normalizedStatus] || variants.unknown;
+    const label = labels[normalizedStatus] || "Unknown";
     return <Badge variant="outline" className={`${variant} font-medium text-xs`}>{label}</Badge>;
   };
 
