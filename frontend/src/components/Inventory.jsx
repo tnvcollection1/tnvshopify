@@ -572,122 +572,108 @@ const Inventory = () => {
 
       <div className="p-8">
         {/* Stats Dashboard */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-          <Card 
-            className="bg-white cursor-pointer hover:shadow-md transition-shadow" 
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+          <div 
+            className="bg-white rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all" 
             onClick={() => setFilters({...filters, profitFilter: 'all', search: ''})}
           >
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Package className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Total Items</p>
-                  <p className="text-lg font-bold">{stats.totalItems.toLocaleString()}</p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Package className="w-5 h-5 text-blue-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Total Items</p>
+                <p className="text-xl font-bold text-gray-900">{stats.totalItems.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
           
-          <Card 
-            className="bg-white cursor-pointer hover:shadow-md transition-shadow"
+          <div 
+            className="bg-white rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:border-orange-300 transition-all"
             onClick={() => setFilters({...filters, profitFilter: 'all'})}
             title="Total cost of all inventory items"
           >
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <DollarSign className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Total Cost</p>
-                  <p className="text-lg font-bold">₹{stats.totalCost.toLocaleString()}</p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <DollarSign className="w-5 h-5 text-orange-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Total Cost</p>
+                <p className="text-xl font-bold text-gray-900">₹{stats.totalCost.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
           
-          <Card 
-            className="bg-white cursor-pointer hover:shadow-md transition-shadow"
+          <div 
+            className="bg-white rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:border-purple-300 transition-all"
             onClick={() => setFilters({...filters, profitFilter: 'positive'})}
-            title="Sum of sale prices from Shopify products (click to see synced items)"
+            title="Sum of sale prices from Shopify"
           >
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <BarChart3 className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Sale Value</p>
-                  <p className="text-lg font-bold">₹{stats.totalSaleValue.toLocaleString()}</p>
-                  <p className="text-xs text-gray-400">from Shopify</p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <BarChart3 className="w-5 h-5 text-purple-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Sale Value</p>
+                <p className="text-xl font-bold text-gray-900">₹{stats.totalSaleValue.toLocaleString()}</p>
+                <p className="text-xs text-purple-600">from Shopify</p>
+              </div>
+            </div>
+          </div>
           
-          <Card 
-            className={`bg-white cursor-pointer hover:shadow-md transition-shadow ${stats.totalProfit >= 0 ? '' : 'border-red-200'}`}
-            onClick={() => setFilters({...filters, profitFilter: stats.totalProfit >= 0 ? 'positive' : 'negative'})}
+          <div 
+            className="bg-white rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:border-green-300 transition-all"
+            onClick={() => setFilters({...filters, profitFilter: 'positive'})}
             title="Total profit = Sale Value - Total Cost"
           >
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${stats.totalProfit >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
-                  {stats.totalProfit >= 0 ? (
-                    <TrendingUp className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <TrendingDown className="w-5 h-5 text-red-600" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Total Profit</p>
-                  <p className={`text-lg font-bold ${stats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    ₹{stats.totalProfit.toLocaleString()}
-                  </p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Total Profit</p>
+                <p className={`text-xl font-bold ${stats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  ₹{Math.abs(stats.totalProfit).toLocaleString()}
+                  {stats.totalProfit < 0 && <span className="text-xs ml-1">(Loss)</span>}
+                </p>
+              </div>
+            </div>
+          </div>
           
-          <Card 
-            className="bg-white cursor-pointer hover:shadow-md transition-shadow"
+          <div 
+            className="bg-white rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:border-teal-300 transition-all"
             onClick={() => setFilters({...filters, profitFilter: 'positive'})}
             title="Profit Margin = (Profit / Sale Value) × 100"
           >
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${stats.profitMargin >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
-                  <TrendingUp className={`w-5 h-5 ${stats.profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Profit Margin</p>
-                  <p className={`text-lg font-bold ${stats.profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {stats.profitMargin.toFixed(1)}%
-                  </p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-teal-100 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-teal-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Profit Margin</p>
+                <p className={`text-xl font-bold ${stats.profitMargin >= 0 ? 'text-teal-600' : 'text-red-600'}`}>
+                  {stats.profitMargin.toFixed(1)}%
+                </p>
+              </div>
+            </div>
+          </div>
           
-          <Card 
-            className="bg-white cursor-pointer hover:shadow-md transition-shadow border-red-200" 
+          <div 
+            className="bg-red-50 rounded-lg border border-red-200 p-4 cursor-pointer hover:shadow-lg hover:border-red-400 transition-all" 
             onClick={() => setFilters({...filters, profitFilter: 'negative'})}
-            title="Items where Cost > Sale Price (click to view)"
+            title="Items where Cost > Sale Price"
           >
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Loss Items</p>
-                  <p className="text-lg font-bold text-red-600">{stats.negativeProfit}</p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-xs text-red-600 font-medium">Loss Items</p>
+                <p className="text-xl font-bold text-red-600">{stats.negativeProfit}</p>
+                <p className="text-xs text-red-500">Click to view</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Search and Filters */}
