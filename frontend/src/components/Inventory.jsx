@@ -787,6 +787,18 @@ const Inventory = () => {
                   )}
                 </Button>
                 <Button 
+                  onClick={syncOrders}
+                  disabled={syncingOrders || filters.store === 'all'}
+                  className="bg-blue-600 hover:bg-blue-700"
+                  title={filters.store === 'all' ? 'Select a store first' : 'Sync Order# from orders'}
+                >
+                  {syncingOrders ? (
+                    <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Syncing...</>
+                  ) : (
+                    <><Link className="w-4 h-4 mr-2" /> Sync Orders</>
+                  )}
+                </Button>
+                <Button 
                   onClick={exportToExcel}
                   variant="outline"
                   title="Export to Excel"
