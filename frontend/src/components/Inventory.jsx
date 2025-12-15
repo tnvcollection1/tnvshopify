@@ -153,14 +153,14 @@ const Inventory = () => {
       const params = new URLSearchParams();
       params.append('store_name', filters.store);
       
-      // Use sync-shopify-prices endpoint (syncs from orders)
-      const response = await fetch(`${API}/inventory/v2/sync-shopify-prices?${params}`, {
+      // Use import-shopify-products endpoint (fetches from Shopify Products API)
+      const response = await fetch(`${API}/inventory/v2/import-shopify-products?${params}`, {
         method: 'POST'
       });
       const data = await response.json();
       
       if (data.success) {
-        toast.success(`✅ Synced prices for ${data.updated_count} items!`);
+        toast.success(`✅ Synced ${data.updated_count} prices from Shopify Products!`);
         fetchItems(); // Refresh inventory
       } else {
         toast.error(data.message || 'Failed to sync prices');
