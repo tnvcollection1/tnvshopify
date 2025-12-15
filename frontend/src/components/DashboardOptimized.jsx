@@ -183,42 +183,62 @@ const DashboardOptimized = () => {
       {/* Stats Cards */}
       <div className="px-6 py-4">
         <div className="grid grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <button 
+            type="button"
+            onClick={() => {
+              setFilters({...filters, fulfillmentStatus: 'all'});
+              setActiveTab('overview');
+            }}
+            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:shadow-lg hover:border-blue-300 transition-all"
+          >
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Total orders</span>
-              <span className="text-xs text-green-600 flex items-center">
-                <ArrowUpRight className="w-3 h-3" /> 8%
-              </span>
+              <ShoppingCart className="w-5 h-5 text-blue-500" />
             </div>
-            <p className="text-2xl font-semibold mt-1">{stats.totalOrders?.toLocaleString() || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <p className="text-2xl font-semibold mt-1 text-gray-900">{stats.totalOrders?.toLocaleString() || 0}</p>
+          </button>
+          <button 
+            type="button"
+            onClick={() => {
+              setFilters({...filters, fulfillmentStatus: 'fulfilled'});
+              setActiveTab('overview');
+            }}
+            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:shadow-lg hover:border-green-300 transition-all"
+          >
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Fulfilled</span>
-              <span className="text-xs text-green-600 flex items-center">
-                <ArrowUpRight className="w-3 h-3" /> 15%
-              </span>
+              <CheckCircle2 className="w-5 h-5 text-green-500" />
             </div>
-            <p className="text-2xl font-semibold mt-1">{stats.fulfillmentStatus?.fulfilled?.toLocaleString() || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <p className="text-2xl font-semibold mt-1 text-green-600">{stats.fulfillmentStatus?.fulfilled?.toLocaleString() || 0}</p>
+          </button>
+          <button 
+            type="button"
+            onClick={() => {
+              setFilters({...filters, fulfillmentStatus: 'unfulfilled'});
+              setActiveTab('unfulfilled');
+            }}
+            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:shadow-lg hover:border-orange-300 transition-all"
+          >
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Unfulfilled</span>
-              <span className="text-xs text-red-600 flex items-center">
-                <ArrowDownRight className="w-3 h-3" /> 5%
-              </span>
+              <Clock className="w-5 h-5 text-orange-500" />
             </div>
-            <p className="text-2xl font-semibold mt-1">{stats.fulfillmentStatus?.unfulfilled?.toLocaleString() || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <p className="text-2xl font-semibold mt-1 text-orange-600">{stats.fulfillmentStatus?.unfulfilled?.toLocaleString() || 0}</p>
+          </button>
+          <button 
+            type="button"
+            onClick={() => {
+              setFilters({...filters, fulfillmentStatus: 'all'});
+              setActiveTab('cancelled');
+            }}
+            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:shadow-lg hover:border-red-300 transition-all"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Customers</span>
-              <span className="text-xs text-green-600 flex items-center">
-                <ArrowUpRight className="w-3 h-3" /> 12%
-              </span>
+              <span className="text-sm text-gray-500">Cancelled</span>
+              <X className="w-5 h-5 text-red-500" />
             </div>
-            <p className="text-2xl font-semibold mt-1">{stats.totalCustomers?.toLocaleString() || 0}</p>
-          </div>
+            <p className="text-2xl font-semibold mt-1 text-red-600">{stats.fulfillmentStatus?.cancelled?.toLocaleString() || 0}</p>
+          </button>
         </div>
       </div>
 
