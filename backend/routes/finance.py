@@ -577,21 +577,29 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
 @finance_router.get("/purchase-order-reconciliation")
 async def get_purchase_order_reconciliation(store_name: str = None, status: str = None):
     """
-    Get purchase order reconciliation results
+    Get purchase order reconciliation results.
+    Filters:
+    - store_name: Filter by specific store (required for meaningful results)
+    - status: 'matched' or 'not_matched'
     """
     try:
         query = {}
         if store_name and store_name != 'all':
             query['store_name'] = store_name
         if status and status != 'all':
-            query['status'] = status
+            # Support both old and new status values
+            if status in ['matched', 'not_matched']:
+                query['status'] = status
+            elif status == 'unmatched':
+                query['status'] = 'not_matched'
             
         records = await db.purchase_order_reconciliation.find(query, {"_id": 0}).to_list(10000)
         
         # Calculate summary
         total = len(records)
-        matched = sum(1 for r in records if r.get('matched'))
-        unmatched = total - matched
+        matched = sum(1 for r in records if r.get('status') == 'matched')
+        not_matched = sum(1 for r in records if r.get('status') == 'not_matched')
+        sku_matched = sum(1 for r in records if r.get('sku_matched'))
         amount_matched = sum(1 for r in records if r.get('amount_match'))
         total_sell = sum(r.get('sell_amount', 0) for r in records)
         total_cost = sum(r.get('cost', 0) for r in records)
@@ -603,7 +611,8 @@ async def get_purchase_order_reconciliation(store_name: str = None, status: str 
             'summary': {
                 'total': total,
                 'matched': matched,
-                'unmatched': unmatched,
+                'not_matched': not_matched,
+                'sku_matched': sku_matched,
                 'amount_matched': amount_matched,
                 'total_sell': total_sell,
                 'total_cost': total_cost,
