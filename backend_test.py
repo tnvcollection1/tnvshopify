@@ -560,6 +560,370 @@ class ShopifyCustomerAPITester:
             self.finance_tests_passed += 1
         self.finance_tests_run += 1
         return success, response
+
+    # ==================== FINANCE RECONCILIATION FEATURE TESTS ====================
+    
+    def test_finance_purchase_order_reconciliation_empty(self):
+        """Test Finance Purchase Order Reconciliation - Empty State"""
+        success, response, _ = self.run_test(
+            "Finance Purchase Order Reconciliation - Empty State",
+            "GET",
+            "finance/purchase-order-reconciliation",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "records" in response and "summary" in response:
+                records = response["records"]
+                summary = response["summary"]
+                
+                print(f"   Records found: {len(records)}")
+                print(f"   Summary: {summary}")
+                
+                # Verify summary structure
+                expected_summary_fields = ["total", "matched", "unmatched", "total_sell", "total_cost", "total_profit"]
+                summary_valid = all(field in summary for field in expected_summary_fields)
+                
+                if summary_valid:
+                    print(f"   ✅ Valid empty state response structure")
+                    if success:
+                        self.finance_tests_passed += 1
+                    self.finance_tests_run += 1
+                    return True, response
+                else:
+                    missing = [field for field in expected_summary_fields if field not in summary]
+                    print(f"   ❌ Missing summary fields: {missing}")
+                    if success:
+                        self.finance_tests_passed += 1
+                    self.finance_tests_run += 1
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                if success:
+                    self.finance_tests_passed += 1
+                self.finance_tests_run += 1
+                return False, response
+        
+        if success:
+            self.finance_tests_passed += 1
+        self.finance_tests_run += 1
+        return success, response
+    
+    def create_test_purchase_order_file(self):
+        """Create a test Excel file with purchase order data"""
+        import pandas as pd
+        from io import BytesIO
+        
+        # Test data as specified in the review request
+        test_data = [
+            {
+                'SHOPIFY ID': '#29461',
+                'SKU': 'MIRA-MAX-92-BLUE-43',
+                'AWB': 'X123456789',
+                'SELL AMOUNT': 7480,
+                'COST': 5000
+            },
+            {
+                'SHOPIFY ID': '#29460',
+                'SKU': 'GUCCI-SNEAKERS',
+                'AWB': 'X987654321',
+                'SELL AMOUNT': 2,
+                'COST': 1
+            },
+            {
+                'SHOPIFY ID': '#29508',
+                'SKU': 'TNV-BLAZE-98-BROWN-44',
+                'AWB': 'X555666777',
+                'SELL AMOUNT': 20796,
+                'COST': 15000
+            }
+        ]
+        
+        df = pd.DataFrame(test_data)
+        
+        # Create Excel file in memory
+        excel_buffer = BytesIO()
+        df.to_excel(excel_buffer, index=False, engine='openpyxl')
+        excel_buffer.seek(0)
+        
+        return excel_buffer.getvalue()
+    
+    def test_finance_upload_purchase_orders(self):
+        """Test Finance Upload Purchase Orders with sample data"""
+        import requests
+        
+        try:
+            # Create test file
+            file_content = self.create_test_purchase_order_file()
+            
+            # Prepare multipart form data
+            files = {
+                'file': ('test_purchase_orders.xlsx', file_content, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            }
+            
+            url = f"{self.api_url}/finance/upload-purchase-orders?store_name=ashmiaa"
+            
+            print(f"\n🔍 Testing Finance Upload Purchase Orders...")
+            print(f"   URL: {url}")
+            
+            self.tests_run += 1
+            
+            response = requests.post(url, files=files, timeout=30)
+            
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                response_data = response.json()
+                print(f"✅ Passed - Status: {response.status_code}")
+                print(f"   Response: {response_data}")
+                
+                # Verify response structure
+                if "success" in response_data and "total_records" in response_data:
+                    total_records = response_data["total_records"]
+                    matched = response_data.get("matched", 0)
+                    unmatched = response_data.get("unmatched", 0)
+                    
+                    print(f"   Total records processed: {total_records}")
+                    print(f"   Matched: {matched}, Unmatched: {unmatched}")
+                    
+                    if total_records > 0:
+                        print(f"   ✅ File upload and processing successful")
+                        if success:
+                            self.finance_tests_passed += 1
+                        self.finance_tests_run += 1
+                        return True, response_data
+                    else:
+                        print(f"   ❌ No records processed")
+                        if success:
+                            self.finance_tests_passed += 1
+                        self.finance_tests_run += 1
+                        return False, response_data
+                else:
+                    print(f"   ❌ Invalid response structure")
+                    if success:
+                        self.finance_tests_passed += 1
+                    self.finance_tests_run += 1
+                    return False, response_data
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                print(f"   Response: {response.text[:200]}...")
+                if success:
+                    self.finance_tests_passed += 1
+                self.finance_tests_run += 1
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            if success:
+                self.finance_tests_passed += 1
+            self.finance_tests_run += 1
+            return False, {}
+    
+    def test_finance_purchase_order_reconciliation_after_upload(self):
+        """Test Finance Purchase Order Reconciliation after file upload"""
+        success, response, _ = self.run_test(
+            "Finance Purchase Order Reconciliation - After Upload",
+            "GET",
+            "finance/purchase-order-reconciliation",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "records" in response and "summary" in response:
+                records = response["records"]
+                summary = response["summary"]
+                
+                print(f"   Records found: {len(records)}")
+                print(f"   Summary: {summary}")
+                
+                # Verify reconciliation logic
+                if records:
+                    # Check first record structure
+                    sample_record = records[0]
+                    expected_fields = ["shopify_id", "sku", "awb", "sell_amount", "cost", "profit", "matched", "status"]
+                    
+                    fields_present = all(field in sample_record for field in expected_fields)
+                    
+                    if fields_present:
+                        print(f"   ✅ Records have correct structure")
+                        
+                        # Verify profit calculation
+                        for record in records[:3]:  # Check first 3 records
+                            sell_amount = record.get("sell_amount", 0)
+                            cost = record.get("cost", 0)
+                            profit = record.get("profit", 0)
+                            expected_profit = sell_amount - cost
+                            
+                            if abs(profit - expected_profit) < 0.01:  # Allow small floating point differences
+                                print(f"   ✅ Profit calculation correct for {record.get('shopify_id')}: {profit}")
+                            else:
+                                print(f"   ❌ Profit calculation incorrect for {record.get('shopify_id')}: expected {expected_profit}, got {profit}")
+                                if success:
+                                    self.finance_tests_passed += 1
+                                self.finance_tests_run += 1
+                                return False, response
+                        
+                        # Verify summary calculations
+                        total_sell = sum(r.get("sell_amount", 0) for r in records)
+                        total_cost = sum(r.get("cost", 0) for r in records)
+                        total_profit = sum(r.get("profit", 0) for r in records)
+                        
+                        summary_sell = summary.get("total_sell", 0)
+                        summary_cost = summary.get("total_cost", 0)
+                        summary_profit = summary.get("total_profit", 0)
+                        
+                        if (abs(total_sell - summary_sell) < 0.01 and 
+                            abs(total_cost - summary_cost) < 0.01 and 
+                            abs(total_profit - summary_profit) < 0.01):
+                            print(f"   ✅ Summary calculations correct")
+                            if success:
+                                self.finance_tests_passed += 1
+                            self.finance_tests_run += 1
+                            return True, response
+                        else:
+                            print(f"   ❌ Summary calculations incorrect")
+                            print(f"      Expected: sell={total_sell}, cost={total_cost}, profit={total_profit}")
+                            print(f"      Got: sell={summary_sell}, cost={summary_cost}, profit={summary_profit}")
+                            if success:
+                                self.finance_tests_passed += 1
+                            self.finance_tests_run += 1
+                            return False, response
+                    else:
+                        missing = [field for field in expected_fields if field not in sample_record]
+                        print(f"   ❌ Missing record fields: {missing}")
+                        if success:
+                            self.finance_tests_passed += 1
+                        self.finance_tests_run += 1
+                        return False, response
+                else:
+                    print(f"   ✅ No records found (valid if no matching orders)")
+                    if success:
+                        self.finance_tests_passed += 1
+                    self.finance_tests_run += 1
+                    return True, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                if success:
+                    self.finance_tests_passed += 1
+                self.finance_tests_run += 1
+                return False, response
+        
+        if success:
+            self.finance_tests_passed += 1
+        self.finance_tests_run += 1
+        return success, response
+    
+    def test_finance_purchase_order_reconciliation_filters(self):
+        """Test Finance Purchase Order Reconciliation with filters"""
+        # Test status filter
+        success1, response1, _ = self.run_test(
+            "Finance Purchase Order Reconciliation - Status Filter (matched)",
+            "GET",
+            "finance/purchase-order-reconciliation?status=matched",
+            200
+        )
+        
+        # Test store filter
+        success2, response2, _ = self.run_test(
+            "Finance Purchase Order Reconciliation - Store Filter",
+            "GET",
+            "finance/purchase-order-reconciliation?store_name=ashmiaa",
+            200
+        )
+        
+        # Verify filter results
+        filter_success = True
+        
+        if success1 and response1:
+            records1 = response1.get("records", [])
+            # All records should have status="matched" if any exist
+            if records1:
+                all_matched = all(record.get("status") == "matched" for record in records1)
+                if all_matched:
+                    print(f"   ✅ Status filter working: {len(records1)} matched records")
+                else:
+                    print(f"   ❌ Status filter not working properly")
+                    filter_success = False
+            else:
+                print(f"   ✅ No matched records found (valid result)")
+        else:
+            filter_success = False
+        
+        if success2 and response2:
+            records2 = response2.get("records", [])
+            # All records should have store_name="ashmiaa" if any exist
+            if records2:
+                all_ashmiaa = all(record.get("store_name") == "ashmiaa" for record in records2)
+                if all_ashmiaa:
+                    print(f"   ✅ Store filter working: {len(records2)} ashmiaa records")
+                else:
+                    print(f"   ❌ Store filter not working properly")
+                    filter_success = False
+            else:
+                print(f"   ✅ No ashmiaa records found (valid result)")
+        else:
+            filter_success = False
+        
+        overall_success = success1 and success2 and filter_success
+        
+        if overall_success:
+            self.finance_tests_passed += 1
+        self.finance_tests_run += 1
+        
+        return overall_success, {"status_filter": response1, "store_filter": response2}
+    
+    def run_finance_reconciliation_tests(self):
+        """Run comprehensive Finance Reconciliation feature tests"""
+        print("\n" + "="*80)
+        print("💰 FINANCE RECONCILIATION FEATURE TESTS")
+        print("="*80)
+        
+        finance_results = {}
+        
+        # Test 1: Empty State
+        print("\n📋 TEST 1: EMPTY STATE API")
+        print("-" * 40)
+        
+        empty_success, empty_response = self.test_finance_purchase_order_reconciliation_empty()
+        finance_results["empty_state"] = {
+            "success": empty_success,
+            "response": empty_response
+        }
+        
+        # Test 2: File Upload
+        print("\n📋 TEST 2: FILE UPLOAD WITH SAMPLE DATA")
+        print("-" * 40)
+        
+        upload_success, upload_response = self.test_finance_upload_purchase_orders()
+        finance_results["file_upload"] = {
+            "success": upload_success,
+            "response": upload_response
+        }
+        
+        # Test 3: Reconciliation after upload
+        print("\n📋 TEST 3: RECONCILIATION LOGIC VERIFICATION")
+        print("-" * 40)
+        
+        reconciliation_success, reconciliation_response = self.test_finance_purchase_order_reconciliation_after_upload()
+        finance_results["reconciliation_logic"] = {
+            "success": reconciliation_success,
+            "response": reconciliation_response
+        }
+        
+        # Test 4: Filters
+        print("\n📋 TEST 4: FILTER FUNCTIONALITY")
+        print("-" * 40)
+        
+        filter_success, filter_response = self.test_finance_purchase_order_reconciliation_filters()
+        finance_results["filters"] = {
+            "success": filter_success,
+            "response": filter_response
+        }
+        
+        return finance_results
     
     # ==================== EXISTING ENDPOINTS TESTS ====================
     
