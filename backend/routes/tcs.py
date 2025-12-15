@@ -217,7 +217,19 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
         if not config:
             return {"success": False, "error": "TCS not configured"}
         
-        tracker = TCSTracker(config)
+        # Initialize tracker with proper config parameters
+        if config.get('auth_type') == 'bearer':
+            tracker = TCSTracker(
+                bearer_token=config.get('bearer_token'),
+                token_expiry=config.get('token_expiry'),
+                customer_no=config.get('customer_no')
+            )
+        else:
+            tracker = TCSTracker(
+                username=config.get('username'),
+                password=config.get('password'),
+                customer_no=config.get('customer_no')
+            )
         
         # Find orders needing sync
         query = {
