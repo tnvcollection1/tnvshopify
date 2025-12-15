@@ -56,7 +56,8 @@ const Inventory = () => {
   const [syncingPrices, setSyncingPrices] = useState(false);
   const [filters, setFilters] = useState({
     status: 'all',
-    store: 'all'
+    store: 'all',
+    search: ''
   });
   
   // Selection state
