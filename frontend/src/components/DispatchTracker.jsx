@@ -931,7 +931,7 @@ const DispatchTracker = () => {
                     </TableCell>
                     <TableCell>{getStatusBadge(order.payment_status || "pending", "payment")}</TableCell>
                     <TableCell className="font-semibold text-gray-900">
-                      ₹{order.cod_amount?.toFixed(0) || order.total_spent?.toFixed(0) || "0"}
+                      {formatCurrency(order.cod_amount || order.total_spent || 0, order.store_name)}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
