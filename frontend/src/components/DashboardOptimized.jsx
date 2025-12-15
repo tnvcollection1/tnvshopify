@@ -420,117 +420,165 @@ const DashboardOptimized = () => {
         </div>
       )}
 
-      {/* Orders Table */}
+      {/* Orders Table - Shopify Style */}
       {activeTab !== 'upload' && (
         <div className="px-6 py-4">
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            {/* Table Header */}
-            <div className="grid grid-cols-14 gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase">
-              <div className="col-span-1">
-                <input type="checkbox" className="rounded border-gray-300" />
-              </div>
-              <div className="col-span-1">Order #</div>
-              <div className="col-span-2">Customer</div>
-              <div className="col-span-2">Product / SKU</div>
-              <div className="col-span-1">Date</div>
-              <div className="col-span-1">Status</div>
-              <div className="col-span-1">Tracking</div>
-              <div className="col-span-1 text-right">Sale</div>
-              <div className="col-span-1 text-right">Cost</div>
-              <div className="col-span-1 text-right">Profit</div>
-              <div className="col-span-1">Stock</div>
-            </div>
-
-            {/* Table Body */}
-            <div className="divide-y divide-gray-100">
-              {filteredOrders.length === 0 ? (
-                <div className="px-4 py-12 text-center text-gray-500">
-                  No orders found
-                </div>
-              ) : (
-                filteredOrders.map((order) => {
-                  const salePrice = order.total_spent || order.total_price || 0;
-                  const cost = order.cost || order.order_cost || 0;
-                  const profit = salePrice - cost;
-                  
-                  return (
-                    <div
-                      key={order.customer_id}
-                      className="grid grid-cols-14 gap-2 px-4 py-3 hover:bg-gray-50 cursor-pointer items-center"
-                      onClick={() => setSelectedOrder(order)}
-                    >
-                      <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
-                        <input type="checkbox" className="rounded border-gray-300" />
-                      </div>
-                      <div className="col-span-1">
-                        <span className="text-sm font-medium text-blue-600 hover:underline">
-                          #{order.order_number || order.name || 'N/A'}
-                        </span>
-                      </div>
-                      <div className="col-span-2">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {order.first_name || order.customer?.first_name || ''} {order.last_name || order.customer?.last_name || ''}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">{order.phone || order.email || ''}</p>
-                      </div>
-                      <div className="col-span-2">
-                        {order.line_items?.length > 0 ? (
-                          <div>
-                            <p className="text-xs text-gray-900 truncate font-medium">
-                              {order.line_items[0]?.title || order.line_items[0]?.name || 'Product'}
-                            </p>
-                            <p className="text-xs text-gray-500 truncate">
-                              SKU: {order.line_items[0]?.sku || order.order_skus?.[0] || '-'}
-                            </p>
-                          </div>
-                        ) : order.order_skus?.length > 0 ? (
-                          <p className="text-xs text-gray-500 truncate">SKU: {order.order_skus.join(', ')}</p>
-                        ) : (
-                          <span className="text-xs text-gray-400">-</span>
-                        )}
-                      </div>
-                      <div className="col-span-1 text-xs text-gray-600">
-                        {formatDate(order.last_order_date || order.created_at)}
-                      </div>
-                      <div className="col-span-1">
-                        <div className="space-y-1">
-                          {getStatusBadge(order.fulfillment_status, 'fulfillment')}
-                        </div>
-                      </div>
-                      <div className="col-span-1">
-                        <p className="text-xs text-gray-600 truncate" title={order.tracking_number}>
-                          {order.tracking_number || '-'}
-                        </p>
-                      </div>
-                      <div className="col-span-1 text-right">
-                        <span className="text-sm font-semibold text-gray-900">₹{salePrice.toLocaleString()}</span>
-                      </div>
-                      <div className="col-span-1 text-right">
-                        <span className="text-sm text-gray-600">{cost > 0 ? `₹${cost.toLocaleString()}` : '-'}</span>
-                      </div>
-                      <div className="col-span-1 text-right">
-                        {cost > 0 ? (
-                          <span className={`text-sm font-medium ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {profit >= 0 ? '+' : ''}₹{profit.toLocaleString()}
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            {/* Table */}
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="w-10 px-4 py-3">
+                    <input type="checkbox" className="rounded border-gray-300" />
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Fulfillment</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan="11" className="px-4 py-12 text-center text-gray-500">
+                      No orders found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredOrders.map((order) => {
+                    const salePrice = parseFloat(order.total_spent || order.total_price || 0);
+                    const cost = parseFloat(order.cost || order.order_cost || 0);
+                    const profit = salePrice - cost;
+                    const itemCount = order.line_items?.length || order.order_skus?.length || 0;
+                    const firstItem = order.line_items?.[0] || null;
+                    const sku = firstItem?.sku || order.order_skus?.[0] || '';
+                    
+                    return (
+                      <tr
+                        key={order.customer_id}
+                        className="hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                          <input type="checkbox" className="rounded border-gray-300" />
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
+                            #{order.order_number || order.name || 'N/A'}
                           </span>
-                        ) : (
-                          <span className="text-xs text-gray-400">-</span>
-                        )}
-                      </div>
-                      <div className="col-span-1">
-                        {order.stock_status === 'IN_STOCK' ? (
-                          <Badge className="bg-green-100 text-green-700 border-0 text-xs">In Stock</Badge>
-                        ) : order.stock_status === 'OUT_OF_STOCK' ? (
-                          <Badge className="bg-red-100 text-red-700 border-0 text-xs">Out</Badge>
-                        ) : (
-                          <span className="text-xs text-gray-400">-</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-sm text-gray-600">
+                            {formatDate(order.last_order_date || order.created_at)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {order.first_name || ''} {order.last_name || ''}
+                            </p>
+                            {order.phone && (
+                              <p className="text-xs text-gray-500">{order.phone}</p>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="max-w-[200px]">
+                            {firstItem ? (
+                              <>
+                                <p className="text-sm text-gray-900 truncate">
+                                  {firstItem.title || firstItem.name || 'Product'}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {sku && `SKU: ${sku}`}
+                                  {itemCount > 1 && <span className="ml-1 text-blue-600">+{itemCount - 1} more</span>}
+                                </p>
+                              </>
+                            ) : sku ? (
+                              <p className="text-sm text-gray-600">SKU: {sku}</p>
+                            ) : (
+                              <span className="text-sm text-gray-400">-</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {order.financial_status === 'paid' || order.payment_status === 'paid' ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Paid
+                            </span>
+                          ) : order.financial_status === 'refunded' ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              Refunded
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              Pending
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {order.fulfillment_status === 'fulfilled' ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Fulfilled
+                            </span>
+                          ) : order.fulfillment_status === 'cancelled' || order.fulfillment_status === 'restocked' ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              Cancelled
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              Unfulfilled
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {order.stock_status === 'IN_STOCK' ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              In Stock
+                            </span>
+                          ) : order.stock_status === 'OUT_OF_STOCK' ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              Out
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span className="text-sm font-medium text-gray-900">
+                            ₹{salePrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {cost > 0 ? (
+                            <span className="text-sm text-gray-600">
+                              ₹{cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {cost > 0 ? (
+                            <span className={`text-sm font-medium ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {profit >= 0 ? '+' : ''}₹{Math.abs(profit).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
