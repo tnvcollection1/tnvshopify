@@ -222,8 +222,12 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
         # Find orders needing sync
         query = {
             'fulfillment_status': 'fulfilled',
-            'tracking_number': {'$exists': True, '$ne': None, '$ne': ''},
-            'delivery_status': {'$nin': ['DELIVERED', 'RETURNED']}
+            'delivery_status': {'$nin': ['DELIVERED', 'RETURNED']},
+            '$and': [
+                {'tracking_number': {'$exists': True}},
+                {'tracking_number': {'$ne': None}},
+                {'tracking_number': {'$ne': ''}}
+            ]
         }
         
         orders = await db.customers.find(query, {'_id': 0}).limit(limit).to_list(limit)
