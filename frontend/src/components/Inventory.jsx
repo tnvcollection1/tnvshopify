@@ -527,12 +527,107 @@ const Inventory = () => {
       </div>
 
       <div className="p-8">
+        {/* Stats Dashboard */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+          <Card className="bg-white">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Package className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Total Items</p>
+                  <p className="text-lg font-bold">{stats.totalItems.toLocaleString()}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <DollarSign className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Total Cost</p>
+                  <p className="text-lg font-bold">₹{stats.totalCost.toLocaleString()}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <BarChart3 className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Sale Value</p>
+                  <p className="text-lg font-bold">₹{stats.totalSaleValue.toLocaleString()}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className={`bg-white ${stats.totalProfit >= 0 ? '' : 'border-red-200'}`}>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${stats.totalProfit >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+                  {stats.totalProfit >= 0 ? (
+                    <TrendingUp className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <TrendingDown className="w-5 h-5 text-red-600" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Total Profit</p>
+                  <p className={`text-lg font-bold ${stats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ₹{stats.totalProfit.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${stats.profitMargin >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+                  <TrendingUp className={`w-5 h-5 ${stats.profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Profit Margin</p>
+                  <p className={`text-lg font-bold ${stats.profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {stats.profitMargin.toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow" onClick={() => setFilters({...filters, profitFilter: 'negative'})}>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Loss Items</p>
+                  <p className="text-lg font-bold text-red-600">{stats.negativeProfit}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Search and Filters */}
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex flex-wrap gap-4 items-end">
               {/* Search Input */}
-              <div className="flex-1 min-w-[250px]">
+              <div className="flex-1 min-w-[200px]">
                 <Label>Search</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -544,7 +639,7 @@ const Inventory = () => {
                   />
                 </div>
               </div>
-              <div className="w-48">
+              <div className="w-40">
                 <Label>Store</Label>
                 <Select value={filters.store} onValueChange={(val) => setFilters({...filters, store: val})}>
                   <SelectTrigger>
@@ -560,7 +655,7 @@ const Inventory = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-48">
+              <div className="w-36">
                 <Label>Status</Label>
                 <Select value={filters.status} onValueChange={(val) => setFilters({...filters, status: val})}>
                   <SelectTrigger>
@@ -575,24 +670,47 @@ const Inventory = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="w-36">
+                <Label>Profit</Label>
+                <Select value={filters.profitFilter} onValueChange={(val) => setFilters({...filters, profitFilter: val})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Items</SelectItem>
+                    <SelectItem value="positive">✅ Profit</SelectItem>
+                    <SelectItem value="negative">❌ Loss</SelectItem>
+                    <SelectItem value="zero">⚪ No Price</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex gap-2">
                 <Button 
                   onClick={syncShopifyPrices}
-                  disabled={syncingPrices}
+                  disabled={syncingPrices || filters.store === 'all'}
                   className="bg-green-600 hover:bg-green-700"
+                  title={filters.store === 'all' ? 'Select a store first' : 'Sync prices from Shopify'}
                 >
                   {syncingPrices ? (
                     <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Syncing...</>
                   ) : (
-                    <><Download className="w-4 h-4 mr-2" /> Import Shopify Prices</>
+                    <><Download className="w-4 h-4 mr-2" /> Sync Prices</>
                   )}
                 </Button>
-                {filters.search && (
+                <Button 
+                  onClick={exportToExcel}
+                  variant="outline"
+                  title="Export to Excel"
+                >
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+                {(filters.search || filters.profitFilter !== 'all') && (
                   <Button 
                     variant="ghost"
-                    onClick={() => setFilters({...filters, search: ''})}
+                    onClick={() => setFilters({...filters, search: '', profitFilter: 'all'})}
                   >
-                    Clear Search
+                    Clear
                   </Button>
                 )}
               </div>
