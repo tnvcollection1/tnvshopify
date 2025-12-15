@@ -291,8 +291,8 @@ const FinanceReconciliation = () => {
         )}
 
         {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-4">
+        <Card className="mb-6 bg-white border border-gray-200 shadow-sm">
+          <CardContent className="pt-5 pb-4">
             <div className="flex flex-wrap gap-4 items-end">
               <div className="flex-1 min-w-[250px]">
                 <Label>Search</Label>
