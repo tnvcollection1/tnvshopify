@@ -155,8 +155,8 @@ const DashboardOptimized = () => {
   };
 
   const filteredOrders = recentOrders.filter(order => {
-    if (activeTab === 'unfulfilled') return order.fulfillment_status !== 'fulfilled';
-    if (activeTab === 'cancelled') return order.fulfillment_status === 'cancelled' || order.financial_status === 'refunded';
+    if (activeTab === 'unfulfilled') return order.fulfillment_status === 'unfulfilled' || !order.fulfillment_status;
+    if (activeTab === 'cancelled') return order.fulfillment_status === 'cancelled' || order.fulfillment_status === 'restocked' || order.financial_status === 'refunded';
     return true;
   });
 
