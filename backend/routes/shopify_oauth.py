@@ -92,18 +92,9 @@ def decrypt_value(encrypted_value: str) -> str:
 
 def get_redirect_uri(request: Request) -> str:
     """Build the redirect URI based on request"""
-    # Use the actual host from request or fallback to env
-    host = request.headers.get('x-forwarded-host', request.headers.get('host', ''))
-    scheme = request.headers.get('x-forwarded-proto', 'https')
-    
-    # For production, use the configured domain
-    frontend_url = os.environ.get('FRONTEND_URL', '')
-    if 'importbaba.com' in host or 'importbaba.com' in frontend_url:
-        return 'https://importbaba.com/api/shopify/oauth/callback'
-    elif 'emergentagent.com' in host:
-        return f'https://{host}/api/shopify/oauth/callback'
-    else:
-        return f'{scheme}://{host}/api/shopify/oauth/callback'
+    # Always use importbaba.com for production OAuth
+    # This ensures the redirect URI matches Shopify App configuration
+    return 'https://importbaba.com/api/shopify/oauth/callback'
 
 def verify_hmac(query_params: dict, secret: str) -> bool:
     """Verify Shopify HMAC signature"""
