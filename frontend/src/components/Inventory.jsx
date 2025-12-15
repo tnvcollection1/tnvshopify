@@ -140,7 +140,51 @@ const Inventory = () => {
       
       const response = await fetch(`${API}/inventory/v2?${params}`);
       const data = await response.json();
-      setItems(data.items || []);
+      let allItems = data.items || [];
+      
+      // Calculate stats from all items
+      let totalCost = 0, totalSaleValue = 0, totalProfit = 0;
+      let positiveProfit = 0, negativeProfit = 0, zeroProfit = 0;
+      
+      allItems.forEach(item => {
+        const cost = parseFloat(item.cost) || 0;
+        const salePrice = parseFloat(item.sale_price) || 0;
+        const profit = parseFloat(item.profit) || (salePrice - cost);
+        
+        totalCost += cost;
+        totalSaleValue += salePrice;
+        totalProfit += profit;
+        
+        if (profit > 0) positiveProfit++;
+        else if (profit < 0) negativeProfit++;
+        else zeroProfit++;
+      });
+      
+      const profitMargin = totalSaleValue > 0 ? ((totalProfit / totalSaleValue) * 100) : 0;
+      
+      setStats({
+        totalItems: allItems.length,
+        totalCost,
+        totalSaleValue,
+        totalProfit,
+        profitMargin,
+        positiveProfit,
+        negativeProfit,
+        zeroProfit
+      });
+      
+      // Apply profit filter
+      if (filters.profitFilter !== 'all') {
+        allItems = allItems.filter(item => {
+          const profit = parseFloat(item.profit) || 0;
+          if (filters.profitFilter === 'positive') return profit > 0;
+          if (filters.profitFilter === 'negative') return profit < 0;
+          if (filters.profitFilter === 'zero') return profit === 0;
+          return true;
+        });
+      }
+      
+      setItems(allItems);
     } catch (error) {
       console.error('Error fetching inventory:', error);
       toast.error('Failed to load inventory');
