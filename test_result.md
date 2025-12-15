@@ -71,6 +71,42 @@ backend:
         agent: "testing"
         comment: "✅ API endpoint GET /api/dynamic-pricing/report working correctly. Returns success=true with 12,136 total products analyzed and proper categories A, B, C populated with product data."
 
+  - task: "Finance Reconciliation - Upload Purchase Orders"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/finance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ API endpoint POST /api/finance/upload-purchase-orders working correctly. Successfully processes Excel/CSV files with purchase order data (SHOPIFY ID, SKU, AWB, SELL AMOUNT, COST). Processed 3 test records with proper reconciliation logic and profit calculations."
+
+  - task: "Finance Reconciliation - View Matched/Unmatched Records"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/finance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ API endpoint GET /api/finance/purchase-order-reconciliation working correctly. Returns proper structure with records and summary. Reconciliation logic matches orders by Shopify ID and tracking numbers. Profit calculations accurate (sell_amount - cost). Summary totals calculated correctly."
+
+  - task: "Finance Reconciliation - Export to CSV"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/finance.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Filter functionality working correctly. Status filter (matched/unmatched/partial) and store filter (ashmiaa) both return properly filtered results. API supports filtering by status and store_name parameters as expected."
+
 frontend:
   - task: "Purchase Tracker Frontend"
     implemented: true
