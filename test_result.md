@@ -299,8 +299,6 @@ backend:
 
 test_plan:
   current_focus:
-    - "Orders page - stats endpoint with fulfillment counts"
-    - "Orders page - cancelled orders filter"
-    - "Orders page - sync order costs feature"
-    - "Orders page - sync stock status feature"
-    - "Orders page - cost and profit columns data"
+    - "Confirmation Tracker - In Stock/Out of Stock cards"
+    - "Confirmation Tracker - Card click to show order numbers"
+    - "Confirmation Tracker - Sync Stock Status button"
