@@ -1,107 +1,105 @@
 <analysis>**original_problem_statement**: The user's goal is to pivot the existing CRM application into a dedicated WhatsApp CRM. This involves a complete rebranding of the UI, focusing the feature set on WhatsApp and Shopify integrations, and disabling or hiding all other features for regular users.
 
-In this session, the user requested a series of rapid-fire changes and fixes:
-1.  **Rebrand the entire application** from Omnisales to WhatsApp CRM, including the landing page, login page, and sidebar.
-2.  **Implement Role-Based Access Control (RBAC)**: The  user should have access to all features, while new users should only see WhatsApp CRM and Shopify Integration features.
-3.  **Fix Security Issues**: The admin user was unable to change their password. The user also requested that all user passwords be securely encrypted.
-4.  **Enhance Inventory Page**: Add a search bar, an Import Sale Price from Shopify feature, and more transparency features like a profit dashboard and an Export to Excel button. The user also noted that not all inventory items were being displayed.
-5.  **Improve Core Pages**: Make stat cards clickable on the All Orders and Inventory pages to filter data. Fix a Not Found error when syncing orders. Fix broken stock status filters on the Confirmation page.
-6.  **Build New Finance Reconciliation Feature**: The user provided an Excel sheet and requested a new feature to reconcile purchase orders by matching , , , and  with Shopify data.
+In this session, the user's requests focused on improving data visibility and financial tracking:
+1.  **UI Theme**: Change the application-wide dark theme to a standard white background with black text for better readability and a more professional look.
+2.  **Finance Reconciliation**: Implement store-wise file uploads, add a match/not match filter, and clear existing data before a new upload.
+3.  **Orders Page (Ashmia Store)**: Fix issues where stats cards (Fulfilled, Unfulfilled, Cancelled) were not working, and the order list was missing key columns like sale price, product SKU, and title.
+4.  **Orders Page (Other Stores)**: Add  and  columns to the order list and implement a feature to sync this data from the inventory based on matching SKUs.
+5.  **TCS Tracking**: Investigate why TCS tracking was not working for the  store, despite a new bearer token being provided. Add delivery status tracking to relevant pages.
+6.  **Confirmation Tracker**: Fix In Stock and Out of Stock cards to display the correct order numbers when clicked. Add a column to show the current delivery status from the tracking API.
+7.  **Currency Display**: Ensure that all monetary values (sale price, cost, profit) are displayed with the correct currency symbol (e.g., ₹ for INR, Rs. for PKR) based on the selected store.
+8.  **Shopify App Installation**: Fix an OAuth error preventing the app from being installed from the user's custom domain ().
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application has been successfully rebranded as a WhatsApp CRM. It features a two-tiered access system where  has full access, and regular users have a restricted view focused on WhatsApp and Shopify functionalities.
-
-Key functionalities implemented in this session:
--   **Security**: Password hashing has been upgraded from SHA256 to the much more secure . The password change feature is now fully functional.
--   **Inventory Management**: The inventory page is now a powerful dashboard with a working search, a button to import sale prices directly from Shopify, a button to sync order numbers, and a transparency dashboard showing total profit, margin, and loss-making items. All stat cards are clickable filters, and the page now correctly displays all 1,337 inventory items.
--   **Order Management**: The All Orders page now features clickable stat cards to filter by status (Fulfilled, Unfulfilled, Cancelled). The store-wise sync functionality has also been fixed.
--   **UI/UX**: The UI has been updated to reflect the WhatsApp CRM branding, with a new color scheme and logos. The inventory page UI was significantly enhanced with a stats dashboard and better color-coding for profit/loss.
+The application now has a consistent and professional white-themed UI across all pages. The Orders page has been significantly enhanced to resemble a Shopify-style list, complete with clickable stat cards, sortable columns, and store-specific cost/profit data. The TCS tracking integration has been debugged, and real-time delivery statuses are now visible on the Dispatch and Confirmation Trackers. Currency symbols are now dynamically displayed based on the active store. However, the Shopify OAuth installation flow is broken.
 
 **Last working item**:
--   **Last item agent was working**: The agent was building a new **Finance Reconciliation** feature. Based on user requirements from an Excel file, the goal is to reconcile purchase orders by matching , , , , and  against existing Shopify orders. The agent has already created the new backend endpoint () to handle the logic.
+-   **Last item agent was working**: Fixing a Shopify OAuth error. The user wants to install the Shopify app from , but the generated authorization URL incorrectly contains  as the , causing an invalid_request error from Shopify.
 -   **Status**: IN PROGRESS
--   **Agent Testing Done**: N (Backend endpoint created, but not tested with frontend)
--   **Which testing method agent to use?**: Frontend testing agent. The agent needs to build the UI for file upload and then use the testing agent to verify the end-to-end reconciliation flow.
--   **User Testing Done**: N
+-   **Agent Testing Done**: N
+-   **Which testing method agent to use?**: Manual testing. The agent needs to verify that the generated Shopify installation URL contains the correct  ().
+-   **User Testing Done**: Y (User confirmed the issue persists by providing the incorrect URL)
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Build Frontend for Finance Reconciliation (P0)**
+-   **Issue 1: Shopify OAuth  is incorrect (P0)**
 -   **Issue 2: Critical  Refactoring Needed (P1)**
--   **Issue 3: Inconsistent SKU formats (P1)**
--   **Issue 4: Facebook Lead Ads Sync Blocked by Expired Token (P1)**
--   **Issue 5: Live Razorpay Keys Still in Environment File (P2)**
+-   **Issue 3: TCS API Authentication Failing for Payment Status (P1)**
+-   **Issue 4: Inconsistent SKU formats (P1)**
+-   **Issue 5: Facebook Lead Ads Sync Blocked by Expired Token (P2)**
+-   **Issue 6: Live Razorpay Keys Still in Environment File (P2)**
 
 **Issues Detail**:
--   **Issue 1: Build Frontend for Finance Reconciliation (P0)**
-    -   **Attempted fixes**: Backend endpoint  has been created in  to handle the reconciliation logic. A new DB collection  was also implicitly created.
+-   **Issue 1: Shopify OAuth  is incorrect (P0)**
+    -   **Attempted fixes**: The agent modified  to hardcode  as the host for the redirect URI. However, the user provided a new installation URL that still contained the old , indicating the fix was not effective or was applied in the wrong place. The agent needs to trace where the installation URL is generated.
     -   **Next debug checklist**:
-        1.  Modify .
-        2.  Create a UI with a file upload component for the Excel/CSV file.
-        3.  Add a button to trigger the reconciliation process by calling the new backend endpoint.
-        4.  Display the results of the reconciliation (matched vs. unmatched records) in a clear table format.
-        5.  Test the full end-to-end flow.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a direct and high-priority user request to enable financial tracking and reconciliation, a core business need.
+        1.  Inspect the code in  again, specifically the  endpoint that generates the initial authorization URL.
+        2.  The  is constructed there; ensure the logic correctly uses  under all conditions.
+        3.  Provide the corrected full installation URL to the user for testing.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker preventing the user from installing or reinstalling the Shopify app, which is core to the application's functionality.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Should Test frontend/backend/both after fix?**: Backend (verifying the generated URL).
     -   **Blocked on other issue**: None
 
 -   **Issue 2: Critical  Refactoring Needed (P1)**
-    -   **Description**: The  file is a monolith containing hundreds of endpoints. The agent made this worse by adding more endpoints and duplicating auth logic that also exists in . This is a major source of bugs and technical debt.
-    -   **Attempted fixes**: None. Agent has only added more code to it.
-    -   **Next debug checklist**: Propose and execute a plan to move all route logic from  into the respective files in the  directory (e.g., inventory routes into an , etc.) and have  only include those routers.
-    -   **Why fix this issue and what will be achieved with the fix?**: Drastically improves code maintainability, scalability, and reduces the risk of introducing bugs. This is the most critical piece of technical debt in the project.
+    -   **Description**:  is a monolithic file with hundreds of endpoints and duplicated logic, making it a major source of bugs and technical debt.
+    -   **Next debug checklist**: Propose and execute a plan to move route logic from  into the respective files in .
+    -   **Why fix this issue and what will be achieved with the fix?**: Improves code maintainability, scalability, and reduces bug risk.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
 
--   **Issue 3: Inconsistent SKU formats (P1)**
-    -   **Description**: The  collection and  (orders) collection use different SKU formats (e.g.,  vs. ). While the agent created a successful workaround for price sync by using the Shopify Products API, this root data problem still prevents accurate linking between orders and inventory for other features.
-    -   **Attempted fixes**: A price sync feature from Shopify Products API was created as a workaround. The original problem of matching SKUs between local collections remains.
-    -   **Next debug checklist**: Propose a SKU Mapping tool or a one-time migration script to the user to standardize SKUs across the  and  collections.
-    -   **Why fix this issue and what will be achieved with the fix?**: Unlocks accurate profit/loss tracking on a per-order basis and enables more advanced inventory intelligence features.
+-   **Issue 3: TCS API Authentication Failing for Payment Status (P1)**
+    -   **Description**: The agent diagnosed that while public TCS tracking works, the authenticated endpoint for fetching payment status fails with a 405 Method Not Allowed error.
+    -   **Next debug checklist**: Inform the user that this is a configuration issue on the TCS side. They need to verify that the provided bearer token has the correct permissions to access the payment status API.
+    -   **Why fix this issue and what will be achieved with the fix?**: Enables automated reconciliation of payments for TCS orders.
+    -   **Status**: BLOCKED (on user/TCS configuration)
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Backend
+    -   **Blocked on other issue**: None
+
+-   **Issue 4: Inconsistent SKU formats (P1)**
+    -   **Description**: Different SKU formats between  and  collections prevent accurate linking. The cost sync feature relies on this matching, and the sync result showed many orders were not updated due to this mismatch.
+    -   **Next debug checklist**: Propose a SKU Mapping tool or a one-time migration script to standardize SKUs.
+    -   **Why fix this issue and what will be achieved with the fix?**: Unlocks accurate profit/loss tracking and advanced inventory features.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
 
--   **Issue 4: Facebook Lead Ads Sync Blocked by Expired Token (P1)**
-    -   **Description**: The Sync from Facebook feature for Lead Ads is failing because the Meta access token has expired.
-    -   **Attempted fixes**: Diagnosed the issue is a Meta platform restriction.
-    -   **Next debug checklist**: Remind the user and guide them to the WhatsApp Business connection page to reconnect their account, which will generate a new, valid token.
-    -   **Why fix this issue and what will be achieved with the fix?**: Unblocks the ability to pull existing leads from Facebook.
+-   **Issue 5: Facebook Lead Ads Sync Blocked by Expired Token (P2)**
+    -   **Description**: The Sync from Facebook feature for Lead Ads is failing due to an expired Meta access token.
+    -   **Next debug checklist**: Guide the user to reconnect their WhatsApp Business account to generate a new token.
     -   **Status**: BLOCKED (on user action)
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on other issue**: None
 
--   **Issue 5: Live Razorpay Keys Still in Environment File (P2)**
-    -   **Description**: Live Razorpay API keys are present in , posing a security risk. A secure API Key Management page exists but has not been used for these keys.
-    -   **Attempted fixes**: None.
-    -   **Next debug checklist**: Migrate the keys from  to the encrypted  collection and update the code to use the new secure storage.
-    -   **Why fix this issue and what will be achieved with the fix?**: Removes a significant security vulnerability.
+-   **Issue 6: Live Razorpay Keys Still in Environment File (P2)**
+    -   **Description**: Live Razorpay API keys are in , which is a security risk.
+    -   **Next debug checklist**: Migrate keys from  to the encrypted  collection and update the code.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   **Task 1: Build Frontend for Finance Reconciliation (P0)**
-    -   **Where to resume**: Start by editing .
-    -   **What will be achieved with this?**: A fully functional page for users to upload a purchase order sheet and see it reconciled against Shopify data, fulfilling a key business requirement.
+-   **Task 1: Resolve Shopify OAuth  (P0)**
+    -   **Where to resume**: , focusing on the  route.
+    -   **What will be achieved with this?**: The user will be able to successfully install the Shopify app from their custom domain.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
     -   (P0) **Add AI Recommendations**: Implement AI-powered suggestions for the Smart Clearance and Dynamic Pricing tools.
     -   (P1) **Implement Razorpay OAuth**: Build a one-click OAuth connection for Razorpay.
-    -   (P1) **Complete Shopify UI Overhaul**: Apply the Shopify theme to remaining pages (, , ).
-    -   (P1) **Implement Drafts & Abandoned Carts Sync**: Implement the  handlers for the sync buttons on .
+    -   (P1) **Complete Shopify UI Overhaul**: Apply the Shopify theme to remaining pages (, ).
+    -   (P1) **Implement Drafts & Abandoned Carts Sync**: Implement  handlers for sync buttons on .
     -   (P1) **Implement Incoming WhatsApp Webhook**: Create a handler to receive and store incoming WhatsApp messages.
 -   **Future Tasks**:
     -   (P2) AI-Assisted Creation Tools (Campaigns, Bundles, Offers).
@@ -109,22 +107,28 @@ Key functionalities implemented in this session:
     -   (P3) Abandoned Cart Recovery via WhatsApp.
 
 **Completed work in this session**
--   **App Rebranding & Refocus**: Rebranded the entire app to WhatsApp CRM, including UI changes on the Landing Page, Login Page, and Sidebar.
--   **Role-Based Access Control (RBAC)**: Implemented logic in  to show a restricted menu (WhatsApp, Shopify, Contacts) for non-admin users.
--   **Password Security Upgrade**: Migrated password storage from SHA256 to  in  and . Added security messaging to the login/signup page.
--   **Password Change Fixed**: Corrected the Pydantic model and API endpoint () to allow users, including admin, to change their password.
--   **Inventory Page Overhaul**:
-    -   Added a debounced **search bar** that queries SKU, product name, and collection.
-    -   Created and integrated a new endpoint to **import sale prices directly from Shopify Products API**.
-    -   Added a **Sync Orders** button and endpoint to link inventory items to their corresponding order numbers.
-    -   Built a **transparency dashboard** with clickable stat cards for Total Profit, Profit Margin, and Loss Items.
-    -   Fixed a backend limit to display all **1,337 inventory items**.
-    -   Added an **Export to CSV** function.
--   **Core Pages Improved**:
-    -   **All Orders Page**: Made the top stat cards (Fulfilled, Unfulfilled, Cancelled) clickable to filter the order list.
-    -   **Confirmation Page**: Fixed the In Stock and Out of Stock filters to correctly query the backend.
--   **WhatsApp Case Study Page Verified**: Fixed a routing issue in  and confirmed the page renders correctly.
--   **WhatsApp Business Connect Diagnosed**: Identified that the disabled Connect button was a Meta platform restriction and provided the user with clear steps to resolve it.
+-   **UI Theme Overhaul**: Changed the entire application from a dark theme to a light/white theme by updating  and component-specific styling.
+-   **Finance Reconciliation Enhancements**:
+    -   Implemented store-specific file uploads.
+    -   Added a Clear Data button and  endpoint.
+    -   Updated the status filter to Matched / Not Matched.
+-   **Orders Page Overhaul ()**:
+    -   Fixed stats cards for Fulfilled, Unfulfilled, and **Cancelled** orders by correcting the backend stats query in .
+    -   Made stat cards clickable filters that update the order list.
+    -   Added , , , and  columns to the order table.
+    -   Implemented a Sync Costs button and  endpoint to populate cost/profit data from inventory.
+    -   Redesigned the order list into a cleaner, Shopify-style layout.
+-   **TCS Tracking and Delivery Status**:
+    -   Fixed a bug in the  endpoint query in .
+    -   Added Sync TCS buttons to Orders and Confirmation Tracker pages.
+    -   Added a Current Status column to  showing real-time tracking status, location, and last update time.
+    -   Added a Delivery Status column to .
+-   **Currency Synchronization**:
+    -   Created a new utility file .
+    -   Updated all pages with monetary values (Orders, Finance, Inventory, Confirmation, Dispatch) to display the correct currency symbol (₹ or Rs.) based on the selected store.
+-   **Confirmation Tracker Fixes**:
+    -   Fixed stat cards to open a modal showing all corresponding order numbers by fetching data from the backend.
+    -   Fixed stock status badges to correctly display In Stock / Out of Stock.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1**: Critical  Refactoring Needed (Captured in All Pending/In progress Issue list).
@@ -133,112 +137,94 @@ Key functionalities implemented in this session:
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**:  requires major refactoring.
--   **Recurrence count**: 17+
--   **Status**: NOT STARTED (The problem was exacerbated this session with the addition of more endpoints and duplicated auth logic).
+-   **Recurrence count**: 18+
+-   **Status**: NOT STARTED
 
 **Code Architecture**
-isAdmin
+
 
 **Key Technical Concepts**
--   **Password Security (bcrypt)**: Upgraded password hashing from the insecure SHA256 to the industry-standard bcrypt, including salt generation.
--   **Role-Based Access Control (RBAC)**: Implemented conditional rendering in the React  component based on the user's role, which is stored in the .
--   **Third-Party API Integration (Shopify)**: Created a new backend endpoint to fetch product data, including , directly from the Shopify Products API using a stored .
--   **Data Reconciliation & Sync**: Implemented multiple backend endpoints to synchronize data between different collections and sources (, , and Shopify Products).
--   **Complex Backend Queries (MongoDB)**: Wrote and debugged complex MongoDB queries using  and  operators to combine multiple filter criteria, including text search.
--   **Debouncing (React)**: Used  with a  to implement debounced search on the inventory page, preventing excessive API calls while the user is typing.
+-   **Dynamic Currency Formatting**: Using a utility function in React to determine the correct currency symbol ( vs. ) based on the selected store context and applying it across multiple components.
+-   **Data Synchronization Logic**: Implemented backend endpoints (, ,  for TCS) to enrich order data by pulling information (cost, stock, delivery status) from other collections or external APIs.
+-   **UI/UX Refinement**: Rewrote a major component () to mimic a familiar Shopify-style layout for better usability. Changed the global CSS theme for a more professional look.
+-   **State Management for Background Tasks**: Implemented UI state (e.g., , ) with loading spinners to provide user feedback during long-running API calls.
 
 **key DB schema**
--   **agents**:
-    -   : (string) Now stores a bcrypt hash.
-    -   : (boolean) **NEW**. Flag to indicate if the password uses bcrypt.
--   **inventory_v2**:
-    -   : (float) Now populated from Shopify Products API.
-    -   : (float) Calculated as  - .
-    -   : (string) **NEW**. Synced from the  collection.
--   **api_keys**:
-    -   Contains a  for a specific store, which is used for the Shopify Products API calls.
--   **purchase_orders**: **NEW** collection to store data from the finance reconciliation Excel uploads. Columns include: , , , , .
+-   **customers**:
+    -   : (float) **NEW**. Populated from  via the cost sync feature.
+    -   : (float) **NEW**. Calculated as .
+    -   : (string) **NEW**. Populated by the TCS tracking sync.
+    -   : (dict) **NEW**. Stores detailed tracking information from TCS.
+-   **stores**: Remains the same, but is now implicitly used to determine currency (e.g., if store name contains 'pk', use PKR).
 
 **All files of reference**
--   **Heavily Modified Frontend**:
+-   **Key Modified Frontend**:
     -   
     -   
     -   
     -   
     -   
--   **Modified Backend**:
+-   **Key Modified Backend**:
     -   
     -   
     -   
     -   
--   **Other Modified Frontend**:
-    -   
-    -   
+-   **New Files**:
     -   
 
 **Areas that need refactoring**:
--   **/app/backend/server.py**: **CRITICAL PRIORITY**. The file is now a severe liability. It contains duplicated authentication logic that also exists in . This must be the first major backend task. The agent should move all endpoints from  into their respective  files and deduplicate the auth logic.
--   **/app/frontend/src/components/SettingsOptimized.jsx**: This unused file still exists and should be deleted.
+-   **/app/backend/server.py**: **CRITICAL PRIORITY**. No progress was made on this. It must be the next major backend task.
 
 **key api endpoints**
--   : **NEW**. Imports product prices from Shopify API.
--   : **NEW**. Syncs order numbers from the  collection to .
--   : **NEW**. Processes an uploaded purchase order sheet for financial reconciliation.
--   : **FIXED**. Now correctly handles password changes using bcrypt.
--   : **MODIFIED**. Now uses bcrypt for password hashing.
--   : **MODIFIED**. Now supports verifying both legacy SHA256 and new bcrypt passwords.
--   : **MODIFIED**. Added a comprehensive search filter and removed the 1000-item limit.
--   : **MODIFIED**. Added  filter.
--   : **FIXED**. Frontend now passes the correct store name parameter.
+-   : **NEW**. Syncs cost data from the  collection to the  collection.
+-   : **NEW**. Clears all records from the  collection for a fresh reconciliation.
+-   : **MODIFIED**. Fixed a bug with duplicate query parameters and made it a background task.
+-   : **MODIFIED**. Added , , and  counts to the response.
+-   : **NEEDS FIXING**. This endpoint generates the installation URL that is causing the  mismatch.
 
 **Critical Info for New Agent**
--   **App Focus Shift**: The application's identity has fundamentally changed to a WhatsApp CRM. All future development should align with this new focus.
--   **Fix  First**: Do not add any more endpoints to . The immediate priority for any backend work should be to refactor this monolithic file. The duplicated auth logic is a ticking time bomb.
--   **New Admin Credentials**: The default admin password was changed from  to  as part of the password change fix. The login page has been updated to reflect this.
--   **Data Sync Workarounds**: Be aware that while the  sync now works by pulling from the Shopify Products API, the underlying data inconsistency between local  and  collections still exists and will affect other features.
--   **Finance Reconciliation**: The immediate next step is to build the frontend for the finance reconciliation feature. The backend endpoint is ready to be consumed.
+-   **Shopify OAuth is the #1 Blocker**: The user cannot install the app. Your first task is to fix the  generation in  to ensure it always uses  when required.
+-   **TCS API Has Two Parts**: The public, unauthenticated tracking API works fine. The private, authenticated API for  is failing with a 405 error. This is a credential/permission issue on the TCS side that the user needs to investigate.
+-   **Data Sync is Imperfect**: The Sync Costs feature works but is limited by the underlying data inconsistency of SKUs between inventory and orders. Many orders will not have their costs updated.
+-   **Currency Logic**: A new utility at  handles all currency formatting. If any new pages with prices are added, they must use this utility.
 
 **documents created in this job**
--   None.
+-   
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: Add more transparency features to the inventory page. (**Resolved**. Added stats dashboard, profit filter, export, etc.)
-2.  **User**: Make all stat cards on the inventory page clickable. (**Resolved**).
-3.  **User**: Explain where Sale Value comes from. (**Resolved**. Explained it's from Shopify).
-4.  **User**: Cards are still not clickable and colors are not standard. (**Resolved**. Fixed CSS and made them proper buttons).
-5.  **User**: The inventory page only shows 1000 items, but I uploaded more. (**Resolved**. Removed the backend limit, now shows 1337 items).
-6.  **User**: Cards are not clickable, and the Order # column should sync with orders. Also, add clickable cards to the All Orders page. (**Resolved**. Fixed inventory cards, added Order# sync, and added clickable cards to the Orders page).
-7.  **User**: Not Found on All Orders sync. (**Resolved**. Fixed the API call to include the store name).
-8.  **User**: The in-stock/out-of-stock filter on the confirmation page is not working. (**Resolved**. Added missing dependency to  and fixed backend query).
-9.  **User**: Finance reconciliation is not working according to the format in the provided Excel sheet. (**In Progress**. New endpoint was created).
-10. **Pending**: User is waiting for the finance reconciliation feature to be completed with a new UI for uploading and viewing matched data.
+1.  **User**: I can't see the Current Status column anywhere. (**Resolved**. Agent added the column to the Dispatch Tracker).
+2.  **User**: Currency should sync with Shopify and display accordingly everywhere. (**Resolved**. Agent implemented a currency utility and applied it to all relevant pages).
+3.  **User**: I'm getting a Shopify OAuth error. (**In Progress**).
+4.  **User**: I'm trying for importbaba only. (**In Progress**. Confirmed user's intent for the OAuth fix).
+5.  **User**: The OAuth URL is wrong, I am still getting an error. (**Pending**. This is the current blocking issue).
 
 **Project Health Check:**
 -   **Broken**:
-    -   **Data Integrity**: The underlying data inconsistency between  SKUs and  (orders) SKUs remains. This prevents accurate linking between sales and inventory stock for many items, impacting profit calculation and stock history.
+    -   **Shopify OAuth**: The app installation flow is completely broken due to an incorrect .
+    -   **Data Integrity**: The SKU mismatch between  and  collections continues to cause issues with data synchronization and profit calculation.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
--   **Shopify Admin API**: **Functional (OAuth)**. Now used more deeply to fetch product data for price sync.
--   **Facebook Marketing API / WhatsApp Business Platform**: **Functional / Partially BLOCKED** — Lead Ads sync is BLOCKED on user reconnecting account to refresh an expired token.
--   **Razorpay**: **Functional (Live Keys)** — Implemented but uses insecure LIVE API keys from . This is a security risk.
+-   **Shopify Admin API**: **BROKEN (OAuth)**. The installation and authentication flow is not working due to a  mismatch.
+-   **TCS Courier API**: **Partially Functional**. Public tracking works and syncs delivery status. Authenticated payment status API is failing with a 405 error (blocked on user/TCS).
+-   **Facebook Marketing API / WhatsApp Business Platform**: **BLOCKED**. Lead Ads sync is blocked on user reconnecting account to refresh an expired token.
+-   **Razorpay**: **Functional (Insecure)**. Implemented but uses LIVE API keys from .
 -   **OpenAI GPT-4**: Functional — uses Emergent LLM Key.
--   **TCS/DTDC Courier API**: Integrated — requires User API Key.
--   **Meta WhatsApp**: Functional (URL scheme) — no key required.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (Used once to verify the rebranding and RBAC changes).
+-   **Testing agent used after significant changes**: YES (Used multiple times for backend API verification).
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None.
--   **Known regressions**: None.
+-   **Known regressions**: Shopify OAuth flow is now broken.
 
 **Credentials to test flow:**
--   **Admin**:  /  (**Note: Password has been changed**)
+-   **Admin**:  / 
 -   **Manager**:  / 
 -   **Viewer**:  / 
 -   **New Demo User**:  / 
 
 **What agent forgot to execute**
--   **Refactor **: This is the most critical recurring issue. The agent exacerbated the problem by adding multiple new endpoints and duplicating authentication logic within the monolithic file instead of placing it in the correct  module.
--   **Migrate Live Secrets**: Failed to migrate the insecure, hardcoded Razorpay keys from the  file to the secure API key management system.
--   **Address Root Data Issue**: While the agent found a successful workaround for price syncing (using the Shopify API), it did not address or propose a plan to fix the fundamental SKU mismatch between local database collections, which is the root cause of many data-related problems.</analysis>
+-   **Refactor **: This critical task was carried over and not addressed.
+-   **Migrate Live Secrets**: Did not migrate the insecure Razorpay keys from the  file.
+-   **Address Root Data Issue**: Did not propose a solution for the fundamental SKU mismatch problem.
+-   **Fully Resolve OAuth Issue**: The agent's attempted fix for the Shopify OAuth  was unsuccessful and left the feature in a broken state.</analysis>

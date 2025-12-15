@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://wa-shopify-hub.preview.emergentagent.com/api'
+base_url = 'https://shop-whatsapp-4.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
