@@ -263,6 +263,20 @@ async def get_customer_stats(
             {"$match": query},
             {"$facet": {
                 "total": [{"$count": "count"}],
+                # Fulfillment status counts
+                "fulfilled": [
+                    {"$match": {"fulfillment_status": "fulfilled"}},
+                    {"$count": "count"}
+                ],
+                "unfulfilled": [
+                    {"$match": {"fulfillment_status": {"$in": ["unfulfilled", None, ""]}}},
+                    {"$count": "count"}
+                ],
+                "cancelled": [
+                    {"$match": {"fulfillment_status": {"$in": ["cancelled", "restocked"]}}},
+                    {"$count": "count"}
+                ],
+                # Delivery status counts
                 "delivered": [
                     {"$match": {"delivery_status": "DELIVERED"}},
                     {"$count": "count"}
@@ -289,6 +303,7 @@ async def get_customer_stats(
                     {"$match": {"delivery_status": "RETURN_IN_PROCESS"}},
                     {"$count": "count"}
                 ],
+                # Payment status counts
                 "paymentReceived": [
                     {"$match": {
                         "$or": [
@@ -317,6 +332,9 @@ async def get_customer_stats(
         if not result:
             return {
                 "total": 0,
+                "fulfilled": 0,
+                "unfulfilled": 0,
+                "cancelled": 0,
                 "delivered": 0,
                 "inTransit": 0,
                 "pending": 0,
@@ -329,6 +347,9 @@ async def get_customer_stats(
         
         return {
             "total": stats["total"][0]["count"] if stats["total"] else 0,
+            "fulfilled": stats["fulfilled"][0]["count"] if stats["fulfilled"] else 0,
+            "unfulfilled": stats["unfulfilled"][0]["count"] if stats["unfulfilled"] else 0,
+            "cancelled": stats["cancelled"][0]["count"] if stats["cancelled"] else 0,
             "delivered": stats["delivered"][0]["count"] if stats["delivered"] else 0,
             "inTransit": stats["inTransit"][0]["count"] if stats["inTransit"] else 0,
             "pending": stats["pending"][0]["count"] if stats["pending"] else 0,
