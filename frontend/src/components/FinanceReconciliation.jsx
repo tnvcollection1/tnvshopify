@@ -268,15 +268,15 @@ const FinanceReconciliation = () => {
               </CardContent>
             </Card>
             
-            <Card className="bg-white border border-red-200 shadow-sm hover:shadow-lg cursor-pointer transition-all hover:border-red-400" onClick={() => setFilter('unmatched')}>
+            <Card className="bg-white border border-red-200 shadow-sm hover:shadow-lg cursor-pointer transition-all hover:border-red-400" onClick={() => setFilter('not_matched')}>
               <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-red-50 rounded-xl">
                     <XCircle className="w-5 h-5 text-red-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Unmatched</p>
-                    <p className="text-2xl font-bold text-red-600">{summary.unmatched}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Not Matched</p>
+                    <p className="text-2xl font-bold text-red-600">{summary.not_matched || 0}</p>
                   </div>
                 </div>
               </CardContent>
