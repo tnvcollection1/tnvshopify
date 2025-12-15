@@ -97,10 +97,8 @@ const Inventory = () => {
     setFilters(prev => ({ ...prev, store: globalStore }));
   }, [globalStore]);
 
-  // Debounced search effect
+  // Debounced fetch effect
   useEffect(() => {
-    if (searchTimeout) clearTimeout(searchTimeout);
-    
     const timeout = setTimeout(() => {
       fetchItems();
       // Reset selections when filters change
@@ -108,10 +106,8 @@ const Inventory = () => {
       setSelectAll(false);
     }, filters.search ? 300 : 0); // Debounce search, immediate for other filters
     
-    setSearchTimeout(timeout);
-    
     return () => clearTimeout(timeout);
-  }, [filters, globalStore]);
+  }, [filters.store, filters.status, filters.search]);
 
   useEffect(() => {
     fetchStores();
