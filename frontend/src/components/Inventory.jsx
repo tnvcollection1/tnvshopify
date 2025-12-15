@@ -90,19 +90,32 @@ const Inventory = () => {
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStore, setUploadStore] = useState('tnvcollectionpk'); // Store selection for upload
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
   // Sync local store filter with global store
   useEffect(() => {
     setFilters(prev => ({ ...prev, store: globalStore }));
   }, [globalStore]);
 
+  // Debounced search effect
   useEffect(() => {
-    fetchItems();
-    fetchStores();
-    // Reset selections when filters change
-    setSelectedItems([]);
-    setSelectAll(false);
+    if (searchTimeout) clearTimeout(searchTimeout);
+    
+    const timeout = setTimeout(() => {
+      fetchItems();
+      // Reset selections when filters change
+      setSelectedItems([]);
+      setSelectAll(false);
+    }, filters.search ? 300 : 0); // Debounce search, immediate for other filters
+    
+    setSearchTimeout(timeout);
+    
+    return () => clearTimeout(timeout);
   }, [filters, globalStore]);
+
+  useEffect(() => {
+    fetchStores();
+  }, []);
 
   const fetchItems = async () => {
     setLoading(true);
