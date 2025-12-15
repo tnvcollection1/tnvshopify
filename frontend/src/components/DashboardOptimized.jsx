@@ -66,16 +66,14 @@ const DashboardOptimized = () => {
         params.store_name = selectedStore;
       }
       const response = await axios.get(`${API}/customers/stats`, { params });
-      // Map the response to expected format
       const data = response.data;
       setStats({
         totalOrders: data.total || 0,
         totalCustomers: data.total || 0,
         fulfillmentStatus: {
-          fulfilled: data.delivered || 0,
-          unfulfilled: data.pending || 0,
-          inTransit: data.inTransit || 0,
-          cancelled: data.returned || 0
+          fulfilled: data.fulfilled || 0,
+          unfulfilled: data.unfulfilled || 0,
+          cancelled: data.cancelled || 0
         },
         paymentStatus: {
           paid: data.paymentReceived || 0,
