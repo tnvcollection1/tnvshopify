@@ -861,40 +861,6 @@ const ConfirmationTracker = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-                          {order.dubai_tracking_number}
-                        </div>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
-                    <TableCell className="font-semibold text-gray-900">
-                      ${order.total_spent?.toFixed(2) || "0.00"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditOrder(order)}
-                          className="h-8 w-8 p-0"
-                          title="Edit Order"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        {!order.messaged && order.phone && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleSendWhatsApp(order.customer_id, `${order.first_name} ${order.last_name}`)}
-                            className="h-8 w-8 p-0 text-green-600"
-                            title="Send WhatsApp Message"
-                          >
-                            <Phone className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
                 ))
               )}
             </TableBody>
