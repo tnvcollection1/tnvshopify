@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import LoadingSpinner from './LoadingSpinner';
 import { useStore } from '../contexts/StoreContext';
+import { formatCurrency, getCurrency } from '../utils/currency';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
