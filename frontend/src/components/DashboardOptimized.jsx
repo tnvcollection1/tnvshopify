@@ -133,6 +133,31 @@ const DashboardOptimized = () => {
     }
   };
 
+  const handleSyncCosts = async () => {
+    if (selectedStore === 'all') {
+      toast.error('Please select a specific store to sync costs');
+      return;
+    }
+    setSyncingCosts(true);
+    try {
+      // Sync stock status and order costs
+      const [stockRes, costRes] = await Promise.all([
+        axios.post(`${API}/customers/sync-stock-status?store_name=${selectedStore}`),
+        axios.post(`${API}/customers/sync-order-costs?store_name=${selectedStore}`)
+      ]);
+      
+      toast.success(
+        `Synced: ${costRes.data.updated} orders with costs, ${stockRes.data.in_stock} in stock, ${stockRes.data.out_of_stock} out of stock`
+      );
+      await fetchRecentOrders();
+    } catch (error) {
+      console.error('Sync costs error:', error);
+      toast.error(error.response?.data?.detail || 'Failed to sync costs');
+    } finally {
+      setSyncingCosts(false);
+    }
+  };
+
   const getStatusBadge = (status, type) => {
     if (type === 'fulfillment') {
       if (status === 'fulfilled') return <Badge className="bg-green-100 text-green-700 border-0">Fulfilled</Badge>;
