@@ -136,7 +136,7 @@ const DashboardOptimized = () => {
     if (type === 'fulfillment') {
       if (status === 'fulfilled') return <Badge className="bg-green-100 text-green-700 border-0">Fulfilled</Badge>;
       if (status === 'unfulfilled') return <Badge className="bg-yellow-100 text-yellow-700 border-0">Unfulfilled</Badge>;
-      if (status === 'cancelled') return <Badge className="bg-red-100 text-red-700 border-0">Cancelled</Badge>;
+      if (status === 'cancelled' || status === 'restocked') return <Badge className="bg-red-100 text-red-700 border-0">Cancelled</Badge>;
       return <Badge className="bg-gray-100 text-gray-700 border-0">{status || 'Pending'}</Badge>;
     }
     if (type === 'payment') {
