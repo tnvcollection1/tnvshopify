@@ -12,7 +12,8 @@ import {
   Download,
   TrendingUp,
   Package,
-  Truck
+  Truck,
+  Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStore } from '../contexts/StoreContext';
@@ -27,16 +28,22 @@ import { Badge } from '@/components/ui/badge';
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
 
 const FinanceReconciliation = () => {
-  const { selectedStore: globalStore } = useStore();
+  const { selectedStore: globalStore, stores } = useStore();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [records, setRecords] = useState([]);
   const [summary, setSummary] = useState(null);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetchReconciliation();
+    if (globalStore && globalStore !== 'all') {
+      fetchReconciliation();
+    } else {
+      setRecords([]);
+      setSummary(null);
+    }
   }, [globalStore, filter]);
 
   const fetchReconciliation = async () => {
@@ -56,12 +63,35 @@ const FinanceReconciliation = () => {
     }
   };
 
+  const handleClearData = async () => {
+    if (globalStore === 'all') {
+      toast.error('Please select a specific store first');
+      return;
+    }
+    
+    if (!window.confirm(`Are you sure you want to clear all reconciliation data for ${globalStore}?`)) {
+      return;
+    }
+
+    try {
+      setClearing(true);
+      await axios.delete(`${API}/finance/clear-reconciliation?store_name=${globalStore}`);
+      toast.success('Data cleared successfully');
+      fetchReconciliation();
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      toast.error('Failed to clear data');
+    } finally {
+      setClearing(false);
+    }
+  };
+
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     if (globalStore === 'all') {
-      toast.error('Please select a specific store first');
+      toast.error('Please select a specific store first. Each store has its own reconciliation file.');
       return;
     }
 
@@ -77,8 +107,8 @@ const FinanceReconciliation = () => {
       );
       
       toast.success(
-        `✅ Reconciled ${response.data.total_records} records\n` +
-        `Matched: ${response.data.matched} | Unmatched: ${response.data.unmatched}\n` +
+        `✅ Reconciled ${response.data.total_records} records for ${globalStore}\n` +
+        `Matched: ${response.data.matched} | Not Matched: ${response.data.not_matched}\n` +
         `Match Rate: ${response.data.match_rate}`
       );
       
@@ -96,10 +126,8 @@ const FinanceReconciliation = () => {
     switch (status) {
       case 'matched':
         return <Badge className="bg-green-100 text-green-800 border-green-200">✅ Matched</Badge>;
-      case 'partial':
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">⚠️ Partial</Badge>;
-      case 'unmatched':
-        return <Badge className="bg-red-100 text-red-800 border-red-200">❌ Unmatched</Badge>;
+      case 'not_matched':
+        return <Badge className="bg-red-100 text-red-800 border-red-200">❌ Not Matched</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
