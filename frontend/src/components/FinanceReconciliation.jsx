@@ -188,85 +188,85 @@ const FinanceReconciliation = () => {
         {/* Summary Cards */}
         {summary && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
-            <Card>
-              <CardContent className="pt-4">
+            <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
+                  <div className="p-3 bg-blue-50 rounded-xl">
                     <FileSpreadsheet className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Total Records</p>
-                    <p className="text-xl font-bold">{summary.total}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Records</p>
+                    <p className="text-2xl font-bold text-gray-900">{summary.total}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="cursor-pointer hover:shadow-md" onClick={() => setFilter('matched')}>
-              <CardContent className="pt-4">
+            <Card className="bg-white border border-green-200 shadow-sm hover:shadow-lg cursor-pointer transition-all hover:border-green-400" onClick={() => setFilter('matched')}>
+              <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
+                  <div className="p-3 bg-green-50 rounded-xl">
                     <CheckCircle className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Matched</p>
-                    <p className="text-xl font-bold text-green-600">{summary.matched}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Matched</p>
+                    <p className="text-2xl font-bold text-green-600">{summary.matched}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="cursor-pointer hover:shadow-md" onClick={() => setFilter('unmatched')}>
-              <CardContent className="pt-4">
+            <Card className="bg-white border border-red-200 shadow-sm hover:shadow-lg cursor-pointer transition-all hover:border-red-400" onClick={() => setFilter('unmatched')}>
+              <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-100 rounded-lg">
+                  <div className="p-3 bg-red-50 rounded-xl">
                     <XCircle className="w-5 h-5 text-red-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Unmatched</p>
-                    <p className="text-xl font-bold text-red-600">{summary.unmatched}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Unmatched</p>
+                    <p className="text-2xl font-bold text-red-600">{summary.unmatched}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="pt-4">
+            <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
+                  <div className="p-3 bg-purple-50 rounded-xl">
                     <DollarSign className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Total Sell</p>
-                    <p className="text-xl font-bold">₹{summary.total_sell?.toLocaleString()}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Sell</p>
+                    <p className="text-2xl font-bold text-gray-900">₹{summary.total_sell?.toLocaleString()}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="pt-4">
+            <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-orange-100 rounded-lg">
+                  <div className="p-3 bg-orange-50 rounded-xl">
                     <Package className="w-5 h-5 text-orange-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Total Cost</p>
-                    <p className="text-xl font-bold">₹{summary.total_cost?.toLocaleString()}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Cost</p>
+                    <p className="text-2xl font-bold text-gray-900">₹{summary.total_cost?.toLocaleString()}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="pt-4">
+            <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-teal-100 rounded-lg">
-                    <TrendingUp className="w-5 h-5 text-teal-600" />
+                  <div className="p-3 bg-emerald-50 rounded-xl">
+                    <TrendingUp className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Total Profit</p>
-                    <p className={`text-xl font-bold ${summary.total_profit >= 0 ? 'text-teal-600' : 'text-red-600'}`}>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Profit</p>
+                    <p className={`text-2xl font-bold ${summary.total_profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                       ₹{summary.total_profit?.toLocaleString()}
                     </p>
                   </div>
@@ -274,15 +274,15 @@ const FinanceReconciliation = () => {
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="pt-4">
+            <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
+                  <div className="p-3 bg-indigo-50 rounded-xl">
                     <Truck className="w-5 h-5 text-indigo-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Match Rate</p>
-                    <p className="text-xl font-bold text-indigo-600">{summary.match_rate}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Match Rate</p>
+                    <p className="text-2xl font-bold text-indigo-600">{summary.match_rate}</p>
                   </div>
                 </div>
               </CardContent>
