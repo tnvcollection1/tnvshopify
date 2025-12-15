@@ -903,7 +903,30 @@ const DispatchTracker = () => {
                       {order.tracking_number || "—"}
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(order.delivery_status || "PENDING", "delivery")}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1">
+                          {getStatusBadge(order.delivery_status || "PENDING", "delivery")}
+                          {order.tracking_number && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleShowTracking(order)}
+                              className="h-5 w-5 p-0 text-blue-600"
+                              title="Track via TCS API"
+                            >
+                              <Truck className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
+                        {order.current_location && (
+                          <span className="text-xs text-gray-500">📍 {order.current_location}</span>
+                        )}
+                        {order.last_auto_sync && (
+                          <span className="text-xs text-gray-400">
+                            Updated: {new Date(order.last_auto_sync).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(order.payment_status || "pending", "payment")}</TableCell>
                     <TableCell className="font-semibold text-gray-900">
