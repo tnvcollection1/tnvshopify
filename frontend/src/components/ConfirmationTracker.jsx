@@ -766,6 +766,35 @@ const ConfirmationTracker = () => {
                     <TableCell className="font-medium text-blue-600">
                       #{order.order_number || "N/A"}
                     </TableCell>
+                    <TableCell className="text-xs font-mono text-gray-600">
+                      {order.tracking_number || "—"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {getDeliveryBadge(order)}
+                        {order.tracking_number && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); handleTrackOrder(order); }}
+                            disabled={loadingTracking[order.customer_id]}
+                            className="h-6 w-6 p-0 text-blue-600 hover:bg-blue-50"
+                            title="Track via TCS API"
+                          >
+                            {loadingTracking[order.customer_id] ? (
+                              <RefreshCw className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Truck className="w-3 h-3" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                      {trackingStatus[order.customer_id]?.current_location && (
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          📍 {trackingStatus[order.customer_id].current_location}
+                        </p>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="bg-slate-50 text-xs">
                         {order.store_name || "N/A"}
@@ -804,10 +833,34 @@ const ConfirmationTracker = () => {
                     <TableCell>
                       {getConfirmationBadge(order.confirmation_status || "PENDING")}
                     </TableCell>
-                    <TableCell className="text-sm font-mono text-gray-600">
-                      {order.dubai_tracking_number ? (
-                        <div className="flex items-center gap-1">
-                          <Plane className="w-3 h-3 text-blue-500" />
+                    <TableCell className="font-semibold text-gray-900">
+                      ${order.total_spent?.toFixed(2) || "0.00"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditOrder(order)}
+                          className="h-8 w-8 p-0"
+                          title="Edit Order"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        {!order.messaged && order.phone && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSendWhatsApp(order.customer_id, `${order.first_name} ${order.last_name}`)}
+                            className="h-8 w-8 p-0 text-green-600"
+                            title="Send WhatsApp Message"
+                          >
+                            <Phone className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
                           {order.dubai_tracking_number}
                         </div>
                       ) : (
