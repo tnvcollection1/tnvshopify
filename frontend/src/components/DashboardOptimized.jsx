@@ -601,13 +601,13 @@ const DashboardOptimized = () => {
                         </td>
                         <td className="px-4 py-3 text-right">
                           <span className="text-sm font-medium text-gray-900">
-                            ₹{salePrice.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                            {formatCurrency(salePrice, order.store_name)}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
                           {cost > 0 ? (
                             <span className="text-sm text-gray-600">
-                              ₹{cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                              {formatCurrency(cost, order.store_name)}
                             </span>
                           ) : (
                             <span className="text-xs text-gray-400">-</span>
@@ -616,7 +616,7 @@ const DashboardOptimized = () => {
                         <td className="px-4 py-3 text-right">
                           {cost > 0 ? (
                             <span className={`text-sm font-medium ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {profit >= 0 ? '+' : ''}₹{Math.abs(profit).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                              {profit >= 0 ? '+' : '-'}{formatCurrency(Math.abs(profit), order.store_name)}
                             </span>
                           ) : (
                             <span className="text-xs text-gray-400">-</span>
