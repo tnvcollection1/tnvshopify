@@ -2956,66 +2956,69 @@ class ShopifyCustomerAPITester:
         return True
 
 def main():
-    print("💰 Starting Finance Reconciliation Feature Tests")
+    print("📋 Starting Orders Page Functionality Tests")
     print("=" * 80)
     
     # Setup
     tester = ShopifyCustomerAPITester()
     
-    # Run Finance Reconciliation Tests as requested
-    finance_results = tester.run_finance_reconciliation_tests()
+    # Run Orders Page Tests as requested
+    orders_results = tester.run_orders_page_tests()
     
-    # Print Finance Reconciliation test summary
+    # Print Orders Page test summary
     print("\n" + "=" * 80)
-    print("📊 FINANCE RECONCILIATION TEST SUMMARY")
+    print("📊 ORDERS PAGE TEST SUMMARY")
     print("=" * 80)
     
-    # Finance Reconciliation Results
-    empty_state_results = finance_results.get("empty_state", {})
-    file_upload_results = finance_results.get("file_upload", {})
-    reconciliation_logic_results = finance_results.get("reconciliation_logic", {})
-    filters_results = finance_results.get("filters", {})
+    # Orders Page Results
+    stats_results = orders_results.get("stats_endpoint", {})
+    cancelled_results = orders_results.get("cancelled_filter", {})
+    sync_costs_results = orders_results.get("sync_costs", {})
+    sync_stock_results = orders_results.get("sync_stock", {})
+    cost_data_results = orders_results.get("cost_data", {})
     
-    # Finance Reconciliation Summary
-    print(f"\n💰 FINANCE RECONCILIATION FEATURE:")
-    print(f"   GET /api/finance/purchase-order-reconciliation (empty): {'✅ PASS' if empty_state_results.get('success') else '❌ FAIL'}")
-    print(f"   POST /api/finance/upload-purchase-orders: {'✅ PASS' if file_upload_results.get('success') else '❌ FAIL'}")
-    print(f"   Reconciliation Logic Verification: {'✅ PASS' if reconciliation_logic_results.get('success') else '❌ FAIL'}")
-    print(f"   Filter Functionality (status & store): {'✅ PASS' if filters_results.get('success') else '❌ FAIL'}")
+    # Orders Page Summary
+    print(f"\n📋 ORDERS PAGE FUNCTIONALITY:")
+    print(f"   GET /api/customers/stats?store_name=ashmiaa: {'✅ PASS' if stats_results.get('success') else '❌ FAIL'}")
+    print(f"   GET /api/customers?fulfillment_status=cancelled: {'✅ PASS' if cancelled_results.get('success') else '❌ FAIL'}")
+    print(f"   POST /api/customers/sync-order-costs: {'✅ PASS' if sync_costs_results.get('success') else '❌ FAIL'}")
+    print(f"   POST /api/customers/sync-stock-status: {'✅ PASS' if sync_stock_results.get('success') else '❌ FAIL'}")
+    print(f"   GET /api/customers with cost data: {'✅ PASS' if cost_data_results.get('success') else '❌ FAIL'}")
     
-    # Overall Finance Reconciliation assessment
+    # Overall Orders Page assessment
     all_tests_passed = all(
         results.get('success', False) 
-        for results in [empty_state_results, file_upload_results, reconciliation_logic_results, filters_results]
+        for results in [stats_results, cancelled_results, sync_costs_results, sync_stock_results, cost_data_results]
     )
     
-    total_tests = 4
+    total_tests = 5
     passed_tests = sum(
-        1 for results in [empty_state_results, file_upload_results, reconciliation_logic_results, filters_results]
+        1 for results in [stats_results, cancelled_results, sync_costs_results, sync_stock_results, cost_data_results]
         if results.get('success', False)
     )
     
-    print(f"\n🎯 FINANCE RECONCILIATION VALIDATION: {passed_tests}/{total_tests} tests passed")
+    print(f"\n🎯 ORDERS PAGE VALIDATION: {passed_tests}/{total_tests} tests passed")
     
     if all_tests_passed:
-        print("✅ Finance Reconciliation feature is working correctly!")
-        print("   - Empty state API returns proper structure")
-        print("   - File upload processes Excel/CSV with purchase orders")
-        print("   - Reconciliation logic matches orders correctly")
-        print("   - Profit calculations are accurate")
-        print("   - Summary calculations are correct")
-        print("   - Status and store filters work properly")
+        print("✅ Orders Page functionality is working correctly!")
+        print("   - Stats endpoint returns fulfillment counts")
+        print("   - Cancelled filter includes restocked orders")
+        print("   - Sync costs endpoint updates order costs from inventory")
+        print("   - Sync stock status endpoint updates stock availability")
+        print("   - Orders have cost data for profit calculations")
         return 0
     else:
-        print("❌ Finance Reconciliation feature has issues")
-        if not empty_state_results.get('success'):
-            print(f"   - Empty State API: Issues with response structure")
-        if not file_upload_results.get('success'):
-            print(f"   - File Upload: Issues with Excel/CSV processing")
-        if not reconciliation_logic_results.get('success'):
-            print(f"   - Reconciliation Logic: Issues with order matching or calculations")
-        if not filters_results.get('success'):
-            print(f"   - Filters: Issues with status or store filtering")
+        print("❌ Orders Page functionality has issues")
+        if not stats_results.get('success'):
+            print(f"   - Stats Endpoint: Issues with fulfillment count statistics")
+        if not cancelled_results.get('success'):
+            print(f"   - Cancelled Filter: Issues with filtering cancelled/restocked orders")
+        if not sync_costs_results.get('success'):
+            print(f"   - Sync Costs: Issues with syncing order costs from inventory")
+        if not sync_stock_results.get('success'):
+            print(f"   - Sync Stock: Issues with syncing stock status")
+        if not cost_data_results.get('success'):
+            print(f"   - Cost Data: Issues with order cost data availability")
         return 1
 
 if __name__ == "__main__":
