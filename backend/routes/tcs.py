@@ -282,21 +282,54 @@ async def sync_all_tcs_deliveries():
         synced = 0
         errors = 0
         
+        # TCS cn_status mapping
+        cn_status_map = {
+            'DE': 'DELIVERED',      # Delivered
+            'RO': 'RETURNED',       # Returned to Origin
+            'RD': 'RETURNED',       # Return Delivered
+            'IT': 'IN_TRANSIT',     # In Transit
+            'OD': 'OUT_FOR_DELIVERY',  # Out for Delivery
+            'AR': 'IN_TRANSIT',     # Arrived at facility
+            'DP': 'IN_TRANSIT',     # Departed from facility
+            'PU': 'IN_TRANSIT',     # Picked up
+            'RI': 'RETURN_IN_PROCESS',  # Return In Process
+        }
+        
         for order in orders:
             try:
                 tracking_data = tracker.track_consignment(order['tracking_number'])
-                if tracking_data and tracking_data.get('normalized_status'):
-                    new_status = tracking_data['normalized_status']
-                    if new_status not in ['UNKNOWN', 'NOT_FOUND']:
-                        await db.customers.update_one(
-                            {'customer_id': order['customer_id'], 'store_name': order['store_name']},
-                            {'$set': {
-                                'delivery_status': new_status,
-                                'current_location': tracking_data.get('current_location'),
-                                'last_auto_sync': datetime.now(timezone.utc).isoformat()
-                            }}
-                        )
-                        synced += 1
+                new_status = None
+                current_location = None
+                payment_info = None
+                
+                if tracking_data:
+                    new_status = tracking_data.get('normalized_status')
+                    current_location = tracking_data.get('current_location')
+                    payment_info = tracking_data.get('payment_info')
+                    
+                    # If main tracking returns UNKNOWN, try to derive from payment_info
+                    if new_status in ['UNKNOWN', 'NOT_FOUND', None] and payment_info:
+                        cn_status = payment_info.get('cn_status', '').upper()
+                        if cn_status in cn_status_map:
+                            new_status = cn_status_map[cn_status]
+                            current_location = payment_info.get('city')
+                
+                if new_status and new_status not in ['UNKNOWN', 'NOT_FOUND']:
+                    update_data = {
+                        'delivery_status': new_status,
+                        'last_auto_sync': datetime.now(timezone.utc).isoformat()
+                    }
+                    if current_location:
+                        update_data['current_location'] = current_location
+                    if payment_info:
+                        update_data['cod_payment_status'] = payment_info.get('payment_status')
+                        update_data['cod_amount'] = payment_info.get('cod_amount', 0)
+                    
+                    await db.customers.update_one(
+                        {'customer_id': order['customer_id'], 'store_name': order['store_name']},
+                        {'$set': update_data}
+                    )
+                    synced += 1
             except Exception as e:
                 errors += 1
                 logger.error(f"Error syncing {order.get('tracking_number')}: {e}")
