@@ -573,7 +573,10 @@ const Inventory = () => {
       <div className="p-8">
         {/* Stats Dashboard */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-          <Card className="bg-white">
+          <Card 
+            className="bg-white cursor-pointer hover:shadow-md transition-shadow" 
+            onClick={() => setFilters({...filters, profitFilter: 'all', search: ''})}
+          >
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
@@ -587,7 +590,11 @@ const Inventory = () => {
             </CardContent>
           </Card>
           
-          <Card className="bg-white">
+          <Card 
+            className="bg-white cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setFilters({...filters, profitFilter: 'all'})}
+            title="Total cost of all inventory items"
+          >
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-orange-100 rounded-lg">
@@ -601,7 +608,11 @@ const Inventory = () => {
             </CardContent>
           </Card>
           
-          <Card className="bg-white">
+          <Card 
+            className="bg-white cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setFilters({...filters, profitFilter: 'positive'})}
+            title="Sum of sale prices from Shopify products (click to see synced items)"
+          >
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 rounded-lg">
@@ -610,12 +621,17 @@ const Inventory = () => {
                 <div>
                   <p className="text-xs text-gray-500">Sale Value</p>
                   <p className="text-lg font-bold">₹{stats.totalSaleValue.toLocaleString()}</p>
+                  <p className="text-xs text-gray-400">from Shopify</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className={`bg-white ${stats.totalProfit >= 0 ? '' : 'border-red-200'}`}>
+          <Card 
+            className={`bg-white cursor-pointer hover:shadow-md transition-shadow ${stats.totalProfit >= 0 ? '' : 'border-red-200'}`}
+            onClick={() => setFilters({...filters, profitFilter: stats.totalProfit >= 0 ? 'positive' : 'negative'})}
+            title="Total profit = Sale Value - Total Cost"
+          >
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${stats.totalProfit >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
@@ -635,7 +651,11 @@ const Inventory = () => {
             </CardContent>
           </Card>
           
-          <Card className="bg-white">
+          <Card 
+            className="bg-white cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setFilters({...filters, profitFilter: 'positive'})}
+            title="Profit Margin = (Profit / Sale Value) × 100"
+          >
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${stats.profitMargin >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
@@ -651,7 +671,11 @@ const Inventory = () => {
             </CardContent>
           </Card>
           
-          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow" onClick={() => setFilters({...filters, profitFilter: 'negative'})}>
+          <Card 
+            className="bg-white cursor-pointer hover:shadow-md transition-shadow border-red-200" 
+            onClick={() => setFilters({...filters, profitFilter: 'negative'})}
+            title="Items where Cost > Sale Price (click to view)"
+          >
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-100 rounded-lg">
