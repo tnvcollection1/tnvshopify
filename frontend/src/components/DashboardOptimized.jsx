@@ -394,7 +394,7 @@ const DashboardOptimized = () => {
         <div className="px-6 py-4">
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase">
+            <div className="grid grid-cols-14 gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase">
               <div className="col-span-1">
                 <input type="checkbox" className="rounded border-gray-300" />
               </div>
@@ -402,10 +402,12 @@ const DashboardOptimized = () => {
               <div className="col-span-2">Customer</div>
               <div className="col-span-2">Product / SKU</div>
               <div className="col-span-1">Date</div>
-              <div className="col-span-1">Fulfillment</div>
-              <div className="col-span-1">Payment</div>
+              <div className="col-span-1">Status</div>
               <div className="col-span-1">Tracking</div>
-              <div className="col-span-2 text-right">Sale Price</div>
+              <div className="col-span-1 text-right">Sale</div>
+              <div className="col-span-1 text-right">Cost</div>
+              <div className="col-span-1 text-right">Profit</div>
+              <div className="col-span-1">Stock</div>
             </div>
 
             {/* Table Body */}
@@ -415,67 +417,87 @@ const DashboardOptimized = () => {
                   No orders found
                 </div>
               ) : (
-                filteredOrders.map((order) => (
-                  <div
-                    key={order.customer_id}
-                    className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer items-center"
-                    onClick={() => setSelectedOrder(order)}
-                  >
-                    <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
-                      <input type="checkbox" className="rounded border-gray-300" />
-                    </div>
-                    <div className="col-span-1">
-                      <span className="text-sm font-medium text-blue-600 hover:underline">
-                        #{order.order_number || order.name || 'N/A'}
-                      </span>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {order.first_name || order.customer?.first_name || ''} {order.last_name || order.customer?.last_name || ''}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">{order.phone || order.email || ''}</p>
-                    </div>
-                    <div className="col-span-2">
-                      {order.line_items?.length > 0 ? (
-                        <div>
-                          <p className="text-xs text-gray-900 truncate font-medium">
-                            {order.line_items[0]?.title || order.line_items[0]?.name || 'Product'}
-                          </p>
-                          <p className="text-xs text-gray-500 truncate">
-                            SKU: {order.line_items[0]?.sku || order.order_skus?.[0] || '-'}
-                          </p>
-                          {order.line_items.length > 1 && (
-                            <p className="text-xs text-blue-500">+{order.line_items.length - 1} more</p>
-                          )}
+                filteredOrders.map((order) => {
+                  const salePrice = order.total_spent || order.total_price || 0;
+                  const cost = order.cost || order.order_cost || 0;
+                  const profit = salePrice - cost;
+                  
+                  return (
+                    <div
+                      key={order.customer_id}
+                      className="grid grid-cols-14 gap-2 px-4 py-3 hover:bg-gray-50 cursor-pointer items-center"
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
+                        <input type="checkbox" className="rounded border-gray-300" />
+                      </div>
+                      <div className="col-span-1">
+                        <span className="text-sm font-medium text-blue-600 hover:underline">
+                          #{order.order_number || order.name || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {order.first_name || order.customer?.first_name || ''} {order.last_name || order.customer?.last_name || ''}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">{order.phone || order.email || ''}</p>
+                      </div>
+                      <div className="col-span-2">
+                        {order.line_items?.length > 0 ? (
+                          <div>
+                            <p className="text-xs text-gray-900 truncate font-medium">
+                              {order.line_items[0]?.title || order.line_items[0]?.name || 'Product'}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">
+                              SKU: {order.line_items[0]?.sku || order.order_skus?.[0] || '-'}
+                            </p>
+                          </div>
+                        ) : order.order_skus?.length > 0 ? (
+                          <p className="text-xs text-gray-500 truncate">SKU: {order.order_skus.join(', ')}</p>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </div>
+                      <div className="col-span-1 text-xs text-gray-600">
+                        {formatDate(order.last_order_date || order.created_at)}
+                      </div>
+                      <div className="col-span-1">
+                        <div className="space-y-1">
+                          {getStatusBadge(order.fulfillment_status, 'fulfillment')}
                         </div>
-                      ) : order.order_skus?.length > 0 ? (
-                        <p className="text-xs text-gray-500">SKU: {order.order_skus.join(', ')}</p>
-                      ) : (
-                        <span className="text-xs text-gray-400">No items</span>
-                      )}
+                      </div>
+                      <div className="col-span-1">
+                        <p className="text-xs text-gray-600 truncate" title={order.tracking_number}>
+                          {order.tracking_number || '-'}
+                        </p>
+                      </div>
+                      <div className="col-span-1 text-right">
+                        <span className="text-sm font-semibold text-gray-900">₹{salePrice.toLocaleString()}</span>
+                      </div>
+                      <div className="col-span-1 text-right">
+                        <span className="text-sm text-gray-600">{cost > 0 ? `₹${cost.toLocaleString()}` : '-'}</span>
+                      </div>
+                      <div className="col-span-1 text-right">
+                        {cost > 0 ? (
+                          <span className={`text-sm font-medium ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {profit >= 0 ? '+' : ''}₹{profit.toLocaleString()}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </div>
+                      <div className="col-span-1">
+                        {order.stock_status === 'IN_STOCK' ? (
+                          <Badge className="bg-green-100 text-green-700 border-0 text-xs">In Stock</Badge>
+                        ) : order.stock_status === 'OUT_OF_STOCK' ? (
+                          <Badge className="bg-red-100 text-red-700 border-0 text-xs">Out</Badge>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="col-span-1 text-xs text-gray-600">
-                      {formatDate(order.last_order_date || order.created_at)}
-                    </div>
-                    <div className="col-span-1">
-                      {getStatusBadge(order.fulfillment_status, 'fulfillment')}
-                    </div>
-                    <div className="col-span-1">
-                      {getStatusBadge(order.payment_status || order.financial_status, 'payment')}
-                    </div>
-                    <div className="col-span-1">
-                      <p className="text-xs text-gray-600 truncate" title={order.tracking_number}>
-                        {order.tracking_number || '-'}
-                      </p>
-                      {order.tracking_company && (
-                        <p className="text-xs text-gray-400">{order.tracking_company}</p>
-                      )}
-                    </div>
-                    <div className="col-span-2 text-right">
-                      <span className="text-sm font-semibold text-gray-900">₹{(order.total_spent || order.total_price || 0).toLocaleString()}</span>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
