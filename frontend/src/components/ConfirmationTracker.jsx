@@ -100,7 +100,7 @@ const ConfirmationTracker = () => {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
-  }, [filters.calling_status, filters.confirmation_status, filters.year, filters.sortBy, searchQuery, globalStore]);
+  }, [filters.calling_status, filters.confirmation_status, filters.stock_status, filters.year, filters.sortBy, searchQuery, globalStore]);
 
   const fetchOrders = async () => {
     setLoading(true);
