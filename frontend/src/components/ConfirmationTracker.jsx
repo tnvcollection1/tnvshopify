@@ -186,22 +186,53 @@ const ConfirmationTracker = () => {
     }
   };
 
-  const viewCardDetails = (cardType) => {
-    let filtered = orders.filter(order => {
-      switch(cardType) {
-        case 'total': return true;
-        case 'notCalled': return !order.calling_status || order.calling_status === 'NOT_CALLED';
-        case 'called': return order.calling_status === 'CALLED' || order.calling_status === 'NO_ANSWER' || order.calling_status === 'CONFIRMED';
-        case 'purchased': return order.confirmation_status === 'PURCHASED';
-        case 'notPurchased': return order.confirmation_status === 'NOT_PURCHASED';
-        case 'canceled': return order.confirmation_status === 'CANCELED';
-        case 'inStock': return order.stock_status === 'IN_STOCK';
-        case 'outOfStock': return order.stock_status === 'OUT_OF_STOCK';
-        default: return false;
-      }
-    });
-    setCardData(filtered);
+  const viewCardDetails = async (cardType) => {
     setViewingCard(cardType);
+    setCardData([]);
+    
+    try {
+      const params = new URLSearchParams();
+      params.append("fulfillment_status", "unfulfilled");
+      params.append("limit", "500");
+      
+      if (globalStore !== "all") params.append("store_name", globalStore);
+      
+      // Add specific filters based on card type
+      switch(cardType) {
+        case 'notCalled':
+          params.append("calling_status", "NOT_CALLED");
+          break;
+        case 'called':
+          params.append("calling_status", "CALLED");
+          break;
+        case 'purchased':
+          params.append("confirmation_status", "PURCHASED");
+          break;
+        case 'notPurchased':
+          params.append("confirmation_status", "NOT_PURCHASED");
+          break;
+        case 'canceled':
+          params.append("confirmation_status", "CANCELED");
+          break;
+        case 'inStock':
+          params.append("stock_availability", "in_stock");
+          break;
+        case 'outOfStock':
+          params.append("stock_availability", "out_of_stock");
+          break;
+        case 'total':
+        default:
+          // No additional filter
+          break;
+      }
+      
+      const response = await axios.get(`${API}/customers?${params.toString()}`);
+      const allOrders = Array.isArray(response.data) ? response.data : response.data.customers || [];
+      setCardData(allOrders);
+    } catch (error) {
+      console.error("Error fetching card details:", error);
+      toast.error("Failed to load order details");
+    }
   };
 
   const closeCardView = () => {
