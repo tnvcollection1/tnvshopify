@@ -205,7 +205,7 @@ class TCSTracker:
                     }
                     
                     try:
-                        payment_info = self.get_cod_payment_status_public(tracking_number)
+                        payment_info = self.get_cod_payment_status(tracking_number)
                         if payment_info:
                             result['payment_info'] = payment_info
                     except Exception as e:
