@@ -92,6 +92,8 @@ const ConfirmationTracker = () => {
   
   const [viewingCard, setViewingCard] = useState(null);
   const [cardData, setCardData] = useState([]);
+  const [trackingStatus, setTrackingStatus] = useState({}); // Store tracking status per order
+  const [loadingTracking, setLoadingTracking] = useState({}); // Track which orders are loading
 
   useEffect(() => {
     fetchOrders();
