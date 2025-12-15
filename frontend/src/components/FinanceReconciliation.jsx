@@ -182,10 +182,24 @@ const FinanceReconciliation = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Finance Reconciliation</h1>
-            <p className="text-sm text-gray-500 mt-1">Match Purchase Orders with Shopify Orders</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Match Purchase Orders with Shopify Orders 
+              {globalStore !== 'all' && <span className="text-green-600 font-medium"> • Store: {globalStore}</span>}
+            </p>
           </div>
           <div className="flex gap-3">
-            <Button onClick={exportToCSV} variant="outline">
+            {records.length > 0 && (
+              <Button 
+                onClick={handleClearData} 
+                variant="outline" 
+                className="text-red-600 border-red-200 hover:bg-red-50"
+                disabled={clearing || globalStore === 'all'}
+              >
+                {clearing ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                Clear Data
+              </Button>
+            )}
+            <Button onClick={exportToCSV} variant="outline" disabled={records.length === 0}>
               <Download className="w-4 h-4 mr-2" /> Export
             </Button>
             <label className="cursor-pointer">
@@ -198,18 +212,28 @@ const FinanceReconciliation = () => {
               />
               <Button 
                 as="span" 
-                className="bg-green-600 hover:bg-green-700"
+                className={`${globalStore === 'all' ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
                 disabled={uploading || globalStore === 'all'}
               >
                 {uploading ? (
                   <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Uploading...</>
                 ) : (
-                  <><Upload className="w-4 h-4 mr-2" /> Upload Purchase Orders</>
+                  <><Upload className="w-4 h-4 mr-2" /> Upload for {globalStore === 'all' ? 'Store' : globalStore}</>
                 )}
               </Button>
             </label>
           </div>
         </div>
+        
+        {/* Store Selection Warning */}
+        {globalStore === 'all' && (
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-amber-800 text-sm">
+              <AlertCircle className="w-4 h-4 inline mr-2" />
+              <strong>Please select a specific store</strong> from the header dropdown. Each store has its own reconciliation data and upload file.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="p-6">
