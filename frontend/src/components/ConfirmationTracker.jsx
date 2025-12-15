@@ -22,6 +22,7 @@ import {
   X,
   AlertCircle,
   Box,
+  Truck,
 } from "lucide-react";
 import {
   Table,
