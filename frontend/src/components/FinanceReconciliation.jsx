@@ -441,14 +441,14 @@ const FinanceReconciliation = () => {
                         <TableCell className="font-mono">{record.shopify_id || '-'}</TableCell>
                         <TableCell className="font-mono">{record.sku || '-'}</TableCell>
                         <TableCell className="font-mono">{record.awb || '-'}</TableCell>
-                        <TableCell className="text-right">₹{(record.sell_amount || 0).toLocaleString()}</TableCell>
-                        <TableCell className="text-right">₹{(record.cost || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(record.sell_amount || 0, globalStore)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(record.cost || 0, globalStore)}</TableCell>
                         <TableCell className={`text-right font-semibold ${record.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          ₹{(record.profit || 0).toLocaleString()}
+                          {formatCurrency(record.profit || 0, globalStore)}
                         </TableCell>
                         <TableCell>{getStatusBadge(record.status)}</TableCell>
                         <TableCell className="font-mono">{record.shopify_order_name || '-'}</TableCell>
-                        <TableCell className="text-right">₹{(record.shopify_amount || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(record.shopify_amount || 0, globalStore)}</TableCell>
                         <TableCell>
                           {record.amount_match ? (
                             <CheckCircle className="w-5 h-5 text-green-500" />
