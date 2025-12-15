@@ -2694,127 +2694,66 @@ class ShopifyCustomerAPITester:
         return True
 
 def main():
-    print("🔥 Starting P0 Bug Fix Validation Tests")
+    print("💰 Starting Finance Reconciliation Feature Tests")
     print("=" * 80)
     
     # Setup
     tester = ShopifyCustomerAPITester()
     
-    # Run P0 Bug Fix tests as requested (the new ones for Purchase Tracker, Smart Clearance, Dynamic Pricing)
-    print("\n" + "="*80)
-    print("🔥 P0 BUG FIX VALIDATION TESTS")
-    print("="*80)
+    # Run Finance Reconciliation Tests as requested
+    finance_results = tester.run_finance_reconciliation_tests()
     
-    p0_results = {}
-    
-    # Test 1: Purchase Tracker - China Post Orders
-    print("\n📋 TEST 1: PURCHASE TRACKER - CHINA POST ORDERS")
-    print("-" * 40)
-    
-    china_orders_success, china_orders_response = tester.test_purchase_tracker_china_orders()
-    p0_results["china_orders"] = {
-        "success": china_orders_success,
-        "response": china_orders_response
-    }
-    
-    # Test 2: Purchase Tracker - China Post Count
-    print("\n📋 TEST 2: PURCHASE TRACKER - CHINA POST COUNT")
-    print("-" * 40)
-    
-    china_count_success, china_count_response = tester.test_purchase_tracker_china_count()
-    p0_results["china_count"] = {
-        "success": china_count_success,
-        "response": china_count_response
-    }
-    
-    # Test 3: Smart Clearance - Inventory Health
-    print("\n📋 TEST 3: SMART CLEARANCE - INVENTORY HEALTH")
-    print("-" * 40)
-    
-    clearance_health_success, clearance_health_response = tester.test_smart_clearance_health()
-    p0_results["clearance_health"] = {
-        "success": clearance_health_success,
-        "response": clearance_health_response
-    }
-    
-    # Test 4: Smart Clearance - Campaigns
-    print("\n📋 TEST 4: SMART CLEARANCE - CAMPAIGNS")
-    print("-" * 40)
-    
-    clearance_campaigns_success, clearance_campaigns_response = tester.test_smart_clearance_campaigns()
-    p0_results["clearance_campaigns"] = {
-        "success": clearance_campaigns_success,
-        "response": clearance_campaigns_response
-    }
-    
-    # Test 5: Dynamic Pricing - Report
-    print("\n📋 TEST 5: DYNAMIC PRICING - REPORT")
-    print("-" * 40)
-    
-    pricing_report_success, pricing_report_response = tester.test_dynamic_pricing_report()
-    p0_results["pricing_report"] = {
-        "success": pricing_report_success,
-        "response": pricing_report_response
-    }
-    
-    # Print P0 Bug Fix test summary
+    # Print Finance Reconciliation test summary
     print("\n" + "=" * 80)
-    print("📊 P0 BUG FIX TEST SUMMARY")
+    print("📊 FINANCE RECONCILIATION TEST SUMMARY")
     print("=" * 80)
     
-    # P0 Bug Fix Results
-    china_orders_results = p0_results.get("china_orders", {})
-    china_count_results = p0_results.get("china_count", {})
-    clearance_health_results = p0_results.get("clearance_health", {})
-    clearance_campaigns_results = p0_results.get("clearance_campaigns", {})
-    pricing_report_results = p0_results.get("pricing_report", {})
+    # Finance Reconciliation Results
+    empty_state_results = finance_results.get("empty_state", {})
+    file_upload_results = finance_results.get("file_upload", {})
+    reconciliation_logic_results = finance_results.get("reconciliation_logic", {})
+    filters_results = finance_results.get("filters", {})
     
-    # Purchase Tracker Summary
-    print(f"\n📦 PURCHASE TRACKER (CHINA POST):")
-    print(f"   GET /api/customers?china_tracking=true: {'✅ PASS' if china_orders_results.get('success') else '❌ FAIL'}")
-    print(f"   GET /api/customers/count?china_tracking=true: {'✅ PASS' if china_count_results.get('success') else '❌ FAIL'}")
+    # Finance Reconciliation Summary
+    print(f"\n💰 FINANCE RECONCILIATION FEATURE:")
+    print(f"   GET /api/finance/purchase-order-reconciliation (empty): {'✅ PASS' if empty_state_results.get('success') else '❌ FAIL'}")
+    print(f"   POST /api/finance/upload-purchase-orders: {'✅ PASS' if file_upload_results.get('success') else '❌ FAIL'}")
+    print(f"   Reconciliation Logic Verification: {'✅ PASS' if reconciliation_logic_results.get('success') else '❌ FAIL'}")
+    print(f"   Filter Functionality (status & store): {'✅ PASS' if filters_results.get('success') else '❌ FAIL'}")
     
-    # Smart Clearance Summary
-    print(f"\n🧹 SMART CLEARANCE (INVENTORY CLEARANCE):")
-    print(f"   GET /api/clearance/health: {'✅ PASS' if clearance_health_results.get('success') else '❌ FAIL'}")
-    print(f"   GET /api/clearance/campaigns: {'✅ PASS' if clearance_campaigns_results.get('success') else '❌ FAIL'}")
-    
-    # Dynamic Pricing Summary
-    print(f"\n💰 DYNAMIC PRICING ENGINE:")
-    print(f"   GET /api/dynamic-pricing/report: {'✅ PASS' if pricing_report_results.get('success') else '❌ FAIL'}")
-    
-    # Overall P0 Bug Fix assessment
+    # Overall Finance Reconciliation assessment
     all_tests_passed = all(
         results.get('success', False) 
-        for results in [china_orders_results, china_count_results, clearance_health_results, clearance_campaigns_results, pricing_report_results]
+        for results in [empty_state_results, file_upload_results, reconciliation_logic_results, filters_results]
     )
     
-    total_tests = 5
+    total_tests = 4
     passed_tests = sum(
-        1 for results in [china_orders_results, china_count_results, clearance_health_results, clearance_campaigns_results, pricing_report_results]
+        1 for results in [empty_state_results, file_upload_results, reconciliation_logic_results, filters_results]
         if results.get('success', False)
     )
     
-    print(f"\n🎯 P0 BUG FIX VALIDATION: {passed_tests}/{total_tests} tests passed")
+    print(f"\n🎯 FINANCE RECONCILIATION VALIDATION: {passed_tests}/{total_tests} tests passed")
     
     if all_tests_passed:
-        print("✅ All P0 Bug Fixes are working correctly!")
-        print("   - Purchase Tracker: China Post orders filtering and counting works")
-        print("   - Smart Clearance: Inventory health analysis and campaigns work")
-        print("   - Dynamic Pricing: Report generation works with proper categories")
+        print("✅ Finance Reconciliation feature is working correctly!")
+        print("   - Empty state API returns proper structure")
+        print("   - File upload processes Excel/CSV with purchase orders")
+        print("   - Reconciliation logic matches orders correctly")
+        print("   - Profit calculations are accurate")
+        print("   - Summary calculations are correct")
+        print("   - Status and store filters work properly")
         return 0
     else:
-        print("❌ Some P0 Bug Fixes have issues")
-        if not china_orders_results.get('success'):
-            print(f"   - Purchase Tracker Orders: Issues with china_tracking=true filter")
-        if not china_count_results.get('success'):
-            print(f"   - Purchase Tracker Count: Issues with china_tracking=true count")
-        if not clearance_health_results.get('success'):
-            print(f"   - Smart Clearance Health: Issues with inventory health analysis")
-        if not clearance_campaigns_results.get('success'):
-            print(f"   - Smart Clearance Campaigns: Issues with campaigns endpoint")
-        if not pricing_report_results.get('success'):
-            print(f"   - Dynamic Pricing Report: Issues with report generation")
+        print("❌ Finance Reconciliation feature has issues")
+        if not empty_state_results.get('success'):
+            print(f"   - Empty State API: Issues with response structure")
+        if not file_upload_results.get('success'):
+            print(f"   - File Upload: Issues with Excel/CSV processing")
+        if not reconciliation_logic_results.get('success'):
+            print(f"   - Reconciliation Logic: Issues with order matching or calculations")
+        if not filters_results.get('success'):
+            print(f"   - Filters: Issues with status or store filtering")
         return 1
 
 if __name__ == "__main__":
