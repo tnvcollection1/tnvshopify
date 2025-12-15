@@ -1134,6 +1134,15 @@ class ShopifyCustomerAPITester:
         print("📋 ORDERS PAGE FUNCTIONALITY TESTS")
         print("="*80)
         
+        # Test admin login first
+        print("\n🔐 PREREQUISITE: ADMIN LOGIN TEST")
+        print("-" * 50)
+        
+        login_success, login_response = self.test_agent_login()
+        if not login_success:
+            print("❌ Admin login failed - cannot proceed with Orders page tests")
+            return {"login_failed": True}
+        
         orders_results = {}
         
         # Test 1: Stats Endpoint with Fulfillment Counts
