@@ -264,7 +264,19 @@ async def sync_all_tcs_deliveries():
         if not config:
             return {"success": False, "error": "TCS not configured. Please configure TCS credentials in Settings."}
         
-        tracker = TCSTracker(config)
+        # Initialize tracker with proper config parameters
+        if config.get('auth_type') == 'bearer':
+            tracker = TCSTracker(
+                bearer_token=config.get('bearer_token'),
+                token_expiry=config.get('token_expiry'),
+                customer_no=config.get('customer_no')
+            )
+        else:
+            tracker = TCSTracker(
+                username=config.get('username'),
+                password=config.get('password'),
+                customer_no=config.get('customer_no')
+            )
         
         # Find orders needing sync (TCS orders only, not China Post)
         query = {
