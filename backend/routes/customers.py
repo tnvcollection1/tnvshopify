@@ -527,6 +527,65 @@ async def sync_stock_status(store_name: str = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@customers_router.post("/sync-order-costs")
+async def sync_order_costs(store_name: str = None):
+    """
+    Sync costs from inventory to orders for profit calculation.
+    Matches orders to inventory by SKU and updates the order with cost.
+    """
+    try:
+        query = {"store_name": store_name} if store_name and store_name != "all" else {}
+        customers = await db.customers.find(query, {"_id": 0, "customer_id": 1, "line_items": 1, "order_skus": 1}).to_list(50000)
+        
+        # Build inventory lookup map
+        inventory_items = await db.inventory_v2.find({}, {"_id": 0, "sku": 1, "cost": 1}).to_list(100000)
+        inventory_map = {item.get("sku", "").upper(): item.get("cost", 0) for item in inventory_items if item.get("sku")}
+        
+        updated = 0
+        total_cost_synced = 0
+        
+        for customer in customers:
+            order_cost = 0
+            
+            # Check line_items first
+            line_items = customer.get("line_items", [])
+            if line_items:
+                for item in line_items:
+                    sku = str(item.get("sku", "")).upper()
+                    qty = item.get("quantity", 1)
+                    if sku in inventory_map:
+                        item_cost = inventory_map[sku] * qty
+                        order_cost += item_cost
+            # If no line_items, check order_skus
+            elif customer.get("order_skus"):
+                for sku in customer.get("order_skus", []):
+                    sku_upper = str(sku).upper()
+                    if sku_upper in inventory_map:
+                        order_cost += inventory_map[sku_upper]
+            
+            if order_cost > 0:
+                result = await db.customers.update_one(
+                    {"customer_id": customer["customer_id"]},
+                    {"$set": {
+                        "order_cost": order_cost,
+                        "cost_synced_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                if result.modified_count > 0:
+                    updated += 1
+                    total_cost_synced += order_cost
+        
+        return {
+            "success": True,
+            "updated": updated,
+            "total": len(customers),
+            "total_cost_synced": total_cost_synced
+        }
+    except Exception as e:
+        logger.error(f"Error syncing order costs: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @customers_router.get("/export-segment/{segment_type}")
 async def export_segment_customers(segment_type: str, store_name: str = None, page: int = 1, limit: int = 50):
     """Export customers from a specific segment for marketing with pagination"""
