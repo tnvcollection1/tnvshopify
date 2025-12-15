@@ -53,6 +53,7 @@ async def get_customers(
     tcs_only: str = None,
     china_tracking: str = None,
     purchase_status: str = None,
+    stock_availability: str = None,
     sort_by: str = None
 ):
     """Get paginated customers with filters - supports Dispatch Tracker and Purchase Tracker requirements"""
@@ -68,6 +69,13 @@ async def get_customers(
             query["payment_status"] = payment_status
         if fulfillment_status and fulfillment_status != "all":
             query["fulfillment_status"] = fulfillment_status
+        
+        # Stock availability filter
+        if stock_availability and stock_availability != "all":
+            if stock_availability == "in_stock":
+                query["stock_status"] = "IN_STOCK"
+            elif stock_availability == "out_of_stock":
+                query["stock_status"] = "OUT_OF_STOCK"
             
         # TCS only filter - orders with valid tracking numbers (excludes China Post/X-prefix)
         if tcs_only == "true":
