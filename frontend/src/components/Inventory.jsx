@@ -111,6 +111,7 @@ const Inventory = () => {
       // Use store from filters (synced with global store)
       if (filters.store !== 'all') params.append('store_name', filters.store);
       if (filters.status !== 'all') params.append('status', filters.status);
+      if (filters.search) params.append('search', filters.search);
       
       const response = await fetch(`${API}/inventory/v2?${params}`);
       const data = await response.json();
