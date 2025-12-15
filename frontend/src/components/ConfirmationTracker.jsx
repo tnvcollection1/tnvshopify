@@ -243,6 +243,72 @@ const ConfirmationTracker = () => {
     setCardData([]);
   };
 
+  // Track a single order via TCS API
+  const handleTrackOrder = async (order) => {
+    if (!order.tracking_number) {
+      toast.error("No tracking number available");
+      return;
+    }
+
+    setLoadingTracking(prev => ({ ...prev, [order.customer_id]: true }));
+    
+    try {
+      const response = await axios.post(`${API}/tcs/track/${order.tracking_number}`);
+      
+      if (response.data?.success && response.data?.tracking) {
+        const tracking = response.data.tracking;
+        setTrackingStatus(prev => ({
+          ...prev,
+          [order.customer_id]: {
+            status: tracking.status || tracking.normalized_status,
+            normalized_status: tracking.normalized_status,
+            current_location: tracking.current_location,
+            last_update: tracking.last_update,
+            is_delivered: tracking.is_delivered
+          }
+        }));
+        
+        // Also update the order's delivery_status in database
+        if (tracking.normalized_status && tracking.normalized_status !== 'UNKNOWN') {
+          await axios.put(`${API}/customers/${order.customer_id}`, {
+            delivery_status: tracking.normalized_status,
+            current_location: tracking.current_location
+          });
+        }
+        
+        toast.success(`Tracking: ${tracking.status || tracking.normalized_status}`);
+      } else {
+        toast.error("Could not fetch tracking info");
+      }
+    } catch (error) {
+      console.error("Tracking error:", error);
+      toast.error("Failed to track order");
+    } finally {
+      setLoadingTracking(prev => ({ ...prev, [order.customer_id]: false }));
+    }
+  };
+
+  // Get delivery status badge
+  const getDeliveryBadge = (order) => {
+    const tracked = trackingStatus[order.customer_id];
+    const status = tracked?.normalized_status || order.delivery_status;
+    
+    if (!status || status === 'PENDING' || status === 'UNKNOWN') {
+      return <Badge className="bg-gray-100 text-gray-600 border-gray-200 text-xs">Pending</Badge>;
+    }
+    
+    const badges = {
+      'DELIVERED': <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">✅ Delivered</Badge>,
+      'IN_TRANSIT': <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">🚚 In Transit</Badge>,
+      'OUT_FOR_DELIVERY': <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs">📦 Out for Delivery</Badge>,
+      'RETURNED': <Badge className="bg-red-100 text-red-800 border-red-200 text-xs">↩️ Returned</Badge>,
+      'RETURN_IN_PROCESS': <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-xs">🔄 Return Process</Badge>,
+      'BOOKED': <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200 text-xs">📝 Booked</Badge>,
+    };
+    
+    return badges[status] || <Badge className="bg-gray-100 text-gray-600 text-xs">{status}</Badge>;
+  };
+
   const handleSyncStockStatus = async () => {
     try {
       toast.loading("Syncing stock status for all unfulfilled orders...");
