@@ -1050,7 +1050,8 @@ class ShopifyCustomerAPITester:
             "Sync Stock Status",
             "POST",
             "customers/sync-stock-status?store_name=tnvcollectionpk",
-            200
+            200,
+            timeout=60  # Increased timeout for large dataset
         )
         
         if success and response:
