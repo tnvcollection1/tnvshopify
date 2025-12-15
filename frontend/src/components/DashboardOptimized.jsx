@@ -216,6 +216,10 @@ const DashboardOptimized = () => {
                 <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
                 Sync Orders
               </Button>
+              <Button variant="outline" size="sm" onClick={handleSyncTCS} disabled={syncingTCS}>
+                <Truck className={`w-4 h-4 mr-2 ${syncingTCS ? 'animate-spin' : ''}`} />
+                Sync TCS
+              </Button>
               <Button variant="outline" size="sm" onClick={handleSyncCosts} disabled={syncingCosts}>
                 <DollarSign className={`w-4 h-4 mr-2 ${syncingCosts ? 'animate-spin' : ''}`} />
                 Sync Costs
