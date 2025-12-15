@@ -194,11 +194,24 @@ class TCSTracker:
                 else:
                     response_data = data.get('responseData', {})
                     logger.warning(f"TCS tracking failed for {tracking_number}: {response_data.get('shipmentsummary', 'Unknown error')}")
-                    return {
+                    
+                    # Even if tracking fails, try to get payment info which may have delivery data
+                    result = {
                         'tracking_number': tracking_number,
                         'status': 'NOT_FOUND',
-                        'message': response_data.get('shipmentsummary', 'No data found')
+                        'normalized_status': 'UNKNOWN',
+                        'message': response_data.get('shipmentsummary', 'No data found'),
+                        'payment_info': None
                     }
+                    
+                    try:
+                        payment_info = self.get_cod_payment_status_public(tracking_number)
+                        if payment_info:
+                            result['payment_info'] = payment_info
+                    except Exception as e:
+                        logger.debug(f"Could not fetch payment info for {tracking_number}: {e}")
+                    
+                    return result
             else:
                 logger.error(f"TCS tracking API error: {response.status_code} - {response.text}")
                 return None
