@@ -3217,6 +3217,56 @@ class ShopifyCustomerAPITester:
         return True
 
 def main():
+    print("📋 Starting Confirmation Tracker Functionality Tests")
+    print("=" * 80)
+    
+    # Setup
+    tester = ShopifyCustomerAPITester()
+    
+    # Run Confirmation Tracker Tests as requested
+    confirmation_results = tester.run_confirmation_tracker_tests()
+    
+    # Print Confirmation Tracker test summary
+    print("\n" + "=" * 80)
+    print("📊 CONFIRMATION TRACKER TEST SUMMARY")
+    print("=" * 80)
+    
+    # Confirmation Tracker Results
+    stock_stats_results = confirmation_results.get("stock_stats", {})
+    stock_filters_results = confirmation_results.get("stock_filters", {})
+    sync_stock_results = confirmation_results.get("sync_stock_status", {})
+    count_results = confirmation_results.get("customer_count", {})
+    
+    print(f"✅ Stock Stats Endpoint: {'PASS' if stock_stats_results.get('success') else 'FAIL'}")
+    print(f"✅ Stock Filters: {'PASS' if stock_filters_results.get('success') else 'FAIL'}")
+    print(f"✅ Sync Stock Status: {'PASS' if sync_stock_results.get('success') else 'FAIL'}")
+    print(f"✅ Customer Count: {'PASS' if count_results.get('success') else 'FAIL'}")
+    
+    # Overall success
+    all_tests_passed = all([
+        stock_stats_results.get('success'),
+        stock_filters_results.get('success'),
+        sync_stock_results.get('success'),
+        count_results.get('success')
+    ])
+    
+    print(f"\n🎯 Overall Confirmation Tracker Tests: {'✅ ALL PASSED' if all_tests_passed else '❌ SOME FAILED'}")
+    
+    # Print detailed results if any failed
+    if not all_tests_passed:
+        print("\n📋 DETAILED FAILURE ANALYSIS:")
+        if not stock_stats_results.get('success'):
+            print("❌ Stock Stats Endpoint failed")
+        if not stock_filters_results.get('success'):
+            print("❌ Stock Filters failed")
+        if not sync_stock_results.get('success'):
+            print("❌ Sync Stock Status failed")
+        if not count_results.get('success'):
+            print("❌ Customer Count failed")
+    
+    return confirmation_results
+
+def main_orders():
     print("📋 Starting Orders Page Functionality Tests")
     print("=" * 80)
     
