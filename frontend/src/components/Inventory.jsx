@@ -45,7 +45,8 @@ import {
   Download,
   AlertTriangle,
   BarChart3,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Link
 } from 'lucide-react';
 import { Checkbox } from './ui/checkbox';
 import { useStore } from '../contexts/StoreContext';
