@@ -148,25 +148,35 @@ const Inventory = () => {
   };
 
   const syncShopifyPrices = async () => {
+    if (filters.store === 'all') {
+      toast.error('Please select a specific store to import prices');
+      return;
+    }
+    
     setSyncingPrices(true);
     try {
       const params = new URLSearchParams();
-      if (filters.store !== 'all') params.append('store_name', filters.store);
+      params.append('store_name', filters.store);
       
-      const response = await fetch(`${API}/inventory/v2/sync-shopify-prices?${params}`, {
+      // Use the new import-shopify-products endpoint
+      const response = await fetch(`${API}/inventory/v2/import-shopify-products?${params}`, {
         method: 'POST'
       });
       const data = await response.json();
       
       if (data.success) {
-        toast.success(`Synced prices for ${data.updated_count} items. Profit calculated!`);
+        toast.success(
+          `✅ Imported ${data.updated_count} prices from Shopify!\n` +
+          `📦 Total products: ${data.total_shopify_products}\n` +
+          `⚠️ Not found: ${data.not_found_in_shopify}`
+        );
         fetchItems(); // Refresh inventory
       } else {
-        toast.error(data.message || 'Failed to sync prices');
+        toast.error(data.message || 'Failed to import prices');
       }
     } catch (error) {
-      console.error('Error syncing prices:', error);
-      toast.error('Failed to sync Shopify prices');
+      console.error('Error importing prices:', error);
+      toast.error('Failed to import Shopify prices');
     } finally {
       setSyncingPrices(false);
     }
