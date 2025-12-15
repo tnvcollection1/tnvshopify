@@ -473,7 +473,7 @@ const DashboardOptimized = () => {
               <tbody className="divide-y divide-gray-100">
                 {filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan="11" className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan="12" className="px-4 py-12 text-center text-gray-500">
                       No orders found
                     </td>
                   </tr>
