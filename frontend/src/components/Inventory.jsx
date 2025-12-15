@@ -452,10 +452,23 @@ const Inventory = () => {
       </div>
 
       <div className="p-8">
-        {/* Filters */}
+        {/* Search and Filters */}
         <Card className="mb-6">
           <CardContent className="pt-6">
-            <div className="flex gap-4 items-end">
+            <div className="flex flex-wrap gap-4 items-end">
+              {/* Search Input */}
+              <div className="flex-1 min-w-[250px]">
+                <Label>Search</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input 
+                    placeholder="Search by SKU, product name, or collection..."
+                    value={filters.search}
+                    onChange={(e) => setFilters({...filters, search: e.target.value})}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
               <div className="w-48">
                 <Label>Store</Label>
                 <Select value={filters.store} onValueChange={(val) => setFilters({...filters, store: val})}>
@@ -487,17 +500,27 @@ const Inventory = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button 
-                onClick={syncShopifyPrices}
-                disabled={syncingPrices}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {syncingPrices ? (
-                  <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Syncing...</>
-                ) : (
-                  <><RefreshCw className="w-4 h-4 mr-2" /> Sync Shopify Prices</>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={syncShopifyPrices}
+                  disabled={syncingPrices}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {syncingPrices ? (
+                    <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Syncing...</>
+                  ) : (
+                    <><Download className="w-4 h-4 mr-2" /> Import Shopify Prices</>
+                  )}
+                </Button>
+                {filters.search && (
+                  <Button 
+                    variant="ghost"
+                    onClick={() => setFilters({...filters, search: ''})}
+                  >
+                    Clear Search
+                  </Button>
                 )}
-              </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
