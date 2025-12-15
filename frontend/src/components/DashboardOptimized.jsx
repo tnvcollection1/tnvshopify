@@ -161,6 +161,26 @@ const DashboardOptimized = () => {
     }
   };
 
+  const handleSyncTCS = async () => {
+    setSyncingTCS(true);
+    try {
+      const response = await axios.post(`${API}/tcs/sync-all`);
+      if (response.data.success) {
+        toast.success(
+          `TCS Sync: ${response.data.synced_count || 0} orders updated, ${response.data.errors || 0} errors`
+        );
+        await fetchRecentOrders();
+      } else {
+        toast.error(response.data.error || 'TCS sync failed');
+      }
+    } catch (error) {
+      console.error('TCS sync error:', error);
+      toast.error(error.response?.data?.detail || 'Failed to sync TCS status');
+    } finally {
+      setSyncingTCS(false);
+    }
+  };
+
   const getStatusBadge = (status, type) => {
     if (type === 'fulfillment') {
       if (status === 'fulfilled') return <Badge className="bg-green-100 text-green-700 border-0">Fulfilled</Badge>;
