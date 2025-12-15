@@ -1202,6 +1202,252 @@ class ShopifyCustomerAPITester:
         
         return orders_results
 
+    # ==================== CONFIRMATION TRACKER TESTS ====================
+    
+    def test_stock_stats_endpoint(self):
+        """Test Stock Stats Endpoint for Confirmation Tracker"""
+        success, response, _ = self.run_test(
+            "Stock Stats - Unfulfilled Orders",
+            "GET",
+            "customers/stock-stats?fulfillment_status=unfulfilled",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            expected_fields = ["in_stock", "out_of_stock", "unknown"]
+            
+            print(f"   Stock stats response: {response}")
+            
+            # Check if all expected fields exist
+            all_fields_present = all(field in response for field in expected_fields)
+            if all_fields_present:
+                in_stock = response.get("in_stock", 0)
+                out_of_stock = response.get("out_of_stock", 0)
+                unknown = response.get("unknown", 0)
+                
+                print(f"   In Stock: {in_stock}, Out of Stock: {out_of_stock}, Unknown: {unknown}")
+                
+                # Verify counts are numbers
+                if all(isinstance(count, (int, float)) for count in [in_stock, out_of_stock, unknown]):
+                    print(f"   ✅ Valid stock stats returned")
+                    
+                    # Check for currency and value fields if present
+                    if "currency" in response:
+                        print(f"   Currency: {response['currency']}")
+                    if "total_value" in response:
+                        print(f"   Total Value: {response['total_value']}")
+                    
+                    return True, response
+                else:
+                    print(f"   ❌ Stock counts are not numbers")
+                    return False, response
+            else:
+                missing = [field for field in expected_fields if field not in response]
+                print(f"   ❌ Missing stock stats fields: {missing}")
+                return False, response
+        
+        return success, response
+    
+    def test_customers_with_stock_filters(self):
+        """Test Customers endpoint with stock availability filters"""
+        # Test in_stock filter
+        success1, response1, _ = self.run_test(
+            "Customers - In Stock Filter",
+            "GET",
+            "customers?fulfillment_status=unfulfilled&stock_availability=in_stock&limit=10",
+            200
+        )
+        
+        # Test out_of_stock filter
+        success2, response2, _ = self.run_test(
+            "Customers - Out of Stock Filter",
+            "GET",
+            "customers?fulfillment_status=unfulfilled&stock_availability=out_of_stock&limit=10",
+            200
+        )
+        
+        filter_success = True
+        
+        # Verify in_stock filter results
+        if success1 and response1:
+            if "customers" in response1:
+                customers_list = response1["customers"]
+                print(f"   In Stock customers found: {len(customers_list)}")
+                
+                # Verify all returned customers have stock_status = "IN_STOCK"
+                if customers_list:
+                    all_in_stock = all(
+                        customer.get("stock_status", "").upper() == "IN_STOCK" 
+                        for customer in customers_list
+                    )
+                    if all_in_stock:
+                        print(f"   ✅ All returned customers have IN_STOCK status")
+                    else:
+                        print(f"   ❌ Some customers don't have IN_STOCK status")
+                        filter_success = False
+                else:
+                    print(f"   ✅ No in stock customers found (valid result)")
+            else:
+                print(f"   ❌ Missing customers field in in_stock response")
+                filter_success = False
+        else:
+            filter_success = False
+        
+        # Verify out_of_stock filter results
+        if success2 and response2:
+            if "customers" in response2:
+                customers_list = response2["customers"]
+                print(f"   Out of Stock customers found: {len(customers_list)}")
+                
+                # Verify all returned customers have stock_status = "OUT_OF_STOCK"
+                if customers_list:
+                    all_out_of_stock = all(
+                        customer.get("stock_status", "").upper() == "OUT_OF_STOCK" 
+                        for customer in customers_list
+                    )
+                    if all_out_of_stock:
+                        print(f"   ✅ All returned customers have OUT_OF_STOCK status")
+                    else:
+                        print(f"   ❌ Some customers don't have OUT_OF_STOCK status")
+                        filter_success = False
+                else:
+                    print(f"   ✅ No out of stock customers found (valid result)")
+            else:
+                print(f"   ❌ Missing customers field in out_of_stock response")
+                filter_success = False
+        else:
+            filter_success = False
+        
+        overall_success = success1 and success2 and filter_success
+        
+        return overall_success, {"in_stock": response1, "out_of_stock": response2}
+    
+    def test_sync_stock_status_confirmation_tracker(self):
+        """Test Sync Stock Status for Confirmation Tracker"""
+        success, response, _ = self.run_test(
+            "Sync Stock Status - tnvcollectionpk",
+            "POST",
+            "customers/sync-stock-status?store_name=tnvcollectionpk",
+            200,
+            timeout=120  # Increased timeout for large dataset processing
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response:
+                success_flag = response["success"]
+                updated = response.get("updated", 0)
+                in_stock = response.get("in_stock", 0)
+                out_of_stock = response.get("out_of_stock", 0)
+                total = response.get("total", 0)
+                
+                print(f"   Sync success: {success_flag}")
+                print(f"   Orders updated: {updated}")
+                print(f"   Total orders processed: {total}")
+                print(f"   In stock: {in_stock}")
+                print(f"   Out of stock: {out_of_stock}")
+                
+                if success_flag:
+                    print(f"   ✅ Stock status sync completed successfully")
+                    return True, response
+                else:
+                    print(f"   ❌ Stock status sync failed")
+                    return False, response
+            else:
+                print(f"   ❌ Missing success field in response")
+                return False, response
+        
+        return success, response
+    
+    def test_customer_count_unfulfilled(self):
+        """Test Customer Count Endpoint for unfulfilled orders"""
+        success, response, _ = self.run_test(
+            "Customer Count - Unfulfilled Orders",
+            "GET",
+            "customers/count?fulfillment_status=unfulfilled",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "total" in response or "count" in response:
+                count = response.get("total", response.get("count", 0))
+                
+                print(f"   Unfulfilled orders count: {count}")
+                
+                # Verify count is a number
+                if isinstance(count, (int, float)):
+                    print(f"   ✅ Valid count returned: {count}")
+                    return True, response
+                else:
+                    print(f"   ❌ Count is not a number: {count}")
+                    return False, response
+            else:
+                print(f"   ❌ Missing count field in response")
+                return False, response
+        
+        return success, response
+    
+    def run_confirmation_tracker_tests(self):
+        """Run comprehensive Confirmation Tracker functionality tests"""
+        print("\n" + "="*80)
+        print("📋 CONFIRMATION TRACKER FUNCTIONALITY TESTS")
+        print("="*80)
+        
+        # Test admin login first
+        print("\n🔐 PREREQUISITE: ADMIN LOGIN TEST")
+        print("-" * 50)
+        
+        login_success, login_response = self.test_login_with_correct_credentials()
+        if not login_success:
+            print("❌ Admin login failed - cannot proceed with Confirmation Tracker tests")
+            return {"login_failed": True}
+        
+        confirmation_results = {}
+        
+        # Test 1: Stock Stats Endpoint
+        print("\n📊 TEST 1: STOCK STATS ENDPOINT")
+        print("-" * 50)
+        
+        stock_stats_success, stock_stats_response = self.test_stock_stats_endpoint()
+        confirmation_results["stock_stats"] = {
+            "success": stock_stats_success,
+            "response": stock_stats_response
+        }
+        
+        # Test 2: Customers with Stock Filters
+        print("\n🔍 TEST 2: CUSTOMERS WITH STOCK FILTERS")
+        print("-" * 50)
+        
+        stock_filters_success, stock_filters_response = self.test_customers_with_stock_filters()
+        confirmation_results["stock_filters"] = {
+            "success": stock_filters_success,
+            "response": stock_filters_response
+        }
+        
+        # Test 3: Sync Stock Status
+        print("\n🔄 TEST 3: SYNC STOCK STATUS")
+        print("-" * 50)
+        
+        sync_stock_success, sync_stock_response = self.test_sync_stock_status_confirmation_tracker()
+        confirmation_results["sync_stock_status"] = {
+            "success": sync_stock_success,
+            "response": sync_stock_response
+        }
+        
+        # Test 4: Customer Count Endpoint
+        print("\n🔢 TEST 4: CUSTOMER COUNT ENDPOINT")
+        print("-" * 50)
+        
+        count_success, count_response = self.test_customer_count_unfulfilled()
+        confirmation_results["customer_count"] = {
+            "success": count_success,
+            "response": count_response
+        }
+        
+        return confirmation_results
+
     # ==================== EXISTING ENDPOINTS TESTS ====================
     
     def test_orders_endpoint(self):
