@@ -1,79 +1,68 @@
-<analysis>**original_problem_statement**: The user's initial goal was to build a CRM with order management, focusing on order visibility and WhatsApp messaging. This has evolved into a sophisticated business intelligence and marketing automation platform. Key features include major performance optimizations, a full-featured Facebook Marketing Suite (including an AI Campaign Optimizer), a Smart Inventory Clearance engine, and a dynamic pricing tool.
+<analysis>**original_problem_statement**: The user's goal is to pivot the existing CRM application into a dedicated WhatsApp CRM. This involves a complete rebranding of the UI, focusing the feature set on WhatsApp and Shopify integrations, and disabling or hiding all other features for regular users.
 
-The current focus is a major architectural shift to a multi-tenant SaaS platform, accompanied by a complete UI/UX overhaul to mimic Shopify's design language. The user has also requested the parallel development of a Meta Ads (Facebook Ads) integration, a Facebook Lead Ads integration, a WhatsApp Business Platform Embedded Signup feature, a Super Admin dashboard for tenant management, and OAuth-based connections for integrations like Shopify.
-
-In this session, the user requested fixes for several core features (Purchase Tracker, Smart/Inventory Clearance, Dynamic Pricing, Dispatch Tracker), UI/UX improvements to match Shopify's design, and the creation of a new marketing case study page focused on WhatsApp.
-
-**PRODUCT REQUIREMENTS**:
-1.  **Fix Core Feature Bugs (P0)**: Resolve all user-reported bugs in Purchase Tracker, Dispatch Tracker, Inventory sections, and the All Orders page.
-2.  **Shopify UI/UX Overhaul (P0)**: Redesign the All Orders page and Inventory Overview to match Shopify's aesthetic, including filter panels and clickable components.
-3.  **WhatsApp Marketing Case Study (P0)**: Create a new frontend landing page showcasing the platform's WhatsApp marketing capabilities for various industries to attract new subscribers.
-4.  **Data Sync & Accuracy (P1)**: Implement a feature to sync Shopify sale prices to the inventory and ensure profit/loss is calculated correctly.
-5.  **Multi-Tenant SaaS Platform (P1)**: Build a Super Admin dashboard to monitor tenant usage and manage subscriptions.
-6.  **Shopify Integration (P1)**: Implement a one-click OAuth connection flow and sync functionality for orders, drafts, and abandoned carts.
-7.  **Meta (Facebook) Integrations (P2)**: Integrate Facebook Lead Ads and Facebook Ads Manager.
+In this session, the user requested a series of rapid-fire changes and fixes:
+1.  **Rebrand the entire application** from Omnisales to WhatsApp CRM, including the landing page, login page, and sidebar.
+2.  **Implement Role-Based Access Control (RBAC)**: The  user should have access to all features, while new users should only see WhatsApp CRM and Shopify Integration features.
+3.  **Fix Security Issues**: The admin user was unable to change their password. The user also requested that all user passwords be securely encrypted.
+4.  **Enhance Inventory Page**: Add a search bar, an Import Sale Price from Shopify feature, and more transparency features like a profit dashboard and an Export to Excel button. The user also noted that not all inventory items were being displayed.
+5.  **Improve Core Pages**: Make stat cards clickable on the All Orders and Inventory pages to filter data. Fix a Not Found error when syncing orders. Fix broken stock status filters on the Confirmation page.
+6.  **Build New Finance Reconciliation Feature**: The user provided an Excel sheet and requested a new feature to reconcile purchase orders by matching , , , and  with Shopify data.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a multi-tenant SaaS platform with a Shopify-like UI. It features Razorpay billing, Shopify integration, and WhatsApp capabilities.
+The application has been successfully rebranded as a WhatsApp CRM. It features a two-tiered access system where  has full access, and regular users have a restricted view focused on WhatsApp and Shopify functionalities.
 
-In this session, the agent performed a major bug-fixing and UI overhaul effort:
--   **Fixed Core Trackers**: Resolved critical bugs in the Purchase Tracker (syncing 'china post' orders) and completely revamped the Dispatch Tracker (fixed date sorting, TCS sync errors, added reactive search/filters, and implemented clickable stat cards).
--   **Enhanced Inventory Pages**: The Inventory Health and Inventory Overview pages now have clickable stat cards and a Shopify-like UI with accurate data. The main Inventory page's filters were also fixed.
--   **Revamped All Orders Page**: The main orders dashboard () was completely overhauled with a Shopify-style collapsible filter panel and a new Products column showing product initials as avatars.
--   **Shopify Price Sync**: A new backend endpoint and frontend button were created to sync sale prices from orders to the inventory collection, although its effectiveness is limited by a known SKU data mismatch issue.
--   **New Case Study Page**: A new component and route were created for a WhatsApp marketing case study landing page.
+Key functionalities implemented in this session:
+-   **Security**: Password hashing has been upgraded from SHA256 to the much more secure . The password change feature is now fully functional.
+-   **Inventory Management**: The inventory page is now a powerful dashboard with a working search, a button to import sale prices directly from Shopify, a button to sync order numbers, and a transparency dashboard showing total profit, margin, and loss-making items. All stat cards are clickable filters, and the page now correctly displays all 1,337 inventory items.
+-   **Order Management**: The All Orders page now features clickable stat cards to filter by status (Fulfilled, Unfulfilled, Cancelled). The store-wise sync functionality has also been fixed.
+-   **UI/UX**: The UI has been updated to reflect the WhatsApp CRM branding, with a new color scheme and logos. The inventory page UI was significantly enhanced with a stats dashboard and better color-coding for profit/loss.
 
 **Last working item**:
--   **Last item agent was working**: The agent was working on a two-part user request. It first rewrote the  component to fix UI alignment issues. It then immediately moved on to the second part: creating a new landing page for a WhatsApp marketing case study. The agent created the  file and added its route in .
+-   **Last item agent was working**: The agent was building a new **Finance Reconciliation** feature. Based on user requirements from an Excel file, the goal is to reconcile purchase orders by matching , , , , and  against existing Shopify orders. The agent has already created the new backend endpoint () to handle the logic.
 -   **Status**: IN PROGRESS
--   **Agent Testing Done**: N (File was just created)
--   **Which testing method agent to use?**: screenshot tool to verify the new page renders correctly and appears visually appealing, followed by user verification.
+-   **Agent Testing Done**: N (Backend endpoint created, but not tested with frontend)
+-   **Which testing method agent to use?**: Frontend testing agent. The agent needs to build the UI for file upload and then use the testing agent to verify the end-to-end reconciliation flow.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Develop WhatsApp Marketing Case Study Content (P0)**
--   **Issue 2: Verify All Orders Page UI/UX (P0)**
+-   **Issue 1: Build Frontend for Finance Reconciliation (P0)**
+-   **Issue 2: Critical  Refactoring Needed (P1)**
 -   **Issue 3: Inconsistent SKU formats (P1)**
 -   **Issue 4: Facebook Lead Ads Sync Blocked by Expired Token (P1)**
--   **Issue 5: Critical  Refactoring Needed (P1)**
--   **Issue 6: Live Razorpay Keys Still in Environment File (P2)**
+-   **Issue 5: Live Razorpay Keys Still in Environment File (P2)**
 
 **Issues Detail**:
--   **Issue 1: Develop WhatsApp Marketing Case Study Content (P0)**
-    -   **Description**: The user requested a new landing page to serve as a case study for the platform's WhatsApp marketing features, aimed at attracting subscribers from all industries (e.g., restaurants, services). The agent has created the file () and route, but the component is empty.
-    -   **Attempted fixes**: File and route created.
+-   **Issue 1: Build Frontend for Finance Reconciliation (P0)**
+    -   **Attempted fixes**: Backend endpoint  has been created in  to handle the reconciliation logic. A new DB collection  was also implicitly created.
     -   **Next debug checklist**:
-        1.  Populate  with compelling marketing copy, visuals, and a clear call-to-action (e.g., Subscribe Now).
-        2.  Ensure the design is modern, professional, and aligns with the platform's branding.
-        3.  Take a screenshot for user review.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a direct user request to build a key marketing asset for customer acquisition.
-    -   **Status**: NOT STARTED
+        1.  Modify .
+        2.  Create a UI with a file upload component for the Excel/CSV file.
+        3.  Add a button to trigger the reconciliation process by calling the new backend endpoint.
+        4.  Display the results of the reconciliation (matched vs. unmatched records) in a clear table format.
+        5.  Test the full end-to-end flow.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a direct and high-priority user request to enable financial tracking and reconciliation, a core business need.
+    -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on other issue**: None
 
--   **Issue 2: Verify All Orders Page UI/UX (P0)**
-    -   **Description**: The user reported that the All Orders page had alignment issues and did not have a Shopify-like order detail view. The agent completely overwrote the  component to fix this.
-    -   **Attempted fixes**: The entire component was replaced with a new version.
-    -   **Next debug checklist**:
-        1.  Thoroughly review the new All Orders page UI.
-        2.  Test the order click functionality to ensure the detail view opens as expected.
-        3.  Confirm with the user that the new design meets their expectations.
-    -   **Why fix this issue and what will be achieved with the fix?**: To finalize the UI/UX of a core application page according to user specifications.
-    -   **Status**: USER VERIFICATION PENDING
+-   **Issue 2: Critical  Refactoring Needed (P1)**
+    -   **Description**: The  file is a monolith containing hundreds of endpoints. The agent made this worse by adding more endpoints and duplicating auth logic that also exists in . This is a major source of bugs and technical debt.
+    -   **Attempted fixes**: None. Agent has only added more code to it.
+    -   **Next debug checklist**: Propose and execute a plan to move all route logic from  into the respective files in the  directory (e.g., inventory routes into an , etc.) and have  only include those routers.
+    -   **Why fix this issue and what will be achieved with the fix?**: Drastically improves code maintainability, scalability, and reduces the risk of introducing bugs. This is the most critical piece of technical debt in the project.
+    -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
 
 -   **Issue 3: Inconsistent SKU formats (P1)**
-    -   **Description**: The  collection and  (orders) collection use different SKU formats (e.g.,  vs. ). This prevents sales data (like price) from being correctly synced to inventory items, resulting in inaccurate profit calculations.
-    -   **Attempted fixes**: The agent built a price sync feature, which highlighted the severity of this data issue as no prices could be matched.
-    -   **Next debug checklist**:
-        1.  Propose a SKU Mapping tool or a one-time migration script to the user.
-        2.  Investigate the source of the different SKU formats to prevent future inconsistencies.
-    -   **Why fix this issue and what will be achieved with the fix?**: Unlocks accurate inventory valuation, profit/loss tracking, and enables more advanced inventory intelligence features.
+    -   **Description**: The  collection and  (orders) collection use different SKU formats (e.g.,  vs. ). While the agent created a successful workaround for price sync by using the Shopify Products API, this root data problem still prevents accurate linking between orders and inventory for other features.
+    -   **Attempted fixes**: A price sync feature from Shopify Products API was created as a workaround. The original problem of matching SKUs between local collections remains.
+    -   **Next debug checklist**: Propose a SKU Mapping tool or a one-time migration script to the user to standardize SKUs across the  and  collections.
+    -   **Why fix this issue and what will be achieved with the fix?**: Unlocks accurate profit/loss tracking on a per-order basis and enables more advanced inventory intelligence features.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend
@@ -81,26 +70,16 @@ In this session, the agent performed a major bug-fixing and UI overhaul effort:
 
 -   **Issue 4: Facebook Lead Ads Sync Blocked by Expired Token (P1)**
     -   **Description**: The Sync from Facebook feature for Lead Ads is failing because the Meta access token has expired.
-    -   **Attempted fixes**: UI was previously updated to prompt the user to reconnect.
-    -   **Next debug checklist**: Guide the user to the WhatsApp Business connection page to reconnect their account, which will generate a new token.
+    -   **Attempted fixes**: Diagnosed the issue is a Meta platform restriction.
+    -   **Next debug checklist**: Remind the user and guide them to the WhatsApp Business connection page to reconnect their account, which will generate a new, valid token.
     -   **Why fix this issue and what will be achieved with the fix?**: Unblocks the ability to pull existing leads from Facebook.
     -   **Status**: BLOCKED (on user action)
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on other issue**: None
 
--   **Issue 5: Critical  Refactoring Needed (P1)**
-    -   **Description**: The  file is a monolith containing all router includes, API endpoints, and startup events, making it difficult to maintain. The agent added another endpoint to it in this session.
-    -   **Attempted fixes**: None.
-    -   **Next debug checklist**: Propose and execute a plan to break down  into smaller modules (e.g., move routes to a dedicated  directory, create a main ).
-    -   **Why fix this issue and what will be achieved with the fix?**: Improves code maintainability, scalability, and reduces the risk of introducing bugs.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: None
-
--   **Issue 6: Live Razorpay Keys Still in Environment File (P2)**
-    -   **Description**: Live Razorpay API keys are hardcoded in , posing a security risk. A secure API Key Management page exists but has not been used for these keys.
+-   **Issue 5: Live Razorpay Keys Still in Environment File (P2)**
+    -   **Description**: Live Razorpay API keys are present in , posing a security risk. A secure API Key Management page exists but has not been used for these keys.
     -   **Attempted fixes**: None.
     -   **Next debug checklist**: Migrate the keys from  to the encrypted  collection and update the code to use the new secure storage.
     -   **Why fix this issue and what will be achieved with the fix?**: Removes a significant security vulnerability.
@@ -110,14 +89,11 @@ In this session, the agent performed a major bug-fixing and UI overhaul effort:
     -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   **Task 1: Finalize All Orders Page and WhatsApp Case Study (P0)**
-    -   **Description**: Complete the two active user requests: finalize the UI for the All Orders page and build out the content for the new WhatsApp marketing landing page.
-    -   **Where to resume**:
-        1.  Populate  with content and styling.
-        2.  Review and test the newly rewritten  for correct alignment and functionality of the order detail view.
-    -   **What will be achieved with this?**: Fulfills the user's most recent requests for a key marketing asset and a UI overhaul of a core page.
+-   **Task 1: Build Frontend for Finance Reconciliation (P0)**
+    -   **Where to resume**: Start by editing .
+    -   **What will be achieved with this?**: A fully functional page for users to upload a purchase order sheet and see it reconciled against Shopify data, fulfilling a key business requirement.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
@@ -133,13 +109,22 @@ In this session, the agent performed a major bug-fixing and UI overhaul effort:
     -   (P3) Abandoned Cart Recovery via WhatsApp.
 
 **Completed work in this session**
--   **Dispatch Tracker Overhaul**: Fixed multiple critical bugs, including incorrect date sorting, TCS auto-sync errors, and unresponsive filters. The UI is now fully reactive with working search, store selection, and clickable stat cards that filter the main order list.
--   **Purchase Tracker Fix**: Resolved a backend bug by adding a  parameter to the customers API, allowing orders with X-prefix tracking numbers to be synced correctly.
--   **All Orders Page Revamp**: Completely rewrote the  component to feature a Shopify-style collapsible filter panel, a Cancelled orders tab, and an improved Products column with avatar initials.
--   **Inventory Overview UI/UX Revamp**: Replaced the old UI with a new, data-accurate, Shopify-like dashboard showing clear summary stats, categorized stock status cards (Ready to Ship, In Transit, etc.), and top collections/sizes. The cards are now clickable to filter items.
--   **Inventory & Inventory Health Fixes**: Made stat cards clickable on the Inventory Health page. Fixed the main Inventory page by syncing its local store filter with the global context.
--   **Initial Bug Fixes**: Resolved frontend issues in  (component name) and  (toast notifications).
--   **Shopify Price Sync Feature**: Added a backend endpoint and a frontend button to sync product sale prices from orders to the inventory, and to calculate profit/loss.
+-   **App Rebranding & Refocus**: Rebranded the entire app to WhatsApp CRM, including UI changes on the Landing Page, Login Page, and Sidebar.
+-   **Role-Based Access Control (RBAC)**: Implemented logic in  to show a restricted menu (WhatsApp, Shopify, Contacts) for non-admin users.
+-   **Password Security Upgrade**: Migrated password storage from SHA256 to  in  and . Added security messaging to the login/signup page.
+-   **Password Change Fixed**: Corrected the Pydantic model and API endpoint () to allow users, including admin, to change their password.
+-   **Inventory Page Overhaul**:
+    -   Added a debounced **search bar** that queries SKU, product name, and collection.
+    -   Created and integrated a new endpoint to **import sale prices directly from Shopify Products API**.
+    -   Added a **Sync Orders** button and endpoint to link inventory items to their corresponding order numbers.
+    -   Built a **transparency dashboard** with clickable stat cards for Total Profit, Profit Margin, and Loss Items.
+    -   Fixed a backend limit to display all **1,337 inventory items**.
+    -   Added an **Export to CSV** function.
+-   **Core Pages Improved**:
+    -   **All Orders Page**: Made the top stat cards (Fulfilled, Unfulfilled, Cancelled) clickable to filter the order list.
+    -   **Confirmation Page**: Fixed the In Stock and Out of Stock filters to correctly query the backend.
+-   **WhatsApp Case Study Page Verified**: Fixed a routing issue in  and confirmed the page renders correctly.
+-   **WhatsApp Business Connect Diagnosed**: Identified that the disabled Connect button was a Meta platform restriction and provided the user with clear steps to resolve it.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1**: Critical  Refactoring Needed (Captured in All Pending/In progress Issue list).
@@ -148,27 +133,35 @@ In this session, the agent performed a major bug-fixing and UI overhaul effort:
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**:  requires major refactoring.
--   **Recurrence count**: 16+
--   **Status**: NOT STARTED (The problem was exacerbated this session with the addition of a new endpoint, making a refactor critically urgent).
+-   **Recurrence count**: 17+
+-   **Status**: NOT STARTED (The problem was exacerbated this session with the addition of more endpoints and duplicated auth logic).
 
 **Code Architecture**
-globalStoreglobalStore
+isAdmin
 
 **Key Technical Concepts**
--   **State Management (React)**: Extensive work with , , and shared context () to create reactive UIs, manage filters, and handle debounced search.
--   **Backend API Filtering**: Complex MongoDB query logic was debugged and fixed, particularly combining  and  operators for multi-faceted search and filtering in .
--   **Component Refactoring/Rewriting**: Agent completely rewrote several key components (, ) to meet user's UI/UX requirements, rather than making incremental edits.
--   **Data Sync Logic**: Implemented a new API endpoint to perform a data synchronization task between two collections (orders and inventory) based on a shared key ().
+-   **Password Security (bcrypt)**: Upgraded password hashing from the insecure SHA256 to the industry-standard bcrypt, including salt generation.
+-   **Role-Based Access Control (RBAC)**: Implemented conditional rendering in the React  component based on the user's role, which is stored in the .
+-   **Third-Party API Integration (Shopify)**: Created a new backend endpoint to fetch product data, including , directly from the Shopify Products API using a stored .
+-   **Data Reconciliation & Sync**: Implemented multiple backend endpoints to synchronize data between different collections and sources (, , and Shopify Products).
+-   **Complex Backend Queries (MongoDB)**: Wrote and debugged complex MongoDB queries using  and  operators to combine multiple filter criteria, including text search.
+-   **Debouncing (React)**: Used  with a  to implement debounced search on the inventory page, preventing excessive API calls while the user is typing.
 
 **key DB schema**
--   **inventory_v2**:  and  fields are now intended to be populated by the new sync endpoint. SKU format is inconsistent with  collection.
--   **customers**: Queried extensively for order data, filtering by , , , , , and .
-
-**changes in tech stack**
--   No changes to the core tech stack.
+-   **agents**:
+    -   : (string) Now stores a bcrypt hash.
+    -   : (boolean) **NEW**. Flag to indicate if the password uses bcrypt.
+-   **inventory_v2**:
+    -   : (float) Now populated from Shopify Products API.
+    -   : (float) Calculated as  - .
+    -   : (string) **NEW**. Synced from the  collection.
+-   **api_keys**:
+    -   Contains a  for a specific store, which is used for the Shopify Products API calls.
+-   **purchase_orders**: **NEW** collection to store data from the finance reconciliation Excel uploads. Columns include: , , , , .
 
 **All files of reference**
--   **Majorly Modified Frontend**:
+-   **Heavily Modified Frontend**:
+    -   
     -   
     -   
     -   
@@ -176,66 +169,76 @@ globalStoreglobalStore
 -   **Modified Backend**:
     -   
     -   
--   **New Frontend**:
     -   
--   **Other Modified Files**: , , , , , .
+    -   
+-   **Other Modified Frontend**:
+    -   
+    -   
+    -   
 
 **Areas that need refactoring**:
--   **/app/backend/server.py**: **CRITICAL PRIORITY**. The agent added another endpoint to this monolith, making refactoring even more urgent. This technical debt is a major risk to future development.
--   **/app/frontend/src/components/SettingsOptimized.jsx**: This unused file from a previous session still exists and should be deleted.
+-   **/app/backend/server.py**: **CRITICAL PRIORITY**. The file is now a severe liability. It contains duplicated authentication logic that also exists in . This must be the first major backend task. The agent should move all endpoints from  into their respective  files and deduplicate the auth logic.
+-   **/app/frontend/src/components/SettingsOptimized.jsx**: This unused file still exists and should be deleted.
 
 **key api endpoints**
--   : **NEW** - Triggers a sync to update  with sale prices and profit calculations from matching orders.
--   : Heavily modified to support new filters () and corrected logic for combined search/filters.
--   : Modified to support new filters and provide more granular status counts ().
+-   : **NEW**. Imports product prices from Shopify API.
+-   : **NEW**. Syncs order numbers from the  collection to .
+-   : **NEW**. Processes an uploaded purchase order sheet for financial reconciliation.
+-   : **FIXED**. Now correctly handles password changes using bcrypt.
+-   : **MODIFIED**. Now uses bcrypt for password hashing.
+-   : **MODIFIED**. Now supports verifying both legacy SHA256 and new bcrypt passwords.
+-   : **MODIFIED**. Added a comprehensive search filter and removed the 1000-item limit.
+-   : **MODIFIED**. Added  filter.
+-   : **FIXED**. Frontend now passes the correct store name parameter.
 
 **Critical Info for New Agent**
--   **User's Top Priority**: The user's last request was twofold: fix the All Orders page UI and create a WhatsApp marketing case study page. The agent has already created placeholder/rewritten files for both. The immediate task is to flesh out the case study content and get user verification on the new All Orders page design.
--   **Data Issues are Real**: The  issue is not theoretical. It actively prevents the new price sync feature from working. This is a major blocker for accurate financial reporting and should be addressed soon.
--   **Address Technical Debt**: Do not add any more endpoints to . The next backend-focused task MUST be to propose and execute the refactoring of this file. Likewise, the live Razorpay keys in  are a security risk that needs to be migrated.
--   **Frontend-Heavy Session**: The previous agent did a massive amount of frontend work, fixing bugs and overhauling UI. Be prepared to continue this trend, focusing on delivering a polished, Shopify-like user experience.
+-   **App Focus Shift**: The application's identity has fundamentally changed to a WhatsApp CRM. All future development should align with this new focus.
+-   **Fix  First**: Do not add any more endpoints to . The immediate priority for any backend work should be to refactor this monolithic file. The duplicated auth logic is a ticking time bomb.
+-   **New Admin Credentials**: The default admin password was changed from  to  as part of the password change fix. The login page has been updated to reflect this.
+-   **Data Sync Workarounds**: Be aware that while the  sync now works by pulling from the Shopify Products API, the underlying data inconsistency between local  and  collections still exists and will affect other features.
+-   **Finance Reconciliation**: The immediate next step is to build the frontend for the finance reconciliation feature. The backend endpoint is ready to be consumed.
 
 **documents created in this job**
 -   None.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: Search on Dispatch Tracker is not working. (**Resolved**)
-2.  **User**: Clicking stat cards on Dispatch Tracker (in transit, delivered) doesn't filter the table correctly. (**Resolved**)
-3.  **User**: Asked if the same clickable card functionality works on the inventory section. (**Resolved** by implementing it on Inventory Health)
-4.  **User**: The status filter on the main  page is not working. (**Resolved** - explained that data for other statuses doesn't exist, and fixed the store filter)
-5.  **User**: The All Orders page needs Shopify-like filters and product images. (**Resolved** - implemented a new filter panel and product avatars)
-6.  **User**: Requested cost/sale price/profit sync for inventory, and for the All Orders page to show canceled orders and product images. (**Resolved** - price sync implemented, Cancelled tab added, product display improved)
-7.  **User**: Inventory Overview cards show the same data and the UI isn't like Shopify. (**Resolved** - UI completely revamped with accurate, distinct data)
-8.  **User**: The All Orders page has bad alignment and no order detail view. Also requested a WhatsApp marketing case study page. (**In Progress** - page rewritten, case study file created)
-9.  **User**: continue. case study for all industires so we grab customer. (Follow-up clarification for the case study page)
-10. **Pending**: User is waiting for the completion of the All Orders UI fix and the new WhatsApp case study page.
+1.  **User**: Add more transparency features to the inventory page. (**Resolved**. Added stats dashboard, profit filter, export, etc.)
+2.  **User**: Make all stat cards on the inventory page clickable. (**Resolved**).
+3.  **User**: Explain where Sale Value comes from. (**Resolved**. Explained it's from Shopify).
+4.  **User**: Cards are still not clickable and colors are not standard. (**Resolved**. Fixed CSS and made them proper buttons).
+5.  **User**: The inventory page only shows 1000 items, but I uploaded more. (**Resolved**. Removed the backend limit, now shows 1337 items).
+6.  **User**: Cards are not clickable, and the Order # column should sync with orders. Also, add clickable cards to the All Orders page. (**Resolved**. Fixed inventory cards, added Order# sync, and added clickable cards to the Orders page).
+7.  **User**: Not Found on All Orders sync. (**Resolved**. Fixed the API call to include the store name).
+8.  **User**: The in-stock/out-of-stock filter on the confirmation page is not working. (**Resolved**. Added missing dependency to  and fixed backend query).
+9.  **User**: Finance reconciliation is not working according to the format in the provided Excel sheet. (**In Progress**. New endpoint was created).
+10. **Pending**: User is waiting for the finance reconciliation feature to be completed with a new UI for uploading and viewing matched data.
 
 **Project Health Check:**
 -   **Broken**:
-    -   **Inventory Price/Profit Sync**: The feature is built but does not work effectively due to the underlying inconsistent SKU data between inventory and order collections.
+    -   **Data Integrity**: The underlying data inconsistency between  SKUs and  (orders) SKUs remains. This prevents accurate linking between sales and inventory stock for many items, impacting profit calculation and stock history.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
--   **Shopify Admin API**: **Functional (OAuth)**.
+-   **Shopify Admin API**: **Functional (OAuth)**. Now used more deeply to fetch product data for price sync.
 -   **Facebook Marketing API / WhatsApp Business Platform**: **Functional / Partially BLOCKED** — Lead Ads sync is BLOCKED on user reconnecting account to refresh an expired token.
--   **Razorpay**: **Functional (Live Keys)** — Implemented for billing but uses insecure LIVE API keys from .
--   **Facebook Lead Ads API**: **NEW & Partially BLOCKED** — Manual sync is blocked by the expired token.
+-   **Razorpay**: **Functional (Live Keys)** — Implemented but uses insecure LIVE API keys from . This is a security risk.
 -   **OpenAI GPT-4**: Functional — uses Emergent LLM Key.
 -   **TCS/DTDC Courier API**: Integrated — requires User API Key.
 -   **Meta WhatsApp**: Functional (URL scheme) — no key required.
 
 **Testing status**
--   **Testing agent used after significant changes**: NO
+-   **Testing agent used after significant changes**: YES (Used once to verify the rebranding and RBAC changes).
 -   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**:  (though it was used by the agent for manual testing via , not by the testing agent).
+-   **Test files created**: None.
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
--   **Admin**:  / 
+-   **Admin**:  /  (**Note: Password has been changed**)
 -   **Manager**:  / 
 -   **Viewer**:  / 
+-   **New Demo User**:  / 
 
 **What agent forgot to execute**
--   **Refactor **: A critical, recurring issue that was ignored again. The agent made the problem worse by adding another endpoint to the monolith.
--   **Migrate Live Secrets**: Failed to migrate the insecure, hardcoded Razorpay keys from the  file to the secure API key management system that was built in the previous session.
--   **Address Root Data Issue**: While the agent identified the SKU mismatch as the reason the price sync failed, it did not propose a plan to fix the underlying data inconsistency, which remains a blocker for financial reporting.</analysis>
+-   **Refactor **: This is the most critical recurring issue. The agent exacerbated the problem by adding multiple new endpoints and duplicating authentication logic within the monolithic file instead of placing it in the correct  module.
+-   **Migrate Live Secrets**: Failed to migrate the insecure, hardcoded Razorpay keys from the  file to the secure API key management system.
+-   **Address Root Data Issue**: While the agent found a successful workaround for price syncing (using the Shopify API), it did not address or propose a plan to fix the fundamental SKU mismatch between local database collections, which is the root cause of many data-related problems.</analysis>
