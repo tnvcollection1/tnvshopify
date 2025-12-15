@@ -3406,22 +3406,21 @@ async def import_shopify_product_prices(store_name: str = None):
         import httpx
         
         # Get store credentials
-        store_query = {}
-        if store_name and store_name != 'all':
-            store_query['store_name'] = store_name
-        else:
+        if not store_name or store_name == 'all':
             return {"success": False, "message": "Please select a specific store"}
         
-        store = await db.stores.find_one(store_query, {"_id": 0})
+        store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
         if not store:
             return {"success": False, "message": f"Store '{store_name}' not found"}
         
-        # Get Shopify credentials
-        shop_domain = store.get('shopify_domain') or store.get('store_url', '').replace('https://', '').replace('http://', '').rstrip('/')
-        access_token = store.get('shopify_access_token') or store.get('access_token')
+        # Get Shopify credentials - check multiple possible field names
+        shop_domain = store.get('shopify_domain') or store.get('shop_url') or store.get('store_url', '').replace('https://', '').replace('http://', '').rstrip('/')
+        access_token = store.get('shopify_token') or store.get('shopify_access_token') or store.get('access_token')
         
         if not shop_domain or not access_token:
             return {"success": False, "message": "Shopify credentials not configured for this store"}
+        
+        logger.info(f"Fetching products from Shopify: {shop_domain}")
         
         # Fetch products from Shopify
         headers = {
@@ -3457,11 +3456,11 @@ async def import_shopify_product_prices(store_name: str = None):
         sku_price_map = {}
         for product in all_products:
             for variant in product.get('variants', []):
-                sku = variant.get('sku', '').strip()
+                sku = (variant.get('sku') or '').strip()
                 if sku:
                     price = float(variant.get('price', 0) or 0)
                     compare_at_price = float(variant.get('compare_at_price', 0) or 0)
-                    # Use compare_at_price as original price, price as sale price
+                    # Use price as sale price
                     sku_price_map[sku.lower()] = {
                         'sale_price': price,
                         'original_price': compare_at_price if compare_at_price > 0 else price,
@@ -3481,7 +3480,7 @@ async def import_shopify_product_prices(store_name: str = None):
         not_found_count = 0
         
         for item in inventory_items:
-            sku = item.get('sku', '').strip().lower()
+            sku = (item.get('sku') or '').strip().lower()
             if not sku:
                 continue
             
@@ -3512,6 +3511,7 @@ async def import_shopify_product_prices(store_name: str = None):
             "updated_count": updated_count,
             "not_found_in_shopify": not_found_count,
             "total_shopify_products": len(all_products),
+            "total_shopify_skus": len(sku_price_map),
             "total_inventory_items": len(inventory_items)
         }
         
