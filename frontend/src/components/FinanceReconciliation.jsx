@@ -367,8 +367,7 @@ const FinanceReconciliation = () => {
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="matched">✅ Matched</SelectItem>
-                    <SelectItem value="partial">⚠️ Partial</SelectItem>
-                    <SelectItem value="unmatched">❌ Unmatched</SelectItem>
+                    <SelectItem value="not_matched">❌ Not Matched</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
