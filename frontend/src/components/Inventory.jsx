@@ -235,6 +235,37 @@ const Inventory = () => {
     }
   };
 
+  // Sync Order# from orders
+  const syncOrders = async () => {
+    if (filters.store === 'all') {
+      toast.error('Please select a specific store to sync orders');
+      return;
+    }
+    
+    setSyncingOrders(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('store_name', filters.store);
+      
+      const response = await fetch(`${API}/inventory/v2/sync-orders?${params}`, {
+        method: 'POST'
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(`✅ Synced ${data.updated_count} orders with inventory!`);
+        fetchItems();
+      } else {
+        toast.error(data.message || 'Failed to sync orders');
+      }
+    } catch (error) {
+      console.error('Error syncing orders:', error);
+      toast.error('Failed to sync orders');
+    } finally {
+      setSyncingOrders(false);
+    }
+  };
+
   // Export to Excel/CSV
   const exportToExcel = () => {
     if (items.length === 0) {
