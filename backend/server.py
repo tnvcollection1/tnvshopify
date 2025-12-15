@@ -3389,6 +3389,130 @@ async def sync_shopify_prices_to_inventory(store_name: str = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/inventory/v2/import-shopify-products")
+async def import_shopify_product_prices(store_name: str = None):
+    """
+    Import sale prices directly from Shopify Products API.
+    Fetches all products from Shopify and updates inventory sale prices.
+    """
+    try:
+        import httpx
+        
+        # Get store credentials
+        store_query = {}
+        if store_name and store_name != 'all':
+            store_query['store_name'] = store_name
+        else:
+            return {"success": False, "message": "Please select a specific store"}
+        
+        store = await db.stores.find_one(store_query, {"_id": 0})
+        if not store:
+            return {"success": False, "message": f"Store '{store_name}' not found"}
+        
+        # Get Shopify credentials
+        shop_domain = store.get('shopify_domain') or store.get('store_url', '').replace('https://', '').replace('http://', '').rstrip('/')
+        access_token = store.get('shopify_access_token') or store.get('access_token')
+        
+        if not shop_domain or not access_token:
+            return {"success": False, "message": "Shopify credentials not configured for this store"}
+        
+        # Fetch products from Shopify
+        headers = {
+            "X-Shopify-Access-Token": access_token,
+            "Content-Type": "application/json"
+        }
+        
+        all_products = []
+        url = f"https://{shop_domain}/admin/api/2024-01/products.json?limit=250"
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            while url:
+                response = await client.get(url, headers=headers)
+                if response.status_code != 200:
+                    logger.error(f"Shopify API error: {response.text}")
+                    return {"success": False, "message": f"Shopify API error: {response.status_code}"}
+                
+                data = response.json()
+                all_products.extend(data.get('products', []))
+                
+                # Handle pagination
+                link_header = response.headers.get('Link', '')
+                url = None
+                if 'rel="next"' in link_header:
+                    for link in link_header.split(','):
+                        if 'rel="next"' in link:
+                            url = link.split(';')[0].strip('<> ')
+                            break
+        
+        logger.info(f"Fetched {len(all_products)} products from Shopify for {store_name}")
+        
+        # Create SKU to price mapping from Shopify variants
+        sku_price_map = {}
+        for product in all_products:
+            for variant in product.get('variants', []):
+                sku = variant.get('sku', '').strip()
+                if sku:
+                    price = float(variant.get('price', 0) or 0)
+                    compare_at_price = float(variant.get('compare_at_price', 0) or 0)
+                    # Use compare_at_price as original price, price as sale price
+                    sku_price_map[sku.lower()] = {
+                        'sale_price': price,
+                        'original_price': compare_at_price if compare_at_price > 0 else price,
+                        'product_title': product.get('title', ''),
+                        'variant_title': variant.get('title', '')
+                    }
+        
+        logger.info(f"Built price map with {len(sku_price_map)} SKUs")
+        
+        # Update inventory items
+        inventory_items = await db.inventory_v2.find(
+            {"store_name": store_name},
+            {"_id": 0}
+        ).to_list(50000)
+        
+        updated_count = 0
+        not_found_count = 0
+        
+        for item in inventory_items:
+            sku = item.get('sku', '').strip().lower()
+            if not sku:
+                continue
+            
+            price_info = sku_price_map.get(sku)
+            if price_info:
+                cost = float(item.get('cost', 0) or 0)
+                sale_price = price_info['sale_price']
+                profit = sale_price - cost
+                
+                await db.inventory_v2.update_one(
+                    {"id": item.get('id')},
+                    {"$set": {
+                        "sale_price": sale_price,
+                        "original_price": price_info['original_price'],
+                        "profit": profit,
+                        "shopify_synced": True,
+                        "shopify_product_title": price_info['product_title'],
+                        "last_price_sync": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                updated_count += 1
+            else:
+                not_found_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Imported prices for {updated_count} items from Shopify",
+            "updated_count": updated_count,
+            "not_found_in_shopify": not_found_count,
+            "total_shopify_products": len(all_products),
+            "total_inventory_items": len(inventory_items)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error importing Shopify product prices: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ========================================
 # OLD INVENTORY ENDPOINTS (KEPT FOR BACKWARD COMPATIBILITY)
 # ========================================
