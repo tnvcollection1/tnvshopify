@@ -294,3 +294,209 @@ async def get_unmatched_records(store_name: str = 'ashmiaa'):
     except Exception as e:
         logger.error(f"❌ Error getting unmatched records: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@finance_router.post("/upload-purchase-orders")
+async def upload_purchase_orders(file: UploadFile = File(...), store_name: str = None):
+    """
+    Upload Purchase Order Excel file and reconcile with Shopify orders.
+    Expected columns: SHOPIFY ID, SKU, AWB (tracking), SELL AMOUNT, COST
+    Matches by: Order # (SHOPIFY ID), SKU, AWB (tracking number), SELL AMOUNT
+    """
+    import pandas as pd
+    from io import BytesIO
+    from datetime import datetime, timezone
+    
+    try:
+        logger.info(f"📤 Uploading purchase order file: {file.filename}")
+        
+        # Read file content
+        content = await file.read()
+        
+        # Parse Excel file
+        df = pd.read_excel(BytesIO(content))
+        
+        # Normalize column names (handle variations)
+        column_mapping = {
+            'SHOPIFY ID': 'shopify_id',
+            'Shopify ID': 'shopify_id', 
+            'ORDER': 'shopify_id',
+            'Order': 'shopify_id',
+            'ORDER #': 'shopify_id',
+            'Order #': 'shopify_id',
+            'ORDER#': 'shopify_id',
+            'PURCHASE ORDER': 'shopify_id',
+            'SKU': 'sku',
+            'Sku': 'sku',
+            'AWB': 'awb',
+            'Awb': 'awb',
+            'TRACKING': 'awb',
+            'DTDC': 'awb',
+            'DTDC TRACKING': 'awb',
+            'DTDC TRACKING NUMBER': 'awb',
+            'TRACKING NUMBER': 'awb',
+            'SELL AMOUNT': 'sell_amount',
+            'SELL': 'sell_amount',
+            'AMOUNT': 'sell_amount',
+            'SALE': 'sell_amount',
+            'SALE AMOUNT': 'sell_amount',
+            'COST': 'cost',
+            'Cost': 'cost',
+            'PURCHASE COST': 'cost'
+        }
+        
+        df.columns = [column_mapping.get(col.strip(), col.strip().lower().replace(' ', '_')) for col in df.columns]
+        
+        # Convert to records
+        records = df.to_dict('records')
+        
+        # Get all Shopify orders for matching
+        query = {}
+        if store_name and store_name != 'all':
+            query['store_name'] = store_name
+            
+        shopify_orders = await db.customers.find(
+            query,
+            {"_id": 0, "name": 1, "tracking_number": 1, "line_items": 1, "total_price": 1, "financial_status": 1}
+        ).to_list(100000)
+        
+        # Build lookup maps
+        order_by_name = {}
+        order_by_tracking = {}
+        for order in shopify_orders:
+            name = str(order.get('name', '')).strip()
+            if name:
+                order_by_name[name] = order
+                # Also try without # prefix
+                order_by_name[name.replace('#', '')] = order
+            tracking = str(order.get('tracking_number', '')).strip()
+            if tracking:
+                order_by_tracking[tracking.upper()] = order
+        
+        # Process and reconcile each record
+        matched = 0
+        unmatched = 0
+        reconciled_records = []
+        
+        for record in records:
+            shopify_id = str(record.get('shopify_id', '')).strip()
+            sku = str(record.get('sku', '')).strip()
+            awb = str(record.get('awb', '')).strip().upper()
+            sell_amount = float(record.get('sell_amount', 0) or 0)
+            cost = float(record.get('cost', 0) or 0)
+            
+            if not shopify_id and not awb:
+                continue
+                
+            # Try to match
+            matched_order = None
+            match_type = None
+            
+            # Match by Order ID
+            if shopify_id and shopify_id in order_by_name:
+                matched_order = order_by_name[shopify_id]
+                match_type = 'order_id'
+            # Match by AWB/Tracking
+            elif awb and awb in order_by_tracking:
+                matched_order = order_by_tracking[awb]
+                match_type = 'tracking'
+            
+            # Verify amount match
+            amount_match = False
+            shopify_amount = 0
+            if matched_order:
+                shopify_amount = float(matched_order.get('total_price', 0) or 0)
+                # Allow 5% tolerance
+                if sell_amount > 0:
+                    diff = abs(shopify_amount - sell_amount) / sell_amount
+                    amount_match = diff < 0.05
+            
+            # Calculate profit
+            profit = sell_amount - cost if sell_amount and cost else 0
+            
+            reconciled_record = {
+                'id': str(len(reconciled_records) + 1),
+                'shopify_id': shopify_id,
+                'sku': sku,
+                'awb': awb,
+                'sell_amount': sell_amount,
+                'cost': cost,
+                'profit': profit,
+                'matched': matched_order is not None,
+                'match_type': match_type,
+                'amount_match': amount_match,
+                'shopify_order_name': matched_order.get('name') if matched_order else None,
+                'shopify_amount': shopify_amount,
+                'shopify_payment_status': matched_order.get('financial_status') if matched_order else None,
+                'status': 'matched' if matched_order and amount_match else 'partial' if matched_order else 'unmatched',
+                'uploaded_at': datetime.now(timezone.utc).isoformat(),
+                'store_name': store_name
+            }
+            
+            reconciled_records.append(reconciled_record)
+            if matched_order:
+                matched += 1
+            else:
+                unmatched += 1
+        
+        # Store reconciled records
+        if reconciled_records:
+            await db.purchase_order_reconciliation.delete_many({'store_name': store_name})
+            await db.purchase_order_reconciliation.insert_many(reconciled_records)
+        
+        return {
+            'success': True,
+            'message': f'Reconciled {len(reconciled_records)} records',
+            'total_records': len(reconciled_records),
+            'matched': matched,
+            'unmatched': unmatched,
+            'match_rate': f"{(matched/len(reconciled_records)*100):.1f}%" if reconciled_records else "0%"
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error uploading purchase orders: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@finance_router.get("/purchase-order-reconciliation")
+async def get_purchase_order_reconciliation(store_name: str = None, status: str = None):
+    """
+    Get purchase order reconciliation results
+    """
+    try:
+        query = {}
+        if store_name and store_name != 'all':
+            query['store_name'] = store_name
+        if status and status != 'all':
+            query['status'] = status
+            
+        records = await db.purchase_order_reconciliation.find(query, {"_id": 0}).to_list(10000)
+        
+        # Calculate summary
+        total = len(records)
+        matched = sum(1 for r in records if r.get('matched'))
+        unmatched = total - matched
+        amount_matched = sum(1 for r in records if r.get('amount_match'))
+        total_sell = sum(r.get('sell_amount', 0) for r in records)
+        total_cost = sum(r.get('cost', 0) for r in records)
+        total_profit = sum(r.get('profit', 0) for r in records)
+        
+        return {
+            'success': True,
+            'records': records,
+            'summary': {
+                'total': total,
+                'matched': matched,
+                'unmatched': unmatched,
+                'amount_matched': amount_matched,
+                'total_sell': total_sell,
+                'total_cost': total_cost,
+                'total_profit': total_profit,
+                'match_rate': f"{(matched/total*100):.1f}%" if total > 0 else "0%"
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting reconciliation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
