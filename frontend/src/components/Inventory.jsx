@@ -573,8 +573,9 @@ const Inventory = () => {
       <div className="p-8">
         {/* Stats Dashboard */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-          <div 
-            className="bg-white rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all" 
+          <button 
+            type="button"
+            className="bg-white rounded-lg border p-4 text-left hover:shadow-lg hover:border-blue-300 transition-all" 
             onClick={() => setFilters({...filters, profitFilter: 'all', search: ''})}
           >
             <div className="flex items-center gap-3">
@@ -586,10 +587,11 @@ const Inventory = () => {
                 <p className="text-xl font-bold text-gray-900">{stats.totalItems.toLocaleString()}</p>
               </div>
             </div>
-          </div>
+          </button>
           
-          <div 
-            className="bg-white rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:border-orange-300 transition-all"
+          <button 
+            type="button"
+            className="bg-white rounded-lg border p-4 text-left hover:shadow-lg hover:border-orange-300 transition-all"
             onClick={() => setFilters({...filters, profitFilter: 'all'})}
             title="Total cost of all inventory items"
           >
@@ -602,10 +604,11 @@ const Inventory = () => {
                 <p className="text-xl font-bold text-gray-900">₹{stats.totalCost.toLocaleString()}</p>
               </div>
             </div>
-          </div>
+          </button>
           
-          <div 
-            className="bg-white rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:border-purple-300 transition-all"
+          <button 
+            type="button"
+            className="bg-white rounded-lg border p-4 text-left hover:shadow-lg hover:border-purple-300 transition-all"
             onClick={() => setFilters({...filters, profitFilter: 'positive'})}
             title="Sum of sale prices from Shopify"
           >
@@ -619,10 +622,11 @@ const Inventory = () => {
                 <p className="text-xs text-purple-600">from Shopify</p>
               </div>
             </div>
-          </div>
+          </button>
           
-          <div 
-            className="bg-white rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:border-green-300 transition-all"
+          <button 
+            type="button"
+            className="bg-white rounded-lg border p-4 text-left hover:shadow-lg hover:border-green-300 transition-all"
             onClick={() => setFilters({...filters, profitFilter: 'positive'})}
             title="Total profit = Sale Value - Total Cost"
           >
@@ -634,14 +638,14 @@ const Inventory = () => {
                 <p className="text-xs text-gray-500 font-medium">Total Profit</p>
                 <p className={`text-xl font-bold ${stats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   ₹{Math.abs(stats.totalProfit).toLocaleString()}
-                  {stats.totalProfit < 0 && <span className="text-xs ml-1">(Loss)</span>}
                 </p>
               </div>
             </div>
-          </div>
+          </button>
           
-          <div 
-            className="bg-white rounded-lg border p-4 cursor-pointer hover:shadow-lg hover:border-teal-300 transition-all"
+          <button 
+            type="button"
+            className="bg-white rounded-lg border p-4 text-left hover:shadow-lg hover:border-teal-300 transition-all"
             onClick={() => setFilters({...filters, profitFilter: 'positive'})}
             title="Profit Margin = (Profit / Sale Value) × 100"
           >
@@ -651,15 +655,14 @@ const Inventory = () => {
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Profit Margin</p>
-                <p className={`text-xl font-bold ${stats.profitMargin >= 0 ? 'text-teal-600' : 'text-red-600'}`}>
-                  {stats.profitMargin.toFixed(1)}%
-                </p>
+                <p className="text-xl font-bold text-teal-600">{stats.profitMargin.toFixed(1)}%</p>
               </div>
             </div>
-          </div>
+          </button>
           
-          <div 
-            className="bg-red-50 rounded-lg border border-red-200 p-4 cursor-pointer hover:shadow-lg hover:border-red-400 transition-all" 
+          <button 
+            type="button"
+            className="bg-red-50 rounded-lg border border-red-200 p-4 text-left hover:shadow-lg hover:border-red-400 transition-all" 
             onClick={() => setFilters({...filters, profitFilter: 'negative'})}
             title="Items where Cost > Sale Price"
           >
@@ -670,10 +673,9 @@ const Inventory = () => {
               <div>
                 <p className="text-xs text-red-600 font-medium">Loss Items</p>
                 <p className="text-xl font-bold text-red-600">{stats.negativeProfit}</p>
-                <p className="text-xs text-red-500">Click to view</p>
               </div>
             </div>
-          </div>
+          </button>
         </div>
 
         {/* Search and Filters */}
