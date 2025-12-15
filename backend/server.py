@@ -2967,14 +2967,24 @@ async def get_inventory_stats():
 
 
 @api_router.get("/inventory/v2")
-async def get_all_inventory_items(store_name: str = None, status: str = None):
-    """Get all inventory items with filtering"""
+async def get_all_inventory_items(store_name: str = None, status: str = None, search: str = None):
+    """Get all inventory items with filtering and search"""
     try:
         query = {}
         if store_name and store_name != "all":
             query["store_name"] = store_name
         if status and status != "all":
             query["status"] = status
+        
+        # Add search filter
+        if search and search.strip():
+            search_regex = {"$regex": search.strip(), "$options": "i"}
+            query["$or"] = [
+                {"sku": search_regex},
+                {"product_name": search_regex},
+                {"collection": search_regex},
+                {"order_number": search_regex}
+            ]
         
         items = await db.inventory_v2.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
         return {"success": True, "items": items, "total": len(items)}
