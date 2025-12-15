@@ -635,7 +635,7 @@ const Inventory = () => {
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Total Cost</p>
-                <p className="text-xl font-bold text-gray-900">₹{stats.totalCost.toLocaleString()}</p>
+                <p className="text-xl font-bold text-gray-900">{formatCurrency(stats.totalCost, globalStore)}</p>
               </div>
             </div>
           </button>
@@ -652,7 +652,7 @@ const Inventory = () => {
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Sale Value</p>
-                <p className="text-xl font-bold text-gray-900">₹{stats.totalSaleValue.toLocaleString()}</p>
+                <p className="text-xl font-bold text-gray-900">{formatCurrency(stats.totalSaleValue, globalStore)}</p>
                 <p className="text-xs text-purple-600">from Shopify</p>
               </div>
             </div>
@@ -671,7 +671,7 @@ const Inventory = () => {
               <div>
                 <p className="text-xs text-gray-500 font-medium">Total Profit</p>
                 <p className={`text-xl font-bold ${stats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  ₹{Math.abs(stats.totalProfit).toLocaleString()}
+                  {formatCurrency(Math.abs(stats.totalProfit), globalStore)}
                 </p>
               </div>
             </div>
