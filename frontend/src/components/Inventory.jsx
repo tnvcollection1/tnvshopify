@@ -799,7 +799,7 @@ const Inventory = () => {
                     </TableRow>
                   ) : (
                     items.map((item) => (
-                      <TableRow key={item.id}>
+                      <TableRow key={item.id} className={item.profit < 0 ? 'bg-red-50' : ''}>
                         <TableCell>
                           <Checkbox 
                             checked={selectedItems.includes(item.id)}
@@ -820,17 +820,28 @@ const Inventory = () => {
                         <TableCell className="font-mono">
                           {item.order_number || '-'}
                         </TableCell>
-                        <TableCell>Rs. {item.cost.toFixed(2)}</TableCell>
-                        <TableCell>Rs. {item.sale_price.toFixed(2)}</TableCell>
+                        <TableCell>Rs. {(item.cost || 0).toFixed(2)}</TableCell>
                         <TableCell>
-                          <span className={item.profit >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                            Rs. {item.profit.toFixed(2)}
-                          </span>
+                          {(item.sale_price || 0) > 0 ? (
+                            `Rs. ${(item.sale_price || 0).toFixed(2)}`
+                          ) : (
+                            <span className="text-gray-400">Not synced</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {(item.sale_price || 0) > 0 ? (
+                            <span className={`font-semibold ${(item.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              Rs. {(item.profit || 0).toFixed(2)}
+                              {(item.profit || 0) < 0 && <AlertTriangle className="w-3 h-3 inline ml-1" />}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <Badge className={`${getStatusBadge(item.status)} flex items-center gap-1 w-fit`}>
                             {getStatusIcon(item.status)}
-                            {item.status.replace('_', ' ')}
+                            {(item.status || 'unknown').replace('_', ' ')}
                           </Badge>
                         </TableCell>
                         <TableCell>
