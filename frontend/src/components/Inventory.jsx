@@ -123,7 +123,7 @@ const Inventory = () => {
     }, filters.search ? 300 : 0); // Debounce search, immediate for other filters
     
     return () => clearTimeout(timeout);
-  }, [filters.store, filters.status, filters.search]);
+  }, [filters.store, filters.status, filters.search, filters.profitFilter]);
 
   useEffect(() => {
     fetchStores();
