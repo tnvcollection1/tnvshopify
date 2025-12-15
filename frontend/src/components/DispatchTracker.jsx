@@ -842,7 +842,7 @@ const DispatchTracker = () => {
                 <TableHead className="font-medium">Customer</TableHead>
                 <TableHead className="font-medium">Phone</TableHead>
                 <TableHead className="font-medium">Tracking #</TableHead>
-                <TableHead className="font-medium">Delivery</TableHead>
+                <TableHead className="font-medium">Current Status</TableHead>
                 <TableHead className="font-medium">Payment</TableHead>
                 <TableHead className="font-medium">COD Amount</TableHead>
                 <TableHead className="font-medium text-right">Actions</TableHead>
