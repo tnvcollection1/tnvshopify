@@ -154,11 +154,7 @@ const DashboardOptimized = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const filteredOrders = recentOrders.filter(order => {
-    if (activeTab === 'unfulfilled') return order.fulfillment_status === 'unfulfilled' || !order.fulfillment_status;
-    if (activeTab === 'cancelled') return order.fulfillment_status === 'cancelled' || order.fulfillment_status === 'restocked' || order.financial_status === 'refunded';
-    return true;
-  });
+  const filteredOrders = recentOrders;
 
   if (loading) {
     return (
