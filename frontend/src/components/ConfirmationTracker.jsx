@@ -836,7 +836,7 @@ const ConfirmationTracker = () => {
                       {getConfirmationBadge(order.confirmation_status || "PENDING")}
                     </TableCell>
                     <TableCell className="font-semibold text-gray-900">
-                      ${order.total_spent?.toFixed(2) || "0.00"}
+                      {formatCurrency(order.total_spent || 0, order.store_name)}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
