@@ -2076,17 +2076,26 @@ async def update_customer_delivery_status(order_number: str, request: dict):
         if not delivery_status:
             raise HTTPException(status_code=400, detail="delivery_status is required")
         
+        # Build update data
+        update_data = {
+            "delivery_status": delivery_status,
+            "delivery_updated_at": datetime.now(timezone.utc).isoformat(),
+            "tcs_last_sync": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Add weight and TCS charges if provided
+        if request.get('tcs_weight'):
+            update_data['tcs_weight'] = request.get('tcs_weight')
+        if request.get('tcs_charges'):
+            update_data['tcs_charges'] = request.get('tcs_charges')
+        
         # Find and update by order_number
         result = await db.customers.update_one(
             {"$or": [
                 {"order_number": order_number},
                 {"order_number": int(order_number) if order_number.isdigit() else order_number}
             ]},
-            {"$set": {
-                "delivery_status": delivery_status,
-                "delivery_updated_at": datetime.now(timezone.utc).isoformat(),
-                "tcs_last_sync": datetime.now(timezone.utc).isoformat()
-            }}
+            {"$set": update_data}
         )
         
         if result.modified_count == 0:
