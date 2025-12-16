@@ -877,7 +877,12 @@ const DashboardOptimized = () => {
 
                   {/* Actions */}
                   <div className="space-y-2">
-                    <Button className="w-full bg-green-600 hover:bg-green-700" size="sm">
+                    <Button 
+                      className="w-full bg-green-600 hover:bg-green-700" 
+                      size="sm"
+                      onClick={() => handleSendWhatsApp(selectedOrder)}
+                      disabled={!selectedOrder.phone && !selectedOrder.default_address?.phone}
+                    >
                       <MessageCircle className="w-4 h-4 mr-2" />
                       Send WhatsApp
                     </Button>
@@ -889,6 +894,59 @@ const DashboardOptimized = () => {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk WhatsApp Dialog */}
+      <Dialog open={bulkWhatsAppDialog} onOpenChange={setBulkWhatsAppDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Bulk WhatsApp</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <p className="text-sm text-gray-600">
+              Send WhatsApp messages to <strong>{selectedOrders.length}</strong> selected customers.
+            </p>
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Message Template
+              </label>
+              <Select value={whatsappTemplate} onValueChange={setWhatsappTemplate}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select template" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="order_confirmation">Order Confirmation</SelectItem>
+                  <SelectItem value="order_shipped">Order Shipped</SelectItem>
+                  <SelectItem value="delivery_update">Delivery Update</SelectItem>
+                  <SelectItem value="payment_reminder">Payment Reminder</SelectItem>
+                  <SelectItem value="order_ready">Order Ready for Pickup</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button variant="outline" onClick={() => setBulkWhatsAppDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSendBulkWhatsApp} 
+              className="bg-green-600 hover:bg-green-700"
+              disabled={sendingWhatsApp}
+            >
+              {sendingWhatsApp ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Send Messages
+                </>
+              )}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
