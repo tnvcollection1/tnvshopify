@@ -285,6 +285,84 @@ const DashboardOptimized = () => {
     }
   };
 
+  const handleBulkCancellation = () => {
+    if (selectedOrders.length === 0) {
+      toast.error('Please select orders first');
+      return;
+    }
+    
+    const ordersToCancel = filteredOrders.filter(o => selectedOrders.includes(o.customer_id));
+    
+    if (!window.confirm(`Send cancellation message to ${ordersToCancel.length} customers?`)) {
+      return;
+    }
+
+    let successCount = 0;
+    ordersToCancel.forEach((order, index) => {
+      const phone = order.phone || order.default_address?.phone;
+      if (!phone) return;
+
+      // Clean phone number
+      let cleanPhone = phone.replace(/[^0-9+]/g, '');
+      if (!cleanPhone.startsWith('+')) {
+        if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+        cleanPhone = '+91' + cleanPhone;
+      }
+
+      const customerName = `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'Customer';
+      const orderNumber = order.order_number || order.name || 'N/A';
+      
+      const message = `Hi ${customerName},
+
+We regret to inform you that your order #${orderNumber} has been cancelled.
+
+If you have any questions, please feel free to contact us.
+
+Thank you for your understanding.`;
+
+      const whatsappUrl = `https://wa.me/${cleanPhone.replace('+', '')}?text=${encodeURIComponent(message)}`;
+      
+      // Open with delay to avoid browser blocking
+      setTimeout(() => {
+        window.open(whatsappUrl, '_blank');
+        successCount++;
+      }, index * 500);
+    });
+
+    toast.success(`Opening ${ordersToCancel.length} cancellation messages...`);
+    setSelectedOrders([]);
+  };
+
+  const handleSendCancellation = (order) => {
+    const phone = order.phone || order.default_address?.phone;
+    if (!phone) {
+      toast.error('No phone number available for this customer');
+      return;
+    }
+
+    let cleanPhone = phone.replace(/[^0-9+]/g, '');
+    if (!cleanPhone.startsWith('+')) {
+      if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+      cleanPhone = '+91' + cleanPhone;
+    }
+
+    const customerName = `${order.first_name || ''} ${order.last_name || ''}`.trim() || 'Customer';
+    const orderNumber = order.order_number || order.name || 'N/A';
+    
+    const message = `Hi ${customerName},
+
+We regret to inform you that your order #${orderNumber} has been cancelled.
+
+If you have any questions, please feel free to contact us.
+
+Thank you for your understanding.`;
+
+    const whatsappUrl = `https://wa.me/${cleanPhone.replace('+', '')}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    
+    toast.success(`Opening cancellation message for ${customerName}`);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
