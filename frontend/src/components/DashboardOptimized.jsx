@@ -843,11 +843,11 @@ Thank you for your understanding.`;
                             {order.tracking_number && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); syncOrderTCS(order); }}
-                                disabled={syncingOrderId === order.order_number}
+                                disabled={syncingOrderId === String(order.order_number)}
                                 className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition-colors"
                                 title="Sync delivery status from TCS"
                               >
-                                <Truck className={`w-4 h-4 ${syncingOrderId === order.order_number ? 'animate-pulse text-blue-500' : ''}`} />
+                                <Truck className={`w-4 h-4 ${syncingOrderId === String(order.order_number) ? 'animate-pulse text-blue-500' : ''}`} />
                               </button>
                             )}
                           </div>
