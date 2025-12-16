@@ -874,6 +874,20 @@ Thank you for your understanding.`;
                           </div>
                         </td>
                         <td className="px-4 py-3 text-center">
+                          {order.tcs_weight ? (
+                            <span className="text-xs text-gray-600">{order.tcs_weight} kg</span>
+                          ) : (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {order.tcs_charges ? (
+                            <span className="text-xs text-gray-600">Rs.{order.tcs_charges}</span>
+                          ) : (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
                           {order.stock_status === 'IN_STOCK' ? (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                               In Stock
