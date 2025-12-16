@@ -1016,7 +1016,6 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 'cost_inr': round(cost_inr, 2),  # Converted cost in INR
                 'advance_payment': advance_payment,
                 'cod_amount': cod_amount,
-                'total_payment': total_payment,  # Advance + COD
                 'profit': round(profit, 2),  # Profit in INR
                 'matched': is_matched,
                 'match_type': match_type,
