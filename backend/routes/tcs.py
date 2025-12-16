@@ -271,7 +271,7 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
             except Exception as e:
                 logger.error(f"Error syncing order {order.get('tracking_number')}: {e}")
         
-        return {"success": True, "synced_count": synced, "total_checked": len(orders)}
+        return {"success": True, "synced_count": synced, "skipped_unknown": skipped, "total_checked": len(orders)}
     except Exception as e:
         logger.error(f"Error in one-by-one sync: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
