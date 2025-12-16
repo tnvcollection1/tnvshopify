@@ -475,6 +475,152 @@ const DTDCReconciliation = () => {
             </TableBody>
           </Table>
         </Card>
+          </>
+        )}
+
+        {/* COD Reconciliation Tab */}
+        {activeTab === 'cod' && (
+          <>
+            {/* COD Summary Cards */}
+            {codSummary && (
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-gray-900">{codSummary.total_orders}</p>
+                      <p className="text-sm text-gray-500">COD Orders</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-blue-600">₹{(codSummary.total_cod_expected || 0).toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">Expected COD</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-orange-600">₹{(codSummary.total_cod_collected || 0).toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">Collected ({codSummary.collection_rate})</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">₹{(codSummary.total_cod_deposited || 0).toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">Deposited ({codSummary.deposit_rate})</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-red-600">₹{(codSummary.pending_collection || 0).toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">Pending Collection</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* COD Lifecycle Info */}
+            <Card className="mb-6 bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">1</div>
+                    <span>Order Placed (COD)</span>
+                  </div>
+                  <span className="text-gray-400">→</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">2</div>
+                    <span>DTDC Collects</span>
+                  </div>
+                  <span className="text-gray-400">→</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">3</div>
+                    <span>Bank Deposit</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* COD Data Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>COD Reconciliation Details</CardTitle>
+              </CardHeader>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Order #</TableHead>
+                    <TableHead>AWB</TableHead>
+                    <TableHead className="text-right">Sell Amt</TableHead>
+                    <TableHead className="text-right">Advance</TableHead>
+                    <TableHead className="text-right">COD Expected</TableHead>
+                    <TableHead className="text-right">COD Collected</TableHead>
+                    <TableHead className="text-right">Bank Deposited</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {codLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8">
+                        <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
+                      </TableCell>
+                    </TableRow>
+                  ) : codRecords.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                        {globalStore === 'all' 
+                          ? 'Please select a store'
+                          : 'No COD orders found. Upload finance reconciliation sheet with COD amounts first.'}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    codRecords.map((record, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-mono text-sm text-blue-600">#{record.shopify_id || record.shopify_order}</TableCell>
+                        <TableCell className="font-mono text-sm">{record.awb || '-'}</TableCell>
+                        <TableCell className="text-right">₹{(record.sell_amount || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right text-blue-600">₹{(record.advance_payment || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right font-medium">₹{(record.cod_expected || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right">
+                          {record.cod_collected > 0 ? (
+                            <span className="text-orange-600 font-medium">₹{record.cod_collected.toLocaleString()}</span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {record.bank_deposited ? (
+                            <span className="text-green-600 font-medium">₹{(record.bank_amount || record.cod_collected || 0).toLocaleString()}</span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {record.status === 'deposited' ? (
+                            <Badge className="bg-green-100 text-green-800">✅ Deposited</Badge>
+                          ) : record.status === 'collected' ? (
+                            <Badge className="bg-orange-100 text-orange-800">📦 Collected</Badge>
+                          ) : (
+                            <Badge className="bg-gray-100 text-gray-800">⏳ Pending</Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );
