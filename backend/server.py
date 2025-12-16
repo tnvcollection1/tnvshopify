@@ -2189,9 +2189,14 @@ async def get_inventory_overview_stats(
                 date_filter["$lt"] = end_dt.isoformat()
             date_query["created_at"] = date_filter
         
-        # Get inventory items with date filter - ONLY items with order_number (sold items)
+        # Get inventory items with date filter - ONLY items with valid order_number (sold items)
+        # Filter out null, empty string, and "None" string values
         all_items = await db.inventory_v2.find(
-            {**date_query, "order_number": {"$exists": True, "$ne": None, "$ne": ""}},
+            {
+                **date_query, 
+                "order_number": {"$exists": True, "$ne": None, "$ne": "", "$ne": "None"},
+                "$expr": {"$ne": [{"$type": "$order_number"}, "null"]}
+            },
             {"_id": 0, "sku": 1, "cost": 1, "order_number": 1, "sale_price": 1, "created_at": 1}
         ).to_list(100000)
         
