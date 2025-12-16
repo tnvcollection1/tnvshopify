@@ -113,6 +113,7 @@ const DTDCReconciliation = () => {
       );
       
       fetchReconciliation();
+      fetchCodReconciliation();
       event.target.value = '';
     } catch (error) {
       console.error('Error uploading DTDC payments:', error);
