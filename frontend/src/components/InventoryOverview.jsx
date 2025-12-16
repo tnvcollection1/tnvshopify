@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Package, DollarSign, TrendingUp, TrendingDown, Truck, CheckCircle, Clock, AlertTriangle, Search, X, RefreshCw } from 'lucide-react';
+import { Package, DollarSign, TrendingUp, TrendingDown, Truck, CheckCircle, Clock, AlertTriangle, Search, X, RefreshCw, Download } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
