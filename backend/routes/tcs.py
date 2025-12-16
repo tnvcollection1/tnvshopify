@@ -249,14 +249,18 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
             try:
                 tracking_data = tracker.track_consignment(order['tracking_number'])
                 if tracking_data and tracking_data.get('normalized_status'):
-                    await db.customers.update_one(
-                        {'customer_id': order['customer_id'], 'store_name': order['store_name']},
+                    # Use tracking_number to find and update - more reliable than customer_id
+                    result = await db.customers.update_one(
+                        {'tracking_number': order['tracking_number']},
                         {'$set': {
                             'delivery_status': tracking_data['normalized_status'],
-                            'last_auto_sync': datetime.now(timezone.utc).isoformat()
+                            'delivery_updated_at': datetime.now(timezone.utc).isoformat(),
+                            'tcs_last_sync': datetime.now(timezone.utc).isoformat()
                         }}
                     )
-                    synced += 1
+                    if result.modified_count > 0:
+                        synced += 1
+                        logger.info(f"Updated {order['tracking_number']} to {tracking_data['normalized_status']}")
             except Exception as e:
                 logger.error(f"Error syncing order {order.get('tracking_number')}: {e}")
         
