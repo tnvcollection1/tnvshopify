@@ -806,8 +806,22 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
             'COST': 'cost',
             'Cost': 'cost',
             'cost': 'cost',
-            'PURCHASE COST': 'cost'
+            'PURCHASE COST': 'cost',
+            'ADVANCE': 'advance_payment',
+            'ADVANCE PAYMENT': 'advance_payment',
+            'Advance Payment': 'advance_payment',
+            'ADVANCE AMT': 'advance_payment',
+            'ADV': 'advance_payment',
+            'PREPAID': 'advance_payment',
+            'COD': 'cod_amount',
+            'COD AMOUNT': 'cod_amount',
+            'Cod Amount': 'cod_amount',
+            'COD AMT': 'cod_amount',
+            'CASH ON DELIVERY': 'cod_amount'
         }
+        
+        # PKR to INR conversion rate (approximate - can be made configurable)
+        PKR_TO_INR_RATE = 0.30  # 1 PKR ≈ 0.30 INR (or 3.33 PKR = 1 INR)
         
         df.columns = [column_mapping.get(col.strip(), col.strip().lower().replace(' ', '_')) for col in df.columns]
         
