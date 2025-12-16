@@ -240,24 +240,34 @@ const DTDCReconciliation = () => {
       </div>
 
       <div className="p-6">
-        {/* Summary Cards */}
-        {summary && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-blue-100 rounded-lg">
-                    <Truck className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">{summary.total_records}</p>
-                    <p className="text-sm text-gray-500">Total DTDC Records</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList>
+            <TabsTrigger value="dtdc">DTDC Payments</TabsTrigger>
+            <TabsTrigger value="cod">COD Reconciliation</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {activeTab === 'dtdc' && (
+          <>
+            {/* Summary Cards */}
+            {summary && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-blue-100 rounded-lg">
+                        <Truck className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-gray-900">{summary.total_records}</p>
+                        <p className="text-sm text-gray-500">Total DTDC Records</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-green-100 rounded-lg">
