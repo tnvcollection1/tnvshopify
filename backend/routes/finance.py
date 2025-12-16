@@ -952,10 +952,9 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                         break
             
             # Verify amount match
-            # Amount Match Logic: Advance Payment + COD Amount = Shopify Order Amount
+            # Amount Match Logic: If COD = 0, then Advance Payment should match Shopify Order Amount
             amount_match = False
             shopify_amount = 0
-            total_payment = advance_payment + cod_amount
             
             if matched_order:
                 try:
@@ -965,14 +964,9 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 
                 # Amount match logic:
                 # If COD = 0, then Advance Payment should match Shopify Amount
-                # If COD > 0, then Advance Payment + COD should match Shopify Amount
-                if total_payment > 0 and shopify_amount > 0:
-                    diff = abs(shopify_amount - total_payment)
+                if cod_amount == 0 and advance_payment > 0 and shopify_amount > 0:
+                    diff = abs(shopify_amount - advance_payment)
                     # Allow Rs.10 tolerance for rounding differences
-                    amount_match = diff <= 10
-                elif sell_amount > 0 and shopify_amount > 0:
-                    # Fallback: check sell_amount matches
-                    diff = abs(shopify_amount - sell_amount)
                     amount_match = diff <= 10
             
             # Calculate profit using cost converted to INR
