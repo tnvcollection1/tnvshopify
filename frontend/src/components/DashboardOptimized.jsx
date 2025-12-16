@@ -607,7 +607,7 @@ const DashboardOptimized = () => {
                         <td className="px-4 py-3 text-right">
                           {cost > 0 ? (
                             <span className="text-sm text-gray-600">
-                              {formatCurrency(cost, order.store_name)}
+                              {order.cost_currency === 'PKR' ? `Rs.${cost.toLocaleString()}` : formatCurrency(cost, order.store_name)}
                             </span>
                           ) : (
                             <span className="text-xs text-gray-400">-</span>
@@ -616,7 +616,8 @@ const DashboardOptimized = () => {
                         <td className="px-4 py-3 text-right">
                           {cost > 0 ? (
                             <span className={`text-sm font-medium ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {profit >= 0 ? '+' : '-'}{formatCurrency(Math.abs(profit), order.store_name)}
+                              {profit >= 0 ? '+' : ''}{formatCurrency(profit, order.store_name)}
+                              {order.cost_currency === 'PKR' && <span className="text-xs text-gray-400 ml-1">(mixed)</span>}
                             </span>
                           ) : (
                             <span className="text-xs text-gray-400">-</span>
