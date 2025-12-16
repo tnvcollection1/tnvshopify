@@ -549,17 +549,27 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
             
             # If matched, update the actual order with cost data
             if is_matched and cost > 0:
-                order_name = matched_order.get('name', '')
-                await db.customers.update_one(
-                    {'name': order_name, 'store_name': store_name},
-                    {'$set': {
-                        'order_cost': cost,
-                        'cost_currency': 'PKR',  # Cost is in PKR
-                        'cost_from_reconciliation': True,
-                        'reconciliation_awb': awb,
-                        'cost_updated_at': datetime.now(timezone.utc).isoformat()
-                    }}
-                )
+                # Build query - use order_number or name depending on what's available
+                order_name = matched_order.get('name')
+                order_num = matched_order.get('order_number')
+                
+                update_query = {'store_name': store_name}
+                if order_name:
+                    update_query['name'] = order_name
+                elif order_num:
+                    update_query['order_number'] = str(order_num)
+                
+                if len(update_query) > 1:  # Has more than just store_name
+                    await db.customers.update_one(
+                        update_query,
+                        {'$set': {
+                            'order_cost': cost,
+                            'cost_currency': 'PKR',  # Cost is in PKR
+                            'cost_from_reconciliation': True,
+                            'reconciliation_awb': awb,
+                            'cost_updated_at': datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
             
             reconciled_record = {
                 'id': str(len(reconciled_records) + 1),
@@ -575,7 +585,7 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 'match_type': match_type,
                 'sku_matched': sku_matched,
                 'amount_match': amount_match,
-                'shopify_order_name': matched_order.get('name') if matched_order else None,
+                'shopify_order_name': matched_order.get('name') or matched_order.get('order_number') if matched_order else None,
                 'shopify_amount': shopify_amount,
                 'shopify_payment_status': matched_order.get('financial_status') if matched_order else None,
                 'shopify_fulfillment_status': matched_order.get('fulfillment_status') if matched_order else None,
