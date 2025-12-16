@@ -2189,137 +2189,109 @@ async def get_inventory_overview_stats(
                 date_filter["$lt"] = end_dt.isoformat()
             date_query["created_at"] = date_filter
         
-        # Get inventory items with date filter
-        all_items = await db.inventory_v2.find(date_query, {
-            "_id": 0, 
-            "sku": 1,
-            "cost": 1, 
-            "order_number": 1,
-            "created_at": 1
-        }).to_list(100000)
+        # Get inventory items with date filter - ONLY items with order_number (sold items)
+        all_items = await db.inventory_v2.find(
+            {**date_query, "order_number": {"$exists": True, "$ne": None, "$ne": ""}},
+            {"_id": 0, "sku": 1, "cost": 1, "order_number": 1, "sale_price": 1, "created_at": 1}
+        ).to_list(100000)
         
-        # Get today's date for matching unfulfilled orders
-        today = datetime.now(timezone.utc).date()
+        # Build order_number to inventory item mapping
+        order_to_items = {}
+        for item in all_items:
+            order_num = str(item.get("order_number", ""))
+            if order_num:
+                if order_num not in order_to_items:
+                    order_to_items[order_num] = []
+                order_to_items[order_num].append(item)
         
-        # Get unfulfilled orders from today
-        unfulfilled_today = await db.customers.find({
-            "fulfillment_status": {"$in": ["unfulfilled", "Unfulfilled", "UNFULFILLED", None]},
-            "order_skus": {"$exists": True, "$ne": []},
-            "created_at": {"$exists": True}
-        }, {
-            "_id": 0,
-            "order_number": 1,
-            "order_skus": 1,
-            "total_spent": 1,
-            "created_at": 1
-        }).to_list(10000)
+        # Get all customer orders that match our inventory order numbers
+        order_numbers = list(order_to_items.keys())
         
-        # Get orders with TCS tracking (using tracking_number field)
-        orders_with_tracking = await db.customers.find({
-            "tracking_number": {"$exists": True, "$ne": None, "$ne": ""},
-            "order_skus": {"$exists": True, "$ne": []}
-        }, {
-            "_id": 0,
-            "order_number": 1,
-            "order_skus": 1,
-            "delivery_status": 1,
-            "tracking_number": 1,
-            "total_spent": 1,
-            "payment_date": 1,
-            "cod_payment_status": 1,
-            "created_at": 1
-        }).to_list(50000)
+        # Fetch order details from customers collection
+        customers_data = await db.customers.find(
+            {"order_number": {"$in": [int(o) for o in order_numbers if o.isdigit()] + order_numbers}},
+            {
+                "_id": 0,
+                "order_number": 1,
+                "fulfillment_status": 1,
+                "tracking_number": 1,
+                "delivery_status": 1,
+                "total_spent": 1
+            }
+        ).to_list(100000)
         
-        # Create mappings
-        sku_to_unfulfilled_orders = {}  # SKU -> list of unfulfilled orders from today
-        sku_to_tracked_orders = {}  # SKU -> order info with TCS tracking
+        # Create order lookup
+        order_lookup = {}
+        for cust in customers_data:
+            order_num = str(cust.get("order_number", ""))
+            order_lookup[order_num] = cust
         
-        # Map unfulfilled orders (today only)
-        for order in unfulfilled_today:
-            try:
-                order_date = datetime.fromisoformat(order.get("created_at", "")).date()
-                # Only include if from today or yesterday (to account for timezone)
-                if (today - order_date).days <= 1:
-                    for sku in order.get("order_skus", []):
-                        sku_upper = sku.upper().strip()
-                        if sku_upper not in sku_to_unfulfilled_orders:
-                            sku_to_unfulfilled_orders[sku_upper] = []
-                        sku_to_unfulfilled_orders[sku_upper].append({
-                            "order_number": order.get("order_number"),
-                            "total_spent": order.get("total_spent", 0)
-                        })
-            except:
-                continue
+        # Categorize inventory based on order status
+        ready_to_ship = []  # Unfulfilled orders (not yet shipped)
+        in_transit = []  # Fulfilled with tracking, not delivered
+        delivered = []  # Delivered orders
+        unknown_status = []  # Orders not found or no status
         
-        # Map tracked orders (with TCS tracking)
-        for order in orders_with_tracking:
-            delivery_status = order.get("delivery_status", "") or "PENDING"  # Default to PENDING if NULL
-            payment_status = order.get("cod_payment_status", "")
-            payment_date = order.get("payment_date")
-            
-            # Include all orders with tracking numbers (they are being tracked)
-            for sku in order.get("order_skus", []):
-                sku_upper = sku.upper().strip()
-                if sku_upper not in sku_to_tracked_orders:
-                    sku_to_tracked_orders[sku_upper] = []
-                sku_to_tracked_orders[sku_upper].append({
-                    "order_number": order.get("order_number"),
-                    "delivery_status": delivery_status,
-                    "total_spent": order.get("total_spent", 0),
-                    "payment_status": payment_status or "PENDING",
-                    "payment_date": payment_date
-                })
-        
-        # Categorize inventory
-        can_fulfill_today = []  # Matches unfulfilled orders from today
-        in_transit_tracked = []  # Has TCS tracking, in transit
-        delivered_recent = []  # Delivered (November onwards)
-        unknown_old = []  # Old orders without tracking or no orders
-        
-        # Track unique orders
-        fulfill_orders = {}
+        # Track unique orders for each category
+        ready_orders = {}
         transit_orders = {}
         delivered_orders = {}
+        unknown_orders = {}
         
         for item in all_items:
-            sku_upper = item.get('sku', '').upper().strip()
-            cost = item.get('cost', 0)
+            order_num = str(item.get("order_number", ""))
+            cost = item.get("cost", 0)
             
-            # Priority 1: Check if can fulfill today's unfulfilled orders
-            if sku_upper in sku_to_unfulfilled_orders:
-                can_fulfill_today.append(item)
-                for order in sku_to_unfulfilled_orders[sku_upper]:
-                    order_num = order["order_number"]
-                    if order_num not in fulfill_orders:
-                        fulfill_orders[order_num] = order["total_spent"]
-            
-            # Priority 2: Check if in tracked orders
-            elif sku_upper in sku_to_tracked_orders:
-                matched = False
-                for order in sku_to_tracked_orders[sku_upper]:
-                    delivery_status = order["delivery_status"]
-                    
-                    if delivery_status == "DELIVERED":
-                        delivered_recent.append(item)
-                        order_num = order["order_number"]
-                        if order_num not in delivered_orders:
-                            delivered_orders[order_num] = order["total_spent"]
-                        matched = True
-                        break
-                    elif delivery_status in ["BOOKED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "ARRIVAL_AT_DESTINATION", "PENDING"]:
-                        # PENDING means tracking exists but status not yet updated - still "in transit"
-                        in_transit_tracked.append(item)
-                        order_num = order["order_number"]
-                        if order_num not in transit_orders:
-                            transit_orders[order_num] = order["total_spent"]
-                        matched = True
-                        break
+            if order_num in order_lookup:
+                order = order_lookup[order_num]
+                fulfillment = (order.get("fulfillment_status") or "").lower()
+                tracking = order.get("tracking_number")
+                delivery = (order.get("delivery_status") or "").upper()
+                total_spent = order.get("total_spent", 0)
                 
-                if not matched:
-                    unknown_old.append(item)
+                # Category 1: Ready to Ship (unfulfilled)
+                if fulfillment in ["unfulfilled", "", "null"] or fulfillment is None:
+                    ready_to_ship.append(item)
+                    if order_num not in ready_orders:
+                        ready_orders[order_num] = total_spent
+                
+                # Category 2: Delivered
+                elif delivery == "DELIVERED":
+                    delivered.append(item)
+                    if order_num not in delivered_orders:
+                        delivered_orders[order_num] = total_spent
+                
+                # Category 3: In Transit (fulfilled with tracking, not delivered)
+                elif tracking and delivery in ["PENDING", "IN_TRANSIT", "BOOKED", "OUT_FOR_DELIVERY", 
+                                                "ARRIVAL_AT_DESTINATION", "RETURN_IN_PROCESS", ""]:
+                    in_transit.append(item)
+                    if order_num not in transit_orders:
+                        transit_orders[order_num] = total_spent
+                
+                # Category 4: Fulfilled but no tracking yet - also ready to ship
+                elif fulfillment == "fulfilled" and not tracking:
+                    ready_to_ship.append(item)
+                    if order_num not in ready_orders:
+                        ready_orders[order_num] = total_spent
+                
+                # Otherwise unknown
+                else:
+                    unknown_status.append(item)
+                    if order_num not in unknown_orders:
+                        unknown_orders[order_num] = total_spent
             else:
-                # No matching orders or old orders without tracking
-                unknown_old.append(item)
+                # Order not found in customers - unknown
+                unknown_status.append(item)
+        
+        # Use new categorized lists
+        can_fulfill_today = ready_to_ship
+        in_transit_tracked = in_transit
+        delivered_recent = delivered
+        unknown_old = unknown_status
+        
+        fulfill_orders = ready_orders
+        transit_orders = transit_orders
+        delivered_orders = delivered_orders
         
         # Calculate stats
         def calc_stats(items, orders_map):
