@@ -1071,7 +1071,9 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                         break
             
             # Verify amount match
-            # Amount Match Logic: If COD = 0, then Advance Payment should match Shopify Order Amount
+            # Amount Match Logic:
+            # - If COD = 0 → Advance Payment should match Shopify Order Amount
+            # - If COD > 0 → Advance Payment + COD should match Shopify Order Amount
             amount_match = False
             shopify_amount = 0
             
@@ -1081,12 +1083,16 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 except:
                     shopify_amount = 0
                 
-                # Amount match logic:
-                # If COD = 0, then Advance Payment should match Shopify Amount
-                if cod_amount == 0 and advance_payment > 0 and shopify_amount > 0:
-                    diff = abs(shopify_amount - advance_payment)
-                    # Allow Rs.10 tolerance for rounding differences
-                    amount_match = diff <= 10
+                if shopify_amount > 0:
+                    if cod_amount == 0 and advance_payment > 0:
+                        # COD = 0: Advance Payment should match Shopify Amount
+                        diff = abs(shopify_amount - advance_payment)
+                        amount_match = diff <= 10  # Allow Rs.10 tolerance
+                    elif cod_amount > 0:
+                        # COD > 0: Advance Payment + COD should match Shopify Amount
+                        total_payment = advance_payment + cod_amount
+                        diff = abs(shopify_amount - total_payment)
+                        amount_match = diff <= 10  # Allow Rs.10 tolerance
             
             # Calculate profit using cost converted to INR minus shipping
             # Profit = Sale Amount (INR) - Cost (converted to INR) - Shipping
