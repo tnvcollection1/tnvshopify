@@ -231,19 +231,21 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
                 customer_no=config.get('customer_no')
             )
         
-        # Find orders needing sync
+        # Find orders needing sync - prioritize TCS tracking numbers (start with 173)
         query = {
             'fulfillment_status': 'fulfilled',
             'delivery_status': {'$nin': ['DELIVERED', 'RETURNED']},
             '$and': [
                 {'tracking_number': {'$exists': True}},
                 {'tracking_number': {'$ne': None}},
-                {'tracking_number': {'$ne': ''}}
+                {'tracking_number': {'$ne': ''}},
+                # Prioritize TCS tracking numbers (start with 173)
+                {'tracking_number': {'$regex': '^173', '$options': 'i'}}
             ]
         }
         
-        # Sort by order_number descending to process recent orders first
-        orders = await db.customers.find(query, {'_id': 0}).sort('order_number', -1).limit(limit).to_list(limit)
+        # Sort by created_at descending to process recent orders first
+        orders = await db.customers.find(query, {'_id': 0}).sort('created_at', -1).limit(limit).to_list(limit)
         synced = 0
         skipped = 0
         
