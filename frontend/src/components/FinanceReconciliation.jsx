@@ -203,18 +203,16 @@ const FinanceReconciliation = () => {
             <Button onClick={exportToCSV} variant="outline" disabled={records.length === 0}>
               <Download className="w-4 h-4 mr-2" /> Export
             </Button>
-            <label className="cursor-pointer">
+            <div className="relative">
               <input
                 type="file"
                 accept=".xlsx,.xls,.csv"
                 onChange={handleFileUpload}
-                className="hidden"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 disabled={uploading || globalStore === 'all'}
               />
               <Button 
-                as="span" 
-                className={`${globalStore === 'all' ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
-                disabled={uploading || globalStore === 'all'}
+                className={`${globalStore === 'all' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} pointer-events-none`}
               >
                 {uploading ? (
                   <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Uploading...</>
@@ -222,7 +220,7 @@ const FinanceReconciliation = () => {
                   <><Upload className="w-4 h-4 mr-2" /> Upload for {globalStore === 'all' ? 'Store' : globalStore}</>
                 )}
               </Button>
-            </label>
+            </div>
           </div>
         </div>
         
