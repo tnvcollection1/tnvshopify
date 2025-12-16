@@ -396,11 +396,12 @@ const FinanceReconciliation = () => {
                   <Badge variant="outline" className="text-sm bg-orange-50 text-orange-700 border-orange-200">AWB</Badge>
                   <Badge variant="outline" className="text-sm bg-green-50 text-green-700 border-green-200">SELL AMOUNT (INR)</Badge>
                   <Badge variant="outline" className="text-sm bg-red-50 text-red-700 border-red-200">COST (PKR)</Badge>
+                  <Badge variant="outline" className="text-sm bg-pink-50 text-pink-700 border-pink-200">SHIPPING (INR)</Badge>
                   <Badge variant="outline" className="text-sm bg-yellow-50 text-yellow-700 border-yellow-200">ADVANCE PAYMENT</Badge>
                   <Badge variant="outline" className="text-sm bg-cyan-50 text-cyan-700 border-cyan-200">COD AMOUNT</Badge>
                 </div>
                 <p className="text-xs text-gray-500">
-                  <strong>Amount Match:</strong> If COD = 0, Advance Payment should match Shopify Price. Cost is converted from PKR to INR.
+                  <strong>Profit = Sell Amount - Cost (INR) - Shipping</strong> | Amount Match: If COD = 0, Advance = Shopify Price
                 </p>
               </div>
             </CardContent>
