@@ -2066,6 +2066,41 @@ async def update_manual_delivery_status(order_id: str, status: str, location: st
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.put("/customers/{order_number}/delivery-status")
+async def update_customer_delivery_status(order_number: str, request: dict):
+    """
+    Update delivery status for a customer order (used by frontend TCS sync)
+    """
+    try:
+        delivery_status = request.get('delivery_status')
+        if not delivery_status:
+            raise HTTPException(status_code=400, detail="delivery_status is required")
+        
+        # Find and update by order_number
+        result = await db.customers.update_one(
+            {"$or": [
+                {"order_number": order_number},
+                {"order_number": int(order_number) if order_number.isdigit() else order_number}
+            ]},
+            {"$set": {
+                "delivery_status": delivery_status,
+                "delivery_updated_at": datetime.now(timezone.utc).isoformat(),
+                "tcs_last_sync": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        return {"success": True, "message": f"Delivery status updated to {delivery_status}"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating delivery status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/orders/{order_id}/mark-return-received")
 async def mark_return_received(order_id: str, received: bool = True, received_by: str = None):
     """
