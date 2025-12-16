@@ -121,7 +121,407 @@ async def get_reconciliation(store_name: str = 'ashmiaa'):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@finance_router.get("/status")
+# ==================== DTDC PAYMENT RECONCILIATION ====================
+
+@finance_router.post("/upload-dtdc-payments")
+async def upload_dtdc_payments(file: UploadFile = File(...), store_name: str = None):
+    """
+    Upload DTDC Payment Report (COD collections).
+    
+    Expected columns (flexible naming):
+    - AWB/Tracking Number
+    - COD Amount (amount collected by DTDC)
+    - Payment Date (when DTDC collected)
+    - Order Reference (optional)
+    - Remittance Status (optional)
+    """
+    import pandas as pd
+    from io import BytesIO
+    from datetime import datetime, timezone
+    
+    try:
+        if not store_name or store_name == 'all':
+            raise HTTPException(status_code=400, detail="Please select a specific store")
+        
+        logger.info(f"📤 Uploading DTDC payment report for store: {store_name}")
+        
+        content = await file.read()
+        
+        # Parse file
+        filename = file.filename.lower() if file.filename else ""
+        if filename.endswith('.csv'):
+            df = pd.read_csv(BytesIO(content))
+        else:
+            try:
+                df = pd.read_excel(BytesIO(content))
+            except:
+                df = pd.read_csv(BytesIO(content))
+        
+        # Flexible column mapping for DTDC reports
+        column_mapping = {
+            'AWB': 'awb',
+            'AWB NO': 'awb',
+            'AWB NO.': 'awb',
+            'TRACKING': 'awb',
+            'TRACKING NO': 'awb',
+            'TRACKING NUMBER': 'awb',
+            'CONSIGNMENT NO': 'awb',
+            'CN NO': 'awb',
+            'COD': 'cod_amount',
+            'COD AMOUNT': 'cod_amount',
+            'COD AMT': 'cod_amount',
+            'AMOUNT': 'cod_amount',
+            'COLLECTED AMOUNT': 'cod_amount',
+            'COLLECTION': 'cod_amount',
+            'REMITTANCE': 'cod_amount',
+            'REMITTANCE AMOUNT': 'cod_amount',
+            'DATE': 'payment_date',
+            'PAYMENT DATE': 'payment_date',
+            'COLLECTION DATE': 'payment_date',
+            'DELIVERY DATE': 'payment_date',
+            'REMITTANCE DATE': 'payment_date',
+            'ORDER': 'order_ref',
+            'ORDER NO': 'order_ref',
+            'ORDER REF': 'order_ref',
+            'REFERENCE': 'order_ref',
+            'STATUS': 'status',
+            'REMITTANCE STATUS': 'status',
+            'PAYMENT STATUS': 'status'
+        }
+        
+        df.columns = [column_mapping.get(col.strip().upper(), col.strip().lower().replace(' ', '_')) for col in df.columns]
+        
+        records = df.to_dict('records')
+        
+        # Get orders with tracking numbers for matching
+        orders = await db.customers.find(
+            {'store_name': store_name, 'tracking_number': {'$exists': True, '$ne': None}},
+            {'_id': 0, 'order_number': 1, 'name': 1, 'tracking_number': 1, 'total_spent': 1, 'total_price': 1}
+        ).to_list(100000)
+        
+        # Build lookup by tracking number
+        order_by_tracking = {}
+        for order in orders:
+            tracking = str(order.get('tracking_number', '')).strip().upper()
+            if tracking:
+                order_by_tracking[tracking] = order
+        
+        # Process records
+        dtdc_records = []
+        matched_count = 0
+        total_cod = 0
+        
+        for record in records:
+            awb = str(record.get('awb', '')).strip().upper()
+            if not awb:
+                continue
+            
+            cod_amount = 0
+            try:
+                cod_amount = float(record.get('cod_amount', 0) or 0)
+            except:
+                pass
+            
+            payment_date = record.get('payment_date')
+            order_ref = record.get('order_ref', '')
+            status = record.get('status', '')
+            
+            # Match with order
+            matched_order = order_by_tracking.get(awb)
+            is_matched = matched_order is not None
+            
+            dtdc_record = {
+                'awb': awb,
+                'cod_amount': cod_amount,
+                'payment_date': str(payment_date) if payment_date else None,
+                'order_ref': order_ref,
+                'dtdc_status': status,
+                'matched': is_matched,
+                'matched_order_number': matched_order.get('order_number') or matched_order.get('name') if matched_order else None,
+                'order_total': matched_order.get('total_spent') or matched_order.get('total_price') if matched_order else None,
+                'store_name': store_name,
+                'uploaded_at': datetime.now(timezone.utc).isoformat(),
+                'bank_matched': False,  # Will be updated when bank statement is uploaded
+                'bank_amount': None,
+                'bank_date': None
+            }
+            
+            dtdc_records.append(dtdc_record)
+            total_cod += cod_amount
+            if is_matched:
+                matched_count += 1
+                
+                # Update order with DTDC payment info
+                update_query = {'store_name': store_name}
+                if matched_order.get('name'):
+                    update_query['name'] = matched_order.get('name')
+                else:
+                    update_query['order_number'] = str(matched_order.get('order_number'))
+                
+                await db.customers.update_one(
+                    update_query,
+                    {'$set': {
+                        'dtdc_cod_amount': cod_amount,
+                        'dtdc_payment_date': str(payment_date) if payment_date else None,
+                        'dtdc_payment_status': status or 'COLLECTED',
+                        'dtdc_updated_at': datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+        
+        # Store DTDC payment records
+        await db.dtdc_payments.delete_many({'store_name': store_name})
+        if dtdc_records:
+            await db.dtdc_payments.insert_many(dtdc_records)
+        
+        logger.info(f"✅ Uploaded {len(dtdc_records)} DTDC payment records, {matched_count} matched with orders")
+        
+        return {
+            'success': True,
+            'message': f'Uploaded {len(dtdc_records)} DTDC payment records',
+            'total_records': len(dtdc_records),
+            'matched': matched_count,
+            'not_matched': len(dtdc_records) - matched_count,
+            'total_cod_amount': total_cod,
+            'match_rate': f"{(matched_count/len(dtdc_records)*100):.1f}%" if dtdc_records else "0%"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error uploading DTDC payments: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@finance_router.post("/upload-bank-statement")
+async def upload_bank_statement(file: UploadFile = File(...), store_name: str = None):
+    """
+    Upload Bank Statement to reconcile with DTDC payments.
+    
+    Expected columns (flexible naming):
+    - Date / Transaction Date
+    - Amount / Credit / Deposit
+    - Description / Narration / Reference
+    - UTR / Reference Number (optional)
+    """
+    import pandas as pd
+    from io import BytesIO
+    from datetime import datetime, timezone
+    import re
+    
+    try:
+        if not store_name or store_name == 'all':
+            raise HTTPException(status_code=400, detail="Please select a specific store")
+        
+        logger.info(f"📤 Uploading bank statement for store: {store_name}")
+        
+        content = await file.read()
+        
+        # Parse file
+        filename = file.filename.lower() if file.filename else ""
+        if filename.endswith('.csv'):
+            df = pd.read_csv(BytesIO(content))
+        else:
+            try:
+                df = pd.read_excel(BytesIO(content))
+            except:
+                df = pd.read_csv(BytesIO(content))
+        
+        # Flexible column mapping
+        column_mapping = {
+            'DATE': 'date',
+            'TXN DATE': 'date',
+            'TRANSACTION DATE': 'date',
+            'VALUE DATE': 'date',
+            'AMOUNT': 'amount',
+            'CREDIT': 'amount',
+            'DEPOSIT': 'amount',
+            'CR': 'amount',
+            'DESCRIPTION': 'description',
+            'NARRATION': 'description',
+            'PARTICULARS': 'description',
+            'REMARKS': 'description',
+            'UTR': 'utr',
+            'UTR NO': 'utr',
+            'REFERENCE': 'utr',
+            'REF NO': 'utr',
+            'REFERENCE NO': 'utr',
+            'TRANSACTION ID': 'utr'
+        }
+        
+        df.columns = [column_mapping.get(col.strip().upper(), col.strip().lower().replace(' ', '_')) for col in df.columns]
+        
+        records = df.to_dict('records')
+        
+        # Get DTDC payments for matching
+        dtdc_payments = await db.dtdc_payments.find(
+            {'store_name': store_name, 'bank_matched': False},
+            {'_id': 0}
+        ).to_list(100000)
+        
+        # Build lookup by COD amount (for approximate matching)
+        dtdc_by_amount = {}
+        for payment in dtdc_payments:
+            amt = payment.get('cod_amount', 0)
+            if amt > 0:
+                # Round to nearest 10 for fuzzy matching
+                key = round(amt / 10) * 10
+                if key not in dtdc_by_amount:
+                    dtdc_by_amount[key] = []
+                dtdc_by_amount[key].append(payment)
+        
+        # Process bank records
+        bank_records = []
+        matched_count = 0
+        total_credits = 0
+        
+        for record in records:
+            amount = 0
+            try:
+                amount = float(record.get('amount', 0) or 0)
+            except:
+                pass
+            
+            # Skip debits (negative amounts) and zero amounts
+            if amount <= 0:
+                continue
+            
+            date = record.get('date')
+            description = str(record.get('description', '')).upper()
+            utr = record.get('utr', '')
+            
+            # Check if this looks like a DTDC remittance
+            is_dtdc_payment = any(kw in description for kw in ['DTDC', 'COD', 'REMIT', 'COURIER', 'DELIVERY'])
+            
+            # Try to match with DTDC payment
+            matched_dtdc = None
+            if is_dtdc_payment:
+                # Try exact amount match first
+                key = round(amount / 10) * 10
+                if key in dtdc_by_amount and dtdc_by_amount[key]:
+                    # Find closest match
+                    for dtdc in dtdc_by_amount[key]:
+                        if abs(dtdc['cod_amount'] - amount) < 50:  # Within Rs.50 tolerance
+                            matched_dtdc = dtdc
+                            dtdc_by_amount[key].remove(dtdc)
+                            break
+            
+            bank_record = {
+                'date': str(date) if date else None,
+                'amount': amount,
+                'description': description,
+                'utr': utr,
+                'is_dtdc_payment': is_dtdc_payment,
+                'matched_awb': matched_dtdc.get('awb') if matched_dtdc else None,
+                'matched_order': matched_dtdc.get('matched_order_number') if matched_dtdc else None,
+                'store_name': store_name,
+                'uploaded_at': datetime.now(timezone.utc).isoformat()
+            }
+            
+            bank_records.append(bank_record)
+            total_credits += amount
+            
+            if matched_dtdc:
+                matched_count += 1
+                # Update DTDC payment record
+                await db.dtdc_payments.update_one(
+                    {'awb': matched_dtdc['awb'], 'store_name': store_name},
+                    {'$set': {
+                        'bank_matched': True,
+                        'bank_amount': amount,
+                        'bank_date': str(date) if date else None,
+                        'bank_utr': utr
+                    }}
+                )
+        
+        # Store bank records
+        await db.bank_statements.delete_many({'store_name': store_name})
+        if bank_records:
+            await db.bank_statements.insert_many(bank_records)
+        
+        logger.info(f"✅ Uploaded {len(bank_records)} bank transactions, {matched_count} matched with DTDC")
+        
+        return {
+            'success': True,
+            'message': f'Uploaded {len(bank_records)} bank transactions',
+            'total_records': len(bank_records),
+            'credit_transactions': len([r for r in bank_records if r['amount'] > 0]),
+            'dtdc_payments_detected': len([r for r in bank_records if r['is_dtdc_payment']]),
+            'matched_with_dtdc': matched_count,
+            'total_credits': total_credits
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error uploading bank statement: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@finance_router.get("/dtdc-payment-reconciliation")
+async def get_dtdc_payment_reconciliation(store_name: str = None, status: str = None):
+    """
+    Get DTDC Payment Reconciliation status.
+    Shows COD collections from DTDC and their bank deposit status.
+    
+    Filters:
+    - store_name: Filter by store
+    - status: 'pending' (not deposited), 'received' (bank matched), 'all'
+    """
+    try:
+        query = {}
+        if store_name and store_name != 'all':
+            query['store_name'] = store_name
+        
+        if status == 'pending':
+            query['bank_matched'] = False
+        elif status == 'received':
+            query['bank_matched'] = True
+        
+        records = await db.dtdc_payments.find(query, {'_id': 0}).to_list(10000)
+        
+        # Calculate summary
+        total = len(records)
+        pending = sum(1 for r in records if not r.get('bank_matched'))
+        received = sum(1 for r in records if r.get('bank_matched'))
+        total_cod = sum(r.get('cod_amount', 0) for r in records)
+        total_received = sum(r.get('bank_amount', 0) or r.get('cod_amount', 0) for r in records if r.get('bank_matched'))
+        total_pending = sum(r.get('cod_amount', 0) for r in records if not r.get('bank_matched'))
+        
+        return {
+            'success': True,
+            'records': records,
+            'summary': {
+                'total_records': total,
+                'pending_deposit': pending,
+                'received_in_bank': received,
+                'total_cod_collected': total_cod,
+                'total_received_in_bank': total_received,
+                'total_pending_amount': total_pending
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting DTDC reconciliation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@finance_router.delete("/clear-dtdc-reconciliation")
+async def clear_dtdc_reconciliation(store_name: str = None):
+    """Clear DTDC payment reconciliation data for a store"""
+    try:
+        if not store_name or store_name == 'all':
+            raise HTTPException(status_code=400, detail="Please select a specific store")
+        
+        await db.dtdc_payments.delete_many({'store_name': store_name})
+        await db.bank_statements.delete_many({'store_name': store_name})
+        
+        return {'success': True, 'message': f'Cleared DTDC reconciliation data for {store_name}'}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error clearing DTDC reconciliation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))@finance_router.get("/status")
 async def get_finance_status():
     """
     Get status of uploaded finance data
