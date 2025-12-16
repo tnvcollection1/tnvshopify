@@ -110,7 +110,8 @@ const Sidebar = () => {
       label: 'Finances', 
       section: 'finances',
       children: [
-        { icon: FileText, label: 'Reconciliation', path: '/finance-reconciliation' },
+        { icon: FileText, label: 'Cost Reconciliation', path: '/finance-reconciliation' },
+        { icon: Truck, label: 'DTDC Payments', path: '/dtdc-reconciliation' },
         { icon: TrendingUp, label: 'Dynamic Pricing', path: '/dynamic-pricing' },
       ]
     },
