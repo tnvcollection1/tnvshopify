@@ -242,25 +242,32 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
             ]
         }
         
-        orders = await db.customers.find(query, {'_id': 0}).limit(limit).to_list(limit)
+        # Sort by order_number descending to process recent orders first
+        orders = await db.customers.find(query, {'_id': 0}).sort('order_number', -1).limit(limit).to_list(limit)
         synced = 0
+        skipped = 0
         
         for order in orders:
             try:
                 tracking_data = tracker.track_consignment(order['tracking_number'])
-                if tracking_data and tracking_data.get('normalized_status'):
-                    # Use tracking_number to find and update - more reliable than customer_id
-                    result = await db.customers.update_one(
-                        {'tracking_number': order['tracking_number']},
-                        {'$set': {
-                            'delivery_status': tracking_data['normalized_status'],
-                            'delivery_updated_at': datetime.now(timezone.utc).isoformat(),
-                            'tcs_last_sync': datetime.now(timezone.utc).isoformat()
-                        }}
-                    )
-                    if result.modified_count > 0:
-                        synced += 1
-                        logger.info(f"Updated {order['tracking_number']} to {tracking_data['normalized_status']}")
+                if tracking_data:
+                    new_status = tracking_data.get('normalized_status')
+                    # Skip UNKNOWN and NOT_FOUND statuses - no point updating to these
+                    if new_status and new_status not in ['UNKNOWN', 'NOT_FOUND']:
+                        # Use tracking_number to find and update - more reliable than customer_id
+                        result = await db.customers.update_one(
+                            {'tracking_number': order['tracking_number']},
+                            {'$set': {
+                                'delivery_status': new_status,
+                                'delivery_updated_at': datetime.now(timezone.utc).isoformat(),
+                                'tcs_last_sync': datetime.now(timezone.utc).isoformat()
+                            }}
+                        )
+                        if result.modified_count > 0:
+                            synced += 1
+                            logger.info(f"Updated {order['tracking_number']} to {new_status}")
+                    else:
+                        skipped += 1
             except Exception as e:
                 logger.error(f"Error syncing order {order.get('tracking_number')}: {e}")
         
