@@ -229,17 +229,24 @@ const DashboardOptimized = () => {
       if (response.data.success) {
         const tracking = response.data.tracking;
         const newStatus = tracking.normalized_status;
+        const paymentInfo = tracking.payment_info || {};
         
-        // Update the order in the database
+        // Update the order in the database with weight and charges
         await axios.put(`${API}/customers/${orderNum}/delivery-status`, {
           delivery_status: newStatus,
-          delivery_updated_at: new Date().toISOString()
+          tcs_weight: paymentInfo.parcel_weight || null,
+          tcs_charges: paymentInfo.delivery_charges || null
         });
         
         // Update local state - compare as strings to handle type mismatches
         setRecentOrders(prev => prev.map(o => 
           String(o.order_number) === orderNum 
-            ? { ...o, delivery_status: newStatus }
+            ? { 
+                ...o, 
+                delivery_status: newStatus,
+                tcs_weight: paymentInfo.parcel_weight,
+                tcs_charges: paymentInfo.delivery_charges
+              }
             : o
         ));
         
