@@ -165,6 +165,19 @@ const InventoryOverview = () => {
               <Button 
                 variant="outline" 
                 size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white border-green-600"
+                onClick={syncStockFromShopify}
+                disabled={syncingStock || globalStore === 'all'}
+              >
+                {syncingStock ? (
+                  <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Syncing Stock...</>
+                ) : (
+                  <><Download className="w-4 h-4 mr-2" /> Sync from Shopify</>
+                )}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
                 onClick={syncPrices}
                 disabled={syncing}
               >
