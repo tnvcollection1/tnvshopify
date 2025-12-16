@@ -362,6 +362,20 @@ frontend:
         agent: "testing"
         comment: "✅ Finance Reconciliation upload button functionality working correctly. Comprehensive testing completed: (1) Initial state shows warning message 'Please select a specific store' and disabled gray upload button when 'All Stores' selected, (2) Store selection from sidebar dropdown working - successfully selected Ashmia store, (3) After store selection: warning message disappears, upload button changes from gray (bg-gray-400) to green (bg-green-600), button text updates to 'Upload for ashmiaa', (4) File input element properly configured with accept='.xlsx,.xls,.csv' and not disabled, (5) Upload container structure correct with invisible file input overlay over visible button. File dialog opening confirmed through programmatic testing (browser security prevents automated file chooser testing). All core functionality verified and working as expected."
 
+backend:
+  - task: "Inventory Data Comparison - Overview vs Main Endpoints"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL DISCREPANCY FOUND: Inventory data mismatch between endpoints. Overview Stats endpoint (/api/inventory/v2/overview-stats) reports 10,000 total items while Main Inventory endpoint (/api/inventory/v2) reports 15,290 total items - a difference of 5,290 items (34.6% discrepancy). However, total cost values match exactly at ₹4,955,756.69, suggesting the overview stats endpoint applies filtering that the main inventory endpoint does not. This explains user reports that stats on /inventory-overview don't match /inventory page. Root cause: Overview stats endpoint uses date filtering and aggregation logic that excludes 5,290 items, while main inventory endpoint returns all items without filtering."
+
 test_plan:
   current_focus:
+    - "Inventory Data Comparison - Overview vs Main Endpoints"
     - "Finance Reconciliation - Upload Button Functionality"
