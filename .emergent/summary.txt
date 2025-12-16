@@ -1,97 +1,97 @@
-<analysis>**original_problem_statement**: The user's goal is to pivot the existing CRM application into a dedicated WhatsApp CRM. This involves a complete rebranding of the UI, focusing the feature set on WhatsApp and Shopify integrations, and disabling or hiding all other features for regular users.
+<analysis>**original_problem_statement**: The user's initial goal was to pivot a CRM into a WhatsApp CRM with a Shopify focus, which included a UI theme change to white, enhancing financial reconciliation, fixing the Orders page, improving TCS tracking, and fixing Shopify OAuth.
 
-In this session, the user's requests focused on improving data visibility and financial tracking:
-1.  **UI Theme**: Change the application-wide dark theme to a standard white background with black text for better readability and a more professional look.
-2.  **Finance Reconciliation**: Implement store-wise file uploads, add a match/not match filter, and clear existing data before a new upload.
-3.  **Orders Page (Ashmia Store)**: Fix issues where stats cards (Fulfilled, Unfulfilled, Cancelled) were not working, and the order list was missing key columns like sale price, product SKU, and title.
-4.  **Orders Page (Other Stores)**: Add  and  columns to the order list and implement a feature to sync this data from the inventory based on matching SKUs.
-5.  **TCS Tracking**: Investigate why TCS tracking was not working for the  store, despite a new bearer token being provided. Add delivery status tracking to relevant pages.
-6.  **Confirmation Tracker**: Fix In Stock and Out of Stock cards to display the correct order numbers when clicked. Add a column to show the current delivery status from the tracking API.
-7.  **Currency Display**: Ensure that all monetary values (sale price, cost, profit) are displayed with the correct currency symbol (e.g., ₹ for INR, Rs. for PKR) based on the selected store.
-8.  **Shopify App Installation**: Fix an OAuth error preventing the app from being installed from the user's custom domain ().
+During this session, the user expanded the scope significantly, focusing on data accuracy and financial workflows:
+1.  **Orders Page Data**: Fix , , , and  columns, as they were not displaying data correctly.
+2.  **Orders Page Functionality**: Re-implement missing Send WhatsApp and Send Cancellation features (both individual and bulk) to the main Orders page ().
+3.  **Finance Reconciliation (Initial Fix)**: Fix a non-functional file upload button.
+4.  **Finance Reconciliation (Enhancement 1)**: Improve the logic to handle cost in PKR and sale price in INR, and match orders using the order number.
+5.  **Finance Reconciliation (Enhancement 2)**: Add , , and  columns. Refine the amount matching logic to compare  against the Shopify total.
+6.  **DTDC & COD Reconciliation (New Feature)**: Build a new multi-step reconciliation feature to:
+    *   Upload a DTDC COD ledger.
+    *   Upload a bank statement.
+    *   Match DTDC collections against bank deposits and reconcile with order COD amounts.
+7.  **Inventory Management**: Add a feature to sync inventory stock levels directly from Shopify to the Inventory Overview page.
+8.  **Inventory Overview Cards**: Fix the data display on the overview cards, which are showing incorrect or no data.
+9.  **Amount Match Logic Refinements**: Adjust the finance reconciliation logic to use exact matching (no tolerance) and verify that the COD amount from the finance sheet matches the amount in the DTDC ledger.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application now has a consistent and professional white-themed UI across all pages. The Orders page has been significantly enhanced to resemble a Shopify-style list, complete with clickable stat cards, sortable columns, and store-specific cost/profit data. The TCS tracking integration has been debugged, and real-time delivery statuses are now visible on the Dispatch and Confirmation Trackers. Currency symbols are now dynamically displayed based on the active store. However, the Shopify OAuth installation flow is broken.
+The application features a white-themed UI. The main Orders page is now highly functional, displaying synced data for cost, profit, and delivery status, and includes robust bulk/individual WhatsApp and cancellation actions. The Finance Reconciliation feature has been significantly overhauled to support multi-currency (PKR/INR) calculations, advanced matching logic, and new fields like , , and . A comprehensive new DTDC Payment Reconciliation module exists for tracking the entire COD lifecycle from courier collection to bank deposit. An inventory sync feature has been added to pull stock levels from Shopify. However, the Shopify OAuth installation remains broken, and the Inventory Overview page cards are not displaying data correctly.
 
 **Last working item**:
--   **Last item agent was working**: Fixing a Shopify OAuth error. The user wants to install the Shopify app from , but the generated authorization URL incorrectly contains  as the , causing an invalid_request error from Shopify.
+-   **Last item agent was working**: Fixing the data display on the stat cards of the Inventory Overview page (). The user reported that the cards were showing incorrect data or no data at all. The agent confirmed the backend API was returning valid data and was starting to investigate the frontend component () to see how the state was being handled and rendered.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: Manual testing. The agent needs to verify that the generated Shopify installation URL contains the correct  ().
--   **User Testing Done**: Y (User confirmed the issue persists by providing the incorrect URL)
+-   **Which testing method agent to use?**: screenshot tool (After fixing the data binding in the component, take a screenshot of the  page to verify the cards display correct numbers).
+-   **User Testing Done**: Y (User reported the issue)
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Shopify OAuth  is incorrect (P0)**
--   **Issue 2: Critical  Refactoring Needed (P1)**
--   **Issue 3: TCS API Authentication Failing for Payment Status (P1)**
+-   **Issue 1: Inventory Overview cards show wrong data (P0)**
+-   **Issue 2: Shopify OAuth  is incorrect (P0)**
+-   **Issue 3: Critical  Refactoring Needed (P1)**
 -   **Issue 4: Inconsistent SKU formats (P1)**
--   **Issue 5: Facebook Lead Ads Sync Blocked by Expired Token (P2)**
--   **Issue 6: Live Razorpay Keys Still in Environment File (P2)**
+-   **Issue 5: TCS API Authentication Failing for Payment Status (P1)**
+-   **Issue 6: Facebook Lead Ads Sync Blocked by Expired Token (P2)**
+-   **Issue 7: Live Razorpay Keys Still in Environment File (P2)**
 
 **Issues Detail**:
--   **Issue 1: Shopify OAuth  is incorrect (P0)**
-    -   **Attempted fixes**: The agent modified  to hardcode  as the host for the redirect URI. However, the user provided a new installation URL that still contained the old , indicating the fix was not effective or was applied in the wrong place. The agent needs to trace where the installation URL is generated.
+-   **Issue 1: Inventory Overview cards show wrong data (P0)**
+    -   **Attempted fixes**: The agent verified that the backend API endpoint  returns a JSON object with the correct statistics. The issue is likely in the frontend.
     -   **Next debug checklist**:
-        1.  Inspect the code in  again, specifically the  endpoint that generates the initial authorization URL.
-        2.  The  is constructed there; ensure the logic correctly uses  under all conditions.
-        3.  Provide the corrected full installation URL to the user for testing.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker preventing the user from installing or reinstalling the Shopify app, which is core to the application's functionality.
+        1.  View the file .
+        2.  Locate the  hook that calls the API and  the  to confirm the structure.
+        3.  Examine the JSX for the stat cards. Ensure the properties being accessed (e.g., , ) exactly match the keys in the logged API response. The issue is likely a mismatch between the object keys and the properties used in the UI.
+    -   **Why fix this issue and what will be achieved with the fix?**: This page is meant to provide a quick, accurate snapshot of inventory health. Fixing it is crucial for user trust and utility.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend (verifying the generated URL).
+    -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
--   **Issue 2: Critical  Refactoring Needed (P1)**
-    -   **Description**:  is a monolithic file with hundreds of endpoints and duplicated logic, making it a major source of bugs and technical debt.
-    -   **Next debug checklist**: Propose and execute a plan to move route logic from  into the respective files in .
-    -   **Why fix this issue and what will be achieved with the fix?**: Improves code maintainability, scalability, and reduces bug risk.
+-   **Issue 2: Shopify OAuth  is incorrect (P0)**
+    -   **Description**: This is a critical carry-over issue. The user cannot install the Shopify app from their custom domain () because the generated authorization URL contains the wrong .
+    -   **Attempted fixes**: Previous agent hardcoded the URL in , but the issue persisted. This agent confirmed the  endpoint generates the correct URL, but the user's installation link was still wrong, suggesting the  redirect might be the problem or something is cached. The user de-prioritized this, but it remains a blocker.
+    -   **Next debug checklist**:
+        1.  Focus on the  endpoint in .
+        2.  Trace how the  is constructed and passed to the Shopify authorization URL within that specific redirect flow.
+        3.  Provide the corrected full installation URL to the user for testing.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a core functionality blocker. The user cannot use the app with Shopify without this fix.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
 
--   **Issue 3: TCS API Authentication Failing for Payment Status (P1)**
-    -   **Description**: The agent diagnosed that while public TCS tracking works, the authenticated endpoint for fetching payment status fails with a 405 Method Not Allowed error.
-    -   **Next debug checklist**: Inform the user that this is a configuration issue on the TCS side. They need to verify that the provided bearer token has the correct permissions to access the payment status API.
-    -   **Why fix this issue and what will be achieved with the fix?**: Enables automated reconciliation of payments for TCS orders.
-    -   **Status**: BLOCKED (on user/TCS configuration)
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: None
+-   **Issue 3: Critical  Refactoring Needed (P1)**
+    -   **Description**:  remains a monolithic file, making development slow and error-prone. The agent added yet another endpoint to it in this session.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: Y
 
 -   **Issue 4: Inconsistent SKU formats (P1)**
-    -   **Description**: Different SKU formats between  and  collections prevent accurate linking. The cost sync feature relies on this matching, and the sync result showed many orders were not updated due to this mismatch.
-    -   **Next debug checklist**: Propose a SKU Mapping tool or a one-time migration script to standardize SKUs.
-    -   **Why fix this issue and what will be achieved with the fix?**: Unlocks accurate profit/loss tracking and advanced inventory features.
+    -   **Description**: The root cause of why cost/profit sync fails for the  store is a mismatch in SKU formats between inventory and orders. There is no inventory data for the  store at all.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: None
 
--   **Issue 5: Facebook Lead Ads Sync Blocked by Expired Token (P2)**
-    -   **Description**: The Sync from Facebook feature for Lead Ads is failing due to an expired Meta access token.
-    -   **Next debug checklist**: Guide the user to reconnect their WhatsApp Business account to generate a new token.
+-   **Issue 5: TCS API Authentication Failing for Payment Status (P1)**
+    -   **Description**: The authenticated TCS endpoint for payment status was failing with a 405 error. The agent fixed the  initialization to pass the bearer token correctly, which allowed the sync to work for some orders. However, the underlying 405 error from TCS for some API calls might still exist.
+    -   **Status**: BLOCKED (on user/TCS configuration)
+    -   **Is recurring issue?**: N
+
+-   **Issue 6: Facebook Lead Ads Sync Blocked by Expired Token (P2)**
+    -   **Description**: Feature is blocked until the user reconnects their account to refresh the token.
     -   **Status**: BLOCKED (on user action)
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: None
 
--   **Issue 6: Live Razorpay Keys Still in Environment File (P2)**
-    -   **Description**: Live Razorpay API keys are in , which is a security risk.
-    -   **Next debug checklist**: Migrate keys from  to the encrypted  collection and update the code.
+-   **Issue 7: Live Razorpay Keys Still in Environment File (P2)**
+    -   **Description**: Live Razorpay API keys in  pose a security risk.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   **Task 1: Resolve Shopify OAuth  (P0)**
-    -   **Where to resume**: , focusing on the  route.
-    -   **What will be achieved with this?**: The user will be able to successfully install the Shopify app from their custom domain.
+-   **Task 1: Fix Inventory Overview Cards (P0)**
+    -   **Where to resume**: .
+    -   **What will be achieved with this?**: The stat cards on the inventory overview page will display accurate data.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Backend
+    -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
@@ -107,60 +107,52 @@ The application now has a consistent and professional white-themed UI across all
     -   (P3) Abandoned Cart Recovery via WhatsApp.
 
 **Completed work in this session**
--   **UI Theme Overhaul**: Changed the entire application from a dark theme to a light/white theme by updating  and component-specific styling.
--   **Finance Reconciliation Enhancements**:
-    -   Implemented store-specific file uploads.
-    -   Added a Clear Data button and  endpoint.
-    -   Updated the status filter to Matched / Not Matched.
--   **Orders Page Overhaul ()**:
-    -   Fixed stats cards for Fulfilled, Unfulfilled, and **Cancelled** orders by correcting the backend stats query in .
-    -   Made stat cards clickable filters that update the order list.
-    -   Added , , , and  columns to the order table.
-    -   Implemented a Sync Costs button and  endpoint to populate cost/profit data from inventory.
-    -   Redesigned the order list into a cleaner, Shopify-style layout.
--   **TCS Tracking and Delivery Status**:
-    -   Fixed a bug in the  endpoint query in .
-    -   Added Sync TCS buttons to Orders and Confirmation Tracker pages.
-    -   Added a Current Status column to  showing real-time tracking status, location, and last update time.
-    -   Added a Delivery Status column to .
--   **Currency Synchronization**:
-    -   Created a new utility file .
-    -   Updated all pages with monetary values (Orders, Finance, Inventory, Confirmation, Dispatch) to display the correct currency symbol (₹ or Rs.) based on the selected store.
--   **Confirmation Tracker Fixes**:
-    -   Fixed stat cards to open a modal showing all corresponding order numbers by fetching data from the backend.
-    -   Fixed stock status badges to correctly display In Stock / Out of Stock.
+-   **Orders Page () Enhancements**:
+    -   Fixed display of , , , and  by fixing the backend TCS sync logic and explaining the need for per-store inventory.
+    -   Restored and enhanced WhatsApp & Cancellation functionality, adding individual/bulk action buttons and a dedicated Bulk Actions bar.
+-   **Finance Reconciliation (, )**:
+    -   Fixed the file upload button and enhanced the backend to accept both CSV and Excel.
+    -   Implemented multi-currency logic (PKR cost to INR profit), and added , , and  fields.
+    -   Refined the amount matching logic to be exact and added a check to match the finance sheet's COD amount against the DTDC ledger.
+-   **DTDC Payment Reconciliation (New Feature)**:
+    -   Built a new page and backend endpoints for a multi-step COD reconciliation process (DTDC Ledger -> Bank Statement -> Order).
+    -   The UI provides a clear view of the entire COD lifecycle for each order.
+-   **Inventory Stock Sync**:
+    -   Created a new endpoint  in  to pull complete product and stock data from Shopify.
+    -   Added a Sync Stock from Shopify button to the  page.
+-   **TCS Delivery Status Sync**: Fixed the  initialization in , which was preventing the bearer token from being used correctly. This unblocked the delivery status sync for many orders.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1**: Critical  Refactoring Needed (Captured in All Pending/In progress Issue list).
--   **Issue 2**: Live Razorpay Keys Still in Environment File (Captured in All Pending/In progress Issue list).
--   **Issue 3**: Inconsistent SKU formats (Captured in All Pending/In progress Issue list).
+-   **Issue 1**: Critical  Refactoring Needed.
+-   **Issue 2**: Live Razorpay Keys Still in Environment File.
+-   **Issue 3**: Inconsistent SKU formats.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**:  requires major refactoring.
--   **Recurrence count**: 18+
+-   **Recurrence count**: 19+
 -   **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Dynamic Currency Formatting**: Using a utility function in React to determine the correct currency symbol ( vs. ) based on the selected store context and applying it across multiple components.
--   **Data Synchronization Logic**: Implemented backend endpoints (, ,  for TCS) to enrich order data by pulling information (cost, stock, delivery status) from other collections or external APIs.
--   **UI/UX Refinement**: Rewrote a major component () to mimic a familiar Shopify-style layout for better usability. Changed the global CSS theme for a more professional look.
--   **State Management for Background Tasks**: Implemented UI state (e.g., , ) with loading spinners to provide user feedback during long-running API calls.
+-   **Multi-Step Financial Reconciliation**: Implemented a workflow tracking money from order creation (Shopify), to courier collection (DTDC), to bank deposit (Bank Statement).
+-   **Multi-Currency Handling**: Converting cost from an uploaded currency (PKR) to a display/profit currency (INR) using a fixed exchange rate in the backend.
+-   **Conditional UI Rendering**: Displaying a Bulk Actions bar in React only when items in a list are selected.
+-   **Robust API Integration Debugging**: Traced an authentication issue (TCS 405 error) to incorrect class initialization in Python and fixed it.
+-   **Long-Running Background Tasks**: Implemented a full inventory sync from Shopify, which is a long-running process initiated by a user click.
 
 **key DB schema**
 -   **customers**:
-    -   : (float) **NEW**. Populated from  via the cost sync feature.
-    -   : (float) **NEW**. Calculated as .
-    -   : (string) **NEW**. Populated by the TCS tracking sync.
-    -   : (dict) **NEW**. Stores detailed tracking information from TCS.
--   **stores**: Remains the same, but is now implicitly used to determine currency (e.g., if store name contains 'pk', use PKR).
+    -   , , , , : New fields populated by the Finance Reconciliation upload.
+-   **finance_purchase_orders**: Heavily modified schema. Now includes , , , , , .
+-   **dtdc_payments**: **NEW** collection storing uploaded DTDC payment reports. , , , .
+-   **bank_statements**: **NEW** collection storing uploaded bank transactions. , , Tue Dec 16 14:01:13 UTC 2025, .
+-   **inventory_v2**: Now populated with full stock information from the new Shopify sync.
 
 **All files of reference**
--   **Key Modified Frontend**:
-    -   
-    -   
+-   **Key Modified/New Frontend**:
+    -    (New)
     -   
     -   
     -   
@@ -169,53 +161,56 @@ The application now has a consistent and professional white-themed UI across all
     -   
     -   
     -   
--   **New Files**:
-    -   
 
 **Areas that need refactoring**:
--   **/app/backend/server.py**: **CRITICAL PRIORITY**. No progress was made on this. It must be the next major backend task.
+-   **/app/backend/server.py**: Still the top priority. More endpoints were added to it, increasing the urgency of breaking it into modular route files.
 
 **key api endpoints**
--   : **NEW**. Syncs cost data from the  collection to the  collection.
--   : **NEW**. Clears all records from the  collection for a fresh reconciliation.
--   : **MODIFIED**. Fixed a bug with duplicate query parameters and made it a background task.
--   : **MODIFIED**. Added , , and  counts to the response.
--   : **NEEDS FIXING**. This endpoint generates the installation URL that is causing the  mismatch.
+-   : **NEW**. Uploads DTDC COD ledger.
+-   : **NEW**. Uploads bank statement for matching.
+-   : **NEW**. Gets the fully reconciled COD lifecycle data.
+-   : **HEAVILY MODIFIED**. Now handles multi-currency, advance/cod payments, shipping costs, and DTDC matching.
+-   : **NEW**. Triggers a full sync of products and stock levels from Shopify.
+-   : **MODIFIED**. Logic fixed to handle authentication correctly, enabling delivery status sync.
 
 **Critical Info for New Agent**
--   **Shopify OAuth is the #1 Blocker**: The user cannot install the app. Your first task is to fix the  generation in  to ensure it always uses  when required.
--   **TCS API Has Two Parts**: The public, unauthenticated tracking API works fine. The private, authenticated API for  is failing with a 405 error. This is a credential/permission issue on the TCS side that the user needs to investigate.
--   **Data Sync is Imperfect**: The Sync Costs feature works but is limited by the underlying data inconsistency of SKUs between inventory and orders. Many orders will not have their costs updated.
--   **Currency Logic**: A new utility at  handles all currency formatting. If any new pages with prices are added, they must use this utility.
-
-**documents created in this job**
--   
+-   **Top Priority is **: Your first task is to fix the stat cards on the Inventory Overview page. The backend API is fine; the bug is in the frontend component's data binding.
+-   **Shopify OAuth is Still Broken**: The user de-prioritized it, but it's the #1 blocker for the app's core Shopify functionality. Once the inventory cards are fixed, this should be the next P0 task.
+-   ** is a Ticking Bomb**: Avoid adding new endpoints to it. Any significant backend work should begin with a plan to refactor the relevant logic out of .
+-   **Data is Store-Specific**: Many features (like cost/profit sync) only work if data (like inventory) for that specific store has been uploaded. The  store has no inventory, so cost sync won't work for it; costs must be uploaded via the Finance Reconciliation tool.
+-   **Finance Reconciliation is Complex**: The logic in  now handles multiple currencies, costs, and matching rules. Read it carefully before making changes.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: I can't see the Current Status column anywhere. (**Resolved**. Agent added the column to the Dispatch Tracker).
-2.  **User**: Currency should sync with Shopify and display accordingly everywhere. (**Resolved**. Agent implemented a currency utility and applied it to all relevant pages).
-3.  **User**: I'm getting a Shopify OAuth error. (**In Progress**).
-4.  **User**: I'm trying for importbaba only. (**In Progress**. Confirmed user's intent for the OAuth fix).
-5.  **User**: The OAuth URL is wrong, I am still getting an error. (**Pending**. This is the current blocking issue).
+1.  **User**: Add  to cost and implement COD reconciliation. (**Done**)
+2.  **User**: Sync inventory stock data on the  page. (**Done**, but led to a new bug)
+3.  **User**: Re-add logic . (**Done**)
+4.  **User**: Use exact amount matching (no tolerance) and match COD amount to DTDC ledger. (**Done**)
+5.  **User**: The cards on  are displaying wrong data or no data. (**In Progress** - This is the current )
+6.  **User**:  is in PKR, should convert to INR, and we take advance payment. (**Done**)
+7.  **User**: Removed logic . (**Done**)
+8.  **User**:  is in pkr, should convert to inr and then update, also handle advance payment for 0 cod. (**Done**)
+9.  **User**:  upload button is not working. (**Done**)
+10. **User**:  are not working in all orders, delivery and stock status too. (**Done**)
 
 **Project Health Check:**
 -   **Broken**:
-    -   **Shopify OAuth**: The app installation flow is completely broken due to an incorrect .
-    -   **Data Integrity**: The SKU mismatch between  and  collections continues to cause issues with data synchronization and profit calculation.
+    -   **Shopify OAuth**: Core installation flow is non-functional.
+    -   **Inventory Overview UI**: The main stat cards are not displaying data.
+    -   **Data Integrity**: The fundamental SKU mismatch between collections for different stores remains, preventing automated cost sync for stores like .
 -   **Mocked**: None.
 
 **3rd Party Integrations**
 -   **Shopify Admin API**: **BROKEN (OAuth)**. The installation and authentication flow is not working due to a  mismatch.
--   **TCS Courier API**: **Partially Functional**. Public tracking works and syncs delivery status. Authenticated payment status API is failing with a 405 error (blocked on user/TCS).
--   **Facebook Marketing API / WhatsApp Business Platform**: **BLOCKED**. Lead Ads sync is blocked on user reconnecting account to refresh an expired token.
+-   **TCS Courier API**: **Partially Functional**. Public tracking and delivery status sync are working after auth fixes. The authenticated payment status API may still have issues.
+-   **Facebook Marketing API**: **BLOCKED**. Awaiting user action to refresh an expired token.
 -   **Razorpay**: **Functional (Insecure)**. Implemented but uses LIVE API keys from .
 -   **OpenAI GPT-4**: Functional — uses Emergent LLM Key.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (Used multiple times for backend API verification).
+-   **Testing agent used after significant changes**: YES, for fixing the Finance Reconciliation upload button.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None.
--   **Known regressions**: Shopify OAuth flow is now broken.
+-   **Known regressions**: None introduced in this session, but the Shopify OAuth regression from the previous session remains unfixed.
 
 **Credentials to test flow:**
 -   **Admin**:  / 
@@ -224,7 +219,7 @@ The application now has a consistent and professional white-themed UI across all
 -   **New Demo User**:  / 
 
 **What agent forgot to execute**
--   **Refactor **: This critical task was carried over and not addressed.
+-   **Refactor **: This critical task was carried over and not addressed. The agent even added more code to this file.
 -   **Migrate Live Secrets**: Did not migrate the insecure Razorpay keys from the  file.
--   **Address Root Data Issue**: Did not propose a solution for the fundamental SKU mismatch problem.
--   **Fully Resolve OAuth Issue**: The agent's attempted fix for the Shopify OAuth  was unsuccessful and left the feature in a broken state.</analysis>
+-   **Address Root Data Issue**: Did not propose a solution for the fundamental SKU mismatch problem, which is the root cause for many data sync issues.
+-   **Resolve Shopify OAuth Issue**: The agent investigated the OAuth issue briefly but then moved on at the user's request. It remains the biggest unresolved blocker for the application.</analysis>
