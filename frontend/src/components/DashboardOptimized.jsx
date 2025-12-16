@@ -212,6 +212,79 @@ const DashboardOptimized = () => {
 
   const filteredOrders = recentOrders;
 
+  // WhatsApp Functions
+  const handleSelectOrder = (orderId) => {
+    setSelectedOrders(prev => 
+      prev.includes(orderId) 
+        ? prev.filter(id => id !== orderId)
+        : [...prev, orderId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedOrders.length === filteredOrders.length) {
+      setSelectedOrders([]);
+    } else {
+      setSelectedOrders(filteredOrders.map(o => o.customer_id));
+    }
+  };
+
+  const handleSendWhatsApp = async (order) => {
+    const phone = order.phone || order.default_address?.phone;
+    if (!phone) {
+      toast.error('No phone number available for this customer');
+      return;
+    }
+
+    // Clean phone number
+    let cleanPhone = phone.replace(/[^0-9+]/g, '');
+    if (!cleanPhone.startsWith('+')) {
+      // Assume India if no country code
+      if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
+      cleanPhone = '+91' + cleanPhone;
+    }
+
+    // Create message
+    const message = `Hi ${order.first_name || 'Customer'}! Your order #${order.order_number || order.name} is being processed. Thank you for shopping with us!`;
+    
+    // Open WhatsApp
+    const whatsappUrl = `https://wa.me/${cleanPhone.replace('+', '')}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    
+    toast.success(`Opening WhatsApp for ${order.first_name || 'Customer'}`);
+  };
+
+  const handleBulkWhatsApp = () => {
+    if (selectedOrders.length === 0) {
+      toast.error('Please select orders first');
+      return;
+    }
+    setBulkWhatsAppDialog(true);
+  };
+
+  const handleSendBulkWhatsApp = async () => {
+    try {
+      setSendingWhatsApp(true);
+      toast.loading(`Sending WhatsApp to ${selectedOrders.length} customers...`);
+
+      const response = await axios.post(`${API}/customers/bulk-whatsapp`, {
+        customer_ids: selectedOrders,
+        template: whatsappTemplate
+      });
+
+      toast.dismiss();
+      toast.success(`WhatsApp sent to ${response.data.sent_count || selectedOrders.length} customers!`);
+      setBulkWhatsAppDialog(false);
+      setSelectedOrders([]);
+    } catch (error) {
+      toast.dismiss();
+      console.error('Bulk WhatsApp error:', error);
+      toast.error(error.response?.data?.detail || 'Failed to send bulk WhatsApp');
+    } finally {
+      setSendingWhatsApp(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
