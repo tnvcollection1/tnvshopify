@@ -1011,6 +1011,7 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                             'cost_currency': 'PKR',  # Original cost is in PKR
                             'advance_payment': advance_payment,
                             'cod_amount': cod_amount,
+                            'shipping_cost': shipping,
                             'cost_from_reconciliation': True,
                             'reconciliation_awb': awb,
                             'cost_updated_at': datetime.now(timezone.utc).isoformat()
@@ -1026,9 +1027,10 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 'sell_currency': 'INR',
                 'cost_pkr': cost,  # Original cost in PKR
                 'cost_inr': round(cost_inr, 2),  # Converted cost in INR
+                'shipping': shipping,  # Shipping cost in INR
                 'advance_payment': advance_payment,
                 'cod_amount': cod_amount,
-                'profit': round(profit, 2),  # Profit in INR
+                'profit': round(profit, 2),  # Profit in INR (after shipping deduction)
                 'matched': is_matched,
                 'match_type': match_type,
                 'sku_matched': sku_matched,
