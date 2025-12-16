@@ -1448,6 +1448,247 @@ class ShopifyCustomerAPITester:
         
         return confirmation_results
 
+    # ==================== INVENTORY DATA COMPARISON TESTS ====================
+    
+    def test_inventory_overview_stats_endpoint(self):
+        """Test Inventory Overview Stats endpoint"""
+        success, response, _ = self.run_test(
+            "Inventory Overview Stats",
+            "GET",
+            "inventory/v2/overview-stats",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "stats" in response:
+                stats = response["stats"]
+                
+                print(f"   Overview Stats Response: {stats}")
+                
+                # Check for required fields
+                required_fields = ["total_items", "total_cost"]
+                missing_fields = [field for field in required_fields if field not in stats]
+                
+                if not missing_fields:
+                    total_items = stats.get("total_items", 0)
+                    total_cost = stats.get("total_cost", 0)
+                    
+                    print(f"   Total Items (Overview): {total_items}")
+                    print(f"   Total Cost (Overview): ₹{total_cost:,.2f}")
+                    
+                    # Verify values are numbers
+                    if isinstance(total_items, (int, float)) and isinstance(total_cost, (int, float)):
+                        print(f"   ✅ Overview stats have valid structure and values")
+                        return True, response
+                    else:
+                        print(f"   ❌ Overview stats values are not numeric")
+                        return False, response
+                else:
+                    print(f"   ❌ Missing required fields in overview stats: {missing_fields}")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in response")
+                return False, response
+        
+        return success, response
+    
+    def test_inventory_main_endpoint(self):
+        """Test main Inventory endpoint (first 100 items)"""
+        success, response, _ = self.run_test(
+            "Inventory Main List (First 100)",
+            "GET",
+            "inventory/v2",
+            200
+        )
+        
+        if success and response:
+            # Verify response structure
+            if "success" in response and "items" in response and "total" in response:
+                items = response["items"]
+                total = response["total"]
+                
+                print(f"   Main Inventory Response - Items returned: {len(items)}")
+                print(f"   Main Inventory Response - Total count: {total}")
+                
+                # Calculate total cost from first 100 items
+                total_cost_first_100 = 0
+                items_with_cost = 0
+                
+                for item in items[:100]:  # Only first 100 items
+                    cost = item.get("cost", 0)
+                    if cost and isinstance(cost, (int, float)):
+                        total_cost_first_100 += cost
+                        items_with_cost += 1
+                
+                print(f"   Total Cost (First 100 items): ₹{total_cost_first_100:,.2f}")
+                print(f"   Items with cost data: {items_with_cost}")
+                
+                # Verify values are numbers
+                if isinstance(total, (int, float)):
+                    print(f"   ✅ Main inventory has valid structure and values")
+                    return True, response
+                else:
+                    print(f"   ❌ Main inventory total is not numeric")
+                    return False, response
+            else:
+                print(f"   ❌ Missing required fields in main inventory response")
+                return False, response
+        
+        return success, response
+    
+    def test_inventory_data_comparison(self):
+        """Compare inventory data between overview-stats and main inventory endpoints"""
+        print("\n🔍 INVENTORY DATA COMPARISON TEST")
+        print("-" * 60)
+        
+        # Test overview stats endpoint
+        overview_success, overview_response = self.test_inventory_overview_stats_endpoint()
+        
+        if not overview_success:
+            print("❌ Overview stats endpoint failed - cannot compare")
+            return False, {"error": "Overview stats endpoint failed"}
+        
+        # Test main inventory endpoint
+        main_success, main_response = self.test_inventory_main_endpoint()
+        
+        if not main_success:
+            print("❌ Main inventory endpoint failed - cannot compare")
+            return False, {"error": "Main inventory endpoint failed"}
+        
+        # Extract data for comparison
+        overview_stats = overview_response.get("stats", {})
+        overview_total_items = overview_stats.get("total_items", 0)
+        overview_total_cost = overview_stats.get("total_cost", 0)
+        
+        main_total_items = main_response.get("total", 0)
+        main_items = main_response.get("items", [])
+        
+        # Calculate total cost from main inventory (all items, not just first 100)
+        main_total_cost = sum(item.get("cost", 0) for item in main_items if item.get("cost"))
+        
+        print(f"\n📊 COMPARISON RESULTS:")
+        print(f"   Overview Stats - Total Items: {overview_total_items}")
+        print(f"   Main Inventory - Total Items: {main_total_items}")
+        print(f"   Overview Stats - Total Cost: ₹{overview_total_cost:,.2f}")
+        print(f"   Main Inventory - Total Cost: ₹{main_total_cost:,.2f}")
+        
+        # Check for discrepancies
+        discrepancies = []
+        
+        # Item count comparison
+        if overview_total_items != main_total_items:
+            discrepancy = f"Item count mismatch: Overview={overview_total_items}, Main={main_total_items}"
+            discrepancies.append(discrepancy)
+            print(f"   ❌ {discrepancy}")
+        else:
+            print(f"   ✅ Item counts match: {overview_total_items}")
+        
+        # Cost comparison (allow small floating point differences)
+        cost_difference = abs(overview_total_cost - main_total_cost)
+        if cost_difference > 0.01:  # Allow 1 cent difference for floating point precision
+            discrepancy = f"Total cost mismatch: Overview=₹{overview_total_cost:,.2f}, Main=₹{main_total_cost:,.2f} (Difference: ₹{cost_difference:,.2f})"
+            discrepancies.append(discrepancy)
+            print(f"   ❌ {discrepancy}")
+        else:
+            print(f"   ✅ Total costs match: ₹{overview_total_cost:,.2f}")
+        
+        # Additional analysis
+        print(f"\n🔍 ADDITIONAL ANALYSIS:")
+        print(f"   Items returned by main endpoint: {len(main_items)}")
+        print(f"   Items with cost data in main: {sum(1 for item in main_items if item.get('cost'))}")
+        
+        # Check if overview stats include additional calculations
+        if "inventory_sale_value" in overview_stats:
+            inventory_sale_value = overview_stats.get("inventory_sale_value", 0)
+            print(f"   Overview includes inventory sale value: ₹{inventory_sale_value:,.2f}")
+        
+        if "inventory_profit" in overview_stats:
+            inventory_profit = overview_stats.get("inventory_profit", 0)
+            print(f"   Overview includes inventory profit: ₹{inventory_profit:,.2f}")
+        
+        # Summary
+        if discrepancies:
+            print(f"\n❌ DISCREPANCIES FOUND:")
+            for i, discrepancy in enumerate(discrepancies, 1):
+                print(f"   {i}. {discrepancy}")
+            
+            return False, {
+                "discrepancies": discrepancies,
+                "overview_data": {
+                    "total_items": overview_total_items,
+                    "total_cost": overview_total_cost
+                },
+                "main_data": {
+                    "total_items": main_total_items,
+                    "total_cost": main_total_cost,
+                    "items_returned": len(main_items)
+                }
+            }
+        else:
+            print(f"\n✅ NO DISCREPANCIES FOUND - Data matches between endpoints")
+            return True, {
+                "status": "match",
+                "overview_data": {
+                    "total_items": overview_total_items,
+                    "total_cost": overview_total_cost
+                },
+                "main_data": {
+                    "total_items": main_total_items,
+                    "total_cost": main_total_cost,
+                    "items_returned": len(main_items)
+                }
+            }
+    
+    def run_inventory_comparison_tests(self):
+        """Run comprehensive Inventory Data Comparison tests"""
+        print("\n" + "="*80)
+        print("📦 INVENTORY DATA COMPARISON TESTS")
+        print("="*80)
+        
+        # Test admin login first
+        print("\n🔐 PREREQUISITE: ADMIN LOGIN TEST")
+        print("-" * 50)
+        
+        login_success, login_response = self.test_login_with_correct_credentials()
+        if not login_success:
+            print("❌ Admin login failed - cannot proceed with Inventory comparison tests")
+            return {"login_failed": True}
+        
+        inventory_results = {}
+        
+        # Test 1: Inventory Overview Stats Endpoint
+        print("\n📊 TEST 1: INVENTORY OVERVIEW STATS ENDPOINT")
+        print("-" * 50)
+        
+        overview_success, overview_response = self.test_inventory_overview_stats_endpoint()
+        inventory_results["overview_stats"] = {
+            "success": overview_success,
+            "response": overview_response
+        }
+        
+        # Test 2: Main Inventory Endpoint
+        print("\n📋 TEST 2: MAIN INVENTORY ENDPOINT")
+        print("-" * 50)
+        
+        main_success, main_response = self.test_inventory_main_endpoint()
+        inventory_results["main_inventory"] = {
+            "success": main_success,
+            "response": main_response
+        }
+        
+        # Test 3: Data Comparison
+        print("\n🔍 TEST 3: DATA COMPARISON ANALYSIS")
+        print("-" * 50)
+        
+        comparison_success, comparison_response = self.test_inventory_data_comparison()
+        inventory_results["data_comparison"] = {
+            "success": comparison_success,
+            "response": comparison_response
+        }
+        
+        return inventory_results
+
     # ==================== EXISTING ENDPOINTS TESTS ====================
     
     def test_orders_endpoint(self):
