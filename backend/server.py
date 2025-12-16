@@ -2253,23 +2253,22 @@ async def get_inventory_overview_stats(
         
         # Map tracked orders (with TCS tracking)
         for order in orders_with_tracking:
-            delivery_status = order.get("delivery_status", "")
+            delivery_status = order.get("delivery_status", "") or "PENDING"  # Default to PENDING if NULL
             payment_status = order.get("cod_payment_status", "")
             payment_date = order.get("payment_date")
             
-            # Only include if has actual TCS status
-            if delivery_status and delivery_status != "UNKNOWN":
-                for sku in order.get("order_skus", []):
-                    sku_upper = sku.upper().strip()
-                    if sku_upper not in sku_to_tracked_orders:
-                        sku_to_tracked_orders[sku_upper] = []
-                    sku_to_tracked_orders[sku_upper].append({
-                        "order_number": order.get("order_number"),
-                        "delivery_status": delivery_status,
-                        "total_spent": order.get("total_spent", 0),
-                        "payment_status": payment_status or "PENDING",
-                        "payment_date": payment_date
-                    })
+            # Include all orders with tracking numbers (they are being tracked)
+            for sku in order.get("order_skus", []):
+                sku_upper = sku.upper().strip()
+                if sku_upper not in sku_to_tracked_orders:
+                    sku_to_tracked_orders[sku_upper] = []
+                sku_to_tracked_orders[sku_upper].append({
+                    "order_number": order.get("order_number"),
+                    "delivery_status": delivery_status,
+                    "total_spent": order.get("total_spent", 0),
+                    "payment_status": payment_status or "PENDING",
+                    "payment_date": payment_date
+                })
         
         # Categorize inventory
         can_fulfill_today = []  # Matches unfulfilled orders from today
