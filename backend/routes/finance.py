@@ -1154,6 +1154,8 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 'shipping': shipping,  # Shipping cost in INR
                 'advance_payment': advance_payment,
                 'cod_amount': cod_amount,
+                'dtdc_cod_amount': dtdc_cod_amount,  # COD from DTDC ledger
+                'cod_match_dtdc': cod_match_dtdc,  # Does COD match DTDC ledger?
                 'profit': round(profit, 2),  # Profit in INR (after shipping deduction)
                 'matched': is_matched,
                 'match_type': match_type,
