@@ -55,6 +55,12 @@ const DashboardOptimized = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   
+  // WhatsApp states
+  const [selectedOrders, setSelectedOrders] = useState([]);
+  const [bulkWhatsAppDialog, setBulkWhatsAppDialog] = useState(false);
+  const [whatsappTemplate, setWhatsappTemplate] = useState('order_confirmation');
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
+  
   // Filter states
   const [filters, setFilters] = useState({
     fulfillmentStatus: 'all',
