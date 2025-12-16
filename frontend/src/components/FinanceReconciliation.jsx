@@ -391,14 +391,16 @@ const FinanceReconciliation = () => {
                   Upload your Excel file with these columns to reconcile with Shopify orders:
                 </p>
                 <div className="flex justify-center gap-3 flex-wrap mb-4">
-                  <Badge variant="outline" className="text-sm bg-blue-50 text-blue-700 border-blue-200">SHOPIFY ID → Order # in Shopify</Badge>
-                  <Badge variant="outline" className="text-sm bg-purple-50 text-purple-700 border-purple-200">SKU → SKU in order line items</Badge>
-                  <Badge variant="outline" className="text-sm bg-orange-50 text-orange-700 border-orange-200">AWB → DTDC Tracking Number</Badge>
-                  <Badge variant="outline" className="text-sm bg-green-50 text-green-700 border-green-200">SELL AMOUNT → Total Sale Price</Badge>
-                  <Badge variant="outline" className="text-sm bg-red-50 text-red-700 border-red-200">COST (optional)</Badge>
+                  <Badge variant="outline" className="text-sm bg-blue-50 text-blue-700 border-blue-200">SHOPIFY ID</Badge>
+                  <Badge variant="outline" className="text-sm bg-purple-50 text-purple-700 border-purple-200">SKU</Badge>
+                  <Badge variant="outline" className="text-sm bg-orange-50 text-orange-700 border-orange-200">AWB</Badge>
+                  <Badge variant="outline" className="text-sm bg-green-50 text-green-700 border-green-200">SELL AMOUNT (INR)</Badge>
+                  <Badge variant="outline" className="text-sm bg-red-50 text-red-700 border-red-200">COST (PKR)</Badge>
+                  <Badge variant="outline" className="text-sm bg-yellow-50 text-yellow-700 border-yellow-200">ADVANCE PAYMENT</Badge>
+                  <Badge variant="outline" className="text-sm bg-cyan-50 text-cyan-700 border-cyan-200">COD AMOUNT</Badge>
                 </div>
                 <p className="text-xs text-gray-500">
-                  <strong>Matching Logic:</strong> Order # → AWB/Tracking → SKU verification → Amount verification (5% tolerance)
+                  <strong>Amount Match:</strong> If COD = 0, Advance Payment should match Shopify Price. Cost is converted from PKR to INR.
                 </p>
               </div>
             </CardContent>
@@ -420,38 +422,44 @@ const FinanceReconciliation = () => {
                     <TableRow>
                       <TableHead>Shopify ID</TableHead>
                       <TableHead>SKU</TableHead>
-                      <TableHead>AWB/Tracking</TableHead>
-                      <TableHead className="text-right">Sell Amount</TableHead>
-                      <TableHead className="text-right">Cost</TableHead>
-                      <TableHead className="text-right">Profit</TableHead>
+                      <TableHead>AWB</TableHead>
+                      <TableHead className="text-right">Sell (INR)</TableHead>
+                      <TableHead className="text-right">Cost (PKR)</TableHead>
+                      <TableHead className="text-right">Cost (INR)</TableHead>
+                      <TableHead className="text-right">Advance</TableHead>
+                      <TableHead className="text-right">COD</TableHead>
+                      <TableHead className="text-right">Profit (INR)</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Shopify Order</TableHead>
-                      <TableHead className="text-right">Shopify Amount</TableHead>
-                      <TableHead>Amount Match</TableHead>
+                      <TableHead className="text-right">Shopify Amt</TableHead>
+                      <TableHead>Amt Match</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredRecords.map((record, index) => (
                       <TableRow 
                         key={record.id || index}
-                        className={record.status === 'unmatched' ? 'bg-red-50' : record.status === 'partial' ? 'bg-yellow-50' : ''}
+                        className={record.status === 'not_matched' ? 'bg-red-50' : ''}
                       >
-                        <TableCell className="font-mono">{record.shopify_id || '-'}</TableCell>
-                        <TableCell className="font-mono">{record.sku || '-'}</TableCell>
-                        <TableCell className="font-mono">{record.awb || '-'}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(record.sell_amount || 0, globalStore)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(record.cost || 0, globalStore)}</TableCell>
-                        <TableCell className={`text-right font-semibold ${record.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {formatCurrency(record.profit || 0, globalStore)}
+                        <TableCell className="font-mono text-sm">{record.shopify_id || '-'}</TableCell>
+                        <TableCell className="font-mono text-sm">{record.sku || '-'}</TableCell>
+                        <TableCell className="font-mono text-sm">{record.awb || '-'}</TableCell>
+                        <TableCell className="text-right">₹{(record.sell_amount || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right text-gray-600">Rs.{(record.cost_pkr || record.cost || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right">₹{(record.cost_inr || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right text-blue-600">₹{(record.advance_payment || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right text-orange-600">₹{(record.cod_amount || 0).toLocaleString()}</TableCell>
+                        <TableCell className={`text-right font-semibold ${(record.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          ₹{(record.profit || 0).toLocaleString()}
                         </TableCell>
                         <TableCell>{getStatusBadge(record.status)}</TableCell>
-                        <TableCell className="font-mono">{record.shopify_order_name || '-'}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(record.shopify_amount || 0, globalStore)}</TableCell>
+                        <TableCell className="font-mono text-sm">{record.shopify_order_name || '-'}</TableCell>
+                        <TableCell className="text-right">₹{(record.shopify_amount || 0).toLocaleString()}</TableCell>
                         <TableCell>
                           {record.amount_match ? (
                             <CheckCircle className="w-5 h-5 text-green-500" />
                           ) : record.matched ? (
-                            <AlertCircle className="w-5 h-5 text-yellow-500" />
+                            <AlertCircle className="w-5 h-5 text-yellow-500" title="Order matched but amount not verified" />
                           ) : (
                             <XCircle className="w-5 h-5 text-gray-300" />
                           )}
