@@ -74,6 +74,19 @@ const DTDCReconciliation = () => {
     }
   };
 
+  const fetchCodReconciliation = async () => {
+    try {
+      setCodLoading(true);
+      const response = await axios.get(`${API}/finance/cod-reconciliation?store_name=${globalStore}`);
+      setCodRecords(response.data.records || []);
+      setCodSummary(response.data.summary || null);
+    } catch (error) {
+      console.error('Error fetching COD reconciliation:', error);
+    } finally {
+      setCodLoading(false);
+    }
+  };
+
   const handleDTDCUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
