@@ -3458,6 +3458,82 @@ class ShopifyCustomerAPITester:
         return True
 
 def main():
+    """Main function for Inventory Data Comparison Tests"""
+    print("📦 Starting Inventory Data Comparison Tests")
+    print("=" * 80)
+    
+    # Setup
+    tester = ShopifyCustomerAPITester()
+    
+    # Run Inventory Comparison Tests as requested
+    inventory_results = tester.run_inventory_comparison_tests()
+    
+    # Print Inventory Comparison test summary
+    print("\n" + "=" * 80)
+    print("📊 INVENTORY DATA COMPARISON TEST SUMMARY")
+    print("=" * 80)
+    
+    # Check if login failed
+    if inventory_results.get("login_failed"):
+        print("❌ CRITICAL: Admin login failed - cannot proceed with tests")
+        return 1
+    
+    # Inventory Results
+    overview_results = inventory_results.get("overview_stats", {})
+    main_results = inventory_results.get("main_inventory", {})
+    comparison_results = inventory_results.get("data_comparison", {})
+    
+    print(f"📊 Overview Stats Endpoint: {'✅ PASS' if overview_results.get('success') else '❌ FAIL'}")
+    print(f"📋 Main Inventory Endpoint: {'✅ PASS' if main_results.get('success') else '❌ FAIL'}")
+    print(f"🔍 Data Comparison Analysis: {'✅ PASS' if comparison_results.get('success') else '❌ FAIL'}")
+    
+    # Overall success
+    all_tests_passed = all([
+        overview_results.get('success'),
+        main_results.get('success'),
+        comparison_results.get('success')
+    ])
+    
+    print(f"\n🎯 Overall Inventory Comparison Tests: {'✅ ALL PASSED' if all_tests_passed else '❌ DISCREPANCIES FOUND'}")
+    
+    # Print detailed results
+    if comparison_results.get('success'):
+        comparison_data = comparison_results.get('response', {})
+        if comparison_data.get('status') == 'match':
+            print("\n✅ NO DISCREPANCIES FOUND:")
+            overview_data = comparison_data.get('overview_data', {})
+            main_data = comparison_data.get('main_data', {})
+            print(f"   - Both endpoints report {overview_data.get('total_items', 0)} total items")
+            print(f"   - Both endpoints report ₹{overview_data.get('total_cost', 0):,.2f} total cost")
+            print(f"   - Main endpoint returned {main_data.get('items_returned', 0)} items")
+    else:
+        comparison_data = comparison_results.get('response', {})
+        discrepancies = comparison_data.get('discrepancies', [])
+        if discrepancies:
+            print("\n❌ DISCREPANCIES FOUND:")
+            for i, discrepancy in enumerate(discrepancies, 1):
+                print(f"   {i}. {discrepancy}")
+            
+            overview_data = comparison_data.get('overview_data', {})
+            main_data = comparison_data.get('main_data', {})
+            print(f"\n📊 DETAILED COMPARISON:")
+            print(f"   Overview Stats - Items: {overview_data.get('total_items', 0)}, Cost: ₹{overview_data.get('total_cost', 0):,.2f}")
+            print(f"   Main Inventory - Items: {main_data.get('total_items', 0)}, Cost: ₹{main_data.get('total_cost', 0):,.2f}")
+    
+    # Print individual test failures if any
+    if not all_tests_passed:
+        print("\n📋 INDIVIDUAL TEST RESULTS:")
+        if not overview_results.get('success'):
+            print("❌ Overview Stats Endpoint: Failed to fetch or invalid response structure")
+        if not main_results.get('success'):
+            print("❌ Main Inventory Endpoint: Failed to fetch or invalid response structure")
+        if not comparison_results.get('success'):
+            print("❌ Data Comparison: Found discrepancies between endpoints")
+    
+    return 0 if all_tests_passed else 1
+
+def main_confirmation_tracker():
+    """Main function for Confirmation Tracker Tests"""
     print("📋 Starting Confirmation Tracker Functionality Tests")
     print("=" * 80)
     
