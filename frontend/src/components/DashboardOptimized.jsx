@@ -589,7 +589,12 @@ const DashboardOptimized = () => {
                         onClick={() => setSelectedOrder(order)}
                       >
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                          <input type="checkbox" className="rounded border-gray-300" />
+                          <input 
+                            type="checkbox" 
+                            className="rounded border-gray-300"
+                            checked={selectedOrders.includes(order.customer_id)}
+                            onChange={() => handleSelectOrder(order.customer_id)}
+                          />
                         </td>
                         <td className="px-4 py-3">
                           <span className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
