@@ -952,22 +952,32 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                         break
             
             # Verify amount match
+            # Amount Match Logic: Advance Payment + COD Amount = Shopify Order Amount
             amount_match = False
             shopify_amount = 0
+            total_payment = advance_payment + cod_amount
+            
             if matched_order:
                 try:
-                    shopify_amount = float(matched_order.get('total_price', 0) or 0)
+                    shopify_amount = float(matched_order.get('total_price', 0) or matched_order.get('total_spent', 0) or 0)
                 except:
                     shopify_amount = 0
                 
-                # Allow 5% tolerance for amount matching
-                if sell_amount > 0 and shopify_amount > 0:
-                    diff = abs(shopify_amount - sell_amount) / max(sell_amount, shopify_amount)
-                    amount_match = diff < 0.05
+                # Amount match logic:
+                # If COD = 0, then Advance Payment should match Shopify Amount
+                # If COD > 0, then Advance Payment + COD should match Shopify Amount
+                if total_payment > 0 and shopify_amount > 0:
+                    diff = abs(shopify_amount - total_payment)
+                    # Allow Rs.10 tolerance for rounding differences
+                    amount_match = diff <= 10
+                elif sell_amount > 0 and shopify_amount > 0:
+                    # Fallback: check sell_amount matches
+                    diff = abs(shopify_amount - sell_amount)
+                    amount_match = diff <= 10
             
-            # Calculate profit (note: cost is in PKR, sell_amount is in INR for ashmiaa)
-            # For now, store both values separately - profit calculation may need currency conversion
-            profit = sell_amount - cost if sell_amount and cost else 0
+            # Calculate profit using cost converted to INR
+            # Profit = Sale Amount (INR) - Cost (converted to INR)
+            profit = sell_amount - cost_inr if sell_amount and cost_inr else 0
             
             # Determine final status
             # Matched = order found (we match by order # or tracking, not by amount since currencies differ)
@@ -991,7 +1001,10 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                         update_query,
                         {'$set': {
                             'order_cost': cost,
-                            'cost_currency': 'PKR',  # Cost is in PKR
+                            'order_cost_inr': cost_inr,
+                            'cost_currency': 'PKR',  # Original cost is in PKR
+                            'advance_payment': advance_payment,
+                            'cod_amount': cod_amount,
                             'cost_from_reconciliation': True,
                             'reconciliation_awb': awb,
                             'cost_updated_at': datetime.now(timezone.utc).isoformat()
@@ -1004,10 +1017,13 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 'sku': sku.upper() if sku else '',
                 'awb': awb,
                 'sell_amount': sell_amount,
-                'sell_currency': 'INR',  # Sale price is in INR for ashmiaa
-                'cost': cost,
-                'cost_currency': 'PKR',  # Cost is in PKR
-                'profit': profit,
+                'sell_currency': 'INR',
+                'cost_pkr': cost,  # Original cost in PKR
+                'cost_inr': round(cost_inr, 2),  # Converted cost in INR
+                'advance_payment': advance_payment,
+                'cod_amount': cod_amount,
+                'total_payment': total_payment,  # Advance + COD
+                'profit': round(profit, 2),  # Profit in INR
                 'matched': is_matched,
                 'match_type': match_type,
                 'sku_matched': sku_matched,
