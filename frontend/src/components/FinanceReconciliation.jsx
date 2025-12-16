@@ -431,11 +431,13 @@ const FinanceReconciliation = () => {
                       <TableHead className="text-right">Shipping</TableHead>
                       <TableHead className="text-right">Advance</TableHead>
                       <TableHead className="text-right">COD</TableHead>
+                      <TableHead className="text-right">DTDC COD</TableHead>
                       <TableHead className="text-right">Profit (INR)</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Shopify Order</TableHead>
                       <TableHead className="text-right">Shopify Amt</TableHead>
                       <TableHead>Amt Match</TableHead>
+                      <TableHead>COD Match</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -453,6 +455,13 @@ const FinanceReconciliation = () => {
                         <TableCell className="text-right text-pink-600">₹{(record.shipping || 0).toLocaleString()}</TableCell>
                         <TableCell className="text-right text-blue-600">₹{(record.advance_payment || 0).toLocaleString()}</TableCell>
                         <TableCell className="text-right text-orange-600">₹{(record.cod_amount || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right">
+                          {record.dtdc_cod_amount > 0 ? (
+                            <span className="text-purple-600">₹{(record.dtdc_cod_amount || 0).toLocaleString()}</span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
                         <TableCell className={`text-right font-semibold ${(record.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           ₹{(record.profit || 0).toLocaleString()}
                         </TableCell>
@@ -463,9 +472,22 @@ const FinanceReconciliation = () => {
                           {record.amount_match ? (
                             <CheckCircle className="w-5 h-5 text-green-500" />
                           ) : record.matched ? (
-                            <AlertCircle className="w-5 h-5 text-yellow-500" title="Order matched but amount not verified" />
+                            <AlertCircle className="w-5 h-5 text-yellow-500" title="Order matched but amount mismatch" />
                           ) : (
                             <XCircle className="w-5 h-5 text-gray-300" />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {record.cod_amount > 0 ? (
+                            record.cod_match_dtdc ? (
+                              <CheckCircle className="w-5 h-5 text-green-500" title="COD matches DTDC ledger" />
+                            ) : record.dtdc_cod_amount > 0 ? (
+                              <XCircle className="w-5 h-5 text-red-500" title={`Mismatch: Finance ₹${record.cod_amount} vs DTDC ₹${record.dtdc_cod_amount}`} />
+                            ) : (
+                              <AlertCircle className="w-5 h-5 text-yellow-500" title="No DTDC record found for this AWB" />
+                            )
+                          ) : (
+                            <span className="text-gray-400 text-xs">N/A</span>
                           )}
                         </TableCell>
                       </TableRow>
