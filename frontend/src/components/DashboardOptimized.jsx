@@ -378,9 +378,9 @@ Thank you for your understanding.`;
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">Orders</h1>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
               <Select value={selectedStore} onValueChange={switchStore}>
-                <SelectTrigger className="w-40 h-9 text-sm">
+                <SelectTrigger className="w-36 h-9 text-sm">
                   <SelectValue placeholder="All stores" />
                 </SelectTrigger>
                 <SelectContent>
@@ -393,37 +393,37 @@ Thank you for your understanding.`;
                 </SelectContent>
               </Select>
               <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
-                <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-                Sync Orders
+                <RefreshCw className={`w-4 h-4 mr-1 ${syncing ? 'animate-spin' : ''}`} />
+                Sync
               </Button>
               <Button variant="outline" size="sm" onClick={handleSyncTCS} disabled={syncingTCS}>
-                <Truck className={`w-4 h-4 mr-2 ${syncingTCS ? 'animate-spin' : ''}`} />
-                Sync TCS
+                <Truck className={`w-4 h-4 mr-1 ${syncingTCS ? 'animate-spin' : ''}`} />
+                TCS
               </Button>
               <Button variant="outline" size="sm" onClick={handleSyncCosts} disabled={syncingCosts}>
-                <DollarSign className={`w-4 h-4 mr-2 ${syncingCosts ? 'animate-spin' : ''}`} />
-                Sync Costs
+                <DollarSign className={`w-4 h-4 mr-1 ${syncingCosts ? 'animate-spin' : ''}`} />
+                Costs
               </Button>
               <Button 
                 size="sm" 
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 text-white"
                 onClick={handleBulkWhatsApp}
                 disabled={selectedOrders.length === 0}
               >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Send WhatsApp {selectedOrders.length > 0 && `(${selectedOrders.length})`}
+                <MessageCircle className="w-4 h-4 mr-1" />
+                WhatsApp {selectedOrders.length > 0 && `(${selectedOrders.length})`}
               </Button>
               <Button 
                 size="sm" 
                 variant="outline"
-                className="text-red-600 border-red-200 hover:bg-red-50"
+                className="text-red-600 border-red-300 hover:bg-red-50"
                 onClick={handleBulkCancellation}
                 disabled={selectedOrders.length === 0}
               >
-                <X className="w-4 h-4 mr-2" />
-                Cancel Orders {selectedOrders.length > 0 && `(${selectedOrders.length})`}
+                <X className="w-4 h-4 mr-1" />
+                Cancel {selectedOrders.length > 0 && `(${selectedOrders.length})`}
               </Button>
-              <Button size="sm">Export</Button>
+              <Button size="sm" variant="outline">Export</Button>
             </div>
           </div>
           {/* Selection Info Bar */}
