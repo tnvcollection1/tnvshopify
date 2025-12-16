@@ -3596,6 +3596,164 @@ async def sync_inventory_orders(store_name: str = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/inventory/v2/sync-shopify-stock")
+async def sync_shopify_inventory_stock(store_name: str = None):
+    """
+    Sync inventory stock data from Shopify.
+    Fetches all products and variants from Shopify and imports/updates inventory.
+    Includes: SKU, Title, Price, Stock Quantity, Variant details.
+    """
+    import httpx
+    
+    try:
+        if not store_name or store_name == 'all':
+            return {"success": False, "message": "Please select a specific store"}
+        
+        store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
+        if not store:
+            return {"success": False, "message": f"Store '{store_name}' not found"}
+        
+        # Get Shopify credentials
+        shop_domain = store.get('shopify_domain') or store.get('shop_url') or store.get('store_url', '').replace('https://', '').replace('http://', '').rstrip('/')
+        access_token = store.get('shopify_token') or store.get('shopify_access_token') or store.get('access_token')
+        
+        if not shop_domain or not access_token:
+            return {"success": False, "message": "Shopify credentials not configured for this store"}
+        
+        logger.info(f"🔄 Syncing inventory from Shopify: {shop_domain}")
+        
+        headers = {
+            "X-Shopify-Access-Token": access_token,
+            "Content-Type": "application/json"
+        }
+        
+        # Fetch all products from Shopify
+        all_products = []
+        url = f"https://{shop_domain}/admin/api/2024-01/products.json?limit=250"
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            while url:
+                response = await client.get(url, headers=headers)
+                if response.status_code != 200:
+                    logger.error(f"Shopify API error: {response.text}")
+                    return {"success": False, "message": f"Shopify API error: {response.status_code}"}
+                
+                data = response.json()
+                all_products.extend(data.get('products', []))
+                
+                # Handle pagination
+                link_header = response.headers.get('Link', '')
+                url = None
+                if 'rel="next"' in link_header:
+                    for link in link_header.split(','):
+                        if 'rel="next"' in link:
+                            url = link.split(';')[0].strip('<> ')
+                            break
+        
+        logger.info(f"📦 Fetched {len(all_products)} products from Shopify")
+        
+        # Process products and variants into inventory items
+        created_count = 0
+        updated_count = 0
+        skipped_count = 0
+        
+        for product in all_products:
+            product_title = product.get('title', '')
+            product_type = product.get('product_type', '')
+            vendor = product.get('vendor', '')
+            tags = product.get('tags', '')
+            
+            # Get image URL
+            images = product.get('images', [])
+            image_url = images[0].get('src') if images else None
+            
+            for variant in product.get('variants', []):
+                sku = (variant.get('sku') or '').strip()
+                if not sku:
+                    skipped_count += 1
+                    continue
+                
+                variant_title = variant.get('title', '')
+                price = float(variant.get('price', 0) or 0)
+                compare_at_price = float(variant.get('compare_at_price', 0) or 0)
+                inventory_quantity = int(variant.get('inventory_quantity', 0) or 0)
+                barcode = variant.get('barcode', '')
+                weight = variant.get('weight', 0)
+                
+                # Extract size/color from variant title or options
+                size = ''
+                color = ''
+                if variant_title and variant_title != 'Default Title':
+                    parts = variant_title.split(' / ')
+                    if len(parts) >= 1:
+                        size = parts[0]
+                    if len(parts) >= 2:
+                        color = parts[1]
+                
+                # Check if item exists
+                existing = await db.inventory_v2.find_one(
+                    {"sku": sku, "store_name": store_name},
+                    {"_id": 0, "id": 1, "cost": 1}
+                )
+                
+                inventory_item = {
+                    "sku": sku,
+                    "product_name": product_title,
+                    "variant_title": variant_title,
+                    "size": size,
+                    "color": color,
+                    "sale_price": price,
+                    "original_price": compare_at_price if compare_at_price > 0 else price,
+                    "quantity": inventory_quantity,
+                    "stock": inventory_quantity,
+                    "barcode": barcode,
+                    "weight": weight,
+                    "product_type": product_type,
+                    "vendor": vendor,
+                    "tags": tags,
+                    "image_url": image_url,
+                    "store_name": store_name,
+                    "shopify_synced": True,
+                    "last_shopify_sync": datetime.now(timezone.utc).isoformat()
+                }
+                
+                if existing:
+                    # Preserve cost if it exists
+                    if existing.get('cost'):
+                        inventory_item['cost'] = existing['cost']
+                        inventory_item['profit'] = price - existing['cost']
+                    
+                    await db.inventory_v2.update_one(
+                        {"sku": sku, "store_name": store_name},
+                        {"$set": inventory_item}
+                    )
+                    updated_count += 1
+                else:
+                    # New item - generate ID
+                    inventory_item['id'] = f"{store_name}_{sku}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                    inventory_item['cost'] = 0
+                    inventory_item['profit'] = price
+                    inventory_item['created_at'] = datetime.now(timezone.utc).isoformat()
+                    
+                    await db.inventory_v2.insert_one(inventory_item)
+                    created_count += 1
+        
+        logger.info(f"✅ Inventory sync complete: {created_count} created, {updated_count} updated, {skipped_count} skipped")
+        
+        return {
+            "success": True,
+            "message": f"Synced {created_count + updated_count} inventory items from Shopify",
+            "created_count": created_count,
+            "updated_count": updated_count,
+            "skipped_count": skipped_count,
+            "total_products": len(all_products)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing Shopify inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ========================================
 # OLD INVENTORY ENDPOINTS (KEPT FOR BACKWARD COMPATIBILITY)
 # ========================================
