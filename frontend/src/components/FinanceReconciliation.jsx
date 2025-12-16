@@ -401,7 +401,8 @@ const FinanceReconciliation = () => {
                   <Badge variant="outline" className="text-sm bg-cyan-50 text-cyan-700 border-cyan-200">COD AMOUNT</Badge>
                 </div>
                 <p className="text-xs text-gray-500">
-                  <strong>Profit = Sell Amount - Cost (INR) - Shipping</strong> | Amount Match: If COD = 0, Advance = Shopify Price
+                  <strong>Profit = Sell Amount - Cost (INR) - Shipping</strong><br/>
+                  Amount Match: COD=0 → Advance=Shopify | COD&gt;0 → Advance+COD=Shopify
                 </p>
               </div>
             </CardContent>
