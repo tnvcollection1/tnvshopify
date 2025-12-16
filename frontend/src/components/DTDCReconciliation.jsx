@@ -1,0 +1,450 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { 
+  Upload, 
+  FileSpreadsheet, 
+  DollarSign, 
+  CheckCircle, 
+  XCircle, 
+  AlertCircle, 
+  RefreshCw, 
+  Search,
+  Download,
+  Truck,
+  CreditCard,
+  Building2,
+  Trash2,
+  IndianRupee
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { useStore } from '../contexts/StoreContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+const API = process.env.REACT_APP_BACKEND_URL + '/api';
+
+const DTDCReconciliation = () => {
+  const { selectedStore: globalStore } = useStore();
+  const [loading, setLoading] = useState(false);
+  const [uploadingDTDC, setUploadingDTDC] = useState(false);
+  const [uploadingBank, setUploadingBank] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [records, setRecords] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    if (globalStore && globalStore !== 'all') {
+      fetchReconciliation();
+    } else {
+      setRecords([]);
+      setSummary(null);
+    }
+  }, [globalStore, filter]);
+
+  const fetchReconciliation = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (globalStore !== 'all') params.append('store_name', globalStore);
+      if (filter !== 'all') params.append('status', filter);
+      
+      const response = await axios.get(`${API}/finance/dtdc-payment-reconciliation?${params}`);
+      setRecords(response.data.records || []);
+      setSummary(response.data.summary || null);
+    } catch (error) {
+      console.error('Error fetching DTDC reconciliation:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDTDCUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (globalStore === 'all') {
+      toast.error('Please select a specific store first');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setUploadingDTDC(true);
+      const response = await axios.post(
+        `${API}/finance/upload-dtdc-payments?store_name=${globalStore}`, 
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      
+      toast.success(
+        `✅ Uploaded ${response.data.total_records} DTDC payments\n` +
+        `Matched: ${response.data.matched} | Total COD: ₹${response.data.total_cod_amount?.toLocaleString()}`
+      );
+      
+      fetchReconciliation();
+      event.target.value = '';
+    } catch (error) {
+      console.error('Error uploading DTDC payments:', error);
+      toast.error(error.response?.data?.detail || 'Failed to upload DTDC payments');
+    } finally {
+      setUploadingDTDC(false);
+    }
+  };
+
+  const handleBankUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (globalStore === 'all') {
+      toast.error('Please select a specific store first');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setUploadingBank(true);
+      const response = await axios.post(
+        `${API}/finance/upload-bank-statement?store_name=${globalStore}`, 
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      
+      toast.success(
+        `✅ Uploaded ${response.data.total_records} bank transactions\n` +
+        `DTDC Payments Found: ${response.data.dtdc_payments_detected} | Matched: ${response.data.matched_with_dtdc}`
+      );
+      
+      fetchReconciliation();
+      event.target.value = '';
+    } catch (error) {
+      console.error('Error uploading bank statement:', error);
+      toast.error(error.response?.data?.detail || 'Failed to upload bank statement');
+    } finally {
+      setUploadingBank(false);
+    }
+  };
+
+  const handleClearData = async () => {
+    if (globalStore === 'all') {
+      toast.error('Please select a specific store first');
+      return;
+    }
+    
+    if (!window.confirm(`Are you sure you want to clear all DTDC reconciliation data for ${globalStore}?`)) {
+      return;
+    }
+
+    try {
+      setClearing(true);
+      await axios.delete(`${API}/finance/clear-dtdc-reconciliation?store_name=${globalStore}`);
+      toast.success('Data cleared successfully');
+      fetchReconciliation();
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      toast.error('Failed to clear data');
+    } finally {
+      setClearing(false);
+    }
+  };
+
+  const filteredRecords = records.filter(record => {
+    if (!search) return true;
+    const searchLower = search.toLowerCase();
+    return (
+      (record.awb || '').toLowerCase().includes(searchLower) ||
+      (record.matched_order_number || '').toString().toLowerCase().includes(searchLower)
+    );
+  });
+
+  const getStatusBadge = (record) => {
+    if (record.bank_matched) {
+      return <Badge className="bg-green-100 text-green-800 border-green-200">✅ Received</Badge>;
+    } else if (record.matched) {
+      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">⏳ Pending</Badge>;
+    } else {
+      return <Badge className="bg-gray-100 text-gray-800 border-gray-200">❓ Unmatched</Badge>;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">DTDC Payment Reconciliation</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Match DTDC COD collections with bank deposits
+              {globalStore !== 'all' && <span className="text-green-600 font-medium"> • Store: {globalStore}</span>}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            {records.length > 0 && (
+              <Button 
+                onClick={handleClearData} 
+                variant="outline" 
+                className="text-red-600 border-red-200 hover:bg-red-50"
+                disabled={clearing || globalStore === 'all'}
+              >
+                {clearing ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                Clear Data
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* Store Selection Warning */}
+        {globalStore === 'all' && (
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-amber-800 text-sm">
+              <AlertCircle className="w-4 h-4 inline mr-2" />
+              <strong>Please select a specific store</strong> from the header dropdown to upload and view DTDC payment data.
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="p-6">
+        {/* Summary Cards */}
+        {summary && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <Truck className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{summary.total_records}</p>
+                    <p className="text-sm text-gray-500">Total DTDC Records</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-green-600">₹{(summary.total_received_in_bank || 0).toLocaleString()}</p>
+                    <p className="text-sm text-gray-500">Received in Bank ({summary.received_in_bank})</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-yellow-100 rounded-lg">
+                    <AlertCircle className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-yellow-600">₹{(summary.total_pending_amount || 0).toLocaleString()}</p>
+                    <p className="text-sm text-gray-500">Pending Deposit ({summary.pending_deposit})</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <IndianRupee className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-purple-600">₹{(summary.total_cod_collected || 0).toLocaleString()}</p>
+                    <p className="text-sm text-gray-500">Total COD Collected</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Upload Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* DTDC Upload */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Truck className="w-5 h-5 text-orange-600" />
+                Step 1: Upload DTDC Payment Report
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Upload DTDC COD collection report. Required columns: <strong>AWB</strong>, <strong>COD Amount</strong>
+              </p>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleDTDCUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  disabled={uploadingDTDC || globalStore === 'all'}
+                />
+                <Button 
+                  className={`w-full ${globalStore === 'all' ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700'} pointer-events-none`}
+                >
+                  {uploadingDTDC ? (
+                    <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Uploading...</>
+                  ) : (
+                    <><Upload className="w-4 h-4 mr-2" /> Upload DTDC Report</>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Bank Statement Upload */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-blue-600" />
+                Step 2: Upload Bank Statement
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4">
+                Upload bank statement to match deposits. Required columns: <strong>Date</strong>, <strong>Amount</strong>, <strong>Description</strong>
+              </p>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleBankUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  disabled={uploadingBank || globalStore === 'all' || records.length === 0}
+                />
+                <Button 
+                  className={`w-full ${(globalStore === 'all' || records.length === 0) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} pointer-events-none`}
+                >
+                  {uploadingBank ? (
+                    <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Uploading...</>
+                  ) : (
+                    <><Upload className="w-4 h-4 mr-2" /> Upload Bank Statement</>
+                  )}
+                </Button>
+              </div>
+              {records.length === 0 && globalStore !== 'all' && (
+                <p className="text-xs text-amber-600 mt-2">⚠️ Upload DTDC report first</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <div className="flex items-center gap-4 mb-4">
+          <div className="flex-1">
+            <Input
+              placeholder="Search by AWB or Order Number..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-md"
+            />
+          </div>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="received">Received in Bank</SelectItem>
+              <SelectItem value="pending">Pending Deposit</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" onClick={fetchReconciliation} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
+
+        {/* Data Table */}
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>AWB / Tracking</TableHead>
+                <TableHead>Order #</TableHead>
+                <TableHead className="text-right">COD Amount</TableHead>
+                <TableHead>DTDC Date</TableHead>
+                <TableHead className="text-center">Bank Status</TableHead>
+                <TableHead className="text-right">Bank Amount</TableHead>
+                <TableHead>Bank Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
+                    <p className="text-gray-500 mt-2">Loading...</p>
+                  </TableCell>
+                </TableRow>
+              ) : filteredRecords.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                    {globalStore === 'all' 
+                      ? 'Please select a store to view DTDC payment data'
+                      : 'No DTDC payment records found. Upload a DTDC report to get started.'}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredRecords.map((record, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="font-mono text-sm">{record.awb}</TableCell>
+                    <TableCell>
+                      {record.matched_order_number ? (
+                        <span className="text-blue-600">#{record.matched_order_number}</span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      ₹{(record.cod_amount || 0).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {record.payment_date || '-'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {getStatusBadge(record)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {record.bank_amount ? (
+                        <span className="text-green-600 font-medium">₹{record.bank_amount.toLocaleString()}</span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {record.bank_date || '-'}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default DTDCReconciliation;
