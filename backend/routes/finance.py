@@ -438,6 +438,12 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 if name_num:
                     order_by_name[name_num] = order
             
+            # Also index by order_number field (for stores like ashmiaa that don't have name)
+            order_number = str(order.get('order_number', '')).strip()
+            if order_number:
+                order_by_name[order_number] = order
+                order_by_name[f"#{order_number}"] = order
+            
             # Index by tracking number
             tracking = str(order.get('tracking_number', '')).strip()
             if tracking:
@@ -453,6 +459,8 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                         if item_sku not in order_by_sku:
                             order_by_sku[item_sku] = []
                         order_by_sku[item_sku].append(order)
+        
+        logger.info(f"Built lookup maps: {len(order_by_name)} by name/number, {len(order_by_tracking)} by tracking")
         
         # Process and reconcile each record
         matched_count = 0
