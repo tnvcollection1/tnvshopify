@@ -61,6 +61,9 @@ const DashboardOptimized = () => {
   const [whatsappTemplate, setWhatsappTemplate] = useState('order_confirmation');
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
   
+  // TCS sync state
+  const [syncingOrderId, setSyncingOrderId] = useState(null);
+  
   // Filter states
   const [filters, setFilters] = useState({
     fulfillmentStatus: 'all',
