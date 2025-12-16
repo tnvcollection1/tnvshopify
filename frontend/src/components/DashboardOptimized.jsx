@@ -404,44 +404,50 @@ Thank you for your understanding.`;
                 <DollarSign className={`w-4 h-4 mr-1 ${syncingCosts ? 'animate-spin' : ''}`} />
                 Costs
               </Button>
-              <Button 
-                size="sm" 
-                className="bg-green-600 hover:bg-green-700 text-white"
-                onClick={handleBulkWhatsApp}
-                disabled={selectedOrders.length === 0}
-              >
-                <MessageCircle className="w-4 h-4 mr-1" />
-                WhatsApp {selectedOrders.length > 0 && `(${selectedOrders.length})`}
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline"
-                className="text-red-600 border-red-300 hover:bg-red-50"
-                onClick={handleBulkCancellation}
-                disabled={selectedOrders.length === 0}
-              >
-                <X className="w-4 h-4 mr-1" />
-                Cancel {selectedOrders.length > 0 && `(${selectedOrders.length})`}
-              </Button>
               <Button size="sm" variant="outline">Export</Button>
             </div>
           </div>
-          {/* Selection Info Bar */}
-          {selectedOrders.length > 0 && (
-            <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-blue-50 rounded-lg">
-              <span className="text-sm text-blue-700 font-medium">
-                {selectedOrders.length} order{selectedOrders.length > 1 ? 's' : ''} selected
-              </span>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="text-blue-600 h-7"
-                onClick={() => setSelectedOrders([])}
-              >
-                Clear selection
-              </Button>
-            </div>
-          )}
+          {/* Bulk Action Bar - Always visible */}
+          <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-gray-50 border rounded-lg">
+            <span className="text-sm text-gray-600">
+              Bulk Actions:
+            </span>
+            <Button 
+              size="sm" 
+              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={handleBulkWhatsApp}
+              disabled={selectedOrders.length === 0}
+            >
+              <MessageCircle className="w-4 h-4 mr-1" />
+              Send WhatsApp {selectedOrders.length > 0 ? `(${selectedOrders.length})` : ''}
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="text-red-600 border-red-300 hover:bg-red-50"
+              onClick={handleBulkCancellation}
+              disabled={selectedOrders.length === 0}
+            >
+              <X className="w-4 h-4 mr-1" />
+              Send Cancellation {selectedOrders.length > 0 ? `(${selectedOrders.length})` : ''}
+            </Button>
+            {selectedOrders.length > 0 && (
+              <>
+                <span className="mx-2 text-gray-300">|</span>
+                <span className="text-sm text-blue-600 font-medium">
+                  {selectedOrders.length} selected
+                </span>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="text-gray-500 h-7"
+                  onClick={() => setSelectedOrders([])}
+                >
+                  Clear
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
