@@ -521,7 +521,114 @@ async def clear_dtdc_reconciliation(store_name: str = None):
         raise
     except Exception as e:
         logger.error(f"❌ Error clearing DTDC reconciliation: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))@finance_router.get("/status")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@finance_router.get("/cod-reconciliation")
+async def get_cod_reconciliation(store_name: str = None):
+    """
+    Get COD Reconciliation status.
+    Combines data from:
+    - Purchase Order Reconciliation (orders with COD amounts)
+    - DTDC Payments (COD collected by courier)
+    - Bank Statements (COD deposited to bank)
+    
+    Shows full COD lifecycle: Order → DTDC Collection → Bank Deposit
+    """
+    try:
+        if not store_name or store_name == 'all':
+            raise HTTPException(status_code=400, detail="Please select a specific store")
+        
+        # Get orders with COD from reconciliation
+        cod_orders = await db.purchase_order_reconciliation.find(
+            {'store_name': store_name, 'cod_amount': {'$gt': 0}},
+            {'_id': 0}
+        ).to_list(10000)
+        
+        # Get DTDC payments
+        dtdc_payments = await db.dtdc_payments.find(
+            {'store_name': store_name},
+            {'_id': 0}
+        ).to_list(10000)
+        
+        # Build lookup by AWB
+        dtdc_by_awb = {p['awb']: p for p in dtdc_payments if p.get('awb')}
+        
+        # Combine data
+        cod_records = []
+        total_cod_expected = 0
+        total_cod_collected = 0
+        total_cod_deposited = 0
+        pending_collection = 0
+        pending_deposit = 0
+        
+        for order in cod_orders:
+            awb = order.get('awb', '').upper()
+            cod_amount = order.get('cod_amount', 0)
+            
+            # Find matching DTDC payment
+            dtdc_record = dtdc_by_awb.get(awb, {})
+            
+            cod_collected = dtdc_record.get('cod_amount', 0) if dtdc_record else 0
+            bank_deposited = dtdc_record.get('bank_matched', False)
+            bank_amount = dtdc_record.get('bank_amount', 0) if bank_deposited else 0
+            
+            # Status determination
+            if bank_deposited:
+                status = 'deposited'
+                total_cod_deposited += bank_amount
+            elif cod_collected > 0:
+                status = 'collected'
+                pending_deposit += cod_collected
+            else:
+                status = 'pending_collection'
+                pending_collection += cod_amount
+            
+            total_cod_expected += cod_amount
+            if cod_collected > 0:
+                total_cod_collected += cod_collected
+            
+            cod_record = {
+                'shopify_id': order.get('shopify_id'),
+                'shopify_order': order.get('shopify_order_name'),
+                'awb': awb,
+                'cod_expected': cod_amount,
+                'cod_collected': cod_collected,
+                'bank_deposited': bank_deposited,
+                'bank_amount': bank_amount,
+                'bank_date': dtdc_record.get('bank_date') if dtdc_record else None,
+                'status': status,
+                'sell_amount': order.get('sell_amount', 0),
+                'advance_payment': order.get('advance_payment', 0)
+            }
+            cod_records.append(cod_record)
+        
+        # Summary
+        summary = {
+            'total_orders': len(cod_records),
+            'total_cod_expected': total_cod_expected,
+            'total_cod_collected': total_cod_collected,
+            'total_cod_deposited': total_cod_deposited,
+            'pending_collection': pending_collection,
+            'pending_deposit': pending_deposit,
+            'collection_rate': f"{(total_cod_collected/total_cod_expected*100):.1f}%" if total_cod_expected > 0 else "0%",
+            'deposit_rate': f"{(total_cod_deposited/total_cod_collected*100):.1f}%" if total_cod_collected > 0 else "0%"
+        }
+        
+        return {
+            'success': True,
+            'records': cod_records,
+            'summary': summary
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error getting COD reconciliation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@finance_router.get("/status")
 async def get_finance_status():
     """
     Get status of uploaded finance data
