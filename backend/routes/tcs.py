@@ -345,7 +345,8 @@ async def sync_all_tcs_deliveries():
                 if new_status and new_status not in ['UNKNOWN', 'NOT_FOUND']:
                     update_data = {
                         'delivery_status': new_status,
-                        'last_auto_sync': datetime.now(timezone.utc).isoformat()
+                        'delivery_updated_at': datetime.now(timezone.utc).isoformat(),
+                        'tcs_last_sync': datetime.now(timezone.utc).isoformat()
                     }
                     if current_location:
                         update_data['current_location'] = current_location
@@ -353,11 +354,14 @@ async def sync_all_tcs_deliveries():
                         update_data['cod_payment_status'] = payment_info.get('payment_status')
                         update_data['cod_amount'] = payment_info.get('cod_amount', 0)
                     
-                    await db.customers.update_one(
-                        {'customer_id': order['customer_id'], 'store_name': order['store_name']},
+                    # Use tracking_number to find and update - more reliable
+                    result = await db.customers.update_one(
+                        {'tracking_number': order['tracking_number']},
                         {'$set': update_data}
                     )
-                    synced += 1
+                    if result.modified_count > 0:
+                        synced += 1
+                        logger.info(f"Synced {order['tracking_number']} to {new_status}")
             except Exception as e:
                 errors += 1
                 logger.error(f"Error syncing {order.get('tracking_number')}: {e}")
