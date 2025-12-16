@@ -75,6 +75,40 @@ const InventoryOverview = () => {
     }
   };
 
+  const [syncingStock, setSyncingStock] = useState(false);
+  
+  const syncStockFromShopify = async () => {
+    if (globalStore === 'all') {
+      toast.error('Please select a specific store first');
+      return;
+    }
+    
+    setSyncingStock(true);
+    try {
+      toast.loading('Syncing inventory from Shopify...');
+      
+      const response = await axios.post(`${API}/api/inventory/v2/sync-shopify-stock?store_name=${globalStore}`);
+      
+      toast.dismiss();
+      
+      if (response.data.success) {
+        toast.success(
+          `✅ ${response.data.message}\n` +
+          `Created: ${response.data.created_count} | Updated: ${response.data.updated_count}`
+        );
+        fetchInventoryStats();
+      } else {
+        toast.error(response.data.message || 'Sync failed');
+      }
+    } catch (error) {
+      toast.dismiss();
+      console.error('Error syncing stock:', error);
+      toast.error(error.response?.data?.detail || 'Failed to sync stock from Shopify');
+    } finally {
+      setSyncingStock(false);
+    }
+  };
+
   const loadCategoryItems = async (category) => {
     if (selectedCategory === category) {
       setSelectedCategory(null);
