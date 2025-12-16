@@ -819,25 +819,37 @@ Thank you for your understanding.`;
                           )}
                         </td>
                         <td className="px-4 py-3 text-center">
-                          {order.delivery_status === 'DELIVERED' ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              Delivered
-                            </span>
-                          ) : order.delivery_status === 'IN_TRANSIT' ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              In Transit
-                            </span>
-                          ) : order.delivery_status === 'PENDING' ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                              Pending
-                            </span>
-                          ) : order.delivery_status === 'RETURNED' ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                              Returned
-                            </span>
-                          ) : (
-                            <span className="text-xs text-gray-400">-</span>
-                          )}
+                          <div className="flex items-center justify-center gap-1">
+                            {order.delivery_status === 'DELIVERED' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Delivered
+                              </span>
+                            ) : order.delivery_status === 'IN_TRANSIT' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                In Transit
+                              </span>
+                            ) : order.delivery_status === 'PENDING' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Pending
+                              </span>
+                            ) : order.delivery_status === 'RETURNED' || order.delivery_status === 'RETURN_IN_PROCESS' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                {order.delivery_status === 'RETURN_IN_PROCESS' ? 'Returning' : 'Returned'}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-gray-400">-</span>
+                            )}
+                            {order.tracking_number && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); syncOrderTCS(order); }}
+                                disabled={syncingOrderId === order.order_number}
+                                className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition-colors"
+                                title="Sync delivery status from TCS"
+                              >
+                                <Truck className={`w-4 h-4 ${syncingOrderId === order.order_number ? 'animate-pulse text-blue-500' : ''}`} />
+                              </button>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-center">
                           {order.stock_status === 'IN_STOCK' ? (
