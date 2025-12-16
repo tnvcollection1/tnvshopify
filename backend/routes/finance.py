@@ -351,8 +351,20 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
         # Read file content
         content = await file.read()
         
-        # Parse Excel file
-        df = pd.read_excel(BytesIO(content))
+        # Parse file based on extension
+        filename = file.filename.lower() if file.filename else ""
+        if filename.endswith('.csv'):
+            df = pd.read_csv(BytesIO(content))
+        else:
+            # Try Excel first, fallback to CSV
+            try:
+                df = pd.read_excel(BytesIO(content))
+            except Exception as excel_error:
+                logger.warning(f"Excel parse failed, trying CSV: {excel_error}")
+                try:
+                    df = pd.read_csv(BytesIO(content))
+                except Exception as csv_error:
+                    raise HTTPException(status_code=400, detail=f"Could not parse file. Excel error: {excel_error}, CSV error: {csv_error}")
         
         # Normalize column names (handle variations)
         column_mapping = {
