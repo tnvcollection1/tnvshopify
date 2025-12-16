@@ -545,7 +545,12 @@ const DashboardOptimized = () => {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="w-10 px-4 py-3">
-                    <input type="checkbox" className="rounded border-gray-300" />
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-gray-300"
+                      checked={selectedOrders.length === filteredOrders.length && filteredOrders.length > 0}
+                      onChange={handleSelectAll}
+                    />
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -558,12 +563,13 @@ const DashboardOptimized = () => {
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">WhatsApp</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan="12" className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan="13" className="px-4 py-12 text-center text-gray-500">
                       No orders found
                     </td>
                   </tr>
