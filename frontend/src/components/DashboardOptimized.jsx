@@ -213,6 +213,47 @@ const DashboardOptimized = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  // Sync single order TCS status
+  const syncOrderTCS = async (order) => {
+    if (!order.tracking_number) {
+      toast.error('No tracking number for this order');
+      return;
+    }
+    
+    setSyncingOrderId(order.order_number);
+    try {
+      // Fetch latest status from TCS
+      const response = await axios.post(`${API}/tcs/track/${order.tracking_number}`);
+      
+      if (response.data.success) {
+        const tracking = response.data.tracking;
+        const newStatus = tracking.normalized_status;
+        
+        // Update the order in the database
+        await axios.put(`${API}/customers/${order.order_number}/delivery-status`, {
+          delivery_status: newStatus,
+          delivery_updated_at: new Date().toISOString()
+        });
+        
+        // Update local state
+        setRecentOrders(prev => prev.map(o => 
+          o.order_number === order.order_number 
+            ? { ...o, delivery_status: newStatus }
+            : o
+        ));
+        
+        toast.success(`Updated: ${tracking.status}`);
+      } else {
+        toast.error('Could not fetch tracking info');
+      }
+    } catch (error) {
+      console.error('Error syncing TCS:', error);
+      toast.error('Failed to sync delivery status');
+    } finally {
+      setSyncingOrderId(null);
+    }
+  };
+
   const filteredOrders = recentOrders;
 
   // WhatsApp Functions
