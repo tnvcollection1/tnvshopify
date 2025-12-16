@@ -732,7 +732,7 @@ Thank you for your understanding.`;
               <tbody className="divide-y divide-gray-100">
                 {filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan="13" className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan="15" className="px-4 py-12 text-center text-gray-500">
                       No orders found
                     </td>
                   </tr>
