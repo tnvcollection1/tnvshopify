@@ -2306,7 +2306,8 @@ async def get_inventory_overview_stats(
                             delivered_orders[order_num] = order["total_spent"]
                         matched = True
                         break
-                    elif delivery_status in ["BOOKED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "ARRIVAL_AT_DESTINATION"]:
+                    elif delivery_status in ["BOOKED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "ARRIVAL_AT_DESTINATION", "PENDING"]:
+                        # PENDING means tracking exists but status not yet updated - still "in transit"
                         in_transit_tracked.append(item)
                         order_num = order["order_number"]
                         if order_num not in transit_orders:
