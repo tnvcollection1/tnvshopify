@@ -825,9 +825,13 @@ Thank you for your understanding.`;
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                 Delivered
                               </span>
-                            ) : order.delivery_status === 'IN_TRANSIT' ? (
+                            ) : order.delivery_status === 'IN_TRANSIT' || order.delivery_status === 'BOOKED' ? (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 In Transit
+                              </span>
+                            ) : order.delivery_status === 'OUT_FOR_DELIVERY' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                Out for Delivery
                               </span>
                             ) : order.delivery_status === 'PENDING' ? (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -836,6 +840,14 @@ Thank you for your understanding.`;
                             ) : order.delivery_status === 'RETURNED' || order.delivery_status === 'RETURN_IN_PROCESS' ? (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                 {order.delivery_status === 'RETURN_IN_PROCESS' ? 'Returning' : 'Returned'}
+                              </span>
+                            ) : order.delivery_status === 'UNKNOWN' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                Unknown
+                              </span>
+                            ) : order.delivery_status ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                {order.delivery_status.replace(/_/g, ' ')}
                               </span>
                             ) : (
                               <span className="text-xs text-gray-400">-</span>
