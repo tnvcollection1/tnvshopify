@@ -38,14 +38,22 @@ const DTDCReconciliation = () => {
   const [summary, setSummary] = useState(null);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('dtdc');
+  
+  // COD Reconciliation state
+  const [codRecords, setCodRecords] = useState([]);
+  const [codSummary, setCodSummary] = useState(null);
+  const [codLoading, setCodLoading] = useState(false);
 
   useEffect(() => {
     if (globalStore && globalStore !== 'all') {
       fetchReconciliation();
+      fetchCodReconciliation();
     } else {
       setRecords([]);
       setSummary(null);
+      setCodRecords([]);
+      setCodSummary(null);
     }
   }, [globalStore, filter]);
 
