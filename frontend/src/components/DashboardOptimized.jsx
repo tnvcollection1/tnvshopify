@@ -827,16 +827,28 @@ Thank you for your understanding.`;
                           )}
                         </td>
                         <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-                            onClick={() => handleSendWhatsApp(order)}
-                            title={order.phone || order.default_address?.phone ? "Send WhatsApp" : "No phone number"}
-                            disabled={!order.phone && !order.default_address?.phone}
-                          >
-                            <MessageCircle className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                              onClick={() => handleSendWhatsApp(order)}
+                              title={order.phone || order.default_address?.phone ? "Send WhatsApp" : "No phone number"}
+                              disabled={!order.phone && !order.default_address?.phone}
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => handleSendCancellation(order)}
+                              title={order.phone || order.default_address?.phone ? "Send Cancellation" : "No phone number"}
+                              disabled={!order.phone && !order.default_address?.phone}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
