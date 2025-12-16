@@ -896,6 +896,7 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
             cost = 0
             advance_payment = 0
             cod_amount = 0
+            shipping = 0
             
             try:
                 sell_amount = float(record.get('sell_amount', 0) or 0)
@@ -911,6 +912,10 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 pass
             try:
                 cod_amount = float(record.get('cod_amount', 0) or 0)
+            except:
+                pass
+            try:
+                shipping = float(record.get('shipping', 0) or 0)
             except:
                 pass
             
