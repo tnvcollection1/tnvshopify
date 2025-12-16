@@ -1072,8 +1072,8 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
             
             # Verify amount match
             # Amount Match Logic:
-            # - If COD = 0 → Advance Payment should match Shopify Order Amount
-            # - If COD > 0 → Advance Payment + COD should match Shopify Order Amount
+            # - If COD = 0 → Advance Payment should match Shopify Order Amount (exact match)
+            # - If COD > 0 → Advance Payment + COD should match Shopify Order Amount (exact match)
             amount_match = False
             shopify_amount = 0
             
@@ -1085,14 +1085,25 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 
                 if shopify_amount > 0:
                     if cod_amount == 0 and advance_payment > 0:
-                        # COD = 0: Advance Payment should match Shopify Amount
-                        diff = abs(shopify_amount - advance_payment)
-                        amount_match = diff <= 10  # Allow Rs.10 tolerance
+                        # COD = 0: Advance Payment should match Shopify Amount (exact)
+                        amount_match = advance_payment == shopify_amount
                     elif cod_amount > 0:
-                        # COD > 0: Advance Payment + COD should match Shopify Amount
+                        # COD > 0: Advance Payment + COD should match Shopify Amount (exact)
                         total_payment = advance_payment + cod_amount
-                        diff = abs(shopify_amount - total_payment)
-                        amount_match = diff <= 10  # Allow Rs.10 tolerance
+                        amount_match = total_payment == shopify_amount
+            
+            # Check COD match with DTDC ledger
+            cod_match_dtdc = False
+            dtdc_cod_amount = 0
+            if awb and cod_amount > 0:
+                # Look up DTDC payment by AWB
+                dtdc_payment = await db.dtdc_payments.find_one(
+                    {'awb': awb, 'store_name': store_name},
+                    {'_id': 0, 'cod_amount': 1}
+                )
+                if dtdc_payment:
+                    dtdc_cod_amount = dtdc_payment.get('cod_amount', 0)
+                    cod_match_dtdc = cod_amount == dtdc_cod_amount
             
             # Calculate profit using cost converted to INR minus shipping
             # Profit = Sale Amount (INR) - Cost (converted to INR) - Shipping
