@@ -981,9 +981,9 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                     # Allow Rs.10 tolerance for rounding differences
                     amount_match = diff <= 10
             
-            # Calculate profit using cost converted to INR
-            # Profit = Sale Amount (INR) - Cost (converted to INR)
-            profit = sell_amount - cost_inr if sell_amount and cost_inr else 0
+            # Calculate profit using cost converted to INR minus shipping
+            # Profit = Sale Amount (INR) - Cost (converted to INR) - Shipping
+            profit = sell_amount - cost_inr - shipping if sell_amount else 0
             
             # Determine final status
             # Matched = order found (we match by order # or tracking, not by amount since currencies differ)
