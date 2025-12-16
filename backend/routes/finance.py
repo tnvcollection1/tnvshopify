@@ -887,6 +887,8 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
             awb = str(record.get('awb', '')).strip().upper()
             sell_amount = 0
             cost = 0
+            advance_payment = 0
+            cod_amount = 0
             
             try:
                 sell_amount = float(record.get('sell_amount', 0) or 0)
@@ -896,6 +898,17 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 cost = float(record.get('cost', 0) or 0)
             except:
                 pass
+            try:
+                advance_payment = float(record.get('advance_payment', 0) or 0)
+            except:
+                pass
+            try:
+                cod_amount = float(record.get('cod_amount', 0) or 0)
+            except:
+                pass
+            
+            # Convert cost from PKR to INR
+            cost_inr = cost * PKR_TO_INR_RATE
             
             # Skip empty rows
             if not shopify_id and not awb and not sku:
