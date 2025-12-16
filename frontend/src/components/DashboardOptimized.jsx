@@ -326,6 +326,16 @@ const DashboardOptimized = () => {
                 <DollarSign className={`w-4 h-4 mr-2 ${syncingCosts ? 'animate-spin' : ''}`} />
                 Sync Costs
               </Button>
+              {selectedOrders.length > 0 && (
+                <Button 
+                  size="sm" 
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={handleBulkWhatsApp}
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  WhatsApp ({selectedOrders.length})
+                </Button>
+              )}
               <Button size="sm">Export</Button>
             </div>
           </div>
