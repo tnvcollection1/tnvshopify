@@ -326,19 +326,44 @@ const DashboardOptimized = () => {
                 <DollarSign className={`w-4 h-4 mr-2 ${syncingCosts ? 'animate-spin' : ''}`} />
                 Sync Costs
               </Button>
-              {selectedOrders.length > 0 && (
-                <Button 
-                  size="sm" 
-                  className="bg-green-600 hover:bg-green-700"
-                  onClick={handleBulkWhatsApp}
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  WhatsApp ({selectedOrders.length})
-                </Button>
-              )}
+              <Button 
+                size="sm" 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={handleBulkWhatsApp}
+                disabled={selectedOrders.length === 0}
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Send WhatsApp {selectedOrders.length > 0 && `(${selectedOrders.length})`}
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="text-red-600 border-red-200 hover:bg-red-50"
+                onClick={handleBulkCancellation}
+                disabled={selectedOrders.length === 0}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancel Orders {selectedOrders.length > 0 && `(${selectedOrders.length})`}
+              </Button>
               <Button size="sm">Export</Button>
             </div>
           </div>
+          {/* Selection Info Bar */}
+          {selectedOrders.length > 0 && (
+            <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-blue-50 rounded-lg">
+              <span className="text-sm text-blue-700 font-medium">
+                {selectedOrders.length} order{selectedOrders.length > 1 ? 's' : ''} selected
+              </span>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="text-blue-600 h-7"
+                onClick={() => setSelectedOrders([])}
+              >
+                Clear selection
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
