@@ -220,7 +220,8 @@ const DashboardOptimized = () => {
       return;
     }
     
-    setSyncingOrderId(order.order_number);
+    const orderNum = String(order.order_number);
+    setSyncingOrderId(orderNum);
     try {
       // Fetch latest status from TCS
       const response = await axios.post(`${API}/tcs/track/${order.tracking_number}`);
@@ -230,14 +231,14 @@ const DashboardOptimized = () => {
         const newStatus = tracking.normalized_status;
         
         // Update the order in the database
-        await axios.put(`${API}/customers/${order.order_number}/delivery-status`, {
+        await axios.put(`${API}/customers/${orderNum}/delivery-status`, {
           delivery_status: newStatus,
           delivery_updated_at: new Date().toISOString()
         });
         
-        // Update local state
+        // Update local state - compare as strings to handle type mismatches
         setRecentOrders(prev => prev.map(o => 
-          o.order_number === order.order_number 
+          String(o.order_number) === orderNum 
             ? { ...o, delivery_status: newStatus }
             : o
         ));
