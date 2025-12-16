@@ -417,7 +417,7 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
         # Get Shopify orders for this specific store
         shopify_orders = await db.customers.find(
             {'store_name': store_name},
-            {"_id": 0, "name": 1, "tracking_number": 1, "line_items": 1, "total_price": 1, "financial_status": 1, "fulfillment_status": 1}
+            {"_id": 0, "name": 1, "order_number": 1, "tracking_number": 1, "line_items": 1, "total_price": 1, "financial_status": 1, "fulfillment_status": 1}
         ).to_list(100000)
         
         logger.info(f"Found {len(shopify_orders)} Shopify orders for store: {store_name}")
