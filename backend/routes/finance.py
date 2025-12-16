@@ -817,7 +817,14 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
             'COD AMOUNT': 'cod_amount',
             'Cod Amount': 'cod_amount',
             'COD AMT': 'cod_amount',
-            'CASH ON DELIVERY': 'cod_amount'
+            'CASH ON DELIVERY': 'cod_amount',
+            'SHIPPING': 'shipping',
+            'SHIPPING COST': 'shipping',
+            'Shipping': 'shipping',
+            'Shipping Cost': 'shipping',
+            'SHIPPING CHARGE': 'shipping',
+            'FREIGHT': 'shipping',
+            'DELIVERY CHARGE': 'shipping'
         }
         
         # PKR to INR conversion rate (approximate - can be made configurable)
