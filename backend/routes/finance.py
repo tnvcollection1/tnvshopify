@@ -530,13 +530,28 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                     diff = abs(shopify_amount - sell_amount) / max(sell_amount, shopify_amount)
                     amount_match = diff < 0.05
             
-            # Calculate profit
+            # Calculate profit (note: cost is in PKR, sell_amount is in INR for ashmiaa)
+            # For now, store both values separately - profit calculation may need currency conversion
             profit = sell_amount - cost if sell_amount and cost else 0
             
             # Determine final status
-            # Matched = order found AND (amount matches OR SKU matches)
-            is_matched = matched_order is not None and (amount_match or sku_matched)
+            # Matched = order found (we match by order # or tracking, not by amount since currencies differ)
+            is_matched = matched_order is not None
             status = 'matched' if is_matched else 'not_matched'
+            
+            # If matched, update the actual order with cost data
+            if is_matched and cost > 0:
+                order_name = matched_order.get('name', '')
+                await db.customers.update_one(
+                    {'name': order_name, 'store_name': store_name},
+                    {'$set': {
+                        'order_cost': cost,
+                        'cost_currency': 'PKR',  # Cost is in PKR
+                        'cost_from_reconciliation': True,
+                        'reconciliation_awb': awb,
+                        'cost_updated_at': datetime.now(timezone.utc).isoformat()
+                    }}
+                )
             
             reconciled_record = {
                 'id': str(len(reconciled_records) + 1),
@@ -544,7 +559,9 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 'sku': sku.upper() if sku else '',
                 'awb': awb,
                 'sell_amount': sell_amount,
+                'sell_currency': 'INR',  # Sale price is in INR for ashmiaa
                 'cost': cost,
+                'cost_currency': 'PKR',  # Cost is in PKR
                 'profit': profit,
                 'matched': is_matched,
                 'match_type': match_type,
@@ -565,10 +582,13 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
             else:
                 not_matched_count += 1
         
-        # Clear existing data for this store and insert new records
+        # Clear existing reconciliation data for this store and insert new records
         await db.purchase_order_reconciliation.delete_many({'store_name': store_name})
         if reconciled_records:
             await db.purchase_order_reconciliation.insert_many(reconciled_records)
+        
+        # Log summary of order updates
+        logger.info(f"✅ Updated {matched_count} orders with cost data for store: {store_name}")
         
         return {
             'success': True,
