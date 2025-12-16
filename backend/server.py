@@ -2123,7 +2123,7 @@ async def get_inventory_overview_stats(
         
         # Extract size from SKU (get last numeric part, typically shoe size)
         # We'll do this in Python for better control
-        all_items_for_agg = await db.inventory_v2.find({}, {"_id": 0, "sku": 1}).to_list(10000)
+        all_items_for_agg = await db.inventory_v2.find({}, {"_id": 0, "sku": 1}).to_list(100000)
         
         size_counts = {}
         for item in all_items_for_agg:
