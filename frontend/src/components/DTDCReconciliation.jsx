@@ -173,6 +173,7 @@ const DTDCReconciliation = () => {
       await axios.delete(`${API}/finance/clear-dtdc-reconciliation?store_name=${globalStore}`);
       toast.success('Data cleared successfully');
       fetchReconciliation();
+      fetchCodReconciliation();
     } catch (error) {
       console.error('Error clearing data:', error);
       toast.error('Failed to clear data');
