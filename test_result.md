@@ -347,8 +347,19 @@ backend:
         agent: "testing"
         comment: "✅ Customer Count endpoint working correctly. GET /api/customers/count?fulfillment_status=unfulfilled returns total count of 12,282 unfulfilled orders. Count endpoint functioning properly for confirmation tracker requirements."
 
+frontend:
+  - task: "Finance Reconciliation - Upload Button Functionality"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/FinanceReconciliation.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Finance Reconciliation upload button functionality working correctly. Comprehensive testing completed: (1) Initial state shows warning message 'Please select a specific store' and disabled gray upload button when 'All Stores' selected, (2) Store selection from sidebar dropdown working - successfully selected Ashmia store, (3) After store selection: warning message disappears, upload button changes from gray (bg-gray-400) to green (bg-green-600), button text updates to 'Upload for ashmiaa', (4) File input element properly configured with accept='.xlsx,.xls,.csv' and not disabled, (5) Upload container structure correct with invisible file input overlay over visible button. File dialog opening confirmed through programmatic testing (browser security prevents automated file chooser testing). All core functionality verified and working as expected."
+
 test_plan:
   current_focus:
-    - "Confirmation Tracker - In Stock/Out of Stock cards"
-    - "Confirmation Tracker - Card click to show order numbers"
-    - "Confirmation Tracker - Sync Stock Status button"
+    - "Finance Reconciliation - Upload Button Functionality"
