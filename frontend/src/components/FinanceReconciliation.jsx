@@ -427,6 +427,7 @@ const FinanceReconciliation = () => {
                       <TableHead className="text-right">Sell (INR)</TableHead>
                       <TableHead className="text-right">Cost (PKR)</TableHead>
                       <TableHead className="text-right">Cost (INR)</TableHead>
+                      <TableHead className="text-right">Shipping</TableHead>
                       <TableHead className="text-right">Advance</TableHead>
                       <TableHead className="text-right">COD</TableHead>
                       <TableHead className="text-right">Profit (INR)</TableHead>
@@ -448,6 +449,7 @@ const FinanceReconciliation = () => {
                         <TableCell className="text-right">₹{(record.sell_amount || 0).toLocaleString()}</TableCell>
                         <TableCell className="text-right text-gray-600">Rs.{(record.cost_pkr || record.cost || 0).toLocaleString()}</TableCell>
                         <TableCell className="text-right">₹{(record.cost_inr || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-right text-pink-600">₹{(record.shipping || 0).toLocaleString()}</TableCell>
                         <TableCell className="text-right text-blue-600">₹{(record.advance_payment || 0).toLocaleString()}</TableCell>
                         <TableCell className="text-right text-orange-600">₹{(record.cod_amount || 0).toLocaleString()}</TableCell>
                         <TableCell className={`text-right font-semibold ${(record.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
