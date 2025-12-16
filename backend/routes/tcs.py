@@ -256,14 +256,25 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
                     new_status = tracking_data.get('normalized_status')
                     # Skip UNKNOWN and NOT_FOUND statuses - no point updating to these
                     if new_status and new_status not in ['UNKNOWN', 'NOT_FOUND']:
+                        # Build update data with weight and charges from payment_info
+                        update_data = {
+                            'delivery_status': new_status,
+                            'delivery_updated_at': datetime.now(timezone.utc).isoformat(),
+                            'tcs_last_sync': datetime.now(timezone.utc).isoformat()
+                        }
+                        
+                        # Add weight and TCS charges from payment_info
+                        payment_info = tracking_data.get('payment_info', {})
+                        if payment_info:
+                            if payment_info.get('parcel_weight'):
+                                update_data['tcs_weight'] = payment_info.get('parcel_weight')
+                            if payment_info.get('delivery_charges'):
+                                update_data['tcs_charges'] = payment_info.get('delivery_charges')
+                        
                         # Use tracking_number to find and update - more reliable than customer_id
                         result = await db.customers.update_one(
                             {'tracking_number': order['tracking_number']},
-                            {'$set': {
-                                'delivery_status': new_status,
-                                'delivery_updated_at': datetime.now(timezone.utc).isoformat(),
-                                'tcs_last_sync': datetime.now(timezone.utc).isoformat()
-                            }}
+                            {'$set': update_data}
                         )
                         if result.modified_count > 0:
                             synced += 1
