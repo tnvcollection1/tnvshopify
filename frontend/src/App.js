@@ -357,6 +357,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/dtdc-reconciliation" 
+        element={
+          <ProtectedRoute>
+            <DTDCReconciliation />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory-clearance" 
         element={
           <ProtectedRoute>
