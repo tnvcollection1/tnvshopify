@@ -2196,7 +2196,7 @@ async def get_inventory_overview_stats(
             "cost": 1, 
             "order_number": 1,
             "created_at": 1
-        }).to_list(10000)
+        }).to_list(100000)
         
         # Get today's date for matching unfulfilled orders
         today = datetime.now(timezone.utc).date()
