@@ -2387,7 +2387,7 @@ async def get_inventory_overview_stats(
         inventory_with_sale_price = await db.inventory_v2.find(
             date_query,
             {"_id": 0, "sku": 1, "cost": 1, "sale_price": 1}
-        ).to_list(10000)
+        ).to_list(100000)
         
         total_inventory_sale_value = 0
         total_inventory_cost = 0
