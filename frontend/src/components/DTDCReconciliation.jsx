@@ -508,6 +508,15 @@ const DTDCReconciliation = () => {
                         <Badge className="bg-gray-100 text-gray-600">Unmatched</Badge>
                       )}
                     </TableCell>
+                    <TableCell className="text-center">
+                      {record.finance_reconciled ? (
+                        <Badge className="bg-green-100 text-green-800">✓ Reconciled</Badge>
+                      ) : record.matched && record.remittance_status === 'Remitted' ? (
+                        <Badge className="bg-blue-100 text-blue-800">Ready</Badge>
+                      ) : (
+                        <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))
               )}
