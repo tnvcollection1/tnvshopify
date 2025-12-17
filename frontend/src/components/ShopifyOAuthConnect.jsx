@@ -124,7 +124,7 @@ const ShopifyOAuthConnect = ({ onConnectionChange }) => {
         <Shield className="h-4 w-4 text-green-600" />
         <AlertDescription className="text-green-800">
           <strong>🔐 Secure OAuth Connection:</strong> Connect your Shopify stores with one click. 
-          No need to manually copy API tokens - OmniSales uses secure OAuth 2.0 authentication.
+          No need to manually copy API tokens - Wamerce uses secure OAuth 2.0 authentication.
         </AlertDescription>
       </Alert>
 
@@ -136,7 +136,7 @@ const ShopifyOAuthConnect = ({ onConnectionChange }) => {
             Connect Shopify Store
           </CardTitle>
           <CardDescription>
-            Enter your store domain and click connect to authorize OmniSales
+            Enter your store domain and click connect to authorize Wamerce
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -270,7 +270,7 @@ const ShopifyOAuthConnect = ({ onConnectionChange }) => {
             <div>
               <h4 className="font-semibold text-gray-800">Permissions Requested</h4>
               <p className="text-sm text-gray-600 mt-1 mb-2">
-                OmniSales requests the following permissions from your Shopify store:
+                Wamerce requests the following permissions from your Shopify store:
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                 <Badge variant="outline">📦 Read Orders</Badge>

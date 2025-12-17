@@ -103,7 +103,7 @@ const PricingPage = ({ user }) => {
         key: key_id || RAZORPAY_KEY_ID,
         amount: amount,
         currency: "INR",
-        name: "OmniSales",
+        name: "Wamerce",
         description: `${plan.name} Plan - ${billingCycle === "annual" ? "Annual" : "Monthly"} Subscription`,
         order_id: order_id,
         handler: async (response) => {

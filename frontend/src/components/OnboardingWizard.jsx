@@ -190,7 +190,7 @@ const OnboardingWizard = () => {
           method: 'PUT'
         });
         
-        toast.success('Onboarding complete! Welcome to OmniSales.');
+        toast.success('Onboarding complete! Welcome to Wamerce.');
         navigate('/dashboard');
         return;
       }
@@ -235,7 +235,7 @@ const OnboardingWizard = () => {
             <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold">OmniSales</span>
+            <span className="text-xl font-bold">Wamerce</span>
           </div>
           <div className="text-sm text-gray-400">Step {currentStep} of {steps.length}</div>
         </div>
@@ -279,7 +279,7 @@ const OnboardingWizard = () => {
           <div className="space-y-8">
             <div className="text-center">
               <h1 className="text-3xl font-bold mb-2">Tell us about your business</h1>
-              <p className="text-gray-400">This helps us customize OmniSales for your needs</p>
+              <p className="text-gray-400">This helps us customize Wamerce for your needs</p>
             </div>
             
             <div className="space-y-6">
