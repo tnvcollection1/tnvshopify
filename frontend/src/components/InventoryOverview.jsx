@@ -132,9 +132,15 @@ const InventoryOverview = () => {
         case 'all':
           // All items - no filter
           break;
-        case 'by_cost':
-          // Items sorted by cost (highest first)
+        case 'by_cost_inr':
+          // Items from INR stores sorted by cost
           params.append('sort_by', 'cost_desc');
+          params.append('currency', 'inr');
+          break;
+        case 'by_cost_pkr':
+          // Items from PKR stores sorted by cost
+          params.append('sort_by', 'cost_desc');
+          params.append('currency', 'pkr');
           break;
         case 'with_price':
           // Items that have sale price set
