@@ -314,15 +314,18 @@ async def sync_all_tcs_deliveries():
                 customer_no=config.get('customer_no')
             )
         
-        # Find orders needing sync (TCS orders only, not China Post)
+        # Find orders needing sync (TCS orders only, not China Post, exclude canceled/voided)
         query = {
             'fulfillment_status': 'fulfilled',
             'delivery_status': {'$nin': ['DELIVERED', 'RETURNED']},
+            # Exclude canceled/voided orders
+            'payment_status': {'$ne': 'voided'},
             '$and': [
                 {'tracking_number': {'$exists': True}},
                 {'tracking_number': {'$ne': None}},
                 {'tracking_number': {'$ne': ''}},
-                {'tracking_number': {'$not': {'$regex': '^X', '$options': 'i'}}}
+                {'tracking_number': {'$not': {'$regex': '^X', '$options': 'i'}}},
+                {'financial_status': {'$nin': ['refunded', 'voided']}}
             ]
         }
         
