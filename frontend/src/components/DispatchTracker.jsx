@@ -751,6 +751,65 @@ const DispatchTracker = () => {
           </div>
         </div>
         
+        {/* Value Summary Cards */}
+        <div className="grid grid-cols-5 gap-4 mb-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Total Sale Value</p>
+                <p className="text-xl font-semibold text-gray-900">Rs.{stats.totalSaleValue.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Package className="w-5 h-5 text-gray-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Delivered Value</p>
+                <p className="text-xl font-semibold text-green-600">Rs.{stats.deliveredValue.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-green-50 rounded-lg">
+                <Check className="w-5 h-5 text-green-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Transit Value</p>
+                <p className="text-xl font-semibold text-blue-600">Rs.{stats.transitValue.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Truck className="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Returned Value</p>
+                <p className="text-xl font-semibold text-red-600">Rs.{stats.returnedValue.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-red-50 rounded-lg">
+                <RotateCcw className="w-5 h-5 text-red-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Canceled Value</p>
+                <p className="text-xl font-semibold text-gray-600">Rs.{stats.canceledValue.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <XCircle className="w-5 h-5 text-gray-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Profit Summary Cards */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg border border-gray-200 p-4">
