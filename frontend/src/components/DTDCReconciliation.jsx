@@ -449,6 +449,7 @@ const DTDCReconciliation = () => {
                 <TableHead>UTR Number</TableHead>
                 <TableHead>Remittance Status</TableHead>
                 <TableHead className="text-center">Order Match</TableHead>
+                <TableHead className="text-center">Reconciliation</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
