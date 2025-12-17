@@ -230,7 +230,7 @@ const InventoryOverview = () => {
 
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Summary Stats - Shopify Style */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-5 gap-4 mb-6">
           <Card 
             className={`bg-white border shadow-sm cursor-pointer transition-all hover:shadow-md ${
               selectedCategory === 'all' ? 'ring-2 ring-gray-500 border-gray-500' : 'border-gray-200'
@@ -252,20 +252,41 @@ const InventoryOverview = () => {
 
           <Card 
             className={`bg-white border shadow-sm cursor-pointer transition-all hover:shadow-md ${
-              selectedCategory === 'by_cost' ? 'ring-2 ring-orange-500 border-orange-500' : 'border-gray-200'
+              selectedCategory === 'by_cost_inr' ? 'ring-2 ring-orange-500 border-orange-500' : 'border-gray-200'
             }`}
-            onClick={() => loadCategoryItems('by_cost')}
+            onClick={() => loadCategoryItems('by_cost_inr')}
           >
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Total Cost</p>
-                  <p className="text-2xl font-semibold text-gray-900">{formatCurrency(stats.total_cost)}</p>
+                  <p className="text-sm font-medium text-gray-500">Total Cost (INR)</p>
+                  <p className="text-2xl font-semibold text-orange-600">₹{(stats.total_cost_inr || 0).toLocaleString()}</p>
                 </div>
                 <div className="p-2 bg-orange-100 rounded-lg">
                   <DollarSign className="w-5 h-5 text-orange-600" />
                 </div>
               </div>
+              <p className="text-xs text-gray-500 mt-1">India stores</p>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className={`bg-white border shadow-sm cursor-pointer transition-all hover:shadow-md ${
+              selectedCategory === 'by_cost_pkr' ? 'ring-2 ring-emerald-500 border-emerald-500' : 'border-gray-200'
+            }`}
+            onClick={() => loadCategoryItems('by_cost_pkr')}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Total Cost (PKR)</p>
+                  <p className="text-2xl font-semibold text-emerald-600">Rs.{(stats.total_cost_pkr || 0).toLocaleString()}</p>
+                </div>
+                <div className="p-2 bg-emerald-100 rounded-lg">
+                  <DollarSign className="w-5 h-5 text-emerald-600" />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Pakistan stores</p>
             </CardContent>
           </Card>
 
