@@ -955,7 +955,21 @@ const DispatchTracker = () => {
                     Loading orders...
                   </TableCell>
                 </TableRow>
-              ) : orders.length === 0 ? (
+              ) : (() => {
+                // Filter orders by profit
+                const filteredByProfit = orders.filter(order => {
+                  if (filters.profit === 'all') return true;
+                  const salePrice = parseFloat(order.cod_amount || order.total_spent || 0);
+                  const cost = parseFloat(order.cost || order.order_cost || 0);
+                  const tcsCharges = parseFloat(order.tcs_charges || 0);
+                  if (cost === 0) return filters.profit === 'all';
+                  const netProfit = salePrice - cost - tcsCharges;
+                  if (filters.profit === 'positive') return netProfit >= 0;
+                  if (filters.profit === 'negative') return netProfit < 0;
+                  return true;
+                });
+                return filteredByProfit;
+              })().length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={14} className="text-center py-12 text-gray-500">
                     <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
