@@ -1038,7 +1038,7 @@ const DispatchTracker = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={14} className="text-center py-12 text-gray-500">
+                  <TableCell colSpan={15} className="text-center py-12 text-gray-500">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
                     Loading orders...
                   </TableCell>
