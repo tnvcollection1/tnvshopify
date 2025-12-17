@@ -225,7 +225,7 @@ const Sidebar = () => {
             </div>
             <div className="flex-1 text-left min-w-0">
               <p className="text-white font-semibold text-sm truncate">
-                WhatsApp CRM
+                Wamerce
               </p>
               <p className="text-green-200 text-xs">
                 {getStoreName(selectedStore)}
