@@ -15,6 +15,8 @@ const InventoryOverview = () => {
   const [stats, setStats] = useState({
     total_items: 0,
     total_cost: 0,
+    total_cost_inr: 0,
+    total_cost_pkr: 0,
     total_sale_value: 0,
     total_profit: 0,
     inventory_sale_value: 0,
