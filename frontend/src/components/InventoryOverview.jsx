@@ -420,6 +420,10 @@ const InventoryOverview = () => {
             <CardHeader className="border-b border-gray-200 py-3 px-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-medium">
+                  {selectedCategory === 'all' && '📦 All Inventory Items'}
+                  {selectedCategory === 'by_cost' && '💰 Items by Cost'}
+                  {selectedCategory === 'with_price' && '🏷️ Items with Sale Price'}
+                  {selectedCategory === 'profitable' && '📈 Profitable Items'}
                   {selectedCategory === 'can_fulfill' && '✅ Ready to Ship Items'}
                   {selectedCategory === 'in_transit' && '🚚 In Transit Items'}
                   {selectedCategory === 'delivered' && '📦 Delivered Items'}
