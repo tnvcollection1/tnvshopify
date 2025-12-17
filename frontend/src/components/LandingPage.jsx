@@ -75,7 +75,7 @@ const LandingPage = () => {
 
   const testimonials = [
     {
-      quote: "WhatsApp CRM transformed how we engage customers. Our response time dropped from hours to minutes.",
+      quote: "Wamerce transformed how we engage customers. Our response time dropped from hours to minutes.",
       author: "Priya Sharma",
       role: "Founder, Fashion Hub",
       avatar: "PS"
@@ -163,7 +163,7 @@ const LandingPage = () => {
               <div className="w-8 h-8 bg-[#25d366] rounded-full flex items-center justify-center">
                 <MessageCircle className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-semibold text-gray-900">WhatsApp CRM</span>
+              <span className="text-xl font-semibold text-gray-900">Wamerce</span>
             </div>
             
             <div className="hidden md:flex items-center gap-8">
@@ -228,7 +228,7 @@ const LandingPage = () => {
               </h1>
               
               <p className="text-lg text-green-100 mb-8 max-w-xl">
-                The complete WhatsApp CRM for modern businesses. Send broadcasts, manage conversations, 
+                The complete e-commerce CRM for modern businesses. Send broadcasts, manage conversations, 
                 and grow sales—all from one powerful dashboard.
               </p>
               
@@ -376,7 +376,7 @@ const LandingPage = () => {
               Loved by businesses everywhere
             </h2>
             <p className="text-lg text-gray-600">
-              See what our customers have to say about WhatsApp CRM
+              See what our customers have to say about Wamerce
             </p>
           </div>
 
@@ -470,7 +470,7 @@ const LandingPage = () => {
             Ready to transform your business?
           </h2>
           <p className="text-lg text-green-100 mb-8">
-            Join 10,000+ businesses already growing with WhatsApp CRM. Start your free trial today.
+            Join 10,000+ businesses already growing with Wamerce. Start your free trial today.
           </p>
           <Link to="/login">
             <Button size="lg" className="bg-white text-[#075e54] hover:bg-green-50 px-8 h-12 text-base font-semibold">
@@ -490,7 +490,7 @@ const LandingPage = () => {
                 <div className="w-8 h-8 bg-[#25d366] rounded-full flex items-center justify-center">
                   <MessageCircle className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-semibold">WhatsApp CRM</span>
+                <span className="font-semibold">Wamerce</span>
               </div>
               <p className="text-sm">
                 The complete WhatsApp Business solution for modern businesses.
@@ -525,7 +525,7 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
-            <p>© 2024 WhatsApp CRM. All rights reserved.</p>
+            <p>© 2024 Wamerce. All rights reserved.</p>
           </div>
         </div>
       </footer>
