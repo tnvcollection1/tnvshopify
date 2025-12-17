@@ -414,13 +414,13 @@ const DTDCReconciliation = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>AWB / Tracking</TableHead>
-                <TableHead>Order #</TableHead>
+                <TableHead>AWB / CN Number</TableHead>
+                <TableHead>Shopify Order#</TableHead>
                 <TableHead className="text-right">COD Amount</TableHead>
-                <TableHead>DTDC Date</TableHead>
-                <TableHead className="text-center">Bank Status</TableHead>
-                <TableHead className="text-right">Bank Amount</TableHead>
-                <TableHead>Bank Date</TableHead>
+                <TableHead className="text-right">Remitted Amount</TableHead>
+                <TableHead>UTR Number</TableHead>
+                <TableHead>Remittance Status</TableHead>
+                <TableHead className="text-center">Order Match</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -444,7 +444,9 @@ const DTDCReconciliation = () => {
                   <TableRow key={idx}>
                     <TableCell className="font-mono text-sm">{record.awb}</TableCell>
                     <TableCell>
-                      {record.matched_order_number ? (
+                      {record.shopify_order ? (
+                        <span className="text-blue-600">{record.shopify_order}</span>
+                      ) : record.matched_order_number ? (
                         <span className="text-blue-600">#{record.matched_order_number}</span>
                       ) : (
                         <span className="text-gray-400">-</span>
@@ -453,21 +455,29 @@ const DTDCReconciliation = () => {
                     <TableCell className="text-right font-medium">
                       ₹{(record.cod_amount || 0).toLocaleString()}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">
-                      {record.payment_date || '-'}
+                    <TableCell className="text-right font-medium text-green-600">
+                      ₹{(record.remitted_amount || 0).toLocaleString()}
                     </TableCell>
-                    <TableCell className="text-center">
-                      {getStatusBadge(record)}
+                    <TableCell className="font-mono text-xs">
+                      {record.utr_number || '-'}
                     </TableCell>
-                    <TableCell className="text-right">
-                      {record.bank_amount ? (
-                        <span className="text-green-600 font-medium">₹{record.bank_amount.toLocaleString()}</span>
+                    <TableCell>
+                      {record.remittance_status === 'Remitted' ? (
+                        <Badge className="bg-green-100 text-green-800">Remitted</Badge>
+                      ) : record.remittance_status === 'Posted To SAP' ? (
+                        <Badge className="bg-blue-100 text-blue-800">Posted To SAP</Badge>
+                      ) : record.remittance_status ? (
+                        <Badge variant="outline">{record.remittance_status}</Badge>
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">
-                      {record.bank_date || '-'}
+                    <TableCell className="text-center">
+                      {record.matched ? (
+                        <Badge className="bg-green-100 text-green-800">✓ Matched</Badge>
+                      ) : (
+                        <Badge className="bg-gray-100 text-gray-600">Unmatched</Badge>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
