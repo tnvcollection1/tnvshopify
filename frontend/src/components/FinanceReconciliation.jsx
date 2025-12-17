@@ -480,6 +480,20 @@ const FinanceReconciliation = () => {
                             <span className="text-gray-400">-</span>
                           )}
                         </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {record.dtdc_utr_number || <span className="text-gray-400">-</span>}
+                        </TableCell>
+                        <TableCell>
+                          {record.dtdc_remittance_status === 'Remitted' ? (
+                            <Badge className="bg-green-100 text-green-800 text-xs">Remitted</Badge>
+                          ) : record.dtdc_remittance_status === 'Posted To SAP' ? (
+                            <Badge className="bg-blue-100 text-blue-800 text-xs">Posted</Badge>
+                          ) : record.dtdc_remittance_status ? (
+                            <Badge variant="outline" className="text-xs">{record.dtdc_remittance_status}</Badge>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
                         <TableCell className={`text-right font-semibold ${(record.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           ₹{(record.profit || 0).toLocaleString()}
                         </TableCell>
@@ -506,6 +520,15 @@ const FinanceReconciliation = () => {
                             )
                           ) : (
                             <span className="text-gray-400 text-xs">N/A</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {record.matched && record.cod_match_dtdc ? (
+                            <Badge className="bg-green-100 text-green-800 text-xs">✓ Perfect</Badge>
+                          ) : record.matched ? (
+                            <Badge className="bg-yellow-100 text-yellow-800 text-xs">Partial</Badge>
+                          ) : (
+                            <Badge className="bg-gray-100 text-gray-600 text-xs">No Match</Badge>
                           )}
                         </TableCell>
                       </TableRow>
