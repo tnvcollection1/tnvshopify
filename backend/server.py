@@ -2993,14 +2993,42 @@ async def get_inventory_stats():
 
 
 @api_router.get("/inventory/v2")
-async def get_all_inventory_items(store_name: str = None, status: str = None, search: str = None):
+async def get_all_inventory_items(
+    store_name: str = None, 
+    status: str = None, 
+    search: str = None,
+    has_price: str = None,
+    profitable: str = None,
+    sort_by: str = None,
+    limit: int = 100
+):
     """Get all inventory items with filtering and search"""
     try:
         query = {}
+        sort_field = [("created_at", -1)]  # Default sort
+        
         if store_name and store_name != "all":
             query["store_name"] = store_name
         if status and status != "all":
             query["status"] = status
+        
+        # Filter for items with sale price
+        if has_price == "true":
+            query["sale_price"] = {"$gt": 0}
+        
+        # Filter for profitable items
+        if profitable == "true":
+            query["profit"] = {"$gt": 0}
+        
+        # Sort options
+        if sort_by == "cost_desc":
+            sort_field = [("cost", -1)]
+        elif sort_by == "cost_asc":
+            sort_field = [("cost", 1)]
+        elif sort_by == "profit_desc":
+            sort_field = [("profit", -1)]
+        elif sort_by == "price_desc":
+            sort_field = [("sale_price", -1)]
         
         # Add search filter using $and to combine with other filters
         if search and search.strip():
@@ -3019,7 +3047,7 @@ async def get_all_inventory_items(store_name: str = None, status: str = None, se
             else:
                 query = search_conditions
         
-        items = await db.inventory_v2.find(query, {"_id": 0}).sort("created_at", -1).to_list(50000)
+        items = await db.inventory_v2.find(query, {"_id": 0}).sort(sort_field).limit(limit).to_list(limit)
         return {"success": True, "items": items, "total": len(items)}
     except Exception as e:
         logger.error(f"Error fetching inventory: {str(e)}")
