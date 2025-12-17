@@ -2470,6 +2470,8 @@ async def get_inventory_overview_stats(
             "stats": {
                 "total_items": len(all_items),
                 "total_cost": round(total_cost, 2),
+                "total_cost_inr": round(total_cost_inr, 2),
+                "total_cost_pkr": round(total_cost_pkr, 2),
                 "total_sale_value": round(total_sale_value, 2),
                 "total_profit": round(total_profit, 2),
                 # NEW: Inventory-based sale value (from SKU sale prices)
