@@ -80,6 +80,7 @@ const ConfirmationTracker = () => {
     purchased: 0,
     notPurchased: 0,
     canceled: 0,
+    voided: 0,
     inStock: 0,
     inStockValue: 0,
     outOfStock: 0,
