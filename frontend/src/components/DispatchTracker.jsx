@@ -1019,6 +1019,7 @@ const DispatchTracker = () => {
                     className="w-4 h-4 cursor-pointer"
                   />
                 </TableHead>
+                <TableHead className="font-medium">Order Date</TableHead>
                 <TableHead className="font-medium">Dispatch Date</TableHead>
                 <TableHead className="font-medium">Order #</TableHead>
                 <TableHead className="font-medium">Store</TableHead>
