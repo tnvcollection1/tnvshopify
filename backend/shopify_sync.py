@@ -180,6 +180,10 @@ class ShopifyOrderSync:
                     }
                     customer_data['fulfillments'].append(fulfillment_data)
                     
+                    # Set fulfilled_at from first fulfillment
+                    if not customer_data.get('fulfilled_at') and fulfillment.created_at:
+                        customer_data['fulfilled_at'] = fulfillment.created_at
+                    
                     # Set primary tracking info from first fulfillment
                     if not customer_data['tracking_info'] and fulfillment.tracking_number:
                         customer_data['tracking_info'] = {
