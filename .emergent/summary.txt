@@ -1,60 +1,57 @@
-<analysis>**original_problem_statement**: The user's initial goal was to pivot a CRM into a WhatsApp CRM with a Shopify focus, which included a UI theme change to white, enhancing financial reconciliation, fixing the Orders page, improving TCS tracking, and fixing Shopify OAuth.
+<analysis>**original_problem_statement**: The user's initial goal was to pivot a CRM into a WhatsApp CRM with a Shopify focus. This session's work focused heavily on improving data accuracy and visibility in the app's logistics and inventory features.
 
-During this session, the user expanded the scope significantly, focusing on data accuracy and financial workflows:
-1.  **Orders Page Data**: Fix , , , and  columns, as they were not displaying data correctly.
-2.  **Orders Page Functionality**: Re-implement missing Send WhatsApp and Send Cancellation features (both individual and bulk) to the main Orders page ().
-3.  **Finance Reconciliation (Initial Fix)**: Fix a non-functional file upload button.
-4.  **Finance Reconciliation (Enhancement 1)**: Improve the logic to handle cost in PKR and sale price in INR, and match orders using the order number.
-5.  **Finance Reconciliation (Enhancement 2)**: Add , , and  columns. Refine the amount matching logic to compare  against the Shopify total.
-6.  **DTDC & COD Reconciliation (New Feature)**: Build a new multi-step reconciliation feature to:
-    *   Upload a DTDC COD ledger.
-    *   Upload a bank statement.
-    *   Match DTDC collections against bank deposits and reconcile with order COD amounts.
-7.  **Inventory Management**: Add a feature to sync inventory stock levels directly from Shopify to the Inventory Overview page.
-8.  **Inventory Overview Cards**: Fix the data display on the overview cards, which are showing incorrect or no data.
-9.  **Amount Match Logic Refinements**: Adjust the finance reconciliation logic to use exact matching (no tolerance) and verify that the COD amount from the finance sheet matches the amount in the DTDC ledger.
+The user's requests during this session were:
+1.  **Fix Inventory Overview Cards**: The cards on  were showing incorrect stats. This evolved from a simple data cap issue to a full redefinition of the page to show stats for **sold items only**.
+2.  **Fix TCS Delivery Status Sync**: Orders were not showing the correct delivery status from the TCS courier system. This led to multiple fixes and enhancements.
+3.  **Implement On-Demand Status Sync**: Add a clickable truck icon on the main Orders page to instantly sync an order's delivery status from TCS.
+4.  **Add Logistics Data Columns**: Add  and  columns to the main Orders page, with data fetched from the TCS API during sync.
+5.  **Enhance Dispatch Tracker**:
+    *   Add , , and  (deducting TCS charges) columns.
+    *   Add a new summary card for  vs. .
+    *   Add new summary cards for , , , and .
+    *   Change the date logic to use the order's **fulfillment date** () as the Dispatch Date, not the order creation date.
+    *   Fix the date range filter to correctly filter by the dispatch date.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application features a white-themed UI. The main Orders page is now highly functional, displaying synced data for cost, profit, and delivery status, and includes robust bulk/individual WhatsApp and cancellation actions. The Finance Reconciliation feature has been significantly overhauled to support multi-currency (PKR/INR) calculations, advanced matching logic, and new fields like , , and . A comprehensive new DTDC Payment Reconciliation module exists for tracking the entire COD lifecycle from courier collection to bank deposit. An inventory sync feature has been added to pull stock levels from Shopify. However, the Shopify OAuth installation remains broken, and the Inventory Overview page cards are not displaying data correctly.
+The application now features a much more robust logistics and inventory tracking system. The Inventory Overview page provides accurate stats on sold items. The main Orders page () has a real-time, on-demand TCS status sync feature via a clickable truck icon, and now displays parcel weight and TCS charges.
+
+The Dispatch Tracker () has been significantly enhanced with new columns for , , and , along with multiple new summary cards for value and profitability analysis. Crucially, its core logic now correctly uses the Shopify **fulfillment date** as the dispatch date, and the date filter reflects this, providing accurate date-based filtering. The underlying Shopify sync has been improved to fetch and store this fulfillment date.
 
 **Last working item**:
--   **Last item agent was working**: Fixing the data display on the stat cards of the Inventory Overview page (). The user reported that the cards were showing incorrect data or no data at all. The agent confirmed the backend API was returning valid data and was starting to investigate the frontend component () to see how the state was being handled and rendered.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: screenshot tool (After fixing the data binding in the component, take a screenshot of the  page to verify the cards display correct numbers).
--   **User Testing Done**: Y (User reported the issue)
+-   **Last item agent was working**: Fixing the date range filter on the  page. The user reported that filtering by a date range (e.g., Dec 1 to present) was incorrectly including orders from outside the range because it was filtering by the order creation date instead of the dispatch (fulfillment) date.
+-   **Status**: USER VERIFICATION PENDING
+-   **Agent Testing Done**: Y
+-   **Which testing method agent to use?**: Manual testing by user. The next agent should ask the user to test the date filter on the  page to confirm it now correctly filters by the dispatch date.
+-   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Inventory Overview cards show wrong data (P0)**
+-   **Issue 1: Date filter on Dispatch Tracker needs user verification (P0)**
 -   **Issue 2: Shopify OAuth  is incorrect (P0)**
 -   **Issue 3: Critical  Refactoring Needed (P1)**
--   **Issue 4: Inconsistent SKU formats (P1)**
--   **Issue 5: TCS API Authentication Failing for Payment Status (P1)**
--   **Issue 6: Facebook Lead Ads Sync Blocked by Expired Token (P2)**
--   **Issue 7: Live Razorpay Keys Still in Environment File (P2)**
+-   **Issue 4: Slow/Incomplete TCS & Shopify Syncs (P1)**
+-   **Issue 5: Login page instability/timeouts (P2)**
+-   **Issue 6: Inconsistent SKU formats (P2)**
+-   **Issue 7: TCS API Authentication Failing for Payment Status (P2)**
+-   **Issue 8: Facebook Lead Ads Sync Blocked by Expired Token (P2)**
+-   **Issue 9: Live Razorpay Keys Still in Environment File (P2)**
 
 **Issues Detail**:
--   **Issue 1: Inventory Overview cards show wrong data (P0)**
-    -   **Attempted fixes**: The agent verified that the backend API endpoint  returns a JSON object with the correct statistics. The issue is likely in the frontend.
-    -   **Next debug checklist**:
-        1.  View the file .
-        2.  Locate the  hook that calls the API and  the  to confirm the structure.
-        3.  Examine the JSX for the stat cards. Ensure the properties being accessed (e.g., , ) exactly match the keys in the logged API response. The issue is likely a mismatch between the object keys and the properties used in the UI.
-    -   **Why fix this issue and what will be achieved with the fix?**: This page is meant to provide a quick, accurate snapshot of inventory health. Fixing it is crucial for user trust and utility.
-    -   **Status**: IN PROGRESS
+-   **Issue 1: Date filter on Dispatch Tracker needs user verification (P0)**
+    -   **Attempted fixes**: The agent modified  to use the  field for date filtering on fulfilled orders. The backend API now correctly filters by dispatch date.
+    -   **Next debug checklist**: Ask the user to test the date filter on the  page and confirm it behaves as expected.
+    -   **Why fix this issue and what will be achieved with the fix?**: This ensures the Dispatch Tracker can be accurately filtered by when orders were actually sent out, which is a core requirement for the page.
+    -   **Status**: USER VERIFICATION PENDING
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Should Test frontend/backend/both after fix?**: Frontend (User manual test).
     -   **Blocked on other issue**: None
 
 -   **Issue 2: Shopify OAuth  is incorrect (P0)**
-    -   **Description**: This is a critical carry-over issue. The user cannot install the Shopify app from their custom domain () because the generated authorization URL contains the wrong .
-    -   **Attempted fixes**: Previous agent hardcoded the URL in , but the issue persisted. This agent confirmed the  endpoint generates the correct URL, but the user's installation link was still wrong, suggesting the  redirect might be the problem or something is cached. The user de-prioritized this, but it remains a blocker.
+    -   **Attempted fixes**: None in this session. This is a critical carry-over issue.
     -   **Next debug checklist**:
         1.  Focus on the  endpoint in .
         2.  Trace how the  is constructed and passed to the Shopify authorization URL within that specific redirect flow.
-        3.  Provide the corrected full installation URL to the user for testing.
     -   **Why fix this issue and what will be achieved with the fix?**: This is a core functionality blocker. The user cannot use the app with Shopify without this fix.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
@@ -62,37 +59,35 @@ The application features a white-themed UI. The main Orders page is now highly f
     -   **Blocked on other issue**: None
 
 -   **Issue 3: Critical  Refactoring Needed (P1)**
-    -   **Description**:  remains a monolithic file, making development slow and error-prone. The agent added yet another endpoint to it in this session.
+    -   **Attempted fixes**: None. The agent added more endpoints (, etc.) to this monolithic file, increasing the technical debt.
+    -   **Next debug checklist**: Plan and execute the migration of routes from  into feature-specific files within .
+    -   **Why fix this issue and what will be achieved with the fix?**: To improve maintainability, reduce bugs, and speed up future development.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Backend
 
--   **Issue 4: Inconsistent SKU formats (P1)**
-    -   **Description**: The root cause of why cost/profit sync fails for the  store is a mismatch in SKU formats between inventory and orders. There is no inventory data for the  store at all.
+-   **Issue 4: Slow/Incomplete TCS & Shopify Syncs (P1)**
+    -   **Attempted fixes**: The agent ran syncs in smaller, manual batches to avoid server hangs.
+    -   **Next debug checklist**:
+        1.  Investigate implementing a background job queue (e.g., Celery) for long-running tasks.
+        2.  Add a UI element to show sync progress and status.
+    -   **Why fix this issue and what will be achieved with the fix?**: Improves system stability and user experience, and ensures data is kept up-to-date without making the app unusable.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Backend
 
--   **Issue 5: TCS API Authentication Failing for Payment Status (P1)**
-    -   **Description**: The authenticated TCS endpoint for payment status was failing with a 405 error. The agent fixed the  initialization to pass the bearer token correctly, which allowed the sync to work for some orders. However, the underlying 405 error from TCS for some API calls might still exist.
-    -   **Status**: BLOCKED (on user/TCS configuration)
-    -   **Is recurring issue?**: N
-
--   **Issue 6: Facebook Lead Ads Sync Blocked by Expired Token (P2)**
-    -   **Description**: Feature is blocked until the user reconnects their account to refresh the token.
-    -   **Status**: BLOCKED (on user action)
-    -   **Is recurring issue?**: N
-
--   **Issue 7: Live Razorpay Keys Still in Environment File (P2)**
-    -   **Description**: Live Razorpay API keys in  pose a security risk.
+-   **Issue 5: Login page instability/timeouts (P2)**
+    -   **Attempted fixes**: Agent had to repeatedly restart services and reset the admin password to get the screenshot tool to work.
+    -   **Next debug checklist**:
+        1.  Review  and the backend auth endpoints for performance bottlenecks.
+        2.  Use browser developer tools to analyze network waterfalls during login to pinpoint delays.
+    -   **Why fix this issue and what will be achieved with the fix?**: A stable login is fundamental to using the application.
     -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
+    -   **Is recurring issue?**: Y (during this session).
+    -   **Should Test frontend/backend/both after fix?**: Both
 
 **In progress Task List**:
--   **Task 1: Fix Inventory Overview Cards (P0)**
-    -   **Where to resume**: .
-    -   **What will be achieved with this?**: The stat cards on the inventory overview page will display accurate data.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on something**: None
+-   None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
@@ -107,20 +102,24 @@ The application features a white-themed UI. The main Orders page is now highly f
     -   (P3) Abandoned Cart Recovery via WhatsApp.
 
 **Completed work in this session**
--   **Orders Page () Enhancements**:
-    -   Fixed display of , , , and  by fixing the backend TCS sync logic and explaining the need for per-store inventory.
-    -   Restored and enhanced WhatsApp & Cancellation functionality, adding individual/bulk action buttons and a dedicated Bulk Actions bar.
--   **Finance Reconciliation (, )**:
-    -   Fixed the file upload button and enhanced the backend to accept both CSV and Excel.
-    -   Implemented multi-currency logic (PKR cost to INR profit), and added , , and  fields.
-    -   Refined the amount matching logic to be exact and added a check to match the finance sheet's COD amount against the DTDC ledger.
--   **DTDC Payment Reconciliation (New Feature)**:
-    -   Built a new page and backend endpoints for a multi-step COD reconciliation process (DTDC Ledger -> Bank Statement -> Order).
-    -   The UI provides a clear view of the entire COD lifecycle for each order.
--   **Inventory Stock Sync**:
-    -   Created a new endpoint  in  to pull complete product and stock data from Shopify.
-    -   Added a Sync Stock from Shopify button to the  page.
--   **TCS Delivery Status Sync**: Fixed the  initialization in , which was preventing the bearer token from being used correctly. This unblocked the delivery status sync for many orders.
+-   **Inventory Overview Fixes (, )**:
+    -   Fixed incorrect stats by removing a  cap on the backend.
+    -   Refactored the logic to show stats for **sold items only**, providing a more accurate view of sales performance.
+-   **TCS Delivery Sync Overhaul (, , )**:
+    -   Implemented a clickable **truck icon** on the Orders page for real-time, on-demand status sync of individual orders.
+    -   Fixed the bulk TCS sync endpoints to be more reliable.
+    -   Enhanced the sync to fetch and store  and .
+-   **Orders Page Enhancements ()**:
+    -   Added Weight and TCS columns to the orders table.
+    -   Fixed a React state bug to ensure the UI updates instantly after a status sync.
+-   **Dispatch Tracker Enhancements (, )**:
+    -   Added Weight, TCS, and Net Profit columns.
+    -   Added new rows of summary cards for Value (Total, Delivered, etc.) and Profit (Net, Gross, etc.).
+    -   Updated the core logic to use the order's **fulfillment date** as the Dispatch Date.
+    -   Fixed the date range filter to correctly use the fulfillment date.
+-   **Core Data & Sync Logic ()**:
+    -   Updated the Shopify order sync to fetch and store the  timestamp.
+    -   Ran batch syncs to populate fulfillment dates for existing orders.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1**: Critical  Refactoring Needed.
@@ -129,31 +128,28 @@ The application features a white-themed UI. The main Orders page is now highly f
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**:  requires major refactoring.
--   **Recurrence count**: 19+
+-   **Recurrence count**: 20+
 -   **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Multi-Step Financial Reconciliation**: Implemented a workflow tracking money from order creation (Shopify), to courier collection (DTDC), to bank deposit (Bank Statement).
--   **Multi-Currency Handling**: Converting cost from an uploaded currency (PKR) to a display/profit currency (INR) using a fixed exchange rate in the backend.
--   **Conditional UI Rendering**: Displaying a Bulk Actions bar in React only when items in a list are selected.
--   **Robust API Integration Debugging**: Traced an authentication issue (TCS 405 error) to incorrect class initialization in Python and fixed it.
--   **Long-Running Background Tasks**: Implemented a full inventory sync from Shopify, which is a long-running process initiated by a user click.
+-   **Real-time Data Sync on UI Interaction**: Implemented the clickable truck icon to trigger an API call, update the DB, and refresh the UI state for a single item.
+-   **Complex Data Aggregation & Display**: Logic was added to both the frontend (React) and backend (FastAPI) to calculate and display numerous summary statistics (e.g., Net Profit, Delivered Value) on the Dispatch Tracker.
+-   **Backend Query Logic Enhancement**: The date filtering logic was improved to conditionally use different date fields ( vs. ) based on the query context, making filters more accurate.
+-   **Incremental Data Syncing**: The Shopify sync process was updated to fetch and store a new field (), and syncs were run in batches to populate historical data without crashing the server.
 
 **key DB schema**
 -   **customers**:
-    -   , , , , : New fields populated by the Finance Reconciliation upload.
--   **finance_purchase_orders**: Heavily modified schema. Now includes , , , , , .
--   **dtdc_payments**: **NEW** collection storing uploaded DTDC payment reports. , , , .
--   **bank_statements**: **NEW** collection storing uploaded bank transactions. , , Tue Dec 16 14:01:13 UTC 2025, .
--   **inventory_v2**: Now populated with full stock information from the new Shopify sync.
+    -   : **NEW** field, stores the ISO string date of when the order was fulfilled in Shopify.
+    -   : **NEW** field, stores parcel weight from the TCS API.
+    -   : **NEW** field, stores delivery charges from the TCS API.
+-   **inventory_v2**:
+    -   : This field was populated by a one-time script that matched SKUs against the  collection to link inventory stock to sales.
 
 **All files of reference**
 -   **Key Modified/New Frontend**:
-    -    (New)
-    -   
     -   
     -   
 -   **Key Modified Backend**:
@@ -163,63 +159,58 @@ The application features a white-themed UI. The main Orders page is now highly f
     -   
 
 **Areas that need refactoring**:
--   **/app/backend/server.py**: Still the top priority. More endpoints were added to it, increasing the urgency of breaking it into modular route files.
+-   **/app/backend/server.py**: This monolithic file is still a high priority for refactoring. More endpoints were added to it in this session.
+-   **Sync Logic**: The Shopify and TCS syncs are performed via synchronous, long-running API calls that can hang the server. This should be refactored into a proper background job/queue system (e.g., using Celery).
 
 **key api endpoints**
--   : **NEW**. Uploads DTDC COD ledger.
--   : **NEW**. Uploads bank statement for matching.
--   : **NEW**. Gets the fully reconciled COD lifecycle data.
--   : **HEAVILY MODIFIED**. Now handles multi-currency, advance/cod payments, shipping costs, and DTDC matching.
--   : **NEW**. Triggers a full sync of products and stock levels from Shopify.
--   : **MODIFIED**. Logic fixed to handle authentication correctly, enabling delivery status sync.
+-   : **NEW**. Used by the truck icon to sync a single order's TCS status and save weight/charges.
+-   : **HEAVILY MODIFIED**. Logic was rewritten to show stats for sold items only, and hardcoded query limits were removed.
+-   : **MODIFIED**. Logic fixed to use  for updates and to handle sync batches more reliably.
+-   : **MODIFIED**. Date filtering logic was changed to use  for fulfilled orders, improving the accuracy of the Dispatch Tracker.
 
 **Critical Info for New Agent**
--   **Top Priority is **: Your first task is to fix the stat cards on the Inventory Overview page. The backend API is fine; the bug is in the frontend component's data binding.
--   **Shopify OAuth is Still Broken**: The user de-prioritized it, but it's the #1 blocker for the app's core Shopify functionality. Once the inventory cards are fixed, this should be the next P0 task.
--   ** is a Ticking Bomb**: Avoid adding new endpoints to it. Any significant backend work should begin with a plan to refactor the relevant logic out of .
--   **Data is Store-Specific**: Many features (like cost/profit sync) only work if data (like inventory) for that specific store has been uploaded. The  store has no inventory, so cost sync won't work for it; costs must be uploaded via the Finance Reconciliation tool.
--   **Finance Reconciliation is Complex**: The logic in  now handles multiple currencies, costs, and matching rules. Read it carefully before making changes.
+-   **Verify Dispatch Tracker Fix**: Your first task is to confirm with the user that the date filter on the Dispatch Tracker page is working as they expect. The agent has fixed it, but it's pending user validation.
+-   **Data Syncs are Fragile and Slow**: Long-running syncs (Shopify, TCS) can block the server and cause the UI to hang. They were run in manual batches. This needs a robust background job solution. Inform the user that full syncs will be slow until this is addressed.
+-   **Authentication is Flaky**: The agent repeatedly faced login timeouts. If the UI is inaccessible, check the auth flow and server performance first. The / credentials may need to be reset.
+-   ** is Key for Dispatch**: The Dispatch Tracker now relies on the  field. If dates seem wrong, ensure the Shopify sync has been run for the relevant period to populate this field.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: Add  to cost and implement COD reconciliation. (**Done**)
-2.  **User**: Sync inventory stock data on the  page. (**Done**, but led to a new bug)
-3.  **User**: Re-add logic . (**Done**)
-4.  **User**: Use exact amount matching (no tolerance) and match COD amount to DTDC ledger. (**Done**)
-5.  **User**: The cards on  are displaying wrong data or no data. (**In Progress** - This is the current )
-6.  **User**:  is in PKR, should convert to INR, and we take advance payment. (**Done**)
-7.  **User**: Removed logic . (**Done**)
-8.  **User**:  is in pkr, should convert to inr and then update, also handle advance payment for 0 cod. (**Done**)
-9.  **User**:  upload button is not working. (**Done**)
-10. **User**:  are not working in all orders, delivery and stock status too. (**Done**)
+1.  **User**: Add  and  (deducting TCS) to Dispatch Tracker. (**Completed**)
+2.  **User**: Add a profit filter and a summary card showing total charges vs profit. (**Completed**)
+3.  **User**: How is profit calculated for order #29467? And add cards for Total/Delivered/Transit/Returned Value. (**Completed**)
+4.  **User**: Dispatch Tracker should use the fulfillment date from Shopify, not the order date. (**Completed**)
+5.  **User**: Explained that the Order Date and Fulfillment date are different. (**Acknowledged,  field was added and synced**)
+6.  **User**: The UI is stuck loading because a sync is running. (**Agent confirmed and restarted backend**)
+7.  **User**: It's still not showing the fulfillment date. (**Agent debugged and confirmed data was present but UI was slow/cached**)
+8.  **User**: Can you run the sync in steps so it doesn't hang? (**Completed**, agent ran sync in batches)
+9.  **User**: It's not showing November orders dispatched in December. (**Agent ran a wider sync to include them**)
+10. **User**: The date filter for Dec 1st is still showing older orders. (**Agent fixed the backend filter logic - This is the last working item, pending user verification**)
 
 **Project Health Check:**
 -   **Broken**:
-    -   **Shopify OAuth**: Core installation flow is non-functional.
-    -   **Inventory Overview UI**: The main stat cards are not displaying data.
-    -   **Data Integrity**: The fundamental SKU mismatch between collections for different stores remains, preventing automated cost sync for stores like .
+    -   **Shopify OAuth**: Core installation flow remains non-functional.
+    -   **Server Performance during Syncs**: Long-running syncs hang the server, making the UI unresponsive.
+    -   **Login Stability**: The login page frequently times out, hindering access.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
--   **Shopify Admin API**: **BROKEN (OAuth)**. The installation and authentication flow is not working due to a  mismatch.
--   **TCS Courier API**: **Partially Functional**. Public tracking and delivery status sync are working after auth fixes. The authenticated payment status API may still have issues.
+-   **Shopify Admin API**: **BROKEN (OAuth)**. The installation and authentication flow is not working due to a  mismatch. Data sync is functional.
+-   **TCS Courier API**: **Partially Functional**. Public tracking and delivery status sync are working. The API can be slow and doesn't always return weight/charges.
 -   **Facebook Marketing API**: **BLOCKED**. Awaiting user action to refresh an expired token.
 -   **Razorpay**: **Functional (Insecure)**. Implemented but uses LIVE API keys from .
 -   **OpenAI GPT-4**: Functional — uses Emergent LLM Key.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES, for fixing the Finance Reconciliation upload button.
+-   **Testing agent used after significant changes**: YES, for an early data discrepancy issue.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None.
--   **Known regressions**: None introduced in this session, but the Shopify OAuth regression from the previous session remains unfixed.
+-   **Known regressions**: None introduced, but the Shopify OAuth regression remains unfixed.
 
 **Credentials to test flow:**
--   **Admin**:  / 
--   **Manager**:  / 
--   **Viewer**:  / 
--   **New Demo User**:  / 
+-   **Admin**:  /  (Note: Agent had to reset this password multiple times. May need reset again if login fails).
 
 **What agent forgot to execute**
--   **Refactor **: This critical task was carried over and not addressed. The agent even added more code to this file.
+-   **Refactor **: This critical task was carried over and not addressed. The agent added more code to this file.
 -   **Migrate Live Secrets**: Did not migrate the insecure Razorpay keys from the  file.
--   **Address Root Data Issue**: Did not propose a solution for the fundamental SKU mismatch problem, which is the root cause for many data sync issues.
--   **Resolve Shopify OAuth Issue**: The agent investigated the OAuth issue briefly but then moved on at the user's request. It remains the biggest unresolved blocker for the application.</analysis>
+-   **Address Root Data Issue**: While a script was run to link inventory by SKU, the root cause of the SKU format mismatch was not investigated or fixed.
+-   **Propose a Background Job System**: The agent identified that long syncs hang the server but did not propose a proper solution like a background job queue, which is the standard architectural pattern for this problem.</analysis>
