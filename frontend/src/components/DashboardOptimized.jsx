@@ -738,7 +738,11 @@ Thank you for your understanding.`;
                   </tr>
                 ) : (
                   filteredOrders.map((order) => {
-                    const salePrice = parseFloat(order.total_spent || order.total_price || 0);
+                    // Calculate sale price: prioritize total_price (order total) over total_spent (customer lifetime)
+                    // If neither, calculate from line items
+                    const lineItemsTotal = order.line_items?.reduce((sum, item) => 
+                      sum + (parseFloat(item.price || 0) * (item.quantity || 1)), 0) || 0;
+                    const salePrice = parseFloat(order.total_price || lineItemsTotal || order.total_spent || 0);
                     const cost = parseFloat(order.cost || order.order_cost || 0);
                     const profit = salePrice - cost;
                     const itemCount = order.line_items?.length || order.order_skus?.length || 0;
