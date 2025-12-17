@@ -224,48 +224,97 @@ async def upload_dtdc_payments(file: UploadFile = File(...), store_name: str = N
             if tracking:
                 order_by_tracking[tracking] = order
         
+        # Build lookup by Shopify Order# for matching
+        order_by_number = {}
+        for order in orders:
+            order_num = str(order.get('order_number', '')).strip()
+            order_name = str(order.get('name', '')).strip()
+            if order_num:
+                order_by_number[order_num] = order
+                order_by_number[f"#{order_num}"] = order
+            if order_name:
+                order_by_number[order_name] = order
+        
         # Process records
         dtdc_records = []
         matched_count = 0
         total_cod = 0
+        total_remitted = 0
+        utr_totals = {}  # Track totals per UTR
         
         for record in records:
             awb = str(record.get('awb', '')).strip().upper()
             if not awb:
                 continue
             
+            # Parse COD amount
             cod_amount = 0
             try:
                 cod_amount = float(record.get('cod_amount', 0) or 0)
             except:
                 pass
             
-            payment_date = record.get('payment_date')
-            order_ref = record.get('order_ref', '')
-            status = record.get('status', '')
+            # Parse Remitted amount (amount sent to bank)
+            remitted_amount = 0
+            try:
+                remitted_amount = float(record.get('remitted_amount', 0) or 0)
+            except:
+                pass
             
-            # Match with order
+            # Get other fields
+            shopify_order = str(record.get('shopify_order', '')).strip()
+            utr_number = str(record.get('utr_number', '')).strip()
+            remittance_status = str(record.get('remittance_status', record.get('status', ''))).strip()
+            booking_date = record.get('booking_date')
+            delivery_date = record.get('delivery_date')
+            remittance_date = record.get('remittance_date')
+            
+            # Match with order - try by tracking number first, then by Shopify Order#
             matched_order = order_by_tracking.get(awb)
+            match_type = 'tracking' if matched_order else None
+            
+            # If not matched by tracking, try by Shopify Order#
+            if not matched_order and shopify_order:
+                # Clean shopify order reference
+                clean_order = shopify_order.replace('#', '').strip()
+                matched_order = order_by_number.get(shopify_order) or order_by_number.get(clean_order) or order_by_number.get(f"#{clean_order}")
+                match_type = 'order_number' if matched_order else None
+            
             is_matched = matched_order is not None
+            
+            # Track UTR totals
+            if utr_number:
+                if utr_number not in utr_totals:
+                    utr_totals[utr_number] = {'cod_total': 0, 'remitted_total': 0, 'count': 0}
+                utr_totals[utr_number]['cod_total'] += cod_amount
+                utr_totals[utr_number]['remitted_total'] += remitted_amount
+                utr_totals[utr_number]['count'] += 1
             
             dtdc_record = {
                 'awb': awb,
                 'cod_amount': cod_amount,
-                'payment_date': str(payment_date) if payment_date else None,
-                'order_ref': order_ref,
-                'dtdc_status': status,
+                'remitted_amount': remitted_amount,
+                'shopify_order': shopify_order,
+                'utr_number': utr_number,
+                'remittance_status': remittance_status,
+                'booking_date': str(booking_date) if booking_date else None,
+                'delivery_date': str(delivery_date) if delivery_date else None,
+                'remittance_date': str(remittance_date) if remittance_date else None,
                 'matched': is_matched,
+                'match_type': match_type,
                 'matched_order_number': matched_order.get('order_number') or matched_order.get('name') if matched_order else None,
                 'order_total': matched_order.get('total_spent') or matched_order.get('total_price') if matched_order else None,
                 'store_name': store_name,
                 'uploaded_at': datetime.now(timezone.utc).isoformat(),
-                'bank_matched': False,  # Will be updated when bank statement is uploaded
+                'bank_matched': False,
                 'bank_amount': None,
                 'bank_date': None
             }
             
             dtdc_records.append(dtdc_record)
             total_cod += cod_amount
+            total_remitted += remitted_amount
+            
             if is_matched:
                 matched_count += 1
                 
@@ -280,11 +329,26 @@ async def upload_dtdc_payments(file: UploadFile = File(...), store_name: str = N
                     update_query,
                     {'$set': {
                         'dtdc_cod_amount': cod_amount,
-                        'dtdc_payment_date': str(payment_date) if payment_date else None,
-                        'dtdc_payment_status': status or 'COLLECTED',
+                        'dtdc_remitted_amount': remitted_amount,
+                        'dtdc_utr_number': utr_number,
+                        'dtdc_remittance_status': remittance_status,
+                        'dtdc_remittance_date': str(remittance_date) if remittance_date else None,
+                        'dtdc_payment_status': remittance_status or 'COLLECTED',
                         'dtdc_updated_at': datetime.now(timezone.utc).isoformat()
                     }}
                 )
+            
+            # Also update purchase_order_reconciliation if AWB matches
+            await db.purchase_order_reconciliation.update_many(
+                {'awb': awb, 'store_name': store_name},
+                {'$set': {
+                    'dtdc_cod_amount': cod_amount,
+                    'dtdc_remitted_amount': remitted_amount,
+                    'dtdc_utr_number': utr_number,
+                    'dtdc_remittance_status': remittance_status,
+                    'cod_match_dtdc': True  # Mark as matched with DTDC
+                }}
+            )
         
         # Store DTDC payment records
         await db.dtdc_payments.delete_many({'store_name': store_name})
