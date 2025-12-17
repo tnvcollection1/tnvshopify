@@ -1041,18 +1041,27 @@ Thank you for your understanding.`;
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h3 className="font-medium text-gray-900 mb-4">Payment</h3>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Subtotal</span>
-                        <span>₹{selectedOrder.total_spent?.toFixed(0) || '0'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Shipping</span>
-                        <span>₹0</span>
-                      </div>
-                      <div className="flex justify-between pt-2 border-t border-gray-200 font-medium">
-                        <span>Total</span>
-                        <span>₹{selectedOrder.total_spent?.toFixed(0) || '0'}</span>
-                      </div>
+                      {(() => {
+                        const orderLineTotal = selectedOrder.line_items?.reduce((sum, item) => 
+                          sum + (parseFloat(item.price || 0) * (item.quantity || 1)), 0) || 0;
+                        const orderTotal = parseFloat(selectedOrder.total_price || orderLineTotal || selectedOrder.total_spent || 0);
+                        return (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Subtotal</span>
+                              <span>{formatCurrency(orderTotal, selectedOrder.store_name)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Shipping</span>
+                              <span>{formatCurrency(0, selectedOrder.store_name)}</span>
+                            </div>
+                            <div className="flex justify-between pt-2 border-t border-gray-200 font-medium">
+                              <span>Total</span>
+                              <span>{formatCurrency(orderTotal, selectedOrder.store_name)}</span>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
