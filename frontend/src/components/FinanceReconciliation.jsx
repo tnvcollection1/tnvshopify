@@ -295,15 +295,29 @@ const FinanceReconciliation = () => {
               </CardContent>
             </Card>
             
-            <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <Card className="bg-white border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-orange-50 rounded-xl">
                     <Package className="w-5 h-5 text-orange-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Cost</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(summary.total_cost, globalStore)}</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Cost (INR)</p>
+                    <p className="text-2xl font-bold text-orange-600">₹{(summary.total_cost_inr || 0).toLocaleString()}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-white border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-emerald-50 rounded-xl">
+                    <Package className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Cost (PKR)</p>
+                    <p className="text-2xl font-bold text-emerald-600">Rs.{(summary.total_cost_pkr || 0).toLocaleString()}</p>
                   </div>
                 </div>
               </CardContent>
@@ -312,12 +326,12 @@ const FinanceReconciliation = () => {
             <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-emerald-50 rounded-xl">
-                    <TrendingUp className="w-5 h-5 text-emerald-600" />
+                  <div className="p-3 bg-green-50 rounded-xl">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Profit</p>
-                    <p className={`text-2xl font-bold ${summary.total_profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    <p className={`text-2xl font-bold ${summary.total_profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {formatCurrency(summary.total_profit, globalStore)}
                     </p>
                   </div>
