@@ -936,6 +936,28 @@ const DispatchTracker = () => {
                     <TableCell className="font-semibold text-gray-900">
                       {formatCurrency(order.cod_amount || order.total_spent || 0, order.store_name)}
                     </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {order.tcs_weight ? `${order.tcs_weight} kg` : '-'}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {order.tcs_charges ? `Rs.${order.tcs_charges}` : '-'}
+                    </TableCell>
+                    <TableCell className="font-semibold">
+                      {(() => {
+                        const salePrice = parseFloat(order.cod_amount || order.total_spent || 0);
+                        const cost = parseFloat(order.cost || order.order_cost || 0);
+                        const tcsCharges = parseFloat(order.tcs_charges || 0);
+                        const netProfit = salePrice - cost - tcsCharges;
+                        if (cost > 0) {
+                          return (
+                            <span className={netProfit >= 0 ? 'text-green-600' : 'text-red-600'}>
+                              {netProfit >= 0 ? '+' : ''}Rs.{netProfit.toLocaleString()}
+                            </span>
+                          );
+                        }
+                        return <span className="text-gray-400">-</span>;
+                      })()}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
                         <Button
