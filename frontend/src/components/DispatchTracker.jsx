@@ -115,6 +115,12 @@ const DispatchTracker = () => {
     totalProfit: 0,
     returnedCharges: 0,
     netProfit: 0,
+    // Value stats
+    totalSaleValue: 0,
+    deliveredValue: 0,
+    transitValue: 0,
+    returnedValue: 0,
+    canceledValue: 0,
   });
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
