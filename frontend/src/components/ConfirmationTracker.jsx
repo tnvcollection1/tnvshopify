@@ -146,6 +146,7 @@ const ConfirmationTracker = () => {
         purchased: allOrders.filter(c => c.confirmation_status === "PURCHASED").length,
         notPurchased: allOrders.filter(c => c.confirmation_status === "NOT_PURCHASED").length,
         canceled: allOrders.filter(c => c.confirmation_status === "CANCELED").length,
+        voided: allOrders.filter(c => c.payment_status === "voided" || c.financial_status === "refunded" || c.financial_status === "voided").length,
         inStock: stockStats.in_stock || 0,
         inStockValue: stockStats.in_stock_value || 0,
         outOfStock: stockStats.out_of_stock || 0,
