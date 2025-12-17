@@ -812,6 +812,16 @@ const DispatchTracker = () => {
               <SelectItem value="pending">Pending</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={filters.profit} onValueChange={(v) => setFilters({ ...filters, profit: v })}>
+            <SelectTrigger className="w-32 border-gray-300 bg-white">
+              <SelectValue placeholder="Profit" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Profit</SelectItem>
+              <SelectItem value="positive">Profit (+)</SelectItem>
+              <SelectItem value="negative">Loss (-)</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={filters.year} onValueChange={(v) => setFilters({ ...filters, year: v })}>
             <SelectTrigger className="w-28 border-gray-300 bg-white">
               <SelectValue placeholder="Year" />
