@@ -484,7 +484,8 @@ const InventoryOverview = () => {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-medium">
                   {selectedCategory === 'all' && '📦 All Inventory Items'}
-                  {selectedCategory === 'by_cost' && '💰 Items by Cost'}
+                  {selectedCategory === 'by_cost_inr' && '💰 Items by Cost (INR - India)'}
+                  {selectedCategory === 'by_cost_pkr' && '💰 Items by Cost (PKR - Pakistan)'}
                   {selectedCategory === 'with_price' && '🏷️ Items with Sale Price'}
                   {selectedCategory === 'profitable' && '📈 Profitable Items'}
                   {selectedCategory === 'can_fulfill' && '✅ Ready to Ship Items'}
