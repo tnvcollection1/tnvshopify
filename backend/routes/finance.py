@@ -1239,21 +1239,17 @@ async def get_purchase_order_reconciliation(store_name: str = None, status: str 
         total_cost = sum(r.get('cost', 0) for r in records)
         total_profit = sum(r.get('profit', 0) for r in records)
         
-        # Calculate cost breakdown by currency (INR for India stores, PKR for Pakistan stores)
-        inr_stores = ['tnvcollection', 'ashmiaa', 'asmia']
-        pkr_stores = ['tnvcollectionpk']
+        # Calculate cost breakdown by currency (using cost_inr and cost_pkr fields if available)
+        total_cost_inr = sum(r.get('cost_inr', 0) or 0 for r in records)
+        total_cost_pkr = sum(r.get('cost_pkr', 0) or 0 for r in records)
         
-        total_cost_inr = sum(r.get('cost', 0) for r in records if r.get('store_name', '').lower() in inr_stores)
-        total_cost_pkr = sum(r.get('cost', 0) for r in records if r.get('store_name', '').lower() in pkr_stores)
-        
-        # If store filter is applied, attribute all cost to that currency
-        if store_name and store_name != 'all':
-            if store_name.lower() in inr_stores:
-                total_cost_inr = total_cost
-                total_cost_pkr = 0
-            elif store_name.lower() in pkr_stores:
-                total_cost_pkr = total_cost
-                total_cost_inr = 0
+        # Fallback: If no specific currency fields, use store-based attribution
+        if total_cost_inr == 0 and total_cost_pkr == 0 and total_cost > 0:
+            inr_stores = ['tnvcollection', 'ashmiaa', 'asmia']
+            pkr_stores = ['tnvcollectionpk']
+            
+            total_cost_inr = sum(r.get('cost', 0) or 0 for r in records if r.get('store_name', '').lower() in inr_stores)
+            total_cost_pkr = sum(r.get('cost', 0) or 0 for r in records if r.get('store_name', '').lower() in pkr_stores)
         
         return {
             'success': True,
