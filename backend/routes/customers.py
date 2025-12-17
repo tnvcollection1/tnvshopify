@@ -81,13 +81,16 @@ async def get_customers(
             elif stock_availability == "out_of_stock":
                 query["stock_status"] = "OUT_OF_STOCK"
             
-        # TCS only filter - orders with valid tracking numbers (excludes China Post/X-prefix)
+        # TCS only filter - orders with valid tracking numbers (excludes China Post/X-prefix and canceled/voided orders)
         if tcs_only == "true":
             query['$and'] = [
                 {"tracking_number": {"$exists": True}},
                 {"tracking_number": {"$ne": None}},
                 {"tracking_number": {"$ne": ""}},
-                {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}}
+                {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}},
+                # Exclude canceled/voided orders
+                {"payment_status": {"$ne": "voided"}},
+                {"financial_status": {"$nin": ["refunded", "voided"]}}
             ]
         
         # China Post tracking filter - orders with X-prefix tracking numbers
