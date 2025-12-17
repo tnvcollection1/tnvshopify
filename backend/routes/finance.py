@@ -355,7 +355,25 @@ async def upload_dtdc_payments(file: UploadFile = File(...), store_name: str = N
         if dtdc_records:
             await db.dtdc_payments.insert_many(dtdc_records)
         
-        logger.info(f"✅ Uploaded {len(dtdc_records)} DTDC payment records, {matched_count} matched with orders")
+        # Store UTR summary for bank reconciliation
+        await db.dtdc_utr_summary.delete_many({'store_name': store_name})
+        utr_records = [
+            {
+                'utr_number': utr,
+                'cod_total': data['cod_total'],
+                'remitted_total': data['remitted_total'],
+                'record_count': data['count'],
+                'store_name': store_name,
+                'bank_matched': False,
+                'bank_amount': None,
+                'uploaded_at': datetime.now(timezone.utc).isoformat()
+            }
+            for utr, data in utr_totals.items() if utr
+        ]
+        if utr_records:
+            await db.dtdc_utr_summary.insert_many(utr_records)
+        
+        logger.info(f"✅ Uploaded {len(dtdc_records)} DTDC payment records, {matched_count} matched with orders, {len(utr_records)} UTR groups")
         
         return {
             'success': True,
@@ -363,7 +381,10 @@ async def upload_dtdc_payments(file: UploadFile = File(...), store_name: str = N
             'total_records': len(dtdc_records),
             'matched': matched_count,
             'not_matched': len(dtdc_records) - matched_count,
-            'total_cod_amount': total_cod,
+            'total_cod': total_cod,
+            'total_remitted': total_remitted,
+            'utr_count': len(utr_records),
+            'utr_totals': utr_totals,
             'match_rate': f"{(matched_count/len(dtdc_records)*100):.1f}%" if dtdc_records else "0%"
         }
         
