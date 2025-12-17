@@ -252,7 +252,7 @@ const DTDCReconciliation = () => {
           <>
             {/* Summary Cards */}
             {summary && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
                 <Card>
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-3">
@@ -261,55 +261,83 @@ const DTDCReconciliation = () => {
                       </div>
                       <div>
                         <p className="text-2xl font-bold text-gray-900">{summary.total_records}</p>
-                        <p className="text-sm text-gray-500">Total DTDC Records</p>
+                        <p className="text-sm text-gray-500">Total Records</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
                 
                 <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-green-100 rounded-lg">
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-green-600">₹{(summary.total_received_in_bank || 0).toLocaleString()}</p>
-                    <p className="text-sm text-gray-500">Received in Bank ({summary.received_in_bank})</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-yellow-100 rounded-lg">
-                    <AlertCircle className="w-6 h-6 text-yellow-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-yellow-600">₹{(summary.total_pending_amount || 0).toLocaleString()}</p>
-                    <p className="text-sm text-gray-500">Pending Deposit ({summary.pending_deposit})</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-purple-100 rounded-lg">
-                    <IndianRupee className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-purple-600">₹{(summary.total_cod_collected || 0).toLocaleString()}</p>
-                    <p className="text-sm text-gray-500">Total COD Collected</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-green-100 rounded-lg">
+                        <CheckCircle className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-green-600">{summary.matched_orders || 0}</p>
+                        <p className="text-sm text-gray-500">Matched Orders</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-purple-100 rounded-lg">
+                        <IndianRupee className="w-6 h-6 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-purple-600">₹{(summary.total_cod_collected || 0).toLocaleString()}</p>
+                        <p className="text-sm text-gray-500">Total COD</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-emerald-100 rounded-lg">
+                        <DollarSign className="w-6 h-6 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-emerald-600">₹{(summary.total_remitted || 0).toLocaleString()}</p>
+                        <p className="text-sm text-gray-500">Total Remitted</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-orange-100 rounded-lg">
+                        <CreditCard className="w-6 h-6 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-orange-600">{summary.unique_utrs || 0}</p>
+                        <p className="text-sm text-gray-500">Unique UTRs</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-yellow-100 rounded-lg">
+                        <AlertCircle className="w-6 h-6 text-yellow-600" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-yellow-600">{summary.not_matched_orders || 0}</p>
+                        <p className="text-sm text-gray-500">Unmatched</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
         {/* Upload Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
