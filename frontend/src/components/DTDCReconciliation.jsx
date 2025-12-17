@@ -336,6 +336,20 @@ const DTDCReconciliation = () => {
                     </div>
                   </CardContent>
                 </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-indigo-100 rounded-lg">
+                        <FileSpreadsheet className="w-6 h-6 text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-indigo-600">{summary.finance_reconciled || 0}</p>
+                        <p className="text-sm text-gray-500">Reconciled</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
 
