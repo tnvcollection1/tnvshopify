@@ -1239,6 +1239,22 @@ async def get_purchase_order_reconciliation(store_name: str = None, status: str 
         total_cost = sum(r.get('cost', 0) for r in records)
         total_profit = sum(r.get('profit', 0) for r in records)
         
+        # Calculate cost breakdown by currency (INR for India stores, PKR for Pakistan stores)
+        inr_stores = ['tnvcollection', 'ashmiaa', 'asmia']
+        pkr_stores = ['tnvcollectionpk']
+        
+        total_cost_inr = sum(r.get('cost', 0) for r in records if r.get('store_name', '').lower() in inr_stores)
+        total_cost_pkr = sum(r.get('cost', 0) for r in records if r.get('store_name', '').lower() in pkr_stores)
+        
+        # If store filter is applied, attribute all cost to that currency
+        if store_name and store_name != 'all':
+            if store_name.lower() in inr_stores:
+                total_cost_inr = total_cost
+                total_cost_pkr = 0
+            elif store_name.lower() in pkr_stores:
+                total_cost_pkr = total_cost
+                total_cost_inr = 0
+        
         return {
             'success': True,
             'records': records,
@@ -1250,6 +1266,8 @@ async def get_purchase_order_reconciliation(store_name: str = None, status: str 
                 'amount_matched': amount_matched,
                 'total_sell': total_sell,
                 'total_cost': total_cost,
+                'total_cost_inr': total_cost_inr,
+                'total_cost_pkr': total_cost_pkr,
                 'total_profit': total_profit,
                 'match_rate': f"{(matched/total*100):.1f}%" if total > 0 else "0%"
             }
