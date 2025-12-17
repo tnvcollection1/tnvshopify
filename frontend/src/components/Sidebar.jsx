@@ -175,7 +175,7 @@ const Sidebar = () => {
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
-  // Limited menu for regular users - Only WhatsApp CRM + Shopify
+  // Limited menu for regular users - Only WhatsApp + Shopify
   const userMenuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
     { 
