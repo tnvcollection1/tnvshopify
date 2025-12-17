@@ -216,13 +216,16 @@ async def get_customer_stats(
         if fulfillment_status and fulfillment_status != "all":
             query["fulfillment_status"] = fulfillment_status
             
-        # TCS only filter
+        # TCS only filter - exclude canceled/voided orders
         if tcs_only == "true":
             tcs_filter = [
                 {"tracking_number": {"$exists": True}},
                 {"tracking_number": {"$ne": None}},
                 {"tracking_number": {"$ne": ""}},
-                {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}}
+                {"tracking_number": {"$not": {"$regex": "^X", "$options": "i"}}},
+                # Exclude canceled/voided orders
+                {"payment_status": {"$ne": "voided"}},
+                {"financial_status": {"$nin": ["refunded", "voided"]}}
             ]
             if "$and" in query:
                 query["$and"].extend(tcs_filter)
