@@ -447,12 +447,15 @@ const FinanceReconciliation = () => {
                       <TableHead className="text-right">Advance</TableHead>
                       <TableHead className="text-right">COD</TableHead>
                       <TableHead className="text-right">DTDC COD</TableHead>
+                      <TableHead>DTDC UTR</TableHead>
+                      <TableHead>DTDC Status</TableHead>
                       <TableHead className="text-right">Profit (INR)</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>Order Status</TableHead>
                       <TableHead>Shopify Order</TableHead>
                       <TableHead className="text-right">Shopify Amt</TableHead>
                       <TableHead>Amt Match</TableHead>
                       <TableHead>COD Match</TableHead>
+                      <TableHead>Order Match</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
