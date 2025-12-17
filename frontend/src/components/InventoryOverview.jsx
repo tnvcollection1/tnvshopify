@@ -122,9 +122,43 @@ const InventoryOverview = () => {
     try {
       const params = new URLSearchParams();
       if (globalStore !== 'all') params.append('store_name', globalStore);
-      params.append('category', category);
       
-      const response = await axios.get(`${API}/api/inventory/v2?${params}&limit=100`);
+      let endpoint = `${API}/api/inventory/v2`;
+      
+      // Map category to appropriate endpoint/params
+      switch (category) {
+        case 'all':
+          // All items - no filter
+          break;
+        case 'by_cost':
+          // Items sorted by cost (highest first)
+          params.append('sort_by', 'cost_desc');
+          break;
+        case 'with_price':
+          // Items that have sale price set
+          params.append('has_price', 'true');
+          break;
+        case 'profitable':
+          // Items with positive profit
+          params.append('profitable', 'true');
+          break;
+        case 'can_fulfill':
+          params.append('status', 'can_fulfill_today');
+          break;
+        case 'in_transit':
+          params.append('status', 'in_transit');
+          break;
+        case 'delivered':
+          params.append('status', 'delivered');
+          break;
+        case 'unknown':
+          params.append('status', 'unknown');
+          break;
+        default:
+          params.append('category', category);
+      }
+      
+      const response = await axios.get(`${endpoint}?${params}&limit=100`);
       setCategoryItems(response.data.items || []);
     } catch (error) {
       console.error('Error loading category items:', error);
