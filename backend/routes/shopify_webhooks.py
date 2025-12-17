@@ -535,12 +535,23 @@ async def handle_order_fulfilled(
         order_data = await request.json()
         order = ShopifyOrder(**order_data)
         
-        # Update order status
+        # Update order status with fulfilled_at timestamp
+        fulfilled_at = datetime.now(timezone.utc).isoformat()
         await db.orders.update_one(
             {"shopify_id": order.id, "store_id": store["id"]},
             {"$set": {
                 "fulfillment_status": "fulfilled",
-                "updated_at": datetime.now(timezone.utc).isoformat()
+                "fulfilled_at": fulfilled_at,
+                "updated_at": fulfilled_at
+            }}
+        )
+        
+        # Also update in customers collection
+        await db.customers.update_one(
+            {"order_number": str(order.order_number)},
+            {"$set": {
+                "fulfillment_status": "fulfilled",
+                "fulfilled_at": fulfilled_at
             }}
         )
         
