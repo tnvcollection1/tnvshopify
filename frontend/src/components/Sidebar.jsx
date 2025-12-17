@@ -288,12 +288,107 @@ const Sidebar = () => {
 
       {/* Search */}
       <div className="px-3 py-2">
-        <div className="flex items-center gap-2 px-3 py-2 bg-[#128c7e]/50 rounded-lg text-green-200 text-sm">
+        <button 
+          onClick={() => setSearchOpen(true)}
+          className="w-full flex items-center gap-2 px-3 py-2 bg-[#128c7e]/50 rounded-lg text-green-200 text-sm hover:bg-[#128c7e] transition-colors cursor-pointer"
+        >
           <Search className="w-4 h-4" />
           <span>Search</span>
           <kbd className="ml-auto text-xs bg-[#128c7e] px-1.5 py-0.5 rounded">⌘K</kbd>
-        </div>
+        </button>
       </div>
+      
+      {/* Search Modal */}
+      {searchOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-20" onClick={() => setSearchOpen(false)}>
+          <div 
+            className="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b">
+              <div className="flex items-center gap-3">
+                <Search className="w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search orders, customers, AWB..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQuery.trim()) {
+                      navigate(`/dashboard?search=${encodeURIComponent(searchQuery.trim())}`);
+                      setSearchOpen(false);
+                      setSearchQuery('');
+                    }
+                    if (e.key === 'Escape') {
+                      setSearchOpen(false);
+                    }
+                  }}
+                  className="flex-1 text-lg outline-none placeholder-gray-400"
+                  autoFocus
+                />
+                <kbd className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">ESC</kbd>
+              </div>
+            </div>
+            <div className="p-4">
+              <p className="text-sm text-gray-500 mb-3">Quick Actions</p>
+              <div className="space-y-1">
+                <button
+                  onClick={() => {
+                    if (searchQuery.trim()) {
+                      navigate(`/dashboard?search=${encodeURIComponent(searchQuery.trim())}`);
+                    } else {
+                      navigate('/dashboard');
+                    }
+                    setSearchOpen(false);
+                    setSearchQuery('');
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-left"
+                >
+                  <ShoppingCart className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm">{searchQuery ? `Search "${searchQuery}" in Orders` : 'Go to Orders'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (searchQuery.trim()) {
+                      navigate(`/dispatch-tracker?search=${encodeURIComponent(searchQuery.trim())}`);
+                    } else {
+                      navigate('/dispatch-tracker');
+                    }
+                    setSearchOpen(false);
+                    setSearchQuery('');
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-left"
+                >
+                  <Truck className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm">{searchQuery ? `Search "${searchQuery}" in Dispatch Tracker` : 'Go to Dispatch Tracker'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    navigate('/dtdc-reconciliation');
+                    setSearchOpen(false);
+                    setSearchQuery('');
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-left"
+                >
+                  <CreditCard className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm">DTDC Reconciliation</span>
+                </button>
+                <button
+                  onClick={() => {
+                    navigate('/finance-reconciliation');
+                    setSearchOpen(false);
+                    setSearchQuery('');
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-left"
+                >
+                  <DollarSign className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm">Finance Reconciliation</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-1">
