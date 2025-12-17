@@ -50,6 +50,18 @@ const Sidebar = () => {
   const [expandedSections, setExpandedSections] = useState(['whatsapp', 'shopify']);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Keyboard shortcut for search (Cmd+K or Ctrl+K)
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
   const [showStoreDropdown, setShowStoreDropdown] = useState(false);
   const [syncStatus, setSyncStatus] = useState(null);
 
