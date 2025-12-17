@@ -1059,7 +1059,7 @@ const DispatchTracker = () => {
                 return filteredByProfit;
               })().length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={14} className="text-center py-12 text-gray-500">
+                  <TableCell colSpan={15} className="text-center py-12 text-gray-500">
                     <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
                     <h3 className="text-lg font-medium text-gray-900 mb-1">No orders found</h3>
                     <p>Try adjusting your filters or search</p>
