@@ -231,16 +231,19 @@ async def sync_tcs_one_by_one(limit: int = 50, delay: int = 2):
                 customer_no=config.get('customer_no')
             )
         
-        # Find orders needing sync - prioritize TCS tracking numbers (start with 173)
+        # Find orders needing sync - prioritize TCS tracking numbers (start with 173), exclude canceled/voided
         query = {
             'fulfillment_status': 'fulfilled',
             'delivery_status': {'$nin': ['DELIVERED', 'RETURNED']},
+            # Exclude canceled/voided orders
+            'payment_status': {'$ne': 'voided'},
             '$and': [
                 {'tracking_number': {'$exists': True}},
                 {'tracking_number': {'$ne': None}},
                 {'tracking_number': {'$ne': ''}},
                 # Prioritize TCS tracking numbers (start with 173)
-                {'tracking_number': {'$regex': '^173', '$options': 'i'}}
+                {'tracking_number': {'$regex': '^173', '$options': 'i'}},
+                {'financial_status': {'$nin': ['refunded', 'voided']}}
             ]
         }
         
