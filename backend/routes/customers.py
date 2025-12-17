@@ -116,7 +116,7 @@ async def get_customers(
             except ValueError:
                 pass
         
-        # Date range filter
+        # Date range filter - use fulfilled_at for fulfilled orders, otherwise last_order_date
         if start_date or end_date:
             date_filter = {}
             if start_date:
@@ -129,7 +129,15 @@ async def get_customers(
                 except:
                     date_filter["$lte"] = end_date
             if date_filter:
-                query['last_order_date'] = date_filter
+                # For fulfilled orders, filter by fulfilled_at (dispatch date), otherwise by order date
+                if fulfillment_status == "fulfilled":
+                    # Use $or to include orders with fulfilled_at OR fall back to last_order_date
+                    query["$or"] = [
+                        {"fulfilled_at": date_filter},
+                        {"$and": [{"fulfilled_at": None}, {"last_order_date": date_filter}]}
+                    ]
+                else:
+                    query['last_order_date'] = date_filter
         
         # Search across multiple fields - combine with $and for compatibility with tcs_only filter
         if search:
