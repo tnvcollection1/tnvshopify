@@ -238,7 +238,7 @@ const FinanceReconciliation = () => {
       <div className="p-6">
         {/* Summary Cards */}
         {summary && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
             <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="pt-5 pb-4">
                 <div className="flex items-center gap-3">
