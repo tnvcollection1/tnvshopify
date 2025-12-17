@@ -187,7 +187,10 @@ const DTDCReconciliation = () => {
     const searchLower = search.toLowerCase();
     return (
       (record.awb || '').toLowerCase().includes(searchLower) ||
-      (record.matched_order_number || '').toString().toLowerCase().includes(searchLower)
+      (record.matched_order_number || '').toString().toLowerCase().includes(searchLower) ||
+      (record.shopify_order || '').toLowerCase().includes(searchLower) ||
+      (record.utr_number || '').toLowerCase().includes(searchLower) ||
+      (record.remittance_status || '').toLowerCase().includes(searchLower)
     );
   });
 
