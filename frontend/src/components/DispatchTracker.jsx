@@ -340,6 +340,12 @@ const DispatchTracker = () => {
         totalProfit: totalProfit,
         returnedCharges: returnedCharges,
         netProfit: totalProfit - returnedCharges,
+        // Value stats
+        totalSaleValue: totalSaleValue,
+        deliveredValue: deliveredValue,
+        transitValue: transitValue,
+        returnedValue: returnedValue,
+        canceledValue: canceledValue,
       });
       
       setTotalPages(Math.ceil(statsData.total / 100));
