@@ -723,6 +723,59 @@ const DispatchTracker = () => {
             </div>
           </div>
         </div>
+        
+        {/* Profit Summary Cards */}
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Total TCS Charges</p>
+                <p className="text-xl font-semibold text-gray-900">Rs.{stats.totalTcsCharges.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <Truck className="w-5 h-5 text-gray-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Gross Profit</p>
+                <p className={`text-xl font-semibold ${stats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {stats.totalProfit >= 0 ? '+' : ''}Rs.{stats.totalProfit.toLocaleString()}
+                </p>
+              </div>
+              <div className="p-2 bg-green-50 rounded-lg">
+                <DollarSign className="w-5 h-5 text-green-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">Return Charges (Loss)</p>
+                <p className="text-xl font-semibold text-red-600">-Rs.{stats.returnedCharges.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-red-50 rounded-lg">
+                <RotateCcw className="w-5 h-5 text-red-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4 border-2 border-blue-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Net Profit</p>
+                <p className={`text-xl font-bold ${stats.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {stats.netProfit >= 0 ? '+' : ''}Rs.{stats.netProfit.toLocaleString()}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">Gross Profit - Return Charges</p>
+              </div>
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <CreditCard className="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Search & Filters */}
         <div className="flex items-center gap-4 mb-4">
