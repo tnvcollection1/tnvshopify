@@ -582,24 +582,40 @@ async def get_dtdc_payment_reconciliation(store_name: str = None, status: str = 
         
         records = await db.dtdc_payments.find(query, {'_id': 0}).to_list(10000)
         
+        # Get UTR summary for bank reconciliation
+        utr_summary = await db.dtdc_utr_summary.find(
+            {'store_name': store_name} if store_name and store_name != 'all' else {},
+            {'_id': 0}
+        ).to_list(1000)
+        
         # Calculate summary
         total = len(records)
+        matched_orders = sum(1 for r in records if r.get('matched'))
         pending = sum(1 for r in records if not r.get('bank_matched'))
         received = sum(1 for r in records if r.get('bank_matched'))
         total_cod = sum(r.get('cod_amount', 0) for r in records)
-        total_received = sum(r.get('bank_amount', 0) or r.get('cod_amount', 0) for r in records if r.get('bank_matched'))
-        total_pending = sum(r.get('cod_amount', 0) for r in records if not r.get('bank_matched'))
+        total_remitted = sum(r.get('remitted_amount', 0) for r in records)
+        total_received = sum(r.get('bank_amount', 0) or r.get('remitted_amount', 0) for r in records if r.get('bank_matched'))
+        total_pending = sum(r.get('remitted_amount', 0) or r.get('cod_amount', 0) for r in records if not r.get('bank_matched'))
+        
+        # Count unique UTRs
+        unique_utrs = set(r.get('utr_number') for r in records if r.get('utr_number'))
         
         return {
             'success': True,
             'records': records,
+            'utr_summary': utr_summary,
             'summary': {
                 'total_records': total,
+                'matched_orders': matched_orders,
+                'not_matched_orders': total - matched_orders,
                 'pending_deposit': pending,
                 'received_in_bank': received,
                 'total_cod_collected': total_cod,
+                'total_remitted': total_remitted,
                 'total_received_in_bank': total_received,
-                'total_pending_amount': total_pending
+                'total_pending_amount': total_pending,
+                'unique_utrs': len(unique_utrs)
             }
         }
         
