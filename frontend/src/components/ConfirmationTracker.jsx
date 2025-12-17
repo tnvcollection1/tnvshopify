@@ -221,6 +221,9 @@ const ConfirmationTracker = () => {
         case 'canceled':
           params.append("confirmation_status", "CANCELED");
           break;
+        case 'voided':
+          params.append("payment_status", "voided");
+          break;
         case 'inStock':
           params.append("stock_availability", "in_stock");
           break;
