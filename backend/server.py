@@ -2408,6 +2408,37 @@ async def get_inventory_overview_stats(
         total_sale_value = sum(total_matched_orders.values())
         total_profit = total_sale_value - total_cost if total_sale_value > 0 else 0
         
+        # Calculate cost breakdown by currency (INR for India stores, PKR for Pakistan stores)
+        # Get all inventory items with store info
+        all_items_with_store = await db.inventory_v2.find(
+            {
+                **date_query, 
+                "order_number": {"$exists": True, "$ne": None, "$ne": "", "$ne": "None"},
+                "$expr": {"$ne": [{"$type": "$order_number"}, "null"]}
+            },
+            {"_id": 0, "cost": 1, "store_name": 1}
+        ).to_list(100000)
+        
+        # INR stores: tnvcollection, ashmiaa (India)
+        # PKR stores: tnvcollectionpk (Pakistan)
+        inr_stores = ['tnvcollection', 'ashmiaa', 'asmia']
+        pkr_stores = ['tnvcollectionpk']
+        
+        total_cost_inr = 0
+        total_cost_pkr = 0
+        
+        for item in all_items_with_store:
+            cost = item.get('cost', 0) or 0
+            store = (item.get('store_name') or '').lower()
+            
+            if store in inr_stores:
+                total_cost_inr += cost
+            elif store in pkr_stores:
+                total_cost_pkr += cost
+            else:
+                # Default to PKR if unknown store
+                total_cost_pkr += cost
+        
         # NEW: Calculate sale value from inventory SKU sale prices
         # Get all inventory items with sale_price field
         inventory_with_sale_price = await db.inventory_v2.find(
