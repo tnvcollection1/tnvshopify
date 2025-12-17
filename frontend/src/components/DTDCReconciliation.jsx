@@ -455,14 +455,14 @@ const DTDCReconciliation = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
                     <p className="text-gray-500 mt-2">Loading...</p>
                   </TableCell>
                 </TableRow>
               ) : filteredRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                     {globalStore === 'all' 
                       ? 'Please select a store to view DTDC payment data'
                       : 'No DTDC payment records found. Upload a DTDC report to get started.'}
