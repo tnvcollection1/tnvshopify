@@ -252,7 +252,7 @@ const DTDCReconciliation = () => {
           <>
             {/* Summary Cards */}
             {summary && (
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-6">
                 <Card>
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-3">
