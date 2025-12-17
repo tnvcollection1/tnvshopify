@@ -1090,7 +1090,9 @@ const DispatchTracker = () => {
                       />
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">
-                      {order.last_order_date
+                      {order.fulfilled_at
+                        ? new Date(order.fulfilled_at).toLocaleDateString()
+                        : order.last_order_date
                         ? new Date(order.last_order_date).toLocaleDateString()
                         : "N/A"}
                     </TableCell>
