@@ -289,25 +289,40 @@ const DispatchTracker = () => {
       
       setOrders(allOrders);
       
-      // Calculate profit stats from orders
+      // Calculate profit and value stats from orders
       let totalTcsCharges = 0;
       let totalProfit = 0;
       let returnedCharges = 0;
+      let totalSaleValue = 0;
+      let deliveredValue = 0;
+      let transitValue = 0;
+      let returnedValue = 0;
+      let canceledValue = 0;
       
       allOrders.forEach(order => {
         const salePrice = parseFloat(order.cod_amount || order.total_spent || 0);
         const cost = parseFloat(order.cost || order.order_cost || 0);
         const tcsCharges = parseFloat(order.tcs_charges || 0);
+        const status = order.delivery_status || '';
+        const isCanceled = order.financial_status === 'refunded' || order.financial_status === 'voided' || order.tags?.includes('canceled');
         
         totalTcsCharges += tcsCharges;
+        totalSaleValue += salePrice;
         
         if (cost > 0) {
           const profit = salePrice - cost - tcsCharges;
           totalProfit += profit;
         }
         
-        // Returned orders - TCS charges are loss
-        if (order.delivery_status === 'RETURNED' || order.delivery_status === 'RETURN_IN_PROCESS') {
+        // Categorize by status
+        if (isCanceled) {
+          canceledValue += salePrice;
+        } else if (status === 'DELIVERED') {
+          deliveredValue += salePrice;
+        } else if (status === 'IN_TRANSIT' || status === 'OUT_FOR_DELIVERY' || status === 'PENDING' || status === 'BOOKED') {
+          transitValue += salePrice;
+        } else if (status === 'RETURNED' || status === 'RETURN_IN_PROCESS') {
+          returnedValue += salePrice;
           returnedCharges += tcsCharges;
         }
       });
