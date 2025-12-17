@@ -48,6 +48,8 @@ const Sidebar = () => {
   const { logout, agent, isAdmin } = useAuth();
   const { stores, selectedStore, switchStore, syncStoreData, syncing, getStoreName } = useStore();
   const [expandedSections, setExpandedSections] = useState(['whatsapp', 'shopify']);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showStoreDropdown, setShowStoreDropdown] = useState(false);
   const [syncStatus, setSyncStatus] = useState(null);
 
