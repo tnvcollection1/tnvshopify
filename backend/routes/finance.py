@@ -159,6 +159,7 @@ async def upload_dtdc_payments(file: UploadFile = File(...), store_name: str = N
         
         # Flexible column mapping for DTDC reports
         column_mapping = {
+            # AWB / CN Number mapping
             'AWB': 'awb',
             'AWB NO': 'awb',
             'AWB NO.': 'awb',
@@ -167,26 +168,43 @@ async def upload_dtdc_payments(file: UploadFile = File(...), store_name: str = N
             'TRACKING NUMBER': 'awb',
             'CONSIGNMENT NO': 'awb',
             'CN NO': 'awb',
+            'CN NUMBER': 'awb',
+            # COD Amount mapping
             'COD': 'cod_amount',
             'COD AMOUNT': 'cod_amount',
             'COD AMT': 'cod_amount',
-            'AMOUNT': 'cod_amount',
             'COLLECTED AMOUNT': 'cod_amount',
             'COLLECTION': 'cod_amount',
-            'REMITTANCE': 'cod_amount',
-            'REMITTANCE AMOUNT': 'cod_amount',
+            # Remitted Amount (sent to bank)
+            'REMITTED AMOUNT': 'remitted_amount',
+            'REMITTANCE AMOUNT': 'remitted_amount',
+            'REMITTANCE': 'remitted_amount',
+            'AMOUNT': 'remitted_amount',
+            # Date mappings
             'DATE': 'payment_date',
             'PAYMENT DATE': 'payment_date',
             'COLLECTION DATE': 'payment_date',
-            'DELIVERY DATE': 'payment_date',
-            'REMITTANCE DATE': 'payment_date',
-            'ORDER': 'order_ref',
-            'ORDER NO': 'order_ref',
-            'ORDER REF': 'order_ref',
-            'REFERENCE': 'order_ref',
+            'DELIVERY DATE': 'delivery_date',
+            'BOOKING DATE': 'booking_date',
+            'REMITTANCE DATE': 'remittance_date',
+            # Customer Reference (Shopify Order#)
+            'CUSTOMER REFERENCE NUMBER': 'shopify_order',
+            'CUSTOMER REFERENCE': 'shopify_order',
+            'ORDER': 'shopify_order',
+            'ORDER NO': 'shopify_order',
+            'ORDER REF': 'shopify_order',
+            'REFERENCE': 'shopify_order',
+            # Status mapping
             'STATUS': 'status',
-            'REMITTANCE STATUS': 'status',
-            'PAYMENT STATUS': 'status'
+            'REMITTANCE STATUS': 'remittance_status',
+            'PAYMENT STATUS': 'status',
+            # UTR Number (Bank Transaction Reference)
+            'UTR NUMBER': 'utr_number',
+            'UTR': 'utr_number',
+            'UTR NO': 'utr_number',
+            'BANK REF': 'utr_number',
+            'BANK REFERENCE': 'utr_number',
+            'TRANSACTION REF': 'utr_number'
         }
         
         df.columns = [column_mapping.get(col.strip().upper(), col.strip().lower().replace(' ', '_')) for col in df.columns]
