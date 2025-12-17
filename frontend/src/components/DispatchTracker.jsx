@@ -93,6 +93,7 @@ const DispatchTracker = () => {
     payment: "all",
     year: "all",
     sortBy: "date_desc",
+    profit: "all", // all, positive, negative
   });
   const [dateRange, setDateRange] = useState({
     start: '',
