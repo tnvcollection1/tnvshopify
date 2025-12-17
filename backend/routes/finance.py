@@ -588,9 +588,25 @@ async def get_dtdc_payment_reconciliation(store_name: str = None, status: str = 
             {'_id': 0}
         ).to_list(1000)
         
+        # Get all AWBs from purchase_order_reconciliation to check finance reconciliation status
+        finance_awbs = set()
+        finance_records = await db.purchase_order_reconciliation.find(
+            {'store_name': store_name} if store_name and store_name != 'all' else {},
+            {'_id': 0, 'awb': 1}
+        ).to_list(100000)
+        for fr in finance_records:
+            if fr.get('awb'):
+                finance_awbs.add(fr.get('awb').upper())
+        
+        # Add finance_reconciled flag to each record
+        for record in records:
+            awb = record.get('awb', '').upper()
+            record['finance_reconciled'] = awb in finance_awbs
+        
         # Calculate summary
         total = len(records)
         matched_orders = sum(1 for r in records if r.get('matched'))
+        finance_reconciled = sum(1 for r in records if r.get('finance_reconciled'))
         pending = sum(1 for r in records if not r.get('bank_matched'))
         received = sum(1 for r in records if r.get('bank_matched'))
         total_cod = sum(r.get('cod_amount', 0) for r in records)
@@ -609,6 +625,8 @@ async def get_dtdc_payment_reconciliation(store_name: str = None, status: str = 
                 'total_records': total,
                 'matched_orders': matched_orders,
                 'not_matched_orders': total - matched_orders,
+                'finance_reconciled': finance_reconciled,
+                'pending_reconciliation': total - finance_reconciled,
                 'pending_deposit': pending,
                 'received_in_bank': received,
                 'total_cod_collected': total_cod,
