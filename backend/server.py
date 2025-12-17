@@ -3033,6 +3033,7 @@ async def get_all_inventory_items(
     has_price: str = None,
     profitable: str = None,
     sort_by: str = None,
+    currency: str = None,
     limit: int = 100
 ):
     """Get all inventory items with filtering and search"""
@@ -3044,6 +3045,14 @@ async def get_all_inventory_items(
             query["store_name"] = store_name
         if status and status != "all":
             query["status"] = status
+        
+        # Filter by currency (store region)
+        # INR stores: tnvcollection, ashmiaa (India)
+        # PKR stores: tnvcollectionpk (Pakistan)
+        if currency == "inr":
+            query["store_name"] = {"$in": ["tnvcollection", "ashmiaa", "asmia"]}
+        elif currency == "pkr":
+            query["store_name"] = {"$in": ["tnvcollectionpk"]}
         
         # Filter for items with sale price
         if has_price == "true":
