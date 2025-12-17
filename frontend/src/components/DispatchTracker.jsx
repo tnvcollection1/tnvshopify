@@ -283,6 +283,29 @@ const DispatchTracker = () => {
       
       setOrders(allOrders);
       
+      // Calculate profit stats from orders
+      let totalTcsCharges = 0;
+      let totalProfit = 0;
+      let returnedCharges = 0;
+      
+      allOrders.forEach(order => {
+        const salePrice = parseFloat(order.cod_amount || order.total_spent || 0);
+        const cost = parseFloat(order.cost || order.order_cost || 0);
+        const tcsCharges = parseFloat(order.tcs_charges || 0);
+        
+        totalTcsCharges += tcsCharges;
+        
+        if (cost > 0) {
+          const profit = salePrice - cost - tcsCharges;
+          totalProfit += profit;
+        }
+        
+        // Returned orders - TCS charges are loss
+        if (order.delivery_status === 'RETURNED' || order.delivery_status === 'RETURN_IN_PROCESS') {
+          returnedCharges += tcsCharges;
+        }
+      });
+      
       setStats({
         total: statsData.total || 0,
         delivered: statsData.delivered || 0,
@@ -292,6 +315,10 @@ const DispatchTracker = () => {
         returnInProcess: statsData.returnInProcess || 0,
         paymentReceived: statsData.paymentReceived || 0,
         paymentPending: statsData.paymentPending || 0,
+        totalTcsCharges: totalTcsCharges,
+        totalProfit: totalProfit,
+        returnedCharges: returnedCharges,
+        netProfit: totalProfit - returnedCharges,
       });
       
       setTotalPages(Math.ceil(statsData.total / 100));
