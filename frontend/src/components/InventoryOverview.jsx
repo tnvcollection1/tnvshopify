@@ -195,7 +195,12 @@ const InventoryOverview = () => {
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Summary Stats - Shopify Style */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          <Card className="bg-white border border-gray-200 shadow-sm">
+          <Card 
+            className={`bg-white border shadow-sm cursor-pointer transition-all hover:shadow-md ${
+              selectedCategory === 'all' ? 'ring-2 ring-gray-500 border-gray-500' : 'border-gray-200'
+            }`}
+            onClick={() => loadCategoryItems('all')}
+          >
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -209,7 +214,12 @@ const InventoryOverview = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border border-gray-200 shadow-sm">
+          <Card 
+            className={`bg-white border shadow-sm cursor-pointer transition-all hover:shadow-md ${
+              selectedCategory === 'by_cost' ? 'ring-2 ring-orange-500 border-orange-500' : 'border-gray-200'
+            }`}
+            onClick={() => loadCategoryItems('by_cost')}
+          >
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -223,7 +233,12 @@ const InventoryOverview = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border border-gray-200 shadow-sm">
+          <Card 
+            className={`bg-white border shadow-sm cursor-pointer transition-all hover:shadow-md ${
+              selectedCategory === 'with_price' ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-200'
+            }`}
+            onClick={() => loadCategoryItems('with_price')}
+          >
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -238,7 +253,12 @@ const InventoryOverview = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border border-gray-200 shadow-sm">
+          <Card 
+            className={`bg-white border shadow-sm cursor-pointer transition-all hover:shadow-md ${
+              selectedCategory === 'profitable' ? 'ring-2 ring-green-500 border-green-500' : 'border-gray-200'
+            }`}
+            onClick={() => loadCategoryItems('profitable')}
+          >
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
