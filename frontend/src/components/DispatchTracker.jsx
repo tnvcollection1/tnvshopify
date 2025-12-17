@@ -110,6 +110,10 @@ const DispatchTracker = () => {
     returnInProcess: 0,
     paymentReceived: 0,
     paymentPending: 0,
+    totalTcsCharges: 0,
+    totalProfit: 0,
+    returnedCharges: 0,
+    netProfit: 0,
   });
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
