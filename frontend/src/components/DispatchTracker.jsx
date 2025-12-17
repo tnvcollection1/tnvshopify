@@ -855,14 +855,14 @@ const DispatchTracker = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-12 text-gray-500">
+                  <TableCell colSpan={14} className="text-center py-12 text-gray-500">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
                     Loading orders...
                   </TableCell>
                 </TableRow>
               ) : orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-12 text-gray-500">
+                  <TableCell colSpan={14} className="text-center py-12 text-gray-500">
                     <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
                     <h3 className="text-lg font-medium text-gray-900 mb-1">No orders found</h3>
                     <p>Try adjusting your filters or search</p>
