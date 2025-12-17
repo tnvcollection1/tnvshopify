@@ -147,7 +147,7 @@ const Sidebar = () => {
     },
     { 
       icon: MessageCircle, 
-      label: 'WhatsApp CRM', 
+      label: 'WhatsApp', 
       section: 'whatsapp',
       children: [
         { icon: Inbox, label: 'Inbox', path: '/whatsapp-inbox' },
@@ -180,7 +180,7 @@ const Sidebar = () => {
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
     { 
       icon: MessageCircle, 
-      label: 'WhatsApp CRM', 
+      label: 'WhatsApp', 
       section: 'whatsapp',
       children: [
         { icon: Inbox, label: 'Inbox', path: '/whatsapp-inbox' },
