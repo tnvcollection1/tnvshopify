@@ -82,6 +82,10 @@ export default function DWZ56Shipping() {
   const [searchTracking, setSearchTracking] = useState('');
   const [selectedCourier, setSelectedCourier] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedStore, setSelectedStore] = useState('');
+  
+  // Stats
+  const [importStats, setImportStats] = useState(null);
   
   // Quote form
   const [quoteForm, setQuoteForm] = useState({
