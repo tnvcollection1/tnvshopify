@@ -132,10 +132,11 @@ const Sidebar = () => {
     },
     { 
       icon: Plane, 
-      label: 'DWZ56 Shipping', 
+      label: 'DWZ56 Logistics', 
       section: 'dwz56',
       children: [
-        { icon: Truck, label: 'Dashboard & Tracking', path: '/dwz56-shipping' },
+        { icon: Truck, label: 'Shipping Account', path: '/dwz56-shipping' },
+        { icon: ShoppingCart, label: 'Purchase Account', path: '/dwz56-purchase' },
       ]
     },
     { icon: BarChart3, label: 'Analytics', path: '/reports' },
