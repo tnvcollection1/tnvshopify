@@ -598,14 +598,18 @@ async def list_shipped_records(
                 ref_order_nums.append(int(order_part))
     
     # Batch lookup Shopify orders by tracking number AND order number
+    # Search in both tnvcollection and tnvcollectionpk stores
     shopify_orders = {}
     shopify_by_order = {}
     
     try:
-        # Lookup by tracking number
+        # Lookup by tracking number from both stores
         if all_nums:
             cursor = db.customers.find(
-                {"tracking_number": {"$in": all_nums}},
+                {
+                    "tracking_number": {"$in": all_nums},
+                    "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}
+                },
                 {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1}
             )
             async for order in cursor:
@@ -617,10 +621,13 @@ async def list_shipped_records(
                         "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip()
                     }
         
-        # Lookup by order number from reference field
+        # Lookup by order number from reference field (both stores)
         if ref_order_nums:
             cursor = db.customers.find(
-                {"order_number": {"$in": ref_order_nums}},
+                {
+                    "order_number": {"$in": ref_order_nums},
+                    "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}
+                },
                 {"_id": 0, "order_number": 1, "store_name": 1, "first_name": 1, "last_name": 1}
             )
             async for order in cursor:
