@@ -449,15 +449,24 @@ export default function DWZ56Shipping() {
           )}
           
           {/* Import Stats */}
-          {importStats && (
-            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-green-600" />
-                  Import Sales Till Date
-                </CardTitle>
-                <CardDescription>Total sale value of imports linked to Shopify orders</CardDescription>
-              </CardHeader>
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-green-600" />
+                Import Sales Till Date
+                {loadingStats && <RefreshCw className="w-4 h-4 animate-spin ml-2" />}
+              </CardTitle>
+              <CardDescription>Total sale value of imports linked to Shopify orders</CardDescription>
+            </CardHeader>
+            {!importStats && !loadingStats && (
+              <CardContent>
+                <Button onClick={fetchImportStats} variant="outline">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Load Import Stats
+                </Button>
+              </CardContent>
+            )}
+            {importStats && (
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div className="text-center p-4 bg-white rounded-lg shadow-sm">
