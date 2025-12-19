@@ -44,6 +44,7 @@ from routes.api_keys import api_keys_router, set_database as set_api_keys_db
 from routes.shopify_oauth import shopify_oauth_router, set_database as set_shopify_oauth_db
 from routes.lead_ads import lead_ads_router, set_database as set_lead_ads_db
 from routes.super_admin import super_admin_router, set_database as set_super_admin_db
+from routes.dwz56 import router as dwz56_router
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
