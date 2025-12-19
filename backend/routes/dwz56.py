@@ -587,6 +587,9 @@ async def list_shipped_records(
     awb_nums = [rec.get("cNo") for rec in records if rec.get("cNo")]
     all_nums = list(set(tracking_nums + awb_nums))
     
+    # Collect X-prefix tracking numbers for China import matching
+    x_prefix_tracking_nums = [num for num in all_nums if num and num.upper().startswith('X')]
+    
     # Extract order numbers from cRNo field (format: "XXXXX-ORDER_NUMBER")
     ref_order_nums = []
     for rec in records:
@@ -601,6 +604,7 @@ async def list_shipped_records(
     # Search in both tnvcollection and tnvcollectionpk stores
     shopify_orders = {}
     shopify_by_order = {}
+    shopify_by_x_tracking = {}  # For X-prefix matching
     
     try:
         # Lookup by tracking number from both stores
@@ -610,7 +614,7 @@ async def list_shipped_records(
                     "tracking_number": {"$in": all_nums},
                     "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}
                 },
-                {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1}
+                {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
             )
             async for order in cursor:
                 tracking = order.get("tracking_number")
@@ -618,7 +622,8 @@ async def list_shipped_records(
                     shopify_orders[tracking] = {
                         "order_number": order.get("order_number"),
                         "store_name": order.get("store_name"),
-                        "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip()
+                        "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                        "total_spent": order.get("total_spent")
                     }
         
         # Lookup by order number from reference field (both stores)
@@ -628,15 +633,37 @@ async def list_shipped_records(
                     "order_number": {"$in": ref_order_nums},
                     "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}
                 },
-                {"_id": 0, "order_number": 1, "store_name": 1, "first_name": 1, "last_name": 1}
+                {"_id": 0, "order_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
             )
             async for order in cursor:
                 order_num = str(order.get("order_number"))
                 shopify_by_order[order_num] = {
                     "order_number": order.get("order_number"),
                     "store_name": order.get("store_name"),
-                    "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip()
+                    "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                    "total_spent": order.get("total_spent")
                 }
+        
+        # NEW: Lookup X-prefix tracking numbers from Shopify fulfillments (China imports)
+        # Match DWZ56 X-prefix tracking to Shopify orders with same X-prefix tracking
+        if x_prefix_tracking_nums:
+            cursor = db.customers.find(
+                {
+                    "tracking_number": {"$regex": "^X", "$options": "i"},
+                    "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}
+                },
+                {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
+            )
+            async for order in cursor:
+                tracking = order.get("tracking_number")
+                if tracking:
+                    # Store by uppercase tracking number for case-insensitive matching
+                    shopify_by_x_tracking[tracking.upper()] = {
+                        "order_number": order.get("order_number"),
+                        "store_name": order.get("store_name"),
+                        "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                        "total_spent": order.get("total_spent")
+                    }
     except Exception as e:
         print(f"Error looking up Shopify orders: {e}")
     
