@@ -596,7 +596,7 @@ export default function DWZ56Shipping() {
           {/* Filters */}
           <Card>
             <CardContent className="pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
                 <div>
                   <Label>Start Date</Label>
                   <Input 
@@ -668,6 +668,19 @@ export default function DWZ56Shipping() {
                       {importStats?.stores?.map((store, i) => (
                         <SelectItem key={i} value={store}>{store}</SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Match Status</Label>
+                  <Select value={matchFilter} onValueChange={setMatchFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="matched">✅ Matched</SelectItem>
+                      <SelectItem value="not_matched">❌ Not Matched</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
