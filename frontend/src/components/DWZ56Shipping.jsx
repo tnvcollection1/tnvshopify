@@ -47,6 +47,17 @@ const STATUS_ICONS = {
   'DESTROYED': Trash2,
 };
 
+// StatusBadge component (moved outside main component to avoid re-renders)
+const StatusBadge = ({ status, label }) => {
+  const Icon = STATUS_ICONS[status] || Clock;
+  return (
+    <Badge className={`${STATUS_COLORS[status] || 'bg-gray-500'} text-white`}>
+      <Icon className="w-3 h-3 mr-1" />
+      {label}
+    </Badge>
+  );
+};
+
 export default function DWZ56Shipping() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(false);
