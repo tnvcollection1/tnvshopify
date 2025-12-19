@@ -223,7 +223,7 @@ export default function DWZ56Shipping() {
         fqWeight: parseFloat(quoteForm.weight),
         nqItemType: 1,
       };
-      if (quoteForm.courier) body.cqEmsKind = quoteForm.courier;
+      if (quoteForm.courier && quoteForm.courier !== 'all') body.cqEmsKind = quoteForm.courier;
       if (quoteForm.length) body.fqLong = parseFloat(quoteForm.length);
       if (quoteForm.width) body.fqWidth = parseFloat(quoteForm.width);
       if (quoteForm.height) body.fqHeight = parseFloat(quoteForm.height);
