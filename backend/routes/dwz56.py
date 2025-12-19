@@ -1016,3 +1016,343 @@ async def get_tracking_status_summary(
         "summary": summary,
         "total": sum(s["count"] for s in summary.values()),
     }
+
+
+
+# ===========================
+# PURCHASE ACCOUNT ENDPOINTS
+# ===========================
+# Account: Sunny (ID: 1051)
+# For reconciling purchases
+
+@router.get("/purchase/client-info")
+async def get_purchase_client_info():
+    """Get purchase account information and balance"""
+    payload = build_request_payload("ClientInfo", account="purchase")
+    
+    try:
+        data = await make_api_request(payload)
+        
+        if data.get("nRet", 0) < 0:
+            error_code = data.get("nRet")
+            error_msg = ERROR_CODES.get(error_code, f"Unknown error: {error_code}")
+            raise HTTPException(status_code=400, detail=error_msg)
+        
+        return {
+            "success": True,
+            "account_name": "Sunny (Purchase)",
+            "client_id": DWZ56_PURCHASE_CLIENT_ID,
+            "client_name": data.get("cCompany", ""),
+            "balance": data.get("fMoney", 0),
+            "credit_limit": data.get("fCredit", 0),
+            "address": data.get("cAddress", ""),
+            "contact": data.get("cName", ""),
+            "phone": data.get("cTel", ""),
+            "email": data.get("cMail", ""),
+            "raw_response": data,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/purchase/courier-types")
+async def get_purchase_courier_types():
+    """Get available courier types for purchase account"""
+    payload = build_request_payload("EmsKindList", account="purchase")
+    
+    try:
+        data = await make_api_request(payload)
+        
+        courier_list = data.get("EmsKindList", [])
+        formatted_list = []
+        
+        for courier in courier_list:
+            formatted_list.append({
+                "code": courier.get("cCode", ""),
+                "name": courier.get("cName", ""),
+                "display_name": f"{courier.get('cCode', '')} - {courier.get('cName', '')}",
+            })
+        
+        return {
+            "success": True,
+            "account": "purchase",
+            "total": len(formatted_list),
+            "courier_types": formatted_list,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/purchase/tracking-list")
+async def get_purchase_tracking_list(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=500),
+    start_date: str = None,
+    end_date: str = None,
+    tracking_number: str = None,
+    status_mask: str = None,
+    courier_type: str = None,
+):
+    """Get tracking records from purchase account (for reconciliation)"""
+    extra_params = {
+        "iPage": page,
+        "iPagePer": page_size,
+    }
+    
+    if start_date:
+        extra_params["dDateA"] = start_date
+    if end_date:
+        extra_params["dDateB"] = end_date
+    if tracking_number:
+        extra_params["cNum"] = tracking_number
+    if status_mask:
+        extra_params["cMask"] = status_mask
+    if courier_type:
+        extra_params["cKind"] = courier_type
+    
+    payload = build_request_payload("RecList", extra_params, account="purchase")
+    
+    try:
+        data = await make_api_request(payload)
+        
+        if data.get("nRet", 0) < 0:
+            error_code = data.get("nRet")
+            error_msg = ERROR_CODES.get(error_code, f"Unknown error: {error_code}")
+            if error_code == -999:
+                raise HTTPException(status_code=429, detail=error_msg)
+            raise HTTPException(status_code=400, detail=error_msg)
+        
+        records = data.get("RecList", [])
+        db = get_db()
+        
+        # Collect tracking numbers for Shopify lookup
+        tracking_nums = [rec.get("cNum") for rec in records if rec.get("cNum")]
+        awb_nums = [rec.get("cNo") for rec in records if rec.get("cNo")]
+        all_nums = list(set(tracking_nums + awb_nums))
+        
+        # Extract order numbers from cRNo field
+        ref_order_nums = []
+        for rec in records:
+            cRNo = rec.get("cRNo", "")
+            if cRNo and "-" in cRNo:
+                order_part = cRNo.split("-")[-1]
+                if order_part.isdigit():
+                    ref_order_nums.append(order_part)
+                    ref_order_nums.append(int(order_part))
+        
+        # Lookup Shopify orders
+        shopify_orders = {}
+        shopify_by_order = {}
+        shopify_by_x_tracking = {}
+        
+        try:
+            if all_nums:
+                cursor = db.customers.find(
+                    {"tracking_number": {"$in": all_nums}, "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}},
+                    {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
+                )
+                async for order in cursor:
+                    tracking = order.get("tracking_number")
+                    if tracking:
+                        shopify_orders[tracking] = {
+                            "order_number": order.get("order_number"),
+                            "store_name": order.get("store_name"),
+                            "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                            "total_spent": order.get("total_spent")
+                        }
+            
+            if ref_order_nums:
+                cursor = db.customers.find(
+                    {"order_number": {"$in": ref_order_nums}, "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}},
+                    {"_id": 0, "order_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
+                )
+                async for order in cursor:
+                    order_num = str(order.get("order_number"))
+                    shopify_by_order[order_num] = {
+                        "order_number": order.get("order_number"),
+                        "store_name": order.get("store_name"),
+                        "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                        "total_spent": order.get("total_spent")
+                    }
+            
+            # X-prefix matching
+            x_prefix_nums = [num for num in all_nums if num and num.upper().startswith('X')]
+            if x_prefix_nums:
+                cursor = db.customers.find(
+                    {"tracking_number": {"$regex": "^X", "$options": "i"}, "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}},
+                    {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
+                )
+                async for order in cursor:
+                    tracking = order.get("tracking_number")
+                    if tracking:
+                        shopify_by_x_tracking[tracking.upper()] = {
+                            "order_number": order.get("order_number"),
+                            "store_name": order.get("store_name"),
+                            "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                            "total_spent": order.get("total_spent")
+                        }
+        except Exception as e:
+            print(f"Error looking up Shopify orders: {e}")
+        
+        # Enrich records
+        enriched_records = []
+        for rec in records:
+            state = rec.get("nState", 0)
+            status_info = TRACKING_STATUS.get(state, TRACKING_STATUS[0])
+            
+            # Look up Shopify order
+            shopify_info = shopify_orders.get(rec.get("cNum")) or shopify_orders.get(rec.get("cNo"))
+            
+            if not shopify_info:
+                cRNo = rec.get("cRNo", "")
+                if cRNo and "-" in cRNo:
+                    order_part = cRNo.split("-")[-1]
+                    shopify_info = shopify_by_order.get(order_part)
+            
+            if not shopify_info:
+                cNum = rec.get("cNum", "")
+                cNo = rec.get("cNo", "")
+                if cNum and cNum.upper().startswith('X'):
+                    shopify_info = shopify_by_x_tracking.get(cNum.upper())
+                elif cNo and cNo.upper().startswith('X'):
+                    shopify_info = shopify_by_x_tracking.get(cNo.upper())
+            
+            shopify_info = shopify_info or {}
+            
+            enriched_records.append({
+                **rec,
+                "status_code": status_info["code"],
+                "status_label": status_info["label"],
+                "status_label_en": status_info["label_en"],
+                "shopify_order_number": shopify_info.get("order_number"),
+                "shopify_store": shopify_info.get("store_name"),
+                "shopify_customer": shopify_info.get("customer_name"),
+                "shopify_value": shopify_info.get("total_spent"),
+            })
+        
+        return {
+            "success": True,
+            "account": "purchase",
+            "page": page,
+            "page_size": page_size,
+            "total_records": data.get("nRecCount", len(records)),
+            "records_count": len(enriched_records),
+            "records": enriched_records,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/purchase/import-stats")
+async def get_purchase_import_stats():
+    """Get purchase account import statistics with store-wise breakdown"""
+    db = get_db()
+    
+    try:
+        # Get all X-prefix tracking orders from Shopify for both stores
+        cursor = db.customers.find(
+            {
+                "tracking_number": {"$regex": "^X", "$options": "i"},
+                "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}
+            },
+            {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "total_spent": 1, "total_price": 1}
+        )
+        
+        orders_by_store = {}
+        total_orders = 0
+        total_value = 0
+        
+        async for order in cursor:
+            store = order.get("store_name", "unknown")
+            if store not in orders_by_store:
+                orders_by_store[store] = {"count": 0, "value": 0, "cod_value": 0}
+            
+            orders_by_store[store]["count"] += 1
+            value = order.get("total_spent") or order.get("total_price") or 0
+            orders_by_store[store]["value"] += float(value) if value else 0
+            
+            total_orders += 1
+            total_value += float(value) if value else 0
+        
+        # Get DWZ56 purchase account record count
+        payload = build_request_payload("RecList", {"iPage": 1, "iPagePer": 1}, account="purchase")
+        try:
+            data = await make_api_request(payload)
+            dwz_total = data.get("nRecCount", 0)
+        except:
+            dwz_total = 0
+        
+        by_store = [
+            {
+                "store": store,
+                "orders": stats["count"],
+                "sale_value": stats["value"],
+                "cod_value": stats["cod_value"]
+            }
+            for store, stats in sorted(orders_by_store.items(), key=lambda x: x[1]["value"], reverse=True)
+        ]
+        
+        return {
+            "success": True,
+            "account": "purchase",
+            "matched_orders": total_orders,
+            "total_sale_value": total_value,
+            "total_dwz56_records": dwz_total,
+            "stores": list(orders_by_store.keys()),
+            "by_store": by_store,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/purchase/fee-list")
+async def get_purchase_fee_list(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
+    start_date: str = None,
+    end_date: str = None,
+):
+    """Get payment/fee records from purchase account for reconciliation"""
+    extra_params = {
+        "iPage": page,
+        "iPagePer": page_size,
+    }
+    
+    if start_date:
+        extra_params["dDateA"] = start_date
+    if end_date:
+        extra_params["dDateB"] = end_date
+    
+    payload = build_request_payload("FeeList", extra_params, account="purchase")
+    
+    try:
+        data = await make_api_request(payload)
+        
+        if data.get("nRet", 0) < 0:
+            error_code = data.get("nRet")
+            error_msg = ERROR_CODES.get(error_code, f"Unknown error: {error_code}")
+            raise HTTPException(status_code=400, detail=error_msg)
+        
+        fee_list = data.get("FeeList", [])
+        
+        # Calculate totals
+        total_amount = sum(float(f.get("fMoney", 0)) for f in fee_list)
+        
+        return {
+            "success": True,
+            "account": "purchase",
+            "page": page,
+            "page_size": page_size,
+            "total_records": data.get("nRecCount", len(fee_list)),
+            "records_count": len(fee_list),
+            "total_amount": total_amount,
+            "records": fee_list,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
