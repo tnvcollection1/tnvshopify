@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://wamerce-dash.preview.emergentagent.com/api'
+base_url = 'https://import-order-dash.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
