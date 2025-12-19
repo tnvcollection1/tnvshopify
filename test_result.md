@@ -408,6 +408,5 @@ backend:
 
 test_plan:
   current_focus:
-    - "DWZ56 X-Prefix Order Matching & Tracking List Enhancement"
     - "Inventory Data Comparison - Overview vs Main Endpoints"
     - "Finance Reconciliation - Upload Button Functionality"
