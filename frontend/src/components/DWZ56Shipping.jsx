@@ -83,6 +83,7 @@ export default function DWZ56Shipping() {
   const [selectedCourier, setSelectedCourier] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedStore, setSelectedStore] = useState('');
+  const [matchFilter, setMatchFilter] = useState('all'); // 'all', 'matched', 'not_matched'
   
   // Stats
   const [importStats, setImportStats] = useState(null);
