@@ -519,7 +519,7 @@ export default function DWZ56Shipping() {
                       <SelectValue placeholder="All couriers" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All couriers</SelectItem>
+                      <SelectItem value="all">All couriers</SelectItem>
                       {courierTypes.map((c, i) => (
                         <SelectItem key={i} value={c.code}>{c.display_name}</SelectItem>
                       ))}
@@ -821,7 +821,7 @@ export default function DWZ56Shipping() {
                       <SelectValue placeholder="All couriers" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All couriers</SelectItem>
+                      <SelectItem value="all">All couriers</SelectItem>
                       {courierTypes.map((c, i) => (
                         <SelectItem key={i} value={c.code}>{c.display_name}</SelectItem>
                       ))}
