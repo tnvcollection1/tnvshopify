@@ -677,6 +677,7 @@ async def list_shipped_records(
         # 1. Tracking number match
         # 2. AWB number match
         # 3. Reference number (cRNo) containing order number
+        # 4. X-prefix tracking number match (China imports)
         shopify_info = shopify_orders.get(rec.get("cNum")) or shopify_orders.get(rec.get("cNo"))
         
         # If not found by tracking, try reference number
@@ -685,6 +686,16 @@ async def list_shipped_records(
             if cRNo and "-" in cRNo:
                 order_part = cRNo.split("-")[-1]
                 shopify_info = shopify_by_order.get(order_part)
+        
+        # NEW: If still not found and tracking starts with X, try X-prefix matching
+        if not shopify_info:
+            cNum = rec.get("cNum", "")
+            cNo = rec.get("cNo", "")
+            # Check if tracking number is an X-prefix (China import)
+            if cNum and cNum.upper().startswith('X'):
+                shopify_info = shopify_by_x_tracking.get(cNum.upper())
+            elif cNo and cNo.upper().startswith('X'):
+                shopify_info = shopify_by_x_tracking.get(cNo.upper())
         
         shopify_info = shopify_info or {}
         
