@@ -1125,7 +1125,12 @@ const DispatchTracker = () => {
                       {order.phone || "N/A"}
                     </TableCell>
                     <TableCell className="text-sm font-mono text-gray-600">
-                      {order.tracking_number || "—"}
+                      <div>
+                        {order.tracking_number || "—"}
+                        {order.tcs_destination && (
+                          <p className="text-xs text-gray-400 font-sans">{order.tcs_origin} → {order.tcs_destination}</p>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
