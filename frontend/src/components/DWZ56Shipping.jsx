@@ -410,38 +410,49 @@ export default function DWZ56Shipping() {
             </div>
           )}
           
-          {/* Status Summary */}
-          {statusSummary && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Shipment Status Overview</CardTitle>
-                <CardDescription>Total: {statusSummary.total} shipments</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {Object.entries(statusSummary.summary).map(([code, data]) => {
-                    const Icon = STATUS_ICONS[code] || Clock;
-                    return (
-                      <div 
-                        key={code} 
-                        className={`p-4 rounded-lg ${STATUS_COLORS[code]} bg-opacity-10 border cursor-pointer hover:shadow-md transition-shadow`}
-                        onClick={() => {
-                          setSelectedStatus(data.state_code.toString());
-                          setActiveTab('tracking');
-                        }}
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <Icon className={`w-5 h-5 ${STATUS_COLORS[code].replace('bg-', 'text-')}`} />
-                          <span className="text-sm font-medium">{data.label_en}</span>
-                        </div>
-                        <p className="text-2xl font-bold">{data.count}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Manage your shipments</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Button 
+                  variant="outline" 
+                  className="h-24 flex flex-col items-center justify-center gap-2"
+                  onClick={() => setActiveTab('tracking')}
+                >
+                  <Truck className="w-8 h-8 text-blue-600" />
+                  <span>View Tracking</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-24 flex flex-col items-center justify-center gap-2"
+                  onClick={() => setActiveTab('orders')}
+                >
+                  <Package className="w-8 h-8 text-green-600" />
+                  <span>Manage Orders</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-24 flex flex-col items-center justify-center gap-2"
+                  onClick={() => setActiveTab('quote')}
+                >
+                  <Calculator className="w-8 h-8 text-purple-600" />
+                  <span>Get Quote</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-24 flex flex-col items-center justify-center gap-2"
+                  onClick={() => setActiveTab('inventory')}
+                >
+                  <Warehouse className="w-8 h-8 text-orange-600" />
+                  <span>Inventory</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
           
           {/* Available Couriers */}
           <Card>
