@@ -85,6 +85,13 @@ export default function DWZ56Purchase() {
     fetchCourierTypes();
   }, []);
   
+  // Auto-load tracking when switching to tracking tab
+  useEffect(() => {
+    if (activeTab === 'tracking' && trackingList.length === 0) {
+      fetchTrackingList(1);
+    }
+  }, [activeTab]);
+  
   const fetchClientInfo = async () => {
     try {
       const res = await fetch(`${API_URL}/api/dwz56/purchase/client-info`);
