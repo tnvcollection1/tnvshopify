@@ -375,6 +375,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/dwz56-purchase" 
+        element={
+          <ProtectedRoute>
+            <DWZ56Purchase />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory-clearance" 
         element={
           <ProtectedRoute>
