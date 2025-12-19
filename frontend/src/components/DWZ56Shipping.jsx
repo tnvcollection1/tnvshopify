@@ -334,16 +334,6 @@ export default function DWZ56Shipping() {
       fetchPayments();
     }
   }, [activeTab, fetchTrackingList, fetchPreInputList, fetchInventory, fetchPayments]);
-  
-  const StatusBadge = ({ status, label }) => {
-    const Icon = STATUS_ICONS[status] || Clock;
-    return (
-      <Badge className={`${STATUS_COLORS[status] || 'bg-gray-500'} text-white`}>
-        <Icon className="w-3 h-3 mr-1" />
-        {label}
-      </Badge>
-    );
-  };
 
   return (
     <div className="p-6 space-y-6">
