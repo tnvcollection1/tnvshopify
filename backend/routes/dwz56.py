@@ -579,16 +579,50 @@ async def list_shipped_records(
     
     records = response.get("RecList", [])
     
-    # Enrich records with status labels
+    # Get database for cross-referencing
+    db = get_db()
+    
+    # Collect all tracking numbers to batch lookup
+    tracking_nums = [rec.get("cNum") for rec in records if rec.get("cNum")]
+    awb_nums = [rec.get("cNo") for rec in records if rec.get("cNo")]
+    all_nums = list(set(tracking_nums + awb_nums))
+    
+    # Batch lookup Shopify orders by tracking number
+    shopify_orders = {}
+    if all_nums:
+        try:
+            cursor = db.customers.find(
+                {"tracking_number": {"$in": all_nums}},
+                {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1}
+            )
+            async for order in cursor:
+                tracking = order.get("tracking_number")
+                if tracking:
+                    shopify_orders[tracking] = {
+                        "order_number": order.get("order_number"),
+                        "store_name": order.get("store_name"),
+                        "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip()
+                    }
+        except Exception as e:
+            print(f"Error looking up Shopify orders: {e}")
+    
+    # Enrich records with status labels and Shopify order info
     enriched_records = []
     for rec in records:
         state = rec.get("nState", 0)
         status_info = TRACKING_STATUS.get(state, TRACKING_STATUS[0])
+        
+        # Look up Shopify order by tracking number or AWB
+        shopify_info = shopify_orders.get(rec.get("cNum")) or shopify_orders.get(rec.get("cNo")) or {}
+        
         enriched_rec = {
             **rec,
             "status_code": status_info["code"],
             "status_label": status_info["label"],
             "status_label_en": status_info["label_en"],
+            "shopify_order_number": shopify_info.get("order_number"),
+            "shopify_store": shopify_info.get("store_name"),
+            "shopify_customer": shopify_info.get("customer_name"),
         }
         enriched_records.append(enriched_rec)
     
