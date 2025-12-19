@@ -145,7 +145,9 @@ export default function DWZ56Shipping() {
   }, []);
   
   // Fetch import stats
+  const [loadingStats, setLoadingStats] = useState(false);
   const fetchImportStats = useCallback(async () => {
+    setLoadingStats(true);
     try {
       let url = `${API_URL}/api/dwz56/import-stats`;
       if (selectedStore && selectedStore !== 'all') {
@@ -158,6 +160,8 @@ export default function DWZ56Shipping() {
       }
     } catch (err) {
       console.error('Failed to fetch import stats:', err);
+    } finally {
+      setLoadingStats(false);
     }
   }, [selectedStore]);
   
