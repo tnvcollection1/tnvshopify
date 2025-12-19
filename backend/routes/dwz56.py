@@ -24,8 +24,20 @@ import hashlib
 import httpx
 import os
 import json
+from motor.motor_asyncio import AsyncIOMotorClient
 
 router = APIRouter(prefix="/api/dwz56", tags=["DWZ56 Shipping"])
+
+# Database connection for cross-referencing with Shopify orders
+_db = None
+
+def get_db():
+    global _db
+    if _db is None:
+        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        client = AsyncIOMotorClient(mongo_url)
+        _db = client['shopify_customers_db']
+    return _db
 
 # Configuration
 DWZ56_API_URL = os.environ.get("DWZ56_API_URL", "https://www.dwz56.com/cgi-bin/EmsData.dll?DoApp")
