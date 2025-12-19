@@ -479,40 +479,68 @@ export default function DWZ56Shipping() {
             {importStats && (
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div 
+                    className="text-center p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:bg-green-50 transition-all border-2 border-transparent hover:border-green-200"
+                    onClick={() => { setSelectedStore('all'); setMatchFilter('matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
+                    title="Click to view all matched orders"
+                  >
                     <p className="text-3xl font-bold text-green-600">
                       Rs.{importStats.total_sale_value?.toLocaleString(undefined, {maximumFractionDigits: 0}) || '0'}
                     </p>
                     <p className="text-sm text-gray-500">Total Sale Value</p>
+                    <p className="text-xs text-green-500 mt-1">Click to view →</p>
                   </div>
-                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div 
+                    className="text-center p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:bg-blue-50 transition-all border-2 border-transparent hover:border-blue-200"
+                    onClick={() => { setSelectedStore('all'); setMatchFilter('matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
+                    title="Click to view matched orders"
+                  >
                     <p className="text-3xl font-bold text-blue-600">
                       {importStats.matched_orders?.toLocaleString() || '0'}
                     </p>
                     <p className="text-sm text-gray-500">Matched Orders</p>
+                    <p className="text-xs text-blue-500 mt-1">Click to view →</p>
                   </div>
-                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div 
+                    className="text-center p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:bg-purple-50 transition-all border-2 border-transparent hover:border-purple-200"
+                    onClick={() => { setSelectedStore('all'); setMatchFilter('all'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
+                    title="Click to view all DWZ56 records"
+                  >
                     <p className="text-3xl font-bold text-purple-600">
                       {importStats.total_dwz56_records?.toLocaleString() || '0'}
                     </p>
                     <p className="text-sm text-gray-500">DWZ56 Records</p>
+                    <p className="text-xs text-purple-500 mt-1">Click to view →</p>
                   </div>
-                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
-                    <p className="text-3xl font-bold text-orange-600">
-                      {importStats.stores?.length || '0'}
+                  <div 
+                    className="text-center p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:bg-red-50 transition-all border-2 border-transparent hover:border-red-200"
+                    onClick={() => { setSelectedStore('all'); setMatchFilter('not_matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
+                    title="Click to view unmatched orders"
+                  >
+                    <p className="text-3xl font-bold text-red-600">
+                      {(importStats.total_dwz56_records - importStats.matched_orders) || '0'}
                     </p>
-                    <p className="text-sm text-gray-500">Stores</p>
+                    <p className="text-sm text-gray-500">Not Matched</p>
+                    <p className="text-xs text-red-500 mt-1">Click to view →</p>
                   </div>
                 </div>
                 
                 {/* Store-wise breakdown */}
                 {importStats.by_store && importStats.by_store.length > 0 && (
                   <div className="mt-4">
-                    <h4 className="font-semibold mb-2">Sales by Store</h4>
+                    <h4 className="font-semibold mb-2">Sales by Store (Click to filter)</h4>
                     <div className="space-y-2">
                       {importStats.by_store.map((store, idx) => (
-                        <div key={idx} className="flex justify-between items-center p-2 bg-white rounded">
-                          <span className="font-medium">{store.store || 'Unknown'}</span>
+                        <div 
+                          key={idx} 
+                          className="flex justify-between items-center p-3 bg-white rounded cursor-pointer hover:bg-blue-50 hover:shadow-md transition-all border-2 border-transparent hover:border-blue-200"
+                          onClick={() => { setSelectedStore(store.store); setMatchFilter('matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
+                          title={`Click to view orders from ${store.store}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="bg-blue-100">{store.store || 'Unknown'}</Badge>
+                            <span className="text-xs text-blue-500">Click to filter →</span>
+                          </div>
                           <div className="text-right">
                             <span className="font-bold text-green-600">Rs.{store.sale_value?.toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
                             <span className="text-sm text-gray-500 ml-2">({store.orders} orders)</span>
