@@ -305,7 +305,8 @@ export default function DWZ56Shipping() {
   // Tab-based data loading
   useEffect(() => {
     if (activeTab === 'dashboard') {
-      fetchStatusSummary();
+      // Don't call fetchStatusSummary as it makes 11 API calls and causes rate limiting
+      // The client info and courier types are fetched on initial load
     } else if (activeTab === 'tracking') {
       fetchTrackingList(1);
     } else if (activeTab === 'orders') {
@@ -315,7 +316,7 @@ export default function DWZ56Shipping() {
     } else if (activeTab === 'payments') {
       fetchPayments();
     }
-  }, [activeTab, fetchStatusSummary, fetchTrackingList, fetchPreInputList, fetchInventory, fetchPayments]);
+  }, [activeTab, fetchTrackingList, fetchPreInputList, fetchInventory, fetchPayments]);
   
   const StatusBadge = ({ status, label }) => {
     const Icon = STATUS_ICONS[status] || Clock;
