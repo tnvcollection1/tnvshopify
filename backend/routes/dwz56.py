@@ -582,15 +582,28 @@ async def list_shipped_records(
     # Get database for cross-referencing
     db = get_db()
     
-    # Collect all tracking numbers to batch lookup
+    # Collect all tracking numbers and reference numbers for lookup
     tracking_nums = [rec.get("cNum") for rec in records if rec.get("cNum")]
     awb_nums = [rec.get("cNo") for rec in records if rec.get("cNo")]
     all_nums = list(set(tracking_nums + awb_nums))
     
-    # Batch lookup Shopify orders by tracking number
+    # Extract order numbers from cRNo field (format: "XXXXX-ORDER_NUMBER")
+    ref_order_nums = []
+    for rec in records:
+        cRNo = rec.get("cRNo", "")
+        if cRNo and "-" in cRNo:
+            order_part = cRNo.split("-")[-1]
+            if order_part.isdigit():
+                ref_order_nums.append(order_part)
+                ref_order_nums.append(int(order_part))
+    
+    # Batch lookup Shopify orders by tracking number AND order number
     shopify_orders = {}
-    if all_nums:
-        try:
+    shopify_by_order = {}
+    
+    try:
+        # Lookup by tracking number
+        if all_nums:
             cursor = db.customers.find(
                 {"tracking_number": {"$in": all_nums}},
                 {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1}
@@ -603,8 +616,22 @@ async def list_shipped_records(
                         "store_name": order.get("store_name"),
                         "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip()
                     }
-        except Exception as e:
-            print(f"Error looking up Shopify orders: {e}")
+        
+        # Lookup by order number from reference field
+        if ref_order_nums:
+            cursor = db.customers.find(
+                {"order_number": {"$in": ref_order_nums}},
+                {"_id": 0, "order_number": 1, "store_name": 1, "first_name": 1, "last_name": 1}
+            )
+            async for order in cursor:
+                order_num = str(order.get("order_number"))
+                shopify_by_order[order_num] = {
+                    "order_number": order.get("order_number"),
+                    "store_name": order.get("store_name"),
+                    "customer_name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip()
+                }
+    except Exception as e:
+        print(f"Error looking up Shopify orders: {e}")
     
     # Enrich records with status labels and Shopify order info
     enriched_records = []
