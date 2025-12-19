@@ -218,7 +218,14 @@ async def get_customer_stats(
         if payment_status and payment_status != "all":
             query["payment_status"] = payment_status
         if fulfillment_status and fulfillment_status != "all":
-            query["fulfillment_status"] = fulfillment_status
+            # Handle comma-separated values for multiple statuses
+            if "," in fulfillment_status:
+                statuses = [s.strip() for s in fulfillment_status.split(",")]
+                query["fulfillment_status"] = {"$in": statuses}
+            elif fulfillment_status == "cancelled":
+                query["fulfillment_status"] = {"$in": ["cancelled", "restocked"]}
+            else:
+                query["fulfillment_status"] = fulfillment_status
             
         # TCS only filter - exclude canceled/voided orders
         if tcs_only == "true":
