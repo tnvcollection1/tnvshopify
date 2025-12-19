@@ -345,7 +345,7 @@ export default function DWZ56Shipping() {
               </p>
             </div>
           )}
-          <Button onClick={() => { fetchClientInfo(); fetchStatusSummary(); }}>
+          <Button onClick={() => { fetchClientInfo(); fetchCourierTypes(); }}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
