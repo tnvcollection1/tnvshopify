@@ -526,6 +526,28 @@ export default function DWZ56Shipping() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label>Status</Label>
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All statuses</SelectItem>
+                      <SelectItem value="0">Not Sent</SelectItem>
+                      <SelectItem value="1">Sent</SelectItem>
+                      <SelectItem value="2">In Transit</SelectItem>
+                      <SelectItem value="3">Delivered</SelectItem>
+                      <SelectItem value="4">Timeout</SelectItem>
+                      <SelectItem value="5">Customs Hold</SelectItem>
+                      <SelectItem value="6">Address Error</SelectItem>
+                      <SelectItem value="7">Lost</SelectItem>
+                      <SelectItem value="8">Returned</SelectItem>
+                      <SelectItem value="9">Other Exception</SelectItem>
+                      <SelectItem value="10">Destroyed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex items-end">
                   <Button onClick={() => fetchTrackingList(1)} className="w-full">
                     <Search className="w-4 h-4 mr-2" />
