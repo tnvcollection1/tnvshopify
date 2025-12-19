@@ -70,6 +70,7 @@ ERROR_CODES = {
     -720: "TimeStamp error - out of sync threshold",
     -730: "MD5 error - not 32 characters",
     -731: "MD5 error - mismatch",
+    -999: "Rate limited - too many concurrent requests. Please try again later.",
 }
 
 
