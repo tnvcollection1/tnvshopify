@@ -343,13 +343,14 @@ export default function DWZ56Shipping() {
   useEffect(() => {
     fetchClientInfo();
     fetchCourierTypes();
-  }, [fetchClientInfo, fetchCourierTypes]);
+    fetchImportStats();
+  }, [fetchClientInfo, fetchCourierTypes, fetchImportStats]);
   
   // Tab-based data loading
   useEffect(() => {
     if (activeTab === 'dashboard') {
-      // Don't call fetchStatusSummary as it makes 11 API calls and causes rate limiting
-      // The client info and courier types are fetched on initial load
+      // Fetch import stats for dashboard
+      fetchImportStats();
     } else if (activeTab === 'tracking') {
       fetchTrackingList(1);
     } else if (activeTab === 'orders') {
