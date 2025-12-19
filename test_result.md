@@ -1,4 +1,16 @@
 backend:
+  - task: "DWZ56 X-Prefix Order Matching & Tracking List Enhancement"
+    implemented: true
+    working: needs_testing
+    file: "/app/backend/routes/dwz56.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: needs_testing
+        agent: "main"
+        comment: "Implemented X-prefix tracking number matching from both tnvcollection and tnvcollectionpk stores. Added Match Status filter (Matched/Not Matched) and clickable stats cards on dashboard. Needs testing to verify matching logic and UI."
+
   - task: "Admin Password Change Functionality"
     implemented: true
     working: true
