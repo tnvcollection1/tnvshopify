@@ -68,8 +68,12 @@ async def get_customers(
         if payment_status and payment_status != "all":
             query["payment_status"] = payment_status
         if fulfillment_status and fulfillment_status != "all":
+            # Handle comma-separated values for multiple statuses
+            if "," in fulfillment_status:
+                statuses = [s.strip() for s in fulfillment_status.split(",")]
+                query["fulfillment_status"] = {"$in": statuses}
             # Handle cancelled to include restocked
-            if fulfillment_status == "cancelled":
+            elif fulfillment_status == "cancelled":
                 query["fulfillment_status"] = {"$in": ["cancelled", "restocked"]}
             else:
                 query["fulfillment_status"] = fulfillment_status
