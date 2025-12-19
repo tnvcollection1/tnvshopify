@@ -278,8 +278,9 @@ async def get_courier_types():
         "count": len(courier_list),
         "couriers": [
             {
-                "code": item.get("cEmsKind"),
-                "display_name": item.get("cEmsKindi") or item.get("cEmsKind"),
+                # API returns oName/cName or cEmsKind/cEmsKindi depending on version
+                "code": item.get("oName") or item.get("cEmsKind"),
+                "display_name": item.get("cName") or item.get("cEmsKindi") or item.get("oName") or item.get("cEmsKind"),
             }
             for item in courier_list
         ],
