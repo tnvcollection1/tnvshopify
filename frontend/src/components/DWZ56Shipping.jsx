@@ -347,8 +347,8 @@ export default function DWZ56Shipping() {
   useEffect(() => {
     fetchClientInfo();
     fetchCourierTypes();
-    fetchImportStats();
-  }, [fetchClientInfo, fetchCourierTypes, fetchImportStats]);
+    // Don't auto-fetch import stats as it's slow - user can click to load
+  }, [fetchClientInfo, fetchCourierTypes]);
   
   // Tab-based data loading
   useEffect(() => {
