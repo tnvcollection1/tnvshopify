@@ -639,8 +639,20 @@ async def list_shipped_records(
         state = rec.get("nState", 0)
         status_info = TRACKING_STATUS.get(state, TRACKING_STATUS[0])
         
-        # Look up Shopify order by tracking number or AWB
-        shopify_info = shopify_orders.get(rec.get("cNum")) or shopify_orders.get(rec.get("cNo")) or {}
+        # Look up Shopify order by:
+        # 1. Tracking number match
+        # 2. AWB number match
+        # 3. Reference number (cRNo) containing order number
+        shopify_info = shopify_orders.get(rec.get("cNum")) or shopify_orders.get(rec.get("cNo"))
+        
+        # If not found by tracking, try reference number
+        if not shopify_info:
+            cRNo = rec.get("cRNo", "")
+            if cRNo and "-" in cRNo:
+                order_part = cRNo.split("-")[-1]
+                shopify_info = shopify_by_order.get(order_part)
+        
+        shopify_info = shopify_info or {}
         
         enriched_rec = {
             **rec,
