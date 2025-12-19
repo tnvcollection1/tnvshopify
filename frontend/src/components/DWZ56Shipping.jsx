@@ -567,6 +567,7 @@ export default function DWZ56Shipping() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Created At</TableHead>
                     <TableHead>Tracking #</TableHead>
                     <TableHead>AWB #</TableHead>
                     <TableHead>Courier</TableHead>
@@ -579,6 +580,7 @@ export default function DWZ56Shipping() {
                 <TableBody>
                   {trackingList.map((item, idx) => (
                     <TableRow key={idx}>
+                      <TableCell className="text-sm whitespace-nowrap">{item.dDate}</TableCell>
                       <TableCell className="font-mono text-sm">{item.cNum}</TableCell>
                       <TableCell className="font-mono text-sm">{item.cNo}</TableCell>
                       <TableCell>{item.cEmsKindi || item.cEmsKind}</TableCell>
@@ -597,7 +599,7 @@ export default function DWZ56Shipping() {
                   ))}
                   {trackingList.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                         No shipments found
                       </TableCell>
                     </TableRow>
