@@ -129,6 +129,14 @@ const Sidebar = () => {
         { icon: TrendingUp, label: 'Dynamic Pricing', path: '/dynamic-pricing' },
       ]
     },
+    { 
+      icon: Plane, 
+      label: 'DWZ56 Shipping', 
+      section: 'dwz56',
+      children: [
+        { icon: Truck, label: 'Dashboard & Tracking', path: '/dwz56-shipping' },
+      ]
+    },
     { icon: BarChart3, label: 'Analytics', path: '/reports' },
     { 
       icon: Megaphone, 
