@@ -112,7 +112,8 @@ const ConfirmationTracker = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      params.append("fulfillment_status", "unfulfilled");
+      // Include both unfulfilled and restocked (cancelled) orders
+      params.append("fulfillment_status", "unfulfilled,restocked");
       
       if (filters.calling_status !== "all") params.append("calling_status", filters.calling_status);
       if (filters.confirmation_status !== "all") params.append("confirmation_status", filters.confirmation_status);
