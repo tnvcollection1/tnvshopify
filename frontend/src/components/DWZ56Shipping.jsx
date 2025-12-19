@@ -189,7 +189,7 @@ export default function DWZ56Shipping() {
   const fetchTrackingList = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page, page_size: 20 });
+      const params = new URLSearchParams({ page, page_size: 50 }); // Increased page size for client-side filtering
       if (dateRange.start) params.append('start_date', dateRange.start);
       if (dateRange.end) params.append('end_date', dateRange.end);
       if (searchTracking) params.append('tracking_number', searchTracking);
@@ -204,13 +204,23 @@ export default function DWZ56Shipping() {
       const res = await fetch(`${API_URL}/api/dwz56/tracking-list?${params}`);
       const data = await res.json();
       if (data.success) {
-        // Filter by store if selected
+        // Apply client-side filters
         let filteredRecords = data.records;
+        
+        // Filter by store if selected
         if (selectedStore && selectedStore !== 'all') {
-          filteredRecords = data.records.filter(r => r.shopify_store === selectedStore);
+          filteredRecords = filteredRecords.filter(r => r.shopify_store === selectedStore);
         }
+        
+        // Filter by match status
+        if (matchFilter === 'matched') {
+          filteredRecords = filteredRecords.filter(r => r.shopify_order_number);
+        } else if (matchFilter === 'not_matched') {
+          filteredRecords = filteredRecords.filter(r => !r.shopify_order_number);
+        }
+        
         setTrackingList(filteredRecords);
-        setTrackingTotal(selectedStore && selectedStore !== 'all' ? filteredRecords.length : data.total_records);
+        setTrackingTotal(data.total_records);
         setTrackingPage(page);
         setError(null);
       } else if (res.status === 429 || data.detail?.includes('Rate limited')) {
@@ -221,7 +231,7 @@ export default function DWZ56Shipping() {
     } finally {
       setLoading(false);
     }
-  }, [dateRange, searchTracking, selectedCourier, selectedStatus, selectedStore]);
+  }, [dateRange, searchTracking, selectedCourier, selectedStatus, selectedStore, matchFilter]);
   
   // Fetch pre-input list
   const fetchPreInputList = useCallback(async () => {
