@@ -170,6 +170,9 @@ export default function DWZ56Shipping() {
         setTrackingList(data.records);
         setTrackingTotal(data.total_records);
         setTrackingPage(page);
+        setError(null);
+      } else if (res.status === 429 || data.detail?.includes('Rate limited')) {
+        setError('Rate limited by DWZ56 API. Please wait 1-2 minutes and try again.');
       }
     } catch (err) {
       setError('Failed to fetch tracking list');
