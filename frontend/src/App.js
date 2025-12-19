@@ -37,6 +37,7 @@ import DynamicPricingDashboard from "@/components/DynamicPricingDashboard";
 import InventoryHealthDashboard from "@/components/InventoryHealthDashboard";
 import FinanceReconciliation from "@/components/FinanceReconciliation";
 import DTDCReconciliation from "@/components/DTDCReconciliation";
+import DWZ56Shipping from "@/components/DWZ56Shipping";
 import WhatsAppInboxStandalone from "@/components/WhatsAppInboxStandalone";
 import WhatsAppEmbeddedSignup from "@/components/WhatsAppEmbeddedSignup";
 import InventoryClearance from "@/components/InventoryClearance";
