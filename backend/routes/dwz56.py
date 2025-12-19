@@ -681,43 +681,23 @@ async def get_import_stats(
     store_filter: Optional[str] = Query(None, description="Filter by Shopify store name"),
 ):
     """
-    Get import statistics including total sale value by store
+    Get import statistics including total sale value by store.
+    China imports are identified by tracking numbers starting with 'X'.
     """
     db = get_db()
     
     try:
-        # Get all DWZ56 tracking records (page through all)
-        all_records = []
-        page = 1
-        while True:
-            payload = build_request_payload("RecList", {"iPage": page, "iPagePer": 500})
-            response = await make_api_request(payload)
-            records = response.get("RecList", [])
-            if not records:
-                break
-            all_records.extend(records)
-            if len(records) < 500:
-                break
-            page += 1
-            if page > 10:  # Limit to 5000 records
-                break
+        # Build query for China imports (X-prefix tracking numbers)
+        # These are from both tnvcollection and tnvcollectionpk stores
+        query = {
+            "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]},
+            "tracking_number": {"$regex": "^X", "$options": "i"}
+        }
         
-        # Extract order numbers from cRNo field
-        order_nums = []
-        for rec in all_records:
-            cRNo = rec.get("cRNo", "")
-            if cRNo and "-" in cRNo:
-                order_part = cRNo.split("-")[-1]
-                if order_part.isdigit():
-                    order_nums.append(order_part)
-                    order_nums.append(int(order_part))
-        
-        # Build query for Shopify orders
-        query = {"order_number": {"$in": order_nums}}
         if store_filter and store_filter != 'all':
             query["store_name"] = store_filter
         
-        # Get matching Shopify orders with sale values
+        # Get import statistics by store
         pipeline = [
             {"$match": query},
             {"$group": {
@@ -739,9 +719,18 @@ async def get_import_stats(
         # Get unique stores for filter dropdown
         stores = [s["_id"] for s in store_stats if s["_id"]]
         
+        # Also get DWZ56 record count for reference
+        dwz56_count = 0
+        try:
+            payload = build_request_payload("RecList", {"iPage": 1, "iPagePer": 1})
+            response = await make_api_request(payload)
+            dwz56_count = response.get("iTotalRec", 0)
+        except:
+            pass
+        
         return {
             "success": True,
-            "total_dwz56_records": len(all_records),
+            "total_dwz56_records": dwz56_count,
             "matched_orders": total_orders,
             "total_sale_value": total_sale_value,
             "total_cod_value": total_cod,
