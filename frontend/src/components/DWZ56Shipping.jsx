@@ -168,7 +168,7 @@ export default function DWZ56Shipping() {
       if (dateRange.end) params.append('end_date', dateRange.end);
       if (searchTracking) params.append('tracking_number', searchTracking);
       if (selectedCourier && selectedCourier !== 'all') params.append('courier_type', selectedCourier);
-      if (selectedStatus) {
+      if (selectedStatus && selectedStatus !== 'all') {
         // Create status mask
         const mask = Array(11).fill('0');
         mask[parseInt(selectedStatus)] = '1';
