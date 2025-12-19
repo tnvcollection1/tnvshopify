@@ -487,7 +487,7 @@ export default function DWZ56Shipping() {
           {/* Filters */}
           <Card>
             <CardContent className="pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                 <div>
                   <Label>Start Date</Label>
                   <Input 
