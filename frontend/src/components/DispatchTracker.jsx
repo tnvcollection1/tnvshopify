@@ -1111,9 +1111,14 @@ const DispatchTracker = () => {
                     <TableCell>
                       <div>
                         <p className="font-medium text-gray-900 text-sm">
-                          {order.first_name} {order.last_name}
+                          {order.tcs_consignee || `${order.first_name} ${order.last_name}`.trim() || 'N/A'}
                         </p>
-                        <p className="text-xs text-gray-500">{order.email}</p>
+                        {order.tcs_received_by && (
+                          <p className="text-xs text-green-600">Received: {order.tcs_received_by}</p>
+                        )}
+                        {!order.tcs_received_by && order.email && (
+                          <p className="text-xs text-gray-500">{order.email}</p>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">
