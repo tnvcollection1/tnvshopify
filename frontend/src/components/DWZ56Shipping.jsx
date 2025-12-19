@@ -444,6 +444,65 @@ export default function DWZ56Shipping() {
             </div>
           )}
           
+          {/* Import Stats */}
+          {importStats && (
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                  Import Sales Till Date
+                </CardTitle>
+                <CardDescription>Total sale value of imports linked to Shopify orders</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <p className="text-3xl font-bold text-green-600">
+                      Rs.{importStats.total_sale_value?.toLocaleString(undefined, {maximumFractionDigits: 0}) || '0'}
+                    </p>
+                    <p className="text-sm text-gray-500">Total Sale Value</p>
+                  </div>
+                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <p className="text-3xl font-bold text-blue-600">
+                      {importStats.matched_orders?.toLocaleString() || '0'}
+                    </p>
+                    <p className="text-sm text-gray-500">Matched Orders</p>
+                  </div>
+                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <p className="text-3xl font-bold text-purple-600">
+                      {importStats.total_dwz56_records?.toLocaleString() || '0'}
+                    </p>
+                    <p className="text-sm text-gray-500">DWZ56 Records</p>
+                  </div>
+                  <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <p className="text-3xl font-bold text-orange-600">
+                      {importStats.stores?.length || '0'}
+                    </p>
+                    <p className="text-sm text-gray-500">Stores</p>
+                  </div>
+                </div>
+                
+                {/* Store-wise breakdown */}
+                {importStats.by_store && importStats.by_store.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="font-semibold mb-2">Sales by Store</h4>
+                    <div className="space-y-2">
+                      {importStats.by_store.map((store, idx) => (
+                        <div key={idx} className="flex justify-between items-center p-2 bg-white rounded">
+                          <span className="font-medium">{store.store || 'Unknown'}</span>
+                          <div className="text-right">
+                            <span className="font-bold text-green-600">Rs.{store.sale_value?.toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
+                            <span className="text-sm text-gray-500 ml-2">({store.orders} orders)</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+          
           {/* Quick Actions */}
           <Card>
             <CardHeader>
