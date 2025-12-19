@@ -199,8 +199,13 @@ export default function DWZ56Shipping() {
       const res = await fetch(`${API_URL}/api/dwz56/tracking-list?${params}`);
       const data = await res.json();
       if (data.success) {
-        setTrackingList(data.records);
-        setTrackingTotal(data.total_records);
+        // Filter by store if selected
+        let filteredRecords = data.records;
+        if (selectedStore && selectedStore !== 'all') {
+          filteredRecords = data.records.filter(r => r.shopify_store === selectedStore);
+        }
+        setTrackingList(filteredRecords);
+        setTrackingTotal(selectedStore && selectedStore !== 'all' ? filteredRecords.length : data.total_records);
         setTrackingPage(page);
         setError(null);
       } else if (res.status === 429 || data.detail?.includes('Rate limited')) {
@@ -211,7 +216,7 @@ export default function DWZ56Shipping() {
     } finally {
       setLoading(false);
     }
-  }, [dateRange, searchTracking, selectedCourier, selectedStatus]);
+  }, [dateRange, searchTracking, selectedCourier, selectedStatus, selectedStore]);
   
   // Fetch pre-input list
   const fetchPreInputList = useCallback(async () => {
