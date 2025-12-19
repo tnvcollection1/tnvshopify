@@ -353,8 +353,7 @@ export default function DWZ56Shipping() {
   // Tab-based data loading
   useEffect(() => {
     if (activeTab === 'dashboard') {
-      // Fetch import stats for dashboard
-      fetchImportStats();
+      // Don't auto-fetch import stats - let user click to load
     } else if (activeTab === 'tracking') {
       fetchTrackingList(1);
     } else if (activeTab === 'orders') {
