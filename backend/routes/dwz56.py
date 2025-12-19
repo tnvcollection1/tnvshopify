@@ -235,6 +235,9 @@ async def get_client_info():
     
     result = parse_return_value(response.get("ReturnValue", -9))
     if not result["success"]:
+        # For rate limiting, return 429 status
+        if response.get("ReturnValue") == -999:
+            raise HTTPException(status_code=429, detail=result["message"])
         raise HTTPException(status_code=400, detail=result["message"])
     
     return {
