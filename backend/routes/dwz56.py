@@ -101,14 +101,28 @@ def generate_md5_signature(client_id: int, timestamp: int, api_key: str) -> str:
     return hashlib.md5(data.encode()).hexdigest()
 
 
-def build_request_payload(request_name: str, extra_params: dict = None) -> dict:
-    """Build a request payload with authentication"""
+def build_request_payload(request_name: str, extra_params: dict = None, account: str = "shipping") -> dict:
+    """Build a request payload with authentication
+    
+    Args:
+        request_name: API request name
+        extra_params: Additional parameters
+        account: 'shipping' or 'purchase' to select account credentials
+    """
     timestamp = generate_timestamp()
-    md5_sig = generate_md5_signature(DWZ56_CLIENT_ID, timestamp, DWZ56_API_KEY)
+    
+    if account == "purchase":
+        client_id = DWZ56_PURCHASE_CLIENT_ID
+        api_key = DWZ56_PURCHASE_API_KEY
+    else:
+        client_id = DWZ56_CLIENT_ID
+        api_key = DWZ56_API_KEY
+    
+    md5_sig = generate_md5_signature(client_id, timestamp, api_key)
     
     payload = {
         "RequestName": request_name,
-        "icID": DWZ56_CLIENT_ID,
+        "icID": client_id,
         "TimeStamp": timestamp,
         "MD5": md5_sig,
     }
