@@ -107,6 +107,9 @@ export default function DWZ56Shipping() {
       const data = await res.json();
       if (data.success) {
         setClientInfo(data.data);
+        setError(null);
+      } else if (res.status === 429) {
+        setError('Rate limited by DWZ56 API. Please wait 1-2 minutes and try again.');
       }
     } catch (err) {
       console.error('Failed to fetch client info:', err);
