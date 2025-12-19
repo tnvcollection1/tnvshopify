@@ -144,6 +144,23 @@ export default function DWZ56Shipping() {
     }
   }, []);
   
+  // Fetch import stats
+  const fetchImportStats = useCallback(async () => {
+    try {
+      let url = `${API_URL}/api/dwz56/import-stats`;
+      if (selectedStore && selectedStore !== 'all') {
+        url += `?store_filter=${selectedStore}`;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        setImportStats(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch import stats:', err);
+    }
+  }, [selectedStore]);
+  
   // Fetch status summary
   const fetchStatusSummary = useCallback(async () => {
     try {
