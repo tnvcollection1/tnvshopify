@@ -1040,15 +1040,15 @@ async def get_purchase_client_info():
         
         return {
             "success": True,
-            "account_name": "Sunny (Purchase)",
+            "account_name": data.get("cUnitName", "Sunny (Purchase)"),
             "client_id": DWZ56_PURCHASE_CLIENT_ID,
-            "client_name": data.get("cCompany", ""),
-            "balance": data.get("fMoney", 0),
+            "client_name": data.get("cUnitNameE", ""),
+            "balance": data.get("fBalance", 0) or data.get("fABalance", 0),
             "credit_limit": data.get("fCredit", 0),
-            "address": data.get("cAddress", ""),
-            "contact": data.get("cName", ""),
-            "phone": data.get("cTel", ""),
-            "email": data.get("cMail", ""),
+            "address": data.get("cAddr", "") or data.get("cAddrE", ""),
+            "contact": data.get("cWebAccount", ""),
+            "phone": data.get("cPhone", ""),
+            "email": data.get("cEMail", ""),
             "raw_response": data,
         }
     except HTTPException:
