@@ -418,7 +418,9 @@ async def get_customer_count(
     tcs_only: str = None,
     year: str = None,
     search: str = None,
-    fulfillment_status: str = None
+    fulfillment_status: str = None,
+    start_date: str = None,
+    end_date: str = None
 ):
     """Get total customer count with filters"""
     try:
@@ -465,15 +467,34 @@ async def get_customer_count(
             except ValueError:
                 pass
         
+        # Date range filter
+        if start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter["$gte"] = start_date
+            if end_date:
+                try:
+                    end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                    end_dt = end_dt.replace(hour=23, minute=59, second=59)
+                    date_filter["$lte"] = end_dt.isoformat()
+                except:
+                    date_filter["$lte"] = end_date
+            if date_filter:
+                query['last_order_date'] = date_filter
+        
         # Search filter
         if search:
             search_regex = {"$regex": search, "$options": "i"}
-            query["$or"] = [
+            search_conditions = {"$or": [
                 {"first_name": search_regex},
                 {"last_name": search_regex},
                 {"order_number": search_regex},
                 {"tracking_number": search_regex}
-            ]
+            ]}
+            if "$and" in query:
+                query["$and"].append(search_conditions)
+            else:
+                query["$and"] = [search_conditions]
             
         count = await db.customers.count_documents(query)
         return {"total": count, "count": count, "store_name": store_name}
