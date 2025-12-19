@@ -676,6 +676,98 @@ async def list_shipped_records(
     }
 
 
+@router.get("/import-stats")
+async def get_import_stats(
+    store_filter: Optional[str] = Query(None, description="Filter by Shopify store name"),
+):
+    """
+    Get import statistics including total sale value by store
+    """
+    db = get_db()
+    
+    try:
+        # Get all DWZ56 tracking records (page through all)
+        all_records = []
+        page = 1
+        while True:
+            payload = build_request_payload("RecList", {"iPage": page, "iPagePer": 500})
+            response = await make_api_request(payload)
+            records = response.get("RecList", [])
+            if not records:
+                break
+            all_records.extend(records)
+            if len(records) < 500:
+                break
+            page += 1
+            if page > 10:  # Limit to 5000 records
+                break
+        
+        # Extract order numbers from cRNo field
+        order_nums = []
+        for rec in all_records:
+            cRNo = rec.get("cRNo", "")
+            if cRNo and "-" in cRNo:
+                order_part = cRNo.split("-")[-1]
+                if order_part.isdigit():
+                    order_nums.append(order_part)
+                    order_nums.append(int(order_part))
+        
+        # Build query for Shopify orders
+        query = {"order_number": {"$in": order_nums}}
+        if store_filter and store_filter != 'all':
+            query["store_name"] = store_filter
+        
+        # Get matching Shopify orders with sale values
+        pipeline = [
+            {"$match": query},
+            {"$group": {
+                "_id": "$store_name",
+                "total_orders": {"$sum": 1},
+                "total_sale_value": {"$sum": {"$toDouble": {"$ifNull": ["$total_spent", 0]}}},
+                "total_cod": {"$sum": {"$toDouble": {"$ifNull": ["$cod_amount", 0]}}},
+            }},
+            {"$sort": {"total_sale_value": -1}}
+        ]
+        
+        store_stats = await db.customers.aggregate(pipeline).to_list(100)
+        
+        # Calculate totals
+        total_orders = sum(s["total_orders"] for s in store_stats)
+        total_sale_value = sum(s["total_sale_value"] for s in store_stats)
+        total_cod = sum(s["total_cod"] for s in store_stats)
+        
+        # Get unique stores for filter dropdown
+        stores = [s["_id"] for s in store_stats if s["_id"]]
+        
+        return {
+            "success": True,
+            "total_dwz56_records": len(all_records),
+            "matched_orders": total_orders,
+            "total_sale_value": total_sale_value,
+            "total_cod_value": total_cod,
+            "stores": stores,
+            "by_store": [
+                {
+                    "store": s["_id"],
+                    "orders": s["total_orders"],
+                    "sale_value": s["total_sale_value"],
+                    "cod_value": s["total_cod"],
+                }
+                for s in store_stats
+            ]
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "total_dwz56_records": 0,
+            "matched_orders": 0,
+            "total_sale_value": 0,
+            "stores": [],
+            "by_store": []
+        }
+
+
 @router.get("/generate-awb")
 async def generate_awb_number(
     courier_type: str = Query(..., description="Courier type code"),
