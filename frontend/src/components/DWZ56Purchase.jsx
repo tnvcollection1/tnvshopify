@@ -138,7 +138,7 @@ export default function DWZ56Purchase() {
         params.append('status_mask', mask.join(''));
       }
       
-      const res = await fetch(`${API_URL}/api/dwz56/purchase/tracking-list?${params}`);
+      const res = await fetch(`${API_URL}/api/dwz56/purchase/tracking-list?${params}`, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         let filteredRecords = data.records;
