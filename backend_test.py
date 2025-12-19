@@ -3921,5 +3921,92 @@ def main_orders():
             print(f"   - Cost Data: Issues with order cost data availability")
         return 1
 
+
+def main_dwz56():
+    """Main function for DWZ56 Shipping Integration Tests"""
+    print("🚢 Starting DWZ56 Shipping Integration Tests")
+    print("=" * 80)
+    
+    # Setup
+    tester = ShopifyCustomerAPITester()
+    
+    # Run DWZ56 Shipping Tests
+    dwz56_results = tester.run_dwz56_shipping_tests()
+    
+    # Print DWZ56 test summary
+    print("\n" + "=" * 80)
+    print("📊 DWZ56 SHIPPING INTEGRATION TEST SUMMARY")
+    print("=" * 80)
+    
+    # Check if login failed
+    if dwz56_results.get("login_failed"):
+        print("❌ CRITICAL: Admin login failed - cannot proceed with tests")
+        return 1
+    
+    # DWZ56 Results
+    health_results = dwz56_results.get("health_check", {})
+    stats_results = dwz56_results.get("import_stats", {})
+    tracking_results = dwz56_results.get("tracking_list", {})
+    matching_results = dwz56_results.get("x_prefix_matching", {})
+    
+    print(f"🏥 Health Check: {'✅ PASS' if health_results.get('success') else '❌ FAIL'}")
+    print(f"📊 Import Stats: {'✅ PASS' if stats_results.get('success') else '❌ FAIL'}")
+    print(f"📋 Tracking List: {'✅ PASS' if tracking_results.get('success') else '❌ FAIL'}")
+    print(f"🔍 X-Prefix Matching: {'✅ PASS' if matching_results.get('success') else '❌ FAIL'}")
+    
+    # Overall success
+    all_tests_passed = all([
+        health_results.get('success'),
+        stats_results.get('success'),
+        tracking_results.get('success'),
+        matching_results.get('success')
+    ])
+    
+    print(f"\n🎯 Overall DWZ56 Tests: {'✅ ALL PASSED' if all_tests_passed else '❌ SOME FAILED'}")
+    
+    # Print detailed results
+    if stats_results.get('success'):
+        stats_data = stats_results.get('response', {})
+        matched_orders = stats_data.get('matched_orders', 0)
+        total_sale_value = stats_data.get('total_sale_value', 0)
+        by_store = stats_data.get('by_store', [])
+        
+        print(f"\n📊 IMPORT STATS DETAILS:")
+        print(f"   Total matched orders: {matched_orders}")
+        print(f"   Total sale value: ₹{total_sale_value:,.2f}")
+        
+        for store_data in by_store:
+            store_name = store_data.get("store", "Unknown")
+            orders = store_data.get("orders", 0)
+            sale_value = store_data.get("sale_value", 0)
+            print(f"   {store_name}: {orders} orders, ₹{sale_value:,.2f}")
+    
+    if tracking_results.get('success'):
+        tracking_data = tracking_results.get('response', {})
+        total_records = tracking_data.get('total_records', 0)
+        records = tracking_data.get('records', [])
+        matched_count = sum(1 for r in records if r.get('shopify_order_number'))
+        
+        print(f"\n📋 TRACKING LIST DETAILS:")
+        print(f"   Total DWZ56 records: {total_records}")
+        print(f"   Records with Shopify matches: {matched_count}/{len(records)}")
+    
+    # Print individual test failures if any
+    if not all_tests_passed:
+        print("\n📋 INDIVIDUAL TEST RESULTS:")
+        if not health_results.get('success'):
+            print(f"   - Health Check: DWZ56 API configuration issues")
+        if not stats_results.get('success'):
+            print(f"   - Import Stats: Issues with stats aggregation from both stores")
+        if not tracking_results.get('success'):
+            print(f"   - Tracking List: Issues with tracking records and Shopify matching")
+        if not matching_results.get('success'):
+            print(f"   - X-Prefix Matching: Issues with X-prefix order matching logic")
+        return 1
+    
+    return 0
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    # Run DWZ56 tests as requested in the review
+    sys.exit(main_dwz56())
