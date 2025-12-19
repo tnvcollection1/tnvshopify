@@ -39,10 +39,14 @@ def get_db():
         _db = client['shopify_customers_db']
     return _db
 
-# Configuration
+# Configuration - Shipping Account
 DWZ56_API_URL = os.environ.get("DWZ56_API_URL", "https://www.dwz56.com/cgi-bin/EmsData.dll?DoApp")
 DWZ56_CLIENT_ID = int(os.environ.get("DWZ56_CLIENT_ID", "1057"))
 DWZ56_API_KEY = os.environ.get("DWZ56_API_KEY", "jIrM5UNuZu905q7")
+
+# Configuration - Purchase Account (Sunny)
+DWZ56_PURCHASE_CLIENT_ID = int(os.environ.get("DWZ56_PURCHASE_CLIENT_ID", "1051"))
+DWZ56_PURCHASE_API_KEY = os.environ.get("DWZ56_PURCHASE_API_KEY", "5OpgrK9wFy3yfOX")
 
 # Tracking status mapping (nState values)
 TRACKING_STATUS = {
