@@ -513,8 +513,8 @@ export default function DWZ56Shipping() {
                   </div>
                 )}
               </CardContent>
-            </Card>
-          )}
+            )}
+          </Card>
           
           {/* Quick Actions */}
           <Card>
