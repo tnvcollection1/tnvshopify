@@ -634,6 +634,20 @@ export default function DWZ56Shipping() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label>Store</Label>
+                  <Select value={selectedStore} onValueChange={setSelectedStore}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All stores" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All stores</SelectItem>
+                      {importStats?.stores?.map((store, i) => (
+                        <SelectItem key={i} value={store}>{store}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex items-end">
                   <Button onClick={() => fetchTrackingList(1)} className="w-full">
                     <Search className="w-4 h-4 mr-2" />
