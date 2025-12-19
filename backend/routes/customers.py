@@ -434,7 +434,14 @@ async def get_customer_count(
             query["store_name"] = store_name
             
         if fulfillment_status and fulfillment_status != "all":
-            query["fulfillment_status"] = fulfillment_status
+            # Handle comma-separated values for multiple statuses
+            if "," in fulfillment_status:
+                statuses = [s.strip() for s in fulfillment_status.split(",")]
+                query["fulfillment_status"] = {"$in": statuses}
+            elif fulfillment_status == "cancelled":
+                query["fulfillment_status"] = {"$in": ["cancelled", "restocked"]}
+            else:
+                query["fulfillment_status"] = fulfillment_status
         
         # TCS only filter
         if tcs_only == "true":
