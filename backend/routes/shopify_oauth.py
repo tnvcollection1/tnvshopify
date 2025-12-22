@@ -220,7 +220,7 @@ async def oauth_callback(
         if error:
             logger.error(f"Shopify OAuth error: {error} - {error_description}")
             # Redirect to frontend with error
-            frontend_url = os.environ.get('REACT_APP_FRONTEND_URL', 'https://importbaba.com')
+            frontend_url = os.environ.get('REACT_APP_FRONTEND_URL', 'https://wamerce.com')
             return RedirectResponse(
                 url=f"{frontend_url}/settings?shopify_error={error}&message={error_description}",
                 status_code=302
@@ -324,7 +324,7 @@ async def oauth_callback(
         logger.info(f"✅ Shopify OAuth complete for: {shop}")
         
         # Redirect to frontend with success
-        frontend_url = os.environ.get('REACT_APP_FRONTEND_URL', 'https://importbaba.com')
+        frontend_url = os.environ.get('REACT_APP_FRONTEND_URL', 'https://wamerce.com')
         return RedirectResponse(
             url=f"{frontend_url}/settings?shopify_connected=true&shop={shop}",
             status_code=302
@@ -334,7 +334,7 @@ async def oauth_callback(
         raise
     except Exception as e:
         logger.error(f"OAuth callback error: {str(e)}")
-        frontend_url = os.environ.get('REACT_APP_FRONTEND_URL', 'https://importbaba.com')
+        frontend_url = os.environ.get('REACT_APP_FRONTEND_URL', 'https://wamerce.com')
         return RedirectResponse(
             url=f"{frontend_url}/settings?shopify_error=callback_failed&message={str(e)}",
             status_code=302
