@@ -91,10 +91,10 @@ def decrypt_value(encrypted_value: str) -> str:
 # ==================== Helper Functions ====================
 
 def get_redirect_uri(request: Request) -> str:
-    """Build the redirect URI based on request"""
-    # Always use importbaba.com for production OAuth
-    # This ensures the redirect URI matches Shopify App configuration
-    return 'https://importbaba.com/api/shopify/oauth/callback'
+    """Get the OAuth redirect URI based on environment"""
+    # Use wamerce.com for production OAuth
+    
+    return 'https://wamerce.com/api/shopify/oauth/callback'
 
 def verify_hmac(query_params: dict, secret: str) -> bool:
     """Verify Shopify HMAC signature"""
