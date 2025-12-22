@@ -1,11 +1,13 @@
 """Customer Management Routes
 Handles customer CRUD, segments, bulk messaging, and stock sync
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timezone
 import logging
+import csv
+import io
 
 logger = logging.getLogger(__name__)
 
