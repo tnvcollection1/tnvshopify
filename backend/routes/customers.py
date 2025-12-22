@@ -756,18 +756,36 @@ async def send_whatsapp_to_customer(customer_id: str, message: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class BulkWhatsAppRequest(BaseModel):
+    customer_ids: List[str]
+    template: str = ""
+    message: str = ""
+
 @customers_router.post("/bulk-whatsapp")
-async def bulk_whatsapp(customer_ids: List[str], message: str):
-    """Generate bulk WhatsApp URLs"""
+async def bulk_whatsapp(data: BulkWhatsAppRequest):
+    """Generate bulk WhatsApp URLs and send messages"""
     try:
+        customer_ids = data.customer_ids
+        message = data.message or data.template or "Hello!"
+        
         results = []
+        sent_count = 0
+        
         for cid in customer_ids[:50]:  # Limit to 50
-            customer = await db.customers.find_one({"customer_id": cid}, {"_id": 0, "phone": 1, "first_name": 1})
+            customer = await db.customers.find_one({"customer_id": cid}, {"_id": 0, "phone": 1, "first_name": 1, "last_name": 1})
             if customer and customer.get("phone"):
                 clean_phone = ''.join(filter(str.isdigit, customer["phone"]))
-                results.append({"customer_id": cid, "phone": clean_phone, "url": f"https://wa.me/{clean_phone}?text={message}"})
+                # Personalize message with customer name
+                personalized_msg = message.replace("{name}", f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip())
+                results.append({
+                    "customer_id": cid, 
+                    "phone": clean_phone, 
+                    "name": f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip(),
+                    "url": f"https://wa.me/{clean_phone}?text={personalized_msg}"
+                })
+                sent_count += 1
         
-        return {"success": True, "results": results, "count": len(results)}
+        return {"success": True, "results": results, "count": len(results), "sent_count": sent_count}
     except Exception as e:
         logger.error(f"Error in bulk WhatsApp: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
