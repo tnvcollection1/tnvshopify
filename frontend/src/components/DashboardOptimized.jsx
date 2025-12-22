@@ -327,9 +327,17 @@ const DashboardOptimized = () => {
       toast.dismiss();
       
       const results = response.data.results || [];
+      const noPhoneCount = response.data.no_phone_count || 0;
+      const notFoundCount = response.data.not_found_count || 0;
+      
       if (results.length === 0) {
-        toast.error('No customers with phone numbers found');
+        toast.error(`No customers with phone numbers found. ${noPhoneCount} customers have no phone number saved in Shopify.`);
         return;
+      }
+
+      // Show info about skipped customers
+      if (noPhoneCount > 0) {
+        toast.warning(`${noPhoneCount} customers skipped (no phone number in Shopify)`);
       }
 
       // Open WhatsApp Desktop app for each customer with delay
