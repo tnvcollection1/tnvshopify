@@ -5053,6 +5053,27 @@ async def get_stores():
     return stores
 
 
+@api_router.put("/stores/{store_name}/token")
+async def update_store_token(store_name: str, token: str):
+    """
+    Update store's Shopify API token
+    """
+    try:
+        result = await db.stores.update_one(
+            {"store_name": store_name},
+            {"$set": {"shopify_token": token}}
+        )
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Store not found")
+        logger.info(f"Updated token for store: {store_name}")
+        return {"success": True, "message": f"Token updated for {store_name}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating store token: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.delete("/stores/{store_id}")
 async def delete_store(store_id: str):
     """
