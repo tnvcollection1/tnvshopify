@@ -176,40 +176,45 @@ class ShopifyOrderSync:
             }
             
             # Extract line items with SKUs
-            for item in order.line_items:
+            line_items = getattr(order, 'line_items', []) or []
+            for item in line_items:
                 customer_data['line_items'].append({
-                    'product_id': item.product_id,
-                    'variant_id': item.variant_id,
-                    'sku': item.sku or '',
-                    'name': item.name,
-                    'quantity': item.quantity,
-                    'price': float(item.price) if item.price else 0.0
+                    'product_id': getattr(item, 'product_id', None),
+                    'variant_id': getattr(item, 'variant_id', None),
+                    'sku': getattr(item, 'sku', '') or '',
+                    'name': getattr(item, 'name', ''),
+                    'quantity': getattr(item, 'quantity', 1),
+                    'price': float(getattr(item, 'price', 0) or 0)
                 })
             
             # Extract fulfillment and tracking info
-            if order.fulfillments:
-                for fulfillment in order.fulfillments:
-                    fulfillment_data = {
-                        'id': fulfillment.id,
-                        'status': fulfillment.status,
-                        'tracking_company': fulfillment.tracking_company or 'TCS Pakistan',
-                        'tracking_number': fulfillment.tracking_number or '',
-                        'tracking_url': fulfillment.tracking_url or '',
-                        'created_at': fulfillment.created_at
+            fulfillments = getattr(order, 'fulfillments', []) or []
+            for fulfillment in fulfillments:
+                tracking_number = getattr(fulfillment, 'tracking_number', '') or ''
+                tracking_company = getattr(fulfillment, 'tracking_company', '') or 'TCS Pakistan'
+                tracking_url = getattr(fulfillment, 'tracking_url', '') or ''
+                
+                fulfillment_data = {
+                    'id': getattr(fulfillment, 'id', None),
+                    'status': getattr(fulfillment, 'status', ''),
+                    'tracking_company': tracking_company,
+                    'tracking_number': tracking_number,
+                    'tracking_url': tracking_url,
+                    'created_at': getattr(fulfillment, 'created_at', None)
+                }
+                customer_data['fulfillments'].append(fulfillment_data)
+                
+                # Set fulfilled_at from first fulfillment
+                if not customer_data.get('fulfilled_at') and fulfillment_data['created_at']:
+                    customer_data['fulfilled_at'] = fulfillment_data['created_at']
+                
+                # Set primary tracking info from first fulfillment
+                if not customer_data['tracking_info'] and tracking_number:
+                    customer_data['tracking_info'] = {
+                        'tracking_number': tracking_number,
+                        'tracking_company': tracking_company,
+                        'tracking_url': tracking_url or self._generate_tcs_tracking_url(tracking_number)
                     }
-                    customer_data['fulfillments'].append(fulfillment_data)
-                    
-                    # Set fulfilled_at from first fulfillment
-                    if not customer_data.get('fulfilled_at') and fulfillment.created_at:
-                        customer_data['fulfilled_at'] = fulfillment.created_at
-                    
-                    # Set primary tracking info from first fulfillment
-                    if not customer_data['tracking_info'] and fulfillment.tracking_number:
-                        customer_data['tracking_info'] = {
-                            'tracking_number': fulfillment.tracking_number,
-                            'tracking_company': fulfillment.tracking_company or 'TCS Pakistan',
-                            'tracking_url': fulfillment.tracking_url or self._generate_tcs_tracking_url(fulfillment.tracking_number)
-                        }
             
             return customer_data
             
