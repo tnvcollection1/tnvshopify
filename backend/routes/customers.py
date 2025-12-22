@@ -770,22 +770,54 @@ async def bulk_whatsapp(data: BulkWhatsAppRequest):
         
         results = []
         sent_count = 0
+        no_phone_count = 0
+        not_found_count = 0
         
         for cid in customer_ids[:50]:  # Limit to 50
-            customer = await db.customers.find_one({"customer_id": cid}, {"_id": 0, "phone": 1, "first_name": 1, "last_name": 1})
-            if customer and customer.get("phone"):
-                clean_phone = ''.join(filter(str.isdigit, customer["phone"]))
-                # Personalize message with customer name
-                personalized_msg = message.replace("{name}", f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip())
-                results.append({
-                    "customer_id": cid, 
-                    "phone": clean_phone, 
-                    "name": f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip(),
-                    "url": f"https://wa.me/{clean_phone}?text={personalized_msg}"
-                })
-                sent_count += 1
+            if not cid:
+                not_found_count += 1
+                continue
+                
+            # Search by customer_id or by id field
+            customer = await db.customers.find_one(
+                {"$or": [{"customer_id": cid}, {"id": cid}]}, 
+                {"_id": 0, "phone": 1, "first_name": 1, "last_name": 1, "email": 1}
+            )
+            
+            if not customer:
+                not_found_count += 1
+                continue
+                
+            phone = customer.get("phone")
+            if not phone:
+                no_phone_count += 1
+                continue
+                
+            clean_phone = ''.join(filter(str.isdigit, phone))
+            if len(clean_phone) < 10:
+                no_phone_count += 1
+                continue
+                
+            # Personalize message with customer name
+            name = f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip() or "Customer"
+            personalized_msg = message.replace("{name}", name)
+            results.append({
+                "customer_id": cid, 
+                "phone": clean_phone, 
+                "name": name,
+                "url": f"https://wa.me/{clean_phone}?text={personalized_msg}"
+            })
+            sent_count += 1
         
-        return {"success": True, "results": results, "count": len(results), "sent_count": sent_count}
+        return {
+            "success": True, 
+            "results": results, 
+            "count": len(results), 
+            "sent_count": sent_count,
+            "no_phone_count": no_phone_count,
+            "not_found_count": not_found_count,
+            "message": f"Found {sent_count} customers with phone numbers. {no_phone_count} have no phone, {not_found_count} not found."
+        }
     except Exception as e:
         logger.error(f"Error in bulk WhatsApp: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
