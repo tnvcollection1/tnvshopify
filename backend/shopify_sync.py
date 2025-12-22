@@ -148,6 +148,19 @@ class ShopifyOrderSync:
                 if not phone and getattr(customer, 'default_address', None):
                     phone = getattr(customer.default_address, 'phone', '') or ''
             
+            # IMPORTANT: Try to get phone from shipping_address if still not found
+            if not phone and getattr(order, 'shipping_address', None):
+                phone = getattr(order.shipping_address, 'phone', '') or ''
+            
+            # Try billing_address as last resort
+            if not phone and getattr(order, 'billing_address', None):
+                phone = getattr(order.billing_address, 'phone', '') or ''
+            
+            # Get name from shipping address if customer name is empty
+            if not first_name and getattr(order, 'shipping_address', None):
+                first_name = getattr(order.shipping_address, 'first_name', '') or ''
+                last_name = getattr(order.shipping_address, 'last_name', '') or ''
+            
             # Get country code from shipping address
             country_code = ''
             if getattr(order, 'shipping_address', None):
