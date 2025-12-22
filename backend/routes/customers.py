@@ -825,6 +825,107 @@ async def bulk_whatsapp(data: BulkWhatsAppRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+@customers_router.post("/upload-csv")
+async def upload_orders_csv(file: UploadFile = File(...), store_name: str = "ashmiaa"):
+    """
+    Upload Shopify orders CSV to update phone numbers and customer data
+    """
+    try:
+        contents = await file.read()
+        decoded = contents.decode('utf-8')
+        
+        # Parse CSV
+        reader = csv.DictReader(io.StringIO(decoded))
+        
+        updated_count = 0
+        not_found_count = 0
+        errors = []
+        
+        for row in reader:
+            try:
+                # Get order number from CSV (Shopify exports as "Name" field like "#4309")
+                order_name = row.get('Name', '').replace('#', '').strip()
+                if not order_name:
+                    continue
+                
+                # Try to parse as integer
+                try:
+                    order_number = int(order_name)
+                except:
+                    order_number = order_name
+                
+                # Get phone from various possible columns
+                phone = (
+                    row.get('Shipping Phone', '') or 
+                    row.get('Billing Phone', '') or 
+                    row.get('Phone', '') or
+                    ''
+                ).strip()
+                
+                # Get other fields
+                email = row.get('Email', '').strip()
+                first_name = row.get('Shipping Name', '').split()[0] if row.get('Shipping Name') else ''
+                last_name = ' '.join(row.get('Shipping Name', '').split()[1:]) if row.get('Shipping Name') else ''
+                
+                # Build update data
+                update_data = {'updated_at': datetime.now(timezone.utc)}
+                if phone:
+                    update_data['phone'] = phone
+                if email:
+                    update_data['email'] = email
+                if first_name:
+                    update_data['first_name'] = first_name
+                if last_name:
+                    update_data['last_name'] = last_name
+                
+                # Also store shipping address
+                shipping_address = row.get('Shipping Address1', '')
+                shipping_city = row.get('Shipping City', '')
+                if shipping_address:
+                    update_data['shipping_address'] = shipping_address
+                if shipping_city:
+                    update_data['shipping_city'] = shipping_city
+                
+                if not update_data.get('phone') and not update_data.get('email'):
+                    continue  # Skip if no useful data
+                
+                # Update in database - try both order_number formats
+                result = await db.customers.update_one(
+                    {
+                        "store_name": store_name,
+                        "$or": [
+                            {"order_number": order_number},
+                            {"order_number": str(order_number)},
+                            {"order_number": f"#{order_number}"}
+                        ]
+                    },
+                    {"$set": update_data}
+                )
+                
+                if result.modified_count > 0:
+                    updated_count += 1
+                    logger.info(f"Updated order #{order_number} with phone: {phone}")
+                else:
+                    not_found_count += 1
+                    
+            except Exception as e:
+                errors.append(f"Row error: {str(e)}")
+                
+        return {
+            "success": True,
+            "updated_count": updated_count,
+            "not_found_count": not_found_count,
+            "errors": errors[:10],  # Return first 10 errors
+            "message": f"Updated {updated_count} orders with phone numbers. {not_found_count} orders not found in database."
+        }
+        
+    except Exception as e:
+        logger.error(f"CSV upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @customers_router.get("/segments")
 async def get_customer_segments(store_name: str = None):
     """Get customer segments with counts and total values - supports frontend dashboard"""
