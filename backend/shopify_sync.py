@@ -130,26 +130,45 @@ class ShopifyOrderSync:
         """
         try:
             customer = order.customer
-            if not customer:
-                logger.warning(f"Order {order.id} has no customer, skipping")
-                return None
+            
+            # Handle orders without customer data - create a fallback customer_id from order
+            customer_id = f"order_{order.id}"
+            first_name = ''
+            last_name = ''
+            email = getattr(order, 'email', '') or ''
+            phone = getattr(order, 'phone', '') or ''
+            
+            if customer:
+                customer_id = f"shopify_{getattr(customer, 'id', order.id)}" if getattr(customer, 'id', None) else f"order_{order.id}"
+                first_name = getattr(customer, 'first_name', '') or ''
+                last_name = getattr(customer, 'last_name', '') or ''
+                email = getattr(customer, 'email', '') or email
+                phone = getattr(customer, 'phone', '') or phone
+                # Try to get phone from default address if not on customer
+                if not phone and getattr(customer, 'default_address', None):
+                    phone = getattr(customer.default_address, 'phone', '') or ''
+            
+            # Get country code from shipping address
+            country_code = ''
+            if getattr(order, 'shipping_address', None):
+                country_code = getattr(order.shipping_address, 'country_code', '') or ''
             
             # Extract customer info
             customer_data = {
                 'shopify_order_id': str(order.id),
                 'order_number': order.order_number,
                 'order_number_int': int(order.order_number) if order.order_number and str(order.order_number).isdigit() else 0,
-                'customer_id': f"shopify_{customer.id}" if customer.id else f"order_{order.id}",
-                'first_name': customer.first_name or '',
-                'last_name': customer.last_name or '',
-                'email': customer.email or '',
-                'phone': customer.phone or (customer.default_address.phone if customer.default_address else ''),
-                'country_code': order.shipping_address.country_code if order.shipping_address else '',
+                'customer_id': customer_id,
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': email,
+                'phone': phone,
+                'country_code': country_code,
                 'order_date': order.created_at,
                 'total_price': float(order.total_price) if order.total_price else 0.0,
                 'financial_status': order.financial_status,
                 'payment_status': order.financial_status,  # paid, pending, refunded, partially_refunded, voided, authorized
-                'payment_method': order.gateway if hasattr(order, 'gateway') else None,
+                'payment_method': getattr(order, 'gateway', None),
                 'fulfillment_status': order.fulfillment_status or 'unfulfilled',
                 'line_items': [],
                 'fulfillments': [],
