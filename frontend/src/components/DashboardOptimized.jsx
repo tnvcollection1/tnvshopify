@@ -317,7 +317,7 @@ const DashboardOptimized = () => {
   const handleSendBulkWhatsApp = async () => {
     try {
       setSendingWhatsApp(true);
-      toast.loading(`Sending WhatsApp to ${selectedOrders.length} customers...`);
+      toast.loading(`Preparing WhatsApp messages for ${selectedOrders.length} customers...`);
 
       const response = await axios.post(`${API}/customers/bulk-whatsapp`, {
         customer_ids: selectedOrders,
@@ -325,13 +325,36 @@ const DashboardOptimized = () => {
       });
 
       toast.dismiss();
-      toast.success(`WhatsApp sent to ${response.data.sent_count || selectedOrders.length} customers!`);
+      
+      const results = response.data.results || [];
+      if (results.length === 0) {
+        toast.error('No customers with phone numbers found');
+        return;
+      }
+
+      // Open WhatsApp Desktop app for each customer with delay
+      toast.success(`Opening WhatsApp for ${results.length} customers. Please send each message manually.`, { duration: 5000 });
+      
+      for (let i = 0; i < results.length; i++) {
+        const { phone, name } = results[i];
+        const message = whatsappTemplate.replace('{name}', name || 'Customer');
+        
+        // Use whatsapp:// protocol to open desktop app
+        const whatsappUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
+        
+        // Open with delay between each to avoid overwhelming
+        setTimeout(() => {
+          window.location.href = whatsappUrl;
+          toast.info(`Opening chat for ${name || phone}`, { duration: 2000 });
+        }, i * 3000); // 3 seconds between each
+      }
+
       setBulkWhatsAppDialog(false);
       setSelectedOrders([]);
     } catch (error) {
       toast.dismiss();
       console.error('Bulk WhatsApp error:', error);
-      toast.error(error.response?.data?.detail || 'Failed to send bulk WhatsApp');
+      toast.error(error.response?.data?.detail || 'Failed to prepare WhatsApp messages');
     } finally {
       setSendingWhatsApp(false);
     }
