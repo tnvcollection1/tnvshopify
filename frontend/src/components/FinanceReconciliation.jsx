@@ -40,7 +40,7 @@ const FinanceReconciliation = () => {
   const [localStore, setLocalStore] = useState('ashmiaa'); // Default to ashmiaa
 
   // Use global store if selected, otherwise use local default
-  const effectiveStore = (globalStore && effectiveStore !== 'all') ? globalStore : localStore;
+  const effectiveStore = (globalStore && globalStore !== 'all') ? globalStore : localStore;
 
   useEffect(() => {
     fetchReconciliation();
