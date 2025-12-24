@@ -167,15 +167,99 @@ const FinanceReconciliation = () => {
     }
   };
 
+  // Helper function to check numeric range
+  const inRange = (value, min, max) => {
+    const numValue = parseFloat(value) || 0;
+    const minVal = min !== '' ? parseFloat(min) : -Infinity;
+    const maxVal = max !== '' ? parseFloat(max) : Infinity;
+    return numValue >= minVal && numValue <= maxVal;
+  };
+
+  // Apply all filters
   const filteredRecords = records.filter(record => {
-    if (!search) return true;
-    const searchLower = search.toLowerCase();
-    return (
-      (record.shopify_id || '').toLowerCase().includes(searchLower) ||
-      (record.sku || '').toLowerCase().includes(searchLower) ||
-      (record.awb || '').toLowerCase().includes(searchLower)
-    );
+    // Text search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      const matchesSearch = (
+        (record.shopify_id || '').toLowerCase().includes(searchLower) ||
+        (record.sku || '').toLowerCase().includes(searchLower) ||
+        (record.awb || '').toLowerCase().includes(searchLower)
+      );
+      if (!matchesSearch) return false;
+    }
+    
+    // Column filters
+    const f = columnFilters;
+    
+    // Text filters
+    if (f.shopify_id && !(record.shopify_id || '').toLowerCase().includes(f.shopify_id.toLowerCase())) return false;
+    if (f.sku && !(record.sku || '').toLowerCase().includes(f.sku.toLowerCase())) return false;
+    if (f.awb && !(record.awb || '').toLowerCase().includes(f.awb.toLowerCase())) return false;
+    if (f.dtdc_utr && !(record.dtdc_utr_number || '').toLowerCase().includes(f.dtdc_utr.toLowerCase())) return false;
+    if (f.shopify_order && !(record.shopify_order_name || '').toLowerCase().includes(f.shopify_order.toLowerCase())) return false;
+    
+    // Numeric range filters
+    if (!inRange(record.sell_amount, f.sell_amount_min, f.sell_amount_max)) return false;
+    if (!inRange(record.cost_pkr || record.cost, f.cost_pkr_min, f.cost_pkr_max)) return false;
+    if (!inRange(record.cost_inr, f.cost_inr_min, f.cost_inr_max)) return false;
+    if (!inRange(record.shipping, f.shipping_min, f.shipping_max)) return false;
+    if (!inRange(record.advance_payment, f.advance_min, f.advance_max)) return false;
+    if (!inRange(record.cod_amount, f.cod_min, f.cod_max)) return false;
+    if (!inRange(record.dtdc_cod_amount, f.dtdc_cod_min, f.dtdc_cod_max)) return false;
+    if (!inRange(record.profit, f.profit_min, f.profit_max)) return false;
+    if (!inRange(record.shopify_amount, f.shopify_amt_min, f.shopify_amt_max)) return false;
+    
+    // Dropdown filters
+    if (f.dtdc_status && f.dtdc_status !== 'all' && record.dtdc_remittance_status !== f.dtdc_status) return false;
+    if (f.order_status && f.order_status !== 'all' && record.status !== f.order_status) return false;
+    
+    // Boolean match filters
+    if (f.amt_match === 'yes' && !record.amount_match) return false;
+    if (f.amt_match === 'no' && record.amount_match) return false;
+    if (f.cod_match === 'yes' && !record.cod_match_dtdc) return false;
+    if (f.cod_match === 'no' && record.cod_match_dtdc) return false;
+    if (f.order_match === 'yes' && !record.matched) return false;
+    if (f.order_match === 'no' && record.matched) return false;
+    
+    return true;
   });
+
+  // Clear all column filters
+  const clearColumnFilters = () => {
+    setColumnFilters({
+      shopify_id: '',
+      sku: '',
+      awb: '',
+      sell_amount_min: '',
+      sell_amount_max: '',
+      cost_pkr_min: '',
+      cost_pkr_max: '',
+      cost_inr_min: '',
+      cost_inr_max: '',
+      shipping_min: '',
+      shipping_max: '',
+      advance_min: '',
+      advance_max: '',
+      cod_min: '',
+      cod_max: '',
+      dtdc_cod_min: '',
+      dtdc_cod_max: '',
+      dtdc_utr: '',
+      dtdc_status: '',
+      profit_min: '',
+      profit_max: '',
+      order_status: '',
+      shopify_order: '',
+      shopify_amt_min: '',
+      shopify_amt_max: '',
+      amt_match: '',
+      cod_match: '',
+      order_match: ''
+    });
+  };
+
+  // Check if any filter is active
+  const hasActiveFilters = Object.values(columnFilters).some(v => v !== '');
 
   const exportToCSV = () => {
     if (filteredRecords.length === 0) {
