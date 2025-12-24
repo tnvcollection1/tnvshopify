@@ -13,7 +13,9 @@ import {
   TrendingUp,
   Package,
   Truck,
-  Trash2
+  Trash2,
+  Filter,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStore } from '../contexts/StoreContext';
