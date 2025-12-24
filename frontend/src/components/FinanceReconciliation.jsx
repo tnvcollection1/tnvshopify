@@ -958,7 +958,7 @@ const FinanceReconciliation = () => {
                     )}
                   </TableHeader>
                   <TableBody>
-                    {filteredRecords.map((record, index) => (
+                    {sortedRecords.map((record, index) => (
                       <TableRow 
                         key={record.id || index}
                         className={record.status === 'not_matched' ? 'bg-red-50' : ''}
@@ -995,6 +995,9 @@ const FinanceReconciliation = () => {
                         </TableCell>
                         <TableCell className={`text-right font-semibold ${(record.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           ₹{(record.profit || 0).toLocaleString()}
+                        </TableCell>
+                        <TableCell className={`text-right font-bold bg-green-50 ${parseFloat(calcProfitPercent(record)) >= 30 ? 'text-green-700' : parseFloat(calcProfitPercent(record)) >= 15 ? 'text-blue-600' : parseFloat(calcProfitPercent(record)) >= 0 ? 'text-gray-600' : 'text-red-600'}`}>
+                          {calcProfitPercent(record)}%
                         </TableCell>
                         <TableCell>{getStatusBadge(record.status)}</TableCell>
                         <TableCell className="font-mono text-sm">{record.shopify_order_name || '-'}</TableCell>
