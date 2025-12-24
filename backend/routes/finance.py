@@ -1351,22 +1351,22 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
                 'shopify_id': shopify_id,
                 'sku': sku.upper() if sku else '',
                 'awb': awb,
-                'sell_amount': sell_amount,
+                'sell_amount': safe_float(sell_amount),
                 'sell_currency': 'INR',
-                'cost_pkr': cost,  # Original cost in PKR
-                'cost_inr': round(cost_inr, 2),  # Converted cost in INR
-                'shipping': shipping,  # Shipping cost in INR
-                'advance_payment': advance_payment,
-                'cod_amount': cod_amount,
-                'dtdc_cod_amount': dtdc_cod_amount,  # COD from DTDC ledger
+                'cost_pkr': safe_float(cost),  # Original cost in PKR
+                'cost_inr': safe_float(round(cost_inr, 2)),  # Converted cost in INR
+                'shipping': safe_float(shipping),  # Shipping cost in INR
+                'advance_payment': safe_float(advance_payment),
+                'cod_amount': safe_float(cod_amount),
+                'dtdc_cod_amount': safe_float(dtdc_cod_amount),  # COD from DTDC ledger
                 'cod_match_dtdc': cod_match_dtdc,  # Does COD match DTDC ledger?
-                'profit': round(profit, 2),  # Profit in INR (after shipping deduction)
+                'profit': safe_float(round(profit, 2)),  # Profit in INR (after shipping deduction)
                 'matched': is_matched,
                 'match_type': match_type,
                 'sku_matched': sku_matched,
                 'amount_match': amount_match,
                 'shopify_order_name': matched_order.get('name') or matched_order.get('order_number') if matched_order else None,
-                'shopify_amount': shopify_amount,
+                'shopify_amount': safe_float(shopify_amount),
                 'shopify_payment_status': matched_order.get('financial_status') if matched_order else None,
                 'shopify_fulfillment_status': matched_order.get('fulfillment_status') if matched_order else None,
                 'status': status,
