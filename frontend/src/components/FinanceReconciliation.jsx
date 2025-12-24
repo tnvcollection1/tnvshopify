@@ -38,6 +38,39 @@ const FinanceReconciliation = () => {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [localStore, setLocalStore] = useState('ashmiaa'); // Default to ashmiaa
+  
+  // Column filters state
+  const [columnFilters, setColumnFilters] = useState({
+    shopify_id: '',
+    sku: '',
+    awb: '',
+    sell_amount_min: '',
+    sell_amount_max: '',
+    cost_pkr_min: '',
+    cost_pkr_max: '',
+    cost_inr_min: '',
+    cost_inr_max: '',
+    shipping_min: '',
+    shipping_max: '',
+    advance_min: '',
+    advance_max: '',
+    cod_min: '',
+    cod_max: '',
+    dtdc_cod_min: '',
+    dtdc_cod_max: '',
+    dtdc_utr: '',
+    dtdc_status: '',
+    profit_min: '',
+    profit_max: '',
+    order_status: '',
+    shopify_order: '',
+    shopify_amt_min: '',
+    shopify_amt_max: '',
+    amt_match: '',
+    cod_match: '',
+    order_match: ''
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   // Use global store if selected, otherwise use local default
   const effectiveStore = (globalStore && globalStore !== 'all') ? globalStore : localStore;
