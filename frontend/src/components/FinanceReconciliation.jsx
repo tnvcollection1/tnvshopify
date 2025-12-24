@@ -854,15 +854,6 @@ const FinanceReconciliation = () => {
                       </TableRow>
                     )}
                   </TableHeader>
-                      <TableHead className="text-right">Profit (INR)</TableHead>
-                      <TableHead>Order Status</TableHead>
-                      <TableHead>Shopify Order</TableHead>
-                      <TableHead className="text-right">Shopify Amt</TableHead>
-                      <TableHead>Amt Match</TableHead>
-                      <TableHead>COD Match</TableHead>
-                      <TableHead>Order Match</TableHead>
-                    </TableRow>
-                  </TableHeader>
                   <TableBody>
                     {filteredRecords.map((record, index) => (
                       <TableRow 
