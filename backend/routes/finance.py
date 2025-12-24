@@ -1222,32 +1222,13 @@ async def upload_purchase_orders(file: UploadFile = File(...), store_name: str =
             shopify_id = str(record.get('shopify_id', '')).strip()
             sku = str(record.get('sku', '')).strip().upper()
             awb = str(record.get('awb', '')).strip().upper()
-            sell_amount = 0
-            cost = 0
-            advance_payment = 0
-            cod_amount = 0
-            shipping = 0
             
-            try:
-                sell_amount = float(record.get('sell_amount', 0) or 0)
-            except:
-                pass
-            try:
-                cost = float(record.get('cost', 0) or 0)
-            except:
-                pass
-            try:
-                advance_payment = float(record.get('advance_payment', 0) or 0)
-            except:
-                pass
-            try:
-                cod_amount = float(record.get('cod_amount', 0) or 0)
-            except:
-                pass
-            try:
-                shipping = float(record.get('shipping', 0) or 0)
-            except:
-                pass
+            # Use safe_float to handle NaN and invalid values
+            sell_amount = safe_float(record.get('sell_amount'))
+            cost = safe_float(record.get('cost'))
+            advance_payment = safe_float(record.get('advance_payment'))
+            cod_amount = safe_float(record.get('cod_amount'))
+            shipping = safe_float(record.get('shipping'))
             
             # Convert cost from PKR to INR
             cost_inr = cost * PKR_TO_INR_RATE
