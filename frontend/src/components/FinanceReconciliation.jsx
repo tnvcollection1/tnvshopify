@@ -546,28 +546,314 @@ const FinanceReconciliation = () => {
         {/* Data Table */}
         {filteredRecords.length > 0 && (
           <Card className="bg-white border border-gray-200 shadow-sm">
-            <CardHeader className="border-b border-gray-100">
+            <CardHeader className="border-b border-gray-100 flex flex-row items-center justify-between">
               <CardTitle className="text-lg text-gray-900">
-                Reconciliation Results ({filteredRecords.length} records)
+                Reconciliation Results ({filteredRecords.length} of {records.length} records)
               </CardTitle>
+              <div className="flex gap-2">
+                <Button 
+                  variant={showFilters ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <Filter className="w-4 h-4 mr-1" />
+                  {showFilters ? 'Hide Filters' : 'Show Filters'}
+                </Button>
+                {hasActiveFilters && (
+                  <Button variant="ghost" size="sm" onClick={clearColumnFilters}>
+                    <X className="w-4 h-4 mr-1" /> Clear Filters
+                  </Button>
+                )}
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Shopify ID</TableHead>
-                      <TableHead>SKU</TableHead>
-                      <TableHead>AWB</TableHead>
-                      <TableHead className="text-right">Sell (INR)</TableHead>
-                      <TableHead className="text-right">Cost (PKR)</TableHead>
-                      <TableHead className="text-right">Cost (INR)</TableHead>
-                      <TableHead className="text-right">Shipping</TableHead>
-                      <TableHead className="text-right">Advance</TableHead>
-                      <TableHead className="text-right">COD</TableHead>
-                      <TableHead className="text-right">DTDC COD</TableHead>
-                      <TableHead>DTDC UTR</TableHead>
-                      <TableHead>DTDC Status</TableHead>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="min-w-[100px]">Shopify ID</TableHead>
+                      <TableHead className="min-w-[100px]">SKU</TableHead>
+                      <TableHead className="min-w-[100px]">AWB</TableHead>
+                      <TableHead className="text-right min-w-[100px]">Sell (INR)</TableHead>
+                      <TableHead className="text-right min-w-[100px]">Cost (PKR)</TableHead>
+                      <TableHead className="text-right min-w-[100px]">Cost (INR)</TableHead>
+                      <TableHead className="text-right min-w-[80px]">Shipping</TableHead>
+                      <TableHead className="text-right min-w-[80px]">Advance</TableHead>
+                      <TableHead className="text-right min-w-[80px]">COD</TableHead>
+                      <TableHead className="text-right min-w-[80px]">DTDC COD</TableHead>
+                      <TableHead className="min-w-[100px]">DTDC UTR</TableHead>
+                      <TableHead className="min-w-[90px]">DTDC Status</TableHead>
+                      <TableHead className="text-right min-w-[100px]">Profit (INR)</TableHead>
+                      <TableHead className="min-w-[90px]">Order Status</TableHead>
+                      <TableHead className="min-w-[100px]">Shopify Order</TableHead>
+                      <TableHead className="text-right min-w-[100px]">Shopify Amt</TableHead>
+                      <TableHead className="min-w-[80px]">Amt Match</TableHead>
+                      <TableHead className="min-w-[80px]">COD Match</TableHead>
+                      <TableHead className="min-w-[90px]">Order Match</TableHead>
+                    </TableRow>
+                    {/* Filter Row */}
+                    {showFilters && (
+                      <TableRow className="bg-blue-50 border-b-2 border-blue-200">
+                        <TableHead className="p-1">
+                          <Input 
+                            placeholder="Filter..." 
+                            value={columnFilters.shopify_id}
+                            onChange={(e) => setColumnFilters({...columnFilters, shopify_id: e.target.value})}
+                            className="h-7 text-xs"
+                          />
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <Input 
+                            placeholder="Filter..." 
+                            value={columnFilters.sku}
+                            onChange={(e) => setColumnFilters({...columnFilters, sku: e.target.value})}
+                            className="h-7 text-xs"
+                          />
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <Input 
+                            placeholder="Filter..." 
+                            value={columnFilters.awb}
+                            onChange={(e) => setColumnFilters({...columnFilters, awb: e.target.value})}
+                            className="h-7 text-xs"
+                          />
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <div className="flex gap-1">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={columnFilters.sell_amount_min}
+                              onChange={(e) => setColumnFilters({...columnFilters, sell_amount_min: e.target.value})}
+                              className="h-7 text-xs w-16"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={columnFilters.sell_amount_max}
+                              onChange={(e) => setColumnFilters({...columnFilters, sell_amount_max: e.target.value})}
+                              className="h-7 text-xs w-16"
+                            />
+                          </div>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <div className="flex gap-1">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={columnFilters.cost_pkr_min}
+                              onChange={(e) => setColumnFilters({...columnFilters, cost_pkr_min: e.target.value})}
+                              className="h-7 text-xs w-16"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={columnFilters.cost_pkr_max}
+                              onChange={(e) => setColumnFilters({...columnFilters, cost_pkr_max: e.target.value})}
+                              className="h-7 text-xs w-16"
+                            />
+                          </div>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <div className="flex gap-1">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={columnFilters.cost_inr_min}
+                              onChange={(e) => setColumnFilters({...columnFilters, cost_inr_min: e.target.value})}
+                              className="h-7 text-xs w-16"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={columnFilters.cost_inr_max}
+                              onChange={(e) => setColumnFilters({...columnFilters, cost_inr_max: e.target.value})}
+                              className="h-7 text-xs w-16"
+                            />
+                          </div>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <div className="flex gap-1">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={columnFilters.shipping_min}
+                              onChange={(e) => setColumnFilters({...columnFilters, shipping_min: e.target.value})}
+                              className="h-7 text-xs w-14"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={columnFilters.shipping_max}
+                              onChange={(e) => setColumnFilters({...columnFilters, shipping_max: e.target.value})}
+                              className="h-7 text-xs w-14"
+                            />
+                          </div>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <div className="flex gap-1">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={columnFilters.advance_min}
+                              onChange={(e) => setColumnFilters({...columnFilters, advance_min: e.target.value})}
+                              className="h-7 text-xs w-14"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={columnFilters.advance_max}
+                              onChange={(e) => setColumnFilters({...columnFilters, advance_max: e.target.value})}
+                              className="h-7 text-xs w-14"
+                            />
+                          </div>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <div className="flex gap-1">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={columnFilters.cod_min}
+                              onChange={(e) => setColumnFilters({...columnFilters, cod_min: e.target.value})}
+                              className="h-7 text-xs w-14"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={columnFilters.cod_max}
+                              onChange={(e) => setColumnFilters({...columnFilters, cod_max: e.target.value})}
+                              className="h-7 text-xs w-14"
+                            />
+                          </div>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <div className="flex gap-1">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={columnFilters.dtdc_cod_min}
+                              onChange={(e) => setColumnFilters({...columnFilters, dtdc_cod_min: e.target.value})}
+                              className="h-7 text-xs w-14"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={columnFilters.dtdc_cod_max}
+                              onChange={(e) => setColumnFilters({...columnFilters, dtdc_cod_max: e.target.value})}
+                              className="h-7 text-xs w-14"
+                            />
+                          </div>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <Input 
+                            placeholder="Filter..." 
+                            value={columnFilters.dtdc_utr}
+                            onChange={(e) => setColumnFilters({...columnFilters, dtdc_utr: e.target.value})}
+                            className="h-7 text-xs"
+                          />
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <select
+                            value={columnFilters.dtdc_status}
+                            onChange={(e) => setColumnFilters({...columnFilters, dtdc_status: e.target.value})}
+                            className="h-7 text-xs border rounded px-1 w-full"
+                          >
+                            <option value="">All</option>
+                            <option value="Remitted">Remitted</option>
+                            <option value="Posted To SAP">Posted</option>
+                          </select>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <div className="flex gap-1">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={columnFilters.profit_min}
+                              onChange={(e) => setColumnFilters({...columnFilters, profit_min: e.target.value})}
+                              className="h-7 text-xs w-16"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={columnFilters.profit_max}
+                              onChange={(e) => setColumnFilters({...columnFilters, profit_max: e.target.value})}
+                              className="h-7 text-xs w-16"
+                            />
+                          </div>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <select
+                            value={columnFilters.order_status}
+                            onChange={(e) => setColumnFilters({...columnFilters, order_status: e.target.value})}
+                            className="h-7 text-xs border rounded px-1 w-full"
+                          >
+                            <option value="">All</option>
+                            <option value="matched">Matched</option>
+                            <option value="not_matched">Not Matched</option>
+                          </select>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <Input 
+                            placeholder="Filter..." 
+                            value={columnFilters.shopify_order}
+                            onChange={(e) => setColumnFilters({...columnFilters, shopify_order: e.target.value})}
+                            className="h-7 text-xs"
+                          />
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <div className="flex gap-1">
+                            <Input 
+                              placeholder="Min" 
+                              type="number"
+                              value={columnFilters.shopify_amt_min}
+                              onChange={(e) => setColumnFilters({...columnFilters, shopify_amt_min: e.target.value})}
+                              className="h-7 text-xs w-16"
+                            />
+                            <Input 
+                              placeholder="Max" 
+                              type="number"
+                              value={columnFilters.shopify_amt_max}
+                              onChange={(e) => setColumnFilters({...columnFilters, shopify_amt_max: e.target.value})}
+                              className="h-7 text-xs w-16"
+                            />
+                          </div>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <select
+                            value={columnFilters.amt_match}
+                            onChange={(e) => setColumnFilters({...columnFilters, amt_match: e.target.value})}
+                            className="h-7 text-xs border rounded px-1 w-full"
+                          >
+                            <option value="">All</option>
+                            <option value="yes">✅ Yes</option>
+                            <option value="no">❌ No</option>
+                          </select>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <select
+                            value={columnFilters.cod_match}
+                            onChange={(e) => setColumnFilters({...columnFilters, cod_match: e.target.value})}
+                            className="h-7 text-xs border rounded px-1 w-full"
+                          >
+                            <option value="">All</option>
+                            <option value="yes">✅ Yes</option>
+                            <option value="no">❌ No</option>
+                          </select>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <select
+                            value={columnFilters.order_match}
+                            onChange={(e) => setColumnFilters({...columnFilters, order_match: e.target.value})}
+                            className="h-7 text-xs border rounded px-1 w-full"
+                          >
+                            <option value="">All</option>
+                            <option value="yes">✅ Yes</option>
+                            <option value="no">❌ No</option>
+                          </select>
+                        </TableHead>
+                      </TableRow>
+                    )}
+                  </TableHeader>
                       <TableHead className="text-right">Profit (INR)</TableHead>
                       <TableHead>Order Status</TableHead>
                       <TableHead>Shopify Order</TableHead>
