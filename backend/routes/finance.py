@@ -99,6 +99,51 @@ async def upload_bank_transactions(file: UploadFile = File(...)):
 
 # ==================== RECONCILIATION ENDPOINTS ====================
 
+@finance_router.get("/purchase-order-reconciliation")
+async def get_purchase_order_reconciliation(store_name: str = None, status: str = None):
+    """
+    Get purchase order reconciliation records
+    """
+    try:
+        query = {}
+        if store_name and store_name != 'all':
+            query['store_name'] = store_name
+        if status and status != 'all':
+            query['status'] = status
+        
+        records = await db.purchase_order_reconciliation.find(query, {"_id": 0}).to_list(1000)
+        
+        # Calculate summary
+        total = len(records)
+        matched = sum(1 for r in records if r.get('matched', False))
+        not_matched = total - matched
+        
+        # Calculate totals
+        total_sell = sum(float(r.get('sell_amount', 0) or 0) for r in records)
+        total_cost_pkr = sum(float(r.get('cost_pkr', 0) or 0) for r in records)
+        total_cost_inr = sum(float(r.get('cost_inr', 0) or 0) for r in records)
+        total_shipping = sum(float(r.get('shipping', 0) or 0) for r in records)
+        
+        summary = {
+            "total": total,
+            "matched": matched,
+            "not_matched": not_matched,
+            "match_rate": round((matched / total * 100), 1) if total > 0 else 0,
+            "total_sell": total_sell,
+            "total_cost_pkr": total_cost_pkr,
+            "total_cost_inr": total_cost_inr,
+            "total_shipping": total_shipping
+        }
+        
+        return {
+            "success": True,
+            "records": records,
+            "summary": summary
+        }
+    except Exception as e:
+        logger.error(f"Error getting purchase order reconciliation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @finance_router.get("/reconciliation")
 async def get_reconciliation(store_name: str = 'ashmiaa'):
     """
