@@ -540,11 +540,12 @@ const FinanceReconciliation = () => {
         )}
 
         {/* Data Table */}
-        {filteredRecords.length > 0 && (
+        {sortedRecords.length > 0 && (
           <Card className="bg-white border border-gray-200 shadow-sm">
             <CardHeader className="border-b border-gray-100 flex flex-row items-center justify-between">
               <CardTitle className="text-lg text-gray-900">
-                Reconciliation Results ({filteredRecords.length} of {records.length} records)
+                Reconciliation Results ({sortedRecords.length} of {records.length} records)
+                {sortConfig.key && <span className="text-sm font-normal text-blue-600 ml-2">Sorted by {sortConfig.key}</span>}
               </CardTitle>
               <div className="flex gap-2">
                 <Button 
@@ -557,7 +558,7 @@ const FinanceReconciliation = () => {
                 </Button>
                 {hasActiveFilters && (
                   <Button variant="ghost" size="sm" onClick={clearColumnFilters}>
-                    <X className="w-4 h-4 mr-1" /> Clear Filters
+                    <X className="w-4 h-4 mr-1" /> Clear All
                   </Button>
                 )}
               </div>
@@ -570,13 +571,27 @@ const FinanceReconciliation = () => {
                       <TableHead className="min-w-[100px]">Shopify ID</TableHead>
                       <TableHead className="min-w-[100px]">SKU</TableHead>
                       <TableHead className="min-w-[100px]">AWB</TableHead>
-                      <TableHead className="text-right min-w-[100px]">Sell (INR)</TableHead>
-                      <TableHead className="text-right min-w-[100px]">Cost (PKR)</TableHead>
-                      <TableHead className="text-right min-w-[100px]">Cost (INR)</TableHead>
-                      <TableHead className="text-right min-w-[80px]">Shipping</TableHead>
-                      <TableHead className="text-right min-w-[80px]">Advance</TableHead>
-                      <TableHead className="text-right min-w-[80px]">COD</TableHead>
-                      <TableHead className="text-right min-w-[80px]">DTDC COD</TableHead>
+                      <TableHead className="text-right min-w-[100px] cursor-pointer hover:bg-gray-100" onClick={() => handleSort('sell_amount')}>
+                        Sell (INR) {getSortIcon('sell_amount')}
+                      </TableHead>
+                      <TableHead className="text-right min-w-[100px] cursor-pointer hover:bg-gray-100" onClick={() => handleSort('cost_pkr')}>
+                        Cost (PKR) {getSortIcon('cost_pkr')}
+                      </TableHead>
+                      <TableHead className="text-right min-w-[100px] cursor-pointer hover:bg-gray-100" onClick={() => handleSort('cost_inr')}>
+                        Cost (INR) {getSortIcon('cost_inr')}
+                      </TableHead>
+                      <TableHead className="text-right min-w-[80px] cursor-pointer hover:bg-gray-100" onClick={() => handleSort('shipping')}>
+                        Shipping {getSortIcon('shipping')}
+                      </TableHead>
+                      <TableHead className="text-right min-w-[80px] cursor-pointer hover:bg-gray-100" onClick={() => handleSort('advance_payment')}>
+                        Advance {getSortIcon('advance_payment')}
+                      </TableHead>
+                      <TableHead className="text-right min-w-[80px] cursor-pointer hover:bg-gray-100" onClick={() => handleSort('cod_amount')}>
+                        COD {getSortIcon('cod_amount')}
+                      </TableHead>
+                      <TableHead className="text-right min-w-[80px] cursor-pointer hover:bg-gray-100" onClick={() => handleSort('dtdc_cod_amount')}>
+                        DTDC COD {getSortIcon('dtdc_cod_amount')}
+                      </TableHead>
                       <TableHead className="min-w-[100px]">DTDC UTR</TableHead>
                       <TableHead className="min-w-[90px]">DTDC Status</TableHead>
                       <TableHead className="text-right min-w-[100px]">Profit (INR)</TableHead>
