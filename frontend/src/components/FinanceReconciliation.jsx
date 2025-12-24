@@ -40,7 +40,7 @@ const FinanceReconciliation = () => {
   const [localStore, setLocalStore] = useState('ashmiaa'); // Default to ashmiaa
 
   // Use global store if selected, otherwise use local default
-  const effectiveStore = (globalStore && globalStore !== 'all') ? globalStore : localStore;
+  const effectiveStore = (globalStore && effectiveStore !== 'all') ? globalStore : localStore;
 
   useEffect(() => {
     fetchReconciliation();
@@ -65,18 +65,18 @@ const FinanceReconciliation = () => {
   };
 
   const handleClearData = async () => {
-    if (globalStore === 'all') {
+    if (effectiveStore === 'all') {
       toast.error('Please select a specific store first');
       return;
     }
     
-    if (!window.confirm(`Are you sure you want to clear all reconciliation data for ${globalStore}?`)) {
+    if (!window.confirm(`Are you sure you want to clear all reconciliation data for ${effectiveStore}?`)) {
       return;
     }
 
     try {
       setClearing(true);
-      await axios.delete(`${API}/finance/clear-reconciliation?store_name=${globalStore}`);
+      await axios.delete(`${API}/finance/clear-reconciliation?store_name=${effectiveStore}`);
       toast.success('Data cleared successfully');
       fetchReconciliation();
     } catch (error) {
@@ -91,7 +91,7 @@ const FinanceReconciliation = () => {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (globalStore === 'all') {
+    if (effectiveStore === 'all') {
       toast.error('Please select a specific store first. Each store has its own reconciliation file.');
       return;
     }
@@ -102,13 +102,13 @@ const FinanceReconciliation = () => {
     try {
       setUploading(true);
       const response = await axios.post(
-        `${API}/finance/upload-purchase-orders?store_name=${globalStore}`, 
+        `${API}/finance/upload-purchase-orders?store_name=${effectiveStore}`, 
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
       
       toast.success(
-        `✅ Reconciled ${response.data.total_records} records for ${globalStore}\n` +
+        `✅ Reconciled ${response.data.total_records} records for ${effectiveStore}\n` +
         `Matched: ${response.data.matched} | Not Matched: ${response.data.not_matched}\n` +
         `Match Rate: ${response.data.match_rate}`
       );
@@ -169,7 +169,7 @@ const FinanceReconciliation = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `reconciliation_${globalStore}_${new Date().toISOString().slice(0,10)}.csv`;
+    link.download = `reconciliation_${effectiveStore}_${new Date().toISOString().slice(0,10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -185,7 +185,7 @@ const FinanceReconciliation = () => {
             <h1 className="text-2xl font-bold text-gray-900">Finance Reconciliation</h1>
             <p className="text-sm text-gray-500 mt-1">
               Match Purchase Orders with Shopify Orders 
-              {globalStore !== 'all' && <span className="text-green-600 font-medium"> • Store: {globalStore}</span>}
+              {effectiveStore !== 'all' && <span className="text-green-600 font-medium"> • Store: {effectiveStore}</span>}
             </p>
           </div>
           <div className="flex gap-3">
@@ -194,7 +194,7 @@ const FinanceReconciliation = () => {
                 onClick={handleClearData} 
                 variant="outline" 
                 className="text-red-600 border-red-200 hover:bg-red-50"
-                disabled={clearing || globalStore === 'all'}
+                disabled={clearing || effectiveStore === 'all'}
               >
                 {clearing ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
                 Clear Data
@@ -209,15 +209,15 @@ const FinanceReconciliation = () => {
                 accept=".xlsx,.xls,.csv"
                 onChange={handleFileUpload}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                disabled={uploading || globalStore === 'all'}
+                disabled={uploading || effectiveStore === 'all'}
               />
               <Button 
-                className={`${globalStore === 'all' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} pointer-events-none`}
+                className={`${effectiveStore === 'all' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} pointer-events-none`}
               >
                 {uploading ? (
                   <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Uploading...</>
                 ) : (
-                  <><Upload className="w-4 h-4 mr-2" /> Upload for {globalStore === 'all' ? 'Store' : globalStore}</>
+                  <><Upload className="w-4 h-4 mr-2" /> Upload for {effectiveStore === 'all' ? 'Store' : effectiveStore}</>
                 )}
               </Button>
             </div>
@@ -225,7 +225,7 @@ const FinanceReconciliation = () => {
         </div>
         
         {/* Store Selection Warning */}
-        {globalStore === 'all' && (
+        {effectiveStore === 'all' && (
           <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-amber-800 text-sm">
               <AlertCircle className="w-4 h-4 inline mr-2" />
@@ -289,7 +289,7 @@ const FinanceReconciliation = () => {
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Sell</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(summary.total_sell, globalStore)}</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(summary.total_sell, effectiveStore)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -332,7 +332,7 @@ const FinanceReconciliation = () => {
                   <div>
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Profit</p>
                     <p className={`text-2xl font-bold ${summary.total_profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(summary.total_profit, globalStore)}
+                      {formatCurrency(summary.total_profit, effectiveStore)}
                     </p>
                   </div>
                 </div>
@@ -395,7 +395,7 @@ const FinanceReconciliation = () => {
         </Card>
 
         {/* Instructions */}
-        {records.length === 0 && !loading && globalStore !== 'all' && (
+        {records.length === 0 && !loading && effectiveStore !== 'all' && (
           <Card className="mb-6 bg-white border border-gray-200 shadow-sm">
             <CardContent className="pt-6">
               <div className="text-center py-8">
