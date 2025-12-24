@@ -258,24 +258,15 @@ const FinanceReconciliation = () => {
 
   // Check if any filter is active
   const hasActiveFilters = Object.values(columnFilters).some(v => v !== '') || sortConfig.key !== null;
-      shopify_amt_max: '',
-      amt_match: '',
-      cod_match: '',
-      order_match: ''
-    });
-  };
-
-  // Check if any filter is active
-  const hasActiveFilters = Object.values(columnFilters).some(v => v !== '');
 
   const exportToCSV = () => {
-    if (filteredRecords.length === 0) {
+    if (sortedRecords.length === 0) {
       toast.error('No records to export');
       return;
     }
 
-    const headers = ['Shopify ID', 'SKU', 'AWB/Tracking', 'Sell Amount', 'Cost', 'Profit', 'Status', 'Shopify Order', 'Shopify Amount', 'Amount Match'];
-    const rows = filteredRecords.map(r => [
+    const headers = ['Shopify ID', 'SKU', 'AWB/Tracking', 'Sell Amount', 'Cost PKR', 'Cost INR', 'Shipping', 'Advance', 'COD', 'Profit', 'Profit %', 'Status', 'Shopify Order', 'Shopify Amount', 'Amount Match'];
+    const rows = sortedRecords.map(r => [
       r.shopify_id,
       r.sku,
       r.awb,
