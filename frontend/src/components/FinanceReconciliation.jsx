@@ -37,21 +37,20 @@ const FinanceReconciliation = () => {
   const [summary, setSummary] = useState(null);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [localStore, setLocalStore] = useState('ashmiaa'); // Default to ashmiaa
+
+  // Use global store if selected, otherwise use local default
+  const effectiveStore = (globalStore && globalStore !== 'all') ? globalStore : localStore;
 
   useEffect(() => {
-    if (globalStore && globalStore !== 'all') {
-      fetchReconciliation();
-    } else {
-      setRecords([]);
-      setSummary(null);
-    }
-  }, [globalStore, filter]);
+    fetchReconciliation();
+  }, [effectiveStore, filter]);
 
   const fetchReconciliation = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (globalStore !== 'all') params.append('store_name', globalStore);
+      params.append('store_name', effectiveStore);
       if (filter !== 'all') params.append('status', filter);
       
       const response = await axios.get(`${API}/finance/purchase-order-reconciliation?${params}`);
@@ -59,6 +58,7 @@ const FinanceReconciliation = () => {
       setSummary(response.data.summary || null);
     } catch (error) {
       console.error('Error fetching reconciliation:', error);
+      toast.error('Failed to fetch reconciliation data');
     } finally {
       setLoading(false);
     }
