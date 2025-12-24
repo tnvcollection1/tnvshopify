@@ -104,6 +104,20 @@ async def get_purchase_order_reconciliation(store_name: str = None, status: str 
     """
     Get purchase order reconciliation records
     """
+    import math
+    
+    def clean_float(val):
+        """Convert value to safe float, handling None, NaN, Inf"""
+        if val is None:
+            return 0
+        try:
+            f = float(val)
+            if math.isnan(f) or math.isinf(f):
+                return 0
+            return f
+        except:
+            return 0
+    
     try:
         query = {}
         if store_name and store_name != 'all':
@@ -113,16 +127,22 @@ async def get_purchase_order_reconciliation(store_name: str = None, status: str 
         
         records = await db.purchase_order_reconciliation.find(query, {"_id": 0}).to_list(1000)
         
+        # Clean float values in records
+        for record in records:
+            for key in ['sell_amount', 'cost_pkr', 'cost_inr', 'shipping', 'advance_payment', 'profit']:
+                if key in record:
+                    record[key] = clean_float(record.get(key))
+        
         # Calculate summary
         total = len(records)
         matched = sum(1 for r in records if r.get('matched', False))
         not_matched = total - matched
         
         # Calculate totals
-        total_sell = sum(float(r.get('sell_amount', 0) or 0) for r in records)
-        total_cost_pkr = sum(float(r.get('cost_pkr', 0) or 0) for r in records)
-        total_cost_inr = sum(float(r.get('cost_inr', 0) or 0) for r in records)
-        total_shipping = sum(float(r.get('shipping', 0) or 0) for r in records)
+        total_sell = sum(clean_float(r.get('sell_amount')) for r in records)
+        total_cost_pkr = sum(clean_float(r.get('cost_pkr')) for r in records)
+        total_cost_inr = sum(clean_float(r.get('cost_inr')) for r in records)
+        total_shipping = sum(clean_float(r.get('shipping')) for r in records)
         
         summary = {
             "total": total,
