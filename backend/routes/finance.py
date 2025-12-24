@@ -4,6 +4,7 @@ Handles ledger uploads, bank transactions, and order reconciliation
 """
 from fastapi import APIRouter, HTTPException, UploadFile, File
 import logging
+import math
 
 from finance_reconciliation import get_finance_reconciliation
 
@@ -16,6 +17,18 @@ def set_database(database):
     """Set the database connection from server.py"""
     global db
     db = database
+
+def safe_float(val, default=0.0):
+    """Convert value to safe float, handling None, NaN, Inf, empty strings"""
+    if val is None or val == '':
+        return default
+    try:
+        f = float(val)
+        if math.isnan(f) or math.isinf(f):
+            return default
+        return f
+    except (ValueError, TypeError):
+        return default
 
 # Create router with prefix
 finance_router = APIRouter(prefix="/finance", tags=["Finance Reconciliation"])
