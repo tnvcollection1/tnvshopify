@@ -594,10 +594,17 @@ const FinanceReconciliation = () => {
                       </TableHead>
                       <TableHead className="min-w-[100px]">DTDC UTR</TableHead>
                       <TableHead className="min-w-[90px]">DTDC Status</TableHead>
-                      <TableHead className="text-right min-w-[100px]">Profit (INR)</TableHead>
+                      <TableHead className="text-right min-w-[100px] cursor-pointer hover:bg-gray-100" onClick={() => handleSort('profit')}>
+                        Profit (INR) {getSortIcon('profit')}
+                      </TableHead>
+                      <TableHead className="text-right min-w-[80px] cursor-pointer hover:bg-gray-100 bg-green-50" onClick={() => handleSort('profit_percent')}>
+                        Profit % {getSortIcon('profit_percent')}
+                      </TableHead>
                       <TableHead className="min-w-[90px]">Order Status</TableHead>
                       <TableHead className="min-w-[100px]">Shopify Order</TableHead>
-                      <TableHead className="text-right min-w-[100px]">Shopify Amt</TableHead>
+                      <TableHead className="text-right min-w-[100px] cursor-pointer hover:bg-gray-100" onClick={() => handleSort('shopify_amount')}>
+                        Shopify Amt {getSortIcon('shopify_amount')}
+                      </TableHead>
                       <TableHead className="min-w-[80px]">Amt Match</TableHead>
                       <TableHead className="min-w-[80px]">COD Match</TableHead>
                       <TableHead className="min-w-[90px]">Order Match</TableHead>
@@ -629,6 +636,91 @@ const FinanceReconciliation = () => {
                             className="h-7 text-xs"
                           />
                         </TableHead>
+                        {/* Sort indicators for numeric columns */}
+                        <TableHead className="p-1 text-center text-xs text-gray-500">Click header to sort</TableHead>
+                        <TableHead className="p-1 text-center text-xs text-gray-500">↕</TableHead>
+                        <TableHead className="p-1 text-center text-xs text-gray-500">↕</TableHead>
+                        <TableHead className="p-1 text-center text-xs text-gray-500">↕</TableHead>
+                        <TableHead className="p-1 text-center text-xs text-gray-500">↕</TableHead>
+                        <TableHead className="p-1 text-center text-xs text-gray-500">↕</TableHead>
+                        <TableHead className="p-1 text-center text-xs text-gray-500">↕</TableHead>
+                        <TableHead className="p-1">
+                          <Input 
+                            placeholder="Filter..." 
+                            value={columnFilters.dtdc_utr}
+                            onChange={(e) => setColumnFilters({...columnFilters, dtdc_utr: e.target.value})}
+                            className="h-7 text-xs"
+                          />
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <select
+                            value={columnFilters.dtdc_status}
+                            onChange={(e) => setColumnFilters({...columnFilters, dtdc_status: e.target.value})}
+                            className="h-7 text-xs border rounded px-1 w-full"
+                          >
+                            <option value="">All</option>
+                            <option value="Remitted">Remitted</option>
+                            <option value="Posted To SAP">Posted</option>
+                          </select>
+                        </TableHead>
+                        <TableHead className="p-1 text-center text-xs text-gray-500">↕</TableHead>
+                        <TableHead className="p-1 text-center text-xs text-green-600 font-bold">↕ %</TableHead>
+                        <TableHead className="p-1">
+                          <select
+                            value={columnFilters.order_status}
+                            onChange={(e) => setColumnFilters({...columnFilters, order_status: e.target.value})}
+                            className="h-7 text-xs border rounded px-1 w-full"
+                          >
+                            <option value="">All</option>
+                            <option value="matched">Matched</option>
+                            <option value="not_matched">Not Matched</option>
+                          </select>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <Input 
+                            placeholder="Filter..." 
+                            value={columnFilters.shopify_order}
+                            onChange={(e) => setColumnFilters({...columnFilters, shopify_order: e.target.value})}
+                            className="h-7 text-xs"
+                          />
+                        </TableHead>
+                        <TableHead className="p-1 text-center text-xs text-gray-500">↕</TableHead>
+                        <TableHead className="p-1">
+                          <select
+                            value={columnFilters.amt_match}
+                            onChange={(e) => setColumnFilters({...columnFilters, amt_match: e.target.value})}
+                            className="h-7 text-xs border rounded px-1 w-full"
+                          >
+                            <option value="">All</option>
+                            <option value="yes">✅ Yes</option>
+                            <option value="no">❌ No</option>
+                          </select>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <select
+                            value={columnFilters.cod_match}
+                            onChange={(e) => setColumnFilters({...columnFilters, cod_match: e.target.value})}
+                            className="h-7 text-xs border rounded px-1 w-full"
+                          >
+                            <option value="">All</option>
+                            <option value="yes">✅ Yes</option>
+                            <option value="no">❌ No</option>
+                          </select>
+                        </TableHead>
+                        <TableHead className="p-1">
+                          <select
+                            value={columnFilters.order_match}
+                            onChange={(e) => setColumnFilters({...columnFilters, order_match: e.target.value})}
+                            className="h-7 text-xs border rounded px-1 w-full"
+                          >
+                            <option value="">All</option>
+                            <option value="yes">✅ Yes</option>
+                            <option value="no">❌ No</option>
+                          </select>
+                        </TableHead>
+                      </TableRow>
+                    )}
+                  </TableHeader>
                         <TableHead className="p-1">
                           <div className="flex gap-1">
                             <Input 
