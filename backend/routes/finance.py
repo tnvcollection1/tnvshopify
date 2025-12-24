@@ -138,7 +138,7 @@ async def get_purchase_order_reconciliation(store_name: str = None, status: str 
         if status and status != 'all':
             query['status'] = status
         
-        records = await db.purchase_order_reconciliation.find(query, {"_id": 0}).to_list(1000)
+        records = await db.purchase_order_reconciliation.find(query, {"_id": 0}).to_list(10000)
         
         # Clean float values in records - ALL float fields
         float_fields = ['sell_amount', 'cost_pkr', 'cost_inr', 'shipping', 'advance_payment', 'profit', 'cod_amount', 'shopify_amount', 'dtdc_cod_amount']
