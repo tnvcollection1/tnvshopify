@@ -732,13 +732,14 @@ async def batch_import_products(request: BatchImportRequest, background_tasks: B
         job_id,
         product_ids,
         request.store_name,
-        request.create_in_shopify
+        request.create_in_shopify,
+        request.translate
     )
     
     return {
         "success": True,
         "job_id": job_id,
-        "message": f"Importing {len(product_ids)} products",
+        "message": f"Importing {len(product_ids)} products" + (" with translation" if request.translate else ""),
         "product_ids": product_ids,
     }
 
@@ -747,12 +748,14 @@ async def run_batch_import(
     job_id: str,
     product_ids: List[str],
     store_name: Optional[str],
-    create_in_shopify: bool
+    create_in_shopify: bool,
+    translate: bool = True
 ):
     """Background task to import products by ID using 1688 API"""
     db = get_db()
     
     scrape_jobs[job_id]["status"] = "processing"
+    scrape_jobs[job_id]["translate"] = translate
     
     for i, product_id in enumerate(product_ids):
         try:
@@ -771,6 +774,14 @@ async def run_batch_import(
                 product = await scrape_product_details(product_id)
             
             if product and product.get("title"):
+                # Translate if requested
+                if translate:
+                    try:
+                        product = await translate_product(product)
+                        scrape_jobs[job_id]["translated"] = scrape_jobs[job_id].get("translated", 0) + 1
+                    except Exception as trans_error:
+                        print(f"Translation failed for {product_id}: {trans_error}")
+                
                 # Save to database
                 product["scraped_at"] = datetime.now(timezone.utc).isoformat()
                 product["source_url"] = "batch_import"
