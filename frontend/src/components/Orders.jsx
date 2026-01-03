@@ -189,6 +189,7 @@ const Orders = () => {
   });
   const [uploading, setUploading] = useState(false);
   const [purchase1688Modal, setPurchase1688Modal] = useState({ open: false, order: null });
+  const [fulfillmentModal, setFulfillmentModal] = useState({ open: false, order: null });
 
   // Extract 1688 product ID from SKU
   const extract1688ProductId = (sku) => {
@@ -205,6 +206,16 @@ const Orders = () => {
   // Close 1688 purchase modal
   const closePurchase1688Modal = () => {
     setPurchase1688Modal({ open: false, order: null });
+  };
+
+  // Open Fulfillment modal for an order
+  const openFulfillmentModal = (order) => {
+    setFulfillmentModal({ open: true, order });
+  };
+
+  // Close Fulfillment modal
+  const closeFulfillmentModal = () => {
+    setFulfillmentModal({ open: false, order: null });
   };
 
   // Open 1688 product in new tab
