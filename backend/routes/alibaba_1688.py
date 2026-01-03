@@ -174,6 +174,153 @@ async def tmapi_request(endpoint: str, params: dict) -> dict:
         raise HTTPException(status_code=500, detail=f"TMAPI request failed: {str(e)}")
 
 
+# ==================== OAuth & Authorization Helpers ====================
+
+class UpdateAccessTokenRequest(BaseModel):
+    access_token: str = Field(..., description="New 1688 access token")
+    refresh_token: Optional[str] = Field(None, description="Refresh token for future renewal")
+
+
+@router.get("/auth/url")
+async def get_auth_url(redirect_uri: str = Query("https://wamerce.com/callback", description="OAuth callback URL")):
+    """
+    Get the OAuth authorization URL for 1688
+    User should visit this URL to authorize the app and get a new access token
+    """
+    # Build OAuth URL for 1688
+    auth_params = {
+        "client_id": ALIBABA_APP_KEY,
+        "site": "1688",
+        "redirect_uri": redirect_uri,
+        "state": "wamerce_auth",
+    }
+    
+    auth_url = f"{ALIBABA_AUTH_URL}?{urlencode(auth_params)}"
+    
+    return {
+        "auth_url": auth_url,
+        "instructions": [
+            "1. Visit the authorization URL in your browser",
+            "2. Log in to your 1688 account if not already logged in",
+            "3. Authorize the WaMerce application",
+            "4. Copy the 'code' parameter from the redirect URL",
+            "5. Use the code to exchange for an access token on 1688 console",
+            "6. Update the access token using POST /api/1688/auth/token"
+        ],
+        "app_key": ALIBABA_APP_KEY,
+        "note": "For Product API access, ensure you have authorized 'com.alibaba.product' scope"
+    }
+
+
+@router.post("/auth/token")
+async def update_access_token(request: UpdateAccessTokenRequest):
+    """
+    Update the 1688 access token in the database and environment
+    This allows updating the token without restarting the server
+    """
+    global ALIBABA_ACCESS_TOKEN
+    
+    db = get_db()
+    
+    # Save to database for persistence
+    await db.system_config.update_one(
+        {"key": "alibaba_1688_credentials"},
+        {"$set": {
+            "key": "alibaba_1688_credentials",
+            "access_token": request.access_token,
+            "refresh_token": request.refresh_token,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }},
+        upsert=True
+    )
+    
+    # Update in-memory variable
+    ALIBABA_ACCESS_TOKEN = request.access_token
+    
+    # Test the new token
+    try:
+        test_result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.receiveAddress.get",
+            {},
+            access_token=request.access_token
+        )
+        token_valid = "error" not in str(test_result).lower() and "errorCode" not in test_result
+    except Exception as e:
+        token_valid = False
+    
+    return {
+        "success": True,
+        "message": "Access token updated",
+        "token_valid": token_valid,
+        "token_prefix": request.access_token[:20] + "..." if len(request.access_token) > 20 else request.access_token,
+    }
+
+
+@router.get("/auth/test")
+async def test_access_token():
+    """
+    Test if the current access token is valid by calling a simple API
+    """
+    results = {
+        "trade_api": {"status": "unknown", "error": None},
+        "product_api": {"status": "unknown", "error": None},
+    }
+    
+    # Test Trade API (should work)
+    try:
+        trade_result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.receiveAddress.get",
+            {}
+        )
+        if "errorCode" in trade_result or "error" in str(trade_result).lower():
+            results["trade_api"]["status"] = "failed"
+            results["trade_api"]["error"] = trade_result.get("errorMessage", str(trade_result))
+        else:
+            results["trade_api"]["status"] = "working"
+    except Exception as e:
+        results["trade_api"]["status"] = "error"
+        results["trade_api"]["error"] = str(e)
+    
+    # Test Product API (might not work due to authorization)
+    try:
+        product_result = await make_api_request(
+            "com.alibaba.product/alibaba.product.simple.get",
+            {"productId": "123456789"}  # Dummy ID just for auth test
+        )
+        if "errorCode" in product_result:
+            error_code = product_result.get("errorCode", "")
+            if error_code == "401" or "Unauthorized" in str(product_result):
+                results["product_api"]["status"] = "unauthorized"
+                results["product_api"]["error"] = "Token not authorized for Product API. Re-authorize with product scope."
+            else:
+                results["product_api"]["status"] = "error"
+                results["product_api"]["error"] = product_result.get("errorMessage", str(product_result))
+        else:
+            results["product_api"]["status"] = "working"
+    except HTTPException as e:
+        if e.status_code == 401:
+            results["product_api"]["status"] = "unauthorized"
+            results["product_api"]["error"] = "Token not authorized for Product API"
+        else:
+            results["product_api"]["status"] = "error"
+            results["product_api"]["error"] = str(e.detail)
+    except Exception as e:
+        results["product_api"]["status"] = "error"
+        results["product_api"]["error"] = str(e)
+    
+    return {
+        "access_token_configured": bool(ALIBABA_ACCESS_TOKEN),
+        "token_prefix": ALIBABA_ACCESS_TOKEN[:15] + "..." if ALIBABA_ACCESS_TOKEN else None,
+        "results": results,
+        "recommendation": (
+            "Trade API is working! Product API requires re-authorization. "
+            "Go to 1688 console → Your App → Iteration → Delete existing user → Re-add user with all scopes"
+            if results["trade_api"]["status"] == "working" and results["product_api"]["status"] != "working"
+            else None
+        )
+    }
+
+
 # ==================== Pydantic Models ====================
 
 class ProductSearchRequest(BaseModel):
