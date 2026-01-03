@@ -814,7 +814,7 @@ Thank you for your understanding.`;
                       <tr
                         key={order.customer_id}
                         className="hover:bg-gray-50 cursor-pointer transition-colors"
-                        onClick={() => setSelectedOrder(order)}
+                        onClick={() => handleOrderSelect(order)}
                       >
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <input 
