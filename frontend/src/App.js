@@ -41,6 +41,7 @@ import DWZ56Shipping from "@/components/DWZ56Shipping";
 import DWZ56Purchase from "@/components/DWZ56Purchase";
 import Products1688 from "@/components/Products1688";
 import FulfillmentDashboard from "@/components/FulfillmentDashboard";
+import ProductsCatalog from "@/components/ProductsCatalog";
 import WhatsAppInboxStandalone from "@/components/WhatsAppInboxStandalone";
 import WhatsAppEmbeddedSignup from "@/components/WhatsAppEmbeddedSignup";
 import InventoryClearance from "@/components/InventoryClearance";
@@ -397,6 +398,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <FulfillmentDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/products" 
+        element={
+          <ProtectedRoute>
+            <ProductsCatalog />
           </ProtectedRoute>
         } 
       />
