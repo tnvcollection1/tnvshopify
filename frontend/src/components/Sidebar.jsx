@@ -139,6 +139,12 @@ const Sidebar = () => {
         { icon: ShoppingCart, label: 'Purchase Account', path: '/dwz56-purchase' },
       ]
     },
+    { 
+      icon: Package, 
+      label: '1688 Products', 
+      path: '/1688-products',
+      badge: 'New'
+    },
     { icon: BarChart3, label: 'Analytics', path: '/reports' },
     { 
       icon: Megaphone, 
