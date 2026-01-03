@@ -36,6 +36,13 @@ class ScrapeRequest(BaseModel):
     max_products: int = Field(50, description="Maximum products to scrape")
 
 
+class BatchImportRequest(BaseModel):
+    """Request for batch importing products by their IDs"""
+    product_ids: List[str] = Field(..., description="List of 1688 product IDs to import")
+    store_name: Optional[str] = Field(None, description="Shopify store to import to")
+    create_in_shopify: bool = Field(False, description="Auto-create products in Shopify")
+
+
 class ScrapedProduct(BaseModel):
     product_id: str
     title: str
