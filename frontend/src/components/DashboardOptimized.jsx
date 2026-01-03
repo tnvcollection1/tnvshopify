@@ -54,6 +54,7 @@ const DashboardOptimized = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedOrderFulfillment, setSelectedOrderFulfillment] = useState(null);
