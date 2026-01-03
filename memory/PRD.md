@@ -102,14 +102,20 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 ## Changelog
 
 ### January 3, 2026
+- **Fulfillment Dashboard UI** - Created FulfillmentDashboard.jsx with:
+  - Visual pipeline stages (Shopify → 1688 → DWZ56 → Delivered)
+  - Stats cards for each status (Total, Pending, Processing, Purchased, etc.)
+  - Pending orders sidebar with "Process" buttons
+  - Sync All Tracking and Refresh functionality
+  - Search and filter by status
+- **1688 Auth Endpoints** - Added /api/1688/auth/url, /auth/test, /auth/token for re-authorization
+- **Return Status Sync** - Shopify sync now captures return_status, refunds, cancelled_at
 - Fixed Shopify sync - was working but not being triggered
 - Enabled automatic hourly Shopify sync for ALL stores (was disabled)
 - Added `sync_all_shopify_stores()` method to scheduler
 - Updated 1688 access token to working credentials
 - Enhanced fulfillment.py with complete automation pipeline
-- Added background task for auto-purchase on 1688
-- Added product matching logic for Shopify → 1688 catalog
-- All 17 backend tests passing
+- All 29 backend tests passing (17 original + 12 new feature tests)
 
 ## Roadmap
 
