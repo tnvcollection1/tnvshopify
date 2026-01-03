@@ -406,25 +406,51 @@ const FulfillmentDashboard = () => {
       return;
     }
     
+    const confirmMsg = autoPurchaseEnabled 
+      ? `Process ${selectedOrders.size} orders AND create 1688 purchase orders?\n\nThis will:\n1. Add orders to fulfillment pipeline\n2. Automatically create purchase orders on 1688`
+      : `Process ${selectedOrders.size} orders into the fulfillment pipeline?`;
+    
+    if (!window.confirm(confirmMsg)) {
+      return;
+    }
+    
     setBulkProcessing(true);
     setBulkProgress({ current: 0, total: selectedOrders.size });
     
     const orderIds = Array.from(selectedOrders);
     let processed = 0;
     let failed = 0;
+    let autoPurchased = 0;
     
     for (const customerId of orderIds) {
       try {
-        const res = await fetch(`${API}/api/fulfillment/process-new-order`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ customer_id: customerId, auto_purchase: false }),
-        });
-        const data = await res.json();
-        if (data.success) {
-          processed++;
+        if (autoPurchaseEnabled) {
+          // Use auto-purchase endpoint
+          const res = await fetch(`${API}/api/fulfillment/auto-purchase/${customerId}`, {
+            method: 'POST',
+          });
+          const data = await res.json();
+          if (data.success) {
+            processed++;
+            if (data.matched_products > 0) {
+              autoPurchased++;
+            }
+          } else {
+            failed++;
+          }
         } else {
-          failed++;
+          // Just add to pipeline without auto-purchase
+          const res = await fetch(`${API}/api/fulfillment/process-new-order`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customer_id: customerId, auto_purchase: false }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            processed++;
+          } else {
+            failed++;
+          }
         }
       } catch (error) {
         failed++;
@@ -436,7 +462,11 @@ const FulfillmentDashboard = () => {
     setSelectedOrders(new Set());
     fetchData();
     
-    alert(`Bulk processing complete!\n✅ Processed: ${processed}\n❌ Failed: ${failed}`);
+    const resultMsg = autoPurchaseEnabled
+      ? `Bulk processing complete!\n✅ Processed: ${processed}\n🛒 Auto-purchased: ${autoPurchased}\n❌ Failed: ${failed}`
+      : `Bulk processing complete!\n✅ Processed: ${processed}\n❌ Failed: ${failed}`;
+    
+    alert(resultMsg);
   };
   
   const handleProcessOrder = async (customerId) => {
