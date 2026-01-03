@@ -266,6 +266,9 @@ const Purchase1688Orders = () => {
 
     setOrdering(true);
     
+    // Find the specId for the selected size/color
+    const specId = findSpecId() || selectedSpecId;
+    
     try {
       const res = await fetch(`${API}/api/1688/create-purchase-order`, {
         method: 'POST',
@@ -275,6 +278,7 @@ const Purchase1688Orders = () => {
           quantity: quantity,
           size: selectedSize,
           color: selectedColor,
+          spec_id: specId,
           shopify_order_id: orderModal.order.order_id,
           notes: `Order #${orderModal.order.order_id} - ${orderModal.order.product_name || 'Product'}`,
         }),
