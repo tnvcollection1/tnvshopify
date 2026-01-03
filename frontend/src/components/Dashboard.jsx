@@ -1704,6 +1704,148 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </main>
+
+      {/* 1688 Purchase Modal */}
+      {purchase1688Modal.open && purchase1688Modal.customer && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={closePurchase1688Modal}>
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <ShoppingCart className="w-6 h-6 text-orange-500" />
+                Purchase on 1688
+              </h3>
+              <button onClick={closePurchase1688Modal} className="p-2 hover:bg-gray-100 rounded-full">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Order Info */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="font-semibold">Order #{purchase1688Modal.customer.order_number}</p>
+                  <p className="text-sm text-gray-600">
+                    {purchase1688Modal.customer.first_name} {purchase1688Modal.customer.last_name}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {purchase1688Modal.customer.last_order_date ? new Date(purchase1688Modal.customer.last_order_date).toLocaleDateString() : 'N/A'}
+                  </p>
+                </div>
+                <Badge className="bg-blue-100 text-blue-700">
+                  {purchase1688Modal.customer.store_name || 'N/A'}
+                </Badge>
+              </div>
+            </div>
+            
+            {/* Line Items with 1688 Links */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-gray-700">Products to Purchase:</h4>
+              {purchase1688Modal.customer.line_items?.map((item, index) => {
+                const productId = extract1688ProductId(item.sku);
+                const productName = item.name || item.title || 'Product';
+                const variant = item.variant_title || '';
+                
+                return (
+                  <div key={index} className="border rounded-lg p-4 hover:border-orange-300 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="font-medium">{productName}</p>
+                        {variant && <p className="text-sm text-gray-500">{variant}</p>}
+                        <p className="text-xs text-gray-400 mt-1">SKU: {item.sku || 'N/A'}</p>
+                        <div className="flex items-center gap-4 mt-2 text-sm">
+                          <span>Qty: <strong>{item.quantity || 1}</strong></span>
+                          <span>Price: <strong>${item.price || '0.00'}</strong></span>
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        {productId ? (
+                          <Button
+                            onClick={() => open1688Product(productId)}
+                            className="bg-orange-500 hover:bg-orange-600 text-white"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Open on 1688
+                          </Button>
+                        ) : (
+                          <Badge variant="outline" className="text-gray-500">
+                            No 1688 ID found
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    {productId && (
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-xs text-gray-500">1688 Product ID: <code className="bg-gray-100 px-2 py-1 rounded">{productId}</code></p>
+                        <a 
+                          href={`https://detail.1688.com/offer/${productId}.html`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-orange-600 hover:underline"
+                        >
+                          https://detail.1688.com/offer/{productId}.html
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              
+              {(!purchase1688Modal.customer.line_items || purchase1688Modal.customer.line_items.length === 0) && (
+                <div className="text-center py-8 text-gray-500">
+                  No line items found for this order
+                </div>
+              )}
+            </div>
+            
+            {/* Quick Actions */}
+            {purchase1688Modal.customer.line_items?.filter(item => extract1688ProductId(item.sku)).length > 0 && (
+              <div className="mt-6 pt-4 border-t">
+                <h4 className="font-semibold text-gray-700 mb-3">Quick Actions:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {purchase1688Modal.customer.line_items?.filter(item => extract1688ProductId(item.sku)).map((item, index) => {
+                    const productId = extract1688ProductId(item.sku);
+                    return (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => open1688Product(productId)}
+                        className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                      >
+                        <ShoppingCart className="w-3 h-3 mr-1" />
+                        Item {index + 1}
+                      </Button>
+                    );
+                  })}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const productIds = purchase1688Modal.customer.line_items
+                        ?.map(item => extract1688ProductId(item.sku))
+                        .filter(Boolean);
+                      productIds?.forEach((id, idx) => {
+                        setTimeout(() => open1688Product(id), idx * 500);
+                      });
+                    }}
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    <ExternalLink className="w-3 h-3 mr-1" />
+                    Open All ({purchase1688Modal.customer.line_items?.filter(item => extract1688ProductId(item.sku)).length || 0})
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Close Button */}
+            <div className="mt-6 flex justify-end">
+              <Button variant="outline" onClick={closePurchase1688Modal}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
