@@ -283,14 +283,21 @@ const Products1688 = () => {
             className="flex items-center gap-2"
           >
             <ShoppingCart className="h-4 w-4" />
-            View 1688 Orders
+            View Orders
+          </Button>
+          <Button 
+            onClick={() => setShowScrapeModal(true)}
+            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            <Zap className="h-4 w-4" />
+            Auto-Scrape
           </Button>
           <Button 
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600"
           >
             <Plus className="h-4 w-4" />
-            Add Product
+            Manual Add
           </Button>
         </div>
       </div>
