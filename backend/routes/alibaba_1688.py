@@ -550,7 +550,7 @@ async def make_merchant_api_request(api_name: str, params: dict = None) -> dict:
 async def get_merchant_info(shop_url: str = Query(..., description="1688 shop URL or domain")):
     """
     Get information about a merchant/supplier using the purchased API
-    API: alibaba.trade.get.sellerInfo (under com.alibaba.trade namespace)
+    API: com.alibaba.trade/alibaba.member.getRelationUserInfo
     """
     try:
         # Extract domain from URL
@@ -564,32 +564,14 @@ async def get_merchant_info(shop_url: str = Query(..., description="1688 shop UR
             "domain": domain,
         }
         
-        # Try different API formats
-        api_names = [
-            "com.alibaba.trade/alibaba.trade.get.sellerInfo",
-            "com.alibaba.open/alibaba.member.getRelationUserInfo", 
+        result = await make_merchant_api_request(
             "com.alibaba.trade/alibaba.member.getRelationUserInfo",
-            "com.alibaba.product/alibaba.product.get.sellerInfo",
-        ]
-        
-        last_error = None
-        for api_name in api_names:
-            try:
-                result = await make_merchant_api_request(api_name, params)
-                if result and not result.get("error_code"):
-                    return {
-                        "success": True,
-                        "api_used": api_name,
-                        "merchant": result.get("result") or result,
-                    }
-            except Exception as e:
-                last_error = str(e)
-                continue
+            params
+        )
         
         return {
-            "success": False,
-            "error": last_error or "All API attempts failed",
-            "tried_apis": api_names,
+            "success": True,
+            "merchant": result.get("result") or result,
         }
         
     except Exception as e:
