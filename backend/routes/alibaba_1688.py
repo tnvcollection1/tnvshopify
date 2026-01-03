@@ -547,42 +547,49 @@ async def make_merchant_api_request(api_name: str, params: dict = None) -> dict:
 
 
 @router.get("/merchant/info")
-async def get_merchant_info(shop_url: str = Query(..., description="1688 shop URL")):
+async def get_merchant_info(shop_url: str = Query(..., description="1688 shop URL or domain")):
     """
     Get information about a merchant/supplier using the purchased API
-    API: alibaba.member.getRelationUserInfo
+    API: alibaba.trade.get.sellerInfo (under com.alibaba.trade namespace)
     """
     try:
-        # Extract member ID from shop URL if needed
+        # Extract domain from URL
         import re
-        member_id = None
+        domain = shop_url
+        # Clean the URL to get just the domain
+        domain = re.sub(r'^https?://', '', domain)
+        domain = re.sub(r'/.*$', '', domain)
         
-        # Try to extract from URL patterns like: shop123456.1688.com or winport/123456
-        patterns = [
-            r'shop(\d+)\.1688\.com',
-            r'winport/(\d+)',
-            r'memberId=(\d+)',
+        params = {
+            "domain": domain,
+        }
+        
+        # Try different API formats
+        api_names = [
+            "com.alibaba.trade/alibaba.trade.get.sellerInfo",
+            "com.alibaba.open/alibaba.member.getRelationUserInfo", 
+            "com.alibaba.trade/alibaba.member.getRelationUserInfo",
+            "com.alibaba.product/alibaba.product.get.sellerInfo",
         ]
-        for pattern in patterns:
-            match = re.search(pattern, shop_url)
-            if match:
-                member_id = match.group(1)
-                break
         
-        params = {}
-        if member_id:
-            params['memberId'] = member_id
-        else:
-            params['loginId'] = shop_url  # Use URL as loginId
-        
-        result = await make_merchant_api_request(
-            "cn.alibaba.open/alibaba.member.getRelationUserInfo",
-            params
-        )
+        last_error = None
+        for api_name in api_names:
+            try:
+                result = await make_merchant_api_request(api_name, params)
+                if result and not result.get("error_code"):
+                    return {
+                        "success": True,
+                        "api_used": api_name,
+                        "merchant": result.get("result") or result,
+                    }
+            except Exception as e:
+                last_error = str(e)
+                continue
         
         return {
-            "success": True,
-            "merchant": result.get("result") or result,
+            "success": False,
+            "error": last_error or "All API attempts failed",
+            "tried_apis": api_names,
         }
         
     except Exception as e:
