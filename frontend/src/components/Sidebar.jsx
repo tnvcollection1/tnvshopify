@@ -145,6 +145,12 @@ const Sidebar = () => {
       path: '/1688-products',
       badge: 'New'
     },
+    { 
+      icon: Truck, 
+      label: 'Fulfillment', 
+      path: '/fulfillment',
+      badge: 'New'
+    },
     { icon: BarChart3, label: 'Analytics', path: '/reports' },
     { 
       icon: Megaphone, 
