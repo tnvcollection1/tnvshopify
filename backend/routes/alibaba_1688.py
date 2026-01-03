@@ -733,6 +733,332 @@ async def health_check():
     }
 
 
+@router.post("/sync-products-from-orders")
+async def sync_products_from_orders():
+    """
+    Sync all products from your 1688 order history to the catalog
+    This extracts product info from orders you've placed
+    """
+    db = get_db()
+    
+    try:
+        # Fetch all orders
+        all_products = {}
+        page = 1
+        page_size = 50
+        
+        while page <= 20:  # Limit to 20 pages (1000 orders max)
+            params = {
+                "pageNo": str(page),
+                "pageSize": str(page_size),
+            }
+            
+            result = await make_api_request(
+                "com.alibaba.trade/alibaba.trade.getBuyerOrderList",
+                params,
+                access_token=ALIBABA_ACCESS_TOKEN
+            )
+            
+            orders = result.get("result", [])
+            if isinstance(orders, dict):
+                orders = orders.get("result", []) or []
+            
+            if not orders:
+                break
+            
+            # Extract products from each order
+            for order in orders:
+                product_items = order.get("productItems", [])
+                for item in product_items:
+                    product_id = str(item.get("productID") or item.get("productId", ""))
+                    if not product_id or product_id in all_products:
+                        continue
+                    
+                    # Extract product details from order
+                    all_products[product_id] = {
+                        "product_id": product_id,
+                        "title": item.get("name") or item.get("productName"),
+                        "price": item.get("itemAmount") or item.get("price"),
+                        "unit_price": item.get("price"),
+                        "quantity": item.get("quantity"),
+                        "sku_id": item.get("skuID") or item.get("specId"),
+                        "sku_info": item.get("productCargoNumber") or item.get("skuInfos"),
+                        "image": item.get("productImgUrl", [None])[0] if isinstance(item.get("productImgUrl"), list) else item.get("productImgUrl"),
+                        "supplier": order.get("sellerContact", {}).get("companyName") or order.get("sellerLoginId"),
+                        "supplier_id": order.get("sellerMemberId") or order.get("sellerLoginId"),
+                    }
+            
+            if len(orders) < page_size:
+                break
+            page += 1
+        
+        # Save products to catalog
+        saved_count = 0
+        for product_id, product in all_products.items():
+            catalog_item = {
+                "id": f"1688_{product_id}",
+                "source": "1688",
+                "source_id": product_id,
+                "source_url": f"https://detail.1688.com/offer/{product_id}.html",
+                "title": product.get("title"),
+                "price": product.get("unit_price") or product.get("price"),
+                "price_info": {"price": product.get("unit_price")},
+                "images": [product.get("image")] if product.get("image") else [],
+                "sku_id": product.get("sku_id"),
+                "sku_info": product.get("sku_info"),
+                "shop_info": {
+                    "name": product.get("supplier"),
+                    "id": product.get("supplier_id"),
+                },
+                "min_order": 1,
+                "synced_at": datetime.now(timezone.utc).isoformat(),
+                "entry_method": "order_history_sync",
+            }
+            
+            await db.product_catalog_1688.update_one(
+                {"source_id": product_id},
+                {"$set": catalog_item},
+                upsert=True
+            )
+            saved_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Synced {saved_count} products from order history",
+            "total_products": len(all_products),
+            "saved": saved_count,
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to sync products from orders",
+        }
+
+
+@router.post("/auto-order-from-shopify")
+async def auto_order_from_shopify(shopify_order_id: str = Body(..., embed=True)):
+    """
+    Automatically create a 1688 purchase order from a Shopify order
+    Matches products and creates the order on 1688
+    """
+    db = get_db()
+    
+    # Get Shopify order
+    shopify_order = await db.customers.find_one(
+        {"order_id": shopify_order_id},
+        {"_id": 0}
+    )
+    
+    if not shopify_order:
+        raise HTTPException(status_code=404, detail="Shopify order not found")
+    
+    # Get shipping addresses from 1688
+    try:
+        address_result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.receiveAddress.get",
+            {},
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        addresses = address_result.get("result", {}).get("receiveAddressItems", [])
+        default_address = addresses[0] if addresses else None
+    except:
+        default_address = None
+    
+    # Find matching 1688 products in catalog
+    line_items = shopify_order.get("line_items", [])
+    matched_items = []
+    unmatched_items = []
+    
+    for item in line_items:
+        product_title = item.get("title", "")
+        sku = item.get("sku", "")
+        
+        # Try to find matching product in 1688 catalog
+        query = {"$or": []}
+        if product_title:
+            query["$or"].append({"title": {"$regex": product_title[:20], "$options": "i"}})
+        if sku:
+            query["$or"].append({"sku_id": sku})
+            query["$or"].append({"sku_info": {"$regex": sku, "$options": "i"}})
+        
+        if not query["$or"]:
+            unmatched_items.append(item)
+            continue
+            
+        catalog_match = await db.product_catalog_1688.find_one(query, {"_id": 0})
+        
+        if catalog_match:
+            matched_items.append({
+                "shopify_item": item,
+                "catalog_item": catalog_match,
+                "product_id": catalog_match.get("source_id"),
+                "sku_id": catalog_match.get("sku_id"),
+                "quantity": item.get("quantity", 1),
+            })
+        else:
+            unmatched_items.append(item)
+    
+    if not matched_items:
+        return {
+            "success": False,
+            "message": "No matching 1688 products found in catalog",
+            "unmatched_items": [{"title": i.get("title"), "sku": i.get("sku")} for i in unmatched_items],
+            "suggestion": "Please sync products from your 1688 orders first using /api/1688/sync-products-from-orders",
+        }
+    
+    # Build 1688 order
+    try:
+        # Prepare cargo list (items to order)
+        cargo_list = []
+        for match in matched_items:
+            cargo = {
+                "offerId": int(match["product_id"]),
+                "quantity": float(match["quantity"]),
+            }
+            if match.get("sku_id"):
+                cargo["specId"] = match["sku_id"]
+            cargo_list.append(cargo)
+        
+        # Prepare address
+        if default_address:
+            address_param = {
+                "addressId": default_address.get("addressId"),
+            }
+        else:
+            # Use Shopify shipping address
+            address_param = {
+                "fullName": f"{shopify_order.get('first_name', '')} {shopify_order.get('last_name', '')}".strip(),
+                "mobile": shopify_order.get("phone", ""),
+                "phone": shopify_order.get("phone", ""),
+                "postCode": shopify_order.get("zip", ""),
+                "cityText": shopify_order.get("city", ""),
+                "provinceText": shopify_order.get("province", ""),
+                "areaText": shopify_order.get("district", ""),
+                "address": shopify_order.get("address", ""),
+            }
+        
+        # Preview the order first
+        preview_params = {
+            "addressParam": json.dumps(address_param),
+            "cargoParamList": json.dumps(cargo_list),
+            "flow": "general",
+        }
+        
+        preview_result = await make_api_request(
+            "com.alibaba.trade/alibaba.createOrder.preview",
+            preview_params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        if preview_result.get("error_code"):
+            return {
+                "success": False,
+                "message": f"Order preview failed: {preview_result.get('error_message')}",
+                "matched_items": len(matched_items),
+            }
+        
+        # Create the actual order
+        create_params = {
+            "addressParam": json.dumps(address_param),
+            "cargoParamList": json.dumps(cargo_list),
+            "flow": "general",
+            "message": f"Shopify Order: {shopify_order.get('order_number', shopify_order_id)}",
+        }
+        
+        create_result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.fastCreateOrder",
+            create_params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        if create_result.get("error_code"):
+            return {
+                "success": False,
+                "message": f"Order creation failed: {create_result.get('error_message')}",
+                "preview_success": True,
+            }
+        
+        # Extract order ID
+        alibaba_order_id = create_result.get("result", {}).get("orderId") or create_result.get("orderId")
+        
+        # Save to fulfillment pipeline
+        fulfillment_record = {
+            "shopify_order_id": shopify_order_id,
+            "order_number": shopify_order.get("order_number"),
+            "alibaba_order_id": str(alibaba_order_id),
+            "status": "purchased",
+            "stages": {
+                "shopify_received": True,
+                "alibaba_purchased": True,
+                "alibaba_shipped": False,
+                "dwz56_received": False,
+                "dwz56_shipped": False,
+            },
+            "matched_items": len(matched_items),
+            "unmatched_items": len(unmatched_items),
+            "customer": {
+                "name": f"{shopify_order.get('first_name', '')} {shopify_order.get('last_name', '')}".strip(),
+                "phone": shopify_order.get("phone"),
+            },
+            "shipping_address": {
+                "address": shopify_order.get("address"),
+                "city": shopify_order.get("city"),
+                "province": shopify_order.get("province"),
+                "country": shopify_order.get("country"),
+            },
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        
+        await db.fulfillment_pipeline.update_one(
+            {"shopify_order_id": shopify_order_id},
+            {"$set": fulfillment_record},
+            upsert=True
+        )
+        
+        # Update Shopify order status
+        await db.customers.update_one(
+            {"order_id": shopify_order_id},
+            {"$set": {
+                "alibaba_order_id": str(alibaba_order_id),
+                "purchase_status": "ordered_on_1688",
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }}
+        )
+        
+        # Get payment link
+        payment_url = None
+        try:
+            payment_params = {"orderIdList": json.dumps([alibaba_order_id])}
+            payment_result = await make_api_request(
+                "com.alibaba.trade/alibaba.alipay.url.get",
+                payment_params,
+                access_token=ALIBABA_ACCESS_TOKEN
+            )
+            payment_url = payment_result.get("result", {}).get("payUrl") or payment_result.get("payUrl")
+        except:
+            pass
+        
+        return {
+            "success": True,
+            "message": "1688 order created successfully!",
+            "alibaba_order_id": alibaba_order_id,
+            "payment_url": payment_url,
+            "matched_items": len(matched_items),
+            "unmatched_items": len(unmatched_items),
+            "order_details": create_result.get("result"),
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to create 1688 order",
+            "matched_items": len(matched_items),
+        }
+
+
 @router.post("/search")
 async def search_products(request: ProductSearchRequest):
     """
