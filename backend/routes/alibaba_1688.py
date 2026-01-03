@@ -95,7 +95,7 @@ async def make_api_request(api_name: str, params: dict = None, method: str = "PO
     """Make HTTP request to 1688 API"""
     params = params or {}
     
-    url, all_params = build_api_url(api_name, params, access_token)
+    url, all_params = build_api_request(api_name, params, access_token)
     
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -108,14 +108,20 @@ async def make_api_request(api_name: str, params: dict = None, method: str = "PO
                     headers={"Content-Type": "application/x-www-form-urlencoded"}
                 )
             
+            print(f"1688 API Response Status: {response.status_code}")
+            print(f"1688 API Response: {response.text[:500]}")
+            
             response.raise_for_status()
             return response.json()
             
     except httpx.HTTPStatusError as e:
+        print(f"1688 API HTTP Error: {e.response.status_code} - {e.response.text[:500]}")
         raise HTTPException(status_code=e.response.status_code, detail=f"API request failed: {str(e)}")
     except httpx.RequestError as e:
+        print(f"1688 API Request Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Connection error: {str(e)}")
     except json.JSONDecodeError as e:
+        print(f"1688 API JSON Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Invalid JSON response: {str(e)}")
 
 
