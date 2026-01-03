@@ -39,8 +39,13 @@ const Purchase1688Orders = () => {
   const [orderModal, setOrderModal] = useState({ open: false, order: null, orderIndex: null });
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSpecId, setSelectedSpecId] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [ordering, setOrdering] = useState(false);
+  const [loadingSkus, setLoadingSkus] = useState(false);
+  const [productSkus, setProductSkus] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
 
   // Parse Excel file
   const handleFileUpload = async (e) => {
