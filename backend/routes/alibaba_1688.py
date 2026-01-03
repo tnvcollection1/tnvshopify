@@ -404,7 +404,7 @@ async def list_catalog_products(
 @router.post("/create-purchase-order")
 async def create_purchase_order(request: CreatePurchaseOrderRequest):
     """
-    Create a purchase order on 1688
+    Create a purchase order on 1688 using alibaba.trade.fastCreateOrder
     This requires a valid access_token with trade permissions
     """
     if not ALIBABA_ACCESS_TOKEN:
@@ -416,82 +416,112 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
     db = get_db()
     
     try:
-        # Build order items
-        order_items = []
+        # Build order items for 1688 API
+        order_entries = []
         for item in request.items:
-            order_items.append({
-                "offerId": item.product_id,
-                "specId": item.sku_id or "",
+            entry = {
+                "offerId": int(item.product_id),
                 "quantity": item.quantity,
-            })
+            }
+            if item.sku_id:
+                entry["specId"] = item.sku_id
+            order_entries.append(entry)
         
-        # Create order preview first
+        # First preview the order using alibaba.createOrder.preview
         preview_params = {
-            "orderEntryParam": json.dumps({
-                "entries": order_items,
-            }),
             "addressParam": json.dumps(request.shipping_address),
+            "cargoParamList": json.dumps(order_entries),
         }
         
+        print(f"Creating order preview with params: {preview_params}")
+        
         preview_result = await make_api_request(
-            "alibaba.trade.createOrder.preview",
+            "com.alibaba.trade/alibaba.createOrder.preview",
             preview_params,
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
-        if preview_result.get("errorCode"):
+        print(f"Preview result: {preview_result}")
+        
+        if preview_result.get("errorCode") or preview_result.get("error_code"):
+            error_msg = preview_result.get("errorMessage") or preview_result.get("error_message") or "Unknown error"
             raise HTTPException(
                 status_code=400, 
-                detail=f"Order preview failed: {preview_result.get('errorMessage')}"
+                detail=f"Order preview failed: {error_msg}"
             )
         
-        # Create actual order
+        # Create actual order using alibaba.trade.fastCreateOrder (Recommended API)
         create_params = {
-            "orderEntryParam": json.dumps({
-                "entries": order_items,
-            }),
             "addressParam": json.dumps(request.shipping_address),
+            "cargoParamList": json.dumps(order_entries),
         }
         
+        if request.notes:
+            create_params["message"] = request.notes
+        
+        print(f"Creating order with params: {create_params}")
+        
         create_result = await make_api_request(
-            "alibaba.trade.createOrder",
+            "com.alibaba.trade/alibaba.trade.fastCreateOrder",
             create_params,
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
-        if create_result.get("errorCode"):
+        print(f"Create result: {create_result}")
+        
+        if create_result.get("errorCode") or create_result.get("error_code"):
+            error_msg = create_result.get("errorMessage") or create_result.get("error_message") or "Unknown error"
             raise HTTPException(
                 status_code=400,
-                detail=f"Order creation failed: {create_result.get('errorMessage')}"
+                detail=f"Order creation failed: {error_msg}"
             )
         
+        # Extract order ID from response
+        order_id = create_result.get("result", {}).get("orderId") or create_result.get("orderId")
+        
         # Save order to database
-        order_id = create_result.get("result", {}).get("orderId")
         order_record = {
             "id": f"1688_order_{order_id}",
             "source": "1688",
-            "order_id": order_id,
+            "order_id": str(order_id),
             "shopify_order_id": request.shopify_order_id,
             "items": [item.dict() for item in request.items],
             "shipping_address": request.shipping_address,
             "notes": request.notes,
             "status": "created",
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "raw_response": create_result,
+            "preview_response": preview_result,
+            "create_response": create_result,
         }
         
         await db.purchase_orders_1688.insert_one(order_record)
+        
+        # Get payment link
+        payment_link = None
+        if order_id:
+            try:
+                payment_params = {"orderIdList": json.dumps([order_id])}
+                payment_result = await make_api_request(
+                    "com.alibaba.trade/alibaba.alipay.url.get",
+                    payment_params,
+                    access_token=ALIBABA_ACCESS_TOKEN
+                )
+                payment_link = payment_result.get("result", {}).get("payUrl") or payment_result.get("payUrl")
+            except Exception as e:
+                print(f"Failed to get payment link: {e}")
         
         return {
             "success": True,
             "message": "Purchase order created successfully",
             "order_id": order_id,
-            "order": order_record,
+            "payment_link": payment_link,
+            "order": {k: v for k, v in order_record.items() if k != "_id"},
         }
         
     except HTTPException:
         raise
     except Exception as e:
+        print(f"Order creation error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to create order: {str(e)}")
 
 
