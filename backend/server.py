@@ -6200,6 +6200,7 @@ app.include_router(super_admin_router)
 app.include_router(dwz56_router)
 app.include_router(alibaba_1688_router)
 app.include_router(fulfillment_router)
+app.include_router(product_scraper_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 # ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================
