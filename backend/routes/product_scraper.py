@@ -7,14 +7,26 @@ import httpx
 import re
 import json
 import asyncio
+import os
 from typing import List, Dict, Optional
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
 from pydantic import BaseModel, Field
-from database import get_db
+from motor.motor_asyncio import AsyncIOMotorClient
 
-router = APIRouter(prefix="/1688-scraper", tags=["1688 Scraper"])
+# Database connection
+_db = None
+
+def get_db():
+    global _db
+    if _db is None:
+        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        client = AsyncIOMotorClient(mongo_url)
+        _db = client[os.environ.get('DB_NAME', 'shopify_customers_db')]
+    return _db
+
+router = APIRouter(prefix="/api/1688-scraper", tags=["1688 Scraper"])
 
 
 class ScrapeRequest(BaseModel):
