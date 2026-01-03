@@ -1689,6 +1689,106 @@ async def get_product_sync_status(store_name: str = None):
         return {"success": True, "statuses": [], "total_products": 0}
 
 
+@api_router.post("/shopify/products/{product_id}/link-1688")
+async def link_product_to_1688(product_id: str, data: dict = Body(...)):
+    """
+    Link a Shopify product to a 1688 product
+    """
+    try:
+        alibaba_product_id = data.get("alibaba_product_id")
+        store_name = data.get("store_name")
+        
+        if not alibaba_product_id:
+            raise HTTPException(status_code=400, detail="alibaba_product_id is required")
+        
+        # Clean the product ID (remove any non-numeric characters)
+        alibaba_product_id = ''.join(filter(str.isdigit, str(alibaba_product_id)))
+        
+        if not alibaba_product_id:
+            raise HTTPException(status_code=400, detail="Invalid 1688 product ID")
+        
+        # Update the Shopify product with the 1688 link
+        query = {"shopify_product_id": product_id}
+        if store_name:
+            query["store_name"] = store_name
+        
+        result = await db.shopify_products.update_one(
+            query,
+            {"$set": {
+                "linked_1688_product_id": alibaba_product_id,
+                "linked_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        # Also add to the 1688 product catalog if not exists
+        existing_catalog = await db.product_catalog_1688.find_one(
+            {"source_id": alibaba_product_id}
+        )
+        
+        if not existing_catalog:
+            # Get the Shopify product info
+            shopify_product = await db.shopify_products.find_one(query, {"_id": 0})
+            if shopify_product:
+                await db.product_catalog_1688.insert_one({
+                    "source_id": alibaba_product_id,
+                    "title": shopify_product.get("title"),
+                    "shopify_product_id": product_id,
+                    "store_name": store_name,
+                    "linked_from_shopify": True,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                })
+        
+        return {
+            "success": True,
+            "message": f"Product linked to 1688 ID: {alibaba_product_id}",
+            "alibaba_product_id": alibaba_product_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error linking product: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/shopify/products/{product_id}/unlink-1688")
+async def unlink_product_from_1688(product_id: str, data: dict = Body(...)):
+    """
+    Remove 1688 link from a Shopify product
+    """
+    try:
+        store_name = data.get("store_name")
+        
+        query = {"shopify_product_id": product_id}
+        if store_name:
+            query["store_name"] = store_name
+        
+        result = await db.shopify_products.update_one(
+            query,
+            {"$unset": {
+                "linked_1688_product_id": "",
+                "linked_at": ""
+            }}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        return {
+            "success": True,
+            "message": "1688 link removed"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error unlinking product: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ========================================
 # DRAFT ORDERS ENDPOINTS
 # ========================================
