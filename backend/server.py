@@ -1478,6 +1478,218 @@ async def sync_abandoned_checkouts(store_name: str, days_back: int = 30):
 
 
 # ========================================
+# SHOPIFY PRODUCTS SYNC
+# ========================================
+
+@api_router.post("/shopify/sync-products/{store_name}")
+async def sync_shopify_products(store_name: str, background_tasks: BackgroundTasks):
+    """
+    Sync ALL products from a Shopify store
+    This runs in the background due to potentially large number of products
+    """
+    try:
+        # Get store credentials
+        store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
+        
+        if not store:
+            raise HTTPException(status_code=404, detail="Store not found")
+        
+        if not store.get('shopify_domain') or not store.get('shopify_token'):
+            raise HTTPException(status_code=400, detail="Shopify not configured for this store")
+        
+        # Start background sync
+        background_tasks.add_task(
+            _sync_products_background,
+            store_name,
+            store['shopify_domain'],
+            store['shopify_token']
+        )
+        
+        return {
+            "success": True,
+            "message": f"Product sync started for {store_name}. This may take a few minutes.",
+            "status": "processing"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error starting product sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _sync_products_background(store_name: str, domain: str, token: str):
+    """Background task to sync products"""
+    try:
+        logger.info(f"🛍️ Starting product sync for {store_name}...")
+        
+        sync = ShopifyOrderSync(domain, token)
+        products = sync.fetch_products(fetch_all=True)
+        
+        if not products:
+            logger.info(f"No products found for {store_name}")
+            await db.product_sync_status.update_one(
+                {"store_name": store_name},
+                {"$set": {
+                    "store_name": store_name,
+                    "status": "completed",
+                    "products_synced": 0,
+                    "last_sync": datetime.now(timezone.utc).isoformat(),
+                    "error": None
+                }},
+                upsert=True
+            )
+            return
+        
+        # Save products to database
+        synced = 0
+        for product in products:
+            product['store_name'] = store_name
+            product['synced_at'] = datetime.now(timezone.utc).isoformat()
+            
+            await db.shopify_products.update_one(
+                {"shopify_product_id": product['shopify_product_id'], "store_name": store_name},
+                {"$set": product},
+                upsert=True
+            )
+            synced += 1
+        
+        # Update sync status
+        await db.product_sync_status.update_one(
+            {"store_name": store_name},
+            {"$set": {
+                "store_name": store_name,
+                "status": "completed",
+                "products_synced": synced,
+                "last_sync": datetime.now(timezone.utc).isoformat(),
+                "error": None
+            }},
+            upsert=True
+        )
+        
+        logger.info(f"✅ Product sync completed for {store_name}: {synced} products")
+        
+    except Exception as e:
+        logger.error(f"❌ Product sync failed for {store_name}: {str(e)}")
+        await db.product_sync_status.update_one(
+            {"store_name": store_name},
+            {"$set": {
+                "store_name": store_name,
+                "status": "error",
+                "error": str(e),
+                "last_sync": datetime.now(timezone.utc).isoformat()
+            }},
+            upsert=True
+        )
+
+
+@api_router.post("/shopify/sync-products-all")
+async def sync_all_store_products(background_tasks: BackgroundTasks):
+    """
+    Sync products from ALL configured Shopify stores
+    """
+    try:
+        stores = await db.stores.find(
+            {"shopify_domain": {"$ne": None, "$exists": True}},
+            {"_id": 0, "store_name": 1, "shopify_domain": 1, "shopify_token": 1}
+        ).to_list(20)
+        
+        if not stores:
+            return {"success": False, "message": "No Shopify stores configured"}
+        
+        started = []
+        for store in stores:
+            if store.get('shopify_domain') and store.get('shopify_token'):
+                background_tasks.add_task(
+                    _sync_products_background,
+                    store['store_name'],
+                    store['shopify_domain'],
+                    store['shopify_token']
+                )
+                started.append(store['store_name'])
+        
+        return {
+            "success": True,
+            "message": f"Product sync started for {len(started)} stores",
+            "stores": started
+        }
+        
+    except Exception as e:
+        logger.error(f"Error starting all-store product sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/shopify/products")
+async def get_shopify_products(
+    store_name: str = None,
+    search: str = None,
+    page: int = 1,
+    page_size: int = 50
+):
+    """Get synced Shopify products from database"""
+    try:
+        query = {}
+        if store_name and store_name != 'all':
+            query["store_name"] = store_name
+        if search:
+            query["$or"] = [
+                {"title": {"$regex": search, "$options": "i"}},
+                {"handle": {"$regex": search, "$options": "i"}},
+                {"vendor": {"$regex": search, "$options": "i"}},
+            ]
+        
+        skip = (page - 1) * page_size
+        
+        products = await db.shopify_products.find(
+            query,
+            {"_id": 0}
+        ).sort("updated_at", -1).skip(skip).limit(page_size).to_list(page_size)
+        
+        total = await db.shopify_products.count_documents(query)
+        
+        return {
+            "success": True,
+            "products": products,
+            "total": total,
+            "page": page,
+            "page_size": page_size
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching products: {str(e)}")
+        return {"success": True, "products": [], "total": 0, "page": page, "page_size": page_size}
+
+
+@api_router.get("/shopify/products/sync-status")
+async def get_product_sync_status(store_name: str = None):
+    """Get product sync status for stores"""
+    try:
+        query = {}
+        if store_name:
+            query["store_name"] = store_name
+        
+        statuses = await db.product_sync_status.find(query, {"_id": 0}).to_list(20)
+        
+        # Get product counts per store
+        stores_with_counts = []
+        for status in statuses:
+            count = await db.shopify_products.count_documents({"store_name": status["store_name"]})
+            status["product_count"] = count
+            stores_with_counts.append(status)
+        
+        # Total products
+        total_products = await db.shopify_products.count_documents({})
+        
+        return {
+            "success": True,
+            "statuses": stores_with_counts,
+            "total_products": total_products
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching sync status: {str(e)}")
+        return {"success": True, "statuses": [], "total_products": 0}
+
+
+# ========================================
 # DRAFT ORDERS ENDPOINTS
 # ========================================
 
