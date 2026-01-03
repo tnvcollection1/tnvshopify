@@ -186,6 +186,29 @@ const Orders = () => {
     returned: 0,
   });
   const [uploading, setUploading] = useState(false);
+  const [purchase1688Modal, setPurchase1688Modal] = useState({ open: false, order: null });
+
+  // Extract 1688 product ID from SKU
+  const extract1688ProductId = (sku) => {
+    if (!sku) return null;
+    const match = sku.match(/(\d{12})/);
+    return match ? match[1] : null;
+  };
+
+  // Open 1688 purchase modal for an order
+  const openPurchase1688Modal = (order) => {
+    setPurchase1688Modal({ open: true, order });
+  };
+
+  // Close 1688 purchase modal
+  const closePurchase1688Modal = () => {
+    setPurchase1688Modal({ open: false, order: null });
+  };
+
+  // Open 1688 product in new tab
+  const open1688Product = (productId) => {
+    window.open(`https://detail.1688.com/offer/${productId}.html`, '_blank');
+  };
 
   // Debounce search query
   useEffect(() => {
