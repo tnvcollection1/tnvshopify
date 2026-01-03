@@ -101,6 +101,29 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 
 ## Changelog
 
+### January 3, 2026 (Session 3)
+- **1688 Product Importer** (`/product-scraper`) - NEW FEATURE!
+  - Import products from 1688 by product IDs or URLs
+  - Two methods: "Batch Import by IDs" (recommended) and "Scrape from URL"
+  - Uses 1688 API (`alibaba.product.simple.get`) for reliable product data
+  - Features:
+    - Paste multiple product IDs/URLs (comma, newline, or semicolon separated)
+    - Auto-extract product IDs from full 1688 URLs
+    - Fetch product details: title, price, images, variants, seller info
+    - Background job processing with progress tracking
+    - Import directly to Shopify (optional)
+    - Search and manage imported products
+    - Delete products from local catalog
+  - New API endpoints in `/api/1688-scraper/`:
+    - `POST /batch-import` - Import multiple products by ID
+    - `POST /scrape` - Scrape from 1688 URL (limited by anti-bot)
+    - `GET /products` - List imported products with pagination/search
+    - `GET /job/{job_id}` - Check import job status
+    - `DELETE /products/{product_id}` - Delete imported product
+    - `POST /import-to-shopify/{product_id}` - Push to Shopify
+  - Added to sidebar navigation under "1688 Scraper"
+  - **93% test pass rate** (14/15 tests passed)
+
 ### January 3, 2026 (Session 2)
 - **1688 Product SKU API Working!**: Successfully integrated `alibaba.product.simple.get` API from the Buyer SDK
   - Now fetches SKU variants (size/color/specId) automatically for products from merchants you've purchased from
