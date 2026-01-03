@@ -23,6 +23,7 @@ import {
   ChevronRight,
   MessageCircle,
   ExternalLink,
+  ShoppingCart,
 } from "lucide-react";
 import {
   Table,
