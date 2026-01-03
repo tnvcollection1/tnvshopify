@@ -692,10 +692,32 @@ const FulfillmentDashboard = () => {
                     </span>
                   </div>
                   
+                  {/* Auto-Purchase Toggle */}
+                  <div className="flex items-center justify-between py-2 px-3 mb-2 bg-orange-50 rounded-lg border border-orange-200">
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={autoPurchaseEnabled}
+                        onChange={(e) => setAutoPurchaseEnabled(e.target.checked)}
+                        className="w-4 h-4 rounded border-orange-300 text-orange-600 focus:ring-orange-500"
+                      />
+                      <div>
+                        <span className="font-medium text-orange-800">Auto-purchase on 1688</span>
+                        <p className="text-xs text-orange-600">Create purchase orders automatically</p>
+                      </div>
+                    </label>
+                    {autoPurchaseEnabled && (
+                      <Badge className="bg-orange-500 text-white text-xs">
+                        <Zap className="w-3 h-3 mr-1" />
+                        ON
+                      </Badge>
+                    )}
+                  </div>
+                  
                   <Button
                     onClick={handleBulkProcess}
                     disabled={selectedOrders.size === 0 || bulkProcessing}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    className={`w-full ${autoPurchaseEnabled ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'} text-white`}
                     data-testid="bulk-process-btn"
                   >
                     {bulkProcessing ? (
@@ -703,9 +725,14 @@ const FulfillmentDashboard = () => {
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Processing {bulkProgress.current}/{bulkProgress.total}...
                       </>
-                    ) : (
+                    ) : autoPurchaseEnabled ? (
                       <>
                         <Zap className="w-4 h-4 mr-2" />
+                        Bulk Auto-Purchase ({selectedOrders.size})
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 mr-2" />
                         Bulk Process ({selectedOrders.size})
                       </>
                     )}
