@@ -655,11 +655,17 @@ Thank you for your understanding.`;
                 placeholder="Search orders by name, order #, phone..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                  }
+                }}
                 className="pl-10 h-9 bg-white border-gray-300 text-sm"
               />
             </div>
             <Button
               variant="outline"
+              type="button"
               className={`h-9 text-sm ${showFilters ? 'bg-gray-100' : ''}`}
               onClick={() => setShowFilters(!showFilters)}
             >
