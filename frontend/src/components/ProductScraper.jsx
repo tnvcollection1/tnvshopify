@@ -182,6 +182,7 @@ const ProductScraper = () => {
           product_ids: ids,
           store_name: createInShopify ? storeToUse : null,
           create_in_shopify: createInShopify && storeToUse,
+          translate: translateToEnglish,
         }),
       });
       
