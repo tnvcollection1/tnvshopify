@@ -107,8 +107,19 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
   - Added step-by-step instructions on how to find specId from 1688 product page
   - Made specId field required for products with variants
   - Shows clear error messaging about SPEC_NO_EXIST error
-- **Access Token Updated**: Updated 1688 access token to `19aec7b8-eaaf-4d06-89fb-459182495953`
-- **HTML Scraping Fallback**: Added HTML scraping function for SKU extraction (limited by 1688's JavaScript rendering)
+- **Access Token Updated**: Updated 1688 access token to `70a07ab8-76fa-4f82-b568-6fcf2834b157`
+- **Order Fulfillment Modal**: Created comprehensive order fulfillment feature for Shopify orders
+  - New component `OrderFulfillmentModal.jsx` for per-order fulfillment
+  - Accessible via ⚡ button in All Orders table (Dashboard)
+  - Features:
+    - Add 1688 links to individual products within an order
+    - Track 1688 Order ID, 1688 Fulfillment ID, DWZ Fulfillment ID
+    - Place orders on 1688 with size/color/specId selection
+    - Save fulfillment data to database
+  - New API endpoints in `/api/fulfillment/`:
+    - `GET /order/{order_id}` - Get fulfillment data for an order
+    - `PUT /order/{order_id}` - Save/update fulfillment data
+    - `GET /orders-with-tracking` - Get all orders with tracking data
 
 ### January 3, 2026 (Session 1)
 - **Products Catalog Page** (`/products`) with:
