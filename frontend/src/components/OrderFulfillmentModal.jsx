@@ -507,27 +507,144 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                       {loadingSkus && (
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          Loading variants...
+                          Loading variants from 1688...
                         </div>
                       )}
 
-                      <div className="grid grid-cols-3 gap-3">
-                        <div>
-                          <label className="text-xs text-gray-500 block mb-1">Size</label>
+                      {/* SKU Dropdown when variants are available */}
+                      {productSkus.length > 0 && (
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <label className="text-xs text-green-700 font-medium block mb-2">
+                            ✓ Select Size/Color Variant
+                          </label>
+                          <select
+                            value={selectedSpecId}
+                            onChange={(e) => {
+                              const sku = productSkus.find(s => s.specId === e.target.value);
+                              if (sku) {
+                                setSelectedSpecId(sku.specId);
+                                // Extract color and size from attributes
+                                const colorAttr = sku.attributes?.find(a => a.attributeName === '颜色' || a.attributeName?.toLowerCase().includes('color'));
+                                const sizeAttr = sku.attributes?.find(a => a.attributeName === '尺码' || a.attributeName === '尺寸' || a.attributeName?.toLowerCase().includes('size'));
+                                if (colorAttr) setSelectedColor(colorAttr.attributeValue);
+                                if (sizeAttr) setSelectedSize(sizeAttr.attributeValue);
+                              }
+                            }}
+                            className="w-full p-2 border border-green-300 rounded text-sm bg-white"
+                          >
+                            <option value="">-- Select variant --</option>
+                            {productSkus.map((sku, idx) => {
+                              const attrs = sku.attributes?.map(a => a.attributeValue).join(' / ') || `SKU ${idx + 1}`;
+                              return (
+                                <option key={sku.specId || idx} value={sku.specId}>
+                                  {attrs} - ¥{sku.price} ({sku.stock} in stock)
+                                </option>
+                              );
+                            })}
+                          </select>
+                          {selectedSpecId && (
+                            <p className="text-xs text-green-600 mt-1">
+                              SpecID: <code className="bg-green-100 px-1 rounded">{selectedSpecId}</code>
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Manual entry when no SKUs available */}
+                      {!loadingSkus && productSkus.length === 0 && (
+                        <>
+                          <div className="grid grid-cols-3 gap-3">
+                            <div>
+                              <label className="text-xs text-gray-500 block mb-1">Size</label>
+                              <Input
+                                value={selectedSize}
+                                onChange={(e) => setSelectedSize(e.target.value)}
+                                placeholder="e.g., XL, 42"
+                                className="text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-gray-500 block mb-1">Color</label>
+                              <Input
+                                value={selectedColor}
+                                onChange={(e) => setSelectedColor(e.target.value)}
+                                placeholder="e.g., Black"
+                                className="text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-gray-500 block mb-1">Qty</label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={quantity}
+                                onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-xs text-gray-500 block mb-1">
+                              Spec ID <span className="text-red-500">*</span>
+                              <span className="text-gray-400 ml-1">(Required for variants)</span>
+                            </label>
+                            <Input
+                              value={selectedSpecId}
+                              onChange={(e) => setSelectedSpecId(e.target.value)}
+                              placeholder="Find from 1688 product page"
+                              className="text-sm font-mono"
+                            />
+                          </div>
+
+                          {!selectedSpecId && (
+                            <div className="bg-amber-50 border border-amber-200 rounded p-2 text-xs text-amber-700">
+                              <AlertCircle className="w-3 h-3 inline mr-1" />
+                              Spec ID required for products with size/color. Find it on the 1688 product page.
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Quantity (always shown) */}
+                      {productSkus.length > 0 && (
+                        <div className="w-24">
+                          <label className="text-xs text-gray-500 block mb-1">Qty</label>
                           <Input
-                            value={selectedSize}
-                            onChange={(e) => setSelectedSize(e.target.value)}
-                            placeholder="e.g., XL, 42"
+                            type="number"
+                            min="1"
+                            value={quantity}
+                            onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
                             className="text-sm"
                           />
                         </div>
-                        <div>
-                          <label className="text-xs text-gray-500 block mb-1">Color</label>
-                          <Input
-                            value={selectedColor}
-                            onChange={(e) => setSelectedColor(e.target.value)}
-                            placeholder="e.g., Black"
-                            className="text-sm"
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => open1688Product(item.product_id_1688)}
+                        >
+                          <ExternalLink className="w-3 h-3 mr-1" />
+                          Open on 1688
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => placeOrder1688(index)}
+                          disabled={loading || !selectedSpecId}
+                          className="bg-green-500 hover:bg-green-600 text-white flex-1"
+                        >
+                          {loading ? (
+                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          ) : (
+                            <Zap className="w-4 h-4 mr-1" />
+                          )}
+                          Place Order via API
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                           />
                         </div>
                         <div>
