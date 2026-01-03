@@ -794,18 +794,43 @@ const Purchase1688Orders = () => {
               
               {/* Manual specId entry if needed */}
               {productSkus.length === 0 && !loadingSkus && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    SKU/Spec ID (optional)
-                  </label>
-                  <Input
-                    value={selectedSpecId}
-                    onChange={(e) => setSelectedSpecId(e.target.value)}
-                    placeholder="Enter 1688 SKU ID if known"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Leave empty if you don't know the specId - order may need manual selection on 1688
-                  </p>
+                <div className="space-y-4">
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-amber-800">SKU variants not available via API</p>
+                        <p className="text-sm text-amber-700 mt-1">
+                          To order a specific size/color, you need to provide the specId from the 1688 product page.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                    <p className="font-medium text-gray-700 mb-2">How to find specId:</p>
+                    <ol className="list-decimal list-inside space-y-1 text-gray-600">
+                      <li>Click "Open on 1688" below to view the product</li>
+                      <li>Select the size/color you want</li>
+                      <li>Open browser DevTools (F12) → Network tab</li>
+                      <li>Look for "specId" in the network requests, or check the URL parameters</li>
+                    </ol>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      SKU/Spec ID <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      value={selectedSpecId}
+                      onChange={(e) => setSelectedSpecId(e.target.value)}
+                      placeholder="e.g., 12345678901234567890"
+                      className="font-mono"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Required for products with size/color variants. Without it, the order will fail with SPEC_NO_EXIST error.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
