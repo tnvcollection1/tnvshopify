@@ -108,6 +108,57 @@ const Products1688 = () => {
     }
   };
 
+  // Auto-scrape single product
+  const handleAutoScrape = async (url, autoSave = true) => {
+    if (!url) return;
+    setScraping(true);
+    setScrapeResult(null);
+    try {
+      const response = await fetch(`${API}/api/1688/scrape`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, auto_save: autoSave }),
+      });
+      const data = await response.json();
+      setScrapeResult(data);
+      if (data.success && autoSave) {
+        fetchProducts();
+      }
+    } catch (error) {
+      setScrapeResult({ success: false, error: error.message });
+    } finally {
+      setScraping(false);
+    }
+  };
+
+  // Bulk scrape multiple products
+  const handleBulkScrape = async () => {
+    const urls = bulkUrls.split('\n').filter(u => u.trim().includes('1688.com'));
+    if (urls.length === 0) {
+      setScrapeResult({ success: false, error: 'No valid 1688 URLs found' });
+      return;
+    }
+    
+    setScraping(true);
+    setScrapeResult(null);
+    try {
+      const response = await fetch(`${API}/api/1688/scrape-bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls, auto_save: true }),
+      });
+      const data = await response.json();
+      setScrapeResult(data);
+      if (data.success) {
+        fetchProducts();
+      }
+    } catch (error) {
+      setScrapeResult({ success: false, error: error.message });
+    } finally {
+      setScraping(false);
+    }
+  };
+
   const extractProductId = (url) => {
     // Extract product ID from 1688 URL
     const patterns = [
