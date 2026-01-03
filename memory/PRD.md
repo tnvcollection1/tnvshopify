@@ -106,6 +106,7 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
   - Visual pipeline stages (Shopify → 1688 → DWZ56 → Delivered)
   - Stats cards for each status (Total, Pending, Processing, Purchased, etc.)
   - Pending orders sidebar with "Process" buttons
+  - **NEW: Bulk Processing** - Select All checkbox, individual checkboxes, and "Bulk Process" button
   - Sync All Tracking and Refresh functionality
   - Search and filter by status
 - **1688 Auth Endpoints** - Added /api/1688/auth/url, /auth/test, /auth/token for re-authorization
