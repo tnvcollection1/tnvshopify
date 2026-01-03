@@ -1,4 +1,4 @@
-// WaMerce 1688 Importer - Popup Script
+// WaMerce 1688 Importer - Popup Script v1.0.1
 
 let selectedProducts = [];
 let serverUrl = '';
@@ -16,10 +16,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   
   // Get products from current tab
-  scanCurrentPage();
+  setTimeout(() => scanCurrentPage(), 500);
   
   // Event listeners
   document.getElementById('serverUrl').addEventListener('change', saveServerUrl);
+  document.getElementById('serverUrl').addEventListener('blur', saveServerUrl);
   document.getElementById('scanBtn').addEventListener('click', scanCurrentPage);
   document.getElementById('importBtn').addEventListener('click', importProducts);
   document.getElementById('openDashboard').addEventListener('click', openDashboard);
@@ -29,6 +30,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Save server URL
 async function saveServerUrl() {
   serverUrl = document.getElementById('serverUrl').value.trim();
+  // Remove trailing slash
+  if (serverUrl.endsWith('/')) {
+    serverUrl = serverUrl.slice(0, -1);
+  }
   await chrome.storage.local.set({ serverUrl });
   checkConnection();
 }
@@ -45,12 +50,29 @@ async function checkConnection() {
   }
   
   try {
-    const response = await fetch(`${serverUrl}/api/1688/health`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    });
+    // Try multiple endpoints to check connection
+    const endpoints = [
+      `${serverUrl}/api/1688-scraper/products?limit=1`,
+      `${serverUrl}/api/stores`
+    ];
     
-    if (response.ok) {
+    let connected = false;
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          connected = true;
+          break;
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+    
+    if (connected) {
       indicator.className = 'status-indicator connected';
       statusText.textContent = 'Connected to WaMerce';
     } else {
@@ -58,42 +80,88 @@ async function checkConnection() {
     }
   } catch (error) {
     indicator.className = 'status-indicator error';
-    statusText.textContent = 'Connection failed';
+    statusText.textContent = 'Connection failed - check URL';
   }
 }
 
 // Scan current page for products
 async function scanCurrentPage() {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  
-  if (!tab.url.includes('1688.com')) {
-    showToast('Please open a 1688.com page');
-    return;
-  }
-  
-  // Inject content script to scan page
   try {
-    const results = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      function: scanPageForProducts
-    });
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     
-    const products = results[0].result || [];
-    document.getElementById('productCount').textContent = products.length;
-    
-    // Store products for import
-    selectedProducts = products;
-    
-    // Update UI
-    updateProductList(products);
-    updateImportButton();
-    
-    if (products.length > 0) {
-      showToast(`Found ${products.length} products`);
+    if (!tab) {
+      showToast('Cannot access current tab');
+      return;
     }
+    
+    if (!tab.url || !tab.url.includes('1688.com')) {
+      showToast('Please open a 1688.com page first');
+      document.getElementById('productCount').textContent = '0';
+      return;
+    }
+    
+    showToast('Scanning page...');
+    
+    // Method 1: Try to get products from content script via message
+    try {
+      const response = await chrome.tabs.sendMessage(tab.id, { action: 'getProducts' });
+      if (response && response.products) {
+        handleProductsFound(response.products);
+        return;
+      }
+    } catch (msgError) {
+      console.log('Content script message failed, trying executeScript:', msgError);
+    }
+    
+    // Method 2: Execute script directly
+    try {
+      const results = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: scanPageForProducts
+      });
+      
+      if (results && results[0] && results[0].result) {
+        handleProductsFound(results[0].result);
+        return;
+      }
+    } catch (scriptError) {
+      console.error('ExecuteScript error:', scriptError);
+    }
+    
+    // Method 3: Parse URL for single product
+    const match = tab.url.match(/offer\/(\d{10,})/);
+    if (match) {
+      const product = {
+        id: match[1],
+        title: 'Product ' + match[1],
+        price: '',
+        image: '',
+        url: tab.url,
+        isCurrentPage: true
+      };
+      handleProductsFound([product]);
+      showToast('Found 1 product from URL');
+      return;
+    }
+    
+    showToast('No products found. Try refreshing the page.');
+    document.getElementById('productCount').textContent = '0';
+    
   } catch (error) {
     console.error('Scan error:', error);
-    showToast('Error scanning page');
+    showToast('Scan failed: ' + (error.message || 'Unknown error'));
+  }
+}
+
+// Handle products found
+function handleProductsFound(products) {
+  selectedProducts = products || [];
+  document.getElementById('productCount').textContent = selectedProducts.length;
+  updateProductList(selectedProducts);
+  updateImportButton();
+  
+  if (selectedProducts.length > 0) {
+    showToast(`Found ${selectedProducts.length} products`);
   }
 }
 
@@ -102,53 +170,74 @@ function scanPageForProducts() {
   const products = [];
   const seen = new Set();
   
-  // Find all product links
-  document.querySelectorAll('a[href*="offer/"]').forEach(link => {
-    const match = link.href.match(/offer\/(\d{10,})/);
-    if (match && !seen.has(match[1])) {
-      seen.add(match[1]);
+  // Find all product links with various patterns
+  const linkSelectors = [
+    'a[href*="offer/"]',
+    'a[href*="detail.1688.com"]',
+    '[data-offer-id]'
+  ];
+  
+  linkSelectors.forEach(selector => {
+    document.querySelectorAll(selector).forEach(el => {
+      let productId = null;
       
-      // Try to get product info from surrounding elements
-      const container = link.closest('[data-offer-id], .sm-offer-item, .offer-item, .sm-offer, .space-offer-card-box, [class*="offer"]') || link.parentElement;
+      // Try to get ID from href
+      if (el.href) {
+        const match = el.href.match(/offer\/(\d{10,})/);
+        if (match) productId = match[1];
+      }
       
-      let title = '';
-      let price = '';
-      let image = '';
+      // Try to get ID from data attribute
+      if (!productId && el.dataset && el.dataset.offerId) {
+        productId = el.dataset.offerId;
+      }
       
-      // Try to find title
-      const titleEl = container?.querySelector('.title, .offer-title, [class*="title"], h4, h3') || link;
-      title = titleEl?.textContent?.trim() || '';
-      
-      // Try to find price
-      const priceEl = container?.querySelector('.price, .sm-offer-price, [class*="price"]');
-      price = priceEl?.textContent?.trim() || '';
-      
-      // Try to find image
-      const imgEl = container?.querySelector('img');
-      image = imgEl?.src || '';
-      
-      products.push({
-        id: match[1],
-        title: title.substring(0, 80),
-        price: price,
-        image: image,
-        url: `https://detail.1688.com/offer/${match[1]}.html`
-      });
-    }
+      if (productId && !seen.has(productId)) {
+        seen.add(productId);
+        
+        // Try to get product info from surrounding elements
+        const container = el.closest('.offer-item, .sm-offer-item, .space-offer-card-box, [class*="card"], [class*="item"]') || el.parentElement;
+        
+        let title = '';
+        let price = '';
+        let image = '';
+        
+        if (container) {
+          // Find title
+          const titleEl = container.querySelector('.title, [class*="title"], h4, h3, .name, [class*="name"]');
+          if (titleEl) title = titleEl.textContent.trim().substring(0, 80);
+          
+          // Find price
+          const priceEl = container.querySelector('.price, [class*="price"]');
+          if (priceEl) price = priceEl.textContent.trim();
+          
+          // Find image
+          const imgEl = container.querySelector('img');
+          if (imgEl && imgEl.src) image = imgEl.src;
+        }
+        
+        products.push({
+          id: productId,
+          title: title || 'Product ' + productId,
+          price: price,
+          image: image,
+          url: `https://detail.1688.com/offer/${productId}.html`
+        });
+      }
+    });
   });
   
-  // Also check for product detail page
-  const detailMatch = window.location.href.match(/offer\/(\d{10,})/);
-  if (detailMatch && !seen.has(detailMatch[1])) {
-    const title = document.querySelector('h1, .d-title, [class*="title"]')?.textContent?.trim() || '';
-    const price = document.querySelector('.price-value, .price, [class*="price"]')?.textContent?.trim() || '';
-    const image = document.querySelector('.detail-gallery img, .main-image img')?.src || '';
+  // Also check current page URL
+  const currentMatch = window.location.href.match(/offer\/(\d{10,})/);
+  if (currentMatch && !seen.has(currentMatch[1])) {
+    const title = document.querySelector('h1, .d-title, [class*="mod-detail-title"]')?.textContent?.trim() || '';
+    const price = document.querySelector('.price-value, [class*="price"]')?.textContent?.trim() || '';
     
     products.unshift({
-      id: detailMatch[1],
-      title: title.substring(0, 80),
+      id: currentMatch[1],
+      title: title.substring(0, 80) || 'Current Product',
       price: price,
-      image: image,
+      image: '',
       url: window.location.href,
       isCurrentPage: true
     });
@@ -162,22 +251,22 @@ function updateProductList(products) {
   const container = document.getElementById('selectedProducts');
   const list = document.getElementById('productList');
   
-  if (products.length === 0) {
+  if (!products || products.length === 0) {
     container.style.display = 'none';
     return;
   }
   
   container.style.display = 'block';
-  list.innerHTML = products.slice(0, 10).map(p => `
+  list.innerHTML = products.slice(0, 8).map(p => `
     <div class="product-item">
-      ${p.image ? `<img src="${p.image}" alt="">` : '<div style="width:30px;height:30px;background:#eee;border-radius:4px;"></div>'}
-      <span class="title" title="${p.title}">${p.title || p.id}</span>
+      ${p.image ? `<img src="${p.image}" alt="" onerror="this.style.display='none'">` : '<div style="width:30px;height:30px;background:#eee;border-radius:4px;"></div>'}
+      <span class="title" title="${p.title || p.id}">${p.title || p.id}</span>
       <span class="price">${p.price || ''}</span>
     </div>
   `).join('');
   
-  if (products.length > 10) {
-    list.innerHTML += `<div class="product-item" style="justify-content:center;color:#666;">... and ${products.length - 10} more</div>`;
+  if (products.length > 8) {
+    list.innerHTML += `<div class="product-item" style="justify-content:center;color:#666;">... and ${products.length - 8} more</div>`;
   }
 }
 
@@ -186,23 +275,26 @@ function updateImportButton() {
   const btn = document.getElementById('importBtn');
   const count = selectedProducts.length;
   
-  btn.disabled = count === 0 || !serverUrl;
+  btn.disabled = count === 0;
   btn.innerHTML = count > 0 
-    ? `<span>📥</span> Import ${count} Products`
-    : `<span>📥</span> Import Selected Products`;
+    ? `<span>📥</span> Import ${count} Product${count > 1 ? 's' : ''}`
+    : `<span>📥</span> No Products Found`;
 }
 
 // Toggle select all
 function toggleSelectAll(e) {
-  // This would communicate with content script to select/deselect products
-  // For now, it just uses all scanned products
   showToast(e.target.checked ? 'All products selected' : 'Selection cleared');
 }
 
 // Import products to WaMerce
 async function importProducts() {
-  if (!serverUrl || selectedProducts.length === 0) {
+  if (selectedProducts.length === 0) {
     showToast('No products to import');
+    return;
+  }
+  
+  if (!serverUrl) {
+    showToast('Please enter WaMerce server URL first');
     return;
   }
   
@@ -228,21 +320,23 @@ async function importProducts() {
     const data = await response.json();
     
     if (data.success) {
-      showToast(`✅ Import started! Job ID: ${data.job_id}`);
+      showToast(`✅ Importing ${data.product_ids.length} products!`);
       
-      // Open dashboard to see progress
-      if (confirm('Import started! Open WaMerce to see progress?')) {
-        chrome.tabs.create({ url: `${serverUrl}/product-scraper` });
-      }
+      // Ask to open dashboard
+      setTimeout(() => {
+        if (confirm(`Import started for ${data.product_ids.length} products!\n\nOpen WaMerce to see progress?`)) {
+          chrome.tabs.create({ url: `${serverUrl}/product-scraper` });
+        }
+      }, 500);
     } else {
       throw new Error(data.detail || 'Import failed');
     }
   } catch (error) {
     console.error('Import error:', error);
-    showToast('❌ Import failed: ' + error.message);
+    showToast('❌ ' + (error.message || 'Import failed'));
   } finally {
     btn.innerHTML = originalText;
-    btn.disabled = false;
+    updateImportButton();
   }
 }
 
