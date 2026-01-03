@@ -424,6 +424,13 @@ async def start_scrape(request: ScrapeRequest, background_tasks: BackgroundTasks
     Start scraping products from a 1688 URL
     Returns a job ID to track progress
     """
+    # Validate URL
+    if not request.url or not request.url.strip():
+        raise HTTPException(status_code=400, detail="URL is required")
+    
+    if "1688.com" not in request.url.lower():
+        raise HTTPException(status_code=400, detail="URL must be a valid 1688.com URL")
+    
     import uuid
     job_id = str(uuid.uuid4())[:8]
     
