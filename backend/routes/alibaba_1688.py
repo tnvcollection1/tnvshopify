@@ -34,10 +34,15 @@ def get_db():
         _db = client['shopify_customers_db']
     return _db
 
-# 1688 API Configuration
+# 1688 API Configuration - Trade/Orders App
 ALIBABA_APP_KEY = os.environ.get("ALIBABA_1688_APP_KEY", "8585237")
 ALIBABA_APP_SECRET = os.environ.get("ALIBABA_1688_APP_SECRET", "Gin6sv4MkP")
 ALIBABA_ACCESS_TOKEN = os.environ.get("ALIBABA_1688_ACCESS_TOKEN", "")
+
+# 1688 Merchant Integration API - Product Sync App
+MERCHANT_APP_KEY = os.environ.get("ALIBABA_MERCHANT_APP_KEY", "8641239")
+MERCHANT_APP_SECRET = os.environ.get("ALIBABA_MERCHANT_APP_SECRET", "vTjzA5OAQ6")
+MERCHANT_ACCESS_TOKEN = os.environ.get("ALIBABA_MERCHANT_ACCESS_TOKEN", "9f15b655-acb8-484a-84a8-2c78747442a4")
 
 # API Base URLs
 ALIBABA_API_URL = "https://gw.open.1688.com/openapi"
