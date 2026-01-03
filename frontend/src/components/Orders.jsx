@@ -24,6 +24,7 @@ import {
   MessageCircle,
   ExternalLink,
   ShoppingCart,
+  Zap,
 } from "lucide-react";
 import {
   Table,
@@ -41,6 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import StoreSyncPanel from "./StoreSyncPanel";
+import OrderFulfillmentModal from "./OrderFulfillmentModal";
 import { useStore } from "../contexts/StoreContext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
