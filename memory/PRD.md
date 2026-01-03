@@ -102,21 +102,27 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 ## Changelog
 
 ### January 3, 2026
-- **Fulfillment Dashboard UI** - Created FulfillmentDashboard.jsx with:
+- **Shopify Product Sync** - Full sync for ALL stores implemented:
+  - `POST /api/shopify/sync-products/{store_name}` - Sync single store
+  - `POST /api/shopify/sync-products-all` - Sync ALL stores
+  - `GET /api/shopify/products` - List synced products with search
+  - `GET /api/shopify/products/sync-status` - Check sync progress
+  - **6,338 products synced** from all Shopify stores!
+- **Auto-Purchase Toggle** in Bulk Processing:
+  - Toggle to enable "Auto-purchase on 1688"
+  - Creates 1688 purchase orders automatically during bulk processing
+  - Confirmation dialog before processing
+  - Progress tracking and success/failure reporting
+- **Fulfillment Dashboard UI** (`/fulfillment` page) with:
   - Visual pipeline stages (Shopify → 1688 → DWZ56 → Delivered)
   - Stats cards for each status (Total, Pending, Processing, Purchased, etc.)
   - Pending orders sidebar with "Process" buttons
-  - **NEW: Bulk Processing** - Select All checkbox, individual checkboxes, and "Bulk Process" button
-  - Sync All Tracking and Refresh functionality
-  - Search and filter by status
+  - Bulk Processing with Select All checkbox
 - **1688 Auth Endpoints** - Added /api/1688/auth/url, /auth/test, /auth/token for re-authorization
 - **Return Status Sync** - Shopify sync now captures return_status, refunds, cancelled_at
 - Fixed Shopify sync - was working but not being triggered
 - Enabled automatic hourly Shopify sync for ALL stores (was disabled)
-- Added `sync_all_shopify_stores()` method to scheduler
-- Updated 1688 access token to working credentials
-- Enhanced fulfillment.py with complete automation pipeline
-- All 29 backend tests passing (17 original + 12 new feature tests)
+- All backend tests passing
 
 ## Roadmap
 
