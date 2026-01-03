@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      width: 350px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 400px;
+    }
+    .header {
+      background: rgba(255,255,255,0.1);
+      padding: 15px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .header h1 {
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .header p {
+      color: rgba(255,255,255,0.8);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .content {
+      padding: 15px;
+    }
+    .server-config {
+      background: rgba(255,255,255,0.95);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+    }
+    .server-config label {
+      display: block;
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+    .server-config input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .server-config input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .status-card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .status-card h3 {
+      font-size: 13px;
+      color: #333;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+    .status-indicator.connected {
+      background: #22c55e;
+    }
+    .status-indicator.error {
+      background: #ef4444;
+    }
+    .product-count {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    .product-count span {
+      font-size: 12px;
+      color: #666;
+      font-weight: normal;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn {
+      padding: 12px 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+    }
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      border: 1px solid #ddd;
+    }
+    .btn-secondary:hover {
+      background: white;
+    }
+    .selected-products {
+      background: rgba(255,255,255,0.95);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .selected-products h4 {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .product-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 11px;
+    }
+    .product-item:last-child {
+      border-bottom: none;
+    }
+    .product-item img {
+      width: 30px;
+      height: 30px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .product-item .title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .product-item .price {
+      color: #f97316;
+      font-weight: 600;
+    }
+    .options {
+      background: rgba(255,255,255,0.95);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+    }
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .option-row:last-child {
+      margin-bottom: 0;
+    }
+    .option-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+    .option-row label {
+      font-size: 12px;
+      color: #333;
+    }
+    .footer {
+      text-align: center;
+      padding: 10px;
+      color: rgba(255,255,255,0.6);
+      font-size: 10px;
+    }
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: none;
+    }
+    .toast.show {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🛒 WaMerce 1688 Importer</h1>
+    <p>Import products with auto-translation</p>
+  </div>
+  
+  <div class="content">
+    <div class="server-config">
+      <label>WaMerce Server URL</label>
+      <input type="text" id="serverUrl" placeholder="https://your-wamerce-url.com">
+    </div>
+    
+    <div class="status-card">
+      <h3>
+        <span class="status-indicator" id="statusIndicator"></span>
+        <span id="statusText">Not connected</span>
+      </h3>
+      <div class="product-count">
+        <span id="productCount">0</span> <span>products found on page</span>
+      </div>
+    </div>
+    
+    <div class="selected-products" id="selectedProducts" style="display: none;">
+      <h4>Selected Products:</h4>
+      <div id="productList"></div>
+    </div>
+    
+    <div class="options">
+      <div class="option-row">
+        <input type="checkbox" id="translateOption" checked>
+        <label for="translateOption">🌐 Translate to English</label>
+      </div>
+      <div class="option-row">
+        <input type="checkbox" id="selectAllOption">
+        <label for="selectAllOption">Select all products on page</label>
+      </div>
+    </div>
+    
+    <div class="actions">
+      <button class="btn btn-primary" id="importBtn" disabled>
+        <span>📥</span> Import Selected Products
+      </button>
+      <button class="btn btn-secondary" id="scanBtn">
+        <span>🔍</span> Scan Page for Products
+      </button>
+      <button class="btn btn-secondary" id="openDashboard">
+        <span>📊</span> Open WaMerce Dashboard
+      </button>
+    </div>
+  </div>
+  
+  <div class="footer">
+    WaMerce × 1688 Integration v1.0
+  </div>
+  
+  <div class="toast" id="toast"></div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
