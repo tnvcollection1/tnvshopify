@@ -220,6 +220,160 @@ class ManualProductEntry(BaseModel):
     store_name: Optional[str] = Field(None, description="Target Shopify store")
 
 
+class ScrapeRequest(BaseModel):
+    url: str = Field(..., description="1688 product URL to scrape")
+    auto_save: bool = Field(False, description="Automatically save to catalog")
+
+
+class BulkScrapeRequest(BaseModel):
+    urls: List[str] = Field(..., description="List of 1688 product URLs to scrape")
+    auto_save: bool = Field(True, description="Automatically save all to catalog")
+
+
+# ==================== Web Scraping Functions ====================
+
+async def scrape_1688_product(url: str) -> dict:
+    """
+    Scrape product details from 1688 product page
+    Uses multiple methods to extract data
+    """
+    import re
+    
+    # Extract product ID from URL
+    product_id = None
+    patterns = [
+        r'detail\.1688\.com/offer/(\d+)',
+        r'offer/(\d+)\.html',
+        r'offerId=(\d+)',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            product_id = match.group(1)
+            break
+    
+    if not product_id:
+        raise HTTPException(status_code=400, detail="Could not extract product ID from URL")
+    
+    # Try to fetch the page
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive',
+    }
+    
+    product_data = {
+        'product_id': product_id,
+        'url': f"https://detail.1688.com/offer/{product_id}.html",
+        'title': None,
+        'price': None,
+        'price_range': None,
+        'images': [],
+        'description': None,
+        'min_order': 1,
+        'supplier_name': None,
+        'supplier_url': None,
+        'category': None,
+        'attributes': [],
+        'skus': [],
+    }
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+            response = await client.get(url, headers=headers)
+            html = response.text
+            
+            # Extract title
+            title_patterns = [
+                r'<title>([^<]+)</title>',
+                r'"subject"\s*:\s*"([^"]+)"',
+                r'class="title[^"]*"[^>]*>([^<]+)<',
+            ]
+            for pattern in title_patterns:
+                match = re.search(pattern, html)
+                if match:
+                    title = match.group(1)
+                    # Clean up title
+                    title = title.replace('- 阿里巴巴', '').replace('-1688.com', '').strip()
+                    if title and len(title) > 5:
+                        product_data['title'] = title
+                        break
+            
+            # Extract price
+            price_patterns = [
+                r'"price"\s*:\s*"?([\d.]+)"?',
+                r'class="price[^"]*"[^>]*>¥?([\d.]+)',
+                r'¥\s*([\d.]+)',
+                r'"priceRange"\s*:\s*"([^"]+)"',
+            ]
+            for pattern in price_patterns:
+                match = re.search(pattern, html)
+                if match:
+                    price_str = match.group(1)
+                    if '-' in price_str:
+                        product_data['price_range'] = price_str
+                        # Use the lower price
+                        try:
+                            product_data['price'] = float(price_str.split('-')[0])
+                        except:
+                            pass
+                    else:
+                        try:
+                            product_data['price'] = float(price_str)
+                        except:
+                            pass
+                    break
+            
+            # Extract images
+            image_patterns = [
+                r'"originalImageURI"\s*:\s*"([^"]+)"',
+                r'"imageUrl"\s*:\s*"([^"]+)"',
+                r'data-lazy-src="(https?://[^"]+\.(?:jpg|jpeg|png|webp))"',
+                r'src="(https?://cbu01\.alicdn\.com/[^"]+\.(?:jpg|jpeg|png))"',
+            ]
+            for pattern in image_patterns:
+                matches = re.findall(pattern, html)
+                for img_url in matches[:10]:  # Limit to 10 images
+                    if img_url.startswith('//'):
+                        img_url = 'https:' + img_url
+                    if img_url not in product_data['images']:
+                        product_data['images'].append(img_url)
+            
+            # Extract supplier name
+            supplier_patterns = [
+                r'"companyName"\s*:\s*"([^"]+)"',
+                r'"shopName"\s*:\s*"([^"]+)"',
+                r'class="company-name[^"]*"[^>]*>([^<]+)<',
+            ]
+            for pattern in supplier_patterns:
+                match = re.search(pattern, html)
+                if match:
+                    product_data['supplier_name'] = match.group(1)
+                    break
+            
+            # Extract minimum order quantity
+            moq_patterns = [
+                r'"minOrderQuantity"\s*:\s*(\d+)',
+                r'"beginAmount"\s*:\s*(\d+)',
+                r'≥\s*(\d+)\s*件',
+            ]
+            for pattern in moq_patterns:
+                match = re.search(pattern, html)
+                if match:
+                    product_data['min_order'] = int(match.group(1))
+                    break
+            
+            print(f"Scraped product {product_id}: {product_data.get('title', 'No title')}")
+            
+    except Exception as e:
+        print(f"Error scraping {url}: {e}")
+        # Return partial data with just the product ID
+    
+    return product_data
+
+
 # ==================== API Endpoints ====================
 
 @router.get("/health")
