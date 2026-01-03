@@ -257,9 +257,39 @@ const ProductScraper = () => {
             Import products from 1688 by URL or product IDs and push to Shopify
           </p>
         </div>
-        <Badge className="bg-orange-500 text-white">
-          {totalProducts} Products Imported
-        </Badge>
+        <div className="flex items-center gap-3">
+          <a 
+            href={`${API}/api/extension/download`}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors"
+            download
+          >
+            <Download className="w-4 h-4" />
+            Chrome Extension
+          </a>
+          <Badge className="bg-orange-500 text-white">
+            {totalProducts} Products Imported
+          </Badge>
+        </div>
+      </div>
+
+      {/* Extension Banner */}
+      <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-4 text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="text-3xl">🧩</div>
+            <div>
+              <h3 className="font-bold">WaMerce Chrome Extension</h3>
+              <p className="text-sm text-purple-100">One-click import from any 1688 page with auto-translation</p>
+            </div>
+          </div>
+          <a 
+            href={`${API}/api/extension/download`}
+            className="px-4 py-2 bg-white text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors"
+            download
+          >
+            Download Extension
+          </a>
+        </div>
       </div>
 
       {/* Import Methods */}
