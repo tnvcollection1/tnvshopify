@@ -43,6 +43,7 @@ const ProductScraper = () => {
   
   // Batch Import state
   const [productIds, setProductIds] = useState('');
+  const [translateToEnglish, setTranslateToEnglish] = useState(true);
   
   // Shared state
   const [selectedStore, setSelectedStore] = useState('');
