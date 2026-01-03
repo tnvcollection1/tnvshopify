@@ -995,14 +995,173 @@ async def sync_all_merchant_products(
         }
 
 
+async def scrape_product_skus_from_html(product_id: str) -> dict:
+    """
+    Scrape SKU/variant info from 1688 product page HTML
+    This is a fallback when the API doesn't work
+    """
+    url = f"https://detail.1688.com/offer/{product_id}.html"
+    
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive',
+        'Referer': 'https://www.1688.com/',
+    }
+    
+    skus = []
+    attributes = {}
+    title = None
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+            response = await client.get(url, headers=headers)
+            html = response.text
+            
+            # Extract title
+            title_match = re.search(r'<title>([^<]+)</title>', html)
+            if title_match:
+                title = title_match.group(1).replace('- 阿里巴巴', '').replace('-1688.com', '').strip()
+            
+            # Method 1: Look for skuProps/skuMap in the page JSON data
+            # 1688 pages often have SKU info in __INIT_DATA or window.detailData
+            sku_patterns = [
+                r'"skuProps"\s*:\s*(\[.*?\])\s*[,}]',
+                r'"skuMap"\s*:\s*(\{.*?\})\s*[,}]',
+                r'"skuInfos"\s*:\s*(\[.*?\])\s*[,}]',
+                r'"productSkuInfos"\s*:\s*(\[.*?\])\s*[,}]',
+            ]
+            
+            # Try to find SKU properties (color, size names)
+            sku_props_match = re.search(r'"skuProps"\s*:\s*(\[.*?\])\s*[,}]', html, re.DOTALL)
+            if sku_props_match:
+                try:
+                    sku_props_str = sku_props_match.group(1)
+                    # Clean up any JS-specific syntax
+                    sku_props_str = re.sub(r'(\w+):', r'"\1":', sku_props_str)
+                    sku_props = json.loads(sku_props_str)
+                    
+                    for prop in sku_props:
+                        prop_name = prop.get('prop', prop.get('name', ''))
+                        prop_values = prop.get('value', [])
+                        if prop_name and prop_values:
+                            attributes[prop_name] = [v.get('name', v) if isinstance(v, dict) else v for v in prop_values]
+                except:
+                    pass
+            
+            # Try to find SKU map with specId
+            sku_map_match = re.search(r'"skuMap"\s*:\s*(\{[^}]*\})', html, re.DOTALL)
+            if sku_map_match:
+                try:
+                    sku_map_str = sku_map_match.group(1)
+                    sku_map = json.loads(sku_map_str)
+                    
+                    for key, value in sku_map.items():
+                        # Key is usually like "颜色:白色;尺码:XL"
+                        attrs = []
+                        for attr_pair in key.split(';'):
+                            if ':' in attr_pair:
+                                attr_name, attr_value = attr_pair.split(':', 1)
+                                attrs.append({
+                                    'attributeName': attr_name.strip(),
+                                    'attributeValue': attr_value.strip()
+                                })
+                        
+                        sku_data = {
+                            'specId': value.get('specId') or value.get('skuId'),
+                            'price': value.get('price') or value.get('discountPrice'),
+                            'stock': value.get('canBookCount') or value.get('saleCount'),
+                            'attributes': attrs,
+                        }
+                        if sku_data['specId']:
+                            skus.append(sku_data)
+                except:
+                    pass
+            
+            # Alternative: Look for globalData or detailData patterns
+            if not skus:
+                detail_data_match = re.search(r'window\.__INIT_DATA__\s*=\s*(\{.*?\})\s*;', html, re.DOTALL)
+                if detail_data_match:
+                    try:
+                        data_str = detail_data_match.group(1)
+                        # This can be complex, try to extract SKU parts
+                        spec_id_matches = re.findall(r'"specId"\s*:\s*"?(\d+)"?', data_str)
+                        for spec_id in spec_id_matches[:20]:  # Limit
+                            skus.append({
+                                'specId': spec_id,
+                                'attributes': [],
+                            })
+                    except:
+                        pass
+            
+            # If still no SKUs, try to find any specId references
+            if not skus:
+                spec_matches = re.findall(r'"specId"\s*:\s*"?(\d+)"?', html)
+                unique_specs = list(set(spec_matches))[:20]
+                for spec_id in unique_specs:
+                    skus.append({
+                        'specId': spec_id,
+                        'attributes': [],
+                    })
+            
+            # Extract attribute options from common patterns
+            if not attributes:
+                # Look for color/size options in various formats
+                color_patterns = [
+                    r'"颜色"\s*:\s*\[([^\]]+)\]',
+                    r'"color"\s*:\s*\[([^\]]+)\]',
+                    r'颜色[：:]\s*([^<\n]+)',
+                ]
+                size_patterns = [
+                    r'"尺码"\s*:\s*\[([^\]]+)\]',
+                    r'"size"\s*:\s*\[([^\]]+)\]',
+                    r'"尺寸"\s*:\s*\[([^\]]+)\]',
+                    r'尺码[：:]\s*([^<\n]+)',
+                ]
+                
+                for pattern in color_patterns:
+                    match = re.search(pattern, html, re.IGNORECASE)
+                    if match:
+                        values = re.findall(r'"([^"]+)"', match.group(1))
+                        if values:
+                            attributes['颜色'] = values
+                            break
+                
+                for pattern in size_patterns:
+                    match = re.search(pattern, html, re.IGNORECASE)
+                    if match:
+                        values = re.findall(r'"([^"]+)"', match.group(1))
+                        if values:
+                            attributes['尺码'] = values
+                            break
+            
+            print(f"Scraped SKUs for {product_id}: {len(skus)} SKUs, attributes: {list(attributes.keys())}")
+            
+    except Exception as e:
+        print(f"Error scraping SKUs from {url}: {e}")
+    
+    return {
+        'skus': skus,
+        'attributes': attributes,
+        'title': title,
+    }
+
+
 @router.get("/product-skus/{product_id}")
 async def get_product_skus(product_id: str):
     """
     Fetch product SKU/variant information from 1688
     Returns available sizes, colors, and their specIds for ordering
+    First tries the API, then falls back to HTML scraping
     """
+    skus = []
+    attributes = {}
+    api_error = None
+    
+    # Try API first
     try:
-        # Try to get product info using the trade API's getProductInfo
         params = {
             "offerId": product_id,
         }
@@ -1013,14 +1172,10 @@ async def get_product_skus(product_id: str):
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
-        skus = []
-        attributes = {}
-        
         # Parse the product info to extract SKUs
         product_info = result.get("result") or result
         
         if isinstance(product_info, dict):
-            # Try to get SKU info from various possible response structures
             sku_infos = product_info.get("skuInfos") or product_info.get("skus") or []
             
             for sku in sku_infos:
@@ -1032,51 +1187,33 @@ async def get_product_skus(product_id: str):
                 }
                 skus.append(sku_data)
             
-            # Get attribute definitions (size names, color names, etc.)
             attr_defs = product_info.get("productAttribute") or product_info.get("attributes") or []
             for attr in attr_defs:
                 attr_name = attr.get("attributeName") or attr.get("name", "")
                 attr_values = attr.get("values") or attr.get("value", [])
                 if attr_name:
                     attributes[attr_name] = attr_values
-        
-        # If direct API didn't work, try alternative approach
-        if not skus:
-            # Try the offer API
-            offer_params = {"offerId": product_id}
-            offer_result = await make_api_request(
-                "com.alibaba.trade/alibaba.trade.get.sellerOrderList",
-                {"bizType": "cn"},
-                access_token=ALIBABA_ACCESS_TOKEN
-            )
-        
-        return {
-            "success": True,
-            "product_id": product_id,
-            "skus": skus,
-            "attributes": attributes,
-            "raw_response": result if not skus else None,
-        }
-        
-    except HTTPException as e:
-        # If we can't get SKUs, return empty but allow manual entry
-        return {
-            "success": True,
-            "product_id": product_id,
-            "skus": [],
-            "attributes": {},
-            "message": "Could not fetch SKUs - enter size/color manually",
-            "error": str(e.detail),
-        }
+                    
     except Exception as e:
-        return {
-            "success": True,
-            "product_id": product_id,
-            "skus": [],
-            "attributes": {},
-            "message": "Could not fetch SKUs - enter size/color manually",
-            "error": str(e),
-        }
+        api_error = str(e)
+        print(f"API failed for product {product_id}: {api_error}")
+    
+    # If API didn't return SKUs, try HTML scraping
+    if not skus:
+        print(f"Falling back to HTML scraping for product {product_id}")
+        scraped = await scrape_product_skus_from_html(product_id)
+        skus = scraped.get('skus', [])
+        attributes = scraped.get('attributes', {}) or attributes
+    
+    return {
+        "success": True,
+        "product_id": product_id,
+        "skus": skus,
+        "attributes": attributes,
+        "message": "SKUs fetched via HTML scraping" if skus else "Could not fetch SKUs - enter size/color manually",
+        "source": "html_scrape" if skus else "none",
+        "api_error": api_error,
+    }
 
 
 class CreatePurchaseOrderRequest(BaseModel):
