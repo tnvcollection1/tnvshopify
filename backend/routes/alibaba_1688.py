@@ -1161,7 +1161,7 @@ async def get_product_skus(product_id: str):
     api_error = None
     api_source = None
     
-    # Method 1: Try alibaba.product.get API (official product API)
+    # Method 1: Try alibaba.product.simple.get (Buyer API - works for merchants you've purchased from)
     try:
         params = {
             "productID": int(product_id),
@@ -1169,12 +1169,12 @@ async def get_product_skus(product_id: str):
         }
         
         result = await make_api_request(
-            "com.alibaba.product/alibaba.product.get",
+            "com.alibaba.product/alibaba.product.simple.get",
             params,
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
-        print(f"alibaba.product.get response for {product_id}: {json.dumps(result, ensure_ascii=False)[:500]}")
+        print(f"alibaba.product.simple.get response for {product_id}: {json.dumps(result, ensure_ascii=False)[:1000]}")
         
         # Parse the product info to extract SKUs
         product_info = result.get("productInfo") or result.get("result") or result
@@ -1213,14 +1213,63 @@ async def get_product_skus(product_id: str):
                         attributes[attr_name].append(attr_value)
             
             if skus:
-                api_source = "alibaba.product.get"
-                print(f"Found {len(skus)} SKUs via alibaba.product.get")
+                api_source = "alibaba.product.simple.get"
+                print(f"Found {len(skus)} SKUs via alibaba.product.simple.get")
                     
     except Exception as e:
         api_error = str(e)
-        print(f"alibaba.product.get failed for {product_id}: {api_error}")
+        print(f"alibaba.product.simple.get failed for {product_id}: {api_error}")
     
-    # Method 2: Try cross-border API if first method didn't return SKUs
+    # Method 2: Try alibaba.product.get API (official product API - for sellers)
+    if not skus:
+        try:
+            params = {
+                "productID": int(product_id),
+                "webSite": "1688",
+            }
+            
+            result = await make_api_request(
+                "com.alibaba.product/alibaba.product.get",
+                params,
+                access_token=ALIBABA_ACCESS_TOKEN
+            )
+            
+            print(f"alibaba.product.get response for {product_id}: {json.dumps(result, ensure_ascii=False)[:500]}")
+            
+            product_info = result.get("productInfo") or result.get("result") or result
+            
+            if isinstance(product_info, dict):
+                sku_infos = product_info.get("skuInfos") or []
+                
+                for sku in sku_infos:
+                    sku_attrs = []
+                    for attr in (sku.get("attributes") or []):
+                        sku_attrs.append({
+                            "attributeName": attr.get("attributeDisplayName") or attr.get("attributeName", ""),
+                            "attributeValue": attr.get("attributeValue") or attr.get("customValueName", ""),
+                        })
+                    
+                    sku_data = {
+                        "specId": sku.get("specId"),
+                        "skuId": sku.get("skuId"),
+                        "price": sku.get("price") or sku.get("consignPrice") or sku.get("retailPrice"),
+                        "stock": sku.get("amountOnSale"),
+                        "skuCode": sku.get("skuCode") or sku.get("cargoNumber"),
+                        "attributes": sku_attrs,
+                    }
+                    if sku_data["specId"]:
+                        skus.append(sku_data)
+                
+                if skus:
+                    api_source = "alibaba.product.get"
+                    print(f"Found {len(skus)} SKUs via alibaba.product.get")
+                        
+        except Exception as e:
+            if not api_error:
+                api_error = str(e)
+            print(f"alibaba.product.get failed for {product_id}: {e}")
+    
+    # Method 3: Try cross-border API
     if not skus:
         try:
             params = {
