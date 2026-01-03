@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Textarea } from './ui/textarea';
 import {
   Select,
   SelectContent,
@@ -23,6 +25,9 @@ import {
   CheckCircle2,
   AlertCircle,
   Image as ImageIcon,
+  ListPlus,
+  Link2,
+  Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStore } from '../contexts/StoreContext';
@@ -31,13 +36,21 @@ const API = process.env.REACT_APP_BACKEND_URL;
 
 const ProductScraper = () => {
   const { stores } = useStore();
+  
+  // URL Scraping state
   const [scrapeUrl, setScrapeUrl] = useState('');
+  const [maxProducts, setMaxProducts] = useState(20);
+  
+  // Batch Import state
+  const [productIds, setProductIds] = useState('');
+  
+  // Shared state
   const [selectedStore, setSelectedStore] = useState('');
   const [createInShopify, setCreateInShopify] = useState(false);
-  const [maxProducts, setMaxProducts] = useState(20);
   const [isLoading, setIsLoading] = useState(false);
   const [currentJobId, setCurrentJobId] = useState(null);
   const [jobStatus, setJobStatus] = useState(null);
+  const [activeTab, setActiveTab] = useState('batch');
   
   const [products, setProducts] = useState([]);
   const [totalProducts, setTotalProducts] = useState(0);
@@ -92,9 +105,9 @@ const ProductScraper = () => {
             fetchProducts();
             
             if (data.job.status === 'completed') {
-              toast.success(`Scraped ${data.job.products_scraped} products! ${data.job.products_created} created in Shopify.`);
+              toast.success(`Imported ${data.job.products_scraped} products! ${data.job.products_created} created in Shopify.`);
             } else {
-              toast.error('Scraping failed: ' + (data.job.error || 'Unknown error'));
+              toast.error('Import failed: ' + (data.job.error || 'Unknown error'));
             }
           }
         }
@@ -106,7 +119,7 @@ const ProductScraper = () => {
     return () => clearInterval(pollInterval);
   }, [currentJobId, fetchProducts]);
 
-  // Start scraping
+  // Start URL scraping
   const startScrape = async () => {
     if (!scrapeUrl.trim()) {
       toast.error('Please enter a 1688 URL');
@@ -146,16 +159,58 @@ const ProductScraper = () => {
     }
   };
 
+  // Start batch import
+  const startBatchImport = async () => {
+    const ids = productIds.split(/[\n,;]+/).map(id => id.trim()).filter(Boolean);
+    
+    if (ids.length === 0) {
+      toast.error('Please enter at least one product ID or URL');
+      return;
+    }
+    
+    setIsLoading(true);
+    setJobStatus(null);
+    
+    const storeToUse = selectedStore && selectedStore !== 'none' ? selectedStore : null;
+    
+    try {
+      const response = await fetch(`${API}/api/1688-scraper/batch-import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_ids: ids,
+          store_name: createInShopify ? storeToUse : null,
+          create_in_shopify: createInShopify && storeToUse,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setCurrentJobId(data.job_id);
+        toast.info(`Importing ${data.product_ids.length} products...`);
+      } else {
+        toast.error(data.detail || 'Failed to start import');
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Import error:', error);
+      toast.error('Failed to start import');
+      setIsLoading(false);
+    }
+  };
+
   // Import single product to Shopify
   const importToShopify = async (productId) => {
-    if (!selectedStore) {
+    const storeToUse = selectedStore && selectedStore !== 'none' ? selectedStore : null;
+    if (!storeToUse) {
       toast.error('Please select a Shopify store first');
       return;
     }
     
     try {
       const response = await fetch(
-        `${API}/api/1688-scraper/import-to-shopify/${productId}?store_name=${selectedStore}`,
+        `${API}/api/1688-scraper/import-to-shopify/${productId}?store_name=${storeToUse}`,
         { method: 'POST' }
       );
       
@@ -195,111 +250,216 @@ const ProductScraper = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">1688 Product Scraper</h1>
+          <h1 className="text-2xl font-bold text-gray-900" data-testid="scraper-title">1688 Product Importer</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Scrape products from 1688 store/collection pages and import to Shopify
+            Import products from 1688 by URL or product IDs and push to Shopify
           </p>
         </div>
         <Badge className="bg-orange-500 text-white">
-          {totalProducts} Products Scraped
+          {totalProducts} Products Imported
         </Badge>
       </div>
 
-      {/* Scrape Form */}
+      {/* Import Methods */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Download className="w-5 h-5 text-orange-500" />
-            Scrape Products from 1688
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium text-gray-700 block mb-1">
-                1688 Store/Collection URL
-              </label>
-              <Input
-                value={scrapeUrl}
-                onChange={(e) => setScrapeUrl(e.target.value)}
-                placeholder="https://shop123456.1688.com or collection URL"
-                className="font-mono text-sm"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Paste the URL of a 1688 store page or product collection
-              </p>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">
-                Max Products to Scrape
-              </label>
-              <Input
-                type="number"
-                min="1"
-                max="100"
-                value={maxProducts}
-                onChange={(e) => setMaxProducts(parseInt(e.target.value) || 20)}
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">
-                Import to Shopify Store
-              </label>
-              <Select value={selectedStore} onValueChange={setSelectedStore}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select store (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Don't import</SelectItem>
-                  {stores.map((store) => (
-                    <SelectItem key={store.store_name} value={store.store_name}>
-                      {store.store_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          {selectedStore && selectedStore !== 'none' && (
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="createInShopify"
-                checked={createInShopify}
-                onChange={(e) => setCreateInShopify(e.target.checked)}
-                className="rounded border-gray-300"
-              />
-              <label htmlFor="createInShopify" className="text-sm text-gray-700">
-                Auto-create products in Shopify after scraping
-              </label>
-            </div>
-          )}
-          
-          <Button
-            onClick={startScrape}
-            disabled={isLoading || !scrapeUrl.trim()}
-            className="w-full bg-orange-500 hover:bg-orange-600"
-            data-testid="start-scraping-btn"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Scraping... {jobStatus?.progress || 0}%
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4 mr-2" />
-                Start Scraping
-              </>
-            )}
-          </Button>
+        <CardContent className="pt-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="batch" className="flex items-center gap-2" data-testid="tab-batch">
+                <ListPlus className="w-4 h-4" />
+                Batch Import by IDs
+              </TabsTrigger>
+              <TabsTrigger value="url" className="flex items-center gap-2" data-testid="tab-url">
+                <Link2 className="w-4 h-4" />
+                Scrape from URL
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Batch Import Tab */}
+            <TabsContent value="batch" className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+                <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-700">
+                  <p className="font-medium">Recommended Method</p>
+                  <p className="text-blue-600 mt-1">
+                    Paste product IDs or full URLs (one per line). Works best for products you've purchased from before.
+                  </p>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">
+                  1688 Product IDs or URLs
+                </label>
+                <Textarea
+                  value={productIds}
+                  onChange={(e) => setProductIds(e.target.value)}
+                  placeholder={`Enter product IDs or URLs, one per line:\n\n684567890123\nhttps://detail.1688.com/offer/684567890123.html\n723456789012`}
+                  className="font-mono text-sm min-h-[120px]"
+                  data-testid="product-ids-input"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Paste product IDs (12+ digits) or full 1688 product URLs. Separate by newlines, commas, or semicolons.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">
+                    Import to Shopify Store (Optional)
+                  </label>
+                  <Select value={selectedStore} onValueChange={setSelectedStore}>
+                    <SelectTrigger data-testid="store-select">
+                      <SelectValue placeholder="Select store (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Don't import to Shopify</SelectItem>
+                      {stores.map((store) => (
+                        <SelectItem key={store.store_name} value={store.store_name}>
+                          {store.store_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {selectedStore && selectedStore !== 'none' && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="createInShopifyBatch"
+                    checked={createInShopify}
+                    onChange={(e) => setCreateInShopify(e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  <label htmlFor="createInShopifyBatch" className="text-sm text-gray-700">
+                    Auto-create products in Shopify after importing
+                  </label>
+                </div>
+              )}
+              
+              <Button
+                onClick={startBatchImport}
+                disabled={isLoading || !productIds.trim()}
+                className="w-full bg-orange-500 hover:bg-orange-600"
+                data-testid="start-batch-import-btn"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Importing... {jobStatus?.progress || 0}%
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Import Products
+                  </>
+                )}
+              </Button>
+            </TabsContent>
+
+            {/* URL Scrape Tab */}
+            <TabsContent value="url" className="space-y-4">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-yellow-700">
+                  <p className="font-medium">Limited Availability</p>
+                  <p className="text-yellow-600 mt-1">
+                    Page scraping may be blocked by 1688's anti-bot protection. For best results, use the Batch Import method with direct product IDs.
+                  </p>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">
+                  1688 Store/Collection URL
+                </label>
+                <Input
+                  value={scrapeUrl}
+                  onChange={(e) => setScrapeUrl(e.target.value)}
+                  placeholder="https://shop123456.1688.com or collection URL"
+                  className="font-mono text-sm"
+                  data-testid="scrape-url-input"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Paste the URL of a 1688 store page or product collection
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">
+                    Max Products to Scrape
+                  </label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={maxProducts}
+                    onChange={(e) => setMaxProducts(parseInt(e.target.value) || 20)}
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">
+                    Import to Shopify Store
+                  </label>
+                  <Select value={selectedStore} onValueChange={setSelectedStore}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select store (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Don't import</SelectItem>
+                      {stores.map((store) => (
+                        <SelectItem key={store.store_name} value={store.store_name}>
+                          {store.store_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {selectedStore && selectedStore !== 'none' && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="createInShopify"
+                    checked={createInShopify}
+                    onChange={(e) => setCreateInShopify(e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  <label htmlFor="createInShopify" className="text-sm text-gray-700">
+                    Auto-create products in Shopify after scraping
+                  </label>
+                </div>
+              )}
+              
+              <Button
+                onClick={startScrape}
+                disabled={isLoading || !scrapeUrl.trim()}
+                className="w-full bg-orange-500 hover:bg-orange-600"
+                data-testid="start-scraping-btn"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Scraping... {jobStatus?.progress || 0}%
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4 mr-2" />
+                    Start Scraping
+                  </>
+                )}
+              </Button>
+            </TabsContent>
+          </Tabs>
           
           {/* Job Progress */}
           {jobStatus && (
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            <div className="bg-gray-50 rounded-lg p-4 space-y-2 mt-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">Status:</span>
                 <Badge className={
@@ -320,6 +480,17 @@ const ProductScraper = () => {
                   <span className="font-medium text-green-600">{jobStatus.products_created || 0}</span>
                 </div>
               )}
+              {jobStatus.errors && jobStatus.errors.length > 0 && (
+                <div className="text-sm text-red-600">
+                  <span className="font-medium">Errors ({jobStatus.errors.length}):</span>
+                  <ul className="mt-1 ml-4 list-disc text-xs">
+                    {jobStatus.errors.slice(0, 3).map((err, i) => (
+                      <li key={i}>{err}</li>
+                    ))}
+                    {jobStatus.errors.length > 3 && <li>...and {jobStatus.errors.length - 3} more</li>}
+                  </ul>
+                </div>
+              )}
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   className="bg-orange-500 h-2 rounded-full transition-all"
@@ -337,7 +508,7 @@ const ProductScraper = () => {
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
               <Package className="w-5 h-5 text-gray-500" />
-              Scraped Products ({totalProducts})
+              Imported Products ({totalProducts})
             </CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -347,9 +518,10 @@ const ProductScraper = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 w-64"
+                  data-testid="search-products"
                 />
               </div>
-              <Button variant="outline" size="sm" onClick={fetchProducts}>
+              <Button variant="outline" size="sm" onClick={fetchProducts} data-testid="refresh-btn">
                 <RefreshCw className="w-4 h-4" />
               </Button>
             </div>
@@ -363,8 +535,8 @@ const ProductScraper = () => {
           ) : products.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p>No products scraped yet</p>
-              <p className="text-sm">Enter a 1688 URL above to start scraping</p>
+              <p>No products imported yet</p>
+              <p className="text-sm">Use the form above to import products from 1688</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -372,6 +544,7 @@ const ProductScraper = () => {
                 <div
                   key={product.product_id}
                   className="border rounded-lg overflow-hidden hover:border-orange-300 transition-colors"
+                  data-testid={`product-card-${product.product_id}`}
                 >
                   {/* Product Image */}
                   <div className="aspect-square bg-gray-100 relative">
@@ -423,6 +596,7 @@ const ProductScraper = () => {
                         variant="ghost"
                         className="flex-1 h-8 text-xs"
                         onClick={() => window.open(product.url, '_blank')}
+                        data-testid={`view-btn-${product.product_id}`}
                       >
                         <ExternalLink className="w-3 h-3 mr-1" />
                         View
@@ -433,6 +607,7 @@ const ProductScraper = () => {
                           variant="ghost"
                           className="flex-1 h-8 text-xs text-green-600"
                           onClick={() => importToShopify(product.product_id)}
+                          data-testid={`import-btn-${product.product_id}`}
                         >
                           <ShoppingCart className="w-3 h-3 mr-1" />
                           Import
@@ -443,6 +618,7 @@ const ProductScraper = () => {
                         variant="ghost"
                         className="h-8 w-8 p-0 text-red-500"
                         onClick={() => deleteProduct(product.product_id)}
+                        data-testid={`delete-btn-${product.product_id}`}
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
