@@ -323,6 +323,7 @@ const FulfillmentDashboard = () => {
   const [selectedOrders, setSelectedOrders] = useState(new Set());
   const [bulkProcessing, setBulkProcessing] = useState(false);
   const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
+  const [autoPurchaseEnabled, setAutoPurchaseEnabled] = useState(false);
   
   useEffect(() => {
     fetchData();
