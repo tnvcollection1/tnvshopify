@@ -452,3 +452,66 @@ class ShopifyOrderSync:
         except Exception as e:
             logger.error(f"Error parsing product {product.id if hasattr(product, 'id') else 'unknown'}: {str(e)}")
             return None
+
+    
+    def update_order_note(self, order_id: int, note: str) -> bool:
+        """
+        Update order note/attributes with 1688 fulfillment info
+        
+        Args:
+            order_id: Shopify order ID
+            note: Note to add (e.g., "1688 Order: 123456789")
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self.session:
+            if not self.connect():
+                return False
+        
+        try:
+            order = shopify.Order.find(order_id)
+            if order:
+                # Append to existing note
+                existing_note = getattr(order, 'note', '') or ''
+                if note not in existing_note:
+                    order.note = f"{existing_note}\n{note}".strip()
+                    order.save()
+                    logger.info(f"Updated order {order_id} note with: {note}")
+                    return True
+            return False
+        except Exception as e:
+            logger.error(f"Failed to update order {order_id} note: {str(e)}")
+            return False
+    
+    def add_order_tag(self, order_id: int, tag: str) -> bool:
+        """
+        Add a tag to a Shopify order
+        
+        Args:
+            order_id: Shopify order ID
+            tag: Tag to add (e.g., "1688-ordered")
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self.session:
+            if not self.connect():
+                return False
+        
+        try:
+            order = shopify.Order.find(order_id)
+            if order:
+                existing_tags = getattr(order, 'tags', '') or ''
+                tags_list = [t.strip() for t in existing_tags.split(',') if t.strip()]
+                if tag not in tags_list:
+                    tags_list.append(tag)
+                    order.tags = ', '.join(tags_list)
+                    order.save()
+                    logger.info(f"Added tag '{tag}' to order {order_id}")
+                    return True
+            return False
+        except Exception as e:
+            logger.error(f"Failed to add tag to order {order_id}: {str(e)}")
+            return False
+
