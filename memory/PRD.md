@@ -102,17 +102,16 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 ## Changelog
 
 ### January 3, 2026 (Session 2)
-- **1688 Purchase Orders - specId Feature**: Enhanced the ordering modal to handle cases when SKU variants can't be fetched via API
-  - Added warning message explaining API limitation
-  - Added step-by-step instructions on how to find specId from 1688 product page
-  - Made specId field required for products with variants
-  - Shows clear error messaging about SPEC_NO_EXIST error
-- **Access Token Updated**: Updated 1688 access token to `70a07ab8-76fa-4f82-b568-6fcf2834b157`
+- **1688 Product SKU API Working!**: Successfully integrated `alibaba.product.simple.get` API from the Buyer SDK
+  - Now fetches SKU variants (size/color/specId) automatically for products from merchants you've purchased from
+  - Dropdown shows all available variants with price and stock info
+  - Selecting a variant auto-populates the specId for ordering
 - **Order Fulfillment Modal**: Created comprehensive order fulfillment feature for Shopify orders
   - New component `OrderFulfillmentModal.jsx` for per-order fulfillment
   - Accessible via ⚡ button in All Orders table (Dashboard)
   - Features:
     - Add 1688 links to individual products within an order
+    - Auto-fetch SKU variants via API (NEW!)
     - Track 1688 Order ID, 1688 Fulfillment ID, DWZ Fulfillment ID
     - Place orders on 1688 with size/color/specId selection
     - Save fulfillment data to database
@@ -120,6 +119,7 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
     - `GET /order/{order_id}` - Get fulfillment data for an order
     - `PUT /order/{order_id}` - Save/update fulfillment data
     - `GET /orders-with-tracking` - Get all orders with tracking data
+- **Access Token Updated**: `70a07ab8-76fa-4f82-b568-6fcf2834b157`
 
 ### January 3, 2026 (Session 1)
 - **Products Catalog Page** (`/products`) with:
