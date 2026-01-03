@@ -483,3 +483,111 @@ async def delete_scraped_product(product_id: str):
         return {"success": True, "message": "Product deleted"}
     
     raise HTTPException(status_code=404, detail="Product not found")
+
+
+@router.post("/batch-import")
+async def batch_import_products(request: BatchImportRequest, background_tasks: BackgroundTasks):
+    """
+    Import multiple products by their 1688 product IDs.
+    This uses direct product scraping (works better than page scraping).
+    
+    Accepts product IDs or full product URLs (will extract ID).
+    """
+    import uuid
+    db = get_db()
+    
+    # Extract product IDs from URLs if needed
+    product_ids = []
+    for item in request.product_ids:
+        item = item.strip()
+        if not item:
+            continue
+        # Extract ID from URL if it's a URL
+        id_match = re.search(r'offer/(\d{10,})', item)
+        if id_match:
+            product_ids.append(id_match.group(1))
+        elif item.isdigit() and len(item) >= 10:
+            product_ids.append(item)
+    
+    if not product_ids:
+        raise HTTPException(status_code=400, detail="No valid product IDs found")
+    
+    job_id = str(uuid.uuid4())[:8]
+    
+    scrape_jobs[job_id] = {
+        "status": "started",
+        "url": "batch_import",
+        "progress": 0,
+        "total": len(product_ids),
+        "products_scraped": 0,
+        "products_created": 0,
+        "errors": [],
+        "started_at": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    # Run import in background
+    background_tasks.add_task(
+        run_batch_import,
+        job_id,
+        product_ids,
+        request.store_name,
+        request.create_in_shopify
+    )
+    
+    return {
+        "success": True,
+        "job_id": job_id,
+        "message": f"Importing {len(product_ids)} products",
+        "product_ids": product_ids,
+    }
+
+
+async def run_batch_import(
+    job_id: str,
+    product_ids: List[str],
+    store_name: Optional[str],
+    create_in_shopify: bool
+):
+    """Background task to import products by ID"""
+    db = get_db()
+    
+    scrape_jobs[job_id]["status"] = "processing"
+    
+    for i, product_id in enumerate(product_ids):
+        try:
+            # Fetch product details
+            product = await scrape_product_details(product_id)
+            
+            if product and product.get("title"):
+                # Save to database
+                product["scraped_at"] = datetime.now(timezone.utc).isoformat()
+                product["source_url"] = "batch_import"
+                
+                await db.scraped_products.update_one(
+                    {"product_id": product["product_id"]},
+                    {"$set": product},
+                    upsert=True
+                )
+                
+                scrape_jobs[job_id]["products_scraped"] += 1
+                
+                # Create in Shopify if requested
+                if create_in_shopify and store_name:
+                    shopify_id = await create_shopify_product(product, store_name)
+                    if shopify_id:
+                        scrape_jobs[job_id]["products_created"] += 1
+                        await db.scraped_products.update_one(
+                            {"product_id": product["product_id"]},
+                            {"$set": {"shopify_product_id": shopify_id}}
+                        )
+            else:
+                scrape_jobs[job_id]["errors"].append(f"Product {product_id}: No data found")
+                
+        except Exception as e:
+            scrape_jobs[job_id]["errors"].append(f"Product {product_id}: {str(e)}")
+        
+        scrape_jobs[job_id]["progress"] = int((i + 1) / len(product_ids) * 100)
+    
+    scrape_jobs[job_id]["status"] = "completed"
+    scrape_jobs[job_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
+
