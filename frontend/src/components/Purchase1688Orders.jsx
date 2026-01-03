@@ -166,11 +166,95 @@ const Purchase1688Orders = () => {
   };
 
   // Open order modal for API ordering
-  const openOrderModal = (order, orderIndex) => {
+  const openOrderModal = async (order, orderIndex) => {
     setOrderModal({ open: true, order, orderIndex });
     setSelectedSize(order.size || '');
     setSelectedColor(order.color || '');
+    setSelectedSpecId('');
     setQuantity(1);
+    setProductSkus([]);
+    setAvailableSizes([]);
+    setAvailableColors([]);
+    
+    // Fetch SKUs from 1688
+    if (order.product_id_1688) {
+      setLoadingSkus(true);
+      try {
+        const res = await fetch(`${API}/api/1688/product-skus/${order.product_id_1688}`);
+        const data = await res.json();
+        
+        if (data.success && data.skus && data.skus.length > 0) {
+          setProductSkus(data.skus);
+          
+          // Extract unique sizes and colors from SKUs
+          const sizes = new Set();
+          const colors = new Set();
+          
+          data.skus.forEach(sku => {
+            if (sku.attributes) {
+              sku.attributes.forEach(attr => {
+                const name = attr.attributeName || attr.name || '';
+                const value = attr.attributeValue || attr.value || '';
+                if (name.toLowerCase().includes('size') || name.includes('尺') || name.includes('码')) {
+                  sizes.add(value);
+                }
+                if (name.toLowerCase().includes('color') || name.toLowerCase().includes('colour') || name.includes('颜色')) {
+                  colors.add(value);
+                }
+              });
+            }
+          });
+          
+          setAvailableSizes(Array.from(sizes));
+          setAvailableColors(Array.from(colors));
+        }
+        
+        // Also check attributes
+        if (data.attributes) {
+          Object.entries(data.attributes).forEach(([key, values]) => {
+            if (key.toLowerCase().includes('size') || key.includes('尺')) {
+              setAvailableSizes(prev => [...new Set([...prev, ...(Array.isArray(values) ? values : [values])])]);
+            }
+            if (key.toLowerCase().includes('color') || key.includes('颜色')) {
+              setAvailableColors(prev => [...new Set([...prev, ...(Array.isArray(values) ? values : [values])])]);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch SKUs:', error);
+      } finally {
+        setLoadingSkus(false);
+      }
+    }
+  };
+
+  // Find specId based on selected size/color
+  const findSpecId = () => {
+    if (!productSkus.length) return null;
+    
+    for (const sku of productSkus) {
+      if (!sku.attributes) continue;
+      
+      let sizeMatch = !selectedSize;
+      let colorMatch = !selectedColor;
+      
+      for (const attr of sku.attributes) {
+        const name = attr.attributeName || attr.name || '';
+        const value = attr.attributeValue || attr.value || '';
+        
+        if ((name.toLowerCase().includes('size') || name.includes('尺')) && value === selectedSize) {
+          sizeMatch = true;
+        }
+        if ((name.toLowerCase().includes('color') || name.includes('颜色')) && value === selectedColor) {
+          colorMatch = true;
+        }
+      }
+      
+      if (sizeMatch && colorMatch && sku.specId) {
+        return sku.specId;
+      }
+    }
+    return null;
   };
 
   // Place order via 1688 API
