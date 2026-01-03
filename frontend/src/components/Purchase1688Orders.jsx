@@ -665,7 +665,7 @@ const Purchase1688Orders = () => {
       {/* Order Modal - Place order via API */}
       {orderModal.open && orderModal.order && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setOrderModal({ open: false, order: null, orderIndex: null })}>
-          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-green-500" />
@@ -698,24 +698,64 @@ const Purchase1688Orders = () => {
               </p>
             </div>
             
+            {/* Loading SKUs */}
+            {loadingSkus && (
+              <div className="flex items-center justify-center py-4 text-gray-500">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                Loading product variants from 1688...
+              </div>
+            )}
+            
             {/* Size & Color Selection */}
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
-                <Input
-                  value={selectedSize}
-                  onChange={(e) => setSelectedSize(e.target.value)}
-                  placeholder="Enter size (e.g., 42, L, XL)"
-                />
+                {availableSizes.length > 0 ? (
+                  <select
+                    value={selectedSize}
+                    onChange={(e) => setSelectedSize(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                  >
+                    <option value="">Select size...</option>
+                    {availableSizes.map((size, idx) => (
+                      <option key={idx} value={size}>{size}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    value={selectedSize}
+                    onChange={(e) => setSelectedSize(e.target.value)}
+                    placeholder="Enter size (e.g., 42, L, XL)"
+                  />
+                )}
+                {orderModal.order.size && (
+                  <p className="text-xs text-gray-500 mt-1">From Excel: {orderModal.order.size}</p>
+                )}
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
-                <Input
-                  value={selectedColor}
-                  onChange={(e) => setSelectedColor(e.target.value)}
-                  placeholder="Enter color (e.g., Black, White)"
-                />
+                {availableColors.length > 0 ? (
+                  <select
+                    value={selectedColor}
+                    onChange={(e) => setSelectedColor(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                  >
+                    <option value="">Select color...</option>
+                    {availableColors.map((color, idx) => (
+                      <option key={idx} value={color}>{color}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    value={selectedColor}
+                    onChange={(e) => setSelectedColor(e.target.value)}
+                    placeholder="Enter color (e.g., Black, White)"
+                  />
+                )}
+                {orderModal.order.color && (
+                  <p className="text-xs text-gray-500 mt-1">From Excel: {orderModal.order.color}</p>
+                )}
               </div>
               
               <div>
@@ -727,12 +767,53 @@ const Purchase1688Orders = () => {
                   onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
                 />
               </div>
+              
+              {/* Show available SKUs if loaded */}
+              {productSkus.length > 0 && (
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm font-medium text-blue-800 mb-2">
+                    Available Variants ({productSkus.length})
+                  </p>
+                  <div className="max-h-32 overflow-y-auto space-y-1">
+                    {productSkus.slice(0, 10).map((sku, idx) => (
+                      <div key={idx} className="text-xs text-blue-700 flex items-center justify-between">
+                        <span>
+                          {sku.attributes?.map(a => a.attributeValue || a.value).join(' / ') || `SKU ${idx + 1}`}
+                        </span>
+                        <span className="text-blue-500">
+                          ¥{sku.price || 'N/A'}
+                        </span>
+                      </div>
+                    ))}
+                    {productSkus.length > 10 && (
+                      <p className="text-xs text-blue-500">+{productSkus.length - 10} more...</p>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Manual specId entry if needed */}
+              {productSkus.length === 0 && !loadingSkus && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    SKU/Spec ID (optional)
+                  </label>
+                  <Input
+                    value={selectedSpecId}
+                    onChange={(e) => setSelectedSpecId(e.target.value)}
+                    placeholder="Enter 1688 SKU ID if known"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty if you don't know the specId - order may need manual selection on 1688
+                  </p>
+                </div>
+              )}
             </div>
             
             {/* Shipping Info */}
             <div className="mb-6 p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
-                <strong>Ships to:</strong> Your default 1688 shipping address (DWZ56 warehouse)
+                <strong>Ships to:</strong> Your default 1688 shipping address
               </p>
             </div>
             
@@ -749,7 +830,7 @@ const Purchase1688Orders = () => {
               <Button 
                 onClick={placeOrder1688} 
                 className="bg-green-500 hover:bg-green-600"
-                disabled={ordering}
+                disabled={ordering || loadingSkus}
               >
                 {ordering ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
