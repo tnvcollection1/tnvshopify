@@ -1,15 +1,17 @@
 {
   "manifest_version": 3,
   "name": "WaMerce 1688 Importer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Import products from 1688.com to WaMerce with one click. Auto-translate Chinese to English.",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "https://*.1688.com/*",
-    "https://detail.1688.com/*"
+    "https://detail.1688.com/*",
+    "*://*.1688.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -21,9 +23,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.1688.com/*"],
+      "matches": ["*://*.1688.com/*"],
       "js": ["content.js"],
-      "css": ["content.css"]
+      "css": ["content.css"],
+      "run_at": "document_end"
     }
   ],
   "icons": {
