@@ -451,6 +451,100 @@ async def list_catalog_products(
     }
 
 
+@router.post("/add-product")
+async def add_product_manually(product: ManualProductEntry):
+    """
+    Manually add a 1688 product to the catalog
+    Use this when API quota is exhausted
+    """
+    db = get_db()
+    
+    catalog_item = {
+        "id": f"1688_{product.product_id}",
+        "source": "1688",
+        "source_id": product.product_id,
+        "source_url": f"https://detail.1688.com/offer/{product.product_id}.html",
+        "title": product.title,
+        "description": product.description,
+        "images": product.images,
+        "price": product.price,
+        "price_range": product.price_range,
+        "price_info": {"price": product.price, "priceRange": product.price_range},
+        "category": product.category,
+        "min_order": product.min_order,
+        "variants": product.variants,
+        "shop_info": {
+            "name": product.supplier_name,
+            "url": product.supplier_url,
+        },
+        "synced_at": datetime.now(timezone.utc).isoformat(),
+        "store_name": product.store_name,
+        "entry_method": "manual",
+    }
+    
+    # Upsert to catalog collection
+    await db.product_catalog_1688.update_one(
+        {"source_id": product.product_id},
+        {"$set": catalog_item},
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "message": "Product added to catalog",
+        "product": catalog_item,
+    }
+
+
+@router.delete("/catalog/{product_id}")
+async def delete_catalog_product(product_id: str):
+    """
+    Delete a product from the 1688 catalog
+    """
+    db = get_db()
+    
+    result = await db.product_catalog_1688.delete_one({"source_id": product_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    return {
+        "success": True,
+        "message": "Product deleted from catalog",
+    }
+
+
+@router.put("/catalog/{product_id}")
+async def update_catalog_product(product_id: str, updates: dict = Body(...)):
+    """
+    Update a product in the 1688 catalog
+    """
+    db = get_db()
+    
+    # Add updated timestamp
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.product_catalog_1688.update_one(
+        {"source_id": product_id},
+        {"$set": updates}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Get updated product
+    product = await db.product_catalog_1688.find_one(
+        {"source_id": product_id},
+        {"_id": 0}
+    )
+    
+    return {
+        "success": True,
+        "message": "Product updated",
+        "product": product,
+    }
+
+
 @router.post("/create-purchase-order")
 async def create_purchase_order(request: CreatePurchaseOrderRequest):
     """
