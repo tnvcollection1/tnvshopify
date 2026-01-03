@@ -411,6 +411,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/purchase-1688" 
+        element={
+          <ProtectedRoute>
+            <Purchase1688Orders />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory-clearance" 
         element={
           <ProtectedRoute>
