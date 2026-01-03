@@ -1559,6 +1559,18 @@ const Orders = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
+                            {/* Purchase on 1688 button */}
+                            {order.line_items?.some(item => extract1688ProductId(item.sku)) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openPurchase1688Modal(order)}
+                                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                                title="Purchase on 1688"
+                              >
+                                <ShoppingCart className="w-4 h-4" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
