@@ -197,9 +197,9 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 
 ## Credentials Reference
 - **1688 AppKey**: 8585237
-- **1688 AccessToken**: 19aec7b8-eaaf-4d06-89fb-459182495953
+- **1688 AccessToken**: 70a07ab8-76fa-4f82-b568-6fcf2834b157
 - **Admin Login**: admin / Sunny345!
 
 ## Known Blockers
-1. **1688 Product API**: Returns 400 error for `com.alibaba.product/alibaba.cross.syncProductInfo` - user needs to enable Product API scope in 1688 developer console
-2. **specId Required**: To place orders with size/color variants, users must manually find and enter the specId from the 1688 product page
+1. **1688 URL Scraping**: Direct URL scraping is blocked by 1688's anti-bot protection. Use Batch Import by product IDs instead.
+2. **Product Images**: Images from alicdn.com may not display due to CORS restrictions. Backend proxy could be implemented as enhancement.
