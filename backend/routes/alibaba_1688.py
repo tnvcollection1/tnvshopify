@@ -499,14 +499,246 @@ async def scrape_products_bulk(request: BulkScrapeRequest):
     return results
 
 
+# ==================== Merchant Integration APIs ====================
+
+async def make_merchant_api_request(api_name: str, params: dict = None) -> dict:
+    """Make HTTP request to 1688 Merchant Integration API"""
+    params = params or {}
+    
+    # Build API path
+    api_path = f"param2/1/{api_name}/{MERCHANT_APP_KEY}"
+    
+    # Add access token
+    request_params = dict(params)
+    request_params['access_token'] = MERCHANT_ACCESS_TOKEN
+    
+    # Add timestamp
+    request_params['_aop_timestamp'] = str(int(time.time() * 1000))
+    
+    # Remove None values
+    request_params = {k: str(v) for k, v in request_params.items() if v is not None and str(v) != ''}
+    
+    # Generate signature using HMAC-SHA1
+    signature = generate_sign(api_path, request_params, MERCHANT_APP_SECRET)
+    request_params['_aop_signature'] = signature
+    
+    # Build full URL
+    url = f"{ALIBABA_API_URL}/{api_path}"
+    
+    print(f"Merchant API URL: {url}")
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                url,
+                data=request_params,
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+            
+            print(f"Merchant API Response Status: {response.status_code}")
+            print(f"Merchant API Response: {response.text[:500]}")
+            
+            response.raise_for_status()
+            return response.json()
+            
+    except Exception as e:
+        print(f"Merchant API Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Merchant API request failed: {str(e)}")
+
+
+@router.get("/merchant/info")
+async def get_merchant_info(shop_url: str = Query(..., description="1688 shop URL")):
+    """
+    Get information about a merchant/supplier using the purchased API
+    API: alibaba.member.getRelationUserInfo
+    """
+    try:
+        # Extract member ID from shop URL if needed
+        import re
+        member_id = None
+        
+        # Try to extract from URL patterns like: shop123456.1688.com or winport/123456
+        patterns = [
+            r'shop(\d+)\.1688\.com',
+            r'winport/(\d+)',
+            r'memberId=(\d+)',
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, shop_url)
+            if match:
+                member_id = match.group(1)
+                break
+        
+        params = {}
+        if member_id:
+            params['memberId'] = member_id
+        else:
+            params['loginId'] = shop_url  # Use URL as loginId
+        
+        result = await make_merchant_api_request(
+            "cn.alibaba.open/alibaba.member.getRelationUserInfo",
+            params
+        )
+        
+        return {
+            "success": True,
+            "merchant": result.get("result") or result,
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+
+@router.get("/merchant/products")
+async def get_merchant_products(
+    member_id: str = Query(..., description="Merchant/Supplier member ID"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=50),
+):
+    """
+    Get products from a specific merchant/supplier
+    API: Get information on purchased merchant products
+    """
+    db = get_db()
+    
+    try:
+        params = {
+            "memberId": member_id,
+            "pageNo": str(page),
+            "pageSize": str(page_size),
+        }
+        
+        # Try the merchant product API
+        result = await make_merchant_api_request(
+            "cn.alibaba.open/alibaba.product.getByMemberId",
+            params
+        )
+        
+        products = result.get("result", {}).get("products", []) or result.get("products", []) or []
+        
+        return {
+            "success": True,
+            "page": page,
+            "page_size": page_size,
+            "total": len(products),
+            "products": products,
+            "raw_response": result,
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to fetch merchant products",
+        }
+
+
+@router.post("/merchant/sync-all")
+async def sync_all_merchant_products(
+    member_id: str = Body(..., description="Merchant/Supplier member ID"),
+    shop_name: str = Body(None, description="Shop name for reference"),
+):
+    """
+    Sync all products from a merchant to the catalog
+    """
+    db = get_db()
+    
+    try:
+        all_products = []
+        page = 1
+        page_size = 50
+        
+        while True:
+            params = {
+                "memberId": member_id,
+                "pageNo": str(page),
+                "pageSize": str(page_size),
+            }
+            
+            result = await make_merchant_api_request(
+                "cn.alibaba.open/alibaba.product.getByMemberId",
+                params
+            )
+            
+            products = result.get("result", {}).get("products", []) or result.get("products", []) or []
+            
+            if not products:
+                break
+                
+            all_products.extend(products)
+            
+            if len(products) < page_size:
+                break
+                
+            page += 1
+            
+            # Safety limit
+            if page > 100:
+                break
+        
+        # Save all products to catalog
+        saved_count = 0
+        for product in all_products:
+            product_id = product.get("productId") or product.get("offerId")
+            if not product_id:
+                continue
+                
+            catalog_item = {
+                "id": f"1688_{product_id}",
+                "source": "1688",
+                "source_id": str(product_id),
+                "source_url": f"https://detail.1688.com/offer/{product_id}.html",
+                "title": product.get("subject") or product.get("title"),
+                "description": product.get("description"),
+                "images": product.get("images", []) or [product.get("imageUrl")],
+                "price": product.get("priceInfo", {}).get("price") or product.get("price"),
+                "price_range": product.get("priceRange"),
+                "price_info": product.get("priceInfo"),
+                "category": product.get("categoryName"),
+                "min_order": product.get("saleInfo", {}).get("minOrderQuantity", 1),
+                "shop_info": {
+                    "name": shop_name or product.get("shopName"),
+                    "id": member_id,
+                },
+                "synced_at": datetime.now(timezone.utc).isoformat(),
+                "entry_method": "merchant_api_sync",
+            }
+            
+            await db.product_catalog_1688.update_one(
+                {"source_id": str(product_id)},
+                {"$set": catalog_item},
+                upsert=True
+            )
+            saved_count += 1
+        
+        return {
+            "success": True,
+            "message": f"Synced {saved_count} products from merchant",
+            "total_found": len(all_products),
+            "saved": saved_count,
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to sync merchant products",
+        }
+
+
 @router.get("/health")
 async def health_check():
     """Check API connectivity and configuration"""
     return {
         "status": "ok",
         "app_key": ALIBABA_APP_KEY,
+        "merchant_app_key": MERCHANT_APP_KEY,
         "has_app_secret": bool(ALIBABA_APP_SECRET),
         "has_access_token": bool(ALIBABA_ACCESS_TOKEN),
+        "has_merchant_token": bool(MERCHANT_ACCESS_TOKEN),
         "has_tmapi_token": bool(TMAPI_TOKEN),
         "api_url": ALIBABA_API_URL,
     }
