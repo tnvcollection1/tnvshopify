@@ -1036,3 +1036,89 @@ async def get_orders_with_tracking(
         "total_pages": (total + limit - 1) // limit,
     }
 
+
+
+@router.post("/sync-to-shopify/{order_id}")
+async def sync_fulfillment_to_shopify(order_id: str):
+    """
+    Sync 1688 fulfillment info to Shopify order (adds note and tag)
+    """
+    from shopify_sync import ShopifyOrderSync
+    
+    db = get_db()
+    
+    # Get fulfillment data
+    fulfillment = await db.order_fulfillment.find_one(
+        {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": order_id},
+        ]},
+        {"_id": 0}
+    )
+    
+    if not fulfillment:
+        raise HTTPException(status_code=404, detail="No fulfillment data found for this order")
+    
+    # Get store credentials
+    store_name = fulfillment.get("store_name")
+    if not store_name:
+        raise HTTPException(status_code=400, detail="Store name not set in fulfillment data")
+    
+    store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
+    if not store or not store.get("shopify_domain") or not store.get("shopify_token"):
+        raise HTTPException(status_code=400, detail=f"Shopify not configured for store: {store_name}")
+    
+    # Find the Shopify order ID
+    customer = await db.customers.find_one(
+        {"order_number": int(order_id), "store_name": store_name},
+        {"_id": 0, "order_id": 1, "shopify_order_id": 1}
+    )
+    
+    if not customer:
+        raise HTTPException(status_code=404, detail=f"Shopify order #{order_id} not found in store {store_name}")
+    
+    shopify_order_id = customer.get("shopify_order_id") or customer.get("order_id")
+    if not shopify_order_id:
+        raise HTTPException(status_code=400, detail="Shopify order ID not found")
+    
+    # Build the note
+    note_parts = []
+    if fulfillment.get("order_1688_id"):
+        note_parts.append(f"1688 Order: {fulfillment['order_1688_id']}")
+    if fulfillment.get("fulfillment_1688_id"):
+        note_parts.append(f"1688 Fulfillment: {fulfillment['fulfillment_1688_id']}")
+    if fulfillment.get("dwz_fulfillment_id"):
+        note_parts.append(f"DWZ Tracking: {fulfillment['dwz_fulfillment_id']}")
+    
+    if not note_parts:
+        return {
+            "success": False,
+            "message": "No fulfillment info to sync"
+        }
+    
+    note = " | ".join(note_parts)
+    
+    # Connect to Shopify and update
+    sync = ShopifyOrderSync(store["shopify_domain"], store["shopify_token"])
+    
+    try:
+        # Update note
+        note_updated = sync.update_order_note(int(shopify_order_id), note)
+        
+        # Add tag
+        tag_updated = sync.add_order_tag(int(shopify_order_id), "1688-ordered")
+        
+        sync.disconnect()
+        
+        return {
+            "success": True,
+            "message": "Fulfillment info synced to Shopify",
+            "shopify_order_id": shopify_order_id,
+            "note_added": note,
+            "tag_added": "1688-ordered" if tag_updated else None,
+        }
+        
+    except Exception as e:
+        sync.disconnect()
+        raise HTTPException(status_code=500, detail=f"Failed to sync to Shopify: {str(e)}")
+
