@@ -548,15 +548,26 @@ async def run_batch_import(
     store_name: Optional[str],
     create_in_shopify: bool
 ):
-    """Background task to import products by ID"""
+    """Background task to import products by ID using 1688 API"""
     db = get_db()
     
     scrape_jobs[job_id]["status"] = "processing"
     
     for i, product_id in enumerate(product_ids):
         try:
-            # Fetch product details
-            product = await scrape_product_details(product_id)
+            product = None
+            
+            # Method 1: Try to use 1688 API first (works for products from suppliers you've ordered from)
+            try:
+                api_product = await fetch_product_via_api(product_id)
+                if api_product and api_product.get("title"):
+                    product = api_product
+            except Exception as api_error:
+                print(f"API fetch failed for {product_id}: {api_error}")
+            
+            # Method 2: Fall back to HTML scraping if API fails
+            if not product:
+                product = await scrape_product_details(product_id)
             
             if product and product.get("title"):
                 # Save to database
@@ -581,7 +592,7 @@ async def run_batch_import(
                             {"$set": {"shopify_product_id": shopify_id}}
                         )
             else:
-                scrape_jobs[job_id]["errors"].append(f"Product {product_id}: No data found")
+                scrape_jobs[job_id]["errors"].append(f"Product {product_id}: No data found (may not be from your suppliers)")
                 
         except Exception as e:
             scrape_jobs[job_id]["errors"].append(f"Product {product_id}: {str(e)}")
