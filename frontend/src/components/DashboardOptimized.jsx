@@ -56,6 +56,7 @@ const DashboardOptimized = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrderFulfillment, setSelectedOrderFulfillment] = useState(null);
   
   // Fulfillment modal state
   const [fulfillmentModal, setFulfillmentModal] = useState({ open: false, order: null });
