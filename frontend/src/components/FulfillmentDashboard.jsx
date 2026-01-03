@@ -378,6 +378,66 @@ const FulfillmentDashboard = () => {
     }
   };
   
+  // Bulk selection handlers
+  const handleSelectOrder = (customerId, isSelected) => {
+    setSelectedOrders(prev => {
+      const newSet = new Set(prev);
+      if (isSelected) {
+        newSet.add(customerId);
+      } else {
+        newSet.delete(customerId);
+      }
+      return newSet;
+    });
+  };
+  
+  const handleSelectAll = () => {
+    if (selectedOrders.size === pendingOrders.length) {
+      setSelectedOrders(new Set());
+    } else {
+      setSelectedOrders(new Set(pendingOrders.map(o => o.customer_id)));
+    }
+  };
+  
+  const handleBulkProcess = async () => {
+    if (selectedOrders.size === 0) {
+      alert('Please select orders to process');
+      return;
+    }
+    
+    setBulkProcessing(true);
+    setBulkProgress({ current: 0, total: selectedOrders.size });
+    
+    const orderIds = Array.from(selectedOrders);
+    let processed = 0;
+    let failed = 0;
+    
+    for (const customerId of orderIds) {
+      try {
+        const res = await fetch(`${API}/api/fulfillment/process-new-order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customer_id: customerId, auto_purchase: false }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          processed++;
+        } else {
+          failed++;
+        }
+      } catch (error) {
+        failed++;
+      }
+      setBulkProgress(prev => ({ ...prev, current: prev.current + 1 }));
+    }
+    
+    setBulkProcessing(false);
+    setSelectedOrders(new Set());
+    fetchData();
+    
+    alert(`Bulk processing complete!\n✅ Processed: ${processed}\n❌ Failed: ${failed}`);
+  };
+  
   const handleProcessOrder = async (customerId) => {
     try {
       const res = await fetch(`${API}/api/fulfillment/process-new-order`, {
