@@ -65,6 +65,118 @@ HEADERS = {
     'Referer': 'https://www.1688.com/',
 }
 
+# 1688 API Configuration
+import hmac
+import hashlib
+import time as _time
+
+ALIBABA_APP_KEY = os.environ.get("ALIBABA_1688_APP_KEY", "8585237")
+ALIBABA_APP_SECRET = os.environ.get("ALIBABA_1688_APP_SECRET", "Gin6sv4MkP")
+ALIBABA_ACCESS_TOKEN = os.environ.get("ALIBABA_1688_ACCESS_TOKEN", "")
+ALIBABA_API_URL = "https://gw.open.1688.com/openapi"
+
+
+def generate_sign(api_path: str, params: dict, secret: str) -> str:
+    """Generate HMAC-SHA1 signature for 1688 API"""
+    enc_arr = []
+    for key, value in params.items():
+        if value is not None and str(value) != '':
+            enc_arr.append(f"{key}{value}")
+    enc_arr.sort()
+    params_str = ''.join(enc_arr)
+    sign_str = api_path + params_str
+    hmac_obj = hmac.new(
+        secret.encode('utf-8'),
+        sign_str.encode('utf-8'),
+        hashlib.sha1
+    )
+    return hmac_obj.hexdigest().upper()
+
+
+async def fetch_product_via_api(product_id: str) -> Optional[Dict]:
+    """Fetch product details using 1688 API (works for products from suppliers you've ordered from)"""
+    api_path = f"param2/1/com.alibaba.product/alibaba.product.simple.get/{ALIBABA_APP_KEY}"
+    
+    params = {
+        "productID": int(product_id),
+        "webSite": "1688",
+        "access_token": ALIBABA_ACCESS_TOKEN,
+        "_aop_timestamp": str(int(_time.time() * 1000)),
+    }
+    
+    params = {k: str(v) for k, v in params.items() if v is not None and str(v) != ''}
+    signature = generate_sign(api_path, params, ALIBABA_APP_SECRET)
+    params['_aop_signature'] = signature
+    
+    url = f"{ALIBABA_API_URL}/{api_path}"
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                url,
+                data=params,
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+            response.raise_for_status()
+            result = response.json()
+            
+            product_info = result.get("productInfo") or result.get("result") or result
+            
+            if isinstance(product_info, dict) and product_info.get("subject"):
+                # Extract images
+                images = []
+                image_list = product_info.get("image", {}).get("images", [])
+                for img in image_list[:10]:
+                    img_url = img if isinstance(img, str) else img.get("url", "")
+                    if img_url:
+                        if img_url.startswith("//"):
+                            img_url = "https:" + img_url
+                        images.append(img_url)
+                
+                # Extract price
+                price = 0
+                sale_info = product_info.get("saleInfo", {})
+                price_ranges = sale_info.get("priceRange", [])
+                if price_ranges:
+                    price = float(price_ranges[0].get("price", 0))
+                
+                # Extract SKU variants
+                variants = []
+                sku_infos = product_info.get("skuInfos", [])
+                for sku in sku_infos:
+                    sku_attrs = []
+                    for attr in (sku.get("attributes") or []):
+                        sku_attrs.append({
+                            "attributeName": attr.get("attributeDisplayName") or attr.get("attributeName", ""),
+                            "attributeValue": attr.get("attributeValue") or attr.get("customValueName", ""),
+                        })
+                    variants.append({
+                        "specId": sku.get("specId"),
+                        "price": sku.get("price") or sku.get("consignPrice"),
+                        "stock": sku.get("amountOnSale"),
+                        "attributes": sku_attrs,
+                    })
+                
+                return {
+                    "product_id": product_id,
+                    "url": f"https://detail.1688.com/offer/{product_id}.html",
+                    "title": product_info.get("subject"),
+                    "price": price,
+                    "price_range": None,
+                    "images": images,
+                    "description": product_info.get("description"),
+                    "seller_name": product_info.get("supplierLoginId"),
+                    "min_order": sale_info.get("minOrderQuantity", 1),
+                    "variants": variants,
+                    "source": "api",
+                }
+                
+    except Exception as e:
+        print(f"API fetch failed for {product_id}: {e}")
+        return None
+    
+    return None
+
 
 async def extract_product_ids_from_page(html: str) -> List[str]:
     """Extract product IDs from a 1688 page HTML"""
