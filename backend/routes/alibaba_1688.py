@@ -639,8 +639,12 @@ async def list_1688_orders(
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
-        orders = result.get("result", {}).get("result", []) or result.get("result", []) or []
-        total = result.get("result", {}).get("totalCount", 0) or result.get("totalCount", 0)
+        # The result is directly a list of orders
+        orders = result.get("result", [])
+        if isinstance(orders, dict):
+            orders = orders.get("result", []) or orders.get("orders", [])
+        
+        total = len(orders) if isinstance(orders, list) else 0
         
         return {
             "success": True,
@@ -648,7 +652,6 @@ async def list_1688_orders(
             "page_size": page_size,
             "total": total,
             "orders": orders,
-            "raw_response": result,
         }
         
     except Exception as e:
