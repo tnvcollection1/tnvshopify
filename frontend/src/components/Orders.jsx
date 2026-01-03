@@ -1796,6 +1796,18 @@ const Orders = () => {
           </div>
         </div>
       )}
+
+      {/* Order Fulfillment Modal */}
+      {fulfillmentModal.open && fulfillmentModal.order && (
+        <OrderFulfillmentModal
+          order={fulfillmentModal.order}
+          onClose={closeFulfillmentModal}
+          onUpdate={() => {
+            fetchOrders();
+            closeFulfillmentModal();
+          }}
+        />
+      )}
     </div>
   );
 };
