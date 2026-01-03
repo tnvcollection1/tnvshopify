@@ -376,6 +376,124 @@ async def scrape_1688_product(url: str) -> dict:
 
 # ==================== API Endpoints ====================
 
+@router.post("/scrape")
+async def scrape_product(request: ScrapeRequest):
+    """
+    Auto-scrape product details from a 1688 URL
+    Extracts title, price, images, supplier info automatically
+    """
+    db = get_db()
+    
+    try:
+        product_data = await scrape_1688_product(request.url)
+        
+        if request.auto_save and product_data.get('product_id'):
+            # Save to catalog
+            catalog_item = {
+                "id": f"1688_{product_data['product_id']}",
+                "source": "1688",
+                "source_id": product_data['product_id'],
+                "source_url": product_data['url'],
+                "title": product_data.get('title') or f"Product {product_data['product_id']}",
+                "description": product_data.get('description'),
+                "images": product_data.get('images', []),
+                "price": product_data.get('price'),
+                "price_range": product_data.get('price_range'),
+                "price_info": {"price": product_data.get('price'), "priceRange": product_data.get('price_range')},
+                "category": product_data.get('category'),
+                "min_order": product_data.get('min_order', 1),
+                "variants": product_data.get('skus', []),
+                "shop_info": {
+                    "name": product_data.get('supplier_name'),
+                    "url": product_data.get('supplier_url'),
+                },
+                "synced_at": datetime.now(timezone.utc).isoformat(),
+                "entry_method": "auto_scrape",
+            }
+            
+            await db.product_catalog_1688.update_one(
+                {"source_id": product_data['product_id']},
+                {"$set": catalog_item},
+                upsert=True
+            )
+            
+            return {
+                "success": True,
+                "message": "Product scraped and saved to catalog",
+                "product": catalog_item,
+            }
+        
+        return {
+            "success": True,
+            "message": "Product scraped successfully",
+            "product": product_data,
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to scrape product",
+        }
+
+
+@router.post("/scrape-bulk")
+async def scrape_products_bulk(request: BulkScrapeRequest):
+    """
+    Scrape multiple products from a list of 1688 URLs
+    """
+    db = get_db()
+    
+    results = {
+        "success": True,
+        "total": len(request.urls),
+        "scraped": 0,
+        "failed": 0,
+        "products": [],
+        "errors": [],
+    }
+    
+    for url in request.urls:
+        try:
+            product_data = await scrape_1688_product(url)
+            
+            if request.auto_save and product_data.get('product_id'):
+                catalog_item = {
+                    "id": f"1688_{product_data['product_id']}",
+                    "source": "1688",
+                    "source_id": product_data['product_id'],
+                    "source_url": product_data['url'],
+                    "title": product_data.get('title') or f"Product {product_data['product_id']}",
+                    "description": product_data.get('description'),
+                    "images": product_data.get('images', []),
+                    "price": product_data.get('price'),
+                    "price_range": product_data.get('price_range'),
+                    "price_info": {"price": product_data.get('price'), "priceRange": product_data.get('price_range')},
+                    "category": product_data.get('category'),
+                    "min_order": product_data.get('min_order', 1),
+                    "shop_info": {
+                        "name": product_data.get('supplier_name'),
+                    },
+                    "synced_at": datetime.now(timezone.utc).isoformat(),
+                    "entry_method": "auto_scrape_bulk",
+                }
+                
+                await db.product_catalog_1688.update_one(
+                    {"source_id": product_data['product_id']},
+                    {"$set": catalog_item},
+                    upsert=True
+                )
+            
+            results['scraped'] += 1
+            results['products'].append(product_data)
+            
+        except Exception as e:
+            results['failed'] += 1
+            results['errors'].append({"url": url, "error": str(e)})
+    
+    return results
+
+
 @router.get("/health")
 async def health_check():
     """Check API connectivity and configuration"""
