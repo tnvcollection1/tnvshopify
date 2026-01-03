@@ -116,14 +116,16 @@ const ProductScraper = () => {
     setIsLoading(true);
     setJobStatus(null);
     
+    const storeToUse = selectedStore && selectedStore !== 'none' ? selectedStore : null;
+    
     try {
       const response = await fetch(`${API}/api/1688-scraper/scrape`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url: scrapeUrl,
-          store_name: createInShopify ? selectedStore : null,
-          create_in_shopify: createInShopify && selectedStore,
+          store_name: createInShopify ? storeToUse : null,
+          create_in_shopify: createInShopify && storeToUse,
           max_products: maxProducts,
         }),
       });
