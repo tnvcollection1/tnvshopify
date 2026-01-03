@@ -151,6 +151,12 @@ const Sidebar = () => {
       path: '/fulfillment',
       badge: 'New'
     },
+    { 
+      icon: Box, 
+      label: 'Products', 
+      path: '/products',
+      badge: 'New'
+    },
     { icon: BarChart3, label: 'Analytics', path: '/reports' },
     { 
       icon: Megaphone, 
