@@ -642,6 +642,47 @@ const FulfillmentDashboard = () => {
               </Badge>
             </div>
             
+            {/* Bulk Actions */}
+            {pendingOrders.length > 0 && (
+              <Card className="bg-green-50 border-green-200">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.size === pendingOrders.length && pendingOrders.length > 0}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 rounded border-gray-300 text-green-600"
+                      />
+                      <span className="font-medium">Select All ({pendingOrders.length})</span>
+                    </label>
+                    <span className="text-xs text-green-700">
+                      {selectedOrders.size} selected
+                    </span>
+                  </div>
+                  
+                  <Button
+                    onClick={handleBulkProcess}
+                    disabled={selectedOrders.size === 0 || bulkProcessing}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    data-testid="bulk-process-btn"
+                  >
+                    {bulkProcessing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing {bulkProgress.current}/{bulkProgress.total}...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4 mr-2" />
+                        Bulk Process ({selectedOrders.size})
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+            
             {pendingOrders.length === 0 ? (
               <Card className="py-8">
                 <CardContent className="text-center">
@@ -650,17 +691,19 @@ const FulfillmentDashboard = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
-                {pendingOrders.slice(0, 15).map((order) => (
+              <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
+                {pendingOrders.slice(0, 20).map((order) => (
                   <PendingOrderCard 
                     key={order.customer_id} 
                     order={order}
                     onProcess={handleProcessOrder}
+                    selected={selectedOrders.has(order.customer_id)}
+                    onSelect={handleSelectOrder}
                   />
                 ))}
-                {pendingOrders.length > 15 && (
+                {pendingOrders.length > 20 && (
                   <p className="text-center text-sm text-gray-500 py-2">
-                    +{pendingOrders.length - 15} more orders
+                    +{pendingOrders.length - 20} more orders
                   </p>
                 )}
               </div>
