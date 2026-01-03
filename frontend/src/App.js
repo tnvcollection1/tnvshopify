@@ -420,6 +420,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/product-scraper" 
+        element={
+          <ProtectedRoute>
+            <ProductScraper />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory-clearance" 
         element={
           <ProtectedRoute>
