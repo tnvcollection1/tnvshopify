@@ -107,6 +107,14 @@ const DashboardOptimized = () => {
     }
   }, [selectedStore]);
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const fetchRecentOrders = useCallback(async () => {
     try {
       const params = { limit: 50 };
@@ -114,7 +122,7 @@ const DashboardOptimized = () => {
       if (filters.fulfillmentStatus !== 'all') params.fulfillment_status = filters.fulfillmentStatus;
       if (filters.paymentStatus !== 'all') params.payment_status = filters.paymentStatus;
       if (filters.deliveryStatus !== 'all') params.delivery_status = filters.deliveryStatus;
-      if (searchQuery) params.search = searchQuery;
+      if (debouncedSearch) params.search = debouncedSearch;
       
       const response = await axios.get(`${API}/customers`, { params });
       const orders = response.data?.customers || response.data || [];
@@ -123,7 +131,7 @@ const DashboardOptimized = () => {
       console.error('Error fetching recent orders:', error);
       setRecentOrders([]);
     }
-  }, [selectedStore, filters, searchQuery]);
+  }, [selectedStore, filters, debouncedSearch]);
 
   // Fetch fulfillment data for selected order
   const fetchOrderFulfillment = useCallback(async (orderNumber) => {
