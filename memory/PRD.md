@@ -102,27 +102,23 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 ## Changelog
 
 ### January 3, 2026
-- **Shopify Product Sync** - Full sync for ALL stores implemented:
-  - `POST /api/shopify/sync-products/{store_name}` - Sync single store
+- **Products Catalog Page** (`/products`) with:
+  - Grid/List view for 6,338 Shopify products
+  - Search, filter by store, filter by link status
+  - **Link to 1688** - Link any Shopify product to its 1688 supplier
+  - View linked products on 1688 with one click
+  - Stats cards showing products per store
+- **1688 Token Updated** - New token `19aec7b8-eaaf-4d06-89fb-459182495953`
+- **Shopify Product Sync** - Full sync for ALL stores:
   - `POST /api/shopify/sync-products-all` - Sync ALL stores
-  - `GET /api/shopify/products` - List synced products with search
-  - `GET /api/shopify/products/sync-status` - Check sync progress
+  - `GET /api/shopify/products` - List with search & filters
   - **6,338 products synced** from all Shopify stores!
 - **Auto-Purchase Toggle** in Bulk Processing:
   - Toggle to enable "Auto-purchase on 1688"
-  - Creates 1688 purchase orders automatically during bulk processing
-  - Confirmation dialog before processing
-  - Progress tracking and success/failure reporting
-- **Fulfillment Dashboard UI** (`/fulfillment` page) with:
-  - Visual pipeline stages (Shopify → 1688 → DWZ56 → Delivered)
-  - Stats cards for each status (Total, Pending, Processing, Purchased, etc.)
-  - Pending orders sidebar with "Process" buttons
-  - Bulk Processing with Select All checkbox
-- **1688 Auth Endpoints** - Added /api/1688/auth/url, /auth/test, /auth/token for re-authorization
-- **Return Status Sync** - Shopify sync now captures return_status, refunds, cancelled_at
-- Fixed Shopify sync - was working but not being triggered
-- Enabled automatic hourly Shopify sync for ALL stores (was disabled)
-- All backend tests passing
+  - Creates 1688 purchase orders automatically
+- **Fulfillment Dashboard UI** (`/fulfillment`)
+- **Return Status Sync** - Shopify sync captures return_status, refunds
+- Enabled automatic hourly Shopify sync for ALL stores
 
 ## Roadmap
 
