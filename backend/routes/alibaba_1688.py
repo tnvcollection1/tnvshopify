@@ -48,26 +48,24 @@ ALIBABA_AUTH_URL = "https://auth.1688.com/oauth/authorize"
 def generate_sign(api_path: str, params: dict, secret: str) -> str:
     """
     Generate signature for 1688 API
-    Sign = HEX(MD5(secret + api_path + key1+urlencode(value1) + key2+urlencode(value2) + ... + secret))
+    Sign = HEX(MD5(secret + api_path + key1value1key2value2... + secret))
     Parameters must be sorted by ASCII order
+    Values should NOT be URL encoded for signature
     """
-    from urllib.parse import quote
-    
     # Sort parameters alphabetically (ASCII order)
     sorted_params = sorted(params.items(), key=lambda x: x[0])
     
-    # Build sign string: secret + api_path + sorted params + secret
+    # Build sign string: secret + api_path + sorted params (key+value) + secret
     sign_str = secret + api_path
     
     for key, value in sorted_params:
         if value is not None and str(value) != '':
-            # URL encode the value
-            encoded_value = quote(str(value), safe='')
-            sign_str += key + encoded_value
+            # Do NOT URL encode - use raw value
+            sign_str += key + str(value)
     
     sign_str += secret
     
-    print(f"Sign string (preview): {sign_str[:200]}...")
+    print(f"Sign string: {sign_str[:300]}...")
     
     # MD5 hash and convert to uppercase hex
     sign = hashlib.md5(sign_str.encode('utf-8')).hexdigest().upper()
@@ -79,7 +77,6 @@ def generate_sign(api_path: str, params: dict, secret: str) -> str:
 
 def build_api_request(api_name: str, params: dict, access_token: str = None):
     """Build the API request with proper signature for 1688"""
-    from urllib.parse import quote
     
     # API path format: param2/1/namespace/api_name/app_key
     api_path = f"param2/1/{api_name}/{ALIBABA_APP_KEY}"
@@ -94,7 +91,7 @@ def build_api_request(api_name: str, params: dict, access_token: str = None):
     # Remove None values and convert to string
     request_params = {k: str(v) for k, v in request_params.items() if v is not None and str(v) != ''}
     
-    # Generate signature
+    # Generate signature (using raw values, not URL encoded)
     signature = generate_sign(api_path, request_params, ALIBABA_APP_SECRET)
     request_params['_aop_signature'] = signature
     
