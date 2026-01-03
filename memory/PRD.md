@@ -101,7 +101,16 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 
 ## Changelog
 
-### January 3, 2026
+### January 3, 2026 (Session 2)
+- **1688 Purchase Orders - specId Feature**: Enhanced the ordering modal to handle cases when SKU variants can't be fetched via API
+  - Added warning message explaining API limitation
+  - Added step-by-step instructions on how to find specId from 1688 product page
+  - Made specId field required for products with variants
+  - Shows clear error messaging about SPEC_NO_EXIST error
+- **Access Token Updated**: Updated 1688 access token to `19aec7b8-eaaf-4d06-89fb-459182495953`
+- **HTML Scraping Fallback**: Added HTML scraping function for SKU extraction (limited by 1688's JavaScript rendering)
+
+### January 3, 2026 (Session 1)
 - **Products Catalog Page** (`/products`) with:
   - Grid/List view for 6,338 Shopify products
   - Search, filter by store, filter by link status
