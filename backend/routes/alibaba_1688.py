@@ -8,7 +8,7 @@ Direct integration for:
 API Documentation: https://open.1688.com/api/overview.htm
 """
 
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query, Body, File, UploadFile
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
@@ -18,6 +18,8 @@ import os
 import json
 import time
 import hmac
+import re
+import io
 from urllib.parse import urlencode, quote
 from motor.motor_asyncio import AsyncIOMotorClient
 
