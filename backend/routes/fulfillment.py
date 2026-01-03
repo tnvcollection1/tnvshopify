@@ -922,3 +922,117 @@ async def get_fulfillment_stats():
         "success": True,
         "stats": stats,
     }
+
+
+
+class OrderFulfillmentData(BaseModel):
+    shopify_order_id: str = Field(..., description="Shopify order ID or number")
+    store_name: Optional[str] = Field(None, description="Store name")
+    order_1688_id: Optional[str] = Field(None, description="1688 order ID")
+    fulfillment_1688_id: Optional[str] = Field(None, description="1688 fulfillment/tracking ID")
+    dwz_fulfillment_id: Optional[str] = Field(None, description="DWZ fulfillment/tracking ID")
+    line_items: Optional[List[dict]] = Field(None, description="Line items with 1688 links")
+
+
+@router.get("/order/{order_id}")
+async def get_order_fulfillment(order_id: str):
+    """
+    Get fulfillment data for a specific order
+    """
+    db = get_db()
+    
+    # Try to find by order_number or shopify_order_id
+    fulfillment = await db.order_fulfillment.find_one(
+        {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": order_id},
+        ]},
+        {"_id": 0}
+    )
+    
+    if fulfillment:
+        return {
+            "success": True,
+            "fulfillment": fulfillment,
+        }
+    
+    return {
+        "success": False,
+        "message": "No fulfillment data found",
+        "fulfillment": None,
+    }
+
+
+@router.put("/order/{order_id}")
+async def save_order_fulfillment(order_id: str, data: OrderFulfillmentData):
+    """
+    Save or update fulfillment data for an order
+    """
+    db = get_db()
+    
+    # Prepare the document
+    doc = {
+        "shopify_order_id": data.shopify_order_id,
+        "order_number": order_id,
+        "store_name": data.store_name,
+        "order_1688_id": data.order_1688_id,
+        "fulfillment_1688_id": data.fulfillment_1688_id,
+        "dwz_fulfillment_id": data.dwz_fulfillment_id,
+        "line_items": data.line_items or [],
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    # Upsert the fulfillment data
+    result = await db.order_fulfillment.update_one(
+        {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": order_id},
+        ]},
+        {
+            "$set": doc,
+            "$setOnInsert": {"created_at": datetime.now(timezone.utc).isoformat()}
+        },
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "message": "Fulfillment data saved",
+        "upserted": result.upserted_id is not None,
+        "modified": result.modified_count > 0,
+    }
+
+
+@router.get("/orders-with-tracking")
+async def get_orders_with_tracking(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    store_name: Optional[str] = None,
+):
+    """
+    Get orders that have fulfillment tracking data
+    """
+    db = get_db()
+    
+    query = {}
+    if store_name:
+        query["store_name"] = store_name
+    
+    skip = (page - 1) * limit
+    
+    orders = await db.order_fulfillment.find(
+        query,
+        {"_id": 0}
+    ).sort("updated_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.order_fulfillment.count_documents(query)
+    
+    return {
+        "success": True,
+        "orders": orders,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total + limit - 1) // limit,
+    }
+
