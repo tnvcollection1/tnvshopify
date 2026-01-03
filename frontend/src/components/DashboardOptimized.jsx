@@ -1062,7 +1062,7 @@ Thank you for your understanding.`;
       )}
 
       {/* Order Detail Modal - Shopify Style */}
-      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+      <Dialog open={!!selectedOrder} onOpenChange={() => { setSelectedOrder(null); setSelectedOrderFulfillment(null); }}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           {selectedOrder && (
             <>
@@ -1105,6 +1105,58 @@ Thank you for your understanding.`;
                         <p className="text-sm text-gray-500">No items</p>
                       )}
                     </div>
+                  </div>
+
+                  {/* 1688 Fulfillment Info */}
+                  <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                    <h3 className="font-medium text-orange-800 mb-4 flex items-center gap-2">
+                      <Package className="w-4 h-4" />
+                      1688 Fulfillment
+                    </h3>
+                    {selectedOrderFulfillment?.order_1688_id ? (
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">1688 Order:</span>
+                          <code className="bg-orange-100 px-2 py-1 rounded text-orange-800 font-mono text-xs">
+                            {selectedOrderFulfillment.order_1688_id}
+                          </code>
+                        </div>
+                        {selectedOrderFulfillment.fulfillment_1688_id && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">1688 Tracking:</span>
+                            <code className="bg-orange-100 px-2 py-1 rounded text-orange-800 font-mono text-xs">
+                              {selectedOrderFulfillment.fulfillment_1688_id}
+                            </code>
+                          </div>
+                        )}
+                        {selectedOrderFulfillment.dwz_fulfillment_id && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">DWZ Tracking:</span>
+                            <code className="bg-blue-100 px-2 py-1 rounded text-blue-800 font-mono text-xs">
+                              {selectedOrderFulfillment.dwz_fulfillment_id}
+                            </code>
+                          </div>
+                        )}
+                        <div className="pt-2 mt-2 border-t border-orange-200">
+                          <Badge className="bg-green-500 text-white">Ordered on 1688</Badge>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-sm text-gray-600">No 1688 order linked yet.</p>
+                        <Button
+                          size="sm"
+                          className="w-full bg-orange-500 hover:bg-orange-600"
+                          onClick={() => {
+                            setSelectedOrder(null);
+                            setFulfillmentModal({ open: true, order: selectedOrder });
+                          }}
+                        >
+                          <Zap className="w-4 h-4 mr-2" />
+                          Order on 1688
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Payment Summary */}
