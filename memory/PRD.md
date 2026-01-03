@@ -170,14 +170,20 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 - [x] Enable automatic hourly sync
 - [x] Frontend UI for fulfillment pipeline
 - [x] 1688 Purchase Orders with specId handling (UI complete, needs valid specIds from user)
+- [x] 1688 Product Importer - Import products by ID or URL
 
 ### P1 (High)
+- [ ] Auto-create products in Shopify from imported 1688 products (extend importer)
+- [ ] Auto-sync 1688 fulfillment status to Shopify orders
+- [ ] Bulk order from dashboard (select multiple → order on 1688 in batch)
 - [ ] Fix 1688 Product API authorization (user action needed on 1688 console - requires Product API scope)
 - [x] Sync return/refund status from Shopify
 - [x] Sync Shopify Products (6,338 products)
 - [ ] User login issues (credentials work but user reports problems - may need browser cache clear)
 
 ### P2 (Medium)
+- [ ] Investigate missing Shopify orders #29206 & #29477
+- [ ] Fix Shopify OAuth redirect_uri for new stores
 - [ ] Refactor sync to use order.id instead of customer_id
 - [ ] Background job queue (Celery) for long-running tasks
 - [ ] Refactor server.py to separate route files
