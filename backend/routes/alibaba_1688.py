@@ -1154,49 +1154,107 @@ async def get_product_skus(product_id: str):
     """
     Fetch product SKU/variant information from 1688
     Returns available sizes, colors, and their specIds for ordering
-    First tries the API, then falls back to HTML scraping
+    Tries multiple API methods, then falls back to HTML scraping
     """
     skus = []
     attributes = {}
     api_error = None
+    api_source = None
     
-    # Try API first
+    # Method 1: Try alibaba.product.get API (official product API)
     try:
         params = {
-            "offerId": product_id,
+            "productID": int(product_id),
+            "webSite": "1688",
         }
         
         result = await make_api_request(
-            "com.alibaba.product/alibaba.cross.syncProductInfo",
+            "com.alibaba.product/alibaba.product.get",
             params,
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
+        print(f"alibaba.product.get response for {product_id}: {json.dumps(result, ensure_ascii=False)[:500]}")
+        
         # Parse the product info to extract SKUs
-        product_info = result.get("result") or result
+        product_info = result.get("productInfo") or result.get("result") or result
         
         if isinstance(product_info, dict):
-            sku_infos = product_info.get("skuInfos") or product_info.get("skus") or []
+            sku_infos = product_info.get("skuInfos") or []
             
             for sku in sku_infos:
+                # Parse attributes from the SKU
+                sku_attrs = []
+                for attr in (sku.get("attributes") or []):
+                    sku_attrs.append({
+                        "attributeName": attr.get("attributeDisplayName") or attr.get("attributeName", ""),
+                        "attributeValue": attr.get("attributeValue") or attr.get("customValueName", ""),
+                    })
+                
                 sku_data = {
-                    "specId": sku.get("specId") or sku.get("skuId"),
-                    "price": sku.get("price") or sku.get("consignPrice"),
-                    "stock": sku.get("amountOnSale") or sku.get("canBookCount"),
-                    "attributes": sku.get("attributes") or [],
+                    "specId": sku.get("specId"),
+                    "skuId": sku.get("skuId"),
+                    "price": sku.get("price") or sku.get("consignPrice") or sku.get("retailPrice"),
+                    "stock": sku.get("amountOnSale"),
+                    "skuCode": sku.get("skuCode") or sku.get("cargoNumber"),
+                    "attributes": sku_attrs,
                 }
-                skus.append(sku_data)
+                if sku_data["specId"]:
+                    skus.append(sku_data)
             
-            attr_defs = product_info.get("productAttribute") or product_info.get("attributes") or []
-            for attr in attr_defs:
-                attr_name = attr.get("attributeName") or attr.get("name", "")
-                attr_values = attr.get("values") or attr.get("value", [])
+            # Get product attributes
+            for attr in (product_info.get("attributes") or []):
+                attr_name = attr.get("attributeName", "")
+                attr_value = attr.get("value", "")
                 if attr_name:
-                    attributes[attr_name] = attr_values
+                    if attr_name not in attributes:
+                        attributes[attr_name] = []
+                    if attr_value:
+                        attributes[attr_name].append(attr_value)
+            
+            if skus:
+                api_source = "alibaba.product.get"
+                print(f"Found {len(skus)} SKUs via alibaba.product.get")
                     
     except Exception as e:
         api_error = str(e)
-        print(f"API failed for product {product_id}: {api_error}")
+        print(f"alibaba.product.get failed for {product_id}: {api_error}")
+    
+    # Method 2: Try cross-border API if first method didn't return SKUs
+    if not skus:
+        try:
+            params = {
+                "offerId": product_id,
+            }
+            
+            result = await make_api_request(
+                "com.alibaba.product/alibaba.cross.syncProductInfo",
+                params,
+                access_token=ALIBABA_ACCESS_TOKEN
+            )
+            
+            product_info = result.get("result") or result
+            
+            if isinstance(product_info, dict):
+                sku_infos = product_info.get("skuInfos") or product_info.get("skus") or []
+                
+                for sku in sku_infos:
+                    sku_data = {
+                        "specId": sku.get("specId") or sku.get("skuId"),
+                        "price": sku.get("price") or sku.get("consignPrice"),
+                        "stock": sku.get("amountOnSale") or sku.get("canBookCount"),
+                        "attributes": sku.get("attributes") or [],
+                    }
+                    if sku_data["specId"]:
+                        skus.append(sku_data)
+                
+                if skus:
+                    api_source = "alibaba.cross.syncProductInfo"
+                        
+        except Exception as e:
+            if not api_error:
+                api_error = str(e)
+            print(f"cross.syncProductInfo also failed for {product_id}: {e}")
     
     # If API didn't return SKUs, try HTML scraping
     if not skus:
