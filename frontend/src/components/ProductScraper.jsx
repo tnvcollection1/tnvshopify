@@ -250,7 +250,7 @@ const ProductScraper = () => {
                   <SelectValue placeholder="Select store (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Don't import</SelectItem>
+                  <SelectItem value="none">Don't import</SelectItem>
                   {stores.map((store) => (
                     <SelectItem key={store.store_name} value={store.store_name}>
                       {store.store_name}
