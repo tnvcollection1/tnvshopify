@@ -1621,6 +1621,7 @@ async def sync_all_store_products(background_tasks: BackgroundTasks):
 async def get_shopify_products(
     store_name: str = None,
     search: str = None,
+    link_status: str = None,
     page: int = 1,
     page_size: int = 50
 ):
@@ -1634,6 +1635,13 @@ async def get_shopify_products(
                 {"title": {"$regex": search, "$options": "i"}},
                 {"handle": {"$regex": search, "$options": "i"}},
                 {"vendor": {"$regex": search, "$options": "i"}},
+            ]
+        if link_status == 'linked':
+            query["linked_1688_product_id"] = {"$exists": True, "$ne": None}
+        elif link_status == 'unlinked':
+            query["$or"] = [
+                {"linked_1688_product_id": {"$exists": False}},
+                {"linked_1688_product_id": None}
             ]
         
         skip = (page - 1) * page_size
