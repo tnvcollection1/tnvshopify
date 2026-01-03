@@ -23,11 +23,13 @@ import {
   MapPin,
   MessageCircle,
   DollarSign,
-  Truck
+  Truck,
+  Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import LoadingSpinner from './LoadingSpinner';
+import OrderFulfillmentModal from './OrderFulfillmentModal';
 import { useStore } from '../contexts/StoreContext';
 import { formatCurrency, getCurrency } from '../utils/currency';
 
