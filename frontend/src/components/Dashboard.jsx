@@ -1623,18 +1623,32 @@ const Dashboard = () => {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => openWhatsApp(customer.phone, customer.country_code, customer.customer_id, `${customer.first_name} ${customer.last_name}`.trim())}
-                            disabled={!customer.phone || sendingMessages}
-                            className="hover:bg-green-50 hover:text-green-700"
-                            data-testid={`whatsapp-btn-${customer.customer_id}`}
-                          >
-                            <MessageCircle className="h-4 w-4 mr-1" />
-                            WhatsApp
-                            <ExternalLink className="h-3 w-3 ml-1" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            {/* Purchase on 1688 button */}
+                            {customer.line_items?.some(item => extract1688ProductId(item.sku)) && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => openPurchase1688Modal(customer)}
+                                className="hover:bg-orange-50 hover:text-orange-700"
+                                title="Purchase on 1688"
+                              >
+                                <ShoppingCart className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => openWhatsApp(customer.phone, customer.country_code, customer.customer_id, `${customer.first_name} ${customer.last_name}`.trim())}
+                              disabled={!customer.phone || sendingMessages}
+                              className="hover:bg-green-50 hover:text-green-700"
+                              data-testid={`whatsapp-btn-${customer.customer_id}`}
+                            >
+                              <MessageCircle className="h-4 w-4 mr-1" />
+                              WhatsApp
+                              <ExternalLink className="h-3 w-3 ml-1" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
