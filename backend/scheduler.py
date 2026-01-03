@@ -113,6 +113,73 @@ class AutoSyncScheduler:
             self.is_running = False
             logger.info("🛑 Background scheduler stopped")
     
+    def sync_all_shopify_stores(self):
+        """
+        Sync Shopify orders for ALL configured stores
+        Runs in separate thread, calls API endpoint for each store
+        """
+        try:
+            logger.info("🔄 [AUTO] Starting Shopify orders sync for ALL stores...")
+            
+            import requests
+            
+            # Get all configured stores from database
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            stores = loop.run_until_complete(self._get_configured_stores())
+            loop.close()
+            
+            if not stores:
+                logger.info("ℹ️ [AUTO] No Shopify stores configured")
+                return
+            
+            total_orders = 0
+            stores_synced = 0
+            
+            for store in stores:
+                store_name = store.get('store_name')
+                if not store_name:
+                    continue
+                    
+                try:
+                    logger.info(f"🔄 [AUTO] Syncing store: {store_name}...")
+                    response = requests.post(
+                        f"http://localhost:8001/api/shopify/sync/{store_name}?days_back=7",
+                        timeout=180  # 3 minutes timeout per store
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data.get('success'):
+                            orders = data.get('orders_synced', 0)
+                            total_orders += orders
+                            stores_synced += 1
+                            logger.info(f"✅ [AUTO] {store_name}: {orders} orders synced")
+                        else:
+                            logger.error(f"❌ [AUTO] {store_name} sync failed: {data.get('detail', 'Unknown error')}")
+                    else:
+                        logger.error(f"❌ [AUTO] {store_name} HTTP error: {response.status_code}")
+                except requests.exceptions.Timeout:
+                    logger.warning(f"⚠️ [AUTO] {store_name} sync timeout")
+                except Exception as req_error:
+                    logger.error(f"❌ [AUTO] {store_name} error: {str(req_error)}")
+            
+            logger.info(f"✅ [AUTO] Shopify sync completed: {stores_synced} stores, {total_orders} total orders")
+                
+        except Exception as e:
+            logger.error(f"❌ [AUTO] Shopify sync error: {str(e)}")
+    
+    async def _get_configured_stores(self):
+        """Get all stores with Shopify credentials configured"""
+        try:
+            stores = await db.stores.find({
+                "shopify_domain": {"$ne": None, "$exists": True},
+                "shopify_token": {"$ne": None, "$exists": True}
+            }, {"_id": 0, "store_name": 1, "shopify_domain": 1}).to_list(20)
+            return stores
+        except Exception as e:
+            logger.error(f"Error getting stores: {str(e)}")
+            return []
+    
     def sync_shopify_orders(self):
         """
         Sync Shopify orders for all configured stores
