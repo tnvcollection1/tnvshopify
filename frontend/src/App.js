@@ -384,6 +384,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/1688-products" 
+        element={
+          <ProtectedRoute>
+            <Products1688 />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory-clearance" 
         element={
           <ProtectedRoute>
