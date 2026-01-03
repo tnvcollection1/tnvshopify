@@ -124,6 +124,30 @@ const DashboardOptimized = () => {
     }
   }, [selectedStore, filters, searchQuery]);
 
+  // Fetch fulfillment data for selected order
+  const fetchOrderFulfillment = useCallback(async (orderNumber) => {
+    try {
+      const response = await axios.get(`${API}/fulfillment/order/${orderNumber}`);
+      if (response.data?.success && response.data?.fulfillment) {
+        setSelectedOrderFulfillment(response.data.fulfillment);
+      } else {
+        setSelectedOrderFulfillment(null);
+      }
+    } catch (error) {
+      console.error('Error fetching fulfillment data:', error);
+      setSelectedOrderFulfillment(null);
+    }
+  }, []);
+
+  // Handle order selection
+  const handleOrderSelect = useCallback((order) => {
+    setSelectedOrder(order);
+    setSelectedOrderFulfillment(null);
+    if (order?.order_number) {
+      fetchOrderFulfillment(order.order_number);
+    }
+  }, [fetchOrderFulfillment]);
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
