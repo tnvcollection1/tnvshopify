@@ -43,6 +43,7 @@ import Products1688 from "@/components/Products1688";
 import FulfillmentDashboard from "@/components/FulfillmentDashboard";
 import ProductsCatalog from "@/components/ProductsCatalog";
 import Purchase1688Orders from "@/components/Purchase1688Orders";
+import ProductScraper from "@/components/ProductScraper";
 import WhatsAppInboxStandalone from "@/components/WhatsAppInboxStandalone";
 import WhatsAppEmbeddedSignup from "@/components/WhatsAppEmbeddedSignup";
 import InventoryClearance from "@/components/InventoryClearance";
