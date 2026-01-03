@@ -123,14 +123,21 @@ async def fetch_product_via_api(product_id: str) -> Optional[Dict]:
             product_info = result.get("productInfo") or result.get("result") or result
             
             if isinstance(product_info, dict) and product_info.get("subject"):
-                # Extract images
+                # Extract images - handle various formats from 1688 API
                 images = []
-                image_list = product_info.get("image", {}).get("images", [])
+                image_data = product_info.get("image", {})
+                image_list = image_data.get("images", [])
+                
                 for img in image_list[:10]:
                     img_url = img if isinstance(img, str) else img.get("url", "")
                     if img_url:
+                        # Fix protocol-relative and partial URLs
                         if img_url.startswith("//"):
                             img_url = "https:" + img_url
+                        elif img_url.startswith("img/") or img_url.startswith("ibank/"):
+                            img_url = "https://cbu01.alicdn.com/" + img_url
+                        elif not img_url.startswith("http"):
+                            img_url = "https://cbu01.alicdn.com/" + img_url
                         images.append(img_url)
                 
                 # Extract price
