@@ -1132,7 +1132,11 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
             "quantity": float(request.quantity),
         }
         
-        # If size/color specified, we'll add them as notes
+        # Add specId if provided (required for variants with size/color)
+        if request.spec_id:
+            cargo["specId"] = request.spec_id
+        
+        # Build order notes
         order_notes = request.notes or ""
         if request.size:
             order_notes += f" | Size: {request.size}"
