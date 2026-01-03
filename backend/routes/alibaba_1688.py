@@ -1262,14 +1262,16 @@ async def get_product_skus(product_id: str):
         scraped = await scrape_product_skus_from_html(product_id)
         skus = scraped.get('skus', [])
         attributes = scraped.get('attributes', {}) or attributes
+        if skus:
+            api_source = "html_scrape"
     
     return {
         "success": True,
         "product_id": product_id,
         "skus": skus,
         "attributes": attributes,
-        "message": "SKUs fetched via HTML scraping" if skus else "Could not fetch SKUs - enter size/color manually",
-        "source": "html_scrape" if skus else "none",
+        "message": f"SKUs fetched via {api_source}" if skus else "Could not fetch SKUs - enter size/color manually",
+        "source": api_source or "none",
         "api_error": api_error,
     }
 
