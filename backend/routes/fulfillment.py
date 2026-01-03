@@ -1070,7 +1070,10 @@ async def sync_fulfillment_to_shopify(order_id: str):
     
     # Find the Shopify order ID
     customer = await db.customers.find_one(
-        {"order_number": int(order_id), "store_name": store_name},
+        {"$or": [
+            {"order_number": int(order_id), "store_name": store_name},
+            {"order_number": str(order_id), "store_name": store_name},
+        ]},
         {"_id": 0, "order_id": 1, "shopify_order_id": 1}
     )
     
