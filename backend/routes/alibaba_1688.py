@@ -1020,7 +1020,10 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
-        addresses = address_result.get("result", {}).get("receiveAddressItems", [])
+        # Handle nested response structure
+        result_data = address_result.get("result", {})
+        addresses = result_data.get("receiveAddressItems", [])
+        
         if not addresses:
             return {
                 "success": False,
@@ -1029,7 +1032,14 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
             }
         
         default_address = addresses[0]
-        address_id = default_address.get("addressId")
+        address_id = default_address.get("id") or default_address.get("addressId")
+        
+        if not address_id:
+            return {
+                "success": False,
+                "error": "Could not find address ID",
+                "message": "Invalid address configuration on 1688"
+            }
         
         # Build cargo list - the products to order
         cargo = {
@@ -1037,8 +1047,7 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
             "quantity": float(request.quantity),
         }
         
-        # If size/color specified, we need to find the specId
-        # For now, we'll add them as notes since specId lookup requires product info
+        # If size/color specified, we'll add them as notes
         order_notes = request.notes or ""
         if request.size:
             order_notes += f" | Size: {request.size}"
@@ -1047,10 +1056,10 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
         
         # Create order params
         create_params = {
-            "addressParam": json.dumps({"addressId": address_id}),
+            "addressParam": json.dumps({"addressId": int(address_id)}),
             "cargoParamList": json.dumps([cargo]),
             "flow": "general",
-            "message": order_notes.strip(),
+            "message": order_notes.strip() if order_notes.strip() else f"Order for product {request.product_id}",
         }
         
         # Create the order
@@ -1060,7 +1069,11 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
-        alibaba_order_id = create_result.get("result", {}).get("orderId") or create_result.get("orderId")
+        alibaba_order_id = None
+        if create_result.get("result"):
+            alibaba_order_id = create_result["result"].get("orderId")
+        if not alibaba_order_id:
+            alibaba_order_id = create_result.get("orderId")
         
         if alibaba_order_id:
             # Save to database for tracking
@@ -1086,8 +1099,8 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
             }
         else:
             # Order creation failed
-            error_msg = create_result.get("errorMessage") or create_result.get("error_message") or "Unknown error"
-            error_code = create_result.get("errorCode") or create_result.get("error_code")
+            error_msg = create_result.get("message") or create_result.get("errorMessage") or create_result.get("error_message") or "Unknown error"
+            error_code = create_result.get("code") or create_result.get("errorCode") or create_result.get("error_code")
             
             return {
                 "success": False,
