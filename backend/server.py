@@ -47,6 +47,7 @@ from routes.super_admin import super_admin_router, set_database as set_super_adm
 from routes.dwz56 import router as dwz56_router
 from routes.alibaba_1688 import router as alibaba_1688_router
 from routes.fulfillment import router as fulfillment_router
+from routes.product_scraper import router as product_scraper_router
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
