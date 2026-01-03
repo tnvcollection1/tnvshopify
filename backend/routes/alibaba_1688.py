@@ -1084,6 +1084,7 @@ class CreatePurchaseOrderRequest(BaseModel):
     quantity: int = Field(1, ge=1, description="Quantity to order")
     size: Optional[str] = Field(None, description="Product size")
     color: Optional[str] = Field(None, description="Product color")
+    spec_id: Optional[str] = Field(None, description="1688 SKU/specId for specific variant")
     shopify_order_id: Optional[str] = Field(None, description="Related Shopify order ID")
     notes: Optional[str] = Field(None, description="Order notes")
 
