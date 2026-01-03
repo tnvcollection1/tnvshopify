@@ -6292,3 +6292,44 @@ async def startup_auto_sync():
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+# Browser Extension Download
+from fastapi.responses import FileResponse
+import zipfile
+
+@app.get("/api/extension/download")
+async def download_extension():
+    """Download the WaMerce 1688 browser extension"""
+    extension_path = Path("/app/wamerce-1688-extension.zip")
+    if not extension_path.exists():
+        raise HTTPException(status_code=404, detail="Extension not found")
+    
+    return FileResponse(
+        extension_path,
+        media_type="application/zip",
+        filename="wamerce-1688-extension.zip"
+    )
+
+@app.get("/api/extension/info")
+async def get_extension_info():
+    """Get extension installation instructions"""
+    return {
+        "name": "WaMerce 1688 Importer",
+        "version": "1.0.0",
+        "description": "Import products from 1688.com with one click. Auto-translate Chinese to English.",
+        "features": [
+            "One-click import from any 1688 product page",
+            "Bulk import from store/collection pages",
+            "Auto-translate Chinese to English",
+            "Floating button on all 1688 pages",
+            "Import buttons on product cards"
+        ],
+        "installation": {
+            "step1": "Download the extension ZIP file",
+            "step2": "Open Chrome and go to chrome://extensions/",
+            "step3": "Enable 'Developer mode' in the top right",
+            "step4": "Click 'Load unpacked' and select the extracted folder",
+            "step5": "Click the extension icon and enter your WaMerce server URL"
+        },
+        "download_url": "/api/extension/download"
+    }
