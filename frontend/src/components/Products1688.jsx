@@ -18,6 +18,9 @@ import {
   AlertCircle,
   Image as ImageIcon,
   Link as LinkIcon,
+  Zap,
+  Loader2,
+  Download,
 } from 'lucide-react';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -27,11 +30,15 @@ const Products1688 = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showScrapeModal, setShowScrapeModal] = useState(false);
   const [apiHealth, setApiHealth] = useState(null);
   const [orders1688, setOrders1688] = useState([]);
   const [showOrdersModal, setShowOrdersModal] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [scraping, setScraping] = useState(false);
+  const [scrapeResult, setScrapeResult] = useState(null);
+  const [bulkUrls, setBulkUrls] = useState('');
   
   // Form state for adding new product
   const [newProduct, setNewProduct] = useState({
