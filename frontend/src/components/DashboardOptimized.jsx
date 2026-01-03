@@ -1220,6 +1220,18 @@ Thank you for your understanding.`;
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Order Fulfillment Modal */}
+      {fulfillmentModal.open && fulfillmentModal.order && (
+        <OrderFulfillmentModal
+          order={fulfillmentModal.order}
+          onClose={() => setFulfillmentModal({ open: false, order: null })}
+          onUpdate={() => {
+            fetchStats();
+            setFulfillmentModal({ open: false, order: null });
+          }}
+        />
+      )}
     </div>
   );
 };
