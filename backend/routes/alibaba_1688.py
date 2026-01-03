@@ -204,6 +204,22 @@ class ProductSyncRequest(BaseModel):
     store_name: Optional[str] = Field(None, description="Target Shopify store")
 
 
+class ManualProductEntry(BaseModel):
+    """For manually adding products when API quota is exhausted"""
+    product_id: str = Field(..., description="1688 Product ID (from URL)")
+    title: str = Field(..., description="Product title")
+    description: Optional[str] = Field(None, description="Product description")
+    price: float = Field(..., description="Product price in CNY")
+    price_range: Optional[str] = Field(None, description="Price range e.g. '10-50'")
+    images: List[str] = Field(default=[], description="List of image URLs")
+    category: Optional[str] = Field(None, description="Product category")
+    min_order: int = Field(1, description="Minimum order quantity")
+    supplier_name: Optional[str] = Field(None, description="Supplier/Shop name")
+    supplier_url: Optional[str] = Field(None, description="Supplier shop URL")
+    variants: Optional[List[dict]] = Field(default=[], description="Product variants/SKUs")
+    store_name: Optional[str] = Field(None, description="Target Shopify store")
+
+
 # ==================== API Endpoints ====================
 
 @router.get("/health")
