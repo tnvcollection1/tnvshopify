@@ -82,6 +82,29 @@ const Dashboard = () => {
   const [schedulerStatus, setSchedulerStatus] = useState(null);
   const [isResetting, setIsResetting] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [purchase1688Modal, setPurchase1688Modal] = useState({ open: false, customer: null });
+
+  // Extract 1688 product ID from SKU (12-digit number)
+  const extract1688ProductId = (sku) => {
+    if (!sku) return null;
+    const match = String(sku).match(/(\d{12})/);
+    return match ? match[1] : null;
+  };
+
+  // Open 1688 purchase modal for a customer/order
+  const openPurchase1688Modal = (customer) => {
+    setPurchase1688Modal({ open: true, customer });
+  };
+
+  // Close 1688 purchase modal
+  const closePurchase1688Modal = () => {
+    setPurchase1688Modal({ open: false, customer: null });
+  };
+
+  // Open 1688 product in new tab
+  const open1688Product = (productId) => {
+    window.open(`https://detail.1688.com/offer/${productId}.html`, '_blank');
+  };
   
   const handleLogout = () => {
     logout();
