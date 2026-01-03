@@ -185,7 +185,11 @@ class ShopifyOrderSync:
                 'fulfillment_status': order.fulfillment_status or 'unfulfilled',
                 'line_items': [],
                 'fulfillments': [],
-                'tracking_info': None
+                'tracking_info': None,
+                'refunds': [],
+                'return_status': None,  # New field for return tracking
+                'cancelled_at': getattr(order, 'cancelled_at', None),
+                'cancel_reason': getattr(order, 'cancel_reason', None),
             }
             
             # Extract line items with SKUs
