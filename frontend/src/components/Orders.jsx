@@ -1572,6 +1572,16 @@ const Orders = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
+                            {/* Fulfillment button - NEW */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openFulfillmentModal(order)}
+                              className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                              title="Order Fulfillment (1688 → DWZ)"
+                            >
+                              <Zap className="w-4 h-4" />
+                            </Button>
                             {/* Purchase on 1688 button */}
                             {order.line_items?.some(item => extract1688ProductId(item.sku)) && (
                               <Button
