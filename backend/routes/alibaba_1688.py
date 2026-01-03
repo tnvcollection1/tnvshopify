@@ -47,36 +47,42 @@ ALIBABA_AUTH_URL = "https://auth.1688.com/oauth/authorize"
 
 def generate_sign(api_path: str, params: dict, secret: str) -> str:
     """
-    Generate signature for 1688 API
-    Sign = HEX(MD5(secret + api_path + key1value1key2value2... + secret))
-    Parameters must be sorted by ASCII order
-    Values should NOT be URL encoded for signature
+    Generate signature for 1688 API using HMAC-SHA1
+    Based on official 1688 Node.js SDK:
+    - Signature = HMAC-SHA1(secret, api_path + sorted(key1value1key2value2...))
+    - Convert to uppercase hex
     """
-    # Sort parameters alphabetically (ASCII order)
-    sorted_params = sorted(params.items(), key=lambda x: x[0])
-    
-    # Build sign string: secret + api_path + sorted params (key+value) + secret
-    sign_str = secret + api_path
-    
-    for key, value in sorted_params:
+    # Build params string: sort and concatenate key+value pairs
+    enc_arr = []
+    for key, value in params.items():
         if value is not None and str(value) != '':
-            # Do NOT URL encode - use raw value
-            sign_str += key + str(value)
+            enc_arr.append(f"{key}{value}")
     
-    sign_str += secret
+    # Sort the array and join
+    enc_arr.sort()
+    params_str = ''.join(enc_arr)
+    
+    # Build sign string: api_path + sorted params
+    sign_str = api_path + params_str
     
     print(f"Sign string: {sign_str[:300]}...")
     
-    # MD5 hash and convert to uppercase hex
-    sign = hashlib.md5(sign_str.encode('utf-8')).hexdigest().upper()
+    # HMAC-SHA1 with secret as key
+    hmac_obj = hmac.new(
+        secret.encode('utf-8'),
+        sign_str.encode('utf-8'),
+        hashlib.sha1
+    )
+    sign = hmac_obj.hexdigest().upper()
     
-    print(f"Generated signature: {sign}")
+    print(f"Generated signature (HMAC-SHA1): {sign}")
     
     return sign
 
 
 def build_api_request(api_name: str, params: dict, access_token: str = None):
     """Build the API request with proper signature for 1688"""
+    import time
     
     # API path format: param2/1/namespace/api_name/app_key
     api_path = f"param2/1/{api_name}/{ALIBABA_APP_KEY}"
@@ -88,10 +94,13 @@ def build_api_request(api_name: str, params: dict, access_token: str = None):
     if access_token or ALIBABA_ACCESS_TOKEN:
         request_params['access_token'] = access_token or ALIBABA_ACCESS_TOKEN
     
+    # Add timestamp (required by 1688 API)
+    request_params['_aop_timestamp'] = str(int(time.time() * 1000))
+    
     # Remove None values and convert to string
     request_params = {k: str(v) for k, v in request_params.items() if v is not None and str(v) != ''}
     
-    # Generate signature (using raw values, not URL encoded)
+    # Generate signature using HMAC-SHA1
     signature = generate_sign(api_path, request_params, ALIBABA_APP_SECRET)
     request_params['_aop_signature'] = signature
     
