@@ -645,65 +645,6 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                       </div>
                     </div>
                   )}
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-500 block mb-1">Qty</label>
-                          <Input
-                            type="number"
-                            min="1"
-                            value={quantity}
-                            onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                            className="text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs text-gray-500 block mb-1">
-                          Spec ID <span className="text-red-500">*</span>
-                          <span className="text-gray-400 ml-1">(Required for variants)</span>
-                        </label>
-                        <Input
-                          value={selectedSpecId}
-                          onChange={(e) => setSelectedSpecId(e.target.value)}
-                          placeholder="Find from 1688 product page"
-                          className="text-sm font-mono"
-                        />
-                      </div>
-
-                      {!selectedSpecId && (
-                        <div className="bg-amber-50 border border-amber-200 rounded p-2 text-xs text-amber-700">
-                          <AlertCircle className="w-3 h-3 inline mr-1" />
-                          Spec ID required for products with size/color. Find it on the 1688 product page.
-                        </div>
-                      )}
-
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => open1688Product(item.product_id_1688)}
-                        >
-                          <ExternalLink className="w-3 h-3 mr-1" />
-                          Open on 1688
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => placeOrder1688(index)}
-                          disabled={loading}
-                          className="bg-green-500 hover:bg-green-600 text-white flex-1"
-                        >
-                          {loading ? (
-                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                          ) : (
-                            <Zap className="w-4 h-4 mr-1" />
-                          )}
-                          Place Order via API
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </CardContent>
