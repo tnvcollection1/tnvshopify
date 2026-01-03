@@ -564,7 +564,7 @@ async def list_purchase_orders(
 @router.get("/order/{order_id}")
 async def get_order_details(order_id: str):
     """
-    Get details of a specific 1688 purchase order
+    Get details of a specific 1688 purchase order using alibaba.trade.get.buyerView
     """
     if not ALIBABA_ACCESS_TOKEN:
         raise HTTPException(status_code=400, detail="Access token not configured")
@@ -575,19 +575,147 @@ async def get_order_details(order_id: str):
         }
         
         result = await make_api_request(
-            "alibaba.trade.get.buyerView",
+            "com.alibaba.trade/alibaba.trade.get.buyerView",
             params,
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
         return {
             "success": True,
-            "order": result.get("result"),
+            "order": result.get("result") or result,
             "raw_response": result,
         }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get order: {str(e)}")
+
+
+@router.get("/orders")
+async def list_1688_orders(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    status: Optional[str] = Query(None, description="Order status filter"),
+):
+    """
+    List orders from 1688 using alibaba.trade.getBuyerOrderList
+    """
+    if not ALIBABA_ACCESS_TOKEN:
+        raise HTTPException(status_code=400, detail="Access token not configured")
+    
+    try:
+        params = {
+            "pageNo": str(page),
+            "pageSize": str(page_size),
+        }
+        
+        if status:
+            params["orderStatus"] = status
+        
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.getBuyerOrderList",
+            params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        orders = result.get("result", {}).get("result", []) or result.get("result", []) or []
+        total = result.get("result", {}).get("totalCount", 0) or result.get("totalCount", 0)
+        
+        return {
+            "success": True,
+            "page": page,
+            "page_size": page_size,
+            "total": total,
+            "orders": orders,
+            "raw_response": result,
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list orders: {str(e)}")
+
+
+@router.get("/logistics/{order_id}")
+async def get_logistics_info(order_id: str):
+    """
+    Get logistics/tracking info for an order using alibaba.trade.getLogisticsInfos.buyerView
+    """
+    if not ALIBABA_ACCESS_TOKEN:
+        raise HTTPException(status_code=400, detail="Access token not configured")
+    
+    try:
+        params = {
+            "orderId": order_id,
+        }
+        
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.getLogisticsInfos.buyerView",
+            params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        return {
+            "success": True,
+            "order_id": order_id,
+            "logistics": result.get("result") or result,
+            "raw_response": result,
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get logistics: {str(e)}")
+
+
+@router.get("/logistics-tracking/{order_id}")
+async def get_logistics_tracking(order_id: str):
+    """
+    Get detailed tracking info using alibaba.trade.getLogisticsTraceInfo.buyerView
+    """
+    if not ALIBABA_ACCESS_TOKEN:
+        raise HTTPException(status_code=400, detail="Access token not configured")
+    
+    try:
+        params = {
+            "orderId": order_id,
+        }
+        
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.getLogisticsTraceInfo.buyerView",
+            params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        return {
+            "success": True,
+            "order_id": order_id,
+            "tracking": result.get("result") or result,
+            "raw_response": result,
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get tracking: {str(e)}")
+
+
+@router.get("/shipping-addresses")
+async def get_shipping_addresses():
+    """
+    Get saved shipping addresses using alibaba.trade.receiveAddress.get
+    """
+    if not ALIBABA_ACCESS_TOKEN:
+        raise HTTPException(status_code=400, detail="Access token not configured")
+    
+    try:
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.receiveAddress.get",
+            {},
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        return {
+            "success": True,
+            "addresses": result.get("result") or result.get("receiveAddressItems", []),
+            "raw_response": result,
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get addresses: {str(e)}")
 
 
 @router.post("/auto-purchase")
