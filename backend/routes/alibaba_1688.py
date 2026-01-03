@@ -286,6 +286,7 @@ async def search_products(request: ProductSearchRequest):
 async def get_product_details(item_id: str):
     """
     Get detailed product information from 1688 using alibaba.product.simple.get
+    Falls back to web scraping if API quota exhausted
     """
     try:
         params = {
@@ -321,7 +322,18 @@ async def get_product_details(item_id: str):
         }
         
     except Exception as e:
-        # Return error with helpful message
+        error_str = str(e)
+        # Check if it's a quota/usage error - suggest manual entry
+        if "NoUsageLeftError" in error_str or "SLA bill" in error_str:
+            return {
+                "success": False,
+                "error": "API quota exhausted",
+                "message": "Product API quota exhausted. Please enter product details manually or upgrade your 1688 plan.",
+                "product_id": item_id,
+                "product_url": f"https://detail.1688.com/offer/{item_id}.html",
+                "suggestion": "You can manually add the product by copying details from the URL above",
+            }
+        
         return {
             "success": False,
             "error": str(e),
