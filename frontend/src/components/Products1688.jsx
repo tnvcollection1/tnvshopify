@@ -691,6 +691,121 @@ const Products1688 = () => {
           </Card>
         </div>
       )}
+
+      {/* Auto-Scrape Modal */}
+      {showScrapeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-blue-500" />
+                Auto-Scrape 1688 Products
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => {
+                setShowScrapeModal(false);
+                setScrapeResult(null);
+                setBulkUrls('');
+              }}>
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  How it works
+                </h3>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• Paste 1688 product URLs (one per line)</li>
+                  <li>• Click "Scrape & Import" to auto-extract product details</li>
+                  <li>• Title, price, images, and supplier info will be fetched automatically</li>
+                </ul>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium block mb-2">
+                  Paste 1688 Product URLs (one per line)
+                </label>
+                <textarea
+                  className="w-full border rounded-md p-3 text-sm min-h-[150px] font-mono"
+                  value={bulkUrls}
+                  onChange={(e) => setBulkUrls(e.target.value)}
+                  placeholder={`https://detail.1688.com/offer/123456789.html
+https://detail.1688.com/offer/987654321.html
+https://detail.1688.com/offer/111222333.html`}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Tip: Copy product URLs directly from your browser when viewing products on 1688.com
+                </p>
+              </div>
+
+              {scraping && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                  <span className="ml-3 text-gray-600">Scraping products...</span>
+                </div>
+              )}
+
+              {scrapeResult && (
+                <div className={`p-4 rounded-lg ${scrapeResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                  {scrapeResult.success ? (
+                    <div>
+                      <p className="font-medium text-green-800 flex items-center gap-2">
+                        <Check className="h-4 w-4" />
+                        {scrapeResult.scraped ? `Scraped ${scrapeResult.scraped} products successfully!` : 'Product scraped successfully!'}
+                      </p>
+                      {scrapeResult.failed > 0 && (
+                        <p className="text-sm text-yellow-700 mt-1">
+                          {scrapeResult.failed} products failed to scrape
+                        </p>
+                      )}
+                      {scrapeResult.product && (
+                        <div className="mt-2 text-sm text-green-700">
+                          <p><strong>Title:</strong> {scrapeResult.product.title || 'N/A'}</p>
+                          <p><strong>Price:</strong> ¥{scrapeResult.product.price || 'N/A'}</p>
+                          <p><strong>Images:</strong> {scrapeResult.product.images?.length || 0} found</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-red-800 flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4" />
+                      {scrapeResult.error || 'Failed to scrape products'}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => {
+                  setShowScrapeModal(false);
+                  setScrapeResult(null);
+                  setBulkUrls('');
+                }}>
+                  Close
+                </Button>
+                <Button 
+                  onClick={handleBulkScrape}
+                  disabled={scraping || !bulkUrls.trim()}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  {scraping ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Scraping...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Scrape & Import
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
