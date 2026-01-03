@@ -45,22 +45,22 @@ ALIBABA_AUTH_URL = "https://auth.1688.com/oauth/authorize"
 
 # ==================== Signature Generation ====================
 
-def generate_sign(api_name: str, params: dict, secret: str) -> str:
+def generate_sign(api_path: str, params: dict, secret: str) -> str:
     """
     Generate signature for 1688 API
-    Sign = HEX(MD5(secret + sorted_params + secret))
+    Sign = HEX(MD5(secret + api_path + sorted_params_string + secret))
     """
     # Sort parameters alphabetically
     sorted_params = sorted(params.items())
     
-    # Build sign string: protocol/version/namespace/api_name + key1value1key2value2...
-    sign_str = api_name
+    # Build params string: key1value1key2value2...
+    params_str = ""
     for key, value in sorted_params:
-        if value is not None and value != '':
-            sign_str += f"{key}{value}"
+        if value is not None and str(value) != '':
+            params_str += f"{key}{value}"
     
-    # Add secret at beginning and end
-    sign_str = secret + sign_str + secret
+    # Build sign string: secret + api_path + params + secret
+    sign_str = secret + api_path + params_str + secret
     
     # MD5 hash and convert to uppercase hex
     sign = hashlib.md5(sign_str.encode('utf-8')).hexdigest().upper()
@@ -68,31 +68,27 @@ def generate_sign(api_name: str, params: dict, secret: str) -> str:
     return sign
 
 
-def build_api_url(api_name: str, params: dict, access_token: str = None) -> str:
-    """Build the full API URL with signature"""
+def build_api_request(api_name: str, params: dict, access_token: str = None):
+    """Build the API request with proper signature for 1688"""
     
-    # System parameters
-    sys_params = {
-        "_aop_signature": "",
-        "access_token": access_token or ALIBABA_ACCESS_TOKEN,
-    }
+    # API path format: param2/1/com.alibaba.xxx/api_name/app_key
+    api_path = f"param2/1/{api_name}/{ALIBABA_APP_KEY}"
     
-    # Merge with business parameters
-    all_params = {**sys_params, **params}
+    # Add access token if provided
+    if access_token or ALIBABA_ACCESS_TOKEN:
+        params['access_token'] = access_token or ALIBABA_ACCESS_TOKEN
     
-    # Remove empty values
-    all_params = {k: v for k, v in all_params.items() if v is not None and v != ''}
+    # Remove None values
+    params = {k: str(v) for k, v in params.items() if v is not None}
     
-    # Generate signature (excluding _aop_signature itself)
-    sign_params = {k: v for k, v in all_params.items() if k != '_aop_signature'}
-    signature = generate_sign(api_name, sign_params, ALIBABA_APP_SECRET)
+    # Generate signature
+    signature = generate_sign(api_path, params, ALIBABA_APP_SECRET)
+    params['_aop_signature'] = signature
     
-    all_params['_aop_signature'] = signature
+    # Build full URL
+    url = f"{ALIBABA_API_URL}/{api_path}"
     
-    # Build URL
-    url = f"{ALIBABA_API_URL}/param2/1/com.alibaba.product/{api_name}/{ALIBABA_APP_KEY}"
-    
-    return url, all_params
+    return url, params
 
 
 async def make_api_request(api_name: str, params: dict = None, method: str = "POST", access_token: str = None) -> dict:
