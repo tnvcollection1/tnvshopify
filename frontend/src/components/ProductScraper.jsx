@@ -326,6 +326,20 @@ const ProductScraper = () => {
                 </div>
               </div>
               
+              {/* Translation Option */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="translateToEnglish"
+                  checked={translateToEnglish}
+                  onChange={(e) => setTranslateToEnglish(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                <label htmlFor="translateToEnglish" className="text-sm text-gray-700">
+                  🌐 Translate Chinese → English (product titles & descriptions)
+                </label>
+              </div>
+              
               {selectedStore && selectedStore !== 'none' && (
                 <div className="flex items-center gap-2">
                   <input
@@ -341,6 +355,24 @@ const ProductScraper = () => {
                 </div>
               )}
               
+              {/* Bookmarklet Helper */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                <p className="text-sm font-medium text-gray-700 mb-2">📑 Quick Extract Tool</p>
+                <p className="text-xs text-gray-600 mb-2">
+                  Drag this button to your bookmarks bar, then click it on any 1688 page to copy all product IDs:
+                </p>
+                <a
+                  href={`javascript:(function(){var ids=[];document.querySelectorAll('a[href*="offer/"]').forEach(function(a){var m=a.href.match(/offer\\/(\\d{10,})/);if(m)ids.push(m[1])});ids=[...new Set(ids)];if(ids.length){prompt('Found '+ids.length+' product IDs. Copy below:',ids.join('\\n'));alert('Found '+ids.length+' products! Press Ctrl+A then Ctrl+C to copy.')}else{alert('No product IDs found on this page')}})();`}
+                  className="inline-flex items-center px-3 py-1.5 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded text-sm font-medium border border-orange-300"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toast.info('Drag this button to your bookmarks bar!');
+                  }}
+                >
+                  🔖 Extract 1688 IDs
+                </a>
+              </div>
+              
               <Button
                 onClick={startBatchImport}
                 disabled={isLoading || !productIds.trim()}
@@ -355,7 +387,7 @@ const ProductScraper = () => {
                 ) : (
                   <>
                     <Download className="w-4 h-4 mr-2" />
-                    Import Products
+                    Import Products {translateToEnglish ? '(with Translation)' : ''}
                   </>
                 )}
               </Button>
