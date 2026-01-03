@@ -92,6 +92,8 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 - `product_catalog_1688` - 1688 product catalog
 - `fulfillment_pipeline` - Fulfillment automation records
 - `purchase_orders_1688` - 1688 purchase orders
+- `scraped_products` - 1688 products imported via Product Importer
+- `fulfillment_data` - Links between Shopify orders and 1688 fulfillment
 
 ## Environment Variables
 - `ALIBABA_1688_APP_KEY` - 1688 App Key (8585237)
