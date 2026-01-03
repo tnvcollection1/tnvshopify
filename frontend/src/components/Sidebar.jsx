@@ -158,6 +158,12 @@ const Sidebar = () => {
       path: '/products',
       badge: 'New'
     },
+    { 
+      icon: ShoppingCart, 
+      label: '1688 Purchase', 
+      path: '/purchase-1688',
+      badge: 'New'
+    },
     { icon: BarChart3, label: 'Analytics', path: '/reports' },
     { 
       icon: Megaphone, 
