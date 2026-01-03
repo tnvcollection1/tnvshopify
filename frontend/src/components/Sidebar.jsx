@@ -147,6 +147,12 @@ const Sidebar = () => {
       badge: 'New'
     },
     { 
+      icon: Search, 
+      label: '1688 Scraper', 
+      path: '/product-scraper',
+      badge: 'New'
+    },
+    { 
       icon: Truck, 
       label: 'Fulfillment', 
       path: '/fulfillment',
