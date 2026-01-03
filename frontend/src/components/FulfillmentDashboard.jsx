@@ -274,12 +274,18 @@ const OrderCard = ({ order, onRefresh, onAutoPurchase, onSendToDWZ56 }) => {
 };
 
 // Pending Order Card (for orders not yet in pipeline)
-const PendingOrderCard = ({ order, onProcess }) => {
+const PendingOrderCard = ({ order, onProcess, selected, onSelect }) => {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow border-dashed">
+    <Card className={`overflow-hidden hover:shadow-md transition-shadow border-dashed ${selected ? 'ring-2 ring-green-500 bg-green-50' : ''}`}>
       <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(e) => onSelect(order.customer_id, e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+          />
+          <div className="flex-1">
             <h3 className="font-semibold text-sm">
               Order #{order.order_number || 'N/A'}
             </h3>
@@ -314,6 +320,9 @@ const FulfillmentDashboard = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [syncing, setSyncing] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState(new Set());
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
   
   useEffect(() => {
     fetchData();
