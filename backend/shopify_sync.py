@@ -319,3 +319,136 @@ class ShopifyOrderSync:
             return None
         finally:
             self.disconnect()
+    
+    def fetch_products(self, limit: int = 250, fetch_all: bool = True) -> List[Dict]:
+        """
+        Fetch products from Shopify store
+        
+        Args:
+            limit: Number of products to fetch per page (max 250)
+            fetch_all: If True, fetches ALL products using pagination
+            
+        Returns:
+            List of parsed product dictionaries
+        """
+        if not self.connect():
+            return []
+        
+        try:
+            all_products = []
+            per_page = min(limit, 250)
+            batch_count = 0
+            last_id = None
+            
+            while True:
+                batch_count += 1
+                
+                params = {
+                    'limit': per_page,
+                }
+                
+                if last_id:
+                    params['since_id'] = last_id
+                
+                logger.info(f"Fetching products batch {batch_count} (since_id: {last_id})...")
+                products = shopify.Product.find(**params)
+                
+                if not products or len(products) == 0:
+                    logger.info(f"No more products. Total fetched: {len(all_products)}")
+                    break
+                
+                for product in products:
+                    parsed = self._parse_product(product)
+                    if parsed:
+                        all_products.append(parsed)
+                    last_id = product.id
+                
+                logger.info(f"Batch {batch_count}: Fetched {len(products)} products. Total: {len(all_products)}")
+                
+                if not fetch_all:
+                    break
+                
+                if len(products) < per_page:
+                    break
+                
+                # Safety limit
+                if batch_count >= 100:
+                    logger.warning(f"Reached safety limit of 100 batches. Total: {len(all_products)}")
+                    break
+            
+            logger.info(f"✅ Product sync completed: {len(all_products)} products from Shopify")
+            return all_products
+            
+        except Exception as e:
+            logger.error(f"❌ Error fetching products: {str(e)}")
+            return []
+        finally:
+            self.disconnect()
+    
+    def _parse_product(self, product) -> Optional[Dict]:
+        """Parse Shopify product object into database format"""
+        try:
+            # Get images
+            images = []
+            for img in getattr(product, 'images', []) or []:
+                images.append({
+                    'id': getattr(img, 'id', None),
+                    'src': getattr(img, 'src', ''),
+                    'alt': getattr(img, 'alt', ''),
+                })
+            
+            # Get variants
+            variants = []
+            for variant in getattr(product, 'variants', []) or []:
+                variants.append({
+                    'id': getattr(variant, 'id', None),
+                    'title': getattr(variant, 'title', ''),
+                    'sku': getattr(variant, 'sku', ''),
+                    'price': float(getattr(variant, 'price', 0) or 0),
+                    'compare_at_price': float(getattr(variant, 'compare_at_price', 0) or 0) if getattr(variant, 'compare_at_price', None) else None,
+                    'inventory_quantity': getattr(variant, 'inventory_quantity', 0),
+                    'inventory_policy': getattr(variant, 'inventory_policy', ''),
+                    'barcode': getattr(variant, 'barcode', ''),
+                    'weight': getattr(variant, 'weight', 0),
+                    'weight_unit': getattr(variant, 'weight_unit', ''),
+                    'option1': getattr(variant, 'option1', ''),
+                    'option2': getattr(variant, 'option2', ''),
+                    'option3': getattr(variant, 'option3', ''),
+                })
+            
+            # Get first variant price as main price
+            main_price = 0
+            if variants:
+                main_price = variants[0].get('price', 0)
+            
+            product_data = {
+                'shopify_product_id': str(product.id),
+                'title': product.title,
+                'handle': getattr(product, 'handle', ''),
+                'body_html': getattr(product, 'body_html', ''),
+                'vendor': getattr(product, 'vendor', ''),
+                'product_type': getattr(product, 'product_type', ''),
+                'tags': getattr(product, 'tags', ''),
+                'status': getattr(product, 'status', 'active'),
+                'published_at': getattr(product, 'published_at', None),
+                'created_at': getattr(product, 'created_at', None),
+                'updated_at': getattr(product, 'updated_at', None),
+                'images': images,
+                'image_url': images[0]['src'] if images else None,
+                'variants': variants,
+                'price': main_price,
+                'options': [],
+            }
+            
+            # Get options (Size, Color, etc.)
+            for opt in getattr(product, 'options', []) or []:
+                product_data['options'].append({
+                    'name': getattr(opt, 'name', ''),
+                    'values': getattr(opt, 'values', []),
+                })
+            
+            return product_data
+            
+        except Exception as e:
+            logger.error(f"Error parsing product {product.id if hasattr(product, 'id') else 'unknown'}: {str(e)}")
+            return None
