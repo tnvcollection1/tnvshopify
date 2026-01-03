@@ -233,6 +233,59 @@ class ShopifyOrderSync:
                         'tracking_url': tracking_url or self._generate_tcs_tracking_url(tracking_number)
                     }
             
+            # Extract refund and return information
+            refunds = getattr(order, 'refunds', []) or []
+            for refund in refunds:
+                refund_data = {
+                    'id': getattr(refund, 'id', None),
+                    'created_at': getattr(refund, 'created_at', None),
+                    'note': getattr(refund, 'note', ''),
+                    'restock': getattr(refund, 'restock', False),
+                    'transactions': [],
+                    'refund_line_items': [],
+                }
+                
+                # Get refund transactions
+                transactions = getattr(refund, 'transactions', []) or []
+                for txn in transactions:
+                    refund_data['transactions'].append({
+                        'amount': float(getattr(txn, 'amount', 0) or 0),
+                        'kind': getattr(txn, 'kind', ''),
+                        'gateway': getattr(txn, 'gateway', ''),
+                    })
+                
+                # Get refund line items (for partial refunds)
+                refund_line_items = getattr(refund, 'refund_line_items', []) or []
+                for rli in refund_line_items:
+                    refund_data['refund_line_items'].append({
+                        'line_item_id': getattr(rli, 'line_item_id', None),
+                        'quantity': getattr(rli, 'quantity', 0),
+                        'restock_type': getattr(rli, 'restock_type', ''),  # 'return', 'cancel', 'no_restock'
+                    })
+                    
+                    # Check if this is a return (restock_type == 'return')
+                    if getattr(rli, 'restock_type', '') == 'return':
+                        customer_data['return_status'] = 'return_in_process'
+                
+                customer_data['refunds'].append(refund_data)
+            
+            # Determine return status based on refunds and financial status
+            if refunds:
+                total_refunded = sum(
+                    sum(float(getattr(txn, 'amount', 0) or 0) for txn in getattr(r, 'transactions', []) or [])
+                    for r in refunds
+                )
+                if total_refunded > 0:
+                    if total_refunded >= customer_data['total_price']:
+                        customer_data['return_status'] = 'fully_refunded'
+                    else:
+                        customer_data['return_status'] = customer_data['return_status'] or 'partially_refunded'
+            
+            # Also check financial_status for return indicators
+            if order.financial_status in ['refunded', 'partially_refunded']:
+                if not customer_data['return_status']:
+                    customer_data['return_status'] = order.financial_status
+            
             return customer_data
             
         except Exception as e:
