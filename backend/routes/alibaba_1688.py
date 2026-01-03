@@ -995,6 +995,90 @@ async def sync_all_merchant_products(
         }
 
 
+@router.get("/product-skus/{product_id}")
+async def get_product_skus(product_id: str):
+    """
+    Fetch product SKU/variant information from 1688
+    Returns available sizes, colors, and their specIds for ordering
+    """
+    try:
+        # Try to get product info using the trade API's getProductInfo
+        params = {
+            "offerId": product_id,
+        }
+        
+        result = await make_api_request(
+            "com.alibaba.product/alibaba.cross.syncProductInfo",
+            params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        skus = []
+        attributes = {}
+        
+        # Parse the product info to extract SKUs
+        product_info = result.get("result") or result
+        
+        if isinstance(product_info, dict):
+            # Try to get SKU info from various possible response structures
+            sku_infos = product_info.get("skuInfos") or product_info.get("skus") or []
+            
+            for sku in sku_infos:
+                sku_data = {
+                    "specId": sku.get("specId") or sku.get("skuId"),
+                    "price": sku.get("price") or sku.get("consignPrice"),
+                    "stock": sku.get("amountOnSale") or sku.get("canBookCount"),
+                    "attributes": sku.get("attributes") or [],
+                }
+                skus.append(sku_data)
+            
+            # Get attribute definitions (size names, color names, etc.)
+            attr_defs = product_info.get("productAttribute") or product_info.get("attributes") or []
+            for attr in attr_defs:
+                attr_name = attr.get("attributeName") or attr.get("name", "")
+                attr_values = attr.get("values") or attr.get("value", [])
+                if attr_name:
+                    attributes[attr_name] = attr_values
+        
+        # If direct API didn't work, try alternative approach
+        if not skus:
+            # Try the offer API
+            offer_params = {"offerId": product_id}
+            offer_result = await make_api_request(
+                "com.alibaba.trade/alibaba.trade.get.sellerOrderList",
+                {"bizType": "cn"},
+                access_token=ALIBABA_ACCESS_TOKEN
+            )
+        
+        return {
+            "success": True,
+            "product_id": product_id,
+            "skus": skus,
+            "attributes": attributes,
+            "raw_response": result if not skus else None,
+        }
+        
+    except HTTPException as e:
+        # If we can't get SKUs, return empty but allow manual entry
+        return {
+            "success": True,
+            "product_id": product_id,
+            "skus": [],
+            "attributes": {},
+            "message": "Could not fetch SKUs - enter size/color manually",
+            "error": str(e.detail),
+        }
+    except Exception as e:
+        return {
+            "success": True,
+            "product_id": product_id,
+            "skus": [],
+            "attributes": {},
+            "message": "Could not fetch SKUs - enter size/color manually",
+            "error": str(e),
+        }
+
+
 class CreatePurchaseOrderRequest(BaseModel):
     product_id: str = Field(..., description="1688 product ID")
     quantity: int = Field(1, ge=1, description="Quantity to order")
