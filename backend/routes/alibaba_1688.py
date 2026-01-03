@@ -323,6 +323,134 @@ async def test_access_token():
     }
 
 
+@router.post("/parse-purchase-excel")
+async def parse_purchase_excel(file: UploadFile = File(...)):
+    """
+    Parse an Excel file with purchase orders and extract 1688 product IDs
+    Expected columns: ORDER ID, SKU (containing 12-digit 1688 ID), SIZE, COLOR
+    """
+    try:
+        import pandas as pd
+        
+        # Read the file
+        contents = await file.read()
+        
+        # Try to parse as Excel
+        try:
+            df = pd.read_excel(io.BytesIO(contents))
+        except Exception:
+            # Try CSV
+            try:
+                df = pd.read_csv(io.BytesIO(contents))
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Could not parse file: {str(e)}")
+        
+        # Normalize column names
+        df.columns = [str(col).strip().upper() for col in df.columns]
+        
+        # Find relevant columns
+        order_col = None
+        sku_col = None
+        size_col = None
+        color_col = None
+        
+        for col in df.columns:
+            if 'ORDER' in col and 'ID' in col:
+                order_col = col
+            elif col == 'ORDER ID':
+                order_col = col
+            elif 'SKU' in col:
+                sku_col = col
+            elif 'SIZE' in col:
+                size_col = col
+            elif 'COLOR' in col or 'COLOUR' in col:
+                color_col = col
+        
+        # Fallback: use first column as order ID if not found
+        if not order_col and len(df.columns) > 0:
+            order_col = df.columns[0]
+        
+        # Fallback: use second column as SKU if not found
+        if not sku_col and len(df.columns) > 1:
+            sku_col = df.columns[1]
+        
+        orders = []
+        
+        for idx, row in df.iterrows():
+            order_id = str(row.get(order_col, '')).strip() if order_col else str(idx)
+            sku = str(row.get(sku_col, '')) if sku_col else ''
+            size = str(row.get(size_col, '')) if size_col else ''
+            color = ''
+            
+            # Try to find color in unnamed columns or the 4th column
+            for col in df.columns:
+                if col.startswith('UNNAMED') or 'COLOR' in col:
+                    val = row.get(col)
+                    if pd.notna(val) and str(val).strip():
+                        color = str(val).strip()
+                        break
+            
+            # Skip empty rows
+            if not order_id or order_id == 'nan' or order_id == '':
+                continue
+            
+            # Extract 1688 product ID (12-digit number) from SKU
+            product_id_1688 = None
+            if sku and sku != 'nan':
+                match = re.search(r'(\d{12})', sku)
+                if match:
+                    product_id_1688 = match.group(1)
+            
+            # Extract product name from SKU (text before the number)
+            product_name = sku.split('\n')[0] if '\n' in sku else sku
+            if '/' in product_name:
+                product_name = product_name.split('/')[0]
+            product_name = re.sub(r'\d{12}', '', product_name).strip()
+            
+            # Clean up order_id (remove .0 from float conversion)
+            if '.' in order_id:
+                try:
+                    order_id = str(int(float(order_id)))
+                except:
+                    pass
+            
+            # Clean up size
+            if size and size != 'nan':
+                try:
+                    size = str(int(float(size)))
+                except:
+                    pass
+            else:
+                size = ''
+            
+            orders.append({
+                'order_id': order_id,
+                'sku': sku if sku != 'nan' else '',
+                'product_name': product_name,
+                'size': size,
+                'color': color,
+                'product_id_1688': product_id_1688,
+                'url_1688': f"https://detail.1688.com/offer/{product_id_1688}.html" if product_id_1688 else None,
+            })
+        
+        return {
+            "success": True,
+            "message": f"Parsed {len(orders)} orders from file",
+            "orders": orders,
+            "columns_found": {
+                "order": order_col,
+                "sku": sku_col,
+                "size": size_col,
+                "color": color_col,
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error parsing file: {str(e)}")
+
+
 # ==================== Pydantic Models ====================
 
 class ProductSearchRequest(BaseModel):
