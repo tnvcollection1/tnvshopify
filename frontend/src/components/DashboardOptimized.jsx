@@ -969,6 +969,15 @@ Thank you for your understanding.`;
                             <Button
                               size="sm"
                               variant="ghost"
+                              className="h-8 w-8 p-0 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                              onClick={() => setFulfillmentModal({ open: true, order })}
+                              title="Order Fulfillment (1688 → DWZ)"
+                            >
+                              <Zap className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
                               className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
                               onClick={() => handleSendWhatsApp(order)}
                               title={order.phone || order.default_address?.phone ? "Send WhatsApp" : "No phone number"}
