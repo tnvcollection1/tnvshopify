@@ -200,13 +200,12 @@ async def health_check():
 @router.post("/search")
 async def search_products(request: ProductSearchRequest):
     """
-    Search products on 1688
+    Search products on 1688 using product.keywords.search API
     """
     db = get_db()
     
-    # Try official API first, fallback to TMAPI
     try:
-        # Using official 1688 API
+        # Using official 1688 API: product.keywords.search
         params = {
             "keywords": request.keyword,
             "pageNo": str(request.page),
@@ -218,18 +217,17 @@ async def search_products(request: ProductSearchRequest):
         if request.max_price:
             params["priceEnd"] = str(request.max_price)
         
-        # Try alibaba.product.search API
-        result = await make_api_request("alibaba.product.search", params)
+        result = await make_api_request("com.alibaba.product/product.keywords.search", params)
         
         # Parse and return results
-        products = result.get("result", {}).get("data", [])
+        products = result.get("result", {}).get("data", []) or result.get("data", []) or []
         
         return {
             "success": True,
             "source": "official_api",
             "keyword": request.keyword,
             "page": request.page,
-            "total": result.get("result", {}).get("total", 0),
+            "total": result.get("result", {}).get("total", 0) or result.get("total", 0),
             "products": [
                 {
                     "id": p.get("productId") or p.get("offerId"),
@@ -244,19 +242,20 @@ async def search_products(request: ProductSearchRequest):
                 }
                 for p in products
             ],
+            "raw_response": result,
         }
         
     except Exception as e:
-        # Log the error and try alternative method
+        # Log the error
         print(f"Official API error: {e}")
         
-        # Fallback: Return mock data for testing
         return {
-            "success": True,
-            "source": "mock_data",
+            "success": False,
+            "source": "official_api",
             "keyword": request.keyword,
             "page": request.page,
-            "message": "Using mock data - configure access_token for live data",
+            "error": str(e),
+            "message": "API call failed. Please check your credentials and API permissions.",
             "products": [],
         }
 
