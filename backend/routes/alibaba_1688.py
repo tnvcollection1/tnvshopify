@@ -263,16 +263,16 @@ async def search_products(request: ProductSearchRequest):
 @router.get("/product/{item_id}")
 async def get_product_details(item_id: str):
     """
-    Get detailed product information from 1688
+    Get detailed product information from 1688 using alibaba.product.simple.get
     """
     try:
         params = {
             "offerId": item_id,
         }
         
-        result = await make_api_request("alibaba.product.get", params)
+        result = await make_api_request("com.alibaba.product/alibaba.product.simple.get", params)
         
-        product = result.get("result", {})
+        product = result.get("result", {}) or result
         
         return {
             "success": True,
@@ -303,7 +303,7 @@ async def get_product_details(item_id: str):
         return {
             "success": False,
             "error": str(e),
-            "message": "Failed to fetch product. Ensure access_token is configured.",
+            "message": "Failed to fetch product. Check API permissions.",
             "product_id": item_id,
             "manual_url": f"https://detail.1688.com/offer/{item_id}.html",
         }
