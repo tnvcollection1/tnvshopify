@@ -263,7 +263,7 @@ const ProductScraper = () => {
             </div>
           </div>
           
-          {selectedStore && (
+          {selectedStore && selectedStore !== 'none' && (
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -282,6 +282,7 @@ const ProductScraper = () => {
             onClick={startScrape}
             disabled={isLoading || !scrapeUrl.trim()}
             className="w-full bg-orange-500 hover:bg-orange-600"
+            data-testid="start-scraping-btn"
           >
             {isLoading ? (
               <>
