@@ -995,6 +995,122 @@ async def sync_all_merchant_products(
         }
 
 
+class CreatePurchaseOrderRequest(BaseModel):
+    product_id: str = Field(..., description="1688 product ID")
+    quantity: int = Field(1, ge=1, description="Quantity to order")
+    size: Optional[str] = Field(None, description="Product size")
+    color: Optional[str] = Field(None, description="Product color")
+    shopify_order_id: Optional[str] = Field(None, description="Related Shopify order ID")
+    notes: Optional[str] = Field(None, description="Order notes")
+
+
+@router.post("/create-purchase-order")
+async def create_purchase_order(request: CreatePurchaseOrderRequest):
+    """
+    Create a purchase order on 1688 for a product
+    Uses the alibaba.trade.fastCreateOrder API
+    """
+    db = get_db()
+    
+    try:
+        # First, get the shipping address
+        address_result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.receiveAddress.get",
+            {},
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        addresses = address_result.get("result", {}).get("receiveAddressItems", [])
+        if not addresses:
+            return {
+                "success": False,
+                "error": "No shipping address configured",
+                "message": "Please add a shipping address on 1688 first"
+            }
+        
+        default_address = addresses[0]
+        address_id = default_address.get("addressId")
+        
+        # Build cargo list - the products to order
+        cargo = {
+            "offerId": int(request.product_id),
+            "quantity": float(request.quantity),
+        }
+        
+        # If size/color specified, we need to find the specId
+        # For now, we'll add them as notes since specId lookup requires product info
+        order_notes = request.notes or ""
+        if request.size:
+            order_notes += f" | Size: {request.size}"
+        if request.color:
+            order_notes += f" | Color: {request.color}"
+        
+        # Create order params
+        create_params = {
+            "addressParam": json.dumps({"addressId": address_id}),
+            "cargoParamList": json.dumps([cargo]),
+            "flow": "general",
+            "message": order_notes.strip(),
+        }
+        
+        # Create the order
+        create_result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.fastCreateOrder",
+            create_params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        alibaba_order_id = create_result.get("result", {}).get("orderId") or create_result.get("orderId")
+        
+        if alibaba_order_id:
+            # Save to database for tracking
+            await db.purchase_orders_1688.insert_one({
+                "alibaba_order_id": str(alibaba_order_id),
+                "product_id": request.product_id,
+                "quantity": request.quantity,
+                "size": request.size,
+                "color": request.color,
+                "shopify_order_id": request.shopify_order_id,
+                "notes": request.notes,
+                "status": "created",
+                "api_response": create_result,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+            
+            return {
+                "success": True,
+                "message": f"Order created on 1688",
+                "alibaba_order_id": str(alibaba_order_id),
+                "product_id": request.product_id,
+                "quantity": request.quantity,
+            }
+        else:
+            # Order creation failed
+            error_msg = create_result.get("errorMessage") or create_result.get("error_message") or "Unknown error"
+            error_code = create_result.get("errorCode") or create_result.get("error_code")
+            
+            return {
+                "success": False,
+                "error": error_msg,
+                "error_code": error_code,
+                "message": f"Failed to create order: {error_msg}",
+                "api_response": create_result,
+            }
+            
+    except HTTPException as e:
+        return {
+            "success": False,
+            "error": str(e.detail),
+            "message": "API error - try ordering manually on 1688.com"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to create order - try ordering manually on 1688.com"
+        }
+
+
 @router.get("/health")
 async def health_check():
     """Check API connectivity and configuration"""
