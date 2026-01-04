@@ -141,6 +141,7 @@ const ProductScraper = () => {
           store_name: createInShopify ? storeToUse : null,
           create_in_shopify: createInShopify && storeToUse,
           max_products: maxProducts,
+          translate: translateToEnglish,
         }),
       });
       
