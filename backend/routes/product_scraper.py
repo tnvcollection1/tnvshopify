@@ -9,6 +9,7 @@ import re
 import json
 import asyncio
 import os
+from pathlib import Path
 from typing import List, Dict, Optional
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
