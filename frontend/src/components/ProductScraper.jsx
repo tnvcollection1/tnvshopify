@@ -289,7 +289,7 @@ const ProductScraper = () => {
             </div>
           </div>
           <a 
-            href={`${API}/download/chrome-extension`}
+            href={`${API}/api/download/chrome-extension`}
             className="flex-shrink-0 px-5 py-3 bg-white text-purple-700 rounded-lg font-semibold hover:bg-purple-50 transition-colors flex items-center gap-2 shadow-md"
             download="wamerce-1688-extension.zip"
           >
