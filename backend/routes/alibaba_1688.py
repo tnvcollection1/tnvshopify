@@ -1154,12 +1154,74 @@ async def get_product_skus(product_id: str):
     """
     Fetch product SKU/variant information from 1688
     Returns available sizes, colors, and their specIds for ordering
-    Tries multiple API methods, then falls back to HTML scraping
+    Tries TMAPI first, then official API, then falls back to HTML scraping
     """
+    import httpx
+    
     skus = []
     attributes = {}
     api_error = None
     api_source = None
+    
+    # Method 0: Try TMAPI first (works for ANY product!)
+    tmapi_token = os.environ.get("TMAPI_TOKEN", "")
+    if tmapi_token:
+        try:
+            url = f"http://api.tmapi.top/1688/item_detail"
+            params = {
+                "apiToken": tmapi_token,
+                "item_id": product_id,
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(url, params=params)
+                result = response.json()
+                
+                if result.get("code") == 200 and result.get("data"):
+                    data = result["data"]
+                    sku_list = data.get("skus", [])
+                    
+                    for sku in sku_list:
+                        # Parse props_names like "颜色:黑色;尺码:46"
+                        props_names = sku.get("props_names", "")
+                        attrs = {}
+                        if props_names:
+                            for prop in props_names.split(";"):
+                                if ":" in prop:
+                                    name, value = prop.split(":", 1)
+                                    attrs[name.strip()] = value.strip()
+                                    
+                                    # Build attributes dict for filtering
+                                    if name.strip() not in attributes:
+                                        attributes[name.strip()] = []
+                                    if value.strip() not in attributes[name.strip()]:
+                                        attributes[name.strip()].append(value.strip())
+                        
+                        sku_data = {
+                            "specId": sku.get("specid"),
+                            "skuId": sku.get("skuid"),
+                            "price": sku.get("sale_price"),
+                            "stock": sku.get("stock", 0),
+                            "color": attrs.get("颜色") or attrs.get("color") or attrs.get("Color"),
+                            "size": attrs.get("尺码") or attrs.get("size") or attrs.get("Size") or attrs.get("码数"),
+                            "props_names": props_names,
+                        }
+                        
+                        if sku_data["specId"]:
+                            skus.append(sku_data)
+                    
+                    if skus:
+                        api_source = "tmapi"
+                        print(f"[TMAPI] Got {len(skus)} SKUs for {product_id}")
+                        return {
+                            "success": True,
+                            "product_id": product_id,
+                            "skus": skus,
+                            "attributes": attributes,
+                            "source": api_source,
+                        }
+        except Exception as e:
+            print(f"[TMAPI] SKU fetch error for {product_id}: {e}")
     
     # Method 1: Try alibaba.product.simple.get (Buyer API - works for merchants you've purchased from)
     try:
