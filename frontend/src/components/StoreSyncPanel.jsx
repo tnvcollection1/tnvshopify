@@ -247,9 +247,14 @@ const StoreSyncPanel = ({ onSyncComplete }) => {
       {syncStatus.results && (
         <div className="mt-4 p-4 bg-gray-900/50 border border-gray-700 rounded-lg">
           <div className="flex items-center gap-2 mb-3">
-            <CheckCircle className="w-5 h-5 text-green-400" />
+            {syncStatus.inProgress ? (
+              <RefreshCw className="w-5 h-5 text-blue-400 animate-spin" />
+            ) : (
+              <CheckCircle className="w-5 h-5 text-green-400" />
+            )}
             <h4 className="font-bold text-white">
-              {syncStatus.type === 'shopify' ? 'Shopify Sync Results' : 'Courier Sync Results'}
+              {syncStatus.type === 'shopify' ? 'Shopify Sync' : 'Courier Sync'} 
+              {syncStatus.inProgress ? ' (In Progress...)' : ' Results'}
             </h4>
           </div>
 
@@ -259,7 +264,12 @@ const StoreSyncPanel = ({ onSyncComplete }) => {
                 <span className="text-sm text-gray-300 capitalize">{key}</span>
                 {result.success ? (
                   <span className="text-sm text-green-400">
-                    ✅ {result.count || result.updated || 0} {syncStatus.type === 'shopify' ? 'synced' : 'updated'}
+                    {result.status === 'started' && '🚀 Started...'}
+                    {result.status === 'fetching' && '📥 Fetching orders...'}
+                    {result.status === 'processing' && `⏳ Processing... ${result.progress || 0}%`}
+                    {result.status === 'completed' && `✅ ${result.count || 0} synced`}
+                    {result.status === 'failed' && '❌ Failed'}
+                    {!result.status && `✅ ${result.count || result.updated || 0} ${syncStatus.type === 'shopify' ? 'synced' : 'updated'}`}
                     {result.failed > 0 && ` (${result.failed} failed)`}
                   </span>
                 ) : (
@@ -268,6 +278,14 @@ const StoreSyncPanel = ({ onSyncComplete }) => {
                   </span>
                 )}
               </div>
+              {result.progress > 0 && result.status === 'processing' && (
+                <div className="mt-1 h-1 bg-gray-700 rounded overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-500 transition-all duration-300" 
+                    style={{ width: `${result.progress}%` }}
+                  />
+                </div>
+              )}
             </div>
           ))}
 
