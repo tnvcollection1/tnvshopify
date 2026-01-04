@@ -430,7 +430,24 @@ async def scrape_collection_with_playwright(url: str, max_products: int = 50) ->
             print(f"[Playwright] Navigating to: {url}")
             
             # Navigate to the page with extended timeout
-            await page.goto(url, wait_until='networkidle', timeout=60000)
+            try:
+                await page.goto(url, wait_until='networkidle', timeout=60000)
+            except Exception as nav_err:
+                print(f"[Playwright] Navigation error (continuing anyway): {nav_err}")
+                # Try with just load event
+                await page.goto(url, wait_until='load', timeout=60000)
+            
+            # Take a debug screenshot
+            try:
+                debug_path = "/tmp/1688_debug_screenshot.png"
+                await page.screenshot(path=debug_path, full_page=False)
+                print(f"[Playwright] Debug screenshot saved to {debug_path}")
+            except Exception as ss_err:
+                print(f"[Playwright] Screenshot error: {ss_err}")
+            
+            # Log the page title
+            title = await page.title()
+            print(f"[Playwright] Page title: {title}")
             
             # Wait for products to load (try multiple selectors)
             selectors_to_try = [
