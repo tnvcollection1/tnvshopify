@@ -51,7 +51,7 @@ const ProductScraper = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentJobId, setCurrentJobId] = useState(null);
   const [jobStatus, setJobStatus] = useState(null);
-  const [activeTab, setActiveTab] = useState('batch');
+  const [activeTab, setActiveTab] = useState('extension');
   
   const [products, setProducts] = useState([]);
   const [totalProducts, setTotalProducts] = useState(0);
