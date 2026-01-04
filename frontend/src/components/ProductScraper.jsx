@@ -273,23 +273,48 @@ const ProductScraper = () => {
         </div>
       </div>
 
-      {/* Extension Banner */}
-      <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-4 text-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="text-3xl">🧩</div>
+      {/* Extension Banner - Main Feature */}
+      <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-xl p-5 text-white shadow-lg">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="text-4xl bg-white/20 rounded-xl p-3">🧩</div>
             <div>
-              <h3 className="font-bold">WaMerce Chrome Extension</h3>
-              <p className="text-sm text-purple-100">One-click import from any 1688 page with auto-translation</p>
+              <h3 className="font-bold text-lg">WaMerce Chrome Extension v2.0</h3>
+              <p className="text-sm text-purple-100 mt-1">One-click import from any 1688 page - works like Dianxiaomi!</p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <span className="px-2 py-1 bg-white/20 rounded text-xs">✨ Auto-detect products</span>
+                <span className="px-2 py-1 bg-white/20 rounded text-xs">🌐 Auto-translate to English</span>
+                <span className="px-2 py-1 bg-white/20 rounded text-xs">⚡ Bulk import</span>
+              </div>
             </div>
           </div>
           <a 
-            href={`${API}/api/extension/download`}
-            className="px-4 py-2 bg-white text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors"
-            download
+            href={`${API}/download/chrome-extension`}
+            className="flex-shrink-0 px-5 py-3 bg-white text-purple-700 rounded-lg font-semibold hover:bg-purple-50 transition-colors flex items-center gap-2 shadow-md"
+            download="wamerce-1688-extension.zip"
           >
-            Download Extension
+            <Download className="w-5 h-5" />
+            Download
           </a>
+        </div>
+        
+        {/* Installation Steps */}
+        <div className="mt-4 pt-4 border-t border-white/20">
+          <p className="text-xs text-purple-200 font-medium mb-2">📋 How to install:</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs text-purple-100">
+            <div className="bg-white/10 rounded p-2">
+              <span className="font-bold">1.</span> Download & unzip
+            </div>
+            <div className="bg-white/10 rounded p-2">
+              <span className="font-bold">2.</span> Go to <code className="bg-white/20 px-1 rounded">chrome://extensions</code>
+            </div>
+            <div className="bg-white/10 rounded p-2">
+              <span className="font-bold">3.</span> Enable "Developer mode"
+            </div>
+            <div className="bg-white/10 rounded p-2">
+              <span className="font-bold">4.</span> Click "Load unpacked" → select folder
+            </div>
+          </div>
         </div>
       </div>
 
