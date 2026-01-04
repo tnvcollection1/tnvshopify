@@ -161,46 +161,6 @@ const StoreSyncPanel = ({ onSyncComplete }) => {
       setSyncing(false);
     }
   };
-              status: job.status,
-              count: job.orders_processed || 0,
-              progress: job.progress || 0
-            };
-            
-            if (job.status === 'completed') {
-              totalSynced += job.orders_processed || 0;
-            } else if (job.status !== 'failed') {
-              allComplete = false;
-            }
-          } catch (err) {
-            console.error(`Error checking status for ${store}:`, err);
-          }
-        }
-        
-        setSyncStatus({
-          type: 'shopify',
-          results,
-          total: totalSynced,
-          inProgress: !allComplete
-        });
-        
-        polls++;
-        
-        if (!allComplete && polls < maxPolls) {
-          setTimeout(checkJobs, pollInterval);
-        } else {
-          setSyncing(false);
-          if (onSyncComplete) onSyncComplete();
-        }
-      };
-      
-      // Start polling
-      setTimeout(checkJobs, pollInterval);
-      
-    } catch (error) {
-      console.error('Sync error:', error);
-      setSyncing(false);
-    }
-  };
 
   const syncCourierTracking = async () => {
     setSyncing(true);
