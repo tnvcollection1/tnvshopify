@@ -119,6 +119,22 @@ class BatchImportRequest(BaseModel):
     translate: bool = Field(True, description="Translate Chinese to English")
 
 
+class ExtensionProduct(BaseModel):
+    """Product data from browser extension"""
+    id: str
+    title: str = ""
+    price: str = ""
+    image: str = ""
+    url: str = ""
+    isCurrentPage: bool = False
+
+
+class ExtensionImportRequest(BaseModel):
+    """Request for importing products directly from browser extension with full data"""
+    products: List[ExtensionProduct] = Field(..., description="Products scraped by extension")
+    translate: bool = Field(True, description="Translate Chinese to English")
+
+
 class ScrapedProduct(BaseModel):
     product_id: str
     title: str
