@@ -55,9 +55,10 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 
 ### Known Issues
 
-1. **1688 Product API Authorization (P1)** - Direct product lookup fails with 401; workaround via order history sync
-2. **Shopify OAuth redirect_uri (P1)** - May need Partner Dashboard configuration
-3. **Data duplication (P2)** - Sync uses customer_id; should use order.id
+1. **1688 Collection Page Scraping (LIMITATION)** - Server-side scraping blocked by 1688's anti-bot protection. Workaround: Browser console script provided in UI.
+2. **1688 Product API Authorization (P1)** - Direct product lookup fails with 401; workaround via order history sync
+3. **Shopify OAuth redirect_uri (P1)** - May need Partner Dashboard configuration
+4. **Data duplication (P2)** - Sync uses customer_id; should use order.id
 
 ## Tech Stack
 - **Backend**: FastAPI (Python) on port 8001
