@@ -1200,6 +1200,232 @@ async def get_tmapi_status():
     }
 
 
+# ==================== IMAGE SEARCH API ====================
+
+class ImageSearchRequest(BaseModel):
+    """Request for image search"""
+    image_url: str = Field(..., description="URL of the image to search with")
+    page: int = Field(1, description="Page number")
+    page_size: int = Field(20, description="Items per page (max 20)")
+    sort: str = Field("default", description="Sort: default, sales, price_up, price_down")
+    price_start: Optional[str] = Field(None, description="Minimum price filter")
+    price_end: Optional[str] = Field(None, description="Maximum price filter")
+
+
+@router.post("/image-search")
+async def search_by_image(request: ImageSearchRequest):
+    """
+    Search for 1688 products using an image URL.
+    
+    Steps:
+    1. If image is not from Alibaba, convert it first using /image-convert endpoint
+    2. Search for matching products
+    3. Returns list of similar products with prices, sales, etc.
+    """
+    if not TMAPI_TOKEN:
+        raise HTTPException(status_code=400, detail="TMAPI token not configured")
+    
+    try:
+        # Step 1: Convert image URL if not from Alibaba
+        img_url = request.image_url
+        if not any(domain in img_url.lower() for domain in ['alicdn.com', '1688.com', 'taobao.com', 'tmall.com']):
+            # Convert the image URL first
+            convert_url = f"{TMAPI_BASE_URL}/1688/img_url_transfer"
+            convert_params = {
+                "apiToken": TMAPI_TOKEN,
+                "url": img_url,
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                convert_response = await client.get(convert_url, params=convert_params)
+                convert_result = convert_response.json()
+                
+                if convert_result.get("code") == 200 and convert_result.get("data", {}).get("img_url"):
+                    img_url = convert_result["data"]["img_url"]
+                    print(f"[Image Search] Converted image URL: {img_url[:50]}...")
+                else:
+                    # Try using original URL anyway
+                    print(f"[Image Search] Could not convert image, trying original URL")
+        
+        # Step 2: Search by image
+        search_url = f"{TMAPI_BASE_URL}/1688/search_items_by_pic"
+        search_params = {
+            "apiToken": TMAPI_TOKEN,
+            "img_url": img_url,
+            "page": request.page,
+            "page_size": min(request.page_size, 20),
+            "sort": request.sort,
+        }
+        
+        if request.price_start:
+            search_params["price_start"] = request.price_start
+        if request.price_end:
+            search_params["price_end"] = request.price_end
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(search_url, params=search_params)
+            result = response.json()
+            
+            if result.get("code") != 200:
+                return {
+                    "success": False,
+                    "error": result.get("msg", "Image search failed"),
+                    "code": result.get("code"),
+                }
+            
+            data = result.get("data", {})
+            items = data.get("items", [])
+            
+            # Parse results
+            products = []
+            for item in items:
+                products.append({
+                    "product_id": item.get("item_id") or item.get("num_iid"),
+                    "title": item.get("title"),
+                    "price": item.get("price"),
+                    "sale_price": item.get("sale_price"),
+                    "sales": item.get("sales") or item.get("sold"),
+                    "image": item.get("pic_url") or item.get("pic"),
+                    "shop_name": item.get("shop_name") or item.get("nick"),
+                    "url": f"https://detail.1688.com/offer/{item.get('item_id') or item.get('num_iid')}.html",
+                })
+            
+            return {
+                "success": True,
+                "total": data.get("total_results") or len(products),
+                "page": request.page,
+                "products": products,
+                "converted_image": img_url if img_url != request.image_url else None,
+            }
+            
+    except Exception as e:
+        print(f"[Image Search] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+
+@router.post("/image-convert")
+async def convert_image_url(image_url: str = Query(..., description="Image URL to convert")):
+    """
+    Convert a non-Alibaba image URL to an Alibaba-compatible URL.
+    Required before using image search with external images.
+    The converted URL is valid for 24 hours.
+    """
+    if not TMAPI_TOKEN:
+        raise HTTPException(status_code=400, detail="TMAPI token not configured")
+    
+    try:
+        url = f"{TMAPI_BASE_URL}/1688/img_url_transfer"
+        params = {
+            "apiToken": TMAPI_TOKEN,
+            "url": image_url,
+        }
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(url, params=params)
+            result = response.json()
+            
+            if result.get("code") == 200 and result.get("data", {}).get("img_url"):
+                return {
+                    "success": True,
+                    "original_url": image_url,
+                    "converted_url": result["data"]["img_url"],
+                    "valid_for": "24 hours",
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": result.get("msg", "Failed to convert image URL"),
+                    "code": result.get("code"),
+                }
+                
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+
+@router.post("/link-product-by-image")
+async def link_product_by_image(
+    order_item_index: int = Query(..., description="Index of the order item to link"),
+    customer_id: str = Query(..., description="Customer/Order ID"),
+    image_url: str = Query(..., description="Image URL to search with"),
+    store_name: str = Query("tnvcollection", description="Store name"),
+):
+    """
+    Search for a product by image and link the best match to an order item.
+    
+    This combines:
+    1. Image search to find matching 1688 products
+    2. Auto-linking the best match to the order
+    """
+    if not TMAPI_TOKEN:
+        raise HTTPException(status_code=400, detail="TMAPI token not configured")
+    
+    db = get_db()
+    
+    try:
+        # Step 1: Search by image
+        search_request = ImageSearchRequest(image_url=image_url, page_size=5)
+        search_result = await search_by_image(search_request)
+        
+        if not search_result.get("success") or not search_result.get("products"):
+            return {
+                "success": False,
+                "error": "No matching products found",
+                "search_result": search_result,
+            }
+        
+        # Step 2: Get the best match (first result)
+        best_match = search_result["products"][0]
+        product_id = best_match["product_id"]
+        
+        # Step 3: Get full product details with SKUs
+        product = await fetch_product_via_tmapi(str(product_id))
+        
+        # Step 4: Update the order with the linked product
+        update_result = await db.customers.update_one(
+            {"customer_id": customer_id, "store_name": store_name},
+            {
+                "$set": {
+                    f"line_items.{order_item_index}.linked_1688_product_id": str(product_id),
+                    f"line_items.{order_item_index}.linked_1688_url": best_match["url"],
+                    f"line_items.{order_item_index}.linked_1688_title": best_match["title"],
+                    f"line_items.{order_item_index}.linked_1688_price": best_match.get("price"),
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                }
+            }
+        )
+        
+        return {
+            "success": True,
+            "linked_product": {
+                "product_id": product_id,
+                "title": best_match["title"],
+                "price": best_match.get("price"),
+                "image": best_match.get("image"),
+                "url": best_match["url"],
+            },
+            "product_details": product,
+            "all_matches": search_result["products"][:5],
+            "message": f"Linked product {product_id} to order item",
+        }
+        
+    except Exception as e:
+        print(f"[Link by Image] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+
 @router.post("/batch-import")
 async def batch_import_products(request: BatchImportRequest, background_tasks: BackgroundTasks):
     """
