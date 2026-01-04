@@ -1009,3 +1009,113 @@ async def run_batch_import(
     scrape_jobs[job_id]["status"] = "completed"
     scrape_jobs[job_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
 
+
+
+@router.post("/extension-import")
+async def extension_import_products(request: ExtensionImportRequest, background_tasks: BackgroundTasks):
+    """
+    Import products directly from browser extension with full scraped data.
+    This bypasses the server-side scraping limitation since the extension 
+    already extracted the data from the user's browser session.
+    """
+    import uuid
+    db = get_db()
+    
+    if not request.products:
+        raise HTTPException(status_code=400, detail="No products provided")
+    
+    job_id = str(uuid.uuid4())[:8]
+    
+    scrape_jobs[job_id] = {
+        "status": "started",
+        "url": "extension_import",
+        "progress": 0,
+        "total": len(request.products),
+        "products_scraped": 0,
+        "products_created": 0,
+        "errors": [],
+        "started_at": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    # Run import in background
+    background_tasks.add_task(
+        run_extension_import,
+        job_id,
+        request.products,
+        request.translate
+    )
+    
+    return {
+        "success": True,
+        "job_id": job_id,
+        "message": f"Importing {len(request.products)} products from extension" + (" with translation" if request.translate else ""),
+        "product_ids": [p.id for p in request.products],
+    }
+
+
+async def run_extension_import(
+    job_id: str,
+    products: List[ExtensionProduct],
+    translate: bool = True
+):
+    """Background task to import products directly from extension data"""
+    db = get_db()
+    
+    scrape_jobs[job_id]["status"] = "processing"
+    
+    for i, ext_product in enumerate(products):
+        try:
+            # Parse price from string (e.g., "¥89.00" -> 89.00)
+            price_str = ext_product.price.replace('¥', '').replace(',', '').strip()
+            try:
+                price = float(price_str) if price_str else 0
+            except:
+                price = 0
+            
+            # Build product dict
+            product = {
+                "product_id": ext_product.id,
+                "url": ext_product.url or f"https://detail.1688.com/offer/{ext_product.id}.html",
+                "title": ext_product.title or f"Product {ext_product.id}",
+                "price": price,
+                "price_range": None,
+                "images": [ext_product.image] if ext_product.image else [],
+                "description": None,
+                "seller_name": None,
+                "min_order": 1,
+                "variants": [],
+                "source": "extension",
+            }
+            
+            # Translate if requested
+            if translate and product.get("title"):
+                try:
+                    product = await translate_product(product)
+                    scrape_jobs[job_id]["translated"] = scrape_jobs[job_id].get("translated", 0) + 1
+                except Exception as trans_error:
+                    print(f"Translation failed for {ext_product.id}: {trans_error}")
+            
+            # Save to database
+            product["scraped_at"] = datetime.now(timezone.utc).isoformat()
+            product["source_url"] = "extension_import"
+            
+            await db.scraped_products.update_one(
+                {"product_id": product["product_id"]},
+                {"$set": product},
+                upsert=True
+            )
+            
+            scrape_jobs[job_id]["products_scraped"] += 1
+            print(f"[Extension Import] Saved product {ext_product.id}: {product.get('title', '')[:40]}")
+                
+        except Exception as e:
+            print(f"[Extension Import] Error with {ext_product.id}: {e}")
+            scrape_jobs[job_id]["errors"].append(f"Product {ext_product.id}: {str(e)}")
+        
+        scrape_jobs[job_id]["progress"] = int((i + 1) / len(products) * 100)
+    
+    scrape_jobs[job_id]["status"] = "completed"
+    scrape_jobs[job_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
+    print(f"[Extension Import] Job {job_id} completed: {scrape_jobs[job_id]['products_scraped']}/{len(products)} products")
+
+
