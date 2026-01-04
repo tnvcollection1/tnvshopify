@@ -1004,6 +1004,67 @@ async def delete_scraped_product(product_id: str):
     raise HTTPException(status_code=404, detail="Product not found")
 
 
+# ==================== TMAPI Configuration ====================
+
+class TmapiConfigRequest(BaseModel):
+    api_token: str = Field(..., description="TMAPI API token from console.tmapi.io")
+
+
+@router.post("/tmapi/configure")
+async def configure_tmapi(request: TmapiConfigRequest):
+    """Configure TMAPI token for accessing 1688 product data"""
+    global TMAPI_TOKEN
+    
+    # Test the token
+    test_url = f"{TMAPI_BASE_URL}/1688/item_detail"
+    test_params = {
+        "apiToken": request.api_token,
+        "item_id": "652702302959",  # Test product ID
+    }
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(test_url, params=test_params)
+            result = response.json()
+            
+            if result.get("code") == 200 or result.get("data"):
+                # Token works! Save it
+                TMAPI_TOKEN = request.api_token
+                
+                # Also save to .env for persistence
+                env_path = Path(__file__).parent.parent / '.env'
+                with open(env_path, 'a') as f:
+                    f.write(f"\nTMAPI_TOKEN={request.api_token}")
+                
+                return {
+                    "success": True,
+                    "message": "TMAPI token configured successfully",
+                    "test_product": result.get("data", {}).get("item", {}).get("title", "Test successful")
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": f"Token validation failed: {result.get('message', 'Unknown error')}",
+                    "code": result.get("code")
+                }
+                
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Failed to validate token: {str(e)}"
+        }
+
+
+@router.get("/tmapi/status")
+async def get_tmapi_status():
+    """Check TMAPI configuration status"""
+    return {
+        "configured": bool(TMAPI_TOKEN),
+        "token_preview": TMAPI_TOKEN[:8] + "..." if TMAPI_TOKEN else None,
+        "api_url": TMAPI_BASE_URL,
+    }
+
+
 @router.post("/batch-import")
 async def batch_import_products(request: BatchImportRequest, background_tasks: BackgroundTasks):
     """
