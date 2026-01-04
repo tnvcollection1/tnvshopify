@@ -348,12 +348,12 @@ async function importAllProducts() {
   progressText.textContent = 'Starting import...';
   
   try {
-    // Send to WaMerce API
-    const response = await fetch(`${serverUrl}/api/1688-scraper/batch-import`, {
+    // Send full product data to WaMerce API (new extension-import endpoint)
+    const response = await fetch(`${serverUrl}/api/1688-scraper/extension-import`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        product_ids: products.map(p => p.id),
+        products: products,
         translate: translate
       })
     });
