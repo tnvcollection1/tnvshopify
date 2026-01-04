@@ -396,6 +396,10 @@ async def scrape_collection_with_playwright(url: str, max_products: int = 50) ->
     This bypasses anti-bot protection by rendering JavaScript.
     """
     from playwright.async_api import async_playwright
+    import os
+    
+    # Ensure Playwright can find browsers
+    os.environ.setdefault('PLAYWRIGHT_BROWSERS_PATH', '/pw-browsers')
     
     product_ids = []
     
