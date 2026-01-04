@@ -523,21 +523,34 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                               const sku = productSkus.find(s => s.specId === e.target.value);
                               if (sku) {
                                 setSelectedSpecId(sku.specId);
-                                // Extract color and size from attributes
-                                const colorAttr = sku.attributes?.find(a => a.attributeName === '颜色' || a.attributeName?.toLowerCase().includes('color'));
-                                const sizeAttr = sku.attributes?.find(a => a.attributeName === '尺码' || a.attributeName === '尺寸' || a.attributeName?.toLowerCase().includes('size'));
-                                if (colorAttr) setSelectedColor(colorAttr.attributeValue);
-                                if (sizeAttr) setSelectedSize(sizeAttr.attributeValue);
+                                // Extract color and size from props_names or color/size fields
+                                if (sku.color) setSelectedColor(sku.color);
+                                if (sku.size) setSelectedSize(sku.size);
                               }
                             }}
                             className="w-full p-2 border border-green-300 rounded text-sm bg-white"
                           >
                             <option value="">-- Select variant --</option>
                             {productSkus.map((sku, idx) => {
-                              const attrs = sku.attributes?.map(a => a.attributeValue).join(' / ') || `SKU ${idx + 1}`;
+                              // Try props_names first (from TMAPI), then attributes, then fallback
+                              let displayText = '';
+                              if (sku.props_names) {
+                                // Parse "颜色:黑色;尺码:46" into "黑色 / 46"
+                                const parts = sku.props_names.split(';').map(p => {
+                                  const [, value] = p.split(':');
+                                  return value?.trim() || '';
+                                }).filter(Boolean);
+                                displayText = parts.join(' / ');
+                              } else if (sku.color || sku.size) {
+                                displayText = [sku.color, sku.size].filter(Boolean).join(' / ');
+                              } else if (sku.attributes?.length > 0) {
+                                displayText = sku.attributes.map(a => a.attributeValue || a.value).join(' / ');
+                              }
+                              displayText = displayText || `SKU ${idx + 1}`;
+                              
                               return (
                                 <option key={sku.specId || idx} value={sku.specId}>
-                                  {attrs} - ¥{sku.price} ({sku.stock} in stock)
+                                  {displayText} - ¥{sku.price} ({sku.stock} in stock)
                                 </option>
                               );
                             })}
