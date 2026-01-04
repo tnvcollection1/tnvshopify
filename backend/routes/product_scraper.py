@@ -157,7 +157,11 @@ HEADERS = {
     'Referer': 'https://www.1688.com/',
 }
 
-# 1688 API Configuration
+# TMAPI Configuration (Third-party 1688 API - like Dianxiaomi uses)
+TMAPI_BASE_URL = "http://api.tmapi.top"
+TMAPI_TOKEN = os.environ.get("TMAPI_TOKEN", "")
+
+# 1688 API Configuration (Official - limited to products you've ordered from)
 import hmac
 import hashlib
 import time as _time
