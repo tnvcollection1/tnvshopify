@@ -1196,16 +1196,22 @@ async def get_tmapi_status():
         "configured": bool(TMAPI_TOKEN),
         "token_preview": TMAPI_TOKEN[:8] + "..." if TMAPI_TOKEN else None,
         "api_url": TMAPI_BASE_URL,
+        "supported_platforms": ["1688", "taobao", "tmall"],
     }
 
 
 @router.post("/batch-import")
 async def batch_import_products(request: BatchImportRequest, background_tasks: BackgroundTasks):
     """
-    Import multiple products by their 1688 product IDs.
-    This uses direct product scraping (works better than page scraping).
+    Import multiple products by their product IDs.
+    Supports: 1688, Taobao, and Tmall products.
     
     Accepts product IDs or full product URLs (will extract ID).
+    
+    Examples:
+    - 1688: "739758517850" or "https://detail.1688.com/offer/739758517850.html"
+    - Taobao: "649752139926" or "https://item.taobao.com/item.htm?id=649752139926"
+    - Tmall: "https://detail.tmall.com/item.htm?id=649752139926"
     """
     import uuid
     db = get_db()
@@ -1216,10 +1222,15 @@ async def batch_import_products(request: BatchImportRequest, background_tasks: B
         item = item.strip()
         if not item:
             continue
-        # Extract ID from URL if it's a URL
+        
+        # Keep the full URL/ID for platform detection later
+        # Extract ID from 1688 URL
         id_match = re.search(r'offer/(\d{10,})', item)
         if id_match:
-            product_ids.append(id_match.group(1))
+            product_ids.append(item)  # Keep original to detect platform
+        # Extract ID from Taobao/Tmall URL
+        elif 'id=' in item:
+            product_ids.append(item)  # Keep original to detect platform
         elif item.isdigit() and len(item) >= 10:
             product_ids.append(item)
     
