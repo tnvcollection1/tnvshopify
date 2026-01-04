@@ -1069,7 +1069,7 @@ async def run_batch_import(
     create_in_shopify: bool,
     translate: bool = True
 ):
-    """Background task to import products by ID using 1688 API"""
+    """Background task to import products by ID using TMAPI (best) or fallback APIs"""
     db = get_db()
     
     scrape_jobs[job_id]["status"] = "processing"
@@ -1079,17 +1079,30 @@ async def run_batch_import(
         try:
             product = None
             
-            # Method 1: Try to use 1688 API first (works for products from suppliers you've ordered from)
-            try:
-                api_product = await fetch_product_via_api(product_id)
-                if api_product and api_product.get("title"):
-                    product = api_product
-            except Exception as api_error:
-                print(f"API fetch failed for {product_id}: {api_error}")
+            # Method 1: TMAPI (third-party API - works for ANY product, like Dianxiaomi)
+            if TMAPI_TOKEN:
+                try:
+                    product = await fetch_product_via_tmapi(product_id)
+                    if product:
+                        scrape_jobs[job_id]["method_used"] = "tmapi"
+                except Exception as tmapi_error:
+                    print(f"[TMAPI] Error for {product_id}: {tmapi_error}")
             
-            # Method 2: Fall back to HTML scraping if API fails
+            # Method 2: Official 1688 API (only works for products from your suppliers)
+            if not product:
+                try:
+                    api_product = await fetch_product_via_api(product_id)
+                    if api_product and api_product.get("title"):
+                        product = api_product
+                        scrape_jobs[job_id]["method_used"] = "official_api"
+                except Exception as api_error:
+                    print(f"[Official API] Error for {product_id}: {api_error}")
+            
+            # Method 3: Fall back to HTML scraping if all APIs fail
             if not product:
                 product = await scrape_product_details(product_id)
+                if product:
+                    scrape_jobs[job_id]["method_used"] = "scrape"
             
             if product and product.get("title"):
                 # Translate if requested
