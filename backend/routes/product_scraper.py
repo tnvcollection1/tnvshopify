@@ -398,16 +398,17 @@ async def scrape_collection_with_playwright(url: str, max_products: int = 50) ->
     from playwright.async_api import async_playwright
     import os
     
-    # Ensure Playwright can find browsers
-    os.environ.setdefault('PLAYWRIGHT_BROWSERS_PATH', '/pw-browsers')
+    # Ensure Playwright can find browsers - set before importing
+    os.environ['PLAYWRIGHT_BROWSERS_PATH'] = '/pw-browsers'
     
     product_ids = []
     
     try:
         async with async_playwright() as p:
-            # Launch headless browser
+            # Launch headless browser with explicit executable path
             browser = await p.chromium.launch(
                 headless=True,
+                executable_path='/pw-browsers/chromium-1200/chrome-linux/chrome',
                 args=[
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
