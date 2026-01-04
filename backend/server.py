@@ -6295,7 +6295,6 @@ async def shutdown_db_client():
     client.close()
 
 # Browser Extension Download
-from fastapi.responses import FileResponse
 import zipfile
 
 @app.get("/api/extension/download")
