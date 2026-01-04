@@ -6335,7 +6335,7 @@ async def get_extension_info():
     }
 
 
-@app.get("/download/chrome-extension")
+@app.get("/api/download/chrome-extension")
 async def download_extension_alt():
     """Alternative download path for the WaMerce 1688 browser extension"""
     extension_path = Path("/app/wamerce-1688-extension.zip")
