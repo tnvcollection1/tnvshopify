@@ -14,7 +14,7 @@ import os
 import time
 
 # Get backend URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://procure-hub-16.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://alidropsource.preview.emergentagent.com')
 
 
 @pytest.fixture
