@@ -428,96 +428,131 @@ const ProductScraper = () => {
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <div className="text-sm text-yellow-700">
-                  <p className="font-medium">Limited Availability</p>
+                  <p className="font-medium">⚠️ 1688 Blocks Server-Side Scraping</p>
                   <p className="text-yellow-600 mt-1">
-                    Page scraping may be blocked by 1688's anti-bot protection. For best results, use the Batch Import method with direct product IDs.
+                    1688.com blocks automated access from servers. Use the <strong>recommended workaround below</strong> to extract product IDs from your browser.
                   </p>
                 </div>
               </div>
               
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">
-                  1688 Store/Collection URL
-                </label>
-                <Input
-                  value={scrapeUrl}
-                  onChange={(e) => setScrapeUrl(e.target.value)}
-                  placeholder="https://shop123456.1688.com or collection URL"
-                  className="font-mono text-sm"
-                  data-testid="scrape-url-input"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Paste the URL of a 1688 store page or product collection
+              {/* Console Script Workaround */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm font-medium text-blue-800 mb-2">✨ Easy Workaround: Browser Console Script</p>
+                <ol className="text-sm text-blue-700 space-y-2 mb-3">
+                  <li>1. Open the 1688 store/collection page in your browser</li>
+                  <li>2. Press <kbd className="px-1 py-0.5 bg-blue-100 rounded text-xs">F12</kbd> to open Developer Tools</li>
+                  <li>3. Go to the <strong>Console</strong> tab</li>
+                  <li>4. Paste this script and press Enter:</li>
+                </ol>
+                <div className="relative">
+                  <pre className="bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto">
+{`(function(){var ids=[];document.querySelectorAll('a[href*="offer/"]').forEach(function(a){var m=a.href.match(/offer\\/(\\d{10,})/);if(m)ids.push(m[1])});ids=[...new Set(ids)];if(ids.length){var t=ids.join('\\n');navigator.clipboard.writeText(t).then(function(){alert('✅ Copied '+ids.length+' product IDs to clipboard!\\n\\nNow paste them in the "Batch Import" tab.')});console.log(t)}else{alert('No products found. Scroll down to load more products, then try again.')}})();`}
+                  </pre>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="absolute top-2 right-2 text-xs bg-white"
+                    onClick={() => {
+                      const script = `(function(){var ids=[];document.querySelectorAll('a[href*="offer/"]').forEach(function(a){var m=a.href.match(/offer\\/(\\d{10,})/);if(m)ids.push(m[1])});ids=[...new Set(ids)];if(ids.length){var t=ids.join('\\n');navigator.clipboard.writeText(t).then(function(){alert('✅ Copied '+ids.length+' product IDs to clipboard!\\n\\nNow paste them in the "Batch Import" tab.')});console.log(t)}else{alert('No products found. Scroll down to load more products, then try again.')}})();`;
+                      navigator.clipboard.writeText(script);
+                      toast.success('Script copied! Paste in browser console on 1688 page');
+                    }}
+                  >
+                    📋 Copy Script
+                  </Button>
+                </div>
+                <p className="text-xs text-blue-600 mt-2">
+                  5. The product IDs will be copied to your clipboard. Paste them in the "Batch Import" tab above.
                 </p>
               </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <p className="text-sm text-gray-500 mb-3">Or try automatic scraping (may not work due to 1688's protection):</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700 block mb-1">
-                    Max Products to Scrape
+                    1688 Store/Collection URL
                   </label>
                   <Input
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={maxProducts}
-                    onChange={(e) => setMaxProducts(parseInt(e.target.value) || 20)}
+                    value={scrapeUrl}
+                    onChange={(e) => setScrapeUrl(e.target.value)}
+                    placeholder="https://shop123456.1688.com or collection URL"
+                    className="font-mono text-sm"
+                    data-testid="scrape-url-input"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Paste the URL of a 1688 store page or product collection
+                  </p>
                 </div>
                 
-                <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">
-                    Import to Shopify Store
-                  </label>
-                  <Select value={selectedStore} onValueChange={setSelectedStore}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select store (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Don't import</SelectItem>
-                      {stores.map((store) => (
-                        <SelectItem key={store.store_name} value={store.store_name}>
-                          {store.store_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">
+                      Max Products to Scrape
+                    </label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={maxProducts}
+                      onChange={(e) => setMaxProducts(parseInt(e.target.value) || 20)}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-1">
+                      Import to Shopify Store
+                    </label>
+                    <Select value={selectedStore} onValueChange={setSelectedStore}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select store (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Don't import</SelectItem>
+                        {stores.map((store) => (
+                          <SelectItem key={store.store_name} value={store.store_name}>
+                            {store.store_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
-              
-              {selectedStore && selectedStore !== 'none' && (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="createInShopify"
-                    checked={createInShopify}
-                    onChange={(e) => setCreateInShopify(e.target.checked)}
-                    className="rounded border-gray-300"
-                  />
-                  <label htmlFor="createInShopify" className="text-sm text-gray-700">
-                    Auto-create products in Shopify after scraping
-                  </label>
-                </div>
-              )}
-              
-              <Button
-                onClick={startScrape}
-                disabled={isLoading || !scrapeUrl.trim()}
-                className="w-full bg-orange-500 hover:bg-orange-600"
-                data-testid="start-scraping-btn"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Scraping... {jobStatus?.progress || 0}%
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4 mr-2" />
-                    Start Scraping
-                  </>
+                
+                {selectedStore && selectedStore !== 'none' && (
+                  <div className="flex items-center gap-2 mt-4">
+                    <input
+                      type="checkbox"
+                      id="createInShopify"
+                      checked={createInShopify}
+                      onChange={(e) => setCreateInShopify(e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <label htmlFor="createInShopify" className="text-sm text-gray-700">
+                      Auto-create products in Shopify after scraping
+                    </label>
+                  </div>
                 )}
-              </Button>
+                
+                <Button
+                  onClick={startScrape}
+                  disabled={isLoading || !scrapeUrl.trim()}
+                  className="w-full bg-gray-500 hover:bg-gray-600 mt-4"
+                  data-testid="start-scraping-btn"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Scraping... {jobStatus?.progress || 0}%
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4 mr-2" />
+                      Try Automatic Scraping (May Fail)
+                    </>
+                  )}
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
           
