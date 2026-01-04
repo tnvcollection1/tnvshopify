@@ -297,7 +297,6 @@ async def fetch_product_via_tmapi(product_id: str) -> Optional[Dict]:
     params = {
         "apiToken": TMAPI_TOKEN,
         "item_id": product_id,
-        "scene": "drop_shipping",  # Optimize for dropshipping
     }
     
     try:
@@ -307,97 +306,93 @@ async def fetch_product_via_tmapi(product_id: str) -> Optional[Dict]:
             result = response.json()
             
             # Check for success
-            if result.get("code") != 200 and not result.get("data"):
-                print(f"[TMAPI] API error for {product_id}: {result.get('message', 'Unknown error')}")
+            if result.get("code") != 200:
+                print(f"[TMAPI] API error for {product_id}: {result.get('msg', 'Unknown error')}")
                 return None
             
             data = result.get("data", {})
-            item = data.get("item", data)  # Handle different response structures
             
-            if not item:
-                print(f"[TMAPI] No item data for {product_id}")
+            if not data:
+                print(f"[TMAPI] No data for {product_id}")
                 return None
             
             # Extract images
             images = []
-            main_imgs = item.get("main_imgs", []) or item.get("images", [])
+            main_imgs = data.get("main_imgs", [])
             for img in main_imgs[:10]:
-                img_url = img if isinstance(img, str) else img.get("url", "")
-                if img_url:
-                    if img_url.startswith("//"):
-                        img_url = "https:" + img_url
-                    images.append(img_url)
+                if img:
+                    if img.startswith("//"):
+                        img = "https:" + img
+                    images.append(img)
             
             # Extract price info
-            price = 0
-            price_info = item.get("price_info", {}) or {}
-            price_range_list = price_info.get("price_range", []) or item.get("price_range", [])
-            
-            if price_range_list and len(price_range_list) > 0:
-                first_price = price_range_list[0]
-                price = float(first_price.get("price", 0))
-            elif item.get("price"):
-                price = float(item.get("price", 0))
+            price_info = data.get("price_info", {})
+            price = float(price_info.get("price", 0) or price_info.get("price_min", 0) or 0)
             
             # Build price range string
             price_range_str = None
-            if price_range_list and len(price_range_list) > 1:
-                min_price = price_range_list[0].get("price", 0)
-                max_price = price_range_list[-1].get("price", 0)
-                price_range_str = f"¥{min_price} - ¥{max_price}"
+            price_min = price_info.get("price_min")
+            price_max = price_info.get("price_max")
+            if price_min and price_max and price_min != price_max:
+                price_range_str = f"¥{price_min} - ¥{price_max}"
             
-            # Extract SKU/variants
+            # Extract SKU/variants with CORRECT field names
             variants = []
-            sku_list = item.get("sku", []) or item.get("skus", []) or []
+            sku_list = data.get("skus", [])
             for sku in sku_list[:50]:  # Limit to 50 variants
-                sku_attrs = []
-                props = sku.get("props", []) or sku.get("properties", []) or []
-                for prop in props:
-                    sku_attrs.append({
-                        "name": prop.get("prop_name", ""),
-                        "value": prop.get("prop_value", ""),
-                    })
+                # Parse props_names like "颜色:黑色;尺码:46"
+                props_names = sku.get("props_names", "")
+                attributes = []
+                if props_names:
+                    for prop in props_names.split(";"):
+                        if ":" in prop:
+                            name, value = prop.split(":", 1)
+                            attributes.append({
+                                "name": name.strip(),
+                                "value": value.strip(),
+                            })
                 
                 variants.append({
-                    "sku_id": sku.get("sku_id") or sku.get("skuId"),
-                    "price": sku.get("price") or sku.get("sku_price"),
-                    "stock": sku.get("quantity") or sku.get("stock"),
-                    "attributes": sku_attrs,
-                    "thumb": sku.get("thumb") or sku.get("thumbnail"),
+                    "sku_id": sku.get("skuid"),
+                    "spec_id": sku.get("specid"),  # IMPORTANT for ordering!
+                    "price": float(sku.get("sale_price", 0) or 0),
+                    "stock": sku.get("stock", 0),
+                    "attributes": attributes,
+                    "props_names": props_names,  # Keep original for display
                 })
             
             # Extract shop/seller info
-            shop_info = item.get("shop_info", {}) or item.get("seller", {}) or {}
+            shop_info = data.get("shop_info", {})
             
             product = {
                 "product_id": product_id,
-                "url": f"https://detail.1688.com/offer/{product_id}.html",
-                "title": item.get("title") or item.get("subject", ""),
+                "url": data.get("product_url") or f"https://detail.1688.com/offer/{product_id}.html",
+                "title": data.get("title", ""),
                 "price": price,
                 "price_range": price_range_str,
                 "images": images,
-                "description": item.get("desc") or item.get("description"),
-                "seller_name": shop_info.get("shop_name") or shop_info.get("seller_nick") or item.get("seller_nick"),
-                "seller_id": shop_info.get("seller_id") or item.get("seller_id"),
-                "min_order": item.get("min_order_quantity") or item.get("minOrderQuantity") or 1,
+                "description": None,
+                "seller_name": shop_info.get("shop_name"),
+                "seller_id": shop_info.get("shop_id"),
+                "min_order": data.get("mixed_batch", {}).get("mix_num", 1) or 1,
                 "variants": variants,
-                "sales": item.get("sales") or item.get("sold_quantity"),
+                "sales": data.get("sale_count"),
                 "source": "tmapi",
             }
             
-            print(f"[TMAPI] Successfully fetched {product_id}: {product['title'][:40]}...")
+            print(f"[TMAPI] Successfully fetched {product_id}: {product['title'][:40]}... ({len(variants)} variants)")
             return product
             
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 439:
-            print(f"[TMAPI] Quota exceeded or subscription issue for {product_id}")
-        elif e.response.status_code == 422:
-            print(f"[TMAPI] Invalid parameter for {product_id}")
+            print(f"[TMAPI] Quota exceeded for {product_id}")
         else:
             print(f"[TMAPI] HTTP error for {product_id}: {e}")
         return None
     except Exception as e:
         print(f"[TMAPI] Error fetching {product_id}: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
