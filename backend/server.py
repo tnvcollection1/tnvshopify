@@ -1241,6 +1241,208 @@ async def sync_shopify_orders(store_name: str, days_back: int = 3650, full_sync:
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==================== NON-BLOCKING BACKGROUND SYNC ====================
+
+@api_router.post("/shopify/sync-background/{store_name}")
+async def start_shopify_sync_background(store_name: str, days_back: int = 30, background_tasks: BackgroundTasks = None):
+    """
+    Start a non-blocking background Shopify sync.
+    Returns immediately with a job ID to track progress.
+    """
+    import uuid as uuid_module
+    
+    # Get store credentials
+    store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
+    
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    if not store.get('shopify_domain') or not store.get('shopify_token'):
+        raise HTTPException(status_code=400, detail="Shopify not configured for this store")
+    
+    # Create job
+    job_id = str(uuid_module.uuid4())[:8]
+    shopify_sync_jobs[job_id] = {
+        "status": "started",
+        "store_name": store_name,
+        "progress": 0,
+        "orders_fetched": 0,
+        "orders_processed": 0,
+        "errors": [],
+        "started_at": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    # Start background task
+    background_tasks.add_task(
+        run_shopify_sync_background,
+        job_id,
+        store_name,
+        store['shopify_domain'],
+        store['shopify_token'],
+        days_back
+    )
+    
+    return {
+        "success": True,
+        "job_id": job_id,
+        "message": f"Sync started for {store_name}",
+        "status_url": f"/api/shopify/sync-status/{job_id}"
+    }
+
+
+@api_router.get("/shopify/sync-status/{job_id}")
+async def get_shopify_sync_status(job_id: str):
+    """Get the status of a background sync job"""
+    if job_id not in shopify_sync_jobs:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    return {
+        "success": True,
+        "job": shopify_sync_jobs[job_id]
+    }
+
+
+async def run_shopify_sync_background(
+    job_id: str,
+    store_name: str,
+    shopify_domain: str,
+    shopify_token: str,
+    days_back: int
+):
+    """Background task to sync Shopify orders without blocking"""
+    try:
+        shopify_sync_jobs[job_id]["status"] = "fetching"
+        
+        # Use async sync
+        sync = ShopifyAsyncSync(shopify_domain, shopify_token, max_workers=5)
+        
+        created_after = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
+        logger.info(f"🚀 [BG Sync {job_id}] Starting for {store_name} (last {days_back} days)")
+        
+        # Fetch orders
+        orders = await sync.fetch_orders_concurrent(created_after=created_after, status="any", max_batches=10)
+        shopify_sync_jobs[job_id]["orders_fetched"] = len(orders)
+        shopify_sync_jobs[job_id]["status"] = "processing"
+        
+        sync.close()
+        
+        if not orders:
+            shopify_sync_jobs[job_id]["status"] = "completed"
+            shopify_sync_jobs[job_id]["message"] = "No new orders to sync"
+            return
+        
+        # Process orders in batches
+        total = len(orders)
+        customers_updated = 0
+        customers_created = 0
+        
+        for i, order_data in enumerate(orders):
+            try:
+                customer_id = order_data['customer_id']
+                existing = await db.customers.find_one(
+                    {"customer_id": customer_id, "store_name": store_name}, 
+                    {"_id": 0}
+                )
+                
+                order_skus = [item['sku'].upper() for item in order_data['line_items'] if item.get('sku')]
+                
+                sizes = []
+                for item in order_data['line_items']:
+                    name = item.get('name', '')
+                    if '/' in name:
+                        parts = name.split('/')
+                        size = parts[-1].strip() if len(parts) > 1 else 'Unknown'
+                        sizes.append(size)
+                
+                if existing:
+                    existing_skus = set(existing.get('order_skus', []))
+                    merged_skus = list(existing_skus.union(set(order_skus)))
+                    
+                    existing_sizes = set(existing.get('shoe_sizes', []))
+                    merged_sizes = list(existing_sizes.union(set(sizes)))
+                    
+                    await db.customers.update_one(
+                        {"customer_id": customer_id, "store_name": store_name},
+                        {"$set": {
+                            "first_name": order_data.get('first_name') or existing.get('first_name'),
+                            "last_name": order_data.get('last_name') or existing.get('last_name'),
+                            "email": order_data.get('email') or existing.get('email'),
+                            "phone": order_data.get('phone') or existing.get('phone'),
+                            "country_code": order_data.get('country_code') or existing.get('country_code'),
+                            "order_skus": merged_skus,
+                            "shoe_sizes": merged_sizes,
+                            "line_items": order_data.get('line_items', []),
+                            "order_number": str(order_data.get('order_number', '')),
+                            "shopify_order_id": order_data.get('shopify_order_id'),
+                            "last_order_date": order_data.get('order_date'),
+                            "fulfillment_status": order_data.get('fulfillment_status'),
+                            "fulfilled_at": order_data.get('fulfilled_at'),
+                            "payment_status": order_data.get('payment_status'),
+                            "payment_method": order_data.get('payment_method'),
+                            "tracking_number": order_data['tracking_info']['tracking_number'] if order_data.get('tracking_info') else None,
+                            "tracking_company": order_data['tracking_info']['tracking_company'] if order_data.get('tracking_info') else 'TCS Pakistan',
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    customers_updated += 1
+                else:
+                    new_customer = {
+                        "id": str(uuid.uuid4()),
+                        "customer_id": customer_id,
+                        "first_name": order_data.get('first_name'),
+                        "last_name": order_data.get('last_name'),
+                        "email": order_data.get('email'),
+                        "phone": order_data.get('phone'),
+                        "country_code": order_data.get('country_code'),
+                        "store_name": store_name,
+                        "order_skus": order_skus,
+                        "shoe_sizes": sizes if sizes else ['Unknown'],
+                        "line_items": order_data.get('line_items', []),
+                        "order_count": 1,
+                        "order_number": str(order_data.get('order_number', '')),
+                        "shopify_order_id": order_data.get('shopify_order_id'),
+                        "last_order_date": order_data.get('order_date'),
+                        "fulfilled_at": order_data.get('fulfilled_at'),
+                        "total_spent": order_data.get('total_price', 0),
+                        "fulfillment_status": order_data.get('fulfillment_status'),
+                        "payment_status": order_data.get('payment_status'),
+                        "payment_method": order_data.get('payment_method'),
+                        "tracking_number": order_data['tracking_info']['tracking_number'] if order_data.get('tracking_info') else None,
+                        "tracking_company": order_data['tracking_info']['tracking_company'] if order_data.get('tracking_info') else 'TCS Pakistan',
+                        "messaged": False,
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    await db.customers.insert_one(new_customer)
+                    customers_created += 1
+                
+                # Update progress every 10 orders
+                if i % 10 == 0:
+                    shopify_sync_jobs[job_id]["progress"] = int((i + 1) / total * 100)
+                    shopify_sync_jobs[job_id]["orders_processed"] = i + 1
+                    
+            except Exception as e:
+                shopify_sync_jobs[job_id]["errors"].append(f"Order {order_data.get('order_number')}: {str(e)}")
+        
+        # Update last sync time
+        await db.stores.update_one(
+            {"store_name": store_name},
+            {"$set": {"last_synced_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        shopify_sync_jobs[job_id]["status"] = "completed"
+        shopify_sync_jobs[job_id]["progress"] = 100
+        shopify_sync_jobs[job_id]["orders_processed"] = total
+        shopify_sync_jobs[job_id]["customers_created"] = customers_created
+        shopify_sync_jobs[job_id]["customers_updated"] = customers_updated
+        shopify_sync_jobs[job_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
+        
+        logger.info(f"✅ [BG Sync {job_id}] Completed: {total} orders, {customers_created} new, {customers_updated} updated")
+        
+    except Exception as e:
+        shopify_sync_jobs[job_id]["status"] = "failed"
+        shopify_sync_jobs[job_id]["error"] = str(e)
+        logger.error(f"❌ [BG Sync {job_id}] Failed: {e}")
+
 
 @api_router.post("/shopify/sync-fast/{store_name}")
 async def sync_shopify_orders_fast(store_name: str, days_back: int = 3650):
