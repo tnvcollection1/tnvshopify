@@ -108,6 +108,7 @@ class ScrapeRequest(BaseModel):
     store_name: Optional[str] = Field(None, description="Shopify store to import to")
     create_in_shopify: bool = Field(False, description="Auto-create products in Shopify")
     max_products: int = Field(50, description="Maximum products to scrape")
+    translate: bool = Field(True, description="Translate Chinese to English")
 
 
 class BatchImportRequest(BaseModel):
