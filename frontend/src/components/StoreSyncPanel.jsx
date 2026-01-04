@@ -35,10 +35,12 @@ const StoreSyncPanel = ({ onSyncComplete }) => {
       let totalSynced = 0;
       const results = {};
       const jobIds = {};
+      let useBackgroundSync = true;
 
-      // Start all sync jobs (non-blocking)
+      // Try new background sync first, fall back to old sync if not available
       for (const store of storesToSync) {
         try {
+          // Try new background endpoint first
           const response = await axios.post(
             `${API_URL}/api/shopify/sync-background/${store}`,
             null,
@@ -54,30 +56,111 @@ const StoreSyncPanel = ({ onSyncComplete }) => {
             };
           }
         } catch (error) {
-          results[store] = {
-            success: false,
-            error: error.response?.data?.detail || 'Failed to start sync'
-          };
+          // If background endpoint doesn't exist (404), fall back to old sync
+          if (error.response?.status === 404 || error.response?.status === 405) {
+            useBackgroundSync = false;
+            console.log('Background sync not available, using legacy sync');
+            
+            try {
+              // Fall back to old sync-fast endpoint
+              const legacyResponse = await axios.post(
+                `${API_URL}/api/shopify/sync-fast/${store}`,
+                null,
+                { params: { days_back: 30 } }
+              );
+
+              results[store] = {
+                success: true,
+                count: legacyResponse.data.orders_synced || legacyResponse.data.total_synced || 0
+              };
+              totalSynced += results[store].count;
+            } catch (legacyError) {
+              results[store] = {
+                success: false,
+                error: legacyError.response?.data?.detail || 'Failed to sync'
+              };
+            }
+          } else {
+            results[store] = {
+              success: false,
+              error: error.response?.data?.detail || 'Failed to start sync'
+            };
+          }
         }
       }
 
-      // Poll for completion
-      const pollInterval = 2000; // 2 seconds
-      const maxPolls = 60; // 2 minutes max
-      let polls = 0;
-      
-      const checkJobs = async () => {
-        let allComplete = true;
+      // If using background sync, poll for completion
+      if (useBackgroundSync && Object.keys(jobIds).length > 0) {
+        const pollInterval = 2000;
+        const maxPolls = 60;
+        let polls = 0;
         
-        for (const store of Object.keys(jobIds)) {
-          try {
-            const statusRes = await axios.get(
-              `${API_URL}/api/shopify/sync-status/${jobIds[store]}`
-            );
-            
-            const job = statusRes.data.job;
-            results[store] = {
-              success: true,
+        const checkJobs = async () => {
+          let allComplete = true;
+          
+          for (const store of Object.keys(jobIds)) {
+            try {
+              const statusRes = await axios.get(
+                `${API_URL}/api/shopify/sync-status/${jobIds[store]}`
+              );
+              
+              const job = statusRes.data.job;
+              results[store] = {
+                success: true,
+                status: job.status,
+                count: job.orders_processed || 0,
+                progress: job.progress || 0
+              };
+              
+              if (job.status === 'completed') {
+                totalSynced += job.orders_processed || 0;
+              } else if (job.status !== 'failed') {
+                allComplete = false;
+              }
+            } catch (err) {
+              console.error(`Error checking status for ${store}:`, err);
+            }
+          }
+          
+          setSyncStatus({
+            type: 'shopify',
+            results,
+            total: totalSynced,
+            inProgress: !allComplete
+          });
+          
+          polls++;
+          
+          if (!allComplete && polls < maxPolls) {
+            setTimeout(checkJobs, pollInterval);
+          } else {
+            setSyncing(false);
+            if (onSyncComplete) onSyncComplete();
+          }
+        };
+        
+        setTimeout(checkJobs, pollInterval);
+      } else {
+        // Legacy sync completed immediately
+        setSyncStatus({
+          type: 'shopify',
+          results,
+          total: totalSynced
+        });
+        setSyncing(false);
+        if (onSyncComplete) onSyncComplete();
+      }
+      
+    } catch (error) {
+      console.error('Sync error:', error);
+      setSyncStatus({
+        type: 'shopify',
+        results: { error: { success: false, error: 'Sync failed: ' + error.message } },
+        total: 0
+      });
+      setSyncing(false);
+    }
+  };
               status: job.status,
               count: job.orders_processed || 0,
               progress: job.progress || 0
