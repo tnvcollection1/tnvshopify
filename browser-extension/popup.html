@@ -2,292 +2,442 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <title>WaMerce 1688 Importer</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+    
     body {
-      width: 350px;
+      width: 380px;
+      min-height: 400px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 400px;
+      color: #333;
     }
+    
+    .container {
+      padding: 0;
+    }
+    
+    /* Header */
     .header {
-      background: rgba(255,255,255,0.1);
-      padding: 15px;
+      background: rgba(255,255,255,0.15);
+      padding: 16px;
       text-align: center;
       border-bottom: 1px solid rgba(255,255,255,0.2);
     }
-    .header h1 {
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    
+    .logo-icon {
+      font-size: 28px;
+    }
+    
+    .logo-text {
+      font-size: 20px;
+      font-weight: 700;
       color: white;
-      font-size: 18px;
-      font-weight: 600;
     }
-    .header p {
-      color: rgba(255,255,255,0.8);
-      font-size: 12px;
-      margin-top: 5px;
-    }
-    .content {
-      padding: 15px;
-    }
-    .server-config {
-      background: rgba(255,255,255,0.95);
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 15px;
-    }
-    .server-config label {
-      display: block;
+    
+    .version {
       font-size: 11px;
-      color: #666;
-      margin-bottom: 5px;
+      color: rgba(255,255,255,0.7);
     }
-    .server-config input {
-      width: 100%;
-      padding: 8px 10px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 12px;
+    
+    /* Connection Status */
+    .connection-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: white;
+      border-bottom: 1px solid #e5e5e5;
     }
-    .server-config input:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-    .status-card {
-      background: rgba(255,255,255,0.95);
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 15px;
-    }
-    .status-card h3 {
-      font-size: 13px;
-      color: #333;
-      margin-bottom: 10px;
+    
+    .status {
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 12px;
     }
-    .status-indicator {
+    
+    .status-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
       background: #ccc;
     }
-    .status-indicator.connected {
-      background: #22c55e;
+    
+    .status-dot.connected { background: #22c55e; }
+    .status-dot.error { background: #ef4444; }
+    .status-dot.loading { background: #f59e0b; animation: pulse 1s infinite; }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
-    .status-indicator.error {
-      background: #ef4444;
+    
+    /* Server URL Input */
+    .server-section {
+      padding: 12px 16px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e5e5e5;
     }
-    .product-count {
-      font-size: 24px;
-      font-weight: bold;
-      color: #667eea;
+    
+    .server-input-group {
+      display: flex;
+      gap: 8px;
     }
-    .product-count span {
+    
+    .server-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
       font-size: 12px;
-      color: #666;
-      font-weight: normal;
     }
+    
+    .server-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .save-btn {
+      padding: 8px 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    
+    .save-btn:hover { background: #5a6fd6; }
+    
+    /* Main Content */
+    .main-content {
+      background: white;
+      padding: 16px;
+    }
+    
+    /* Page Detection */
+    .page-info {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .page-info.store { background: #f0fdf4; border-color: #86efac; }
+    .page-info.product { background: #fef3c7; border-color: #fcd34d; }
+    .page-info.search { background: #ede9fe; border-color: #c4b5fd; }
+    
+    .page-type {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    
+    .page-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    /* Product Count */
+    .product-count {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .count-number {
+      font-size: 48px;
+      font-weight: 700;
+      color: white;
+    }
+    
+    .count-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.9);
+    }
+    
+    /* Action Buttons */
     .actions {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
-    .btn {
-      padding: 12px 15px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
+    
+    .action-btn {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
       transition: all 0.2s;
     }
-    .btn-primary {
-      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .action-btn.primary {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
       color: white;
     }
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+    
+    .action-btn.primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
     }
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
+    
+    .action-btn.secondary {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #e5e7eb;
     }
-    .btn-secondary {
-      background: rgba(255,255,255,0.9);
-      color: #333;
-      border: 1px solid #ddd;
+    
+    .action-btn.secondary:hover:not(:disabled) {
+      background: #e5e7eb;
     }
-    .btn-secondary:hover {
-      background: white;
+    
+    .action-btn.danger {
+      background: #fee2e2;
+      color: #dc2626;
     }
-    .selected-products {
-      background: rgba(255,255,255,0.95);
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 15px;
-      max-height: 150px;
-      overflow-y: auto;
-    }
-    .selected-products h4 {
-      font-size: 12px;
-      color: #666;
-      margin-bottom: 8px;
-    }
-    .product-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 0;
-      border-bottom: 1px solid #eee;
-      font-size: 11px;
-    }
-    .product-item:last-child {
-      border-bottom: none;
-    }
-    .product-item img {
-      width: 30px;
-      height: 30px;
-      object-fit: cover;
-      border-radius: 4px;
-    }
-    .product-item .title {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .product-item .price {
-      color: #f97316;
-      font-weight: 600;
-    }
+    
+    /* Options */
     .options {
-      background: rgba(255,255,255,0.95);
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 15px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e5e5;
     }
+    
     .option-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
-    .option-row:last-child {
-      margin-bottom: 0;
-    }
+    
     .option-row input[type="checkbox"] {
       width: 16px;
       height: 16px;
+      accent-color: #667eea;
     }
+    
     .option-row label {
+      font-size: 13px;
+      color: #555;
+    }
+    
+    /* Product List */
+    .product-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 12px;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+    }
+    
+    .product-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-bottom: 1px solid #f0f0f0;
       font-size: 12px;
+    }
+    
+    .product-item:last-child { border-bottom: none; }
+    
+    .product-item img {
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 4px;
+      background: #f0f0f0;
+    }
+    
+    .product-item .info {
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    .product-item .title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       color: #333;
     }
-    .footer {
+    
+    .product-item .price {
+      color: #e53e3e;
+      font-weight: 500;
+    }
+    
+    /* Progress */
+    .progress-section {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: #e5e5e5;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 0.3s;
+    }
+    
+    .progress-text {
+      font-size: 12px;
+      color: #666;
       text-align: center;
-      padding: 10px;
-      color: rgba(255,255,255,0.6);
-      font-size: 10px;
     }
-    .loading {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    
+    /* Toast */
     .toast {
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
+      padding: 10px 20px;
       background: #333;
       color: white;
-      padding: 10px 20px;
-      border-radius: 6px;
+      border-radius: 8px;
+      font-size: 13px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+    
+    .toast.show { opacity: 1; }
+    .toast.success { background: #22c55e; }
+    .toast.error { background: #ef4444; }
+    
+    /* Footer */
+    .footer {
+      padding: 12px 16px;
+      background: #f8f9fa;
+      border-top: 1px solid #e5e5e5;
+      text-align: center;
+    }
+    
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
       font-size: 12px;
-      display: none;
     }
-    .toast.show {
-      display: block;
-      animation: fadeIn 0.3s;
+    
+    .footer a:hover { text-decoration: underline; }
+    
+    /* Not on 1688 */
+    .not-1688 {
+      text-align: center;
+      padding: 40px 20px;
+      background: white;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    
+    .not-1688 .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .not-1688 h3 {
+      color: #333;
+      margin-bottom: 8px;
+    }
+    
+    .not-1688 p {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    
+    .not-1688 .go-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #667eea;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 13px;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🛒 WaMerce 1688 Importer</h1>
-    <p>Import products with auto-translation</p>
-  </div>
-  
-  <div class="content">
-    <div class="server-config">
-      <label>WaMerce Server URL</label>
-      <input type="text" id="serverUrl" placeholder="https://your-wamerce-url.com">
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <span class="logo-icon">🛒</span>
+        <span class="logo-text">WaMerce Importer</span>
+      </div>
+      <div class="version">v2.0 - Like Dianxiaomi, but yours!</div>
     </div>
     
-    <div class="status-card">
-      <h3>
-        <span class="status-indicator" id="statusIndicator"></span>
-        <span id="statusText">Not connected</span>
-      </h3>
-      <div class="product-count">
-        <span id="productCount">0</span> <span>products found on page</span>
+    <!-- Connection Status -->
+    <div class="connection-bar">
+      <div class="status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Checking...</span>
+      </div>
+      <button class="save-btn" id="settingsBtn" style="padding: 4px 10px; font-size: 11px;">⚙️ Settings</button>
+    </div>
+    
+    <!-- Server URL (hidden by default) -->
+    <div class="server-section" id="serverSection" style="display: none;">
+      <div class="server-input-group">
+        <input type="text" class="server-input" id="serverUrl" placeholder="https://your-wamerce-url.com">
+        <button class="save-btn" id="saveServer">Save</button>
       </div>
     </div>
     
-    <div class="selected-products" id="selectedProducts" style="display: none;">
-      <h4>Selected Products:</h4>
-      <div id="productList"></div>
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+      <!-- Will be populated by JS -->
     </div>
     
-    <div class="options">
-      <div class="option-row">
-        <input type="checkbox" id="translateOption" checked>
-        <label for="translateOption">🌐 Translate to English</label>
-      </div>
-      <div class="option-row">
-        <input type="checkbox" id="selectAllOption">
-        <label for="selectAllOption">Select all products on page</label>
-      </div>
+    <!-- Footer -->
+    <div class="footer">
+      <a href="#" id="openDashboard">Open WaMerce Dashboard →</a>
     </div>
-    
-    <div class="actions">
-      <button class="btn btn-primary" id="importBtn" disabled>
-        <span>📥</span> Import Selected Products
-      </button>
-      <button class="btn btn-secondary" id="scanBtn">
-        <span>🔍</span> Scan Page for Products
-      </button>
-      <button class="btn btn-secondary" id="openDashboard">
-        <span>📊</span> Open WaMerce Dashboard
-      </button>
-    </div>
-  </div>
-  
-  <div class="footer">
-    WaMerce × 1688 Integration v1.0
   </div>
   
   <div class="toast" id="toast"></div>
