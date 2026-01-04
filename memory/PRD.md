@@ -103,6 +103,24 @@ WaMerce is a comprehensive e-commerce management platform for Pakistani business
 
 ## Changelog
 
+### January 4, 2026 (Session 4)
+- **1688 Collection Scraping Investigation & Workaround**
+  - Attempted server-side scraping with Playwright headless browser
+  - **Finding**: 1688.com blocks all server-side access (returns "访问被拒绝" / Access Denied)
+  - **Root Cause**: 1688 requires Chinese IP addresses and active session cookies
+  - **Solution Implemented**: Browser Console Script Workaround
+    - Added clear UI guidance in "Scrape from URL" tab explaining the limitation
+    - Provided a JavaScript console script that users can run in their browser
+    - Script extracts product IDs from any 1688 page and copies to clipboard
+    - Users then paste IDs in "Batch Import" tab (which works reliably via API)
+  - Updated frontend with improved UX:
+    - Warning banner about server-side scraping limitations
+    - Step-by-step instructions for the workaround
+    - "Copy Script" button for easy clipboard copy
+    - Clear labeling of automatic scraping as "may not work"
+  - Added Playwright to backend for potential future use with proxy services
+  - **Note**: The "Batch Import by IDs" feature remains fully functional and reliable
+
 ### January 3, 2026 (Session 3)
 - **1688 Product Importer** (`/product-scraper`) - NEW FEATURE!
   - Import products from 1688 by product IDs or URLs
