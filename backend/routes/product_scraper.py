@@ -678,23 +678,40 @@ async def run_scrape_job(
     url: str,
     store_name: Optional[str],
     create_in_shopify: bool,
-    max_products: int
+    max_products: int,
+    translate: bool = True
 ):
-    """Background task to run the scraping job"""
+    """Background task to run the scraping job using Playwright"""
     db = get_db()
     
     try:
         scrape_jobs[job_id]["status"] = "scraping"
+        scrape_jobs[job_id]["phase"] = "extracting_products"
         
-        # Scrape products
+        # Scrape products using Playwright
         products = await scrape_collection_page(url, max_products)
         
         scrape_jobs[job_id]["total"] = len(products)
         scrape_jobs[job_id]["products_scraped"] = len(products)
+        scrape_jobs[job_id]["phase"] = "processing"
         
-        # Save to database
+        if not products:
+            scrape_jobs[job_id]["status"] = "completed"
+            scrape_jobs[job_id]["error"] = "No products found on page. The page may require login or have anti-bot protection."
+            return
+        
+        # Save to database with optional translation
         for i, product in enumerate(products):
             try:
+                # Translate if requested
+                if translate:
+                    scrape_jobs[job_id]["phase"] = f"translating_{i+1}_of_{len(products)}"
+                    try:
+                        product = await translate_product(product)
+                        scrape_jobs[job_id]["products_translated"] = scrape_jobs[job_id].get("products_translated", 0) + 1
+                    except Exception as trans_error:
+                        print(f"Translation failed for {product.get('product_id')}: {trans_error}")
+                
                 # Save to scraped_products collection
                 product["scraped_at"] = datetime.now(timezone.utc).isoformat()
                 product["source_url"] = url
@@ -707,6 +724,7 @@ async def run_scrape_job(
                 
                 # Create in Shopify if requested
                 if create_in_shopify and store_name:
+                    scrape_jobs[job_id]["phase"] = f"creating_shopify_{i+1}_of_{len(products)}"
                     shopify_id = await create_shopify_product(product, store_name)
                     if shopify_id:
                         scrape_jobs[job_id]["products_created"] += 1
@@ -722,11 +740,14 @@ async def run_scrape_job(
                 scrape_jobs[job_id]["errors"].append(f"Product {product.get('product_id')}: {str(e)}")
         
         scrape_jobs[job_id]["status"] = "completed"
+        scrape_jobs[job_id]["phase"] = "done"
         scrape_jobs[job_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
         
     except Exception as e:
         scrape_jobs[job_id]["status"] = "failed"
         scrape_jobs[job_id]["error"] = str(e)
+        import traceback
+        scrape_jobs[job_id]["traceback"] = traceback.format_exc()
 
 
 @router.get("/job/{job_id}")
