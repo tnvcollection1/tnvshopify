@@ -322,25 +322,104 @@ const ProductScraper = () => {
       <Card>
         <CardContent className="pt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsTrigger value="extension" className="flex items-center gap-2" data-testid="tab-extension">
+                🧩 Chrome Extension
+              </TabsTrigger>
               <TabsTrigger value="batch" className="flex items-center gap-2" data-testid="tab-batch">
                 <ListPlus className="w-4 h-4" />
-                Batch Import by IDs
+                Batch Import
               </TabsTrigger>
               <TabsTrigger value="url" className="flex items-center gap-2" data-testid="tab-url">
                 <Link2 className="w-4 h-4" />
-                Scrape from URL
+                Manual Script
               </TabsTrigger>
             </TabsList>
+
+            {/* Extension Tab */}
+            <TabsContent value="extension" className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 className="font-semibold text-green-800 flex items-center gap-2 mb-3">
+                  <CheckCircle2 className="w-5 h-5" />
+                  Recommended: Chrome Extension (Like Dianxiaomi!)
+                </h3>
+                <p className="text-sm text-green-700 mb-4">
+                  The extension runs in YOUR browser, so it bypasses 1688's anti-bot protection. It can scan any 1688 page and import products with one click.
+                </p>
+                
+                <div className="bg-white rounded-lg p-4 border border-green-100">
+                  <h4 className="font-medium text-gray-800 mb-3">🛠️ Setup Instructions:</h4>
+                  <ol className="space-y-3 text-sm text-gray-700">
+                    <li className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center font-bold text-xs">1</span>
+                      <div>
+                        <strong>Download the extension</strong>
+                        <p className="text-gray-500 text-xs mt-0.5">Click the download button above to get the .zip file</p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center font-bold text-xs">2</span>
+                      <div>
+                        <strong>Unzip the file</strong>
+                        <p className="text-gray-500 text-xs mt-0.5">Extract to a folder on your computer</p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center font-bold text-xs">3</span>
+                      <div>
+                        <strong>Open Chrome Extensions</strong>
+                        <p className="text-gray-500 text-xs mt-0.5">
+                          Go to <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">chrome://extensions</code> in your browser
+                        </p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center font-bold text-xs">4</span>
+                      <div>
+                        <strong>Enable Developer Mode</strong>
+                        <p className="text-gray-500 text-xs mt-0.5">Toggle the switch in the top-right corner</p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center font-bold text-xs">5</span>
+                      <div>
+                        <strong>Load the extension</strong>
+                        <p className="text-gray-500 text-xs mt-0.5">Click "Load unpacked" and select the <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">browser-extension</code> folder</p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-green-100 text-green-700 rounded-full flex items-center justify-center font-bold text-xs">✓</span>
+                      <div>
+                        <strong>Configure the server URL</strong>
+                        <p className="text-gray-500 text-xs mt-0.5">
+                          Click the extension icon, go to Settings, and enter: 
+                          <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs block mt-1">{API}</code>
+                        </p>
+                      </div>
+                    </li>
+                  </ol>
+                </div>
+                
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <h4 className="font-medium text-blue-800 text-sm mb-2">💡 How to use:</h4>
+                  <ol className="text-xs text-blue-700 space-y-1">
+                    <li>1. Go to any 1688 store page, search results, or product page</li>
+                    <li>2. Click the WaMerce extension icon in your toolbar</li>
+                    <li>3. Click "Import Products to WaMerce"</li>
+                    <li>4. Products are automatically fetched, translated, and saved!</li>
+                  </ol>
+                </div>
+              </div>
+            </TabsContent>
 
             {/* Batch Import Tab */}
             <TabsContent value="batch" className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
                 <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                 <div className="text-sm text-blue-700">
-                  <p className="font-medium">Recommended Method</p>
+                  <p className="font-medium">Manual Import Method</p>
                   <p className="text-blue-600 mt-1">
-                    Paste product IDs or full URLs (one per line). Works best for products you've purchased from before.
+                    Paste product IDs or full URLs (one per line). Use this if you have IDs from the extension or console script.
                   </p>
                 </div>
               </div>
