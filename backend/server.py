@@ -1302,6 +1302,140 @@ async def get_shopify_sync_status(job_id: str):
     }
 
 
+@api_router.post("/shopify/sync-orders/{store_name}")
+async def sync_specific_orders(store_name: str, order_numbers: List[str] = Query(...)):
+    """
+    Sync specific orders by their order numbers.
+    Useful for fetching missing orders.
+    
+    Usage: POST /api/shopify/sync-orders/tnvcollection?order_numbers=29160&order_numbers=29156
+    """
+    store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
+    
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    if not store.get('shopify_domain') or not store.get('shopify_token'):
+        raise HTTPException(status_code=400, detail="Shopify not configured for this store")
+    
+    shopify_domain = store['shopify_domain']
+    shopify_token = store['shopify_token']
+    
+    results = []
+    
+    for order_number in order_numbers:
+        try:
+            # Fetch order from Shopify by order number
+            url = f"https://{shopify_domain}/admin/api/2024-01/orders.json"
+            headers = {"X-Shopify-Access-Token": shopify_token}
+            params = {"name": order_number, "status": "any"}
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(url, headers=headers, params=params)
+                response.raise_for_status()
+                data = response.json()
+                
+                orders = data.get("orders", [])
+                
+                if not orders:
+                    results.append({"order": order_number, "status": "not_found"})
+                    continue
+                
+                order = orders[0]
+                
+                # Process and save the order
+                customer = order.get("customer", {})
+                shipping = order.get("shipping_address", {}) or order.get("billing_address", {})
+                
+                customer_id = f"shopify_{customer.get('id', order['id'])}"
+                
+                line_items = []
+                order_skus = []
+                sizes = []
+                
+                for item in order.get("line_items", []):
+                    sku = item.get("sku", "") or ""
+                    line_items.append({
+                        "product_id": item.get("product_id"),
+                        "variant_id": item.get("variant_id"),
+                        "sku": sku,
+                        "name": item.get("name"),
+                        "quantity": item.get("quantity"),
+                        "price": float(item.get("price", 0))
+                    })
+                    if sku:
+                        order_skus.append(sku.upper())
+                    
+                    # Extract size from name
+                    name = item.get("name", "")
+                    if "/" in name:
+                        parts = name.split("/")
+                        size = parts[-1].strip() if len(parts) > 1 else "Unknown"
+                        sizes.append(size)
+                
+                # Get tracking info
+                tracking_number = None
+                tracking_company = "TCS Pakistan"
+                fulfillments = order.get("fulfillments", [])
+                if fulfillments:
+                    tracking_number = fulfillments[0].get("tracking_number")
+                    tracking_company = fulfillments[0].get("tracking_company") or "TCS Pakistan"
+                
+                # Build customer/order document
+                order_doc = {
+                    "customer_id": customer_id,
+                    "first_name": shipping.get("first_name") or customer.get("first_name"),
+                    "last_name": shipping.get("last_name") or customer.get("last_name"),
+                    "email": customer.get("email", ""),
+                    "phone": shipping.get("phone") or customer.get("phone") or "",
+                    "country_code": shipping.get("country_code", ""),
+                    "store_name": store_name,
+                    "order_skus": order_skus,
+                    "shoe_sizes": sizes if sizes else ["Unknown"],
+                    "line_items": line_items,
+                    "order_count": 1,
+                    "order_number": str(order.get("order_number", "")),
+                    "shopify_order_id": str(order.get("id")),
+                    "last_order_date": order.get("created_at"),
+                    "fulfilled_at": order.get("fulfilled_at"),
+                    "total_spent": float(order.get("total_price", 0)),
+                    "fulfillment_status": order.get("fulfillment_status") or "unfulfilled",
+                    "payment_status": order.get("financial_status"),
+                    "tracking_number": tracking_number,
+                    "tracking_company": tracking_company,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+                
+                # Upsert to database
+                existing = await db.customers.find_one(
+                    {"customer_id": customer_id, "store_name": store_name}
+                )
+                
+                if existing:
+                    await db.customers.update_one(
+                        {"customer_id": customer_id, "store_name": store_name},
+                        {"$set": order_doc}
+                    )
+                    results.append({"order": order_number, "status": "updated"})
+                else:
+                    order_doc["id"] = str(uuid.uuid4())
+                    order_doc["created_at"] = datetime.now(timezone.utc).isoformat()
+                    order_doc["messaged"] = False
+                    await db.customers.insert_one(order_doc)
+                    results.append({"order": order_number, "status": "created"})
+                    
+        except Exception as e:
+            logger.error(f"Error syncing order {order_number}: {e}")
+            results.append({"order": order_number, "status": "error", "error": str(e)})
+    
+    return {
+        "success": True,
+        "results": results,
+        "synced": len([r for r in results if r["status"] in ["created", "updated"]]),
+        "failed": len([r for r in results if r["status"] in ["not_found", "error"]])
+    }
+
+
 async def run_shopify_sync_background(
     job_id: str,
     store_name: str,
