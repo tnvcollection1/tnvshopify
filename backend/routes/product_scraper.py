@@ -389,38 +389,168 @@ async def scrape_product_details(product_id: str) -> Optional[Dict]:
         return None
 
 
+async def scrape_collection_with_playwright(url: str, max_products: int = 50) -> List[str]:
+    """
+    Use Playwright headless browser to scrape product IDs from a 1688 collection/store page.
+    This bypasses anti-bot protection by rendering JavaScript.
+    """
+    from playwright.async_api import async_playwright
+    
+    product_ids = []
+    
+    try:
+        async with async_playwright() as p:
+            # Launch headless browser
+            browser = await p.chromium.launch(
+                headless=True,
+                args=[
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--disable-gpu',
+                    '--window-size=1920,1080',
+                ]
+            )
+            
+            context = await browser.new_context(
+                viewport={'width': 1920, 'height': 1080},
+                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                locale='zh-CN',
+            )
+            
+            page = await context.new_page()
+            
+            print(f"[Playwright] Navigating to: {url}")
+            
+            # Navigate to the page with extended timeout
+            await page.goto(url, wait_until='networkidle', timeout=60000)
+            
+            # Wait for products to load (try multiple selectors)
+            selectors_to_try = [
+                '.sm-offer-item',
+                '.offer-item',
+                '.space-offer-card-box',
+                '[data-offer-id]',
+                'a[href*="offer/"]',
+                '.product-item',
+            ]
+            
+            for selector in selectors_to_try:
+                try:
+                    await page.wait_for_selector(selector, timeout=5000)
+                    print(f"[Playwright] Found elements with selector: {selector}")
+                    break
+                except:
+                    continue
+            
+            # Additional wait for dynamic content
+            await page.wait_for_timeout(3000)
+            
+            # Scroll down to load more products (lazy loading)
+            for _ in range(3):
+                await page.evaluate('window.scrollBy(0, window.innerHeight)')
+                await page.wait_for_timeout(1500)
+            
+            # Scroll back to top
+            await page.evaluate('window.scrollTo(0, 0)')
+            await page.wait_for_timeout(500)
+            
+            # Get page HTML and extract product IDs
+            html = await page.content()
+            
+            # Extract product IDs using multiple patterns
+            patterns = [
+                r'offer/(\d{10,})',  # Standard offer links
+                r'data-offer-id=["\'](\d{10,})["\']',  # Data attributes
+                r'"offerId"[:\s]*["\']?(\d{10,})["\']?',  # JSON data
+            ]
+            
+            seen = set()
+            for pattern in patterns:
+                matches = re.findall(pattern, html)
+                for match in matches:
+                    if match not in seen:
+                        seen.add(match)
+                        product_ids.append(match)
+            
+            print(f"[Playwright] Extracted {len(product_ids)} product IDs")
+            
+            # Also try to get product info directly from page elements
+            try:
+                elements = await page.query_selector_all('a[href*="offer/"]')
+                for el in elements[:100]:  # Limit to first 100 elements
+                    href = await el.get_attribute('href')
+                    if href:
+                        match = re.search(r'offer/(\d{10,})', href)
+                        if match and match.group(1) not in seen:
+                            seen.add(match.group(1))
+                            product_ids.append(match.group(1))
+            except Exception as e:
+                print(f"[Playwright] Error extracting from elements: {e}")
+            
+            await browser.close()
+            
+    except Exception as e:
+        print(f"[Playwright] Error: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # Limit to max_products and deduplicate
+    unique_ids = list(dict.fromkeys(product_ids))[:max_products]
+    print(f"[Playwright] Final product IDs: {len(unique_ids)}")
+    
+    return unique_ids
+
+
 async def scrape_collection_page(url: str, max_products: int = 50) -> List[Dict]:
-    """Scrape all products from a 1688 collection/store page"""
+    """
+    Scrape all products from a 1688 collection/store page.
+    Uses Playwright headless browser for reliable JavaScript rendering.
+    """
     products = []
     
     try:
-        async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
-            # Fetch the main page
-            response = await client.get(url, headers=HEADERS)
-            html = response.text
-            
-            # Extract product IDs
-            product_ids = await extract_product_ids_from_page(html)
-            print(f"Found {len(product_ids)} product IDs on page")
-            
-            # Limit products
-            product_ids = product_ids[:max_products]
-            
-            # Scrape each product (with some concurrency)
-            semaphore = asyncio.Semaphore(5)  # Limit concurrent requests
-            
-            async def scrape_with_semaphore(pid):
-                async with semaphore:
-                    await asyncio.sleep(0.5)  # Rate limiting
-                    return await scrape_product_details(pid)
-            
-            tasks = [scrape_with_semaphore(pid) for pid in product_ids]
-            results = await asyncio.gather(*tasks)
-            
-            products = [p for p in results if p is not None]
-            
+        # Step 1: Use Playwright to get product IDs from the page
+        print(f"[Scraper] Starting Playwright scrape for: {url}")
+        product_ids = await scrape_collection_with_playwright(url, max_products)
+        
+        if not product_ids:
+            print("[Scraper] No product IDs found via Playwright, trying fallback methods")
+            # Fallback: Try simple HTTP request (might work for some pages)
+            async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
+                response = await client.get(url, headers=HEADERS)
+                html = response.text
+                product_ids = await extract_product_ids_from_page(html)
+        
+        print(f"[Scraper] Found {len(product_ids)} product IDs")
+        
+        if not product_ids:
+            return []
+        
+        # Step 2: Fetch product details using the working API
+        # Use the reliable alibaba.product.simple.get API for products from known suppliers
+        for pid in product_ids[:max_products]:
+            try:
+                product = await fetch_product_via_api(pid)
+                if product and product.get("title"):
+                    products.append(product)
+                    print(f"[Scraper] Fetched product {pid}: {product.get('title', '')[:40]}...")
+                else:
+                    # Fallback to HTML scraping for individual product
+                    product = await scrape_product_details(pid)
+                    if product and product.get("title"):
+                        products.append(product)
+            except Exception as e:
+                print(f"[Scraper] Error fetching product {pid}: {e}")
+                continue
+        
+        print(f"[Scraper] Successfully scraped {len(products)} products")
+        
     except Exception as e:
-        print(f"Error scraping collection: {e}")
+        print(f"[Scraper] Error scraping collection: {e}")
+        import traceback
+        traceback.print_exc()
     
     return products
 
