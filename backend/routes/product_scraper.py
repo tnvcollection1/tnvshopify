@@ -629,6 +629,8 @@ async def start_scrape(request: ScrapeRequest, background_tasks: BackgroundTasks
     """
     Start scraping products from a 1688 URL
     Returns a job ID to track progress
+    
+    This uses Playwright headless browser to reliably scrape 1688 collection pages.
     """
     # Validate URL
     if not request.url or not request.url.strip():
@@ -647,8 +649,10 @@ async def start_scrape(request: ScrapeRequest, background_tasks: BackgroundTasks
         "total": 0,
         "products_scraped": 0,
         "products_created": 0,
+        "products_translated": 0,
         "errors": [],
         "started_at": datetime.now(timezone.utc).isoformat(),
+        "method": "playwright",
     }
     
     # Start background task
@@ -658,13 +662,14 @@ async def start_scrape(request: ScrapeRequest, background_tasks: BackgroundTasks
         request.url,
         request.store_name,
         request.create_in_shopify,
-        request.max_products
+        request.max_products,
+        request.translate
     )
     
     return {
         "success": True,
         "job_id": job_id,
-        "message": "Scraping started",
+        "message": "Scraping started with Playwright browser" + (" + translation" if request.translate else ""),
     }
 
 
