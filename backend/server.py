@@ -66,6 +66,9 @@ pricing_engine = DynamicPricingEngine(db)
 # Initialize clearance engine
 clearance_engine = InventoryClearanceEngine(db)
 
+# Shopify sync job tracking (in-memory)
+shopify_sync_jobs = {}
+
 # Initialize modular routers with database and dependencies
 set_facebook_db(db)
 set_finance_db(db)
