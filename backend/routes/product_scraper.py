@@ -1270,21 +1270,39 @@ async def run_batch_import(
     scrape_jobs[job_id]["status"] = "processing"
     scrape_jobs[job_id]["translate"] = translate
     
-    for i, product_id in enumerate(product_ids):
+    for i, product_id_or_url in enumerate(product_ids):
         try:
             product = None
+            product_id = product_id_or_url
+            
+            # Extract product ID from URL if needed
+            id_match = re.search(r'offer/(\d{10,})', product_id_or_url)
+            if id_match:
+                product_id = id_match.group(1)
+            else:
+                # Check for Taobao/Tmall URL pattern
+                taobao_match = re.search(r'[?&]id=(\d+)', product_id_or_url)
+                if taobao_match:
+                    product_id = taobao_match.group(1)
+            
+            # Detect platform
+            platform = detect_product_platform(product_id_or_url)
             
             # Method 1: TMAPI (third-party API - works for ANY product, like Dianxiaomi)
             if TMAPI_TOKEN:
                 try:
-                    product = await fetch_product_via_tmapi(product_id)
+                    if platform == "taobao":
+                        product = await fetch_taobao_product_via_tmapi(product_id)
+                    else:
+                        product = await fetch_product_via_tmapi(product_id)
+                    
                     if product:
-                        scrape_jobs[job_id]["method_used"] = "tmapi"
+                        scrape_jobs[job_id]["method_used"] = f"tmapi_{platform}"
                 except Exception as tmapi_error:
                     print(f"[TMAPI] Error for {product_id}: {tmapi_error}")
             
             # Method 2: Official 1688 API (only works for products from your suppliers)
-            if not product:
+            if not product and platform == "1688":
                 try:
                     api_product = await fetch_product_via_api(product_id)
                     if api_product and api_product.get("title"):
@@ -1293,8 +1311,8 @@ async def run_batch_import(
                 except Exception as api_error:
                     print(f"[Official API] Error for {product_id}: {api_error}")
             
-            # Method 3: Fall back to HTML scraping if all APIs fail
-            if not product:
+            # Method 3: Fall back to HTML scraping if all APIs fail (1688 only)
+            if not product and platform == "1688":
                 product = await scrape_product_details(product_id)
                 if product:
                     scrape_jobs[job_id]["method_used"] = "scrape"
