@@ -1447,20 +1447,82 @@ async def run_shopify_sync_background(
     shopify_token: str,
     days_back: int
 ):
-    """Background task to sync Shopify orders without blocking"""
+    """Background task to sync Shopify orders without blocking.
+    For large date ranges (>90 days), processes in monthly chunks to prevent timeouts.
+    """
     try:
         shopify_sync_jobs[job_id]["status"] = "fetching"
+        shopify_sync_jobs[job_id]["phase"] = "Initializing..."
         
         # Use async sync
         sync = ShopifyAsyncSync(shopify_domain, shopify_token, max_workers=5)
         
-        created_after = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
-        logger.info(f"🚀 [BG Sync {job_id}] Starting for {store_name} (last {days_back} days)")
+        all_orders = []
         
-        # Fetch orders
-        orders = await sync.fetch_orders_concurrent(created_after=created_after, status="any", max_batches=10)
+        # For large syncs (>90 days), process in monthly chunks
+        if days_back > 90:
+            logger.info(f"🚀 [BG Sync {job_id}] Large sync ({days_back} days) - processing in monthly chunks")
+            shopify_sync_jobs[job_id]["phase"] = "Fetching in monthly chunks..."
+            
+            # Calculate number of chunks (30-day periods)
+            chunk_size = 30  # days per chunk
+            num_chunks = (days_back + chunk_size - 1) // chunk_size  # ceil division
+            
+            for chunk_idx in range(num_chunks):
+                chunk_start_days = chunk_idx * chunk_size
+                chunk_end_days = min((chunk_idx + 1) * chunk_size, days_back)
+                
+                # Calculate date range for this chunk
+                end_date = datetime.now(timezone.utc) - timedelta(days=chunk_start_days)
+                start_date = datetime.now(timezone.utc) - timedelta(days=chunk_end_days)
+                
+                created_after = start_date.isoformat()
+                created_before = end_date.isoformat() if chunk_start_days > 0 else None
+                
+                shopify_sync_jobs[job_id]["phase"] = f"Fetching chunk {chunk_idx + 1}/{num_chunks} ({chunk_end_days - chunk_start_days} days)"
+                shopify_sync_jobs[job_id]["progress"] = int((chunk_idx / num_chunks) * 30)  # First 30% is fetching
+                
+                logger.info(f"📦 [BG Sync {job_id}] Fetching chunk {chunk_idx + 1}/{num_chunks}: {start_date.date()} to {end_date.date()}")
+                
+                try:
+                    chunk_orders = await sync.fetch_orders_concurrent(
+                        created_after=created_after,
+                        status="any",
+                        max_batches=5  # Smaller batches per chunk
+                    )
+                    all_orders.extend(chunk_orders)
+                    logger.info(f"📦 [BG Sync {job_id}] Chunk {chunk_idx + 1} fetched {len(chunk_orders)} orders")
+                except Exception as chunk_error:
+                    logger.warning(f"⚠️ [BG Sync {job_id}] Chunk {chunk_idx + 1} failed: {chunk_error}")
+                    shopify_sync_jobs[job_id]["errors"].append(f"Chunk {chunk_idx + 1}: {str(chunk_error)}")
+                
+                # Small delay between chunks to avoid rate limiting
+                await asyncio.sleep(1)
+            
+            # Deduplicate orders by shopify_order_id
+            seen_ids = set()
+            unique_orders = []
+            for order in all_orders:
+                order_id = order.get('shopify_order_id')
+                if order_id and order_id not in seen_ids:
+                    seen_ids.add(order_id)
+                    unique_orders.append(order)
+            
+            all_orders = unique_orders
+            logger.info(f"✅ [BG Sync {job_id}] Total unique orders after deduplication: {len(all_orders)}")
+        else:
+            # Regular sync for smaller date ranges
+            created_after = (datetime.now(timezone.utc) - timedelta(days=days_back)).isoformat()
+            logger.info(f"🚀 [BG Sync {job_id}] Starting for {store_name} (last {days_back} days)")
+            shopify_sync_jobs[job_id]["phase"] = f"Fetching orders (last {days_back} days)..."
+            
+            all_orders = await sync.fetch_orders_concurrent(created_after=created_after, status="any", max_batches=10)
+        
+        orders = all_orders
         shopify_sync_jobs[job_id]["orders_fetched"] = len(orders)
         shopify_sync_jobs[job_id]["status"] = "processing"
+        shopify_sync_jobs[job_id]["phase"] = f"Processing {len(orders)} orders..."
+        shopify_sync_jobs[job_id]["progress"] = 30  # 30% done after fetching
         
         sync.close()
         
