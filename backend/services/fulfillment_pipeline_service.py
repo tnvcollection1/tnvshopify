@@ -259,10 +259,7 @@ async def update_order_stage(
             
             # Also update customers collection
             await db.customers.update_one(
-                {"$or": [
-                    {"shopify_order_id": order_id},
-                    {"order_number": order_id},
-                ]},
+                order_query,
                 {"$set": {
                     "fulfillment_stage": request.stage,
                     "updated_at": now,
@@ -281,10 +278,7 @@ async def update_order_stage(
     
     # Also sync to customers collection
     await db.customers.update_one(
-        {"$or": [
-            {"shopify_order_id": order_id},
-            {"order_number": order_id},
-        ]},
+        order_query,
         {"$set": {
             "fulfillment_stage": request.stage,
             "updated_at": now,
