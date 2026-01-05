@@ -168,12 +168,7 @@ fetch_taobao_product_via_tmapi = _fetch_taobao_tmapi
 log_tmapi_usage = _log_tmapi_usage
 
 
-def detect_product_platform(product_id_or_url: str) -> str:
-    """Detect which platform a product is from based on ID or URL"""
-    url_lower = product_id_or_url.lower()
-    
-    try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
+async def extract_product_ids_from_page(html: str) -> List[str]:
             response = await client.get(url, params=params)
             response.raise_for_status()
             result = response.json()
