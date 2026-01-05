@@ -3164,3 +3164,40 @@ async def unified_image_search(
     
     results["error"] = "No image search source available or all failed"
     return results
+
+
+@router.get("/auth/reauthorize-url")
+async def get_reauthorize_url(redirect_uri: str = Query("https://wamerce.com/api/1688/auth/callback")):
+    """
+    Get URL to re-authorize with all API scopes including image search
+    Use force_auth=true to refresh permissions
+    """
+    # All available scopes for buyer APIs
+    scopes = [
+        "ali.cross.imageSearch",  # Cross-border image search
+        "ali.distributor.imageSearch",  # Distributed image search
+        "ali.trade",  # Trade APIs
+        "ali.product",  # Product APIs
+        "ali.member",  # Member APIs
+    ]
+    
+    auth_url = (
+        f"https://auth.1688.com/oauth/authorize?"
+        f"response_type=code&"
+        f"client_id={ALIBABA_APP_KEY}&"
+        f"redirect_uri={redirect_uri}&"
+        f"force_auth=true&"
+        f"scope={','.join(scopes)}&"
+        f"state=reauth_with_image_search"
+    )
+    
+    return {
+        "reauthorize_url": auth_url,
+        "instructions": [
+            "1. Click the URL below to re-authorize",
+            "2. Login with your 1688 account",
+            "3. Accept ALL permissions shown",
+            "4. You'll be redirected back with new token",
+        ],
+        "scopes_requested": scopes,
+    }
