@@ -194,28 +194,36 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 ---
 
 ## Last Updated
-January 5, 2026 - Session 8: Service Module Refactoring
+January 5, 2026 - Session 8: Major Service Module Refactoring
 
 ---
 
 ## Recent Completed Work (Jan 5, 2026 - Session 8)
 
-### Service Module Refactoring ✅
-- **New Services Created**:
-  - `translation_service.py` (132 lines) - Chinese to English translation using LLM
-  - `product_linking_service.py` (389 lines) - Shopify to 1688 product linking
-- **Extended Services**:
-  - `tmapi_service.py` - Added TMAPI usage summary, import history, and import stats functions
-- **Endpoints Migrated from `product_scraper.py`**:
-  - `/product-links/link-1688` → Uses `product_linking_service`
-  - `/product-links/get-1688` → Uses `product_linking_service`
-  - `/product-links/auto-link-from-image` → Uses `product_linking_service`
-  - `/product-links/all` → Uses `product_linking_service`
-  - `/tmapi/usage` → Uses `tmapi_service`
-  - `/tmapi/usage/summary` → Uses `tmapi_service`
-  - `/import-history` → Uses `tmapi_service`
-  - `/import-history/stats` → Uses `tmapi_service`
-- **Result**: `product_scraper.py` reduced from 3,355 to 2,976 lines (~11% reduction)
+### Major Service Module Refactoring ✅
+
+**Line Count Reduction**: `product_scraper.py` reduced from **3,355 → 2,634 lines** (~21% reduction)
+
+**New Services Created**:
+1. `translation_service.py` (132 lines) - Chinese to English translation
+2. `product_linking_service.py` (389 lines) - Shopify to 1688 product linking
+3. `product_fetcher_service.py` (555 lines) - Product fetching from APIs:
+   - `fetch_product_via_official_api()` - 1688 Official API
+   - `fetch_product_via_tmapi()` - TMAPI for any 1688 product
+   - `fetch_taobao_product_via_tmapi()` - Taobao/Tmall products
+   - `fetch_product_auto()` - Auto-detect platform and fetch
+   - `detect_product_platform()` - Platform detection
+   - `save_product_to_db()` - Save product with optional translation
+   - `batch_fetch_products()` - Batch fetch multiple products
+
+**Extended Services**:
+- `tmapi_service.py` - Added usage summary, import history, stats functions
+
+**Endpoints Migrated**:
+- All `/product-links/*` endpoints → `product_linking_service`
+- All `/tmapi/usage/*` endpoints → `tmapi_service`
+- All `/import-history/*` endpoints → `tmapi_service`
+- Product fetching functions → `product_fetcher_service`
 
 ### Session 7 Completed Work (Jan 5, 2026)
 
