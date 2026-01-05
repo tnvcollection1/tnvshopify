@@ -250,13 +250,20 @@ const ProductEditModal = ({ product, onClose, onSave }) => {
           </div>
         </div>
 
-        {/* Missing Data Warning */}
+        {/* Missing Data Warning - Shows loading state when auto-fetching */}
         {(editedProduct.images.length === 0 || editedProduct.variants.length === 0) && (
           <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 flex items-center gap-2">
-            <span className="text-yellow-600 text-sm">
-              ⚠️ {editedProduct.images.length === 0 && 'No images. '}{editedProduct.variants.length === 0 && 'No variants. '}
-              Click "Fetch Images & Variants" to load full product data from 1688.
-            </span>
+            {fetching ? (
+              <span className="text-orange-600 text-sm flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Fetching full product data from 1688... Please wait.
+              </span>
+            ) : (
+              <span className="text-yellow-600 text-sm">
+                ⚠️ {editedProduct.images.length === 0 && 'No images. '}{editedProduct.variants.length === 0 && 'No variants. '}
+                Click "Fetch Images & Variants" to load full product data from 1688.
+              </span>
+            )}
           </div>
         )}
 
