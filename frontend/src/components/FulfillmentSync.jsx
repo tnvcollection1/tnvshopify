@@ -184,6 +184,50 @@ const FulfillmentSync = () => {
     }
   };
 
+  const quickFulfillAll = async () => {
+    if (orders.length === 0) {
+      toast.error('No orders to fulfill');
+      return;
+    }
+
+    const confirm = window.confirm(
+      `Quick Fulfill All will sync ${orders.length} orders to Shopify using ${fulfillmentMethod.toUpperCase()} method. Continue?`
+    );
+    if (!confirm) return;
+
+    setSyncing(true);
+    
+    try {
+      const allOrderIds = orders.map(o => o.shopify_order_id);
+      const res = await fetch(`${API}/api/fulfillment/bulk-sync-to-shopify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_ids: allOrderIds,
+          fulfillment_method: fulfillmentMethod,
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success(`🎉 Quick Fulfilled ${data.synced}/${data.total} orders!`);
+        if (data.failed > 0) {
+          toast.warning(`${data.failed} orders failed`);
+        }
+        setSelectedOrders([]);
+        fetchPendingOrders();
+        fetchSummary();
+      } else {
+        toast.error(data.detail || 'Quick fulfill failed');
+      }
+    } catch (e) {
+      toast.error('Error: ' + e.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const getStatusBadge = (order) => {
     if (order.ready_for_dwz_fulfillment) {
       return <Badge className="bg-green-100 text-green-700">DWZ Ready</Badge>;
@@ -196,6 +240,43 @@ const FulfillmentSync = () => {
 
   return (
     <div className="space-y-6">
+      {/* Quick Fulfill All Banner */}
+      {orders.length > 0 && (
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Zap className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Quick Fulfill All</h3>
+                <p className="text-sm text-white/80">
+                  {orders.length} orders ready • Click to sync all to Shopify instantly
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={quickFulfillAll}
+              disabled={syncing}
+              className="bg-white text-green-600 hover:bg-white/90 font-semibold"
+              data-testid="quick-fulfill-all-btn"
+            >
+              {syncing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4 mr-2" />
+                  Fulfill All ({orders.length})
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Summary Cards */}
       {summary && (
         <div className="grid grid-cols-4 gap-4">
