@@ -86,10 +86,25 @@ const StageProgressBar = ({ currentStage }) => {
 };
 
 // Order Card Component
-const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating, onNotify }) => {
+const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating, onNotify, onPromptTracking }) => {
   const getStageIndex = (stage) => FULFILLMENT_STAGES.findIndex(s => s.key === stage);
   const currentIndex = getStageIndex(order.current_stage);
   const nextStage = FULFILLMENT_STAGES[currentIndex + 1];
+  
+  // Stages that require tracking input
+  const stagesRequiringTracking = {
+    'dwz56_shipped': { type: 'dwz', label: 'DWZ56 Tracking #' },
+    'local_shipped': { type: 'local', label: `${carrierInfo?.carrier || 'Local'} Tracking #` },
+  };
+  
+  const handleNextStage = () => {
+    if (nextStage && stagesRequiringTracking[nextStage.key]) {
+      // This stage requires tracking - prompt for it
+      onPromptTracking(order, nextStage.key, stagesRequiringTracking[nextStage.key]);
+    } else {
+      onUpdateStage(order._id || order.shopify_order_id, nextStage.key);
+    }
+  };
   
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -118,7 +133,7 @@ const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating,
             <p className="font-mono">{order.dwz_tracking || '-'}</p>
           </div>
           <div>
-            <p className="text-gray-500">{carrierInfo.carrier} #</p>
+            <p className="text-gray-500">{carrierInfo?.carrier || 'Local'} #</p>
             <p className="font-mono">{order.local_tracking || '-'}</p>
           </div>
         </div>
@@ -136,7 +151,7 @@ const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating,
           {nextStage && (
             <Button
               size="sm"
-              onClick={() => onUpdateStage(order._id || order.shopify_order_id, nextStage.key)}
+              onClick={handleNextStage}
               disabled={updating === (order._id || order.shopify_order_id)}
               className="bg-blue-600 hover:bg-blue-700"
             >
