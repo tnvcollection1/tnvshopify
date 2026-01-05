@@ -169,12 +169,8 @@ log_tmapi_usage = _log_tmapi_usage
 
 
 def detect_product_platform(product_id_or_url: str) -> str:
-    
-    url = f"{TMAPI_BASE_URL}/taobao/item_detail"
-    params = {
-        "apiToken": TMAPI_TOKEN,
-        "item_id": product_id,
-    }
+    """Detect which platform a product is from based on ID or URL"""
+    url_lower = product_id_or_url.lower()
     
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
