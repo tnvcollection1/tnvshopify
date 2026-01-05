@@ -9,6 +9,8 @@ Note: Much of the logic has been moved to service modules:
 - services/tmapi_service.py - TMAPI operations and monitoring
 - services/image_search_service.py - Image search functionality
 - services/product_fetcher_service.py - Product fetching from APIs
+- services/scraper_service.py - Web scraping functions
+- services/job_manager_service.py - Background job management
 """
 
 import httpx
@@ -49,6 +51,26 @@ from services.product_fetcher_service import (
     batch_fetch_products,
     log_tmapi_usage as _log_tmapi_usage,
 )
+from services.scraper_service import (
+    scrape_product_details as _scrape_product,
+    scrape_collection_with_playwright as _scrape_collection_playwright,
+    scrape_collection_page as _scrape_collection,
+    extract_product_ids_from_html,
+)
+from services.job_manager_service import (
+    scrape_jobs,
+    import_jobs,
+    create_scrape_job,
+    create_import_job,
+    get_job,
+    update_job,
+    complete_job,
+    add_job_error,
+    increment_job_counter,
+    run_scrape_job as _run_scrape_job,
+    run_batch_import as _run_batch_import,
+    run_extension_import as _run_extension_import,
+)
 
 load_dotenv()
 
@@ -68,8 +90,13 @@ router = APIRouter(prefix="/api/1688-scraper", tags=["1688 Scraper"])
 # Translation setup - Now using service module
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
 
-# NOTE: translate_to_english and translate_product are now imported from services/translation_service.py
-# NOTE: Product fetching functions now imported from services/product_fetcher_service.py
+# Aliases to service functions for backward compatibility
+scrape_product_details = _scrape_product
+scrape_collection_with_playwright = _scrape_collection_playwright
+scrape_collection_page = _scrape_collection
+run_scrape_job = _run_scrape_job
+run_batch_import = _run_batch_import
+run_extension_import = _run_extension_import
 
 
 class ScrapeRequest(BaseModel):
