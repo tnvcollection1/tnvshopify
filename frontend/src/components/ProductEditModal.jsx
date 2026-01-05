@@ -271,7 +271,7 @@ const ProductEditModal = ({ product, onClose, onSave }) => {
               {editedProduct.images.length === 0 && (
                 <div className="text-center py-12 border-2 border-dashed rounded-lg">
                   <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p className="text-gray-500">No images. Click "Add Image" to add product images.</p>
+                  <p className="text-gray-500">No images. Click Add Image to add product images.</p>
                 </div>
               )}
             </div>
