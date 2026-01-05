@@ -1720,15 +1720,31 @@ async def run_extension_import(
     products: List[ExtensionProduct],
     translate: bool = True
 ):
-    """Background task to import products directly from extension data - v3/v4 supports full scrape"""
+    """
+    Background task to import products from extension.
+    Uses TMAPI to fetch complete product data (like Dianxiaomi).
+    Extension provides product IDs, TMAPI provides full data.
+    """
     db = get_db()
     
     scrape_jobs[job_id]["status"] = "processing"
     
     for i, ext_product in enumerate(products):
         try:
-            # Check if we have full data from v3/v4 extension (NO API NEEDED!)
-            if ext_product.fullData:
+            product_id = ext_product.id
+            
+            # ALWAYS use TMAPI to get full product data (like Dianxiaomi)
+            print(f"[Extension Import] Fetching full data from TMAPI for {product_id}")
+            
+            tmapi_product = await fetch_product_from_tmapi(product_id)
+            
+            if tmapi_product:
+                # Successfully got data from TMAPI
+                product = tmapi_product
+                product["source"] = "tmapi_via_extension"
+                print(f"[Extension Import] TMAPI success: {len(product.get('images', []))} images, {len(product.get('variants', []))} variants")
+            elif ext_product.fullData:
+                # Fallback to extension data if TMAPI fails
                 full = ext_product.fullData
                 
                 # Parse all variants to ensure color/size are extracted
@@ -1758,6 +1774,14 @@ async def run_extension_import(
                     "description": full.get("description"),
                     "description_images": full.get("description_images", []),
                     "seller_name": full.get("seller", {}).get("name") if full.get("seller") else None,
+                    "seller_member_id": full.get("seller", {}).get("member_id") if full.get("seller") else None,
+                    "min_order": full.get("min_order", 1),
+                    "variants": parsed_variants,
+                    "sold_count": full.get("sold_count"),
+                    "source": "extension_fallback",
+                }
+                print(f"[Extension Import] Using extension data: {len(product['images'])} images, {len(product['variants'])} variants")
+            else:
                     "seller_member_id": full.get("seller", {}).get("member_id") if full.get("seller") else None,
                     "min_order": full.get("min_order", 1),
                     "variants": parsed_variants,
