@@ -780,7 +780,8 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                     </div>
                   )}
                 </div>
-              ))}
+              );
+              })}
             </CardContent>
           </Card>
         </div>
