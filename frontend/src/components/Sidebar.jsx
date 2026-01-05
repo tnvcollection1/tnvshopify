@@ -160,6 +160,12 @@ const Sidebar = () => {
       badge: 'New'
     },
     { 
+      icon: Key, 
+      label: '1688 Accounts', 
+      path: '/1688-accounts',
+      badge: 'New'
+    },
+    { 
       icon: Truck, 
       label: 'Fulfillment', 
       path: '/fulfillment',
