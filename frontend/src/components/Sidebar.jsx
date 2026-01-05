@@ -180,6 +180,12 @@ const Sidebar = () => {
       badge: 'New'
     },
     { 
+      icon: Send, 
+      label: 'Fulfillment Sync', 
+      path: '/fulfillment-sync',
+      badge: 'New'
+    },
+    { 
       icon: Truck, 
       label: 'Fulfillment', 
       path: '/fulfillment',
