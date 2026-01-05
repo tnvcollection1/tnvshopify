@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ExternalLink,
   Clock,
+  Zap,
 } from 'lucide-react';
 import {
   Select,
