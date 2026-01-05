@@ -263,6 +263,39 @@ January 5, 2026 - Session 10: Fulfillment Pipeline Enhancements (Sync, Export, A
   - `POST /api/fulfillment/pipeline/import-dwz-tracking` - JSON format
   - `POST /api/fulfillment/pipeline/import-dwz-csv` - CSV text format
 
+### DWZ Auto-Sync & Timeline ✅ NEW (Session 10 Part 3)
+
+**Automated DWZ Tracking Fetch**:
+- "Sync DWZ" button in pipeline UI (cyan)
+- Fetches real-time tracking status from DWZ56 API
+- Auto-updates order stages based on DWZ status:
+  - Status 1 (Sent) → In Transit
+  - Status 3 (Delivered) → Warehouse Arrived
+- Logs all syncs to `dwz_sync_logs` collection
+- Endpoints:
+  - `POST /api/dwz56-sync/sync` - Trigger sync
+  - `GET /api/dwz56-sync/tracking/{tracking_number}` - Get single tracking
+  - `GET /api/dwz56-sync/sync-logs` - View sync history
+
+**Batch WhatsApp Notifications**:
+- "Batch Notify" button in pipeline UI (emerald)
+- Send notifications to ALL orders in a specific stage
+- Shows order counts per stage before sending
+- Endpoint: `POST /api/fulfillment/pipeline/notify-by-stage`
+
+**Order History Timeline**:
+- History icon (🔵) on each order card
+- Shows complete order timeline with events:
+  - Order Created, Shopify Received, 1688 Ordered
+  - DWZ Shipped, In Transit, Warehouse Arrived
+  - Local Shipped, DWZ Sync events
+- Current status summary with tracking numbers
+- Endpoints:
+  - `GET /api/dwz56-sync/order-history/{order_id}` - Get timeline
+  - `POST /api/dwz56-sync/log-event` - Log custom events
+
+**Testing**: Iteration 17 - All 20 tests passed (100%)
+
 **CSV Format**:
 ```
 order_number,dwz_tracking
