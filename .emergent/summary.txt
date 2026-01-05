@@ -1,183 +1,188 @@
-<analysis>**original_problem_statement**: The user's goal is a deep integration with 1688.com, Taobao, and Tmall for their Shopify stores. This involves:
-1.  **Product Syncing & Scraping**: Build a tool to reliably scrape product data (including all variants, SKUs, and prices) from 1688, Taobao, and Tmall, translate it, and create a local catalog. The initial problem of scraping being blocked by anti-bot measures has been solved by integrating a third-party API (TMAPI).
-2.  **Order Automation & SKU Handling**: Automate placing Shopify orders on 1688. A critical issue was that product variants (SKUs/Spec IDs) were not being imported, blocking the ability to place orders. This has been resolved via TMAPI.
-3.  **Shopify Order Sync Performance**: The user experienced the system hanging and timing out when syncing orders from Shopify. This was a major blocker.
+<analysis>**original_problem_statement**: The user's primary goal is to create a robust Shopify application that deeply integrates with 1688.com, Taobao, and Tmall. The core requirements have evolved to mimic the functionality of a competing service, Dianxiaomi.
+
+PRODUCT REQUIREMENTS:
+1.  **Zero-API Product Scraping**: Build a Chrome Extension that can scrape full product details (including all images, descriptions, titles, prices, and all variants/SKUs) from both single product pages and collection/search result pages on 1688.com. This must be done without relying on paid third-party APIs like TMAPI.
+2.  **Dianxiaomi-style Product Management UI**: Create a Product Collector in the web app where users can see their scraped products. This interface must allow them to:
+    *   View all scraped products in a draft or scraping box area.
+    *   Edit every aspect of the product: title, description, images (add/remove), and variants (edit price, SKU, attributes).
+    *   One-click publish the edited product to their connected Shopify store, creating the product with all its images and variants.
+3.  **Multi-Account 1688 Integration**: Allow users of the application to connect their own 1688 accounts via a standard OAuth flow, similar to how Dianxiaomi authorizes. The system should manage multiple tokens and allow users to place orders using their own connected accounts.
+4.  **Order Automation**: Automate placing Shopify orders on 1688.com using the official 1688 APIs and the user's authenticated token.
+5.  **Performance & Reliability**: Ensure long-running tasks like historical Shopify order sync do not time out or hang the UI.
 
 **User's preferred language**: English
 
 **what currently exists?**
--   **TMAPI Integration**: The application is now integrated with the TMAPI third-party service, using a token provided by the user. This allows reliable fetching of full product details (including all variants, prices, and images) for 1688, Taobao, and Tmall products by URL or ID.
--   **Robust Product Importer**: The 1688 Product Importer at  now uses TMAPI as its primary data source, solving the initial scraping problem. It can handle 1688, Taobao, and Tmall links/IDs.
--   **Improved Chrome Extension**: A revamped Chrome extension exists to scrape product IDs from a 1688 page and send them to the backend for import via TMAPI. The frontend provides a dedicated tab with download and setup instructions.
--   **Non-Blocking Shopify Sync**: The Shopify order sync functionality has been completely refactored. It now uses a background job system. When a user initiates a sync, the API returns immediately with a job ID, and the frontend polls for progress, preventing the UI from hanging or timing out on standard syncs.
--   **Specific Order Sync Endpoint**: To handle missing historical orders and production timeouts on large syncs, a new endpoint  was created. It allows syncing a specific list of order numbers on demand.
+*   **Dianxiaomi-style UI**: A Product Collector page () and an Edit Product modal have been created, providing the foundational UI for the product scraping and publishing workflow.
+*   **Multi-Account 1688 Auth**: A complete OAuth flow has been implemented on both the backend () and frontend (), allowing users to connect their 1688 accounts. An initial account for the user has been added.
+*   **Chrome Extension (In-Progress)**: The browser extension () has been heavily modified to scrape product data directly from the page's HTML DOM. It aims to capture full details to avoid API calls, but its functionality is incomplete.
+*   **Official 1688 API Integration**: The backend is connected to the official 1688 API using the user's token. It can place orders, get shipping addresses, and access information about products from previously purchased merchants.
+*   **Background Sync for Shopify**: The initial problem of Shopify sync timeouts has been solved using a background job system.
+*   **TMAPI Integration**: The application is integrated with TMAPI as a fallback for fetching product data, though the primary goal is to eliminate this dependency for scraping. The user has a limited balance of ~900 calls.
 
 **Last working item**:
--   **Last item agent was working**: The user reported that in the Place Order on 1688 modal, the SKU/variant dropdown was displaying generic names like SKU 1, SKU 2... instead of meaningful attributes like Black / 46. The agent identified the bug in  where the  string from the TMAPI response was not being parsed correctly for display. A fix has been written to correctly format and display these variant names.
--   **Status**: USER VERIFICATION PENDING
--   **Agent Testing Done**: Y (Verified locally that the API returns the correct data fields (, , ) required for the frontend fix).
--   **Which testing method agent to use?**: manual testing by curl. The user needs to redeploy the latest frontend code to their production environment to see the fix. The next agent should guide the user to test and verify the fix on their production URL.
--   **User Testing Done**: N (User has seen the issue on production but has not deployed the fix yet).
+*   **Last item agent was working**: The user wants to avoid TMAPI calls entirely for product scraping. The agent was attempting to fulfill this by upgrading the Chrome Extension to scrape all product details (images, variants, etc.) directly from the 1688 product page. This would make product collection free.
+*   **Status**: IN PROGRESS
+*   **Agent Testing Done**: N
+*   **Which testing method agent to use?**: Frontend testing agent. The test should involve installing the updated extension, navigating to a 1688 product page with multiple variants, scraping it, and verifying that the product is saved in the Product Collector with all its variants and images, without any TMAPI calls being made.
+*   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: SKU variant dropdown displays generic names (e.g., SKU 1) instead of descriptive attributes (e.g., Black / 46). (P0)
--   **Issue 2**: Shopify sync for large date ranges (> 30 days) times out on production due to Cloudflare limits. (P1)
--   **Issue 3**: User has requested 1688 image search functionality. (P2)
--   **Issue 4**: Legacy Shopify OAuth  issue for new stores. (P2)
--   **Issue 5**: Legacy user login difficulties. (P2)
+*   **Issue 1**: Chrome Extension does not scrape complete product data, especially for collections. (P0)
+*   **Issue 2**: The Edit button is not visible or fully functional across all product lists. (P1)
+*   **Issue 3**: Shopify sync for large date ranges (> 30 days) times out. (P1)
+*   **Issue 4**: Official 1688 Image Search API is not working. (P2)
 
 **Issues Detail**:
--   **Issue 1: SKU variant dropdown displays generic names**
-    -   **Attempted fixes**: The agent has already implemented a fix in  to correctly parse and display the  string returned by the TMAPI-powered SKU endpoint.
-    -   **Next debug checklist**:
-        1.  Confirm with the user that they have redeployed the application to their production environment.
-        2.  Ask the user to test the Place Order on 1688 modal again and verify that the dropdown now shows descriptive variant names (e.g., 黑色 / 46 - ¥258.00).
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical usability issue. Fixing it will allow the user to correctly select the desired product variant when placing an order on 1688.
-    -   **Status**: USER VERIFICATION PENDING
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: None. Blocked on user action (re-deployment).
+*   **Issue 1: Chrome Extension incomplete scraping**
+    *   **Attempted fixes**: The agent overwrote  with logic to scrape variants and other details from the DOM. However, it's unverified and does not handle scraping multiple products from a collection/search page.
+    *   **Next debug checklist**:
+        1.  Verify the latest  on a single product page. Does it capture all variants and images?
+        2.  Enhance  to handle **collection pages**. When on a 1688 search or category page, the extension should scrape the summary data (title, main image, price, product ID) for all listed products.
+        3.  Ensure the backend endpoint  can correctly process both single-product full data and multi-product summary data from the extension.
+    *   **Why fix this issue and what will be achieved with the fix?**: This is the user's top priority. Completing this will achieve the goal of free, Dianxiaomi-style product scraping and eliminate reliance on the paid TMAPI service.
+    *   **Status**: IN PROGRESS
+    *   **Is recurring issue?**: Y
+    *   **Should Test frontend/backend/both after fix?**: Both
 
--   **Issue 2: Shopify sync for large date ranges times out**
-    -   **Attempted fixes**: A new endpoint  was created to sync specific, individual order numbers. This was used to manually sync 13 missing historical orders into production. This is a workaround, not a solution for bulk historical sync.
-    -   **Next debug checklist**:
-        1.  Propose and implement a batching mechanism for historical sync.
-        2.  This could be a UI feature allowing the user to select a month or year and have the backend process the sync in smaller, sequential chunks (e.g., one week at a time) to avoid the Cloudflare 100-second timeout.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will allow the user to perform a full historical sync of their Shopify stores without running into timeouts, ensuring complete data integrity between the app and Shopify.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: None.
+*   **Issue 2: The Edit button is not visible or fully functional**
+    *   **Attempted fixes**: The agent added an Edit button to the original  page.
+    *   **Next debug checklist**:
+        1.  Ensure the Edit button is present and functional for every product listed in both  and .
+        2.  Verify that clicking Edit opens the  with the correct product data loaded.
+    *   **Why fix this issue and what will be achieved with the fix?**: This is a core part of the requested Dianxiaomi workflow.
+    *   **Status**: IN PROGRESS
+    *   **Is recurring issue?**: N
+    *   **Should Test frontend/backend/both after fix?**: Frontend
 
--   **Issue 3: User has requested 1688 image search functionality**
-    -   **Attempted fixes**: Agent investigated the TMAPI documentation and endpoints for image search (). All attempts failed with a no Route matched error.
-    -   **Next debug checklist**:
-        1.  The agent concluded that image search is likely a premium TMAPI feature not included in the user's current free/basic plan.
-        2.  The agent must re-confirm with the user if they wish to upgrade their TMAPI plan to get this feature.
-        3.  Do not attempt to implement this further until the user confirms they have access to the image search API.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a new feature request that would allow the user to find 1688 products by uploading an image.
-    -   **Status**: BLOCKED
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: Blocked on user upgrading their TMAPI subscription.
+*   **Issue 3: Shopify sync for large date ranges times out**
+    *   **Attempted fixes**: A manual endpoint  exists as a workaround for specific orders.
+    *   **Next debug checklist**: Implement a frontend UI that allows the user to select a date range (e.g., a specific month) and have the backend process the historical sync in smaller, sequential batches to avoid timeouts.
+    *   **Why fix this issue and what will be achieved with the fix?**: This will provide a complete and reliable solution for importing historical Shopify data.
+    *   **Status**: NOT STARTED
+    *   **Is recurring issue?**: Y
+    *   **Should Test frontend/backend/both after fix?**: Both
 
--   **Issue 4 & 5 (Legacy issues)**
-    -   **Attempted fixes**: None in this session.
-    -   **Next debug checklist**: These are lower priority but should be kept on the backlog. Re-engage with the user on these once the higher priority issues are resolved.
-    -   **Status**: NOT STARTED
+*   **Issue 4: Official 1688 Image Search API is not working**
+    *   **Attempted fixes**: Agent tried several potential API names with no success.
+    *   **Next debug checklist**: This is blocked on the user. The agent must ask the user to go to their 1688 Open Platform console, find the Image search for cross-border products ability, click Usage Details, and provide the exact API method name listed there.
+    *   **Why fix this issue and what will be achieved with the fix?**: This is a feature requested by the user.
+    *   **Status**: BLOCKED
+    *   **Is recurring issue?**: N
+    *   **Should Test frontend/backend/both after fix?**: Backend
 
 **In progress Task List**:
--   None.
+*   **Task 1: Complete Dianxiaomi Scraping Feature**
+    *   **Where to resume**: The  file has been updated. The immediate next step is to test its scraping capability on a single product page and then extend it to support collection/search pages.
+    *   **What will be achieved with this?**: A complete, free product scraping solution that mimics Dianxiaomi, avoiding all TMAPI calls for data collection.
+    *   **Status**: IN PROGRESS
+    *   **Should Test frontend/backend/both after fix?**: Both
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks**:
-    -   (P1) **Batch Historical Sync UI**: Create a frontend interface for the Shopify sync that allows syncing data month-by-month to avoid timeouts.
-    -   (P1) **Auto-create products in Shopify**: Extend the scraper to allow selecting imported products and pushing them to the user's Shopify store.
-    -   (P1) **Auto-sync 1688 Fulfillment Status**: Implement a background job to check the status of placed 1688 orders and sync tracking numbers back to Shopify.
--   **Future Tasks**:
-    -   (P2) **Bulk Order from Dashboard**: Add functionality to select multiple orders and place them on 1688 in one batch.
-    -   (P2) Refactor  and  into smaller, more manageable modules.
-    -   (P2)  Features integration.
-    -   (P2) Universal AI Analytics feature.
-    -   (P3) Abandoned Cart Recovery via WhatsApp.
+*   **Upcoming Tasks**:
+    *   (P0) **Implement Collection Scraping**: Enhance the Chrome Extension to scrape all products from a 1688 search/category page.
+    *   (P1) **Implement Publish to Shopify**: Build the backend logic for the  endpoint to create products in Shopify with all variants and images, and connect it to the UI.
+    *   (P1) **Implement Account Selection for Ordering**: When placing an order, allow the user to select which connected 1688 account to use.
+*   **Future Tasks**:
+    *   (P1) Auto-sync 1688 Fulfillment Status back to Shopify.
+    *   (P2) Bulk Order from Dashboard.
+    *   (P2) Refactor  and .
+    *   (P2) Universal AI Analytics feature.
 
 **Completed work in this session**
--   **Shopify Sync Overhaul (DONE)**: Replaced the blocking sync API with a non-blocking background job system, fixing the UI hanging/timeout issue.
--   **TMAPI Integration (DONE)**: Integrated the TMAPI third-party service to reliably fetch full product data, including variants and SKUs, for 1688, Taobao, and Tmall.
--   **SKU Import Fixed (DONE)**: Resolved the critical bug where missing s prevented ordering of products with variants. The app now fetches and stores all SKU data from TMAPI.
--   **Manual Order Sync Endpoint (DONE)**: Created  and used it to sync 13 missing historical orders into the user's production database.
--   **Chrome Extension v2 (DONE)**: Significantly improved the browser extension for scraping and importing products.
--   **Taobao/Tmall Support (DONE)**: Extended the TMAPI integration to support product imports from Taobao and Tmall.
--   **SKU Display Name Fix (DONE, Pending Deployment)**: Wrote the frontend fix in  to show descriptive variant names.
+*   **Dianxiaomi UI Scaffolding**: Created the Product Collector page and an Edit Product modal to mirror the Dianxiaomi workflow.
+*   **Multi-Account 1688 Authentication**: Implemented a full OAuth flow for users to connect and manage their own 1688 accounts.
+*   **Official 1688 Buyer API Integration**: Integrated several buyer APIs and updated the user's expired access token.
+*   **Product Edit Functionality**: Added CRUD endpoints for scraped products and integrated an Edit button and modal into the product list UIs.
+*   **Chrome Extension Enhancement (In Progress)**: Significantly updated the extension to scrape product data directly from the DOM, aiming to eliminate the need for TMAPI.
 
 **Earlier issues found/mentioned but not fixed**
--   The core Shopify sync logic may have a design flaw (using  instead of ), as mentioned in the initial handoff. This was not investigated.
--   The Shopify OAuth  issue for new stores is still pending.
--   The user's recurring login difficulties are still pending.
+*   The Shopify OAuth  issue for new stores is still pending.
+*   The user's recurring login difficulties are still pending.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: Shopify sync issues were a major recurring theme, evolving from hanging to timeouts for large date ranges. The core problem of efficiently handling large datasets from Shopify persists.
--   **Recurrence count**: 3+
--   **Status**: IN PROGRESS (Workaround implemented, but a full solution for historical sync is needed).
+*   **Issue recurrence in previous fork**: Shopify sync timeouts for large date ranges.
+*   **Recurrence count**: 3+
+*   **Status**: IN PROGRESS (A full solution is planned but not started).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Third-Party API Integration (TMAPI)**: Using an external, paid API as the primary, reliable source for product data scraping, overcoming anti-bot measures.
--   **Background Tasks (FastAPI)**: Implemented non-blocking background jobs for long-running processes like Shopify order sync to prevent UI hanging and API timeouts.
--   **Client-Side Scraping (Chrome Extension)**: The primary workflow for initiating a scrape now relies on a Chrome extension that runs in the user's browser context.
--   **Environment-Specific Configurations**: The importance of managing environment variables () separately for preview and production deployments was a key learning. Production and preview use different databases.
+*   **Client-Side Scraping**: The core strategy is now to use a Chrome Extension to parse the HTML DOM of 1688 pages to extract all product data, making scraping free and avoiding anti-bot measures.
+*   **OAuth for Multi-Tenancy**: The system now supports connecting multiple 1688 accounts, storing individual tokens, and using them for API actions. This allows different users of the app to use their own 1688 credentials.
+*   **Feature Parity Development**: The current development is driven by the goal of replicating the user-facing workflow of a competitor application (Dianxiaomi).
 
 **key DB schema**
--   ****: This collection is now populated with much richer data from TMAPI, including a full  array with , , , and descriptive properties.
--   ****: A new collection to track the status and progress of background sync jobs.
-
-**changes in tech stack**
--   No new libraries were added, but the application now has a critical dependency on the external **TMAPI** service.
+*   ****: Stores credentials for multiple 1688 accounts, including , , and .
+*   ****: Stores product data scraped by the extension. The schema now accommodates a full  array and an  array.
 
 **All files of reference**
--    (Shopify sync logic)
--    (TMAPI and import logic)
--    (Frontend for Shopify sync)
--    (Frontend for SKU selection)
--    (Directory for the client-side scraping extension)
+*    (Core scraping logic)
+*    (Dianxiaomi-style UI)
+*    (Product editing UI)
+*    (Backend for 1688 auth and actions)
+*    (Backend for processing scraped data)
 
 **Areas that need refactoring**:
--    has grown significantly and now contains the background job management, multiple sync endpoints, and other core routes. It should be broken down.
--    is also very large, handling TMAPI logic for multiple platforms, direct imports, and extension imports. This could be split into a dedicated TMAPI service module.
+*   The product management logic is split between  and . These should be consolidated into a unified service for clarity.
 
 **key api endpoints**
--   : (New) Starts a non-blocking Shopify sync.
--   : (New) Checks the progress of a background sync job.
--   : (New) Syncs a specific list of order numbers.
--   : (New) Endpoint for the Chrome extension to send fully scraped product data.
--   : (New) Sets the TMAPI API token.
--   : (Updated) Now uses TMAPI to fetch full SKU/variant data.
--   : (Updated) Now uses TMAPI to fetch data for 1688, Taobao, and Tmall.
--   : (Updated) Serves the latest version of the Chrome extension zip file.
+*   : (New) Initiates the OAuth flow to connect a new 1688 account.
+*   : (New) Callback endpoint for the OAuth flow.
+*   : (New) Lists all connected 1688 accounts.
+*   : (Modified) Accepts full product data scraped by the extension.
+*   : (New) Updates a scraped product.
+*   : (New) Enriches a product using TMAPI (to be deprecated by extension scraping).
 
 **Critical Info for New Agent**
--   The immediate task is to guide the user to **redeploy the application** to fix the SKU variant display issue. The code fix is already in . Do not try to re-write it.
--   **Production and Preview have DIFFERENT databases.** Data synced or imported in preview will NOT appear in production. Any fix requiring data sync must be run on the production environment after deployment.
--   Syncing Shopify orders for a large date range (e.g., >30 days) **will fail on production** due to a Cloudflare timeout (524 error). A workaround endpoint exists ( for specific IDs), but a proper batching solution for historical sync is a pending task.
--   The user's TMAPI plan **does NOT support image search**. Do not attempt to work on this feature unless the user confirms they have upgraded their plan and have access to the  API.
+*   **The absolute top priority is to perfect the Chrome Extension to eliminate the need for TMAPI for scraping.** You must test and, if necessary, fix the extension to scrape:
+    1.  All details from a single product page (all images, all variants with their properties).
+    2.  All products from a collection/search result page.
+*   **Do not use the Dianxiaomi login credentials.** The login is protected by a rotating CAPTCHA. All necessary workflow information has been extracted from screenshots provided by the user.
+*   **TMAPI is a fallback, not the primary tool.** The user has a limited balance and wants to avoid using it. The main development path is client-side scraping.
+*   The multi-account auth system is in place, but the order placement logic has not been updated to allow selecting which account to use. This is a key upcoming task.
 
 **documents and test reports created in this job**
--    (Updated)
--    (Updated)
+*   
+*   Analysis of Dianxiaomi workflow based on user-provided screenshots.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks for image search and to link products via API. **Status**: Addressed. Agent determined image search is not in the user's TMAPI plan.
-2.  **User**: still same - Reports that the SKU dropdown fix is not working on production. **Status**: Addressed. Agent explained the fix needs to be deployed by the user.
-3.  **User**: Wants to know if missing orders will appear on final deployment. **Status**: Addressed. Agent clarified that databases are separate and the sync must be run on production after deployment.
-4.  **User**: done u can do it for me - Confirms redeployment is done and asks agent to sync missing orders on production. **Status**: Completed. Agent synced the 13 orders.
-5.  **User**: Reports that the  dropdown shows incorrect data on production. **Status**: Addressed. Agent identified the issue and implemented a frontend fix, which is now pending deployment by the user.
-6.  **User**: Provides a screenshot of the sync failing on production. **Status**: Addressed. Agent diagnosed the issue as the new background endpoints not being deployed yet and implemented a fallback in the frontend.
-7.  **User**: reploy is not working ? **Status**: Addressed. Agent initially thought deployment was failing and called support, but user clarified.
-8.  **User**: reploy is working dear i mean ive reployed the app even then sync is not working. **Status**: Addressed. Agent investigated production and found the sync timeout issue.
-9.  **User**: Lists 13 specific order numbers that are missing from  on production. **Status**: Completed. Agent implemented a specific-order-sync endpoint and used it to sync these orders.
-10. **User**: Provides a screenshot showing the sync failing on their final deployment. **Status**: Addressed. Agent determined this was due to the new background sync endpoints not being available on production and added a fallback to the old endpoint.
+1.  **User**: Asks to use the official 1688 API instead of TMAPI. (Agent agrees to use the extension).
+2.  **User**: Requests the Chrome extension be updated to scrape SKUs to make it free. (Agent implements).
+3.  **User**: Provides Dianxiaomi login and asks about collection scraping. (Agent fails to log in due to CAPTCHA).
+4.  **User**: Provides screenshots of the Dianxiaomi workflow. (Agent analyzes them).
+5.  **User**: Asks to avoid TMAPI. (Agent confirms the plan is to use the extension).
+6.  **User**: Reports the edit option is missing. (Agent adds it).
+7.  **User**: Provides screenshots and asks how Dianxiaomi authorizes. (Agent explains it's the same OAuth flow).
+8.  **User**: Agrees to add multi-account auth. (Agent implements).
+9.  **User**: Reports the edit button is not visible. (Agent fixes its location).
+10. **User**: Reports that scraped products are missing images/variants. (Agent adds a temporary Fetch Details button using TMAPI).
+11. **User**: *[PENDING]* Re-iterates that the extension should scrape everything (including from collections) to avoid TMAPI calls. This is the current, highest-priority task.
 
 **Project Health Check:**
--   **Broken**:
-    -   Syncing large historical data from Shopify (>30 days) is broken on production due to timeouts.
--   **Mocked**: None.
+*   **Broken**:
+    *   End-to-end free product scraping is not yet complete, especially for collections.
+    *   Syncing large historical Shopify data remains an issue.
+*   **Mocked**: None.
 
 **3rd Party Integrations**
--   **1688 / Taobao / Tmall**: Integrated via **TMAPI** (a third-party paid service). The user has provided an  which is configured. This integration is for product/SKU data fetching.
--   **Shopify Admin API**: Used for order syncing.
--   **OpenAI GPT-4o**: Used for Chinese to English translation via .
+*   **TMAPI**: Integrated for product data fetching, but the goal is to deprecate it for scraping. Requires user-provided API Key.
+*   **1688 Open Platform**: Integrated via OAuth for authenticated actions like placing orders. Requires user authorization.
+*   **Shopify Admin API**: Used for order syncing and product management. Requires user-provided API Key.
+*   **OpenAI GPT-4o**: Used for translation. Uses Emergent LLM Key.
 
 **Testing status**
--   **Testing agent used after significant changes**: NO (Agent self-tested features using curl and manual verification).
--   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: None in this session.
--   **Known regressions**: None.
+*   **Testing agent used after significant changes**: NO
+*   **Troubleshoot agent used after agent stuck in loop**: NO
+*   **Test files created**: None
+*   **Known regressions**: None
 
 **Credentials to test flow:**
--   **Admin Login**:  / 
--   **TMAPI Token**: Stored in  as .
+*   **Admin Login**:  / 
+*   **TMAPI Token**: Located in .
+*   **1688 Access Token**: Located in .
 
 **What agent forgot to execute**
--   The agent correctly prioritized and resolved all major user-reported blockers. Older, lower-priority issues from the initial handoff (e.g., Shopify OAuth , core sync logic design flaw) were not addressed, which was an appropriate trade-off.</analysis>
+*   **Collection Scraping**: The user explicitly asked about scraping collections like Dianxiaomi, but the agent only focused on single product pages. The current extension logic for collection pages is incomplete.
+*   **Account Selection in Ordering**: After implementing multi-account 1688 auth, the agent did not add a mechanism in the order fulfillment flow for the user to select *which* 1688 account to use when placing an order.</analysis>
