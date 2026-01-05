@@ -194,40 +194,26 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 ---
 
 ## Last Updated
-January 5, 2026 - Quick Fulfill All, Bulk Order 1688, Service Module Refactoring
+January 5, 2026 - Dashboard Widget for 1688 Orders Status
 
 ---
 
-## Recent Completed Work (Jan 5, 2026 - Session 4)
+## Recent Completed Work (Jan 5, 2026 - Session 5)
 
-### 1. Quick Fulfill All Button ✅
-- **Location**: Fulfillment Sync page (`/fulfillment-sync`)
-- **Feature**: One-click button to sync all ready orders to Shopify
-- **UI**: Green gradient banner with Zap icon, only shows when orders exist
-- **Function**: Calls bulk-sync-to-shopify for all pending orders
-
-### 2. Bulk Order 1688 Feature (P2) ✅
-- **Route**: `/bulk-order-1688`
-- **Component**: `BulkOrder1688.jsx`
+### Dashboard Widget - 1688 Orders Status ✅
+- **Component**: `Widget1688Status.jsx`
+- **Location**: Main Orders dashboard (home page after login)
 - **Features**:
-  - Store selector and 1688 account selector
-  - Stats cards: Confirmed Orders, With 1688 Links, Selected, Need Linking
-  - Select all linked orders and bulk order on 1688
-  - Help section with SKU linking instructions
-- **Backend Endpoints**:
-  - `POST /api/1688/bulk-order` - Place bulk orders (max 50 items)
-  - `POST /api/1688/find-linked-products` - Find 1688 product links for orders
-
-### 3. Service Module Refactoring (P2) ✅
-- **New Modules**:
-  - `/app/backend/services/tmapi_service.py` - TMAPI operations
-  - `/app/backend/services/shopify_publishing_service.py` - Shopify publishing
-- **Functions Extracted**:
-  - tmapi_service: log_tmapi_usage, fetch_product_via_tmapi, fetch_taobao_product_via_tmapi, search_products_by_image, get_tmapi_usage_stats
-  - shopify_publishing: convert_price, publish_product_to_shopify, batch_publish_to_shopify
-
-### Testing: 14/14 tests passed (100%)
+  - Orange gradient header with "1688 Orders Today"
+  - 6-stage status pipeline: Pending → Ordered → Shipped → With DWZ → To Sync → Synced
+  - Clickable status boxes that navigate to relevant pages
+  - Recent 1688 Orders list with status badges and external links
+  - Quick action buttons: Bulk Order, Sync Fulfillment, Import Products
+  - Auto-refresh every 5 minutes
+- **Data Sources**:
+  - `/api/fulfillment/sync-status-summary` - Pipeline stats
+  - `/api/1688/purchase-orders` - Recent orders
 
 ---
 
-## Previous Completed Work (Jan 5, 2026 - Sessions 1-3)
+## Previous Completed Work (Jan 5, 2026 - Sessions 1-4)
