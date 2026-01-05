@@ -265,10 +265,39 @@
   }
   
   function extractAllImages(product) {
-    // 1. Main gallery images (high priority)
+    console.log('[WaMerce v4] Extracting images...');
+    
+    // 1. First try to find images in script data (most reliable)
+    document.querySelectorAll('script').forEach(script => {
+      const text = script.textContent || '';
+      
+      // Look for image URLs in various patterns
+      const patterns = [
+        // Full alicdn URLs
+        /https?:\/\/cbu\d+\.alicdn\.com\/[^"'\s><]+\.(?:jpg|jpeg|png|webp)/gi,
+        // Protocol-relative URLs
+        /\/\/cbu\d+\.alicdn\.com\/[^"'\s><]+\.(?:jpg|jpeg|png|webp)/gi,
+        // In JSON objects
+        /"(?:image|img|src|url|originalImageURI)"[:\s]*"([^"]+alicdn[^"]+)"/gi,
+      ];
+      
+      patterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+          // Handle both full match and capture group
+          const imgUrl = match[1] || match[0];
+          const cleanUrl = cleanImageUrl(imgUrl);
+          if (cleanUrl && !product.main_images.includes(cleanUrl)) {
+            product.main_images.push(cleanUrl);
+          }
+        }
+      });
+    });
+    
+    // 2. Main gallery images from DOM
     const gallerySelectors = [
       '.detail-gallery-img img',
-      '.mod-detail-gallery img',
+      '.mod-detail-gallery img', 
       '.vertical-img img',
       '.thumb-list img',
       '.detail-gallery img',
@@ -277,18 +306,48 @@
       '.tab-pane img',
       '.detail-main-img img',
       '.main-img-list img',
+      '.offer-main-img img',
+      '.main-image img',
+      '.slider-item img',
+      '.detail-pic img',
+      '[class*="detail"] [class*="gallery"] img',
+      '[class*="detail"] [class*="image"] img',
+      '.d-content-main img',
+      '.module-pdp-image-gallery img',
     ];
     
     gallerySelectors.forEach(sel => {
       document.querySelectorAll(sel).forEach(img => {
-        const url = cleanImageUrl(img.src || img.dataset.src || img.dataset.lazySrc || img.dataset.original);
-        if (url && !product.main_images.includes(url)) {
-          product.main_images.push(url);
+        // Try multiple attribute sources
+        const sources = [
+          img.src,
+          img.dataset.src,
+          img.dataset.lazySrc,
+          img.dataset.original,
+          img.getAttribute('data-src'),
+          img.getAttribute('data-lazy-src'),
+        ];
+        
+        for (const src of sources) {
+          const url = cleanImageUrl(src);
+          if (url && !product.main_images.includes(url)) {
+            product.main_images.push(url);
+            break;
+          }
         }
       });
     });
     
-    // 2. SKU/Variant images
+    // 3. Get large image from currently visible main image
+    const mainImgEl = document.querySelector('.detail-gallery-turn-wrapper img, .offer-main-img img, .main-image-wrapper img');
+    if (mainImgEl) {
+      const url = cleanImageUrl(mainImgEl.src || mainImgEl.dataset.src);
+      if (url && !product.main_images.includes(url)) {
+        product.main_images.unshift(url); // Put at front as main image
+      }
+    }
+    
+    // 4. SKU/Variant images
     const skuImgSelectors = [
       '.obj-sku img',
       '.sku-item img', 
@@ -296,6 +355,8 @@
       '.prop-img img',
       '.sku-color img',
       '.color-item img',
+      '.sku-prop-img img',
+      '[class*="variant"] img',
     ];
     
     skuImgSelectors.forEach(sel => {
@@ -307,19 +368,23 @@
       });
     });
     
-    // 3. Look for images in data attributes
-    document.querySelectorAll('[data-imgs], [data-images], [data-big-img]').forEach(el => {
+    // 5. Look for images in data attributes on any element
+    document.querySelectorAll('[data-imgs], [data-images], [data-big-img], [data-pic]').forEach(el => {
       try {
-        const data = el.dataset.imgs || el.dataset.images || el.dataset.bigImg;
+        const data = el.dataset.imgs || el.dataset.images || el.dataset.bigImg || el.dataset.pic;
         if (data) {
-          if (data.startsWith('[')) {
-            JSON.parse(data).forEach(img => {
-              const url = cleanImageUrl(typeof img === 'string' ? img : img.url);
+          if (data.startsWith('[') || data.startsWith('{')) {
+            // JSON array or object
+            const parsed = JSON.parse(data);
+            const items = Array.isArray(parsed) ? parsed : [parsed];
+            items.forEach(item => {
+              const url = cleanImageUrl(typeof item === 'string' ? item : (item.url || item.src || item.original));
               if (url && !product.main_images.includes(url)) {
                 product.main_images.push(url);
               }
             });
-          } else {
+          } else if (data.includes('alicdn')) {
+            // Direct URL
             const url = cleanImageUrl(data);
             if (url && !product.main_images.includes(url)) {
               product.main_images.push(url);
@@ -329,13 +394,30 @@
       } catch (e) {}
     });
     
-    // 4. Description images (lower priority)
-    document.querySelectorAll('.detail-content img, .offer-description img, .desc-content img').forEach(img => {
+    // 6. Also scan ALL images on page as fallback
+    if (product.main_images.length === 0) {
+      console.log('[WaMerce v4] No gallery images found, scanning all page images...');
+      document.querySelectorAll('img').forEach(img => {
+        const url = cleanImageUrl(img.src || img.dataset.src);
+        // Only include reasonably sized images (likely product images)
+        if (url && url.includes('alicdn') && !product.main_images.includes(url)) {
+          // Check if image appears to be a product image (not icon/logo)
+          if (img.width > 100 || img.height > 100 || !img.complete) {
+            product.main_images.push(url);
+          }
+        }
+      });
+    }
+    
+    // 7. Description images (lower priority)
+    document.querySelectorAll('.detail-content img, .offer-description img, .desc-content img, .detail-desc img').forEach(img => {
       const url = cleanImageUrl(img.src || img.dataset.src);
       if (url && !product.description_images.includes(url)) {
         product.description_images.push(url);
       }
     });
+    
+    console.log('[WaMerce v4] Found', product.main_images.length, 'main images,', product.sku_images.length, 'SKU images');
   }
   
   function extractAllVariants(product) {
