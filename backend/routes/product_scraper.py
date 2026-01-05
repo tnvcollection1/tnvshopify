@@ -1022,40 +1022,7 @@ async def extension_import_products(request: ExtensionImportRequest, background_
 # parse_global_api_response function moved to services/product_fetcher_service.py
 
 
-def parse_standard_api_response(item: dict, product_id: str) -> dict:
-    """Parse Standard API response (needs translation)"""
-    # Extract images
-    images = []
-    main_imgs = item.get("main_imgs", []) or item.get("images", [])
-    for img in main_imgs[:20]:
-        if img:
-            images.append(img if not img.startswith("//") else "https:" + img)
-    
-    # Extract variants with proper parsing
-    variants = []
-    for sku in (item.get("skus") or [])[:100]:
-        parsed = parse_variant_props(sku)
-        variants.append(parsed)
-    
-    # Extract price
-    price_info = item.get("price_info", {})
-    price = float(price_info.get("price", 0) or price_info.get("price_min", 0) or item.get("price", 0) or 0)
-    
-    return {
-        "product_id": product_id,
-        "url": f"https://detail.1688.com/offer/{product_id}.html",
-        "title": item.get("title"),
-        "title_cn": item.get("title"),
-        "price": price,
-        "images": images,
-        "description": item.get("desc"),
-        "variants": variants,
-        "min_order": item.get("mixed_batch", {}).get("mix_num", 1) or 1,
-        "sold_count": item.get("sale_count"),
-        "seller_name": item.get("shop_info", {}).get("shop_name"),
-        "seller_member_id": item.get("shop_info", {}).get("shop_id"),
-        "is_global_api": False,
-    }
+# parse_standard_api_response function moved to services/product_fetcher_service.py
 
 
 async def log_tmapi_usage(endpoint: str, product_id: str, success: bool, error_msg: str = None):
