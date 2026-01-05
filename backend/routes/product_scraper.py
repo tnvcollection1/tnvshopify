@@ -2706,78 +2706,29 @@ async def auto_link_from_image_endpoint(
     Uses product_linking_service for the search logic.
     """
     return await _auto_link_service(shopify_sku=shopify_sku, image_url=image_url)
-            
-            suggestions.append({
-                "product_1688_id": product_id,
-                "product_1688_url": f"https://detail.1688.com/offer/{product_id}.html",
-                "title": item.get("title"),
-                "price": item.get("price"),
-                "image": item.get("img"),
-                "shop_name": shop_info.get("company_name") or shop_info.get("login_id"),
-                "is_factory": shop_info.get("is_factory", False),
-            })
-        
-        return {
-            "success": True,
-            "shopify_sku": shopify_sku,
-            "suggestions": suggestions,
-            "total_found": result.get("data", {}).get("total_count", 0),
-        }
-        
-    except Exception as e:
-        return {"success": False, "error": str(e)}
 
 
 @router.get("/product-links/all")
-async def get_all_product_links(
+async def get_all_product_links_endpoint(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100)
 ):
     """Get all product links (Shopify -> 1688 mappings)"""
-    db = get_db()
-    
-    skip = (page - 1) * limit
-    
-    links = await db.product_links.find(
-        {},
-        {"_id": 0}
-    ).skip(skip).limit(limit).to_list(limit)
-    
-    total = await db.product_links.count_documents({})
-    
-    return {
-        "success": True,
-        "links": links,
-        "total": total,
-        "page": page,
-        "pages": (total + limit - 1) // limit,
-    }
+    return await _get_all_links_service(page=page, limit=limit)
 
 
 # ============= TMAPI USAGE MONITORING =============
 
 @router.get("/tmapi/usage")
-async def get_tmapi_usage(
+async def get_tmapi_usage_endpoint(
     days: int = Query(7, ge=1, le=90),
 ):
     """
     Get TMAPI usage statistics for monitoring credits.
+    Uses tmapi_service for the stats logic.
     """
-    db = get_db()
-    
-    # Calculate date range
-    from_date = datetime.now(timezone.utc) - timedelta(days=days)
-    
-    # Get usage logs
-    logs = await db.tmapi_usage_logs.find(
-        {"timestamp": {"$gte": from_date.isoformat()}},
-        {"_id": 0}
-    ).sort("timestamp", -1).to_list(1000)
-    
-    # Calculate statistics
-    total_calls = len(logs)
-    successful_calls = len([l for l in logs if l.get("success")])
-    failed_calls = total_calls - successful_calls
+    stats = await get_tmapi_usage_stats(days=days)
+    return {"success": True, **stats}
     
     # Group by endpoint
     by_endpoint = {}
