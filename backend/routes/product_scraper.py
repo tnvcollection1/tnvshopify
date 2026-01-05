@@ -1715,6 +1715,77 @@ def parse_variant_props(variant: dict) -> dict:
     return result
 
 
+async def fetch_product_from_tmapi(product_id: str) -> Optional[dict]:
+    """
+    Fetch full product data from TMAPI (like Dianxiaomi).
+    Returns parsed product dict or None if failed.
+    """
+    TMAPI_TOKEN = os.environ.get("TMAPI_TOKEN", "")
+    
+    if not TMAPI_TOKEN:
+        print(f"[TMAPI] Token not configured")
+        return None
+    
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(
+                f"{TMAPI_BASE_URL}/1688/item_detail",
+                params={
+                    "apiToken": TMAPI_TOKEN,
+                    "item_id": product_id,
+                }
+            )
+            data = response.json()
+        
+        if data.get("code") != 200:
+            print(f"[TMAPI] Failed for {product_id}: {data.get('msg', 'Unknown error')}")
+            return None
+        
+        item = data.get("data", {})
+        
+        # Extract images
+        images = []
+        main_imgs = item.get("main_imgs", []) or item.get("images", [])
+        for img in main_imgs[:20]:
+            if img:
+                if img.startswith("//"):
+                    img = "https:" + img
+                images.append(img)
+        
+        # Extract variants with proper parsing
+        variants = []
+        sku_list = item.get("skus", [])
+        for sku in sku_list[:100]:
+            parsed = parse_variant_props(sku)
+            variants.append(parsed)
+        
+        # Extract price
+        price_info = item.get("price_info", {})
+        price = float(price_info.get("price", 0) or price_info.get("price_min", 0) or item.get("price", 0) or 0)
+        
+        # Build product dict
+        product = {
+            "product_id": product_id,
+            "url": f"https://detail.1688.com/offer/{product_id}.html",
+            "title": item.get("title"),
+            "title_cn": item.get("title"),
+            "price": price,
+            "images": images,
+            "description": item.get("desc"),
+            "variants": variants,
+            "min_order": item.get("mixed_batch", {}).get("mix_num", 1) or 1,
+            "sold_count": item.get("sale_count"),
+            "seller_name": item.get("shop_info", {}).get("shop_name"),
+            "seller_member_id": item.get("shop_info", {}).get("shop_id"),
+        }
+        
+        return product
+        
+    except Exception as e:
+        print(f"[TMAPI] Exception for {product_id}: {e}")
+        return None
+
+
 async def run_extension_import(
     job_id: str,
     products: List[ExtensionProduct],
