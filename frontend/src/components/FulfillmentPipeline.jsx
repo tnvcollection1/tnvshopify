@@ -797,6 +797,16 @@ const FulfillmentPipeline = () => {
           <Download className="h-4 w-4 mr-2" />
           Export JSON
         </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={syncAllToShopify}
+          className="border-green-300 text-green-600 hover:bg-green-50"
+          title="Sync all local_shipped orders to Shopify"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Sync to Shopify
+        </Button>
       </div>
       
       {/* Stats Cards */}
