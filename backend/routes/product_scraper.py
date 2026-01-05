@@ -1894,33 +1894,81 @@ async def fetch_product_details(product_id: str):
         if data.get("code") != 200:
             return {
                 "success": False,
-                "error": data.get("message", "TMAPI request failed"),
+                "error": data.get("msg", data.get("message", "TMAPI request failed")),
             }
         
         item = data.get("data", {})
         
+        # Extract images
+        images = []
+        main_imgs = item.get("main_imgs", []) or item.get("images", [])
+        for img in main_imgs[:15]:
+            if img:
+                if img.startswith("//"):
+                    img = "https:" + img
+                images.append(img)
+        
+        # Extract variants with proper parsing
+        variants = []
+        sku_list = item.get("skus", [])
+        for sku in sku_list[:50]:
+            props_names = sku.get("props_names", "")
+            color = ""
+            size = ""
+            
+            if props_names:
+                for part in props_names.split(";"):
+                    if ":" in part:
+                        key, value = part.split(":", 1)
+                        key_lower = key.strip().lower()
+                        if '颜色' in key_lower or 'color' in key_lower or '款式' in key_lower:
+                            color = value.strip()
+                        if '尺码' in key_lower or '尺寸' in key_lower or 'size' in key_lower or '规格' in key_lower:
+                            size = value.strip()
+            
+            price_val = sku.get("sale_price") or sku.get("price") or 0
+            if isinstance(price_val, str):
+                try:
+                    price_val = float(price_val)
+                except:
+                    price_val = 0
+            
+            variants.append({
+                "sku_id": sku.get("skuid"),
+                "spec_id": sku.get("specid"),
+                "price": price_val,
+                "stock": sku.get("stock", 0),
+                "props_names": props_names,
+                "color": color,
+                "size": size,
+            })
+        
+        # Extract price
+        price_info = item.get("price_info", {})
+        price = float(price_info.get("price", 0) or price_info.get("price_min", 0) or item.get("price", 0) or 0)
+        
         # Build update data
         update_data = {
             "title_cn": item.get("title"),
-            "price": item.get("price") or item.get("priceRange", {}).get("price"),
-            "images": item.get("images", []),
-            "variants": item.get("skus", []),
+            "price": price,
+            "images": images,
+            "variants": variants,
             "description": item.get("desc"),
-            "min_order": item.get("beginAmount", 1),
-            "sold_count": item.get("saleCount"),
-            "seller_name": item.get("shopName"),
-            "seller_member_id": item.get("memberId"),
+            "min_order": item.get("mixed_batch", {}).get("mix_num", 1) or 1,
+            "sold_count": item.get("sale_count"),
+            "seller_name": item.get("shop_info", {}).get("shop_name"),
+            "seller_member_id": item.get("shop_info", {}).get("shop_id"),
             "updated_at": datetime.now(timezone.utc).isoformat(),
             "details_fetched": True,
+            "source": "tmapi_enriched",
         }
         
         # Translate title if needed
-        if item.get("title") and not item.get("title", "").isascii():
+        if item.get("title") and EMERGENT_LLM_KEY:
             try:
-                # Use existing translation function if available
-                translated = await translate_product({"title": item.get("title")})
-                if translated.get("title_en"):
-                    update_data["title_en"] = translated["title_en"]
+                translated_title = await translate_to_english(item.get("title"), "product title")
+                if translated_title:
+                    update_data["title"] = translated_title
             except Exception as e:
                 print(f"Translation failed: {e}")
         
@@ -1938,11 +1986,13 @@ async def fetch_product_details(product_id: str):
         
         return {
             "success": True,
-            "message": f"Fetched {len(update_data.get('images', []))} images and {len(update_data.get('variants', []))} variants",
+            "message": f"Fetched {len(images)} images and {len(variants)} variants",
             "product": updated_product,
-            "images_count": len(update_data.get("images", [])),
-            "variants_count": len(update_data.get("variants", [])),
+            "images_count": len(images),
+            "variants_count": len(variants),
         }
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return {"success": False, "error": str(e)}
