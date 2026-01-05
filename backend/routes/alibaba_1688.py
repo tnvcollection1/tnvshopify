@@ -3586,3 +3586,300 @@ async def test_1688_account(account_id: str):
             }
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+
+# ==================== BULK ORDER FEATURE ====================
+
+class BulkOrderItem(BaseModel):
+    """Single item for bulk ordering"""
+    shopify_order_id: str = Field(..., description="Shopify order ID")
+    product_id_1688: str = Field(..., description="1688 product ID")
+    quantity: int = Field(1, ge=1, description="Quantity to order")
+    spec_id: Optional[str] = Field(None, description="SKU/spec ID for variant")
+    size: Optional[str] = Field(None, description="Size")
+    color: Optional[str] = Field(None, description="Color")
+
+
+class BulkOrderRequest(BaseModel):
+    """Request for bulk ordering multiple items on 1688"""
+    items: List[BulkOrderItem] = Field(..., description="List of items to order")
+    account_id: Optional[str] = Field(None, description="1688 account to use")
+    auto_link: bool = Field(True, description="Auto-link 1688 product to Shopify SKU")
+
+
+@router.post("/bulk-order")
+async def create_bulk_order(request: BulkOrderRequest):
+    """
+    Create bulk orders on 1688 for multiple Shopify orders.
+    Each Shopify order's linked 1688 product will be ordered.
+    
+    This is useful when you have multiple confirmed Shopify orders
+    and want to place all 1688 orders in one go.
+    """
+    db = get_db()
+    
+    if not request.items:
+        raise HTTPException(status_code=400, detail="No items provided")
+    
+    if len(request.items) > 50:
+        raise HTTPException(status_code=400, detail="Maximum 50 items per bulk order")
+    
+    # Determine access token
+    access_token = ALIBABA_ACCESS_TOKEN
+    account_name = "Default"
+    
+    if request.account_id:
+        account = await db.alibaba_1688_accounts.find_one({"account_id": request.account_id})
+        if account and account.get("access_token"):
+            access_token = account["access_token"]
+            account_name = account.get("account_name", account.get("member_id", request.account_id))
+    
+    if not access_token:
+        return {
+            "success": False,
+            "error": "No 1688 access token configured",
+            "message": "Please configure 1688 access token or add an account"
+        }
+    
+    results = {
+        "success": True,
+        "total": len(request.items),
+        "ordered": 0,
+        "failed": 0,
+        "skipped": 0,
+        "orders": [],
+        "errors": [],
+        "account_used": account_name,
+    }
+    
+    # Get shipping address once
+    try:
+        address_result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.receiveAddress.get",
+            {},
+            access_token=access_token
+        )
+        
+        result_data = address_result.get("result", {})
+        addresses = result_data.get("receiveAddressItems", [])
+        
+        if not addresses:
+            return {
+                "success": False,
+                "error": "No shipping address configured on 1688",
+                "message": f"Please add a shipping address for account: {account_name}"
+            }
+        
+        default_address = addresses[0]
+        address_id = default_address.get("id") or default_address.get("addressId")
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to get shipping address: {str(e)}"
+        }
+    
+    # Process each item
+    for item in request.items:
+        try:
+            # Check if already ordered for this Shopify order
+            existing = await db.purchase_orders_1688.find_one({
+                "shopify_order_id": item.shopify_order_id,
+                "product_id": item.product_id_1688,
+                "status": {"$ne": "cancelled"}
+            })
+            
+            if existing:
+                results["skipped"] += 1
+                results["errors"].append({
+                    "shopify_order_id": item.shopify_order_id,
+                    "reason": f"Already ordered (1688 Order: {existing.get('alibaba_order_id', 'N/A')})"
+                })
+                continue
+            
+            # Build cargo
+            cargo = {
+                "offerId": int(item.product_id_1688),
+                "quantity": float(item.quantity),
+            }
+            
+            if item.spec_id:
+                cargo["specId"] = item.spec_id
+            
+            # Build notes
+            notes = f"Shopify #{item.shopify_order_id}"
+            if item.size:
+                notes += f" | Size: {item.size}"
+            if item.color:
+                notes += f" | Color: {item.color}"
+            
+            # Create order params
+            create_params = {
+                "addressParam": json.dumps({"addressId": int(address_id)}),
+                "cargoParamList": json.dumps([cargo]),
+                "flow": "general",
+                "message": notes,
+            }
+            
+            # Create the order
+            create_result = await make_api_request(
+                "com.alibaba.trade/alibaba.trade.fastCreateOrder",
+                create_params,
+                access_token=access_token
+            )
+            
+            alibaba_order_id = None
+            if create_result.get("result"):
+                alibaba_order_id = create_result["result"].get("orderId")
+            if not alibaba_order_id:
+                alibaba_order_id = create_result.get("orderId")
+            
+            if alibaba_order_id:
+                # Save to database
+                await db.purchase_orders_1688.insert_one({
+                    "alibaba_order_id": str(alibaba_order_id),
+                    "shopify_order_id": item.shopify_order_id,
+                    "product_id": item.product_id_1688,
+                    "quantity": item.quantity,
+                    "spec_id": item.spec_id,
+                    "size": item.size,
+                    "color": item.color,
+                    "account_id": request.account_id,
+                    "account_name": account_name,
+                    "status": "created",
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "bulk_order": True,
+                })
+                
+                results["ordered"] += 1
+                results["orders"].append({
+                    "shopify_order_id": item.shopify_order_id,
+                    "alibaba_order_id": str(alibaba_order_id),
+                    "product_id": item.product_id_1688,
+                })
+                
+                # Update fulfillment pipeline if exists
+                await db.fulfillment_pipeline.update_one(
+                    {"shopify_order_id": item.shopify_order_id},
+                    {"$set": {
+                        "alibaba_order_id": str(alibaba_order_id),
+                        "status": "purchased",
+                        "stages.alibaba_ordered": True,
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    }}
+                )
+            else:
+                error_msg = create_result.get("message") or create_result.get("errorMessage") or "Unknown error"
+                results["failed"] += 1
+                results["errors"].append({
+                    "shopify_order_id": item.shopify_order_id,
+                    "product_id": item.product_id_1688,
+                    "reason": error_msg,
+                })
+                
+        except Exception as e:
+            results["failed"] += 1
+            results["errors"].append({
+                "shopify_order_id": item.shopify_order_id,
+                "product_id": item.product_id_1688,
+                "reason": str(e),
+            })
+    
+    results["success"] = results["ordered"] > 0
+    results["message"] = f"Ordered {results['ordered']}/{results['total']} items on 1688"
+    
+    return results
+
+
+@router.post("/find-linked-products")
+async def find_linked_1688_products(
+    shopify_order_ids: List[str] = Body(..., description="List of Shopify order IDs")
+):
+    """
+    Find 1688 product links for multiple Shopify orders.
+    Useful before bulk ordering to see which orders have linked products.
+    """
+    db = get_db()
+    
+    results = {
+        "success": True,
+        "total": len(shopify_order_ids),
+        "linked": 0,
+        "unlinked": 0,
+        "orders": [],
+    }
+    
+    for shopify_order_id in shopify_order_ids:
+        # Get order from customers collection
+        order = await db.customers.find_one(
+            {"$or": [
+                {"shopify_order_id": shopify_order_id},
+                {"customer_id": shopify_order_id},
+                {"order_number": int(shopify_order_id) if shopify_order_id.isdigit() else shopify_order_id},
+            ]},
+            {"_id": 0}
+        )
+        
+        if not order:
+            results["orders"].append({
+                "shopify_order_id": shopify_order_id,
+                "found": False,
+                "linked": False,
+            })
+            results["unlinked"] += 1
+            continue
+        
+        # Check line items for 1688 product IDs
+        linked_products = []
+        line_items = order.get("line_items", [])
+        
+        for item in line_items:
+            sku = item.get("sku", "")
+            product_id_1688 = None
+            
+            # Try to extract 1688 ID from SKU
+            if sku:
+                # Pattern: 1688-PRODUCTID-... or SKU-1688-PRODUCTID-...
+                import re
+                match = re.search(r'1688[_-]?(\d{10,})', sku)
+                if match:
+                    product_id_1688 = match.group(1)
+            
+            # Also check order_fulfillment collection
+            if not product_id_1688:
+                fulfillment = await db.order_fulfillment.find_one(
+                    {"shopify_order_id": shopify_order_id},
+                    {"_id": 0}
+                )
+                if fulfillment:
+                    for li in fulfillment.get("line_items", []):
+                        if li.get("product_id_1688"):
+                            product_id_1688 = li["product_id_1688"]
+                            break
+            
+            linked_products.append({
+                "name": item.get("name", "Unknown"),
+                "sku": sku,
+                "quantity": item.get("quantity", 1),
+                "product_id_1688": product_id_1688,
+                "linked": bool(product_id_1688),
+            })
+        
+        has_linked = any(p["linked"] for p in linked_products)
+        
+        results["orders"].append({
+            "shopify_order_id": shopify_order_id,
+            "order_number": order.get("order_number"),
+            "customer_name": order.get("customer_name") or order.get("name"),
+            "found": True,
+            "linked": has_linked,
+            "products": linked_products,
+        })
+        
+        if has_linked:
+            results["linked"] += 1
+        else:
+            results["unlinked"] += 1
+    
+    return results
+
