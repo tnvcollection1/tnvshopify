@@ -361,8 +361,6 @@ async def run_batch_import(
     from services.product_fetcher_service import fetch_product_via_tmapi, fetch_taobao_product_via_tmapi, save_product_to_db
     from services.translation_service import translate_product
     
-    db = get_db()
-    
     try:
         update_job(job_id, {
             "status": "importing",
