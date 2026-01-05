@@ -6613,6 +6613,7 @@ app.include_router(product_scraper_router)
 app.include_router(tmapi_buyer_router)
 app.include_router(fulfillment_webhooks_router)
 app.include_router(whatsapp_notifications_router)
+app.include_router(fulfillment_pipeline_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 # ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================
