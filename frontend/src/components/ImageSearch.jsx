@@ -110,7 +110,7 @@ const ImageSearch = () => {
     }
   };
 
-  // Search by image
+  // Search by image - Uses official 1688 API first, falls back to TMAPI
   const searchByImage = async (pageNum = 1) => {
     const searchUrl = convertedImageUrl || imageUrl;
     if (!searchUrl.trim()) {
@@ -120,24 +120,24 @@ const ImageSearch = () => {
 
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        img_url: searchUrl,
-        page: pageNum,
-        page_size: 20,
-        sort: filters.sort,
+      // Use unified endpoint that tries official 1688 first, then TMAPI
+      const res = await fetch(`${API}/api/1688/image-search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_url: searchUrl,
+          page: pageNum,
+          page_size: 20,
+          source: 'auto', // auto tries: cross_border -> distributed -> tmapi
+        }),
       });
-      
-      if (filters.priceStart) params.append('price_start', filters.priceStart);
-      if (filters.priceEnd) params.append('price_end', filters.priceEnd);
-
-      const res = await fetch(`${API}/api/tmapi/image-search?${params}`);
       const data = await res.json();
       
       if (data.success) {
-        setResults(data.items || []);
+        setResults(data.products || []);
         setTotalResults(data.total || 0);
         setPage(pageNum);
-        toast.success(`Found ${data.total} similar products`);
+        toast.success(`Found ${data.total} products via ${data.source}`);
       } else {
         toast.error(data.error || 'Image search failed');
         if (data.error?.includes('balance')) {
