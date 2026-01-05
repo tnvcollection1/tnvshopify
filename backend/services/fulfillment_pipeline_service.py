@@ -883,13 +883,13 @@ async def get_advanced_analytics(
     for i, stage in enumerate(FULFILLMENT_STAGES):
         # Count orders that reached or passed this stage
         reached = sum(1 for o in orders if FULFILLMENT_STAGES.index(
-            next((s for s in FULFILLMENT_STAGES if s["key"] == o.get("current_stage")), FULFILLMENT_STAGES[0])
-        ) >= i)
+            o.get("current_stage", FULFILLMENT_STAGES[0])
+        ) >= i if o.get("current_stage") in FULFILLMENT_STAGES else 0)
         
         conversion = round(reached / prev_count * 100, 1) if prev_count > 0 else 0
         funnel.append({
-            "stage": stage["key"],
-            "label": stage["label"],
+            "stage": stage,
+            "label": STAGE_LABELS.get(stage, stage.replace('_', ' ').title()),
             "reached": reached,
             "conversion_from_previous": f"{conversion}%",
         })
