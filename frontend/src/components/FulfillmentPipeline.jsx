@@ -919,6 +919,8 @@ const FulfillmentPipeline = () => {
   const [updating, setUpdating] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [trackingPrompt, setTrackingPrompt] = useState(null); // {order, stage, config}
+  const [showDWZImport, setShowDWZImport] = useState(false);
+  const [showBulkActions, setShowBulkActions] = useState(false);
 
   const getCarrierInfo = useCallback(() => {
     return STORE_CARRIERS[selectedStore] || { carrier: 'Local Carrier', country: 'Unknown' };
