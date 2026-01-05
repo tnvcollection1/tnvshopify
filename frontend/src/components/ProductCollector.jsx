@@ -395,7 +395,12 @@ https://detail.1688.com/offer/987654321.html
 
                     {/* Actions */}
                     <div className="flex gap-2 mt-3 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
-                      <Button size="sm" variant="outline" className="flex-1 gap-1">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1 gap-1"
+                        onClick={() => setEditingProduct(product)}
+                      >
                         <Edit className="w-3 h-3" />
                         Edit
                       </Button>
@@ -415,6 +420,20 @@ https://detail.1688.com/offer/987654321.html
             </div>
           )}
         </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingProduct && (
+        <ProductEditModal
+          product={editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onSave={(updatedProduct) => {
+            setDraftProducts(prev => 
+              prev.map(p => p.product_id === updatedProduct.product_id ? updatedProduct : p)
+            );
+            setEditingProduct(null);
+          }}
+        />
       )}
     </div>
   );
