@@ -231,11 +231,34 @@ January 5, 2026 - Session 10: Fulfillment Pipeline Enhancements (Sync, Export, A
 - Manual notify button on order cards
 - Endpoints: `POST /api/fulfillment/pipeline/{order_id}/notify-whatsapp`
 
+### Auto-Sync 1688 Fulfillment to Shopify ✅ NEW
+
+**New Service**: `/app/backend/services/shopify_fulfillment_sync.py`
+
+**Features**:
+1. **Auto-Sync on Stage Change**: When order reaches `local_shipped` stage, automatically creates fulfillment in Shopify
+2. **Manual Sync Button**: "Sync to Shopify" button in pipeline UI syncs all pending orders
+3. **Tracking Info Sync**: Sends tracking number and carrier to Shopify
+4. **Customer Notification**: Shopify sends fulfillment email to customer
+
+**Endpoints**:
+- `POST /api/fulfillment-sync/sync-order/{order_id}` - Sync single order
+- `POST /api/fulfillment-sync/sync-stage/local_shipped` - Sync all orders in stage
+- `GET /api/fulfillment-sync/pending-sync` - Get orders pending sync
+- `GET /api/fulfillment-sync/sync-logs` - View sync history
+
 **Bug Fixes**:
 - Fixed route ordering - moved `/{order_id}` to end of routes to prevent catching `/export`, `/analytics`
 - Fixed store dropdown to handle both array and object API responses
 
 **Testing**: 13/13 backend tests passed (100%) - All features verified
+
+### Chrome Extension Testing
+
+**Status**: Extension code is functional, but 1688 uses CAPTCHA/blocking for automated access
+- Extension v4 content.js has comprehensive scraping logic
+- Must be tested manually by user in real browser with cookies
+- Backend `/api/1688-scraper/extension-import` endpoint verified working
 
 ---
 
