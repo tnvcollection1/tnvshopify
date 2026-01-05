@@ -48,6 +48,7 @@ import WhatsAppInboxStandalone from "@/components/WhatsAppInboxStandalone";
 import ImageSearch from "@/components/ImageSearch";
 import ProductCollector from "@/components/ProductCollector";
 import WhatsAppEmbeddedSignup from "@/components/WhatsAppEmbeddedSignup";
+import Alibaba1688Accounts from "@/components/Alibaba1688Accounts";
 import InventoryClearance from "@/components/InventoryClearance";
 import UserManagement from "@/components/UserManagement";
 import PricingPage from "@/components/PricingPage";
