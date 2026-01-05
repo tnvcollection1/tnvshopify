@@ -801,6 +801,16 @@ const ProductScraper = () => {
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="flex-1 h-8 text-xs text-blue-600"
+                        onClick={() => setEditingProduct(product)}
+                        data-testid={`edit-btn-${product.product_id}`}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
                         className="flex-1 h-8 text-xs"
                         onClick={() => window.open(product.url, '_blank')}
                         data-testid={`view-btn-${product.product_id}`}
