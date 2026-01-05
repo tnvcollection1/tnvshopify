@@ -114,13 +114,22 @@ async def get_order_data(order_id: str) -> Optional[Dict]:
     """Get order data from various collections"""
     db = get_db()
     
+    # Build query - try multiple fields
+    query_options = [
+        {"shopify_order_id": order_id},
+        {"customer_id": order_id},
+    ]
+    
+    # Try as integer for order_number
+    try:
+        order_num = int(order_id)
+        query_options.append({"order_number": order_num})
+    except (ValueError, TypeError):
+        query_options.append({"order_number": order_id})
+    
     # Try customers collection first
     customer = await db.customers.find_one(
-        {"$or": [
-            {"shopify_order_id": order_id},
-            {"order_number": int(order_id) if order_id.isdigit() else order_id},
-            {"customer_id": order_id},
-        ]},
+        {"$or": query_options},
         {"_id": 0}
     )
     
