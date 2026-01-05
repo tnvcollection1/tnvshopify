@@ -2334,7 +2334,8 @@ async def list_purchase_orders(
     shopify_order_id: Optional[str] = Query(None),
 ):
     """
-    List purchase orders created on 1688
+    List purchase orders created on 1688 with fulfillment data
+    Includes: supplier fulfillment status, DWZ tracking number
     """
     db = get_db()
     
@@ -2351,6 +2352,53 @@ async def list_purchase_orders(
         {"_id": 0}
     ).sort("created_at", -1).skip(skip).limit(page_size).to_list(page_size)
     
+    # Enrich orders with fulfillment data
+    enriched_orders = []
+    for order in orders:
+        enriched = dict(order)
+        
+        # Try to find fulfillment pipeline data
+        pipeline_data = await db.fulfillment_pipeline.find_one(
+            {"$or": [
+                {"alibaba_order_id": order.get("alibaba_order_id")},
+                {"shopify_order_id": order.get("shopify_order_id")},
+                {"order_number": order.get("shopify_order_id")},
+            ]},
+            {"_id": 0}
+        )
+        
+        if pipeline_data:
+            # Add fulfillment data
+            enriched["supplier_status"] = pipeline_data.get("alibaba_status") or pipeline_data.get("status")
+            enriched["supplier_tracking"] = pipeline_data.get("alibaba_tracking")
+            enriched["supplier_carrier"] = pipeline_data.get("alibaba_carrier")
+            enriched["dwz_tracking"] = pipeline_data.get("dwz56_tracking")
+            enriched["dwz_status"] = pipeline_data.get("dwz_status")
+            enriched["stages"] = pipeline_data.get("stages", {})
+        else:
+            enriched["supplier_status"] = None
+            enriched["supplier_tracking"] = None
+            enriched["dwz_tracking"] = None
+            enriched["dwz_status"] = None
+            enriched["stages"] = {}
+        
+        # Also check customers collection for additional order info
+        customer_data = await db.customers.find_one(
+            {"$or": [
+                {"shopify_order_id": order.get("shopify_order_id")},
+                {"order_number": order.get("shopify_order_id")},
+            ]},
+            {"_id": 0, "order_number": 1, "fulfillment_status": 1, "tracking_number": 1}
+        )
+        
+        if customer_data:
+            enriched["shopify_order_number"] = customer_data.get("order_number")
+            enriched["shopify_fulfillment_status"] = customer_data.get("fulfillment_status")
+            if not enriched.get("dwz_tracking"):
+                enriched["dwz_tracking"] = customer_data.get("tracking_number")
+        
+        enriched_orders.append(enriched)
+    
     total = await db.purchase_orders_1688.count_documents(query)
     
     return {
@@ -2358,7 +2406,7 @@ async def list_purchase_orders(
         "page": page,
         "page_size": page_size,
         "total": total,
-        "orders": orders,
+        "orders": enriched_orders,
     }
 
 
