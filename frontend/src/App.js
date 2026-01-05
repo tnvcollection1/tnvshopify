@@ -491,6 +491,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/bulk-order-1688" 
+        element={
+          <ProtectedRoute>
+            <BulkOrder1688 />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/pricing" 
         element={
           <ProtectedRoute>
