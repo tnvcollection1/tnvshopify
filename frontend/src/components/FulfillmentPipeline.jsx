@@ -1551,6 +1551,7 @@ const FulfillmentPipeline = () => {
               updating={updating}
               onNotify={sendNotification}
               onPromptTracking={(order, stage, config) => setTrackingPrompt({ order, stage, config })}
+              onViewHistory={(orderId) => setShowOrderHistory(orderId)}
             />
           ))}
         </div>
