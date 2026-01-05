@@ -114,18 +114,19 @@ async def get_order_data(order_id: str) -> Optional[Dict]:
     """Get order data from various collections"""
     db = get_db()
     
-    # Build query - try multiple fields
+    # Build query - try multiple fields (order_number can be string or int)
     query_options = [
         {"shopify_order_id": order_id},
         {"customer_id": order_id},
+        {"order_number": order_id},  # As string
     ]
     
-    # Try as integer for order_number
+    # Also try as integer for order_number
     try:
         order_num = int(order_id)
         query_options.append({"order_number": order_num})
     except (ValueError, TypeError):
-        query_options.append({"order_number": order_id})
+        pass
     
     # Try customers collection first
     customer = await db.customers.find_one(
