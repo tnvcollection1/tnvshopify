@@ -482,6 +482,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/fulfillment-sync" 
+        element={
+          <ProtectedRoute>
+            <FulfillmentSync />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/pricing" 
         element={
           <ProtectedRoute>
