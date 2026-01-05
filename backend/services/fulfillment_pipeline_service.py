@@ -693,6 +693,241 @@ async def sync_orders_from_shopify(store_name: str = Body(..., embed=True)):
     }
 
 
+# ==================== Advanced Analytics ====================
+
+@router.get("/pipeline/analytics-advanced")
+async def get_advanced_analytics(
+    store_name: str,
+    start_date: str = None,
+    end_date: str = None,
+    group_by: str = "day",  # day, week, month
+):
+    """
+    Get advanced analytics with date range filtering.
+    
+    Parameters:
+    - store_name: Store to analyze
+    - start_date: Start date (ISO format, e.g., 2025-01-01)
+    - end_date: End date (ISO format, e.g., 2025-01-31)
+    - group_by: Grouping period (day, week, month)
+    
+    Returns detailed metrics including:
+    - Orders by stage with counts and percentages
+    - Average time per stage
+    - Orders over time (for charts)
+    - Conversion funnel
+    - Stuck orders analysis
+    """
+    db = get_db()
+    now = datetime.now(timezone.utc)
+    
+    # Parse dates
+    try:
+        if start_date:
+            start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        else:
+            start_dt = now - timedelta(days=30)
+        
+        if end_date:
+            end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        else:
+            end_dt = now
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use ISO format: YYYY-MM-DD")
+    
+    # Base query
+    query = {
+        "store_name": store_name,
+        "created_at": {
+            "$gte": start_dt.isoformat(),
+            "$lte": end_dt.isoformat(),
+        },
+    }
+    
+    # Get all orders in date range
+    orders = await db.fulfillment_pipeline.find(
+        query,
+        {"_id": 0}
+    ).to_list(10000)
+    
+    total_orders = len(orders)
+    
+    if total_orders == 0:
+        return {
+            "success": True,
+            "store_name": store_name,
+            "date_range": {"start": start_dt.isoformat(), "end": end_dt.isoformat()},
+            "total_orders": 0,
+            "message": "No orders in selected date range",
+        }
+    
+    # Stage distribution
+    stage_counts = {}
+    for stage in FULFILLMENT_STAGES:
+        stage_counts[stage["key"]] = 0
+    
+    for order in orders:
+        stage = order.get("current_stage", "shopify_order")
+        if stage in stage_counts:
+            stage_counts[stage] += 1
+    
+    stage_distribution = [
+        {
+            "stage": stage["key"],
+            "label": stage["label"],
+            "count": stage_counts.get(stage["key"], 0),
+            "percentage": round(stage_counts.get(stage["key"], 0) / total_orders * 100, 1) if total_orders > 0 else 0,
+        }
+        for stage in FULFILLMENT_STAGES
+    ]
+    
+    # Completed orders (reached local_shipped)
+    completed = sum(1 for o in orders if o.get("current_stage") == "local_shipped")
+    completion_rate = round(completed / total_orders * 100, 1) if total_orders > 0 else 0
+    
+    # Stuck orders (no update in 3+ days)
+    stuck_threshold = now - timedelta(days=3)
+    stuck_orders = []
+    for order in orders:
+        updated = order.get("updated_at", order.get("created_at"))
+        if updated:
+            try:
+                updated_dt = datetime.fromisoformat(updated.replace('Z', '+00:00'))
+                if updated_dt < stuck_threshold and order.get("current_stage") != "local_shipped":
+                    stuck_orders.append({
+                        "order_id": order.get("order_number") or order.get("shopify_order_id"),
+                        "stage": order.get("current_stage"),
+                        "days_stuck": (now - updated_dt).days,
+                        "customer": order.get("customer_name"),
+                    })
+            except:
+                pass
+    
+    stuck_orders.sort(key=lambda x: x["days_stuck"], reverse=True)
+    
+    # Average time per stage (for completed orders)
+    stage_times = {stage["key"]: [] for stage in FULFILLMENT_STAGES}
+    
+    for order in orders:
+        stage_dates = order.get("stage_dates", {})
+        stages_list = [s["key"] for s in FULFILLMENT_STAGES]
+        
+        for i in range(len(stages_list) - 1):
+            current = stages_list[i]
+            next_stage = stages_list[i + 1]
+            
+            if current in stage_dates and next_stage in stage_dates:
+                try:
+                    current_dt = datetime.fromisoformat(stage_dates[current].replace('Z', '+00:00'))
+                    next_dt = datetime.fromisoformat(stage_dates[next_stage].replace('Z', '+00:00'))
+                    hours = (next_dt - current_dt).total_seconds() / 3600
+                    if 0 < hours < 720:  # Max 30 days
+                        stage_times[current].append(hours)
+                except:
+                    pass
+    
+    avg_stage_times = []
+    for stage in FULFILLMENT_STAGES[:-1]:  # Exclude last stage
+        times = stage_times.get(stage["key"], [])
+        if times:
+            avg = round(sum(times) / len(times), 1)
+            avg_stage_times.append({
+                "stage": stage["key"],
+                "label": stage["label"],
+                "avg_hours": avg,
+                "avg_days": round(avg / 24, 1),
+                "sample_size": len(times),
+            })
+    
+    # Orders over time (for charts)
+    orders_over_time = {}
+    
+    for order in orders:
+        created = order.get("created_at", "")
+        if created:
+            try:
+                created_dt = datetime.fromisoformat(created.replace('Z', '+00:00'))
+                
+                if group_by == "day":
+                    key = created_dt.strftime("%Y-%m-%d")
+                elif group_by == "week":
+                    # Week number
+                    key = f"{created_dt.year}-W{created_dt.isocalendar()[1]:02d}"
+                else:  # month
+                    key = created_dt.strftime("%Y-%m")
+                
+                orders_over_time[key] = orders_over_time.get(key, 0) + 1
+            except:
+                pass
+    
+    # Sort by date
+    timeline = [
+        {"date": k, "orders": v}
+        for k, v in sorted(orders_over_time.items())
+    ]
+    
+    # Conversion funnel
+    funnel = []
+    prev_count = total_orders
+    for i, stage in enumerate(FULFILLMENT_STAGES):
+        # Count orders that reached or passed this stage
+        reached = sum(1 for o in orders if FULFILLMENT_STAGES.index(
+            next((s for s in FULFILLMENT_STAGES if s["key"] == o.get("current_stage")), FULFILLMENT_STAGES[0])
+        ) >= i)
+        
+        conversion = round(reached / prev_count * 100, 1) if prev_count > 0 else 0
+        funnel.append({
+            "stage": stage["key"],
+            "label": stage["label"],
+            "reached": reached,
+            "conversion_from_previous": f"{conversion}%",
+        })
+        prev_count = reached if reached > 0 else prev_count
+    
+    # Top performers (orders completed fastest)
+    fastest_orders = []
+    for order in orders:
+        if order.get("current_stage") == "local_shipped":
+            stage_dates = order.get("stage_dates", {})
+            if "shopify_order" in stage_dates and "local_shipped" in stage_dates:
+                try:
+                    start = datetime.fromisoformat(stage_dates["shopify_order"].replace('Z', '+00:00'))
+                    end = datetime.fromisoformat(stage_dates["local_shipped"].replace('Z', '+00:00'))
+                    days = (end - start).days
+                    if 0 < days < 60:  # Valid range
+                        fastest_orders.append({
+                            "order_id": order.get("order_number") or order.get("shopify_order_id"),
+                            "days_to_complete": days,
+                            "customer": order.get("customer_name"),
+                        })
+                except:
+                    pass
+    
+    fastest_orders.sort(key=lambda x: x["days_to_complete"])
+    
+    return {
+        "success": True,
+        "store_name": store_name,
+        "date_range": {
+            "start": start_dt.isoformat(),
+            "end": end_dt.isoformat(),
+            "days": (end_dt - start_dt).days,
+        },
+        "summary": {
+            "total_orders": total_orders,
+            "completed_orders": completed,
+            "completion_rate": f"{completion_rate}%",
+            "stuck_orders": len(stuck_orders),
+        },
+        "stage_distribution": stage_distribution,
+        "avg_stage_times": avg_stage_times,
+        "stuck_orders": stuck_orders[:20],  # Top 20 stuck orders
+        "conversion_funnel": funnel,
+        "orders_over_time": timeline,
+        "fastest_completions": fastest_orders[:10],  # Top 10 fastest
+    }
+
+
 # ==================== WhatsApp Notifications ====================
 
 STAGE_MESSAGES = {
