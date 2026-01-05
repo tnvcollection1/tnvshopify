@@ -104,6 +104,7 @@ class AutoSyncScheduler:
         logger.info("✅ Background scheduler started")
         logger.info("📅 Shopify sync: Every 1 hour (incremental)")
         logger.info("📅 TCS delivery sync: Every 2 hours")
+        logger.info("📅 DWZ56 tracking sync: Every 4 hours")
         logger.info("📅 Dynamic pricing sync: Every 30 minutes")
         logger.info("⏸️  TCS COD payment sync: DISABLED (waiting for API credentials)")
         
