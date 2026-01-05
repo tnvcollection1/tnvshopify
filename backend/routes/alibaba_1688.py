@@ -1486,11 +1486,11 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
             "message": order_notes.strip() if order_notes.strip() else f"Order for product {request.product_id}",
         }
         
-        # Create the order
+        # Create the order using the selected account's access token
         create_result = await make_api_request(
             "com.alibaba.trade/alibaba.trade.fastCreateOrder",
             create_params,
-            access_token=ALIBABA_ACCESS_TOKEN
+            access_token=access_token  # Use the selected account's token
         )
         
         alibaba_order_id = None
@@ -1509,6 +1509,8 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
                 "color": request.color,
                 "shopify_order_id": request.shopify_order_id,
                 "notes": request.notes,
+                "account_id": request.account_id,
+                "account_name": account_name,
                 "status": "created",
                 "api_response": create_result,
                 "created_at": datetime.now(timezone.utc).isoformat(),
@@ -1516,10 +1518,11 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
             
             return {
                 "success": True,
-                "message": f"Order created on 1688",
+                "message": f"Order created on 1688 via account: {account_name}",
                 "alibaba_order_id": str(alibaba_order_id),
                 "product_id": request.product_id,
                 "quantity": request.quantity,
+                "account_used": account_name,
             }
         else:
             # Order creation failed
