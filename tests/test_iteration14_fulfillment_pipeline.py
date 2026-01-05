@@ -227,33 +227,23 @@ class TestImageSearchService:
     
     def test_image_search_endpoint_exists(self):
         """Test that image search endpoint exists (may fail without valid image)"""
-        # First get an order
-        response = requests.get(
-            f"{BASE_URL}/api/fulfillment/pipeline",
-            params={"store_name": "tnvcollectionpk"}
-        )
-        data = response.json()
+        # Use a known order
+        order_id = "29489"
         
-        if data.get("orders") and len(data["orders"]) > 0:
-            order = data["orders"][0]
-            order_id = order.get("order_number") or order.get("shopify_order_id")
-            
-            # Test image search endpoint (will likely fail without valid TMAPI token)
-            search_response = requests.post(
-                f"{BASE_URL}/api/fulfillment/pipeline/{order_id}/link-product-by-image",
-                json={"image_url": "https://example.com/test.jpg"}
-            )
-            
-            # Should return 200 even if search fails (with error message)
-            assert search_response.status_code == 200
-            
-            search_data = search_response.json()
-            # Either success with products or error message
-            assert "success" in search_data or "error" in search_data
-            
-            print(f"SUCCESS: Image search endpoint responded for order {order_id}")
-        else:
-            pytest.skip("No orders in pipeline to test")
+        # Test image search endpoint (will likely fail without valid TMAPI token)
+        search_response = requests.post(
+            f"{BASE_URL}/api/fulfillment/pipeline/{order_id}/link-product-by-image",
+            json={"image_url": "https://example.com/test.jpg"}
+        )
+        
+        # Should return 200 even if search fails (with error message)
+        assert search_response.status_code == 200
+        
+        search_data = search_response.json()
+        # Either success with products or error message
+        assert "success" in search_data or "error" in search_data
+        
+        print(f"SUCCESS: Image search endpoint responded for order {order_id}")
 
 
 class TestWhatsAppNotifications:
