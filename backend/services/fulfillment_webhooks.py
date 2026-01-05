@@ -345,8 +345,13 @@ async def receive_1688_webhook(
     Webhook endpoint for 1688 order status updates.
     Note: 1688 doesn't have native webhooks, so this is for
     simulated/polled updates or manual triggers.
+    
+    Security: Verifies signature, rate limits, and IP whitelist.
     """
     db = get_db()
+    
+    # Security verification
+    client_ip = await verify_webhook_security(request)
     
     try:
         # Log the webhook
@@ -355,6 +360,7 @@ async def receive_1688_webhook(
             "order_id": payload.orderId,
             "status": payload.orderStatus,
             "payload": payload.dict(),
+            "source_ip": client_ip,
             "received_at": datetime.now(timezone.utc).isoformat(),
         })
         
