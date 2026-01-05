@@ -2361,7 +2361,7 @@ async def get_1688_link(
     }
 
 
-@router.post("/products/auto-link-from-image")
+@router.post("/product-links/auto-link-from-image")
 async def auto_link_from_image(
     shopify_sku: str = Query(...),
     image_url: str = Query(...)
