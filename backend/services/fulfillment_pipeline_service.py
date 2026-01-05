@@ -490,6 +490,7 @@ async def sync_orders_from_shopify(store_name: str = Body(..., embed=True)):
                 "shopify_order_id": order.get("shopify_order_id"),
                 "order_number": order.get("order_number"),
                 "customer_name": order.get("customer_name") or f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+                "customer_phone": order.get("phone") or order.get("customer_phone"),
                 "store_name": store_name,
                 "current_stage": "shopify_order",
                 "created_at": order.get("created_at", datetime.now(timezone.utc).isoformat()),
@@ -497,6 +498,8 @@ async def sync_orders_from_shopify(store_name: str = Body(..., embed=True)):
                 "stage_dates": {
                     "shopify_order": order.get("created_at", datetime.now(timezone.utc).isoformat()),
                 },
+                "line_items": order.get("line_items", []),
+                "total_price": order.get("total_price"),
             }
             
             await db.fulfillment_pipeline.insert_one(pipeline_entry)
@@ -506,4 +509,340 @@ async def sync_orders_from_shopify(store_name: str = Body(..., embed=True)):
         "success": True,
         "message": f"Synced {synced} orders to pipeline",
         "synced_count": synced,
+    }
+
+
+# ==================== WhatsApp Notifications ====================
+
+STAGE_MESSAGES = {
+    '1688_ordered': "Your order #{order_number} has been placed with our supplier. We'll update you when it ships!",
+    'dwz56_shipped': "Great news! Order #{order_number} has shipped internationally. Tracking: {dwz_tracking}",
+    'in_transit': "Order #{order_number} is in transit and on its way to our warehouse.",
+    'warehouse_arrived': "Order #{order_number} has arrived at our local warehouse! Final delivery coming soon.",
+    'warehouse_received': "Order #{order_number} has been received and checked. Preparing for final delivery.",
+    'local_shipped': "Order #{order_number} is out for delivery via {carrier}! Tracking: {local_tracking}",
+}
+
+
+async def send_whatsapp_stage_notification(order: Dict, stage: str):
+    """Send WhatsApp notification for stage change"""
+    try:
+        from services.whatsapp_notifications import send_whatsapp_message
+        
+        phone = order.get("customer_phone") or order.get("phone")
+        if not phone:
+            logger.warning(f"No phone number for order {order.get('order_number')}")
+            return False
+        
+        message_template = STAGE_MESSAGES.get(stage)
+        if not message_template:
+            return False
+        
+        # Format message
+        carrier_info = get_carrier_for_store(order.get("store_name", ""))
+        message = message_template.format(
+            order_number=order.get("order_number", order.get("shopify_order_id", "")),
+            dwz_tracking=order.get("dwz_tracking", "N/A"),
+            local_tracking=order.get("local_tracking", "N/A"),
+            carrier=carrier_info.get("carrier", "Local Carrier"),
+        )
+        
+        # Send via WhatsApp service
+        result = await send_whatsapp_message(phone, message)
+        
+        # Log notification
+        db = get_db()
+        await db.notification_logs.insert_one({
+            "type": "whatsapp_stage",
+            "order_id": order.get("shopify_order_id"),
+            "order_number": order.get("order_number"),
+            "stage": stage,
+            "phone": phone,
+            "message": message,
+            "success": result.get("success", False),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+        
+        return result.get("success", False)
+        
+    except Exception as e:
+        logger.error(f"WhatsApp notification error: {e}")
+        return False
+
+
+@router.post("/pipeline/{order_id}/notify-whatsapp")
+async def send_stage_notification(
+    order_id: str,
+    stage: str = Body(None, embed=True),
+    custom_message: str = Body(None, embed=True),
+):
+    """Send WhatsApp notification for an order"""
+    db = get_db()
+    
+    order = await db.fulfillment_pipeline.find_one(
+        {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": order_id},
+        ]},
+        {"_id": 0}
+    )
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    stage = stage or order.get("current_stage")
+    
+    if custom_message:
+        from services.whatsapp_notifications import send_whatsapp_message
+        phone = order.get("customer_phone") or order.get("phone")
+        if phone:
+            result = await send_whatsapp_message(phone, custom_message)
+            return {"success": result.get("success", False), "message": "Custom message sent"}
+    
+    success = await send_whatsapp_stage_notification(order, stage)
+    
+    return {
+        "success": success,
+        "message": "Notification sent" if success else "Failed to send notification",
+        "stage": stage,
+    }
+
+
+@router.post("/pipeline/bulk-notify")
+async def bulk_send_notifications(
+    order_ids: List[str] = Body(...),
+    stage: str = Body(None),
+):
+    """Send WhatsApp notifications to multiple orders"""
+    db = get_db()
+    
+    sent = 0
+    failed = 0
+    
+    for order_id in order_ids:
+        order = await db.fulfillment_pipeline.find_one(
+            {"$or": [
+                {"shopify_order_id": order_id},
+                {"order_number": order_id},
+            ]},
+            {"_id": 0}
+        )
+        
+        if order:
+            target_stage = stage or order.get("current_stage")
+            success = await send_whatsapp_stage_notification(order, target_stage)
+            if success:
+                sent += 1
+            else:
+                failed += 1
+        else:
+            failed += 1
+    
+    return {
+        "success": True,
+        "sent": sent,
+        "failed": failed,
+        "total": len(order_ids),
+    }
+
+
+# ==================== Export & Reporting ====================
+
+@router.get("/pipeline/export")
+async def export_pipeline_data(
+    store_name: str = Query(...),
+    stage: Optional[str] = Query(None),
+    format: str = Query("json"),  # json or csv
+):
+    """Export pipeline data for reporting"""
+    db = get_db()
+    
+    query = {"store_name": store_name}
+    if stage:
+        query["current_stage"] = stage
+    
+    orders = await db.fulfillment_pipeline.find(
+        query,
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(10000)
+    
+    if format == "csv":
+        # Generate CSV format
+        import io
+        import csv
+        
+        output = io.StringIO()
+        if orders:
+            writer = csv.DictWriter(output, fieldnames=[
+                "order_number", "shopify_order_id", "customer_name", "customer_phone",
+                "current_stage", "alibaba_order_id", "dwz_tracking", "local_tracking",
+                "local_carrier", "created_at", "updated_at", "total_price"
+            ])
+            writer.writeheader()
+            for order in orders:
+                writer.writerow({
+                    "order_number": order.get("order_number", ""),
+                    "shopify_order_id": order.get("shopify_order_id", ""),
+                    "customer_name": order.get("customer_name", ""),
+                    "customer_phone": order.get("customer_phone", ""),
+                    "current_stage": order.get("current_stage", ""),
+                    "alibaba_order_id": order.get("alibaba_order_id", ""),
+                    "dwz_tracking": order.get("dwz_tracking", ""),
+                    "local_tracking": order.get("local_tracking", ""),
+                    "local_carrier": order.get("local_carrier", ""),
+                    "created_at": order.get("created_at", ""),
+                    "updated_at": order.get("updated_at", ""),
+                    "total_price": order.get("total_price", ""),
+                })
+        
+        return {
+            "success": True,
+            "format": "csv",
+            "data": output.getvalue(),
+            "count": len(orders),
+        }
+    
+    return {
+        "success": True,
+        "format": "json",
+        "orders": orders,
+        "count": len(orders),
+    }
+
+
+@router.get("/pipeline/analytics")
+async def get_pipeline_analytics(
+    store_name: str = Query(...),
+    days: int = Query(30, ge=1, le=365),
+):
+    """Get pipeline analytics and reporting data"""
+    db = get_db()
+    from datetime import timedelta
+    
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    # Stage distribution
+    stage_pipeline = [
+        {"$match": {"store_name": store_name}},
+        {"$group": {"_id": "$current_stage", "count": {"$sum": 1}}}
+    ]
+    stage_results = await db.fulfillment_pipeline.aggregate(stage_pipeline).to_list(None)
+    stage_stats = {r["_id"]: r["count"] for r in stage_results}
+    
+    # Orders by day (recent)
+    daily_pipeline = [
+        {"$match": {
+            "store_name": store_name,
+            "created_at": {"$gte": cutoff.isoformat()}
+        }},
+        {"$addFields": {
+            "date": {"$substr": ["$created_at", 0, 10]}
+        }},
+        {"$group": {"_id": "$date", "count": {"$sum": 1}}},
+        {"$sort": {"_id": 1}}
+    ]
+    daily_results = await db.fulfillment_pipeline.aggregate(daily_pipeline).to_list(None)
+    daily_stats = {r["_id"]: r["count"] for r in daily_results}
+    
+    # Average time in each stage
+    # (Simplified - would need stage_dates tracking for accurate calculation)
+    
+    # Total orders
+    total = await db.fulfillment_pipeline.count_documents({"store_name": store_name})
+    
+    # Completed (local_shipped)
+    completed = await db.fulfillment_pipeline.count_documents({
+        "store_name": store_name,
+        "current_stage": "local_shipped"
+    })
+    
+    # Stuck orders (in same stage for > 3 days)
+    three_days_ago = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
+    stuck = await db.fulfillment_pipeline.count_documents({
+        "store_name": store_name,
+        "current_stage": {"$nin": ["local_shipped", "shopify_order"]},
+        "updated_at": {"$lt": three_days_ago}
+    })
+    
+    return {
+        "success": True,
+        "period_days": days,
+        "total_orders": total,
+        "completed_orders": completed,
+        "stuck_orders": stuck,
+        "completion_rate": f"{(completed/total*100):.1f}%" if total > 0 else "0%",
+        "stage_distribution": stage_stats,
+        "daily_orders": daily_stats,
+        "carrier": get_carrier_for_store(store_name),
+    }
+
+
+# ==================== Product Image Search Linking ====================
+
+@router.post("/pipeline/{order_id}/link-product-by-image")
+async def link_product_by_image_search(
+    order_id: str,
+    image_url: str = Body(..., embed=True),
+):
+    """Search 1688 for product by image and suggest links"""
+    db = get_db()
+    
+    # Get the order
+    order = await db.fulfillment_pipeline.find_one(
+        {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": order_id},
+        ]},
+        {"_id": 0}
+    )
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Use image search service
+    from services.image_search_service import search_by_image
+    
+    results = await search_by_image(image_url)
+    
+    if not results.get("success"):
+        return {"success": False, "error": results.get("error", "Image search failed")}
+    
+    return {
+        "success": True,
+        "order_id": order_id,
+        "suggestions": results.get("products", [])[:10],
+        "total_found": results.get("total", 0),
+    }
+
+
+@router.post("/pipeline/{order_id}/link-to-1688")
+async def link_order_to_1688_product(
+    order_id: str,
+    product_1688_id: str = Body(..., embed=True),
+):
+    """Link an order to a 1688 product"""
+    db = get_db()
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Update the order with 1688 product link
+    result = await db.fulfillment_pipeline.update_one(
+        {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": order_id},
+        ]},
+        {"$set": {
+            "linked_1688_product_id": product_1688_id,
+            "linked_1688_url": f"https://detail.1688.com/offer/{product_1688_id}.html",
+            "updated_at": now,
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    return {
+        "success": True,
+        "message": f"Order linked to 1688 product {product_1688_id}",
+        "product_url": f"https://detail.1688.com/offer/{product_1688_id}.html",
     }
