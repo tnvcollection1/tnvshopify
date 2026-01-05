@@ -612,69 +612,145 @@
       return products;
     }
     
-    // For listing/search/collection pages
-    const productCards = document.querySelectorAll(`
-      .sm-offer-item,
-      .offer-list-row-offer,
-      .space-offer-card-box,
-      [data-offer-id],
-      .offer-item,
-      .product-item,
-      .card-item
-    `);
+    console.log('[WaMerce v4] Scanning listing page for products...');
+    
+    // For listing/search/collection pages - comprehensive selectors
+    const productCardSelectors = [
+      // Modern 1688 search results
+      '.sm-offer-item',
+      '.offer-list-row-offer', 
+      '.space-offer-card-box',
+      '.pc-offer-card',
+      // Legacy selectors
+      '[data-offer-id]',
+      '.offer-item',
+      '.product-item',
+      '.card-item',
+      '.list-item',
+      // Grid layouts
+      '.offer-list-row .offer',
+      '.list-gallery .item',
+      // Category pages
+      '.sm-offer-card',
+      '.normalcommon-offer-card',
+      // Search results
+      '[class*="OfferCard"]',
+      '[class*="offer-card"]',
+      '.organic-list .item',
+    ];
+    
+    // Try each selector
+    let productCards = [];
+    for (const sel of productCardSelectors) {
+      const cards = document.querySelectorAll(sel);
+      if (cards.length > 0) {
+        productCards = [...cards];
+        console.log(`[WaMerce v4] Found ${cards.length} products using selector: ${sel}`);
+        break;
+      }
+    }
+    
+    // If no structured cards found, fallback to link-based detection
+    if (productCards.length === 0) {
+      console.log('[WaMerce v4] No product cards found, using link-based detection');
+    }
     
     productCards.forEach(card => {
-      let productId = card.dataset.offerId || card.dataset.id;
+      let productId = card.dataset.offerId || card.dataset.id || card.getAttribute('data-offer-id');
       
-      // Try to get ID from link
+      // Try to get ID from link inside card
       if (!productId) {
-        const link = card.querySelector('a[href*="offer/"]');
+        const link = card.querySelector('a[href*="offer/"], a[href*="detail.1688.com"]');
         if (link) {
           const match = link.href.match(/offer\/(\d{10,})/);
           if (match) productId = match[1];
         }
       }
       
+      // Try data attributes
+      if (!productId) {
+        productId = card.dataset.offerid || card.dataset.itemId || card.dataset.productId;
+      }
+      
       if (productId && !seen.has(productId)) {
         seen.add(productId);
         
-        // Extract basic info from card
-        const titleEl = card.querySelector('.title, [class*="title"], h4, h3, .name');
-        const priceEl = card.querySelector('.price, [class*="price"]');
+        // Extract basic info from card - try multiple selectors
+        const titleSelectors = ['.title', '[class*="title"]', 'h4', 'h3', '.name', '[class*="name"]', '.desc', 'a[title]'];
+        let title = '';
+        for (const sel of titleSelectors) {
+          const el = card.querySelector(sel);
+          if (el) {
+            title = el.textContent?.trim() || el.title || el.getAttribute('title') || '';
+            if (title.length > 5) break;
+          }
+        }
+        
+        const priceSelectors = ['.price', '[class*="price"]', '.price-value', '[class*="Price"]'];
+        let price = '';
+        for (const sel of priceSelectors) {
+          const el = card.querySelector(sel);
+          if (el) {
+            const match = el.textContent?.match(/[\d.]+/);
+            if (match) {
+              price = `¥${match[0]}`;
+              break;
+            }
+          }
+        }
+        
+        // Get image
         const imgEl = card.querySelector('img');
+        const image = cleanImageUrl(imgEl?.src || imgEl?.dataset?.src || imgEl?.dataset?.lazySrc || '') || '';
         
         products.push({
           id: productId,
-          title: titleEl?.textContent?.trim()?.substring(0, 80) || `Product ${productId.substring(0, 8)}`,
-          price: priceEl?.textContent?.match(/[\d.]+/)?.[0] ? `¥${priceEl.textContent.match(/[\d.]+/)[0]}` : '',
-          image: cleanImageUrl(imgEl?.src || imgEl?.dataset.src) || '',
+          title: title.substring(0, 80) || `Product ${productId.substring(0, 8)}`,
+          price: price,
+          image: image,
           url: `https://detail.1688.com/offer/${productId}.html`,
           isCurrentPage: false,
-          // Note: fullData not available for listing items - need to visit detail page
+          // Note: fullData not available for listing items - need to fetch from TMAPI
         });
       }
     });
     
-    // Also check for links
+    // Also check for any links to product pages if we found few products
     if (products.length < 5) {
-      document.querySelectorAll('a[href*="detail.1688.com/offer/"]').forEach(link => {
+      console.log('[WaMerce v4] Few products found, scanning links...');
+      document.querySelectorAll('a[href*="detail.1688.com/offer/"], a[href*="/offer/"]').forEach(link => {
         const match = link.href.match(/offer\/(\d{10,})/);
         if (match && !seen.has(match[1])) {
           seen.add(match[1]);
-          const container = link.closest('[class*="item"], [class*="card"], .offer');
+          const container = link.closest('[class*="item"], [class*="card"], [class*="offer"], .list-item, tr, li') || link.parentElement;
+          
+          // Extract info from container
+          let title = link.textContent?.trim() || '';
+          if (!title || title.length < 5) {
+            const titleEl = container?.querySelector('[class*="title"], h3, h4, .name');
+            title = titleEl?.textContent?.trim() || `Product ${match[1].substring(0, 8)}`;
+          }
+          
+          const priceEl = container?.querySelector('[class*="price"]');
+          const priceMatch = priceEl?.textContent?.match(/[\d.]+/);
+          const price = priceMatch ? `¥${priceMatch[0]}` : '';
+          
+          const imgEl = container?.querySelector('img');
+          const image = cleanImageUrl(imgEl?.src || imgEl?.dataset?.src || '') || '';
           
           products.push({
             id: match[1],
-            title: container?.querySelector('[class*="title"]')?.textContent?.trim()?.substring(0, 80) || link.textContent?.trim()?.substring(0, 80) || `Product ${match[1].substring(0, 8)}`,
-            price: container?.querySelector('[class*="price"]')?.textContent?.match(/[\d.]+/)?.[0] ? `¥${container.querySelector('[class*="price"]').textContent.match(/[\d.]+/)[0]}` : '',
-            image: cleanImageUrl(container?.querySelector('img')?.src) || '',
-            url: link.href,
+            title: title.substring(0, 80),
+            price: price,
+            image: image,
+            url: `https://detail.1688.com/offer/${match[1]}.html`,
             isCurrentPage: false,
           });
         }
       });
     }
     
+    console.log(`[WaMerce v4] Total products found on page: ${products.length}`);
     return products;
   }
   
