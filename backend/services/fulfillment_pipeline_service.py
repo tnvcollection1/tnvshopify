@@ -194,6 +194,24 @@ async def update_order_stage(
     
     now = datetime.now(timezone.utc).isoformat()
     
+    # Handle both string and integer order_id
+    order_id_int = None
+    try:
+        order_id_int = int(order_id)
+    except (ValueError, TypeError):
+        pass
+    
+    # Build query to match both string and integer versions
+    order_query = {"$or": [
+        {"shopify_order_id": order_id},
+        {"order_number": order_id},
+    ]}
+    if order_id_int is not None:
+        order_query["$or"].extend([
+            {"shopify_order_id": order_id_int},
+            {"order_number": order_id_int},
+        ])
+    
     # Build update data
     update_data = {
         "current_stage": request.stage,
@@ -213,10 +231,7 @@ async def update_order_stage(
     
     # Try to find and update in fulfillment_pipeline collection
     result = await db.fulfillment_pipeline.find_one_and_update(
-        {"$or": [
-            {"shopify_order_id": order_id},
-            {"order_number": order_id},
-        ]},
+        order_query,
         {"$set": update_data},
         return_document=True
     )
@@ -224,10 +239,7 @@ async def update_order_stage(
     if not result:
         # Try customers collection and create pipeline entry
         customer = await db.customers.find_one(
-            {"$or": [
-                {"shopify_order_id": order_id},
-                {"order_number": order_id},
-            ]},
+            order_query,
             {"_id": 0}
         )
         
