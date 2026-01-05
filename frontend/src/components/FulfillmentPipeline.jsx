@@ -648,6 +648,262 @@ const TrackingPromptModal = ({ order, stage, trackingConfig, carrierInfo, onClos
   );
 };
 
+// DWZ Tracking Import Modal
+const DWZImportModal = ({ store, onClose, onSuccess }) => {
+  const [csvData, setCsvData] = useState('');
+  const [autoAdvance, setAutoAdvance] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const [results, setResults] = useState(null);
+  
+  const handleImport = async () => {
+    if (!csvData.trim()) {
+      toast.error('Please enter tracking data');
+      return;
+    }
+    
+    setImporting(true);
+    try {
+      const res = await fetch(`${API}/api/fulfillment/pipeline/import-dwz-csv`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          store_name: store,
+          csv_data: csvData,
+          auto_advance: autoAdvance,
+        }),
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setResults(data);
+        toast.success(`Imported ${data.updated} tracking numbers`);
+        if (data.updated > 0) {
+          onSuccess();
+        }
+      } else {
+        toast.error(data.detail || 'Import failed');
+      }
+    } catch (e) {
+      toast.error('Failed to import tracking data');
+    } finally {
+      setImporting(false);
+    }
+  };
+  
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            <Upload className="w-5 h-5 text-purple-500" />
+            Import DWZ Tracking Numbers
+          </h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
+          <p className="font-medium text-blue-700 mb-1">CSV Format (one per line):</p>
+          <code className="text-xs bg-blue-100 px-2 py-1 rounded">order_number,dwz_tracking</code>
+          <p className="text-blue-600 mt-2">Example:</p>
+          <pre className="text-xs bg-blue-100 px-2 py-1 rounded mt-1">99001,DWZ123456789
+99002,DWZ987654321</pre>
+        </div>
+        
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">Tracking Data</label>
+          <textarea
+            placeholder="Paste CSV data here..."
+            value={csvData}
+            onChange={e => setCsvData(e.target.value)}
+            className="w-full h-40 p-3 border rounded-lg font-mono text-sm"
+          />
+        </div>
+        
+        <div className="mb-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={autoAdvance}
+              onChange={e => setAutoAdvance(e.target.checked)}
+              className="rounded"
+            />
+            Auto-advance orders to "DWZ56 Shipped" stage
+          </label>
+        </div>
+        
+        {results && (
+          <div className={`mb-4 p-3 rounded-lg ${results.not_found > 0 ? 'bg-yellow-50' : 'bg-green-50'}`}>
+            <p className="font-medium">Import Results:</p>
+            <ul className="text-sm mt-1">
+              <li>✅ Updated: {results.updated}</li>
+              <li>⚠️ Not found: {results.not_found}</li>
+              {results.errors?.length > 0 && (
+                <li className="text-red-600">Errors: {results.errors.join(', ')}</li>
+              )}
+            </ul>
+          </div>
+        )}
+        
+        <div className="flex gap-2 justify-end">
+          <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button 
+            onClick={handleImport} 
+            disabled={importing || !csvData.trim()}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            {importing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
+            Import Tracking
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Bulk Actions Modal
+const BulkActionsModal = ({ orders, store, carrierInfo, onClose, onSuccess }) => {
+  const [selectedOrders, setSelectedOrders] = useState([]);
+  const [targetStage, setTargetStage] = useState('');
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [processing, setProcessing] = useState(false);
+  
+  const toggleOrder = (orderId) => {
+    setSelectedOrders(prev => 
+      prev.includes(orderId) 
+        ? prev.filter(id => id !== orderId)
+        : [...prev, orderId]
+    );
+  };
+  
+  const selectAll = () => {
+    if (selectedOrders.length === orders.length) {
+      setSelectedOrders([]);
+    } else {
+      setSelectedOrders(orders.map(o => o.order_number || o.shopify_order_id));
+    }
+  };
+  
+  const handleBulkUpdate = async () => {
+    if (selectedOrders.length === 0 || !targetStage) {
+      toast.error('Select orders and a target stage');
+      return;
+    }
+    
+    setProcessing(true);
+    try {
+      const body = {
+        order_ids: selectedOrders.map(String),
+        stage: targetStage,
+        store_name: store,
+      };
+      
+      // Add tracking if provided
+      if (trackingNumber && targetStage === 'dwz56_shipped') {
+        body.dwz_tracking = trackingNumber;
+      } else if (trackingNumber && targetStage === 'local_shipped') {
+        body.local_tracking = trackingNumber;
+        body.local_carrier = carrierInfo?.carrier || 'TCS';
+      }
+      
+      const res = await fetch(`${API}/api/fulfillment/pipeline/bulk-update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success(`Updated ${data.updated_count} orders to ${targetStage.replace(/_/g, ' ')}`);
+        onSuccess();
+        onClose();
+      } else {
+        toast.error(data.detail || 'Bulk update failed');
+      }
+    } catch (e) {
+      toast.error('Failed to update orders');
+    } finally {
+      setProcessing(false);
+    }
+  };
+  
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold">Bulk Update Orders</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <label className="text-sm font-medium">Select Orders ({selectedOrders.length} selected)</label>
+            <Button variant="ghost" size="sm" onClick={selectAll}>
+              {selectedOrders.length === orders.length ? 'Deselect All' : 'Select All'}
+            </Button>
+          </div>
+          <div className="max-h-48 overflow-y-auto border rounded-lg p-2">
+            {orders.map(order => (
+              <label key={order.order_number || order.shopify_order_id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedOrders.includes(order.order_number || order.shopify_order_id)}
+                  onChange={() => toggleOrder(order.order_number || order.shopify_order_id)}
+                  className="rounded"
+                />
+                <span className="font-mono">#{order.order_number || order.shopify_order_id}</span>
+                <span className="text-gray-500 text-sm">{order.customer_name}</span>
+                <Badge className="ml-auto text-xs">{order.current_stage?.replace(/_/g, ' ')}</Badge>
+              </label>
+            ))}
+          </div>
+        </div>
+        
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">Move to Stage</label>
+          <Select value={targetStage} onValueChange={setTargetStage}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select target stage" />
+            </SelectTrigger>
+            <SelectContent>
+              {FULFILLMENT_STAGES.map(stage => (
+                <SelectItem key={stage.key} value={stage.key}>
+                  {stage.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {(targetStage === 'dwz56_shipped' || targetStage === 'local_shipped') && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">
+              {targetStage === 'dwz56_shipped' ? 'DWZ56 Tracking # (optional - same for all)' : `${carrierInfo?.carrier || 'Local'} Tracking # (optional)`}
+            </label>
+            <Input
+              placeholder="Enter tracking number"
+              value={trackingNumber}
+              onChange={e => setTrackingNumber(e.target.value)}
+            />
+            <p className="text-xs text-gray-500 mt-1">Leave empty to update stage without tracking</p>
+          </div>
+        )}
+        
+        <div className="flex gap-2 justify-end">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button 
+            onClick={handleBulkUpdate}
+            disabled={processing || selectedOrders.length === 0 || !targetStage}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            Update {selectedOrders.length} Orders
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main Component
 const FulfillmentPipeline = () => {
   const [stores, setStores] = useState([]);
