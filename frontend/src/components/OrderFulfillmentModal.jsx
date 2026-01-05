@@ -72,7 +72,7 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
     for (const item of items) {
       if (item.sku) {
         try {
-          const res = await fetch(`${API}/api/1688-scraper/products/get-1688-link?shopify_sku=${encodeURIComponent(item.sku)}`);
+          const res = await fetch(`${API}/api/1688-scraper/product-links/get-1688?shopify_sku=${encodeURIComponent(item.sku)}`);
           const data = await res.json();
           if (data.success) {
             links[item.sku] = data.link || data.suggested_link || null;
