@@ -507,6 +507,14 @@ function AppRoutes() {
         path="/whatsapp-case-study" 
         element={<WhatsAppCaseStudy />}
       />
+      <Route 
+        path="/tmapi-monitor" 
+        element={
+          <ProtectedRoute>
+            <TmapiMonitor />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
