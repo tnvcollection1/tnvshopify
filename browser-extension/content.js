@@ -421,42 +421,93 @@
   }
   
   function extractAllVariants(product) {
-    // If we already have SKUs from window objects, enhance them with DOM data
+    console.log('[WaMerce v4] Extracting variants...');
     
-    // Get color options
+    // Try to find SKU data in script tags first (most reliable)
+    document.querySelectorAll('script').forEach(script => {
+      const text = script.textContent || '';
+      
+      // Look for skuInfoMap object
+      const skuMapMatch = text.match(/["']skuInfoMap["']\s*:\s*(\{[\s\S]*?\})\s*[,}]/);
+      if (skuMapMatch && product.skus.length === 0) {
+        try {
+          // This is complex nested JSON, try to extract key-value pairs
+          const mapText = skuMapMatch[1];
+          const skuIds = mapText.match(/"([a-f0-9]{20,})"/g) || [];
+          
+          skuIds.forEach(idMatch => {
+            const specId = idMatch.replace(/"/g, '');
+            // Try to find price and stock for this SKU
+            const priceMatch = text.match(new RegExp(`"${specId}"[^}]*"price"\\s*:\\s*([\\d.]+)`));
+            const stockMatch = text.match(new RegExp(`"${specId}"[^}]*"(?:canBookCount|amountOnSale)"\\s*:\\s*(\\d+)`));
+            
+            if (!product.skus.find(s => s.spec_id === specId)) {
+              product.skus.push({
+                spec_id: specId,
+                price: priceMatch ? parseFloat(priceMatch[1]) : product.price,
+                stock: stockMatch ? parseInt(stockMatch[1]) : 100,
+              });
+            }
+          });
+        } catch (e) {
+          console.log('[WaMerce v4] Error parsing skuInfoMap:', e);
+        }
+      }
+      
+      // Look for skuModel.skuProps array
+      const skuPropsMatch = text.match(/["']skuProps["']\s*:\s*(\[[\s\S]*?\])\s*,?\s*["']/);
+      if (skuPropsMatch) {
+        try {
+          const propsText = skuPropsMatch[1];
+          // This contains the property definitions (color names, size names, etc)
+          const valueMatches = propsText.match(/"value"\s*:\s*"([^"]+)"/g) || [];
+          // Store for later use
+          product._skuPropValues = valueMatches.map(m => m.match(/"([^"]+)"$/)[1]);
+        } catch (e) {}
+      }
+    });
+    
+    // Get color options from DOM
     const colorOptions = [];
-    document.querySelectorAll('.obj-sku .obj-content li, [class*="sku-prop"]:first-of-type li, .sku-color li').forEach((item, idx) => {
-      const name = item.textContent?.trim() || item.title || item.dataset.value || `Color ${idx + 1}`;
+    document.querySelectorAll('.obj-sku .obj-content li, [class*="sku-prop"]:first-of-type li, .sku-color li, .prop-item li, [class*="color-list"] li').forEach((item, idx) => {
+      const name = item.textContent?.trim() || item.title || item.dataset.value || item.dataset.name || `Color ${idx + 1}`;
       const img = item.querySelector('img');
       const imgUrl = img ? cleanImageUrl(img.src || img.dataset.src) : null;
       const specId = item.dataset.specId || item.dataset.value || item.dataset.skuId;
       
-      colorOptions.push({ 
-        name: name.substring(0, 30), 
-        image: imgUrl,
-        specId 
-      });
+      // Skip if name is too short or looks like a button
+      if (name.length > 1 && name.length < 50) {
+        colorOptions.push({ 
+          name: name.substring(0, 30), 
+          image: imgUrl,
+          specId 
+        });
+      }
     });
     
-    // Get size options
+    // Get size options from DOM
     const sizeOptions = [];
-    document.querySelectorAll('.obj-sku:nth-of-type(2) .obj-content li, [class*="sku-prop"]:nth-of-type(2) li, .sku-size li').forEach((item, idx) => {
-      const name = item.textContent?.trim() || item.title || item.dataset.value || `Size ${idx + 1}`;
+    const sizeContainers = document.querySelectorAll('.obj-sku:nth-of-type(2) .obj-content li, [class*="sku-prop"]:nth-of-type(2) li, .sku-size li, [class*="size-list"] li');
+    sizeContainers.forEach((item, idx) => {
+      const name = item.textContent?.trim() || item.title || item.dataset.value || item.dataset.name || `Size ${idx + 1}`;
       const specId = item.dataset.specId || item.dataset.value || item.dataset.skuId;
       
-      sizeOptions.push({ 
-        name: name.substring(0, 20),
-        specId 
-      });
+      if (name.length > 0 && name.length < 30) {
+        sizeOptions.push({ 
+          name: name.substring(0, 20),
+          specId 
+        });
+      }
     });
+    
+    console.log('[WaMerce v4] Found', colorOptions.length, 'colors,', sizeOptions.length, 'sizes');
     
     // If no SKUs from window objects, build from DOM
     if (product.skus.length === 0) {
       if (colorOptions.length > 0 || sizeOptions.length > 0) {
-        let idx = 0;
         
         if (colorOptions.length > 0 && sizeOptions.length > 0) {
-          // Both color and size
+          // Both color and size - create combinations
           colorOptions.forEach((color, ci) => {
             sizeOptions.forEach((size, si) => {
               product.skus.push({
@@ -503,10 +554,10 @@
         const parts = sku.props_names.split(';');
         parts.forEach(part => {
           const [key, value] = part.split(':');
-          if (key?.includes('颜色') || key?.toLowerCase().includes('color')) {
+          if (key?.includes('颜色') || key?.toLowerCase().includes('color') || key?.includes('款式')) {
             sku.color = value;
           }
-          if (key?.includes('尺码') || key?.includes('尺寸') || key?.toLowerCase().includes('size')) {
+          if (key?.includes('尺码') || key?.includes('尺寸') || key?.toLowerCase().includes('size') || key?.includes('规格')) {
             sku.size = value;
           }
         });
@@ -514,6 +565,7 @@
     });
     
     product.variants = product.skus;
+    console.log('[WaMerce v4] Total variants:', product.variants.length);
   }
   
   function cleanImageUrl(url) {
