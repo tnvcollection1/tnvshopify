@@ -267,11 +267,11 @@ const Purchase1688Orders = () => {
                   <tr className="border-b bg-gray-50">
                     <th className="text-left p-3 font-semibold text-gray-700">1688 Order ID</th>
                     <th className="text-left p-3 font-semibold text-gray-700">Product</th>
-                    <th className="text-left p-3 font-semibold text-gray-700">Qty</th>
+                    <th className="text-left p-3 font-semibold text-gray-700">Shopify #</th>
+                    <th className="text-left p-3 font-semibold text-gray-700">Supplier Status</th>
+                    <th className="text-left p-3 font-semibold text-gray-700">DWZ Tracking</th>
                     <th className="text-left p-3 font-semibold text-gray-700">Size/Color</th>
-                    <th className="text-left p-3 font-semibold text-gray-700">Shopify Order</th>
-                    <th className="text-left p-3 font-semibold text-gray-700">Account</th>
-                    <th className="text-left p-3 font-semibold text-gray-700">Status</th>
+                    <th className="text-left p-3 font-semibold text-gray-700">Order Status</th>
                     <th className="text-left p-3 font-semibold text-gray-700">Created</th>
                     <th className="text-right p-3 font-semibold text-gray-700">Actions</th>
                   </tr>
@@ -293,31 +293,79 @@ const Purchase1688Orders = () => {
                       <td className="p-3">
                         <div>
                           <p
-                            className="font-medium text-sm text-blue-600 hover:underline cursor-pointer truncate max-w-[200px]"
+                            className="font-medium text-sm text-blue-600 hover:underline cursor-pointer truncate max-w-[150px]"
                             onClick={() => order.product_id && open1688Product(order.product_id)}
                             title={order.product_id}
                           >
                             {order.product_id || 'N/A'}
                           </p>
                           {order.notes && (
-                            <p className="text-xs text-gray-500 truncate max-w-[200px]" title={order.notes}>
+                            <p className="text-xs text-gray-500 truncate max-w-[150px]" title={order.notes}>
                               {order.notes}
                             </p>
                           )}
                         </div>
                       </td>
-                      <td className="p-3 font-medium">{order.quantity || 1}</td>
+                      <td className="p-3">
+                        {order.shopify_order_id || order.shopify_order_number ? (
+                          <div>
+                            <Badge variant="outline" className="text-gray-700 font-mono">
+                              #{order.shopify_order_number || order.shopify_order_id}
+                            </Badge>
+                            {order.shopify_fulfillment_status && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {order.shopify_fulfillment_status}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="p-3">
+                        {order.supplier_status ? (
+                          <div>
+                            <Badge className={`${getSupplierStatusColor(order.supplier_status)} border text-xs`}>
+                              {formatSupplierStatus(order.supplier_status)}
+                            </Badge>
+                            {order.supplier_tracking && (
+                              <p className="text-xs text-gray-500 mt-1 font-mono truncate max-w-[100px]" title={order.supplier_tracking}>
+                                {order.supplier_tracking}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <Badge variant="outline" className="text-gray-400 text-xs">Pending</Badge>
+                        )}
+                      </td>
+                      <td className="p-3">
+                        {order.dwz_tracking ? (
+                          <div>
+                            <code className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded font-mono">
+                              {order.dwz_tracking}
+                            </code>
+                            {order.dwz_status && (
+                              <p className="text-xs text-purple-600 mt-1">
+                                {order.dwz_status}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">Not assigned</span>
+                        )}
+                      </td>
                       <td className="p-3">
                         <div className="text-sm">
-                          {order.size && <span className="mr-2">Size: {order.size}</span>}
-                          {order.color && <span>Color: {order.color}</span>}
+                          {order.size && <span className="block text-xs">Size: {order.size}</span>}
+                          {order.color && <span className="block text-xs">Color: {order.color}</span>}
                           {!order.size && !order.color && '-'}
                         </div>
                       </td>
                       <td className="p-3">
-                        {order.shopify_order_id ? (
-                          <Badge variant="outline" className="text-gray-700">
-                            <Hash className="h-3 w-3 mr-1" />
+                        <Badge className={`${getStatusColor(order.status)} border`}>
+                          {order.status || 'Unknown'}
+                        </Badge>
+                      </td>
                             {order.shopify_order_id}
                           </Badge>
                         ) : (
