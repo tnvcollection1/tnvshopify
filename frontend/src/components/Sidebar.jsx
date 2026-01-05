@@ -174,6 +174,12 @@ const Sidebar = () => {
       badge: ''
     },
     { 
+      icon: RefreshCw, 
+      label: 'Shopify Sync', 
+      path: '/shopify-sync',
+      badge: 'New'
+    },
+    { 
       icon: Truck, 
       label: 'Fulfillment', 
       path: '/fulfillment',
