@@ -150,13 +150,19 @@ const Sidebar = () => {
       icon: Search, 
       label: '1688 Scraper', 
       path: '/product-scraper',
+      badge: ''
+    },
+    { 
+      icon: Upload, 
+      label: 'Product Collector', 
+      path: '/product-collector',
       badge: 'New'
     },
     { 
       icon: Truck, 
       label: 'Fulfillment', 
       path: '/fulfillment',
-      badge: 'New'
+      badge: ''
     },
     { 
       icon: Box, 
