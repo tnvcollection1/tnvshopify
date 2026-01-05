@@ -2233,7 +2233,7 @@ class ProductLinkRequest(BaseModel):
     product_1688_id: str
 
 
-@router.post("/products/link-1688")
+@router.post("/product-links/link-1688")
 async def link_product_to_1688(request: ProductLinkRequest):
     """
     Link a Shopify product/SKU to a 1688 product.
