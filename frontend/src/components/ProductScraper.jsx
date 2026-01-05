@@ -399,9 +399,13 @@ const ProductScraper = () => {
       <Card>
         <CardContent className="pt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3 mb-4">
+            <TabsList className="grid w-full grid-cols-4 mb-4">
               <TabsTrigger value="extension" className="flex items-center gap-2" data-testid="tab-extension">
-                🧩 Chrome Extension
+                🧩 Extension
+              </TabsTrigger>
+              <TabsTrigger value="image-search" className="flex items-center gap-2" data-testid="tab-image-search">
+                <ImageIcon className="w-4 h-4" />
+                Image Search
               </TabsTrigger>
               <TabsTrigger value="batch" className="flex items-center gap-2" data-testid="tab-batch">
                 <ListPlus className="w-4 h-4" />
@@ -409,7 +413,7 @@ const ProductScraper = () => {
               </TabsTrigger>
               <TabsTrigger value="url" className="flex items-center gap-2" data-testid="tab-url">
                 <Link2 className="w-4 h-4" />
-                Manual Script
+                Manual
               </TabsTrigger>
             </TabsList>
 
