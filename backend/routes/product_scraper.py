@@ -1664,34 +1664,55 @@ async def run_extension_import(
     products: List[ExtensionProduct],
     translate: bool = True
 ):
-    """Background task to import products directly from extension data"""
+    """Background task to import products directly from extension data - v3 supports full scrape"""
     db = get_db()
     
     scrape_jobs[job_id]["status"] = "processing"
     
     for i, ext_product in enumerate(products):
         try:
-            # Parse price from string (e.g., "¥89.00" -> 89.00)
-            price_str = ext_product.price.replace('¥', '').replace(',', '').strip()
-            try:
-                price = float(price_str) if price_str else 0
-            except:
-                price = 0
-            
-            # Build product dict
-            product = {
-                "product_id": ext_product.id,
-                "url": ext_product.url or f"https://detail.1688.com/offer/{ext_product.id}.html",
-                "title": ext_product.title or f"Product {ext_product.id}",
-                "price": price,
-                "price_range": None,
-                "images": [ext_product.image] if ext_product.image else [],
-                "description": None,
-                "seller_name": None,
-                "min_order": 1,
-                "variants": [],
-                "source": "extension",
-            }
+            # Check if we have full data from v3 extension (NO API NEEDED!)
+            if ext_product.fullData:
+                full = ext_product.fullData
+                product = {
+                    "product_id": full.get("product_id") or ext_product.id,
+                    "url": ext_product.url or f"https://detail.1688.com/offer/{ext_product.id}.html",
+                    "title": full.get("title") or full.get("title_cn") or ext_product.title,
+                    "title_cn": full.get("title_cn"),
+                    "price": full.get("price") or 0,
+                    "price_range": full.get("price_range"),
+                    "images": full.get("images", []),
+                    "description": full.get("description"),
+                    "description_images": full.get("description_images", []),
+                    "seller_name": full.get("seller", {}).get("name") if full.get("seller") else None,
+                    "seller_member_id": full.get("seller", {}).get("member_id") if full.get("seller") else None,
+                    "min_order": full.get("min_order", 1),
+                    "variants": full.get("skus", []),  # Full SKU data from page!
+                    "sold_count": full.get("sold_count"),
+                    "source": "extension_v3_full",  # Mark as full scrape
+                }
+                print(f"[Extension Import v3] Full data: {len(product['images'])} images, {len(product['variants'])} SKUs")
+            else:
+                # Fallback: Basic data from v2 extension
+                price_str = ext_product.price.replace('¥', '').replace(',', '').strip()
+                try:
+                    price = float(price_str) if price_str else 0
+                except:
+                    price = 0
+                
+                product = {
+                    "product_id": ext_product.id,
+                    "url": ext_product.url or f"https://detail.1688.com/offer/{ext_product.id}.html",
+                    "title": ext_product.title or f"Product {ext_product.id}",
+                    "price": price,
+                    "price_range": None,
+                    "images": [ext_product.image] if ext_product.image else [],
+                    "description": None,
+                    "seller_name": None,
+                    "min_order": 1,
+                    "variants": [],
+                    "source": "extension_v2_basic",
+                }
             
             # Translate if requested
             if translate and product.get("title"):
