@@ -351,7 +351,7 @@ async def import_product_to_shopify(product_id: str, store_name: str):
         raise HTTPException(status_code=404, detail="Product not found")
     
     # Create in Shopify
-    shopify_id = await create_shopify_product(product, store_name)
+    shopify_id = await publish_product_to_shopify(product, store_name)
     
     if shopify_id:
         # Update database
