@@ -2669,61 +2669,21 @@ class ProductLinkRequest(BaseModel):
 
 
 @router.post("/product-links/link-1688")
-async def link_product_to_1688(request: ProductLinkRequest):
+async def link_product_to_1688_endpoint(request: ProductLinkRequest):
     """
     Link a Shopify product/SKU to a 1688 product.
     This creates a mapping so orders can be automatically fulfilled.
+    Uses product_linking_service for the actual linking logic.
     """
-    db = get_db()
-    
-    try:
-        # Get the 1688 product details
-        product_1688 = await db.scraped_products.find_one(
-            {"product_id": request.product_1688_id},
-            {"_id": 0}
-        )
-        
-        if not product_1688:
-            # Try to fetch from TMAPI
-            return {
-                "success": False,
-                "error": f"1688 product {request.product_1688_id} not found. Please import it first."
-            }
-        
-        # Create/update the link in product_links collection
-        link_data = {
-            "shopify_product_id": request.shopify_product_id,
-            "shopify_sku": request.shopify_sku,
-            "product_1688_id": request.product_1688_id,
-            "product_1688_url": f"https://detail.1688.com/offer/{request.product_1688_id}.html",
-            "product_1688_title": product_1688.get("title") or product_1688.get("title_cn"),
-            "product_1688_price": product_1688.get("price"),
-            "product_1688_image": (product_1688.get("images") or [None])[0],
-            "variants_count": len(product_1688.get("variants") or []),
-            "linked_at": datetime.now(timezone.utc).isoformat(),
-        }
-        
-        # Use shopify_sku as primary key if available, otherwise use shopify_product_id
-        filter_key = {"shopify_sku": request.shopify_sku} if request.shopify_sku else {"shopify_product_id": request.shopify_product_id}
-        
-        await db.product_links.update_one(
-            filter_key,
-            {"$set": link_data},
-            upsert=True
-        )
-        
-        return {
-            "success": True,
-            "message": f"Linked to 1688 product {request.product_1688_id}",
-            "link": link_data,
-        }
-        
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+    return await _link_product_service(
+        shopify_product_id=request.shopify_product_id,
+        product_1688_id=request.product_1688_id,
+        shopify_sku=request.shopify_sku
+    )
 
 
 @router.get("/product-links/get-1688")
-async def get_1688_link(
+async def get_1688_link_endpoint(
     shopify_sku: Optional[str] = Query(None),
     shopify_product_id: Optional[str] = Query(None)
 ):
