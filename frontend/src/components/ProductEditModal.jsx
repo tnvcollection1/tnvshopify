@@ -162,6 +162,16 @@ const ProductEditModal = ({ product, onClose, onSave }) => {
             <p className="text-sm text-gray-500">ID: {editedProduct.product_id}</p>
           </div>
           <div className="flex items-center gap-2">
+            {/* Fetch Details Button - Gets images & variants from TMAPI */}
+            <Button 
+              onClick={fetchProductDetails} 
+              disabled={fetching}
+              variant="outline"
+              className="gap-2 border-orange-300 text-orange-600 hover:bg-orange-50"
+            >
+              {fetching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              Fetch Images & Variants
+            </Button>
             <Button onClick={handleSave} disabled={saving} className="bg-green-500 hover:bg-green-600 gap-2">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Changes
@@ -171,6 +181,16 @@ const ProductEditModal = ({ product, onClose, onSave }) => {
             </Button>
           </div>
         </div>
+
+        {/* Missing Data Warning */}
+        {(editedProduct.images.length === 0 || editedProduct.variants.length === 0) && (
+          <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 flex items-center gap-2">
+            <span className="text-yellow-600 text-sm">
+              ⚠️ {editedProduct.images.length === 0 && 'No images. '}{editedProduct.variants.length === 0 && 'No variants. '}
+              Click "Fetch Images & Variants" to load full product data from 1688.
+            </span>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex border-b">
