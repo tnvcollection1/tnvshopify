@@ -1,6 +1,7 @@
 """
 Fulfillment Webhook Service
 Handles webhook-based fulfillment status sync from 1688 and DWZ
+Enhanced with security features: signature verification, rate limiting, IP whitelist
 """
 
 from typing import Optional, Dict, List
@@ -8,6 +9,8 @@ from datetime import datetime, timezone
 import os
 import hmac
 import hashlib
+import time
+from collections import defaultdict
 from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi import APIRouter, HTTPException, Request, Body
 from pydantic import BaseModel, Field
@@ -29,18 +32,146 @@ def get_db():
     return _db
 
 
+# ==================== Security Configuration ====================
+
 # Webhook secret for verification
 WEBHOOK_SECRET = os.environ.get('FULFILLMENT_WEBHOOK_SECRET', 'wamerce_fulfillment_secret_2024')
 
+# Security settings
+REQUIRE_SIGNATURE = os.environ.get('WEBHOOK_REQUIRE_SIGNATURE', 'false').lower() == 'true'
+RATE_LIMIT_REQUESTS = int(os.environ.get('WEBHOOK_RATE_LIMIT', '100'))  # requests per minute per IP
+RATE_LIMIT_WINDOW = 60  # seconds
 
-def verify_webhook_signature(payload: bytes, signature: str) -> bool:
-    """Verify webhook signature using HMAC-SHA256"""
+# IP whitelist (comma-separated, empty = allow all)
+IP_WHITELIST = [ip.strip() for ip in os.environ.get('WEBHOOK_IP_WHITELIST', '').split(',') if ip.strip()]
+
+# Rate limiting storage (in-memory, resets on restart)
+_rate_limit_data = defaultdict(list)
+
+
+def verify_webhook_signature(payload: bytes, signature: str, timestamp: str = None) -> bool:
+    """
+    Verify webhook signature using HMAC-SHA256.
+    Optionally verify timestamp to prevent replay attacks.
+    """
+    if timestamp:
+        # Check if timestamp is within 5 minutes
+        try:
+            ts = int(timestamp)
+            current_ts = int(time.time())
+            if abs(current_ts - ts) > 300:  # 5 minutes
+                logger.warning(f"Webhook timestamp too old: {timestamp}")
+                return False
+        except ValueError:
+            logger.warning(f"Invalid webhook timestamp: {timestamp}")
+            return False
+        
+        # Include timestamp in signature verification
+        sign_data = f"{timestamp}.".encode() + payload
+    else:
+        sign_data = payload
+    
     expected = hmac.new(
         WEBHOOK_SECRET.encode(),
-        payload,
+        sign_data,
         hashlib.sha256
     ).hexdigest()
+    
     return hmac.compare_digest(expected, signature)
+
+
+def check_rate_limit(ip_address: str) -> bool:
+    """Check if IP has exceeded rate limit. Returns True if allowed."""
+    current_time = time.time()
+    window_start = current_time - RATE_LIMIT_WINDOW
+    
+    # Clean old entries
+    _rate_limit_data[ip_address] = [
+        t for t in _rate_limit_data[ip_address] if t > window_start
+    ]
+    
+    # Check limit
+    if len(_rate_limit_data[ip_address]) >= RATE_LIMIT_REQUESTS:
+        return False
+    
+    # Record this request
+    _rate_limit_data[ip_address].append(current_time)
+    return True
+
+
+def check_ip_whitelist(ip_address: str) -> bool:
+    """Check if IP is in whitelist. Returns True if allowed."""
+    if not IP_WHITELIST:
+        return True  # No whitelist = allow all
+    
+    # Support CIDR notation in future
+    return ip_address in IP_WHITELIST
+
+
+async def log_security_event(db, event_type: str, ip_address: str, details: dict):
+    """Log security-related events for auditing"""
+    await db.security_logs.insert_one({
+        "event_type": event_type,
+        "ip_address": ip_address,
+        "details": details,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    })
+
+
+async def verify_webhook_security(request: Request):
+    """
+    Comprehensive webhook security verification.
+    Raises HTTPException if security check fails.
+    """
+    db = get_db()
+    
+    # Get client IP
+    client_ip = request.client.host if request.client else "unknown"
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        client_ip = forwarded_for.split(",")[0].strip()
+    
+    # Check IP whitelist
+    if not check_ip_whitelist(client_ip):
+        await log_security_event(db, "webhook_ip_blocked", client_ip, {
+            "reason": "IP not in whitelist",
+            "path": str(request.url.path),
+        })
+        logger.warning(f"Webhook blocked - IP not in whitelist: {client_ip}")
+        raise HTTPException(status_code=403, detail="IP not authorized")
+    
+    # Check rate limit
+    if not check_rate_limit(client_ip):
+        await log_security_event(db, "webhook_rate_limited", client_ip, {
+            "reason": "Rate limit exceeded",
+            "path": str(request.url.path),
+        })
+        logger.warning(f"Webhook rate limited: {client_ip}")
+        raise HTTPException(status_code=429, detail="Rate limit exceeded")
+    
+    # Verify signature
+    signature = request.headers.get("X-Webhook-Signature")
+    timestamp = request.headers.get("X-Webhook-Timestamp")
+    
+    if REQUIRE_SIGNATURE and not signature:
+        await log_security_event(db, "webhook_signature_missing", client_ip, {
+            "reason": "Signature required but not provided",
+            "path": str(request.url.path),
+        })
+        logger.warning(f"Webhook missing signature from: {client_ip}")
+        raise HTTPException(status_code=401, detail="Webhook signature required")
+    
+    if signature:
+        body = await request.body()
+        if not verify_webhook_signature(body, signature, timestamp):
+            await log_security_event(db, "webhook_signature_invalid", client_ip, {
+                "reason": "Invalid signature",
+                "path": str(request.url.path),
+            })
+            logger.warning(f"Webhook invalid signature from: {client_ip}")
+            raise HTTPException(status_code=401, detail="Invalid webhook signature")
+    
+    return client_ip
 
 
 # ==================== Webhook Payloads ====================
