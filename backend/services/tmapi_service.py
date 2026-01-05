@@ -384,8 +384,8 @@ async def get_tmapi_usage_stats(days: int = 7) -> Dict:
     
     # Calculate stats
     total_calls = len(logs)
-    successful_calls = sum(1 for l in logs if l.get("success"))
-    total_cost = sum(l.get("cost", 0) for l in logs)
+    successful_calls = sum(1 for log in logs if log.get("success"))
+    total_cost = sum(log.get("cost", 0) for log in logs)
     
     # Group by endpoint
     by_endpoint = {}
