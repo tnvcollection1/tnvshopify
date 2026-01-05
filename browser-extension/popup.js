@@ -1,20 +1,15 @@
-// WaMerce 1688 Importer - Popup Script v2.0
-// Dianxiaomi-style one-click import
+// WaMerce 1688 Importer - Popup Script v3.0
+// One-click import with hardcoded deployment URL
 
-let serverUrl = '';
+// HARDCODED DEPLOYMENT URL - No user configuration needed
+const SERVER_URL = 'https://asian-mart-hub.preview.emergentagent.com';
+
 let products = [];
 let pageInfo = { type: 'unknown', title: '', url: '' };
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  // Load saved server URL
-  const stored = await chrome.storage.local.get(['serverUrl']);
-  serverUrl = stored.serverUrl || '';
-  document.getElementById('serverUrl').value = serverUrl;
-  
   // Setup event listeners
-  document.getElementById('settingsBtn').addEventListener('click', toggleSettings);
-  document.getElementById('saveServer').addEventListener('click', saveServerUrl);
   document.getElementById('openDashboard').addEventListener('click', openDashboard);
   
   // Check connection and scan page
@@ -22,50 +17,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   await scanCurrentPage();
 });
 
-// Toggle settings panel
-function toggleSettings() {
-  const section = document.getElementById('serverSection');
-  section.style.display = section.style.display === 'none' ? 'block' : 'none';
-}
-
-// Save server URL
-async function saveServerUrl() {
-  serverUrl = document.getElementById('serverUrl').value.trim().replace(/\/$/, '');
-  await chrome.storage.local.set({ serverUrl });
-  showToast('Server URL saved!', 'success');
-  await checkConnection();
-}
-
 // Check connection to WaMerce server
 async function checkConnection() {
   const dot = document.getElementById('statusDot');
   const text = document.getElementById('statusText');
   
-  if (!serverUrl) {
-    dot.className = 'status-dot error';
-    text.textContent = 'Set server URL';
-    return false;
-  }
-  
   dot.className = 'status-dot loading';
-  text.textContent = 'Connecting...';
+  text.textContent = 'Connecting to WaMerce...';
   
   try {
-    const response = await fetch(`${serverUrl}/api/1688-scraper/products?limit=1`, {
+    const response = await fetch(`${SERVER_URL}/api/1688-scraper/products?limit=1`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     });
     
     if (response.ok) {
       dot.className = 'status-dot connected';
-      text.textContent = 'Connected';
+      text.textContent = 'Connected to WaMerce';
       return true;
     } else {
       throw new Error('Connection failed');
     }
   } catch (error) {
     dot.className = 'status-dot error';
-    text.textContent = 'Not connected';
+    text.textContent = 'Server unavailable';
     return false;
   }
 }
@@ -329,12 +304,6 @@ async function importAllProducts() {
     return;
   }
   
-  if (!serverUrl) {
-    showToast('Please set server URL first', 'error');
-    toggleSettings();
-    return;
-  }
-  
   const btn = document.getElementById('importAllBtn');
   const progressSection = document.getElementById('progressSection');
   const progressFill = document.getElementById('progressFill');
@@ -349,7 +318,7 @@ async function importAllProducts() {
   
   try {
     // Send full product data to WaMerce API (new extension-import endpoint)
-    const response = await fetch(`${serverUrl}/api/1688-scraper/extension-import`, {
+    const response = await fetch(`${SERVER_URL}/api/1688-scraper/extension-import`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -391,7 +360,7 @@ async function pollJobStatus(jobId) {
   
   const poll = async () => {
     try {
-      const response = await fetch(`${serverUrl}/api/1688-scraper/job/${jobId}`);
+      const response = await fetch(`${SERVER_URL}/api/1688-scraper/job/${jobId}`);
       const data = await response.json();
       
       if (data.success && data.job) {
@@ -474,12 +443,7 @@ async function rescanPage() {
 
 // Open dashboard
 function openDashboard() {
-  if (serverUrl) {
-    chrome.tabs.create({ url: `${serverUrl}/product-scraper` });
-  } else {
-    showToast('Please set server URL first', 'error');
-    toggleSettings();
-  }
+  chrome.tabs.create({ url: `${SERVER_URL}/product-collector` });
 }
 
 // Show toast notification
