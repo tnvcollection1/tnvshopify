@@ -28,9 +28,11 @@ import {
   ListPlus,
   Link2,
   Info,
+  Edit,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStore } from '../contexts/StoreContext';
+import ProductEditModal from './ProductEditModal';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
