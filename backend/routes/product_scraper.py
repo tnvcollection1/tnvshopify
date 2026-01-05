@@ -652,7 +652,7 @@ async def batch_import_taobao_products(
     # Run in background
     if background_tasks:
         background_tasks.add_task(
-            run_taobao_batch_import,
+            _run_taobao_batch_import,
             job_id,
             clean_ids,
             translate
