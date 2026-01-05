@@ -1027,6 +1027,21 @@ const FulfillmentPipeline = () => {
           onClose={() => setShowAnalytics(false)}
         />
       )}
+      
+      {/* Tracking Prompt Modal */}
+      {trackingPrompt && (
+        <TrackingPromptModal
+          order={trackingPrompt.order}
+          stage={trackingPrompt.stage}
+          trackingConfig={trackingPrompt.config}
+          carrierInfo={carrierInfo}
+          onClose={() => setTrackingPrompt(null)}
+          onConfirm={(orderId, stage, additionalData) => {
+            updateOrderStage(orderId, stage, additionalData);
+            setTrackingPrompt(null);
+          }}
+        />
+      )}
     </div>
   );
 };
