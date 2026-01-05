@@ -817,11 +817,11 @@ async def get_advanced_analytics(
     stuck_orders.sort(key=lambda x: x["days_stuck"], reverse=True)
     
     # Average time per stage (for completed orders)
-    stage_times = {stage["key"]: [] for stage in FULFILLMENT_STAGES}
+    stage_times = {stage: [] for stage in FULFILLMENT_STAGES}
     
     for order in orders:
         stage_dates = order.get("stage_dates", {})
-        stages_list = [s["key"] for s in FULFILLMENT_STAGES]
+        stages_list = FULFILLMENT_STAGES
         
         for i in range(len(stages_list) - 1):
             current = stages_list[i]
@@ -839,12 +839,12 @@ async def get_advanced_analytics(
     
     avg_stage_times = []
     for stage in FULFILLMENT_STAGES[:-1]:  # Exclude last stage
-        times = stage_times.get(stage["key"], [])
+        times = stage_times.get(stage, [])
         if times:
             avg = round(sum(times) / len(times), 1)
             avg_stage_times.append({
-                "stage": stage["key"],
-                "label": stage["label"],
+                "stage": stage,
+                "label": STAGE_LABELS.get(stage, stage.replace('_', ' ').title()),
                 "avg_hours": avg,
                 "avg_days": round(avg / 24, 1),
                 "sample_size": len(times),
