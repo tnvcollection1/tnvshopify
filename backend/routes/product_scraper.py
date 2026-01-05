@@ -2690,111 +2690,22 @@ async def get_1688_link_endpoint(
     """
     Get the linked 1688 product for a Shopify SKU or product ID.
     Returns the 1688 product details and URL.
+    Uses product_linking_service for the lookup logic.
     """
-    db = get_db()
-    
-    if not shopify_sku and not shopify_product_id:
-        return {"success": False, "error": "Provide shopify_sku or shopify_product_id"}
-    
-    # Try to find existing link
-    query = {}
-    if shopify_sku:
-        query["shopify_sku"] = shopify_sku
-    else:
-        query["shopify_product_id"] = shopify_product_id
-    
-    link = await db.product_links.find_one(query, {"_id": 0})
-    
-    if link:
-        return {
-            "success": True,
-            "linked": True,
-            "link": link,
-        }
-    
-    # Try to extract 1688 ID from SKU (if SKU contains product ID)
-    if shopify_sku:
-        import re
-        match = re.search(r'(\d{12,})', shopify_sku)
-        if match:
-            product_1688_id = match.group(1)
-            # Check if this product exists in our database
-            product = await db.scraped_products.find_one(
-                {"product_id": product_1688_id},
-                {"_id": 0, "product_id": 1, "title": 1, "title_cn": 1, "price": 1, "images": 1, "variants": 1}
-            )
-            if product:
-                return {
-                    "success": True,
-                    "linked": False,
-                    "suggested_link": {
-                        "product_1688_id": product_1688_id,
-                        "product_1688_url": f"https://detail.1688.com/offer/{product_1688_id}.html",
-                        "product_1688_title": product.get("title") or product.get("title_cn"),
-                        "product_1688_price": product.get("price"),
-                        "product_1688_image": (product.get("images") or [None])[0],
-                        "variants_count": len(product.get("variants") or []),
-                        "source": "extracted_from_sku",
-                    }
-                }
-            else:
-                return {
-                    "success": True,
-                    "linked": False,
-                    "suggested_link": {
-                        "product_1688_id": product_1688_id,
-                        "product_1688_url": f"https://detail.1688.com/offer/{product_1688_id}.html",
-                        "source": "extracted_from_sku",
-                        "needs_import": True,
-                    }
-                }
-    
-    return {
-        "success": True,
-        "linked": False,
-        "link": None,
-    }
+    return await _get_link_service(shopify_sku=shopify_sku, shopify_product_id=shopify_product_id)
 
 
 @router.post("/product-links/auto-link-from-image")
-async def auto_link_from_image(
+async def auto_link_from_image_endpoint(
     shopify_sku: str = Query(...),
     image_url: str = Query(...)
 ):
     """
     Auto-link a Shopify product to 1688 by searching for similar products using image.
     Returns top matches that user can choose from.
+    Uses product_linking_service for the search logic.
     """
-    db = get_db()
-    TMAPI_TOKEN = os.environ.get("TMAPI_TOKEN", "")
-    
-    if not TMAPI_TOKEN:
-        return {"success": False, "error": "TMAPI token not configured"}
-    
-    try:
-        # Search by image
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.get(
-                f"{TMAPI_BASE_URL}/1688/search/image",
-                params={
-                    "apiToken": TMAPI_TOKEN,
-                    "img_url": image_url,
-                    "page": 1,
-                    "page_size": 10,
-                }
-            )
-            result = response.json()
-        
-        if result.get("code") != 200:
-            return {"success": False, "error": result.get("msg", "Image search failed")}
-        
-        items = result.get("data", {}).get("items", [])
-        
-        # Format results
-        suggestions = []
-        for item in items[:5]:
-            product_id = str(item.get("item_id", ""))
-            shop_info = item.get("shop_info", {})
+    return await _auto_link_service(shopify_sku=shopify_sku, image_url=image_url)
             
             suggestions.append({
                 "product_1688_id": product_id,
