@@ -44,6 +44,7 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSpecId, setSelectedSpecId] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [productLinks, setProductLinks] = useState({}); // Store 1688 links for each SKU
 
   useEffect(() => {
     if (order) {
@@ -59,8 +60,30 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
       
       // Load existing fulfillment data if available
       loadFulfillmentData();
+      
+      // Auto-fetch 1688 links for all line items
+      fetchProductLinks(items);
     }
   }, [order]);
+
+  // Fetch 1688 links for all line items
+  const fetchProductLinks = async (items) => {
+    const links = {};
+    for (const item of items) {
+      if (item.sku) {
+        try {
+          const res = await fetch(`${API}/api/1688-scraper/products/get-1688-link?shopify_sku=${encodeURIComponent(item.sku)}`);
+          const data = await res.json();
+          if (data.success) {
+            links[item.sku] = data.link || data.suggested_link || null;
+          }
+        } catch (err) {
+          console.error('Failed to fetch link for', item.sku, err);
+        }
+      }
+    }
+    setProductLinks(links);
+  };
 
   // Extract 1688 product ID from SKU
   const extract1688ProductId = (sku) => {
