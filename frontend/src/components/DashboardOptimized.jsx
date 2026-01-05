@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import LoadingSpinner from './LoadingSpinner';
 import OrderFulfillmentModal from './OrderFulfillmentModal';
+import Widget1688Status from './Widget1688Status';
 import { useStore } from '../contexts/StoreContext';
 import { formatCurrency, getCurrency } from '../utils/currency';
 
