@@ -294,12 +294,33 @@ async def update_order_stage(
         if updated_order:
             notification_sent = await send_whatsapp_stage_notification(updated_order, request.stage)
     
+    # Auto-sync to Shopify if order reached 'local_shipped' stage
+    shopify_synced = False
+    if request.stage == 'local_shipped':
+        try:
+            from services.shopify_fulfillment_sync import sync_order_to_shopify
+            updated_order = await db.fulfillment_pipeline.find_one(
+                {"$or": [
+                    {"shopify_order_id": order_id},
+                    {"order_number": order_id},
+                ]},
+                {"_id": 0}
+            )
+            if updated_order and updated_order.get("local_tracking"):
+                sync_result = await sync_order_to_shopify(updated_order)
+                shopify_synced = sync_result.get("success", False)
+                if shopify_synced:
+                    logger.info(f"Auto-synced order {order_id} to Shopify")
+        except Exception as e:
+            logger.warning(f"Auto-sync to Shopify failed for {order_id}: {e}")
+    
     return {
         "success": True,
         "message": f"Order moved to {request.stage}",
         "order_id": order_id,
         "stage": request.stage,
         "notification_sent": notification_sent,
+        "shopify_synced": shopify_synced,
     }
 
 
