@@ -71,6 +71,9 @@ from services.job_manager_service import (
     run_batch_import as _run_batch_import,
     run_extension_import as _run_extension_import,
 )
+from services.shopify_publishing_service import (
+    publish_product_to_shopify,
+)
 
 load_dotenv()
 
