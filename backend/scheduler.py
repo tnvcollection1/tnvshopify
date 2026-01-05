@@ -86,6 +86,17 @@ class AutoSyncScheduler:
         #     coalesce=True
         # )
         
+        # Schedule DWZ56 tracking sync every 4 hours
+        self.scheduler.add_job(
+            func=self.sync_dwz_tracking,
+            trigger=IntervalTrigger(hours=4),
+            id='dwz_sync',
+            name='DWZ56 Tracking Sync (Every 4 Hours)',
+            replace_existing=True,
+            max_instances=1,
+            coalesce=True
+        )
+        
         # Start scheduler
         self.scheduler.start()
         self.is_running = True
