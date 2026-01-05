@@ -219,16 +219,16 @@ async def receive_fulfillment_status_update(
     Generic webhook endpoint for fulfillment status updates.
     Can be called by any system (1688, DWZ, manual triggers).
     
-    Verifies signature if X-Webhook-Signature header is present.
+    Security: Verifies signature, rate limits, and IP whitelist.
+    
+    Headers:
+    - X-Webhook-Signature: HMAC-SHA256 signature (required if WEBHOOK_REQUIRE_SIGNATURE=true)
+    - X-Webhook-Timestamp: Unix timestamp (optional, prevents replay attacks)
     """
     db = get_db()
     
-    # Verify signature if provided
-    signature = request.headers.get("X-Webhook-Signature")
-    if signature:
-        body = await request.body()
-        if not verify_webhook_signature(body, signature):
-            raise HTTPException(status_code=401, detail="Invalid webhook signature")
+    # Security verification
+    client_ip = await verify_webhook_security(request)
     
     try:
         # Log the webhook
@@ -238,6 +238,7 @@ async def receive_fulfillment_status_update(
             "order_type": payload.order_type,
             "status": payload.status,
             "payload": payload.dict(),
+            "source_ip": client_ip,
             "received_at": datetime.now(timezone.utc).isoformat(),
             "processed": False,
         })
