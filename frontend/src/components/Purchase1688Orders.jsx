@@ -87,6 +87,39 @@ const Purchase1688Orders = () => {
     }
   };
 
+  const getSupplierStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'shipped':
+      case 'shipped_from_supplier':
+        return 'bg-purple-100 text-purple-700 border-purple-300';
+      case 'paid':
+      case 'paid_waiting_ship':
+        return 'bg-green-100 text-green-700 border-green-300';
+      case 'received':
+      case 'completed':
+        return 'bg-emerald-100 text-emerald-700 border-emerald-300';
+      case 'pending_payment':
+        return 'bg-yellow-100 text-yellow-700 border-yellow-300';
+      case 'cancelled':
+        return 'bg-red-100 text-red-700 border-red-300';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-300';
+    }
+  };
+
+  const formatSupplierStatus = (status) => {
+    const statusMap = {
+      'pending_payment': 'Awaiting Payment',
+      'paid_waiting_ship': 'Paid - Awaiting Ship',
+      'shipped': 'Shipped',
+      'shipped_from_supplier': 'Shipped',
+      'received': 'Received',
+      'completed': 'Completed',
+      'cancelled': 'Cancelled',
+    };
+    return statusMap[status?.toLowerCase()] || status || 'Unknown';
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
