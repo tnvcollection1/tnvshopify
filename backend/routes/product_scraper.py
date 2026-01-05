@@ -1804,3 +1804,84 @@ async def delete_product(product_id: str):
             return {"success": False, "error": "Product not found"}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+
+@router.post("/products/{product_id}/fetch-details")
+async def fetch_product_details(product_id: str):
+    """
+    Fetch full product details including variants/SKUs using TMAPI.
+    Updates the product in database with fresh data.
+    """
+    db = get_db()
+    TMAPI_TOKEN = os.environ.get("TMAPI_TOKEN", "")
+    
+    if not TMAPI_TOKEN:
+        return {"success": False, "error": "TMAPI token not configured"}
+    
+    try:
+        # Fetch from TMAPI
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(
+                f"http://api.tmapi.top/1688/item_detail",
+                params={
+                    "apiToken": TMAPI_TOKEN,
+                    "item_id": product_id,
+                }
+            )
+            data = response.json()
+        
+        if data.get("code") != 200:
+            return {
+                "success": False,
+                "error": data.get("message", "TMAPI request failed"),
+            }
+        
+        item = data.get("data", {})
+        
+        # Build update data
+        update_data = {
+            "title_cn": item.get("title"),
+            "price": item.get("price") or item.get("priceRange", {}).get("price"),
+            "images": item.get("images", []),
+            "variants": item.get("skus", []),
+            "description": item.get("desc"),
+            "min_order": item.get("beginAmount", 1),
+            "sold_count": item.get("saleCount"),
+            "seller_name": item.get("shopName"),
+            "seller_member_id": item.get("memberId"),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "details_fetched": True,
+        }
+        
+        # Translate title if needed
+        if item.get("title") and not item.get("title", "").isascii():
+            try:
+                # Use existing translation function if available
+                translated = await translate_product({"title": item.get("title")})
+                if translated.get("title_en"):
+                    update_data["title_en"] = translated["title_en"]
+            except Exception as e:
+                print(f"Translation failed: {e}")
+        
+        # Update database
+        result = await db.scraped_products.update_one(
+            {"product_id": product_id},
+            {"$set": update_data}
+        )
+        
+        # Return updated product
+        updated_product = await db.scraped_products.find_one(
+            {"product_id": product_id},
+            {"_id": 0}
+        )
+        
+        return {
+            "success": True,
+            "message": f"Fetched {len(update_data.get('images', []))} images and {len(update_data.get('variants', []))} variants",
+            "product": updated_product,
+            "images_count": len(update_data.get("images", [])),
+            "variants_count": len(update_data.get("variants", [])),
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
