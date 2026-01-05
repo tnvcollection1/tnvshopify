@@ -599,3 +599,115 @@ async def test_webhook_endpoint(
         "message": f"Test {test_type} webhook logged",
         "payload": payload,
     }
+
+
+# ==================== Security Endpoints ====================
+
+@router.get("/security/config")
+async def get_security_config():
+    """Get current webhook security configuration (without secrets)"""
+    return {
+        "success": True,
+        "config": {
+            "require_signature": REQUIRE_SIGNATURE,
+            "rate_limit_requests": RATE_LIMIT_REQUESTS,
+            "rate_limit_window_seconds": RATE_LIMIT_WINDOW,
+            "ip_whitelist_enabled": bool(IP_WHITELIST),
+            "ip_whitelist_count": len(IP_WHITELIST),
+        }
+    }
+
+
+@router.get("/security/logs")
+async def get_security_logs(
+    event_type: str = None,
+    limit: int = 50,
+):
+    """Get recent security-related logs"""
+    db = get_db()
+    
+    query = {}
+    if event_type:
+        query["event_type"] = event_type
+    
+    logs = await db.security_logs.find(
+        query,
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    return {
+        "success": True,
+        "logs": logs,
+        "count": len(logs),
+    }
+
+
+@router.get("/security/stats")
+async def get_security_stats():
+    """Get security statistics for monitoring"""
+    db = get_db()
+    
+    # Get counts by event type
+    pipeline = [
+        {"$match": {"timestamp": {"$exists": True}}},
+        {"$group": {
+            "_id": "$event_type",
+            "count": {"$sum": 1}
+        }}
+    ]
+    
+    stats = await db.security_logs.aggregate(pipeline).to_list(None)
+    stats_dict = {s["_id"]: s["count"] for s in stats if s["_id"]}
+    
+    # Current rate limit usage
+    current_rate_usage = {
+        ip: len(times) for ip, times in _rate_limit_data.items()
+        if times  # Only show IPs with active requests
+    }
+    
+    return {
+        "success": True,
+        "stats": {
+            "blocked_by_ip": stats_dict.get("webhook_ip_blocked", 0),
+            "rate_limited": stats_dict.get("webhook_rate_limited", 0),
+            "invalid_signatures": stats_dict.get("webhook_signature_invalid", 0),
+            "missing_signatures": stats_dict.get("webhook_signature_missing", 0),
+        },
+        "current_rate_usage": current_rate_usage,
+        "rate_limit_threshold": RATE_LIMIT_REQUESTS,
+    }
+
+
+@router.post("/security/generate-signature")
+async def generate_webhook_signature(
+    payload: str = Body(..., embed=True),
+    include_timestamp: bool = Body(False, embed=True),
+):
+    """
+    Generate a webhook signature for testing.
+    Use this to sign payloads when testing webhook endpoints.
+    """
+    timestamp = str(int(time.time())) if include_timestamp else None
+    
+    if timestamp:
+        sign_data = f"{timestamp}.".encode() + payload.encode()
+    else:
+        sign_data = payload.encode()
+    
+    signature = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        sign_data,
+        hashlib.sha256
+    ).hexdigest()
+    
+    result = {
+        "success": True,
+        "signature": signature,
+        "header_name": "X-Webhook-Signature",
+    }
+    
+    if timestamp:
+        result["timestamp"] = timestamp
+        result["timestamp_header_name"] = "X-Webhook-Timestamp"
+    
+    return result
