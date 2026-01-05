@@ -14,11 +14,9 @@ import {
   ChevronRight,
   Eye,
   Calendar,
-  User,
-  Hash,
-  DollarSign,
   Filter,
   X,
+  Truck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
