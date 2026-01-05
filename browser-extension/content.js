@@ -151,17 +151,117 @@
         image = imgEl.src || '';
       }
       
+      // Extract SKUs/variants from product detail page (FREE - no API!)
+      const skus = extractSkusFromPage();
+      
       products.unshift({
         id: pid,
         title: title || 'Current Product',
         price: price,
         image: image,
         url: currentUrl,
-        isCurrentPage: true
+        isCurrentPage: true,
+        skus: skus
       });
     }
     
     return products;
+  }
+  
+  // Extract SKU/variant data directly from 1688 product page (0 API calls!)
+  function extractSkusFromPage() {
+    const skus = [];
+    
+    try {
+      // Method 1: Try to get from window.iDetailData (most reliable)
+      if (window.iDetailData && window.iDetailData.sku) {
+        const skuData = window.iDetailData.sku;
+        if (skuData.skuInfoMap) {
+          Object.entries(skuData.skuInfoMap).forEach(([specId, info]) => {
+            skus.push({
+              spec_id: specId,
+              price: info.price || info.discountPrice,
+              stock: info.canBookCount || info.amountOnSale,
+              props_names: info.specAttrs || '',
+            });
+          });
+        }
+      }
+      
+      // Method 2: Try to get from script tag with sku data
+      if (skus.length === 0) {
+        const scripts = document.querySelectorAll('script');
+        scripts.forEach(script => {
+          const text = script.textContent || '';
+          if (text.includes('skuInfoMap') || text.includes('skuModel')) {
+            try {
+              // Extract JSON from script
+              const match = text.match(/skuInfoMap['"]\s*:\s*(\{[^}]+\})/);
+              if (match) {
+                const skuMap = JSON.parse(match[1]);
+                Object.entries(skuMap).forEach(([specId, info]) => {
+                  skus.push({
+                    spec_id: specId,
+                    price: info.price,
+                    stock: info.canBookCount,
+                  });
+                });
+              }
+            } catch (e) {}
+          }
+        });
+      }
+      
+      // Method 3: Extract from DOM elements
+      if (skus.length === 0) {
+        const skuItems = document.querySelectorAll('.sku-item, [data-sku-id], .obj-sku .obj-content li');
+        skuItems.forEach((item, idx) => {
+          const specId = item.dataset.skuId || item.dataset.specId || `sku_${idx}`;
+          const priceEl = item.querySelector('.price, [class*="price"]');
+          const nameEl = item.querySelector('.name, [class*="name"], span');
+          
+          skus.push({
+            spec_id: specId,
+            price: priceEl ? priceEl.textContent.replace(/[^\d.]/g, '') : null,
+            name: nameEl ? nameEl.textContent.trim() : null,
+          });
+        });
+      }
+      
+      // Method 4: Get color/size options
+      if (skus.length === 0) {
+        const colorItems = document.querySelectorAll('[class*="color"] li, [class*="sku-color"] li');
+        const sizeItems = document.querySelectorAll('[class*="size"] li, [class*="sku-size"] li');
+        
+        if (colorItems.length > 0 || sizeItems.length > 0) {
+          colorItems.forEach((color, ci) => {
+            const colorName = color.textContent.trim() || color.title || `Color ${ci+1}`;
+            sizeItems.forEach((size, si) => {
+              const sizeName = size.textContent.trim() || size.title || `Size ${si+1}`;
+              skus.push({
+                spec_id: `${ci}_${si}`,
+                color: colorName,
+                size: sizeName,
+                props_names: `颜色:${colorName};尺码:${sizeName}`,
+              });
+            });
+            if (sizeItems.length === 0) {
+              skus.push({
+                spec_id: `${ci}`,
+                color: colorName,
+                props_names: `颜色:${colorName}`,
+              });
+            }
+          });
+        }
+      }
+      
+    } catch (e) {
+      console.log('[WaMerce] SKU extraction error:', e);
+    }
+    
+    console.log('[WaMerce] Extracted', skus.length, 'SKUs from page');
+    return skus;
   }
   
   // Create floating import button
