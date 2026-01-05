@@ -2224,3 +2224,225 @@ async def get_shopify_stores():
         "success": True,
         "stores": stores,
     }
+
+
+
+class ProductLinkRequest(BaseModel):
+    shopify_product_id: Optional[str] = None
+    shopify_sku: Optional[str] = None
+    product_1688_id: str
+
+
+@router.post("/products/link-1688")
+async def link_product_to_1688(request: ProductLinkRequest):
+    """
+    Link a Shopify product/SKU to a 1688 product.
+    This creates a mapping so orders can be automatically fulfilled.
+    """
+    db = get_db()
+    
+    try:
+        # Get the 1688 product details
+        product_1688 = await db.scraped_products.find_one(
+            {"product_id": request.product_1688_id},
+            {"_id": 0}
+        )
+        
+        if not product_1688:
+            # Try to fetch from TMAPI
+            return {
+                "success": False,
+                "error": f"1688 product {request.product_1688_id} not found. Please import it first."
+            }
+        
+        # Create/update the link in product_links collection
+        link_data = {
+            "shopify_product_id": request.shopify_product_id,
+            "shopify_sku": request.shopify_sku,
+            "product_1688_id": request.product_1688_id,
+            "product_1688_url": f"https://detail.1688.com/offer/{request.product_1688_id}.html",
+            "product_1688_title": product_1688.get("title") or product_1688.get("title_cn"),
+            "product_1688_price": product_1688.get("price"),
+            "product_1688_image": (product_1688.get("images") or [None])[0],
+            "variants_count": len(product_1688.get("variants") or []),
+            "linked_at": datetime.now(timezone.utc).isoformat(),
+        }
+        
+        # Use shopify_sku as primary key if available, otherwise use shopify_product_id
+        filter_key = {"shopify_sku": request.shopify_sku} if request.shopify_sku else {"shopify_product_id": request.shopify_product_id}
+        
+        await db.product_links.update_one(
+            filter_key,
+            {"$set": link_data},
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": f"Linked to 1688 product {request.product_1688_id}",
+            "link": link_data,
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/products/get-1688-link")
+async def get_1688_link(
+    shopify_sku: Optional[str] = Query(None),
+    shopify_product_id: Optional[str] = Query(None)
+):
+    """
+    Get the linked 1688 product for a Shopify SKU or product ID.
+    Returns the 1688 product details and URL.
+    """
+    db = get_db()
+    
+    if not shopify_sku and not shopify_product_id:
+        return {"success": False, "error": "Provide shopify_sku or shopify_product_id"}
+    
+    # Try to find existing link
+    query = {}
+    if shopify_sku:
+        query["shopify_sku"] = shopify_sku
+    else:
+        query["shopify_product_id"] = shopify_product_id
+    
+    link = await db.product_links.find_one(query, {"_id": 0})
+    
+    if link:
+        return {
+            "success": True,
+            "linked": True,
+            "link": link,
+        }
+    
+    # Try to extract 1688 ID from SKU (if SKU contains product ID)
+    if shopify_sku:
+        import re
+        match = re.search(r'(\d{12,})', shopify_sku)
+        if match:
+            product_1688_id = match.group(1)
+            # Check if this product exists in our database
+            product = await db.scraped_products.find_one(
+                {"product_id": product_1688_id},
+                {"_id": 0, "product_id": 1, "title": 1, "title_cn": 1, "price": 1, "images": 1, "variants": 1}
+            )
+            if product:
+                return {
+                    "success": True,
+                    "linked": False,
+                    "suggested_link": {
+                        "product_1688_id": product_1688_id,
+                        "product_1688_url": f"https://detail.1688.com/offer/{product_1688_id}.html",
+                        "product_1688_title": product.get("title") or product.get("title_cn"),
+                        "product_1688_price": product.get("price"),
+                        "product_1688_image": (product.get("images") or [None])[0],
+                        "variants_count": len(product.get("variants") or []),
+                        "source": "extracted_from_sku",
+                    }
+                }
+            else:
+                return {
+                    "success": True,
+                    "linked": False,
+                    "suggested_link": {
+                        "product_1688_id": product_1688_id,
+                        "product_1688_url": f"https://detail.1688.com/offer/{product_1688_id}.html",
+                        "source": "extracted_from_sku",
+                        "needs_import": True,
+                    }
+                }
+    
+    return {
+        "success": True,
+        "linked": False,
+        "link": None,
+    }
+
+
+@router.post("/products/auto-link-from-image")
+async def auto_link_from_image(
+    shopify_sku: str = Query(...),
+    image_url: str = Query(...)
+):
+    """
+    Auto-link a Shopify product to 1688 by searching for similar products using image.
+    Returns top matches that user can choose from.
+    """
+    db = get_db()
+    TMAPI_TOKEN = os.environ.get("TMAPI_TOKEN", "")
+    
+    if not TMAPI_TOKEN:
+        return {"success": False, "error": "TMAPI token not configured"}
+    
+    try:
+        # Search by image
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(
+                f"{TMAPI_BASE_URL}/1688/search/image",
+                params={
+                    "apiToken": TMAPI_TOKEN,
+                    "img_url": image_url,
+                    "page": 1,
+                    "page_size": 10,
+                }
+            )
+            result = response.json()
+        
+        if result.get("code") != 200:
+            return {"success": False, "error": result.get("msg", "Image search failed")}
+        
+        items = result.get("data", {}).get("items", [])
+        
+        # Format results
+        suggestions = []
+        for item in items[:5]:
+            product_id = str(item.get("item_id", ""))
+            shop_info = item.get("shop_info", {})
+            
+            suggestions.append({
+                "product_1688_id": product_id,
+                "product_1688_url": f"https://detail.1688.com/offer/{product_id}.html",
+                "title": item.get("title"),
+                "price": item.get("price"),
+                "image": item.get("img"),
+                "shop_name": shop_info.get("company_name") or shop_info.get("login_id"),
+                "is_factory": shop_info.get("is_factory", False),
+            })
+        
+        return {
+            "success": True,
+            "shopify_sku": shopify_sku,
+            "suggestions": suggestions,
+            "total_found": result.get("data", {}).get("total_count", 0),
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/products/links")
+async def get_all_product_links(
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=100)
+):
+    """Get all product links (Shopify -> 1688 mappings)"""
+    db = get_db()
+    
+    skip = (page - 1) * limit
+    
+    links = await db.product_links.find(
+        {},
+        {"_id": 0}
+    ).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.product_links.count_documents({})
+    
+    return {
+        "success": True,
+        "links": links,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit,
+    }
