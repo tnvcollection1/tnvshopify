@@ -2287,7 +2287,7 @@ async def link_product_to_1688(request: ProductLinkRequest):
         return {"success": False, "error": str(e)}
 
 
-@router.get("/products/get-1688-link")
+@router.get("/product-links/get-1688")
 async def get_1688_link(
     shopify_sku: Optional[str] = Query(None),
     shopify_product_id: Optional[str] = Query(None)
