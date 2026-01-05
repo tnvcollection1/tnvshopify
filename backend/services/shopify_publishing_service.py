@@ -196,7 +196,7 @@ async def publish_product_to_shopify(
     except Exception as e:
         try:
             shopify.ShopifyResource.clear_session()
-        except:
+        except Exception:
             pass
         return {
             "success": False,
