@@ -183,6 +183,12 @@ const Sidebar = () => {
       icon: Send, 
       label: 'Fulfillment Sync', 
       path: '/fulfillment-sync',
+      badge: ''
+    },
+    { 
+      icon: Truck, 
+      label: 'Fulfillment Pipeline', 
+      path: '/fulfillment-pipeline',
       badge: 'New'
     },
     { 
