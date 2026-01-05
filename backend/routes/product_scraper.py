@@ -1019,74 +1019,7 @@ async def extension_import_products(request: ExtensionImportRequest, background_
 # parse_variant_props and fetch_product_from_tmapi functions moved to services/product_fetcher_service.py
 
 
-def parse_global_api_response(item: dict, product_id: str) -> dict:
-    """Parse Global API response (already has English translations)"""
-    # Extract images
-    images = []
-    for img in (item.get("main_imgs") or [])[:20]:
-        if img:
-            images.append(img if not img.startswith("//") else "https:" + img)
-    
-    # Extract variants with proper parsing
-    variants = []
-    for sku in (item.get("skus") or [])[:100]:
-        props_names = sku.get("props_names", "")
-        color = ""
-        size = ""
-        
-        if props_names:
-            # Format: "Color:value" or "Color:value;Size:value"
-            for part in props_names.split(";"):
-                if ":" in part:
-                    key, value = part.split(":", 1)
-                    key_lower = key.strip().lower()
-                    if "color" in key_lower or "颜色" in key_lower:
-                        color = value.strip()
-                    if "size" in key_lower or "尺码" in key_lower:
-                        size = value.strip()
-        
-        variants.append({
-            "sku_id": sku.get("skuid"),
-            "spec_id": sku.get("specid"),
-            "price": float(sku.get("sale_price") or sku.get("origin_price") or 0),
-            "stock": sku.get("stock", 0),
-            "props_names": props_names,
-            "color": color or props_names.split(":")[-1] if props_names else "",
-            "size": size,
-        })
-    
-    # Extract price
-    price_info = item.get("price_info", {})
-    price = float(price_info.get("price", 0) or price_info.get("price_min", 0) or 0)
-    
-    shop_info = item.get("shop_info", {})
-    
-    return {
-        "product_id": product_id,
-        "url": item.get("product_url") or f"https://detail.1688.com/offer/{product_id}.html",
-        "title": item.get("title"),  # Already in English from Global API
-        "title_en": item.get("title"),
-        "title_cn": item.get("title"),  # May need separate fetch for Chinese
-        "price": price,
-        "price_min": float(price_info.get("price_min", 0) or 0),
-        "price_max": float(price_info.get("price_max", 0) or 0),
-        "images": images,
-        "video_url": item.get("video_url"),
-        "description": item.get("detail_url"),
-        "variants": variants,
-        "min_order": item.get("mixed_batch", {}).get("mix_num", 1) or 1,
-        "sold_count": item.get("sale_count"),
-        "stock": item.get("stock", 0),
-        "seller_name": shop_info.get("shop_name"),
-        "seller_member_id": shop_info.get("seller_member_id"),
-        "seller_url": shop_info.get("shop_url"),
-        "location": item.get("delivery_info", {}).get("location"),
-        "support_dropshipping": item.get("support_drop_shipping", False),
-        "support_cross_border": item.get("support_cross_border", False),
-        "category_id": item.get("category_id"),
-        "service_tags": item.get("service_tags", []),
-        "is_global_api": True,
-    }
+# parse_global_api_response function moved to services/product_fetcher_service.py
 
 
 def parse_standard_api_response(item: dict, product_id: str) -> dict:
