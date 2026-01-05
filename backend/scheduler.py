@@ -468,6 +468,45 @@ class AutoSyncScheduler:
         except Exception as e:
             logger.error(f"❌ [AUTO] TCS sync error: {str(e)}")
     
+    def sync_dwz_tracking(self):
+        """
+        Sync DWZ56 tracking status for all orders with DWZ tracking numbers.
+        Fetches status from DWZ56 API and updates fulfillment pipeline.
+        Runs every 4 hours automatically.
+        """
+        try:
+            logger.info("🔄 [AUTO] Starting DWZ56 tracking sync...")
+            
+            import requests
+            
+            # Call the DWZ sync endpoint via HTTP
+            try:
+                response = requests.post(
+                    "http://localhost:8001/api/dwz56-sync/sync",
+                    json={"days_back": 30},
+                    timeout=300  # 5 minutes timeout
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('success'):
+                        logger.info(f"✅ [AUTO] DWZ56 sync completed: {data.get('total_fetched', 0)} fetched, "
+                                  f"{data.get('matched', 0)} matched, {data.get('updated', 0)} stage updates")
+                        
+                        # Log stage changes
+                        for change in data.get('stage_changes', [])[:5]:
+                            logger.info(f"  📦 Order {change.get('order_id')}: {change.get('from_stage')} → {change.get('to_stage')}")
+                    else:
+                        logger.error(f"❌ [AUTO] DWZ56 sync failed: {data.get('errors', 'Unknown error')}")
+                else:
+                    logger.error(f"❌ [AUTO] DWZ56 sync HTTP error: {response.status_code}")
+            except requests.exceptions.Timeout:
+                logger.warning("⚠️ [AUTO] DWZ56 sync timeout (still running in background)")
+            except Exception as req_error:
+                logger.error(f"❌ [AUTO] DWZ56 sync request error: {str(req_error)}")
+                
+        except Exception as e:
+            logger.error(f"❌ [AUTO] DWZ56 sync error: {str(e)}")
+    
     async def _async_tcs_sync(self):
         """Async implementation of TCS delivery sync"""
         try:
