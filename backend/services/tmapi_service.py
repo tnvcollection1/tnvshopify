@@ -407,3 +407,151 @@ async def get_tmapi_usage_stats(days: int = 7) -> Dict:
         "by_endpoint": by_endpoint,
         "period_days": days,
     }
+
+
+async def get_tmapi_usage_summary() -> Dict:
+    """Get quick summary of TMAPI usage for different time periods"""
+    db = get_db()
+    
+    from datetime import timedelta
+    
+    # Today's usage
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_count = await db.tmapi_logs.count_documents(
+        {"timestamp": {"$gte": today.isoformat()}}
+    )
+    
+    # This week's usage
+    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    week_count = await db.tmapi_logs.count_documents(
+        {"timestamp": {"$gte": week_ago.isoformat()}}
+    )
+    
+    # This month's usage
+    month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    month_count = await db.tmapi_logs.count_documents(
+        {"timestamp": {"$gte": month_ago.isoformat()}}
+    )
+    
+    # Total
+    total_count = await db.tmapi_logs.count_documents({})
+    
+    # Get total cost for today and month
+    today_logs = await db.tmapi_logs.find(
+        {"timestamp": {"$gte": today.isoformat()}, "success": True}
+    ).to_list(1000)
+    today_cost = sum(log.get("cost", 0) for log in today_logs)
+    
+    month_logs = await db.tmapi_logs.find(
+        {"timestamp": {"$gte": month_ago.isoformat()}, "success": True}
+    ).to_list(10000)
+    month_cost = sum(log.get("cost", 0) for log in month_logs)
+    
+    return {
+        "today": today_count,
+        "this_week": week_count,
+        "this_month": month_count,
+        "all_time": total_count,
+        "cost": {
+            "today": today_cost,
+            "this_month": month_cost,
+        }
+    }
+
+
+async def get_import_history(
+    page: int = 1,
+    limit: int = 50,
+    source: str = None
+) -> Dict:
+    """Get product import history with pagination"""
+    db = get_db()
+    
+    query = {}
+    if source:
+        query["source"] = {"$regex": source, "$options": "i"}
+    
+    skip = (page - 1) * limit
+    
+    products = await db.scraped_products.find(
+        query,
+        {
+            "_id": 0,
+            "product_id": 1,
+            "title": 1,
+            "title_cn": 1,
+            "price": 1,
+            "images": 1,
+            "variants": 1,
+            "source": 1,
+            "scraped_at": 1,
+            "is_global_api": 1,
+        }
+    ).sort("scraped_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Format products
+    for p in products:
+        p["variants_count"] = len(p.get("variants", []))
+        p["image"] = p.get("images", [None])[0] if p.get("images") else None
+        if "images" in p:
+            del p["images"]
+        if "variants" in p:
+            del p["variants"]
+    
+    total = await db.scraped_products.count_documents(query)
+    
+    # Get source statistics
+    pipeline = [
+        {"$group": {"_id": "$source", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    source_stats = await db.scraped_products.aggregate(pipeline).to_list(20)
+    
+    return {
+        "products": products,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit,
+        "source_stats": {s["_id"]: s["count"] for s in source_stats if s["_id"]},
+    }
+
+
+async def get_import_stats() -> Dict:
+    """Get import statistics summary"""
+    db = get_db()
+    
+    from datetime import timedelta
+    
+    # Total products
+    total = await db.scraped_products.count_documents({})
+    
+    # Today's imports
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_count = await db.scraped_products.count_documents(
+        {"scraped_at": {"$gte": today.isoformat()}}
+    )
+    
+    # This week's imports
+    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    week_count = await db.scraped_products.count_documents(
+        {"scraped_at": {"$gte": week_ago.isoformat()}}
+    )
+    
+    # Translated vs non-translated
+    translated_count = await db.scraped_products.count_documents({"translated": True})
+    
+    # By source
+    pipeline = [
+        {"$group": {"_id": "$source", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    by_source = await db.scraped_products.aggregate(pipeline).to_list(10)
+    
+    return {
+        "total_products": total,
+        "today_imports": today_count,
+        "week_imports": week_count,
+        "translated": translated_count,
+        "non_translated": total - translated_count,
+        "by_source": {s["_id"]: s["count"] for s in by_source if s["_id"]},
+    }
