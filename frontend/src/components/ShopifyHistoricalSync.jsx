@@ -427,7 +427,7 @@ const ShopifyHistoricalSync = () => {
             <li>• Large syncs (&gt;90 days) are processed in the background to prevent timeouts</li>
             <li>• You can start a sync and leave the page - it will continue running</li>
             <li>• Duplicate orders are automatically skipped</li>
-            <li>• Use "All time" for a complete historical import</li>
+            <li>• Use &quot;All time&quot; for a complete historical import</li>
           </ul>
         </CardContent>
       </Card>
