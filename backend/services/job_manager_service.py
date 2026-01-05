@@ -265,8 +265,6 @@ async def run_scrape_job(
     from services.translation_service import translate_product
     from services.shopify_publishing_service import publish_product_to_shopify
     
-    db = get_db()
-    
     try:
         update_job(job_id, {
             "status": "scraping",
