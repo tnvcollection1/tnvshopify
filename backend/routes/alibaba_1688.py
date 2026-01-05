@@ -3022,3 +3022,145 @@ async def get_order_detail(order_id: str):
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+
+# ==================== Official 1688 Image Search APIs ====================
+
+@router.post("/image-search/distributed")
+async def image_search_distributed(
+    image_url: str = Body(..., description="Image URL to search"),
+    page: int = Body(1),
+    page_size: int = Body(20),
+):
+    """
+    Search for similar products in distribution pool by image
+    API: alibaba.distributor.imageSearch
+    """
+    try:
+        result = await make_api_request(
+            "cn.alibaba.open/alibaba.distributor.imageSearch",
+            {
+                "imageUrl": image_url,
+                "pageNo": str(page),
+                "pageSize": str(page_size),
+            },
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        products = result.get("result", {}).get("products", [])
+        return {
+            "success": True,
+            "source": "1688_official_distributed",
+            "total": result.get("result", {}).get("totalCount", len(products)),
+            "products": products,
+            "page": page,
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e), "source": "1688_official_distributed"}
+
+
+@router.post("/image-search/cross-border")
+async def image_search_cross_border(
+    image_url: str = Body(..., description="Image URL to search"),
+    page: int = Body(1),
+    page_size: int = Body(20),
+):
+    """
+    Search for similar products in cross-border e-commerce pool by image
+    API: alibaba.cross.imageSearch
+    """
+    try:
+        result = await make_api_request(
+            "com.alibaba.product/alibaba.cross.imageSearch",
+            {
+                "imageUrl": image_url,
+                "pageNo": str(page),
+                "pageSize": str(page_size),
+            },
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        products = result.get("result", {}).get("products", []) or result.get("result", [])
+        return {
+            "success": True,
+            "source": "1688_official_cross_border",
+            "total": result.get("result", {}).get("totalCount", len(products)),
+            "products": products,
+            "page": page,
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e), "source": "1688_official_cross_border"}
+
+
+@router.post("/image-search")
+async def unified_image_search(
+    image_url: str = Body(..., description="Image URL to search"),
+    page: int = Body(1),
+    page_size: int = Body(20),
+    source: str = Body("auto", description="Search source: auto, cross_border, distributed, tmapi"),
+):
+    """
+    Unified image search - tries official 1688 APIs first, falls back to TMAPI
+    """
+    results = {
+        "success": False,
+        "products": [],
+        "total": 0,
+        "sources_tried": [],
+    }
+    
+    # Try cross-border first (user has this ordered)
+    if source in ["auto", "cross_border"]:
+        try:
+            cb_result = await image_search_cross_border(image_url, page, page_size)
+            results["sources_tried"].append("cross_border")
+            if cb_result.get("success") and cb_result.get("products"):
+                results["success"] = True
+                results["products"] = cb_result["products"]
+                results["total"] = cb_result.get("total", 0)
+                results["source"] = "1688_cross_border"
+                return results
+        except:
+            pass
+    
+    # Try distributed
+    if source in ["auto", "distributed"]:
+        try:
+            dist_result = await image_search_distributed(image_url, page, page_size)
+            results["sources_tried"].append("distributed")
+            if dist_result.get("success") and dist_result.get("products"):
+                results["success"] = True
+                results["products"] = dist_result["products"]
+                results["total"] = dist_result.get("total", 0)
+                results["source"] = "1688_distributed"
+                return results
+        except:
+            pass
+    
+    # Fall back to TMAPI
+    if source in ["auto", "tmapi"] and TMAPI_TOKEN:
+        try:
+            results["sources_tried"].append("tmapi")
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.get(
+                    f"{TMAPI_BASE_URL}/1688/search/img",
+                    params={
+                        "apiToken": TMAPI_TOKEN,
+                        "img_url": image_url,
+                        "page": page,
+                        "page_size": page_size,
+                    }
+                )
+                tmapi_data = response.json()
+                
+                if tmapi_data.get("code") == 200:
+                    results["success"] = True
+                    results["products"] = tmapi_data.get("data", {}).get("items", [])
+                    results["total"] = tmapi_data.get("data", {}).get("total", 0)
+                    results["source"] = "tmapi"
+                    return results
+        except:
+            pass
+    
+    results["error"] = "No image search source available or all failed"
+    return results
