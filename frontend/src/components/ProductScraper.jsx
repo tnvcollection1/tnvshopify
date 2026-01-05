@@ -493,6 +493,174 @@ const ProductScraper = () => {
               </div>
             </TabsContent>
 
+            {/* Image Search Tab */}
+            <TabsContent value="image-search" className="space-y-4">
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <h3 className="font-semibold text-purple-800 flex items-center gap-2 mb-3">
+                  <ImageIcon className="w-5 h-5" />
+                  Search Products by Image
+                </h3>
+                <p className="text-sm text-purple-600">
+                  Find similar products on 1688 by uploading an image URL. Works best with product images from Alibaba, Taobao, or Tmall.
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">
+                    Image URL
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={imageSearchUrl}
+                      onChange={(e) => setImageSearchUrl(e.target.value)}
+                      placeholder="Paste image URL (e.g., https://cbu01.alicdn.com/...)"
+                      className="flex-1"
+                      data-testid="image-search-url-input"
+                    />
+                    <Select value={imageSearchSort} onValueChange={setImageSearchSort}>
+                      <SelectTrigger className="w-36">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="default">Default</SelectItem>
+                        <SelectItem value="sales">Best Selling</SelectItem>
+                        <SelectItem value="price_up">Price: Low→High</SelectItem>
+                        <SelectItem value="price_down">Price: High→Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <Button
+                  onClick={() => handleImageSearch(1)}
+                  disabled={imageSearchLoading || !imageSearchUrl.trim()}
+                  className="w-full bg-purple-500 hover:bg-purple-600"
+                  data-testid="image-search-btn"
+                >
+                  {imageSearchLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4 mr-2" />
+                      Search by Image
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              {/* Image Search Results */}
+              {imageSearchResults.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-600">
+                      Found <strong>{imageSearchTotal}</strong> similar products
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={imageSearchPage <= 1 || imageSearchLoading}
+                        onClick={() => handleImageSearch(imageSearchPage - 1)}
+                      >
+                        Previous
+                      </Button>
+                      <span className="text-sm text-gray-500">
+                        Page {imageSearchPage}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={imageSearchResults.length < 20 || imageSearchLoading}
+                        onClick={() => handleImageSearch(imageSearchPage + 1)}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {imageSearchResults.map((product, idx) => (
+                      <div 
+                        key={`${product.product_id}-${idx}`}
+                        className="border rounded-lg overflow-hidden bg-white hover:shadow-lg transition-shadow"
+                      >
+                        <div className="aspect-square bg-gray-100 relative">
+                          {product.image ? (
+                            <img 
+                              src={product.image.startsWith('//') ? 'https:' + product.image : product.image}
+                              alt={product.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => { e.target.src = 'https://placehold.co/200x200?text=No+Image'; }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <ImageIcon className="w-8 h-8" />
+                            </div>
+                          )}
+                          {product.is_factory && (
+                            <Badge className="absolute top-1 left-1 bg-green-500 text-xs">Factory</Badge>
+                          )}
+                        </div>
+                        <div className="p-2">
+                          <h4 className="text-xs font-medium text-gray-800 line-clamp-2 h-8" title={product.title}>
+                            {product.title}
+                          </h4>
+                          <div className="mt-1 flex items-center justify-between">
+                            <span className="text-sm font-bold text-orange-600">
+                              ¥{product.price}
+                            </span>
+                            {product.min_order > 1 && (
+                              <span className="text-xs text-gray-500">
+                                MOQ: {product.min_order}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 truncate mt-1" title={product.shop_name}>
+                            {product.shop_name}
+                          </p>
+                          <div className="mt-2 flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 text-xs h-7"
+                              onClick={() => window.open(product.url, '_blank')}
+                            >
+                              <ExternalLink className="w-3 h-3 mr-1" />
+                              View
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="flex-1 text-xs h-7 bg-orange-500 hover:bg-orange-600"
+                              onClick={() => importFromImageSearch(product)}
+                              disabled={isLoading}
+                            >
+                              <Plus className="w-3 h-3 mr-1" />
+                              Import
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Tips */}
+              <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-600">
+                <p className="font-medium mb-2">💡 Tips:</p>
+                <ul className="list-disc list-inside space-y-1 text-xs">
+                  <li>Works best with Alibaba/Taobao/Tmall image URLs (alicdn.com)</li>
+                  <li>For other images, they'll be converted automatically (may take longer)</li>
+                  <li>Use right-click → "Copy Image Address" to get the URL</li>
+                  <li>Click "Import" to add products to your collection</li>
+                </ul>
+              </div>
+            </TabsContent>
+
             {/* Batch Import Tab */}
             <TabsContent value="batch" className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
