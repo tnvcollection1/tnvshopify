@@ -2657,6 +2657,219 @@ async def get_all_product_links(
     }
 
 
+# ============= TMAPI USAGE MONITORING =============
+
+@router.get("/tmapi/usage")
+async def get_tmapi_usage(
+    days: int = Query(7, ge=1, le=90),
+):
+    """
+    Get TMAPI usage statistics for monitoring credits.
+    """
+    db = get_db()
+    
+    # Calculate date range
+    from_date = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    # Get usage logs
+    logs = await db.tmapi_usage_logs.find(
+        {"timestamp": {"$gte": from_date.isoformat()}},
+        {"_id": 0}
+    ).sort("timestamp", -1).to_list(1000)
+    
+    # Calculate statistics
+    total_calls = len(logs)
+    successful_calls = len([l for l in logs if l.get("success")])
+    failed_calls = total_calls - successful_calls
+    
+    # Group by endpoint
+    by_endpoint = {}
+    for log in logs:
+        endpoint = log.get("endpoint", "unknown")
+        if endpoint not in by_endpoint:
+            by_endpoint[endpoint] = {"total": 0, "success": 0, "failed": 0}
+        by_endpoint[endpoint]["total"] += 1
+        if log.get("success"):
+            by_endpoint[endpoint]["success"] += 1
+        else:
+            by_endpoint[endpoint]["failed"] += 1
+    
+    # Group by day
+    by_day = {}
+    for log in logs:
+        day = log.get("timestamp", "")[:10]
+        if day not in by_day:
+            by_day[day] = 0
+        by_day[day] += 1
+    
+    # Estimate points used (rough estimate: ~50 points per call)
+    estimated_points_used = total_calls * 50
+    
+    return {
+        "success": True,
+        "period_days": days,
+        "total_calls": total_calls,
+        "successful_calls": successful_calls,
+        "failed_calls": failed_calls,
+        "success_rate": f"{(successful_calls/total_calls*100):.1f}%" if total_calls > 0 else "0%",
+        "estimated_points_used": estimated_points_used,
+        "by_endpoint": by_endpoint,
+        "by_day": dict(sorted(by_day.items())),
+        "recent_logs": logs[:20],
+    }
+
+
+@router.get("/tmapi/usage/summary")
+async def get_tmapi_usage_summary():
+    """Get quick summary of TMAPI usage"""
+    db = get_db()
+    
+    # Today's usage
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_count = await db.tmapi_usage_logs.count_documents(
+        {"timestamp": {"$gte": today.isoformat()}}
+    )
+    
+    # This week's usage
+    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    week_count = await db.tmapi_usage_logs.count_documents(
+        {"timestamp": {"$gte": week_ago.isoformat()}}
+    )
+    
+    # This month's usage
+    month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    month_count = await db.tmapi_usage_logs.count_documents(
+        {"timestamp": {"$gte": month_ago.isoformat()}}
+    )
+    
+    # Total
+    total_count = await db.tmapi_usage_logs.count_documents({})
+    
+    return {
+        "success": True,
+        "today": today_count,
+        "this_week": week_count,
+        "this_month": month_count,
+        "all_time": total_count,
+        "estimated_points": {
+            "today": today_count * 50,
+            "this_week": week_count * 50,
+            "this_month": month_count * 50,
+        }
+    }
+
+
+# ============= PRODUCT IMPORT HISTORY =============
+
+@router.get("/import-history")
+async def get_import_history(
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=100),
+    source: Optional[str] = Query(None),
+):
+    """
+    Get product import history with details.
+    """
+    db = get_db()
+    
+    query = {}
+    if source:
+        query["source"] = {"$regex": source, "$options": "i"}
+    
+    skip = (page - 1) * limit
+    
+    products = await db.scraped_products.find(
+        query,
+        {
+            "_id": 0,
+            "product_id": 1,
+            "title": 1,
+            "title_cn": 1,
+            "price": 1,
+            "images": {"$slice": 1},  # Only first image
+            "variants": {"$size": "$variants"},  # Count variants
+            "source": 1,
+            "scraped_at": 1,
+            "is_global_api": 1,
+        }
+    ).sort("scraped_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Fix variants count (MongoDB $size doesn't work in projection like this)
+    for p in products:
+        if isinstance(p.get("variants"), list):
+            p["variants_count"] = len(p.get("variants", []))
+        else:
+            p["variants_count"] = p.get("variants", 0)
+        p["image"] = p.get("images", [None])[0] if p.get("images") else None
+        del p["images"]
+        if "variants" in p:
+            del p["variants"]
+    
+    total = await db.scraped_products.count_documents(query)
+    
+    # Get source statistics
+    pipeline = [
+        {"$group": {"_id": "$source", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    source_stats = await db.scraped_products.aggregate(pipeline).to_list(20)
+    
+    return {
+        "success": True,
+        "products": products,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit,
+        "source_stats": {s["_id"]: s["count"] for s in source_stats if s["_id"]},
+    }
+
+
+@router.get("/import-history/stats")
+async def get_import_stats():
+    """Get import statistics summary"""
+    db = get_db()
+    
+    total_products = await db.scraped_products.count_documents({})
+    
+    # Products with variants
+    with_variants = await db.scraped_products.count_documents(
+        {"variants": {"$exists": True, "$ne": []}}
+    )
+    
+    # Products with images
+    with_images = await db.scraped_products.count_documents(
+        {"images": {"$exists": True, "$ne": []}}
+    )
+    
+    # Published to Shopify
+    published = await db.scraped_products.count_documents(
+        {"shopify_product_id": {"$exists": True, "$ne": None}}
+    )
+    
+    # By source
+    pipeline = [
+        {"$group": {"_id": "$source", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    by_source = await db.scraped_products.aggregate(pipeline).to_list(20)
+    
+    # Recent imports (last 24 hours)
+    yesterday = datetime.now(timezone.utc) - timedelta(days=1)
+    recent = await db.scraped_products.count_documents(
+        {"scraped_at": {"$gte": yesterday.isoformat()}}
+    )
+    
+    return {
+        "success": True,
+        "total_products": total_products,
+        "with_variants": with_variants,
+        "with_images": with_images,
+        "published_to_shopify": published,
+        "imported_last_24h": recent,
+        "by_source": {s["_id"]: s["count"] for s in by_source if s["_id"]},
+    }
+
+
 class BulkAutoLinkRequest(BaseModel):
     skus: List[str]  # List of Shopify SKUs to auto-link
     use_image_search: bool = False  # Whether to use image search for matching
