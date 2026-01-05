@@ -90,10 +90,10 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
    - Goal: Scrape full product data without any API calls
    - Current: Falls back to "Fetch Images & Variants" which uses TMAPI
 
-2. **Shopify Sync Timeout for Large Date Ranges**
-   - Syncing >30 days fails due to Cloudflare 100s timeout
-   - Workaround: Use specific order sync endpoint
-   - Needed: Batch/chunked historical sync UI
+2. **Shopify Sync Timeout for Large Date Ranges** ✅ VALIDATED
+   - **Fixed**: Syncing >90 days now processes in 30-day chunks
+   - **Tested**: 120-day sync completed successfully (336 orders in 4 chunks)
+   - **Features**: Deduplication, progress tracking, error handling per chunk
 
 3. **Collection/Search Page Scraping**
    - Extension needs testing for bulk scraping from search results
