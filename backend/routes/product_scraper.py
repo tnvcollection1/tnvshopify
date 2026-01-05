@@ -662,53 +662,7 @@ async def batch_import_taobao_products(
     }
 
 
-async def run_taobao_batch_import(job_id: str, product_ids: List[str], translate: bool):
-    """Background task for Taobao batch import"""
-    db = get_db()
-    
-    scrape_jobs[job_id]["status"] = "processing"
-    
-    for i, product_id in enumerate(product_ids):
-        try:
-            # Log TMAPI call
-            await db.tmapi_logs.insert_one({
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "endpoint": "taobao/item_detail",
-                "product_id": product_id,
-                "cost": 50,
-            })
-            
-            product = await fetch_taobao_product_via_tmapi(product_id)
-            
-            if product and product.get("title"):
-                # Translate if requested
-                if translate:
-                    try:
-                        product = await translate_product(product)
-                    except Exception as trans_error:
-                        print(f"Translation failed for {product_id}: {trans_error}")
-                
-                # Save to database
-                product["scraped_at"] = datetime.now(timezone.utc).isoformat()
-                product["source_url"] = f"https://item.taobao.com/item.htm?id={product_id}"
-                
-                await db.scraped_products.update_one(
-                    {"product_id": product_id},
-                    {"$set": product},
-                    upsert=True
-                )
-                
-                scrape_jobs[job_id]["products_scraped"] += 1
-            else:
-                scrape_jobs[job_id]["errors"].append(f"Product {product_id}: Not found")
-                
-        except Exception as e:
-            scrape_jobs[job_id]["errors"].append(f"Product {product_id}: {str(e)}")
-        
-        scrape_jobs[job_id]["progress"] = int((i + 1) / len(product_ids) * 100)
-    
-    scrape_jobs[job_id]["status"] = "completed"
-    scrape_jobs[job_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
+# run_taobao_batch_import function moved to services/job_manager_service.py
 
 
 # ==================== IMAGE SEARCH API ====================
