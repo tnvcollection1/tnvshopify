@@ -43,6 +43,17 @@ FULFILLMENT_STAGES = [
     'local_shipped',      # Shipped to customer via local carrier
 ]
 
+# Stage labels for display
+STAGE_LABELS = {
+    'shopify_order': 'Shopify Order',
+    '1688_ordered': '1688 Ordered',
+    'dwz56_shipped': 'DWZ56 Shipped',
+    'in_transit': 'In Transit',
+    'warehouse_arrived': 'Warehouse Arrived',
+    'warehouse_received': 'Received',
+    'local_shipped': 'Local Shipped',
+}
+
 # Store-specific carrier configuration
 STORE_CARRIERS = {
     'tnvcollectionpk': {'carrier': 'TCS', 'country': 'Pakistan'},
