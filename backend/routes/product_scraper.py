@@ -1782,16 +1782,8 @@ async def run_extension_import(
                 }
                 print(f"[Extension Import] Using extension data: {len(product['images'])} images, {len(product['variants'])} variants")
             else:
-                    "seller_member_id": full.get("seller", {}).get("member_id") if full.get("seller") else None,
-                    "min_order": full.get("min_order", 1),
-                    "variants": parsed_variants,
-                    "sold_count": full.get("sold_count"),
-                    "source": "extension_v4_full",
-                }
-                print(f"[Extension Import v4] Full data: {len(product['images'])} images, {len(product['variants'])} SKUs")
-            else:
-                # Fallback: Basic data from v2 extension
-                price_str = ext_product.price.replace('¥', '').replace(',', '').strip()
+                # No TMAPI data and no extension fullData - use basic info
+                price_str = (ext_product.price or '').replace('¥', '').replace(',', '').strip()
                 try:
                     price = float(price_str) if price_str else 0
                 except:
@@ -1808,8 +1800,9 @@ async def run_extension_import(
                     "seller_name": None,
                     "min_order": 1,
                     "variants": [],
-                    "source": "extension_v2_basic",
+                    "source": "extension_basic_no_tmapi",
                 }
+                print(f"[Extension Import] Basic data only (TMAPI failed): {ext_product.id}")
             
             # Translate if requested
             if translate and product.get("title"):
