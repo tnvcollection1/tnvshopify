@@ -662,6 +662,31 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                         </Button>
                       </div>
 
+                      {/* 1688 Account Selector */}
+                      {alibaba1688Accounts.length > 0 && (
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <label className="text-xs text-blue-700 font-medium block mb-2">
+                            🏪 Select 1688 Account
+                          </label>
+                          <select
+                            value={selected1688Account}
+                            onChange={(e) => setSelected1688Account(e.target.value)}
+                            className="w-full p-2 border border-blue-300 rounded text-sm bg-white"
+                            data-testid="account-selector"
+                          >
+                            {alibaba1688Accounts.map((acc) => (
+                              <option key={acc.account_id} value={acc.account_id}>
+                                {acc.account_name || acc.member_id || acc.account_id}
+                                {acc.is_default && ' (Default)'}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="text-xs text-blue-600 mt-1">
+                            Order will be placed using this 1688 account
+                          </p>
+                        </div>
+                      )}
+
                       {loadingSkus && (
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Loader2 className="w-4 h-4 animate-spin" />
