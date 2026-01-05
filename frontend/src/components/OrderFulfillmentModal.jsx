@@ -409,7 +409,10 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {lineItems.map((item, index) => (
+              {lineItems.map((item, index) => {
+                const link = productLinks[item.sku];
+                
+                return (
                 <div key={index} className="border rounded-lg p-3 hover:border-orange-300 transition-colors">
                   <div className="flex justify-between items-start gap-4">
                     {/* Product Info */}
@@ -432,13 +435,71 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                           <Check className="w-3 h-3 mr-1" />
                           Ordered
                         </Badge>
-                      ) : item.product_id_1688 ? (
+                      ) : item.product_id_1688 || link ? (
                         <Badge className="bg-orange-100 text-orange-700 text-xs">Ready</Badge>
                       ) : (
                         <Badge variant="outline" className="text-gray-500 text-xs">Need Link</Badge>
                       )}
                     </div>
                   </div>
+
+                  {/* Auto-detected 1688 Product Link Card */}
+                  {link && !activeItemIndex && (
+                    <div className="mt-3 p-2 bg-orange-50 rounded-lg border border-orange-200">
+                      <div className="flex items-center gap-3">
+                        {link.product_1688_image && (
+                          <a href={link.product_1688_url} target="_blank" rel="noopener noreferrer">
+                            <img 
+                              src={link.product_1688_image.startsWith('//') ? 'https:' + link.product_1688_image : link.product_1688_image}
+                              alt="1688 Product"
+                              className="w-14 h-14 object-cover rounded border hover:opacity-80 transition-opacity"
+                            />
+                          </a>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-orange-600">1688 Linked Product</span>
+                            {link.source === 'extracted_from_sku' && !link.linked && (
+                              <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">Auto-detected</Badge>
+                            )}
+                          </div>
+                          <a 
+                            href={link.product_1688_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-gray-700 hover:text-orange-600 line-clamp-1"
+                          >
+                            {link.product_1688_title || `Product ${link.product_1688_id}`}
+                          </a>
+                          <div className="flex items-center gap-3 mt-1 text-xs">
+                            <span className="text-orange-600 font-semibold">¥{link.product_1688_price}</span>
+                            <a 
+                              href={link.product_1688_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-400 hover:text-orange-500 underline"
+                            >
+                              ID: {link.product_1688_id}
+                            </a>
+                            {link.variants_count > 0 && (
+                              <span className="text-gray-400">{link.variants_count} variants</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(link.product_1688_url, '_blank')}
+                            className="h-7 text-xs border-orange-300 text-orange-600"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* 1688 Link Section */}
                   <div className="mt-3 pt-3 border-t flex items-center justify-between gap-2">
@@ -460,7 +521,7 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                         </Button>
                       </div>
                     ) : item.product_id_1688 ? (
-                      // Has 1688 ID
+                      // Has 1688 ID (manually set)
                       <div className="flex-1 flex items-center gap-2">
                         <code className="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded">
                           {item.product_id_1688}
@@ -483,8 +544,8 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                           View
                         </Button>
                       </div>
-                    ) : (
-                      // No 1688 ID
+                    ) : !link ? (
+                      // No 1688 ID and no auto-detected link
                       <Button
                         size="sm"
                         variant="outline"
@@ -494,6 +555,19 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                         <Plus className="w-3 h-3 mr-1" />
                         Add 1688 Link
                       </Button>
+                    ) : (
+                      // Has auto-detected link but not manually set
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Auto-linked from SKU</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => { setActiveItemIndex(index); setLinkInput(link.product_1688_id); }}
+                          className="h-7 px-2 text-gray-500"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </Button>
+                      </div>
                     )}
 
                     {/* Order Button */}
