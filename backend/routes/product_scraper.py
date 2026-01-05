@@ -169,9 +169,8 @@ log_tmapi_usage = _log_tmapi_usage
 
 
 async def extract_product_ids_from_page(html: str) -> List[str]:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
-            result = response.json()
+    """Extract product IDs from a 1688 page HTML"""
+    product_ids = []
             
             # Check for success
             if result.get("code") != 200:
