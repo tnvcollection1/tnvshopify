@@ -148,6 +148,9 @@ const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating,
             <Button variant="ghost" size="sm" onClick={() => onNotify(order)} title="Send WhatsApp">
               <MessageCircle className="w-4 h-4 text-green-600" />
             </Button>
+            <Button variant="ghost" size="sm" onClick={() => onViewHistory(order.order_number || order.shopify_order_id)} title="View History">
+              <History className="w-4 h-4 text-blue-500" />
+            </Button>
           </div>
           
           {nextStage && (
