@@ -2099,12 +2099,14 @@ async def publish_products_to_shopify(request: PublishToShopifyRequest):
                     colors = list(set([v.get("color") for v in variants if v.get("color")]))
                     sizes = list(set([v.get("size") for v in variants if v.get("size")]))
                     
-                    # Set product options
+                    # Set product options with position (required by Shopify API)
                     options = []
+                    position = 1
                     if colors:
-                        options.append({"name": "Color", "values": colors[:100]})  # Shopify limit
+                        options.append({"name": "Color", "position": position})
+                        position += 1
                     if sizes:
-                        options.append({"name": "Size", "values": sizes[:100]})
+                        options.append({"name": "Size", "position": position})
                     
                     if options:
                         new_product.options = options
