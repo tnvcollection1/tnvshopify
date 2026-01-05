@@ -429,6 +429,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/image-search" 
+        element={
+          <ProtectedRoute>
+            <ImageSearch />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory-clearance" 
         element={
           <ProtectedRoute>
