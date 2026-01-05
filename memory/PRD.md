@@ -53,6 +53,7 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 - Enhanced scraping of product data directly from 1688 DOM
 - Scrapes images from multiple sources (scripts, gallery, DOM)
 - Extracts SKU/variant data including color and size
+- **NEW**: Improved collection/search page scraping with multiple selector patterns
 - Download available at `/api/download/chrome-extension`
 
 #### 7. Product Edit Modal Fix (Jan 5, 2026) ✅
@@ -61,12 +62,20 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
   - Updated `ProductEditModal.jsx` to parse `props_names` into color/size fields
   - Fixed `fetch_product_details` endpoint to correctly extract TMAPI response
   - Backend now parses variants with proper color/size extraction
+  - **Auto-fetch**: Products with 0 variants automatically fetch data when modal opens
 - **Result**: Modal now displays 11 images and 50 variants with actual color/size names
 
 #### 8. Multi-Account 1688 OAuth ✅
 - Users can connect multiple 1688 accounts
 - OAuth flow implemented at `/api/1688/auth/authorize`
 - Tokens stored in `alibaba_accounts` collection
+
+#### 9. Publish to Shopify Feature (Jan 5, 2026) ✅ NEW
+- **Feature**: One-click publish scraped products to Shopify with all variants and images
+- **Endpoint**: `POST /api/1688-scraper/shopify/publish-batch`
+- **UI**: Store selector dropdown + "Publish to Shopify" button in Edit modal
+- **Price Conversion**: Automatic CNY to target currency with configurable markup
+- **Tested**: Successfully published product 850596274690 to Shopify (ID: 10111038882075)
 
 ---
 
