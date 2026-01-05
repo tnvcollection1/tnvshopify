@@ -2111,38 +2111,36 @@ async def publish_products_to_shopify(request: PublishToShopifyRequest):
                     if options:
                         new_product.options = options
                     
-                    # Create variant entries
+                    # Create variant entries using shopify.Variant objects (required by ShopifyAPI library)
                     for v in variants[:100]:  # Shopify limit is 100 variants
                         cny_price = v.get("price") or product.get("price") or 0
                         target_price = round(cny_price * request.currency_rate * request.price_multiplier, 2)
                         
-                        variant_data = {
-                            "price": str(target_price),
-                            "sku": v.get("spec_id") or v.get("sku_id") or f"1688-{product_id}-{len(shopify_variants)}",
-                            "inventory_management": "shopify",
-                            "inventory_quantity": v.get("stock") or 100,
-                        }
+                        variant_obj = shopify.Variant()
+                        variant_obj.price = str(target_price)
+                        variant_obj.sku = v.get("spec_id") or v.get("sku_id") or f"1688-{product_id}-{len(shopify_variants)}"
+                        variant_obj.inventory_management = "shopify"
                         
                         # Add option values
                         if v.get("color"):
-                            variant_data["option1"] = v.get("color")
+                            variant_obj.option1 = v.get("color")
                         if v.get("size"):
-                            variant_data["option2"] = v.get("size")
+                            variant_obj.option2 = v.get("size")
                         
-                        shopify_variants.append(variant_data)
+                        shopify_variants.append(variant_obj)
                     
                     new_product.variants = shopify_variants
                 else:
-                    # Single variant (no options)
+                    # Single variant (no options) - use Variant object
                     cny_price = product.get("price") or 0
                     target_price = round(cny_price * request.currency_rate * request.price_multiplier, 2)
                     
-                    new_product.variants = [{
-                        "price": str(target_price),
-                        "sku": f"1688-{product_id}",
-                        "inventory_management": "shopify",
-                        "inventory_quantity": 100,
-                    }]
+                    single_variant = shopify.Variant()
+                    single_variant.price = str(target_price)
+                    single_variant.sku = f"1688-{product_id}"
+                    single_variant.inventory_management = "shopify"
+                    
+                    new_product.variants = [single_variant]
                 
                 # Save to Shopify
                 success = new_product.save()
