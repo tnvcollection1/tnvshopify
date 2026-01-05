@@ -160,29 +160,12 @@ ALIBABA_APP_SECRET = os.environ.get("ALIBABA_1688_APP_SECRET", "Gin6sv4MkP")
 ALIBABA_ACCESS_TOKEN = os.environ.get("ALIBABA_1688_ACCESS_TOKEN", "")
 ALIBABA_API_URL = "https://gw.open.1688.com/openapi"
 
-
-def generate_sign(api_path: str, params: dict, secret: str) -> str:
-    """Generate HMAC-SHA1 signature for 1688 API"""
-    enc_arr = []
-    for key, value in params.items():
-        if value is not None and str(value) != '':
-            enc_arr.append(f"{key}{value}")
-    enc_arr.sort()
-    params_str = ''.join(enc_arr)
-    sign_str = api_path + params_str
-    hmac_obj = hmac.new(
-        secret.encode('utf-8'),
-        sign_str.encode('utf-8'),
-        hashlib.sha1
-    )
-    return hmac_obj.hexdigest().upper()
-
-
-async def fetch_product_via_api(product_id: str) -> Optional[Dict]:
-    """Fetch product details using 1688 API (works for products from suppliers you've ordered from)"""
-    api_path = f"param2/1/com.alibaba.product/alibaba.product.simple.get/{ALIBABA_APP_KEY}"
-    
-    params = {
+# Aliases to service functions for backward compatibility
+# These functions are now in services/product_fetcher_service.py
+fetch_product_via_api = _fetch_official_api
+fetch_product_via_tmapi = _fetch_tmapi
+fetch_taobao_product_via_tmapi = _fetch_taobao_tmapi
+log_tmapi_usage = _log_tmapi_usage
         "productID": int(product_id),
         "webSite": "1688",
         "access_token": ALIBABA_ACCESS_TOKEN,
