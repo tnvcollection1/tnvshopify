@@ -203,6 +203,12 @@ const Sidebar = () => {
       path: '/purchase-1688',
       badge: 'New'
     },
+    { 
+      icon: Zap, 
+      label: 'Bulk Order 1688', 
+      path: '/bulk-order-1688',
+      badge: 'New'
+    },
     { icon: BarChart3, label: 'Analytics', path: '/reports' },
     { 
       icon: Megaphone, 
