@@ -1025,19 +1025,7 @@ async def extension_import_products(request: ExtensionImportRequest, background_
 # parse_standard_api_response function moved to services/product_fetcher_service.py
 
 
-async def log_tmapi_usage(endpoint: str, product_id: str, success: bool, error_msg: str = None):
-    """Log TMAPI API usage for monitoring"""
-    db = get_db()
-    try:
-        await db.tmapi_usage_logs.insert_one({
-            "endpoint": endpoint,
-            "product_id": product_id,
-            "success": success,
-            "error": error_msg,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        })
-    except Exception as e:
-        print(f"[TMAPI] Failed to log usage: {e}")
+# log_tmapi_usage function moved to services/product_fetcher_service.py
 
 
 # run_extension_import function moved to services/job_manager_service.py
