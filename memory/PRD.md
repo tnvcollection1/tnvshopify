@@ -194,11 +194,30 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 ---
 
 ## Last Updated
-January 5, 2026 - Session 7: P0 Bug Fix, Webhook Security Enhancement, Shopify Sync Improvement
+January 5, 2026 - Session 8: Service Module Refactoring
 
 ---
 
-## Recent Completed Work (Jan 5, 2026 - Session 7)
+## Recent Completed Work (Jan 5, 2026 - Session 8)
+
+### Service Module Refactoring ✅
+- **New Services Created**:
+  - `translation_service.py` (132 lines) - Chinese to English translation using LLM
+  - `product_linking_service.py` (389 lines) - Shopify to 1688 product linking
+- **Extended Services**:
+  - `tmapi_service.py` - Added TMAPI usage summary, import history, and import stats functions
+- **Endpoints Migrated from `product_scraper.py`**:
+  - `/product-links/link-1688` → Uses `product_linking_service`
+  - `/product-links/get-1688` → Uses `product_linking_service`
+  - `/product-links/auto-link-from-image` → Uses `product_linking_service`
+  - `/product-links/all` → Uses `product_linking_service`
+  - `/tmapi/usage` → Uses `tmapi_service`
+  - `/tmapi/usage/summary` → Uses `tmapi_service`
+  - `/import-history` → Uses `tmapi_service`
+  - `/import-history/stats` → Uses `tmapi_service`
+- **Result**: `product_scraper.py` reduced from 3,355 to 2,976 lines (~11% reduction)
+
+### Session 7 Completed Work (Jan 5, 2026)
 
 ### 1. P0 Bug Fix: /purchase-1688 Page ✅
 - **Issue**: Page was showing Excel file upload UI instead of purchase orders list
