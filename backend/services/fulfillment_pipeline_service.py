@@ -775,7 +775,7 @@ async def get_advanced_analytics(
     # Stage distribution
     stage_counts = {}
     for stage in FULFILLMENT_STAGES:
-        stage_counts[stage["key"]] = 0
+        stage_counts[stage] = 0
     
     for order in orders:
         stage = order.get("current_stage", "shopify_order")
@@ -784,10 +784,10 @@ async def get_advanced_analytics(
     
     stage_distribution = [
         {
-            "stage": stage["key"],
-            "label": stage["label"],
-            "count": stage_counts.get(stage["key"], 0),
-            "percentage": round(stage_counts.get(stage["key"], 0) / total_orders * 100, 1) if total_orders > 0 else 0,
+            "stage": stage,
+            "label": STAGE_LABELS.get(stage, stage.replace('_', ' ').title()),
+            "count": stage_counts.get(stage, 0),
+            "percentage": round(stage_counts.get(stage, 0) / total_orders * 100, 1) if total_orders > 0 else 0,
         }
         for stage in FULFILLMENT_STAGES
     ]
