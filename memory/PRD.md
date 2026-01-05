@@ -247,9 +247,33 @@ January 5, 2026 - Session 10: Fulfillment Pipeline Enhancements (Sync, Export, A
 - `GET /api/fulfillment-sync/pending-sync` - Get orders pending sync
 - `GET /api/fulfillment-sync/sync-logs` - View sync history
 
+### Bulk Operations & DWZ Import ✅ NEW (Session 10 Part 2)
+
+**Bulk Stage Updates**:
+- "Bulk Update" button in pipeline UI (orange)
+- Select multiple orders → choose target stage → update all at once
+- Supports optional tracking number for DWZ/local shipped stages
+- Endpoint: `POST /api/fulfillment/pipeline/bulk-update-stage`
+
+**Automated DWZ Tracking Import**:
+- "Import DWZ" button in pipeline UI (purple)
+- Import DWZ tracking numbers via CSV format
+- Auto-advances orders to "DWZ56 Shipped" stage (optional)
+- Endpoints:
+  - `POST /api/fulfillment/pipeline/import-dwz-tracking` - JSON format
+  - `POST /api/fulfillment/pipeline/import-dwz-csv` - CSV text format
+
+**CSV Format**:
+```
+order_number,dwz_tracking
+99001,DWZ123456789
+99002,DWZ987654321
+```
+
 **Bug Fixes**:
 - Fixed route ordering - moved `/{order_id}` to end of routes to prevent catching `/export`, `/analytics`
 - Fixed store dropdown to handle both array and object API responses
+- Fixed order queries to handle both string and integer `order_number` types
 
 **Testing**: 13/13 backend tests passed (100%) - All features verified
 
