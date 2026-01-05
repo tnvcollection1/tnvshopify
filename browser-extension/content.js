@@ -1,12 +1,13 @@
-// WaMerce 1688 Importer - Content Script v2.0
-// Runs on 1688.com pages
+// WaMerce 1688 Importer - Content Script v3.0
+// Full product scraping WITHOUT any API calls (like Dianxiaomi)
+// Runs on 1688.com product detail pages
 
 (function() {
   // Prevent duplicate injection
-  if (window.__wamerceImporterV2) return;
-  window.__wamerceImporterV2 = true;
+  if (window.__wamerceImporterV3) return;
+  window.__wamerceImporterV3 = true;
   
-  console.log('[WaMerce] Content script v2.0 loaded');
+  console.log('[WaMerce] Content script v3.0 loaded - Full scraping mode');
   
   // Listen for messages from popup
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -18,22 +19,272 @@
       sendResponse({ products: products });
     }
     
+    if (request.action === 'getFullProductData') {
+      // Scrape complete product data from detail page
+      const fullData = scrapeFullProductData();
+      console.log('[WaMerce] Scraped full product data');
+      sendResponse({ product: fullData });
+    }
+    
     if (request.action === 'getPageInfo') {
       sendResponse({
         url: window.location.href,
-        title: document.title
+        title: document.title,
+        isDetailPage: isProductDetailPage()
       });
     }
     
     return true;
   });
   
-  // Scan page for products
+  // Check if current page is a product detail page
+  function isProductDetailPage() {
+    return window.location.href.includes('detail.1688.com/offer/') || 
+           window.location.href.includes('/offer/') ||
+           document.querySelector('.detail-gallery, .mod-detail-gallery, #dt-tab');
+  }
+  
+  // Scrape FULL product data from detail page (0 API calls!)
+  function scrapeFullProductData() {
+    const product = {
+      product_id: null,
+      title: null,
+      title_cn: null,
+      price: null,
+      price_range: null,
+      images: [],
+      description: null,
+      description_images: [],
+      skus: [],
+      variants: [],
+      seller: {
+        name: null,
+        member_id: null,
+        shop_url: null,
+      },
+      min_order: 1,
+      sold_count: null,
+      scraped_at: new Date().toISOString(),
+      source: 'extension_v3',
+    };
+    
+    try {
+      // 1. Extract Product ID from URL
+      const urlMatch = window.location.href.match(/offer\/(\d+)/);
+      if (urlMatch) product.product_id = urlMatch[1];
+      
+      // 2. Try to get data from window objects (most reliable)
+      if (window.iDetailData) {
+        const d = window.iDetailData;
+        product.title_cn = d.offerTitle || d.subject;
+        product.price = d.price;
+        product.price_range = d.priceRange;
+        
+        // SKUs from iDetailData
+        if (d.sku && d.sku.skuInfoMap) {
+          Object.entries(d.sku.skuInfoMap).forEach(([specId, info]) => {
+            product.skus.push({
+              spec_id: specId,
+              price: info.price || info.discountPrice,
+              stock: info.canBookCount || info.amountOnSale || 0,
+              props_names: info.specAttrs || '',
+              image: info.skuPic,
+            });
+          });
+        }
+        
+        // Seller info
+        if (d.sellerInfo) {
+          product.seller.name = d.sellerInfo.sellerName || d.sellerInfo.companyName;
+          product.seller.member_id = d.sellerInfo.loginId || d.sellerInfo.memberId;
+        }
+      }
+      
+      // 3. Try window.__INIT_DATA__ (another common location)
+      if (window.__INIT_DATA__) {
+        const initData = window.__INIT_DATA__;
+        if (initData.offerModel) {
+          const offer = initData.offerModel;
+          product.title_cn = product.title_cn || offer.subject;
+          product.min_order = offer.beginAmount || 1;
+        }
+        if (initData.skuModel && initData.skuModel.skuInfoMap) {
+          Object.entries(initData.skuModel.skuInfoMap).forEach(([specId, info]) => {
+            if (!product.skus.find(s => s.spec_id === specId)) {
+              product.skus.push({
+                spec_id: specId,
+                price: info.price,
+                stock: info.canBookCount || 0,
+                props_names: info.specAttrs || '',
+              });
+            }
+          });
+        }
+      }
+      
+      // 4. Fallback: Scrape from DOM
+      if (!product.title_cn) {
+        const titleSelectors = ['h1.d-title', '.mod-detail-title h1', '.detail-title', 'h1[class*="title"]', '.offer-title'];
+        for (const sel of titleSelectors) {
+          const el = document.querySelector(sel);
+          if (el && el.textContent.trim()) {
+            product.title_cn = el.textContent.trim();
+            break;
+          }
+        }
+      }
+      
+      // 5. Extract all images
+      // Main gallery images
+      const galleryImages = document.querySelectorAll('.detail-gallery img, .mod-detail-gallery img, .vertical-img img, .tab-content img');
+      galleryImages.forEach(img => {
+        let src = img.src || img.dataset.src || img.dataset.lazySrc;
+        if (src) {
+          if (src.startsWith('//')) src = 'https:' + src;
+          // Get high-res version
+          src = src.replace(/_\d+x\d+\.(jpg|png|webp)/i, '.$1').replace(/\?.+$/, '');
+          if (!product.images.includes(src) && src.includes('alicdn')) {
+            product.images.push(src);
+          }
+        }
+      });
+      
+      // SKU images (color/variant images)
+      const skuImages = document.querySelectorAll('.obj-sku img, .sku-item img, [class*="sku"] img');
+      skuImages.forEach(img => {
+        let src = img.src || img.dataset.src;
+        if (src) {
+          if (src.startsWith('//')) src = 'https:' + src;
+          src = src.replace(/_\d+x\d+\.(jpg|png|webp)/i, '.$1').replace(/\?.+$/, '');
+          if (!product.images.includes(src) && src.includes('alicdn')) {
+            product.images.push(src);
+          }
+        }
+      });
+      
+      // 6. Extract price from DOM if not found
+      if (!product.price) {
+        const priceEl = document.querySelector('.price-value, .price-now, [class*="price"]');
+        if (priceEl) {
+          const priceText = priceEl.textContent.replace(/[^\d.]/g, '');
+          if (priceText) product.price = parseFloat(priceText);
+        }
+      }
+      
+      // 7. Extract variants/SKU options from DOM
+      const colorItems = document.querySelectorAll('.obj-sku .obj-content li, [class*="sku-color"] li, [class*="sku-prop"] li');
+      const colorOptions = [];
+      const sizeOptions = [];
+      
+      colorItems.forEach(item => {
+        const name = item.textContent.trim() || item.title || item.dataset.value;
+        const img = item.querySelector('img');
+        const imgSrc = img ? (img.src || img.dataset.src) : null;
+        
+        // Determine if color or size based on parent or class
+        const parent = item.closest('.obj-sku, [class*="sku"]');
+        const label = parent ? parent.querySelector('.obj-title, .sku-title')?.textContent : '';
+        
+        if (label.includes('颜色') || label.includes('color') || imgSrc) {
+          colorOptions.push({ name, image: imgSrc });
+        } else if (label.includes('尺码') || label.includes('size') || label.includes('规格')) {
+          sizeOptions.push({ name });
+        }
+      });
+      
+      // Build variants array if SKUs not found from JS
+      if (product.skus.length === 0 && (colorOptions.length > 0 || sizeOptions.length > 0)) {
+        let idx = 0;
+        colorOptions.forEach((color, ci) => {
+          if (sizeOptions.length > 0) {
+            sizeOptions.forEach((size, si) => {
+              product.skus.push({
+                spec_id: `${ci}_${si}`,
+                color: color.name,
+                size: size.name,
+                props_names: `颜色:${color.name};尺码:${size.name}`,
+                image: color.image,
+                price: product.price,
+              });
+              idx++;
+            });
+          } else {
+            product.skus.push({
+              spec_id: `${ci}`,
+              color: color.name,
+              props_names: `颜色:${color.name}`,
+              image: color.image,
+              price: product.price,
+            });
+          }
+        });
+      }
+      
+      // 8. Extract description images
+      const descImages = document.querySelectorAll('.detail-content img, .offer-description img, [class*="desc"] img');
+      descImages.forEach(img => {
+        let src = img.src || img.dataset.src;
+        if (src) {
+          if (src.startsWith('//')) src = 'https:' + src;
+          if (!product.description_images.includes(src) && src.includes('alicdn')) {
+            product.description_images.push(src);
+          }
+        }
+      });
+      
+      // 9. Extract seller info from DOM
+      if (!product.seller.name) {
+        const sellerEl = document.querySelector('.company-name a, .shop-name, [class*="seller"] a');
+        if (sellerEl) {
+          product.seller.name = sellerEl.textContent.trim();
+          product.seller.shop_url = sellerEl.href;
+          // Extract member_id from shop URL
+          const memberMatch = sellerEl.href?.match(/memberId=([^&]+)|shop\/([^\/]+)/);
+          if (memberMatch) product.seller.member_id = memberMatch[1] || memberMatch[2];
+        }
+      }
+      
+      // 10. Extract sold count
+      const soldEl = document.querySelector('.sale-count, [class*="sold"], [class*="sale"]');
+      if (soldEl) {
+        const soldMatch = soldEl.textContent.match(/\d+/);
+        if (soldMatch) product.sold_count = parseInt(soldMatch[0]);
+      }
+      
+      // 11. Set title (prefer Chinese, we'll translate later)
+      product.title = product.title_cn;
+      
+    } catch (e) {
+      console.error('[WaMerce] Error scraping product:', e);
+    }
+    
+    console.log('[WaMerce] Scraped product:', product.product_id, 'Images:', product.images.length, 'SKUs:', product.skus.length);
+    return product;
+  }
+  
+  // Scan page for product IDs (for listing pages)
   function scanPageForProducts() {
     const products = [];
     const seen = new Set();
     
-    // Multiple selectors to find products
+    // If on detail page, scrape full data
+    if (isProductDetailPage()) {
+      const fullData = scrapeFullProductData();
+      if (fullData.product_id) {
+        products.push({
+          id: fullData.product_id,
+          title: fullData.title,
+          price: fullData.price ? `¥${fullData.price}` : '',
+          image: fullData.images[0] || '',
+          url: window.location.href,
+          isCurrentPage: true,
+          fullData: fullData, // Include full data!
+        });
+      }
+      return products;
+    }
+    
+    // For listing pages, scan for product cards
     const selectors = [
       'a[href*="offer/"]',
       'a[href*="detail.1688.com"]',
@@ -43,7 +294,6 @@
       '.space-offer-card-box'
     ];
     
-    // Find all potential product elements
     selectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(el => {
         let productId = null;
@@ -60,18 +310,9 @@
           productId = el.dataset.offerId || el.dataset.auctionId || el.dataset.id;
         }
         
-        // Method 3: Look in parent elements
-        if (!productId) {
-          let parent = el.closest('[data-offer-id], [data-auction-id]');
-          if (parent && parent.dataset) {
-            productId = parent.dataset.offerId || parent.dataset.auctionId;
-          }
-        }
-        
         if (productId && !seen.has(productId) && productId.length >= 10) {
           seen.add(productId);
           
-          // Get product details
           const container = el.closest('.sm-offer-item, .offer-item, .offer-list-row-offer, .space-offer-card-box, [class*="card"], [class*="item"]') || el;
           
           let title = '';
@@ -120,153 +361,11 @@
       });
     });
     
-    // Check if we're on a product detail page
-    const currentUrl = window.location.href;
-    const currentMatch = currentUrl.match(/offer\/(\d{10,})/);
-    if (currentMatch && !seen.has(currentMatch[1])) {
-      const pid = currentMatch[1];
-      
-      // Get details from product page
-      let title = '';
-      const titleSelectors = ['h1', '.d-title', '[class*="mod-detail-title"]', '.detail-title'];
-      for (const ts of titleSelectors) {
-        const el = document.querySelector(ts);
-        if (el && el.textContent.trim()) {
-          title = el.textContent.trim().substring(0, 80);
-          break;
-        }
-      }
-      
-      let price = '';
-      const priceEl = document.querySelector('.price-value, [class*="price"], .price');
-      if (priceEl) {
-        const priceText = priceEl.textContent.trim();
-        const priceMatch = priceText.match(/[\d.]+/);
-        if (priceMatch) price = '¥' + priceMatch[0];
-      }
-      
-      let image = '';
-      const imgEl = document.querySelector('.detail-gallery img, .main-image img, [class*="gallery"] img');
-      if (imgEl) {
-        image = imgEl.src || '';
-      }
-      
-      // Extract SKUs/variants from product detail page (FREE - no API!)
-      const skus = extractSkusFromPage();
-      
-      products.unshift({
-        id: pid,
-        title: title || 'Current Product',
-        price: price,
-        image: image,
-        url: currentUrl,
-        isCurrentPage: true,
-        skus: skus
-      });
-    }
-    
     return products;
-  }
-  
-  // Extract SKU/variant data directly from 1688 product page (0 API calls!)
-  function extractSkusFromPage() {
-    const skus = [];
-    
-    try {
-      // Method 1: Try to get from window.iDetailData (most reliable)
-      if (window.iDetailData && window.iDetailData.sku) {
-        const skuData = window.iDetailData.sku;
-        if (skuData.skuInfoMap) {
-          Object.entries(skuData.skuInfoMap).forEach(([specId, info]) => {
-            skus.push({
-              spec_id: specId,
-              price: info.price || info.discountPrice,
-              stock: info.canBookCount || info.amountOnSale,
-              props_names: info.specAttrs || '',
-            });
-          });
-        }
-      }
-      
-      // Method 2: Try to get from script tag with sku data
-      if (skus.length === 0) {
-        const scripts = document.querySelectorAll('script');
-        scripts.forEach(script => {
-          const text = script.textContent || '';
-          if (text.includes('skuInfoMap') || text.includes('skuModel')) {
-            try {
-              // Extract JSON from script
-              const match = text.match(/skuInfoMap['"]\s*:\s*(\{[^}]+\})/);
-              if (match) {
-                const skuMap = JSON.parse(match[1]);
-                Object.entries(skuMap).forEach(([specId, info]) => {
-                  skus.push({
-                    spec_id: specId,
-                    price: info.price,
-                    stock: info.canBookCount,
-                  });
-                });
-              }
-            } catch (e) {}
-          }
-        });
-      }
-      
-      // Method 3: Extract from DOM elements
-      if (skus.length === 0) {
-        const skuItems = document.querySelectorAll('.sku-item, [data-sku-id], .obj-sku .obj-content li');
-        skuItems.forEach((item, idx) => {
-          const specId = item.dataset.skuId || item.dataset.specId || `sku_${idx}`;
-          const priceEl = item.querySelector('.price, [class*="price"]');
-          const nameEl = item.querySelector('.name, [class*="name"], span');
-          
-          skus.push({
-            spec_id: specId,
-            price: priceEl ? priceEl.textContent.replace(/[^\d.]/g, '') : null,
-            name: nameEl ? nameEl.textContent.trim() : null,
-          });
-        });
-      }
-      
-      // Method 4: Get color/size options
-      if (skus.length === 0) {
-        const colorItems = document.querySelectorAll('[class*="color"] li, [class*="sku-color"] li');
-        const sizeItems = document.querySelectorAll('[class*="size"] li, [class*="sku-size"] li');
-        
-        if (colorItems.length > 0 || sizeItems.length > 0) {
-          colorItems.forEach((color, ci) => {
-            const colorName = color.textContent.trim() || color.title || `Color ${ci+1}`;
-            sizeItems.forEach((size, si) => {
-              const sizeName = size.textContent.trim() || size.title || `Size ${si+1}`;
-              skus.push({
-                spec_id: `${ci}_${si}`,
-                color: colorName,
-                size: sizeName,
-                props_names: `颜色:${colorName};尺码:${sizeName}`,
-              });
-            });
-            if (sizeItems.length === 0) {
-              skus.push({
-                spec_id: `${ci}`,
-                color: colorName,
-                props_names: `颜色:${colorName}`,
-              });
-            }
-          });
-        }
-      }
-      
-    } catch (e) {
-      console.log('[WaMerce] SKU extraction error:', e);
-    }
-    
-    console.log('[WaMerce] Extracted', skus.length, 'SKUs from page');
-    return skus;
   }
   
   // Create floating import button
   function createFloatingButton() {
-    // Remove existing
     const existing = document.getElementById('wamerce-fab');
     if (existing) existing.remove();
     
@@ -282,7 +381,6 @@
     
     document.body.appendChild(fab);
     
-    // Update count on hover
     fab.addEventListener('mouseenter', () => {
       const products = scanPageForProducts();
       const countEl = fab.querySelector('.wamerce-fab-count');
@@ -290,53 +388,22 @@
       countEl.style.display = products.length > 0 ? 'flex' : 'none';
     });
     
-    // Click to open popup
     fab.addEventListener('click', () => {
-      // Chrome extensions can't programmatically open popup, so show a message
       showNotification('Click the WaMerce icon in your toolbar to import products!', 'info');
     });
   }
   
   // Show notification
   function showNotification(message, type = 'info') {
-    const existing = document.getElementById('wamerce-notification');
-    if (existing) existing.remove();
+    const notif = document.createElement('div');
+    notif.className = `wamerce-notification wamerce-notification-${type}`;
+    notif.textContent = message;
+    document.body.appendChild(notif);
     
-    const notification = document.createElement('div');
-    notification.id = 'wamerce-notification';
-    notification.className = `wamerce-notification wamerce-${type}`;
-    notification.innerHTML = `
-      <span>${message}</span>
-      <button onclick="this.parentElement.remove()">×</button>
-    `;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      if (notification.parentElement) {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 300);
-      }
-    }, 5000);
+    setTimeout(() => notif.remove(), 4000);
   }
   
-  // Initialize when DOM is ready
-  function init() {
-    console.log('[WaMerce] Initializing...');
-    
-    // Wait a bit for page to fully load
-    setTimeout(() => {
-      createFloatingButton();
-      
-      // Log product count
-      const products = scanPageForProducts();
-      console.log('[WaMerce] Found', products.length, 'products on page');
-    }, 2000);
-  }
+  // Initialize
+  setTimeout(createFloatingButton, 1500);
   
-  // Run init
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
 })();
