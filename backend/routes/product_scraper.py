@@ -1746,3 +1746,61 @@ async def run_extension_import(
     print(f"[Extension Import] Job {job_id} completed: {scrape_jobs[job_id]['products_scraped']}/{len(products)} products")
 
 
+
+
+@router.put("/products/{product_id}")
+async def update_product(product_id: str, product_data: dict = Body(...)):
+    """Update a scraped product (for editing before Shopify publish)"""
+    db = get_db()
+    
+    try:
+        # Remove _id if present to avoid MongoDB errors
+        product_data.pop('_id', None)
+        product_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+        
+        result = await db.scraped_products.update_one(
+            {"product_id": product_id},
+            {"$set": product_data}
+        )
+        
+        if result.matched_count > 0:
+            return {"success": True, "message": "Product updated"}
+        else:
+            return {"success": False, "error": "Product not found"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/products/{product_id}")
+async def get_product(product_id: str):
+    """Get a single product by ID"""
+    db = get_db()
+    
+    try:
+        product = await db.scraped_products.find_one(
+            {"product_id": product_id},
+            {"_id": 0}
+        )
+        
+        if product:
+            return {"success": True, "product": product}
+        else:
+            return {"success": False, "error": "Product not found"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.delete("/products/{product_id}")
+async def delete_product(product_id: str):
+    """Delete a scraped product"""
+    db = get_db()
+    
+    try:
+        result = await db.scraped_products.delete_one({"product_id": product_id})
+        
+        if result.deleted_count > 0:
+            return {"success": True, "message": "Product deleted"}
+        else:
+            return {"success": False, "error": "Product not found"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
