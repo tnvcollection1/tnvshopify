@@ -1659,21 +1659,82 @@ async def extension_import_products(request: ExtensionImportRequest, background_
     }
 
 
+def parse_variant_props(variant: dict) -> dict:
+    """Parse props_names like '颜色:棕色加绒;尺码:40' into color/size fields"""
+    result = dict(variant)
+    color = variant.get('color', '')
+    size = variant.get('size', '')
+    
+    # Parse props_names
+    props_names = variant.get('props_names', '')
+    if props_names:
+        for part in props_names.split(';'):
+            if ':' in part:
+                key, value = part.split(':', 1)
+                key_lower = key.strip().lower()
+                if '颜色' in key_lower or 'color' in key_lower or '款式' in key_lower:
+                    color = color or value.strip()
+                if '尺码' in key_lower or '尺寸' in key_lower or 'size' in key_lower or '规格' in key_lower:
+                    size = size or value.strip()
+    
+    # Parse attributes array (TMAPI format)
+    for attr in (variant.get('attributes') or []):
+        name = (attr.get('name') or attr.get('attributeName') or '').lower()
+        value = attr.get('value') or attr.get('attributeValue') or ''
+        if '颜色' in name or 'color' in name or '款式' in name:
+            color = color or value
+        if '尺码' in name or '尺寸' in name or 'size' in name or '规格' in name:
+            size = size or value
+    
+    # Parse price from string
+    price = variant.get('price') or variant.get('sale_price') or 0
+    if isinstance(price, str):
+        try:
+            price = float(re.sub(r'[^\d.]', '', price))
+        except:
+            price = 0
+    
+    result['color'] = color
+    result['size'] = size
+    result['price'] = price
+    result['spec_id'] = variant.get('spec_id') or variant.get('specid') or variant.get('sku_id') or variant.get('skuid') or ''
+    result['stock'] = variant.get('stock') or variant.get('canBookCount') or 0
+    
+    return result
+
+
 async def run_extension_import(
     job_id: str,
     products: List[ExtensionProduct],
     translate: bool = True
 ):
-    """Background task to import products directly from extension data - v3 supports full scrape"""
+    """Background task to import products directly from extension data - v3/v4 supports full scrape"""
     db = get_db()
     
     scrape_jobs[job_id]["status"] = "processing"
     
     for i, ext_product in enumerate(products):
         try:
-            # Check if we have full data from v3 extension (NO API NEEDED!)
+            # Check if we have full data from v3/v4 extension (NO API NEEDED!)
             if ext_product.fullData:
                 full = ext_product.fullData
+                
+                # Parse all variants to ensure color/size are extracted
+                raw_variants = full.get("skus", []) or full.get("variants", [])
+                parsed_variants = [parse_variant_props(v) for v in raw_variants]
+                
+                # Collect images from multiple sources
+                images = list(full.get("images", []))
+                images.extend(full.get("main_images", []))
+                images.extend(full.get("sku_images", []))
+                # Deduplicate while preserving order
+                seen = set()
+                unique_images = []
+                for img in images:
+                    if img and img not in seen:
+                        seen.add(img)
+                        unique_images.append(img)
+                
                 product = {
                     "product_id": full.get("product_id") or ext_product.id,
                     "url": ext_product.url or f"https://detail.1688.com/offer/{ext_product.id}.html",
@@ -1681,17 +1742,17 @@ async def run_extension_import(
                     "title_cn": full.get("title_cn"),
                     "price": full.get("price") or 0,
                     "price_range": full.get("price_range"),
-                    "images": full.get("images", []),
+                    "images": unique_images,
                     "description": full.get("description"),
                     "description_images": full.get("description_images", []),
                     "seller_name": full.get("seller", {}).get("name") if full.get("seller") else None,
                     "seller_member_id": full.get("seller", {}).get("member_id") if full.get("seller") else None,
                     "min_order": full.get("min_order", 1),
-                    "variants": full.get("skus", []),  # Full SKU data from page!
+                    "variants": parsed_variants,
                     "sold_count": full.get("sold_count"),
-                    "source": "extension_v3_full",  # Mark as full scrape
+                    "source": "extension_v4_full",
                 }
-                print(f"[Extension Import v3] Full data: {len(product['images'])} images, {len(product['variants'])} SKUs")
+                print(f"[Extension Import v4] Full data: {len(product['images'])} images, {len(product['variants'])} SKUs")
             else:
                 # Fallback: Basic data from v2 extension
                 price_str = ext_product.price.replace('¥', '').replace(',', '').strip()
