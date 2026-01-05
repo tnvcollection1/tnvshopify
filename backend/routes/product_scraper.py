@@ -715,7 +715,7 @@ async def search_by_image(request: ImageSearchRequest):
                     print(f"[Image Search] Converted image URL: {img_url[:50]}...")
                 else:
                     # Try using original URL anyway
-                    print(f"[Image Search] Could not convert image, trying original URL")
+                    print("[Image Search] Could not convert image, trying original URL")
         
         # Step 2: Search by image - using correct TMAPI endpoint
         search_url = f"{TMAPI_BASE_URL}/1688/search/image"
@@ -1112,7 +1112,7 @@ async def fetch_product_details(product_id: str):
         # Fetch from TMAPI
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.get(
-                f"http://api.tmapi.top/1688/item_detail",
+                "http://api.tmapi.top/1688/item_detail",
                 params={
                     "apiToken": TMAPI_TOKEN,
                     "item_id": product_id,
