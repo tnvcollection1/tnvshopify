@@ -3201,3 +3201,38 @@ async def get_reauthorize_url(redirect_uri: str = Query("https://wamerce.com/api
         ],
         "scopes_requested": scopes,
     }
+
+
+@router.get("/buyer/product-detail/{product_id}")
+async def get_purchased_product_detail(product_id: str):
+    """
+    Get product details using Official 1688 API (FREE)
+    Works for products from merchants you've purchased from
+    """
+    try:
+        # Try official 1688 API first
+        result = await make_api_request(
+            "com.alibaba.product/alibaba.product.get",
+            {"productId": product_id},
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        if result.get("result"):
+            product = result["result"]
+            return {
+                "success": True,
+                "source": "1688_official",
+                "product": {
+                    "product_id": product_id,
+                    "title": product.get("subject"),
+                    "price": product.get("referencePrice"),
+                    "images": product.get("image", {}).get("images", []),
+                    "description": product.get("description"),
+                    "skus": product.get("productSkuInfos", []),
+                    "raw": product,
+                }
+            }
+        else:
+            return {"success": False, "error": "Product not found or not from purchased merchant"}
+    except Exception as e:
+        return {"success": False, "error": str(e), "source": "1688_official"}
