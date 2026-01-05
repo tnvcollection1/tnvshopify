@@ -872,6 +872,21 @@ const ProductScraper = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Product Modal */}
+      {editingProduct && (
+        <ProductEditModal
+          product={editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onSave={(updatedProduct) => {
+            setProducts(prev => 
+              prev.map(p => p.product_id === updatedProduct.product_id ? updatedProduct : p)
+            );
+            setEditingProduct(null);
+            toast.success('Product updated!');
+          }}
+        />
+      )}
     </div>
   );
 };
