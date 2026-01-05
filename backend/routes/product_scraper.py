@@ -1996,3 +1996,219 @@ async def fetch_product_details(product_id: str):
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
+
+
+
+class PublishToShopifyRequest(BaseModel):
+    product_ids: List[str]
+    store_name: str
+    price_multiplier: float = 2.5  # Default markup
+    currency_rate: float = 20.0  # CNY to target currency (e.g., PKR)
+
+
+@router.post("/shopify/publish-batch")
+async def publish_products_to_shopify(request: PublishToShopifyRequest):
+    """
+    Publish scraped products to Shopify with all variants and images.
+    This creates full Shopify products with proper variant structure.
+    """
+    db = get_db()
+    
+    # Get store credentials
+    store = await db.stores.find_one({"store_name": request.store_name}, {"_id": 0})
+    if not store or not store.get("shopify_domain") or not store.get("shopify_token"):
+        return {"success": False, "error": f"Shopify not configured for store: {request.store_name}"}
+    
+    results = {
+        "success": True,
+        "published": [],
+        "failed": [],
+        "total": len(request.product_ids),
+    }
+    
+    try:
+        import shopify
+        
+        # Initialize Shopify session
+        shop_url = f"https://{store['shopify_domain']}"
+        api_version = '2024-01'
+        session = shopify.Session(shop_url, api_version, store['shopify_token'])
+        shopify.ShopifyResource.activate_session(session)
+        
+        for product_id in request.product_ids:
+            try:
+                # Get product from database
+                product = await db.scraped_products.find_one(
+                    {"product_id": product_id},
+                    {"_id": 0}
+                )
+                
+                if not product:
+                    results["failed"].append({
+                        "product_id": product_id,
+                        "error": "Product not found in database"
+                    })
+                    continue
+                
+                # Check if already published
+                if product.get("shopify_product_id"):
+                    results["failed"].append({
+                        "product_id": product_id,
+                        "error": "Already published to Shopify",
+                        "shopify_id": product.get("shopify_product_id")
+                    })
+                    continue
+                
+                # Create Shopify product
+                new_product = shopify.Product()
+                
+                # Use English title if available, otherwise Chinese
+                title = product.get("title") or product.get("title_en") or product.get("title_cn") or f"Product {product_id}"
+                new_product.title = title
+                
+                # Build description
+                description = product.get("description") or ""
+                new_product.body_html = f"""
+                    <p>{description}</p>
+                    <hr>
+                    <p><strong>Imported from 1688</strong></p>
+                    <p>Original Product ID: {product_id}</p>
+                    <p>Original Price: ¥{product.get('price', 0):.2f}</p>
+                """
+                
+                new_product.vendor = product.get("seller_name") or "1688 Supplier"
+                new_product.product_type = "Imported from 1688"
+                new_product.tags = f"1688-import,1688-{product_id}"
+                
+                # Add images (max 250 for Shopify)
+                images = []
+                for img_url in (product.get("images") or [])[:20]:
+                    if img_url:
+                        # Ensure URL is absolute
+                        if img_url.startswith("//"):
+                            img_url = "https:" + img_url
+                        images.append({"src": img_url})
+                new_product.images = images
+                
+                # Build variants
+                variants = product.get("variants") or []
+                shopify_variants = []
+                
+                if variants:
+                    # Collect unique option values
+                    colors = list(set([v.get("color") for v in variants if v.get("color")]))
+                    sizes = list(set([v.get("size") for v in variants if v.get("size")]))
+                    
+                    # Set product options
+                    options = []
+                    if colors:
+                        options.append({"name": "Color", "values": colors[:100]})  # Shopify limit
+                    if sizes:
+                        options.append({"name": "Size", "values": sizes[:100]})
+                    
+                    if options:
+                        new_product.options = options
+                    
+                    # Create variant entries
+                    for v in variants[:100]:  # Shopify limit is 100 variants
+                        cny_price = v.get("price") or product.get("price") or 0
+                        target_price = round(cny_price * request.currency_rate * request.price_multiplier, 2)
+                        
+                        variant_data = {
+                            "price": str(target_price),
+                            "sku": v.get("spec_id") or v.get("sku_id") or f"1688-{product_id}-{len(shopify_variants)}",
+                            "inventory_management": "shopify",
+                            "inventory_quantity": v.get("stock") or 100,
+                        }
+                        
+                        # Add option values
+                        if v.get("color"):
+                            variant_data["option1"] = v.get("color")
+                        if v.get("size"):
+                            variant_data["option2"] = v.get("size")
+                        
+                        shopify_variants.append(variant_data)
+                    
+                    new_product.variants = shopify_variants
+                else:
+                    # Single variant (no options)
+                    cny_price = product.get("price") or 0
+                    target_price = round(cny_price * request.currency_rate * request.price_multiplier, 2)
+                    
+                    new_product.variants = [{
+                        "price": str(target_price),
+                        "sku": f"1688-{product_id}",
+                        "inventory_management": "shopify",
+                        "inventory_quantity": 100,
+                    }]
+                
+                # Save to Shopify
+                success = new_product.save()
+                
+                if success:
+                    shopify_id = str(new_product.id)
+                    
+                    # Update database with Shopify ID
+                    await db.scraped_products.update_one(
+                        {"product_id": product_id},
+                        {"$set": {
+                            "shopify_product_id": shopify_id,
+                            "shopify_store": request.store_name,
+                            "published_at": datetime.now(timezone.utc).isoformat(),
+                        }}
+                    )
+                    
+                    results["published"].append({
+                        "product_id": product_id,
+                        "shopify_id": shopify_id,
+                        "title": title,
+                        "variants_count": len(shopify_variants) if shopify_variants else 1,
+                        "images_count": len(images),
+                    })
+                else:
+                    error_msg = "Shopify save failed"
+                    if hasattr(new_product, 'errors') and new_product.errors:
+                        error_msg = str(new_product.errors.full_messages())
+                    results["failed"].append({
+                        "product_id": product_id,
+                        "error": error_msg
+                    })
+                
+            except Exception as e:
+                results["failed"].append({
+                    "product_id": product_id,
+                    "error": str(e)
+                })
+        
+        shopify.ShopifyResource.clear_session()
+        
+        results["success"] = len(results["failed"]) == 0
+        results["message"] = f"Published {len(results['published'])} products, {len(results['failed'])} failed"
+        
+        return results
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "error": str(e),
+            "published": results["published"],
+            "failed": results["failed"],
+        }
+
+
+@router.get("/shopify/stores")
+async def get_shopify_stores():
+    """Get list of stores with Shopify configured"""
+    db = get_db()
+    
+    stores = await db.stores.find(
+        {"shopify_domain": {"$exists": True, "$ne": None}},
+        {"_id": 0, "store_name": 1, "shopify_domain": 1}
+    ).to_list(100)
+    
+    return {
+        "success": True,
+        "stores": stores,
+    }
