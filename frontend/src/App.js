@@ -438,6 +438,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/product-collector" 
+        element={
+          <ProtectedRoute>
+            <ProductCollector />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory-clearance" 
         element={
           <ProtectedRoute>
