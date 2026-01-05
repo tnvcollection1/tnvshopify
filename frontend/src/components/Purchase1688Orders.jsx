@@ -566,11 +566,54 @@ const Purchase1688Orders = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-gray-500 uppercase">Shopify Order</p>
-                  <p className="font-medium">{selectedOrder.shopify_order_id || '-'}</p>
+                  <p className="font-medium font-mono">#{selectedOrder.shopify_order_number || selectedOrder.shopify_order_id || '-'}</p>
+                  {selectedOrder.shopify_fulfillment_status && (
+                    <p className="text-xs text-gray-500">{selectedOrder.shopify_fulfillment_status}</p>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase">Account</p>
                   <p className="font-medium">{selectedOrder.account_name || 'Default'}</p>
+                </div>
+              </div>
+
+              {/* Fulfillment Status Section */}
+              <div className="border-t pt-4 mt-4">
+                <p className="text-sm font-semibold text-gray-700 mb-3">Fulfillment Status</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase">Supplier Status</p>
+                    {selectedOrder.supplier_status ? (
+                      <Badge className={`${getSupplierStatusColor(selectedOrder.supplier_status)} border mt-1`}>
+                        {formatSupplierStatus(selectedOrder.supplier_status)}
+                      </Badge>
+                    ) : (
+                      <p className="text-gray-400 text-sm">Pending</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase">Supplier Tracking</p>
+                    <p className="font-mono text-sm">{selectedOrder.supplier_tracking || '-'}</p>
+                    {selectedOrder.supplier_carrier && (
+                      <p className="text-xs text-gray-500">{selectedOrder.supplier_carrier}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-3">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase">DWZ Tracking #</p>
+                    {selectedOrder.dwz_tracking ? (
+                      <code className="text-sm bg-purple-100 text-purple-700 px-2 py-1 rounded font-mono">
+                        {selectedOrder.dwz_tracking}
+                      </code>
+                    ) : (
+                      <p className="text-gray-400 text-sm">Not assigned</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase">DWZ Status</p>
+                    <p className="font-medium text-sm">{selectedOrder.dwz_status || '-'}</p>
+                  </div>
                 </div>
               </div>
 
