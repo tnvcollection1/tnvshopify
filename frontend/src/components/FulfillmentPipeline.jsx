@@ -1182,6 +1182,27 @@ const FulfillmentPipeline = () => {
           <RefreshCw className="h-4 w-4 mr-2" />
           Sync to Shopify
         </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setShowDWZImport(true)}
+          className="border-purple-300 text-purple-600 hover:bg-purple-50"
+          title="Import DWZ tracking numbers from CSV"
+        >
+          <Upload className="h-4 w-4 mr-2" />
+          Import DWZ
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setShowBulkActions(true)}
+          className="border-orange-300 text-orange-600 hover:bg-orange-50"
+          title="Bulk update multiple orders"
+          disabled={orders.length === 0}
+        >
+          <Package className="h-4 w-4 mr-2" />
+          Bulk Update
+        </Button>
       </div>
       
       {/* Stats Cards */}
