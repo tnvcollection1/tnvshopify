@@ -1629,6 +1629,24 @@ const FulfillmentPipeline = () => {
           onSuccess={fetchOrders}
         />
       )}
+      
+      {/* Batch Notify Modal */}
+      {showBatchNotify && (
+        <BatchNotifyModal
+          store={selectedStore}
+          orders={orders}
+          onClose={() => setShowBatchNotify(false)}
+          onSuccess={fetchOrders}
+        />
+      )}
+      
+      {/* Order History Modal */}
+      {showOrderHistory && (
+        <OrderHistoryModal
+          orderId={showOrderHistory}
+          onClose={() => setShowOrderHistory(null)}
+        />
+      )}
     </div>
   );
 };
