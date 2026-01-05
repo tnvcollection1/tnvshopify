@@ -251,32 +251,22 @@ class TestWhatsAppNotifications:
     
     def test_notify_whatsapp_endpoint(self):
         """Test POST /api/fulfillment/pipeline/{order_id}/notify-whatsapp"""
-        # First get an order
-        response = requests.get(
-            f"{BASE_URL}/api/fulfillment/pipeline",
-            params={"store_name": "tnvcollectionpk"}
-        )
-        data = response.json()
+        # Use a known order
+        order_id = "29489"
         
-        if data.get("orders") and len(data["orders"]) > 0:
-            order = data["orders"][0]
-            order_id = order.get("order_number") or order.get("shopify_order_id")
-            
-            # Test notification endpoint
-            notify_response = requests.post(
-                f"{BASE_URL}/api/fulfillment/pipeline/{order_id}/notify-whatsapp",
-                json={"stage": "shopify_order"}
-            )
-            
-            # Should return 200 (may fail to send if no phone number)
-            assert notify_response.status_code == 200
-            
-            notify_data = notify_response.json()
-            assert "success" in notify_data or "message" in notify_data
-            
-            print(f"SUCCESS: WhatsApp notification endpoint responded for order {order_id}")
-        else:
-            pytest.skip("No orders in pipeline to test")
+        # Test notification endpoint
+        notify_response = requests.post(
+            f"{BASE_URL}/api/fulfillment/pipeline/{order_id}/notify-whatsapp",
+            json={"stage": "shopify_order"}
+        )
+        
+        # Should return 200 (may fail to send if no phone number)
+        assert notify_response.status_code == 200
+        
+        notify_data = notify_response.json()
+        assert "success" in notify_data or "message" in notify_data
+        
+        print(f"SUCCESS: WhatsApp notification endpoint responded for order {order_id}")
 
 
 if __name__ == "__main__":
