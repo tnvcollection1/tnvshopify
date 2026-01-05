@@ -2661,3 +2661,364 @@ async def extract_product_id_from_url(url: str = Query(...)):
         "message": "Could not extract product ID from URL",
         "url": url,
     }
+
+
+# ==================== Official 1688 Buyer APIs ====================
+# Based on open.1688.com API Testing - WaMerce CRM Integration
+
+@router.get("/buyer/shipping-addresses")
+async def get_buyer_shipping_addresses():
+    """
+    Get saved shipping addresses for the buyer
+    API: alibaba.trade.receiveAddress.get
+    """
+    try:
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.receiveAddress.get",
+            {},
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        addresses = result.get("result", {}).get("receiveAddressItems", [])
+        return {
+            "success": True,
+            "addresses": addresses,
+            "count": len(addresses),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/buyer/purchased-products")
+async def get_purchased_products(page: int = Query(1), page_size: int = Query(20)):
+    """
+    Get basic info about products purchased from merchants
+    API: alibaba.trade.getBuyerOrderList then extract products
+    """
+    try:
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.getBuyerOrderList",
+            {"pageNo": str(page), "pageSize": str(page_size)},
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        orders = result.get("result", [])
+        if isinstance(orders, dict):
+            orders = orders.get("result", [])
+        
+        products = []
+        for order in orders:
+            for item in order.get("productItems", []):
+                products.append({
+                    "product_id": item.get("productID"),
+                    "name": item.get("name"),
+                    "price": item.get("price"),
+                    "quantity": item.get("quantity"),
+                    "image": item.get("productImgUrl", [None])[0] if isinstance(item.get("productImgUrl"), list) else item.get("productImgUrl"),
+                    "order_id": order.get("orderId"),
+                    "seller": order.get("sellerLoginId"),
+                })
+        
+        return {
+            "success": True,
+            "products": products,
+            "count": len(products),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/buyer/merchant-info")
+async def get_purchased_merchant_info():
+    """
+    Get info about merchants you have purchased from
+    API: alibaba.trade.getBuyerOrderList to extract unique sellers
+    """
+    try:
+        all_merchants = {}
+        page = 1
+        
+        while page <= 5:  # Limit to 5 pages
+            result = await make_api_request(
+                "com.alibaba.trade/alibaba.trade.getBuyerOrderList",
+                {"pageNo": str(page), "pageSize": "50"},
+                access_token=ALIBABA_ACCESS_TOKEN
+            )
+            
+            orders = result.get("result", [])
+            if isinstance(orders, dict):
+                orders = orders.get("result", [])
+            
+            if not orders:
+                break
+            
+            for order in orders:
+                seller_id = order.get("sellerMemberId") or order.get("sellerLoginId")
+                if seller_id and seller_id not in all_merchants:
+                    all_merchants[seller_id] = {
+                        "member_id": seller_id,
+                        "login_id": order.get("sellerLoginId"),
+                        "company_name": order.get("sellerContact", {}).get("companyName"),
+                        "order_count": 1,
+                    }
+                elif seller_id:
+                    all_merchants[seller_id]["order_count"] += 1
+            
+            page += 1
+        
+        return {
+            "success": True,
+            "merchants": list(all_merchants.values()),
+            "count": len(all_merchants),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.post("/buyer/preview-order")
+async def preview_order_before_creating(
+    product_id: str = Body(...),
+    quantity: int = Body(1),
+    spec_id: str = Body(None),
+):
+    """
+    Preview order data before creating
+    API: alibaba.trade.fastCreateOrder.preview
+    """
+    try:
+        cargo = {
+            "offerId": int(product_id),
+            "quantity": float(quantity),
+        }
+        if spec_id:
+            cargo["specId"] = spec_id
+        
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.fastCreateOrder.preview",
+            {"cargoParamList": json.dumps([cargo])},
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        return {
+            "success": True,
+            "preview": result.get("result", result),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.post("/buyer/quick-order")
+async def create_quick_order(
+    product_id: str = Body(...),
+    quantity: int = Body(1),
+    spec_id: str = Body(None),
+    address_id: int = Body(None),
+    message: str = Body(""),
+):
+    """
+    Quickly create 1688 order (Recommended)
+    API: alibaba.trade.fastCreateOrder
+    """
+    try:
+        # Get default address if not provided
+        if not address_id:
+            addr_result = await make_api_request(
+                "com.alibaba.trade/alibaba.trade.receiveAddress.get",
+                {},
+                access_token=ALIBABA_ACCESS_TOKEN
+            )
+            addresses = addr_result.get("result", {}).get("receiveAddressItems", [])
+            if addresses:
+                address_id = addresses[0].get("id")
+        
+        if not address_id:
+            return {"success": False, "error": "No shipping address available"}
+        
+        cargo = {
+            "offerId": int(product_id),
+            "quantity": float(quantity),
+        }
+        if spec_id:
+            cargo["specId"] = spec_id
+        
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.fastCreateOrder",
+            {
+                "addressParam": json.dumps({"addressId": int(address_id)}),
+                "cargoParamList": json.dumps([cargo]),
+                "flow": "general",
+                "message": message or f"Order for {product_id}",
+            },
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        order_id = None
+        if result.get("result"):
+            order_id = result["result"].get("orderId")
+        
+        return {
+            "success": bool(order_id),
+            "order_id": order_id,
+            "result": result.get("result", result),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/buyer/keyword-search")
+async def buyer_keyword_search(
+    keyword: str = Query(...),
+    page: int = Query(1),
+    page_size: int = Query(20),
+):
+    """
+    Domestic distribution keyword search
+    API: alibaba.distributor.product.list
+    """
+    try:
+        result = await make_api_request(
+            "cn.alibaba.open/alibaba.distributor.product.list",
+            {
+                "keyword": keyword,
+                "pageNo": str(page),
+                "pageSize": str(page_size),
+            },
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        return {
+            "success": True,
+            "keyword": keyword,
+            "products": result.get("result", {}).get("products", []),
+            "total": result.get("result", {}).get("totalCount", 0),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/buyer/recommended-suppliers")
+async def get_recommended_suppliers(keyword: str = Query(None)):
+    """
+    Get recommended suppliers for buyers
+    API: alibaba.member.getRelatedSuppliers
+    """
+    try:
+        params = {}
+        if keyword:
+            params["keyword"] = keyword
+        
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.member.getRelatedSuppliers",
+            params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        return {
+            "success": True,
+            "suppliers": result.get("result", []),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.post("/buyer/follow-product")
+async def follow_product(product_id: str = Body(..., embed=True)):
+    """
+    Add product to favorites/watchlist
+    API: alibaba.product.follow
+    """
+    try:
+        result = await make_api_request(
+            "com.alibaba.product/alibaba.product.follow",
+            {"offerId": product_id},
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        return {
+            "success": True,
+            "message": "Product followed",
+            "result": result,
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.post("/buyer/unfollow-product")
+async def unfollow_product(product_id: str = Body(..., embed=True)):
+    """
+    Remove product from favorites/watchlist
+    API: alibaba.product.unfollow
+    """
+    try:
+        result = await make_api_request(
+            "com.alibaba.product/alibaba.product.unfollow",
+            {"offerId": product_id},
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        return {
+            "success": True,
+            "message": "Product unfollowed",
+            "result": result,
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/buyer/order-list")
+async def get_buyer_orders(
+    page: int = Query(1),
+    page_size: int = Query(20),
+    status: str = Query(None, description="Order status filter"),
+):
+    """
+    Get buyer's order list with details
+    API: alibaba.trade.getBuyerOrderList
+    """
+    try:
+        params = {
+            "pageNo": str(page),
+            "pageSize": str(page_size),
+        }
+        if status:
+            params["orderStatus"] = status
+        
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.getBuyerOrderList",
+            params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        orders = result.get("result", [])
+        if isinstance(orders, dict):
+            orders = orders.get("result", [])
+        
+        return {
+            "success": True,
+            "orders": orders,
+            "count": len(orders),
+            "page": page,
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/buyer/order/{order_id}")
+async def get_order_detail(order_id: str):
+    """
+    Get detailed info for a specific order
+    API: alibaba.trade.get.buyerView
+    """
+    try:
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.get.buyerView",
+            {"orderId": order_id},
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        return {
+            "success": True,
+            "order": result.get("result", result),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
