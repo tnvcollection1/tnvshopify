@@ -1267,8 +1267,8 @@ async def search_by_image(request: ImageSearchRequest):
                     # Try using original URL anyway
                     print(f"[Image Search] Could not convert image, trying original URL")
         
-        # Step 2: Search by image
-        search_url = f"{TMAPI_BASE_URL}/1688/search_items_by_pic"
+        # Step 2: Search by image - using correct TMAPI endpoint
+        search_url = f"{TMAPI_BASE_URL}/1688/search/image"
         search_params = {
             "apiToken": TMAPI_TOKEN,
             "img_url": img_url,
@@ -1296,24 +1296,36 @@ async def search_by_image(request: ImageSearchRequest):
             data = result.get("data", {})
             items = data.get("items", [])
             
-            # Parse results
+            # Parse results with full product info
             products = []
             for item in items:
+                product_id = str(item.get("item_id") or item.get("num_iid") or "")
+                shop_info = item.get("shop_info", {})
+                price_info = item.get("price_info", {})
+                sale_info = item.get("sale_info", {})
+                
                 products.append({
-                    "product_id": item.get("item_id") or item.get("num_iid"),
+                    "product_id": product_id,
                     "title": item.get("title"),
-                    "price": item.get("price"),
-                    "sale_price": item.get("sale_price"),
-                    "sales": item.get("sales") or item.get("sold"),
-                    "image": item.get("pic_url") or item.get("pic"),
-                    "shop_name": item.get("shop_name") or item.get("nick"),
-                    "url": f"https://detail.1688.com/offer/{item.get('item_id') or item.get('num_iid')}.html",
+                    "price": item.get("price") or price_info.get("origin_price"),
+                    "wholesale_price": price_info.get("wholesale_price"),
+                    "dropship_price": price_info.get("drop_ship_price"),
+                    "sales": sale_info.get("sale_quantity") or item.get("sales") or 0,
+                    "orders": sale_info.get("orders_count") or 0,
+                    "image": item.get("img") or item.get("pic_url"),
+                    "shop_name": shop_info.get("company_name") or shop_info.get("login_id") or item.get("shop_name"),
+                    "shop_url": shop_info.get("shop_url"),
+                    "is_factory": shop_info.get("is_factory", False),
+                    "location": shop_info.get("location", []),
+                    "url": item.get("product_url") or f"https://detail.1688.com/offer/{product_id}.html",
+                    "min_order": item.get("quantity_begin") or 1,
                 })
             
             return {
                 "success": True,
-                "total": data.get("total_results") or len(products),
-                "page": request.page,
+                "total": data.get("total_count") or len(products),
+                "page": data.get("page") or request.page,
+                "page_size": data.get("page_size") or request.page_size,
                 "products": products,
                 "converted_image": img_url if img_url != request.image_url else None,
             }
