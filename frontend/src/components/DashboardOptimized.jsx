@@ -634,6 +634,42 @@ Thank you for your understanding.`;
             <p className="text-2xl font-semibold mt-1 text-red-600">{stats.fulfillmentStatus?.cancelled?.toLocaleString() || 0}</p>
           </button>
         </div>
+        
+        {/* 1688 Orders Widget */}
+        <div className="grid grid-cols-4 gap-4 mt-4">
+          <Widget1688Status />
+          {/* Quick Stats Cards */}
+          <div className="col-span-2 grid grid-cols-2 gap-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Payment Pending</span>
+                <DollarSign className="w-5 h-5 text-yellow-500" />
+              </div>
+              <p className="text-2xl font-semibold mt-1 text-yellow-600">{stats.paymentStatus?.pending?.toLocaleString() || 0}</p>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Paid</span>
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
+              </div>
+              <p className="text-2xl font-semibold mt-1 text-green-600">{stats.paymentStatus?.paid?.toLocaleString() || 0}</p>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">In Transit</span>
+                <Truck className="w-5 h-5 text-blue-500" />
+              </div>
+              <p className="text-2xl font-semibold mt-1 text-blue-600">{stats.deliveryStatus?.in_transit?.toLocaleString() || 0}</p>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Delivered</span>
+                <Package className="w-5 h-5 text-green-500" />
+              </div>
+              <p className="text-2xl font-semibold mt-1 text-green-600">{stats.deliveryStatus?.delivered?.toLocaleString() || 0}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
