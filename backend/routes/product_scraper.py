@@ -171,11 +171,8 @@ log_tmapi_usage = _log_tmapi_usage
 async def extract_product_ids_from_page(html: str) -> List[str]:
     """Extract product IDs from a 1688 page HTML"""
     product_ids = []
-            
-            # Check for success
-            if result.get("code") != 200:
-                print(f"[TMAPI-Taobao] API error for {product_id}: {result.get('msg', 'Unknown error')}")
-                return None
+    
+    # Pattern 1: offer/ID.html links
             
             data = result.get("data", {})
             
