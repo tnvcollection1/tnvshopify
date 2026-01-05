@@ -515,3 +515,126 @@ class ShopifyOrderSync:
             logger.error(f"Failed to add tag to order {order_id}: {str(e)}")
             return False
 
+    def create_fulfillment(self, order_id: int, tracking_number: str = None, 
+                          tracking_company: str = None, notify_customer: bool = True) -> dict:
+        """
+        Create a fulfillment for a Shopify order.
+        This marks the order as fulfilled with optional tracking info.
+        
+        Args:
+            order_id: Shopify order ID
+            tracking_number: Shipping tracking number
+            tracking_company: Carrier name (e.g., "DWZ56", "DTDC", etc.)
+            notify_customer: Whether to send fulfillment notification email
+            
+        Returns:
+            dict with fulfillment details or error info
+        """
+        if not self.connect():
+            return {"success": False, "error": "Failed to connect to Shopify"}
+        
+        try:
+            # Get the order
+            order = shopify.Order.find(order_id)
+            if not order:
+                return {"success": False, "error": f"Order {order_id} not found"}
+            
+            # Check if already fulfilled
+            if order.fulfillment_status == "fulfilled":
+                return {
+                    "success": True,
+                    "already_fulfilled": True,
+                    "message": f"Order {order_id} is already fulfilled"
+                }
+            
+            # Get fulfillment orders (for Shopify's newer fulfillment API)
+            try:
+                # Try newer FulfillmentOrder API first
+                fulfillment_orders = shopify.FulfillmentOrder.find(order_id=order_id)
+                
+                if fulfillment_orders:
+                    for fo in fulfillment_orders:
+                        if fo.status in ['open', 'in_progress']:
+                            # Create fulfillment using FulfillmentOrder
+                            fulfillment = shopify.Fulfillment()
+                            fulfillment.line_items_by_fulfillment_order = [{
+                                "fulfillment_order_id": fo.id,
+                            }]
+                            
+                            if tracking_number:
+                                fulfillment.tracking_info = {
+                                    "number": tracking_number,
+                                    "company": tracking_company or "Other",
+                                }
+                            
+                            fulfillment.notify_customer = notify_customer
+                            fulfillment.save()
+                            
+                            logger.info(f"Created fulfillment for order {order_id} via FulfillmentOrder API")
+                            return {
+                                "success": True,
+                                "fulfillment_id": fulfillment.id,
+                                "tracking_number": tracking_number,
+                                "tracking_company": tracking_company,
+                            }
+                            
+            except Exception as fo_error:
+                logger.warning(f"FulfillmentOrder API failed, trying legacy method: {fo_error}")
+            
+            # Fallback to legacy Fulfillment API
+            # Get line items that need fulfillment
+            fulfillable_items = []
+            for item in order.line_items:
+                if item.fulfillable_quantity > 0:
+                    fulfillable_items.append({
+                        "id": item.id,
+                        "quantity": item.fulfillable_quantity
+                    })
+            
+            if not fulfillable_items:
+                return {
+                    "success": True,
+                    "already_fulfilled": True,
+                    "message": "All items are already fulfilled"
+                }
+            
+            # Create fulfillment
+            fulfillment = shopify.Fulfillment()
+            fulfillment.order_id = order_id
+            fulfillment.line_items = fulfillable_items
+            fulfillment.notify_customer = notify_customer
+            
+            if tracking_number:
+                fulfillment.tracking_number = tracking_number
+            if tracking_company:
+                fulfillment.tracking_company = tracking_company
+            
+            # Try to get location ID
+            try:
+                locations = shopify.Location.find()
+                if locations:
+                    fulfillment.location_id = locations[0].id
+            except:
+                pass
+            
+            fulfillment.save()
+            
+            logger.info(f"Created fulfillment for order {order_id} - Tracking: {tracking_number}")
+            
+            return {
+                "success": True,
+                "fulfillment_id": fulfillment.id,
+                "tracking_number": tracking_number,
+                "tracking_company": tracking_company,
+                "items_fulfilled": len(fulfillable_items),
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to create fulfillment for order {order_id}: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "order_id": order_id,
+            }
+
+
