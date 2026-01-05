@@ -1125,3 +1125,406 @@ async def sync_fulfillment_to_shopify(order_id: str):
         sync.disconnect()
         raise HTTPException(status_code=500, detail=f"Failed to sync to Shopify: {str(e)}")
 
+
+# ==================== Auto-Sync 1688 Fulfillment Status ====================
+
+class FulfillmentSyncOptions(BaseModel):
+    """Options for fulfillment sync"""
+    fulfillment_method: str = Field("dwz", description="dwz or warehouse")
+    tracking_number: Optional[str] = Field(None, description="Tracking number to sync")
+    carrier: Optional[str] = Field("DWZ56", description="Carrier name for Shopify")
+    notify_customer: bool = Field(True, description="Send notification to customer")
+
+
+@router.post("/auto-sync-to-shopify/{order_id}")
+async def auto_sync_1688_fulfillment_to_shopify(
+    order_id: str,
+    options: FulfillmentSyncOptions = Body(...)
+):
+    """
+    Auto-sync 1688 fulfillment status to Shopify.
+    This marks the Shopify order as fulfilled with tracking info.
+    
+    fulfillment_method:
+    - "dwz": Fulfill via DWZ56 shipping (gets tracking from DWZ56)
+    - "warehouse": Fulfill after arrival at your warehouse (manual tracking)
+    """
+    from shopify_sync import ShopifyOrderSync
+    
+    db = get_db()
+    
+    # Get fulfillment data from multiple sources
+    fulfillment = await db.order_fulfillment.find_one(
+        {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": order_id},
+        ]},
+        {"_id": 0}
+    )
+    
+    # Also check fulfillment_pipeline
+    pipeline_order = await db.fulfillment_pipeline.find_one(
+        {"shopify_order_id": order_id},
+        {"_id": 0}
+    )
+    
+    # Get customer/order info
+    customer = await db.customers.find_one(
+        {"$or": [
+            {"order_number": int(order_id) if order_id.isdigit() else order_id},
+            {"shopify_order_id": order_id},
+            {"customer_id": order_id},
+        ]},
+        {"_id": 0}
+    )
+    
+    if not customer:
+        raise HTTPException(status_code=404, detail=f"Order #{order_id} not found")
+    
+    store_name = customer.get("store_name") or (fulfillment or {}).get("store_name")
+    shopify_order_id = customer.get("shopify_order_id") or customer.get("order_id")
+    
+    if not store_name:
+        raise HTTPException(status_code=400, detail="Store name not found for this order")
+    
+    # Get store credentials
+    store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
+    if not store or not store.get("shopify_domain") or not store.get("shopify_token"):
+        raise HTTPException(status_code=400, detail=f"Shopify not configured for store: {store_name}")
+    
+    # Determine tracking number based on fulfillment method
+    tracking_number = options.tracking_number
+    tracking_source = "manual"
+    
+    if options.fulfillment_method == "dwz":
+        # Try to get DWZ tracking
+        if pipeline_order and pipeline_order.get("dwz56_tracking"):
+            tracking_number = tracking_number or pipeline_order["dwz56_tracking"]
+            tracking_source = "dwz56_pipeline"
+        elif fulfillment and fulfillment.get("dwz_fulfillment_id"):
+            tracking_number = tracking_number or fulfillment["dwz_fulfillment_id"]
+            tracking_source = "dwz_fulfillment"
+        
+        # Try to fetch from DWZ56 API if not found
+        if not tracking_number:
+            try:
+                from routes.dwz56 import get_recent_shipments_internal
+                # Search DWZ56 for this order's shipments
+                dwz_shipments = await get_recent_shipments_internal(order_number=str(order_id))
+                if dwz_shipments:
+                    tracking_number = dwz_shipments[0].get("cNo") or dwz_shipments[0].get("cNum")
+                    tracking_source = "dwz56_api"
+            except Exception as e:
+                logger.warning(f"Could not fetch DWZ56 tracking for order {order_id}: {e}")
+    
+    elif options.fulfillment_method == "warehouse":
+        # For warehouse fulfillment, use 1688 tracking or provided tracking
+        if pipeline_order and pipeline_order.get("alibaba_tracking"):
+            tracking_number = tracking_number or pipeline_order["alibaba_tracking"]
+            tracking_source = "1688_tracking"
+        elif fulfillment and fulfillment.get("fulfillment_1688_id"):
+            tracking_number = tracking_number or fulfillment["fulfillment_1688_id"]
+            tracking_source = "1688_fulfillment"
+    
+    # Connect to Shopify
+    sync = ShopifyOrderSync(store["shopify_domain"], store["shopify_token"])
+    
+    try:
+        result = {
+            "success": True,
+            "order_id": order_id,
+            "shopify_order_id": shopify_order_id,
+            "fulfillment_method": options.fulfillment_method,
+            "tracking_number": tracking_number,
+            "tracking_source": tracking_source,
+            "actions": [],
+        }
+        
+        # Create fulfillment on Shopify
+        if tracking_number:
+            try:
+                # Use Shopify REST API to create fulfillment
+                fulfillment_created = sync.create_fulfillment(
+                    int(shopify_order_id),
+                    tracking_number=tracking_number,
+                    tracking_company=options.carrier,
+                    notify_customer=options.notify_customer
+                )
+                result["actions"].append(f"Created Shopify fulfillment with tracking: {tracking_number}")
+                result["shopify_fulfillment_created"] = fulfillment_created
+            except Exception as e:
+                # Try alternative method - just add note and tag
+                logger.warning(f"Could not create Shopify fulfillment: {e}")
+                result["actions"].append(f"Warning: Could not create fulfillment - {str(e)}")
+        
+        # Add note with fulfillment details
+        note_parts = [f"Fulfilled via {options.fulfillment_method.upper()}"]
+        if tracking_number:
+            note_parts.append(f"Tracking: {tracking_number}")
+        if pipeline_order and pipeline_order.get("alibaba_order_id"):
+            note_parts.append(f"1688 Order: {pipeline_order['alibaba_order_id']}")
+        
+        note = " | ".join(note_parts)
+        note_updated = sync.update_order_note(int(shopify_order_id), note)
+        if note_updated:
+            result["actions"].append(f"Added order note: {note}")
+        
+        # Add fulfillment tag
+        tag = f"{options.fulfillment_method}-fulfilled"
+        tag_updated = sync.add_order_tag(int(shopify_order_id), tag)
+        if tag_updated:
+            result["actions"].append(f"Added tag: {tag}")
+        
+        sync.disconnect()
+        
+        # Update local fulfillment records
+        await db.order_fulfillment.update_one(
+            {"shopify_order_id": str(shopify_order_id)},
+            {"$set": {
+                "synced_to_shopify": True,
+                "synced_at": datetime.now(timezone.utc).isoformat(),
+                "fulfillment_method": options.fulfillment_method,
+                "tracking_number": tracking_number,
+                "carrier": options.carrier,
+            }},
+            upsert=True
+        )
+        
+        # Update pipeline status
+        await db.fulfillment_pipeline.update_one(
+            {"shopify_order_id": order_id},
+            {"$set": {
+                "status": "fulfilled",
+                "stages.shopify_synced": True,
+                "fulfilled_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }}
+        )
+        
+        # Update customer record
+        await db.customers.update_one(
+            {"$or": [
+                {"shopify_order_id": str(shopify_order_id)},
+                {"order_number": int(order_id) if order_id.isdigit() else order_id},
+            ]},
+            {"$set": {
+                "fulfillment_status": "fulfilled",
+                "fulfillment_tracking": tracking_number,
+                "fulfillment_method": options.fulfillment_method,
+                "fulfilled_at": datetime.now(timezone.utc).isoformat(),
+            }}
+        )
+        
+        return result
+        
+    except Exception as e:
+        try:
+            sync.disconnect()
+        except:
+            pass
+        raise HTTPException(status_code=500, detail=f"Failed to sync fulfillment: {str(e)}")
+
+
+@router.post("/fulfill-via-dwz/{order_id}")
+async def fulfill_order_via_dwz(
+    order_id: str,
+    notify_customer: bool = Body(True, embed=True)
+):
+    """
+    Fulfill an order via DWZ56 shipping.
+    Fetches tracking from DWZ56 and syncs to Shopify.
+    """
+    return await auto_sync_1688_fulfillment_to_shopify(
+        order_id,
+        FulfillmentSyncOptions(
+            fulfillment_method="dwz",
+            carrier="DWZ56",
+            notify_customer=notify_customer
+        )
+    )
+
+
+@router.post("/fulfill-via-warehouse/{order_id}")
+async def fulfill_order_via_warehouse(
+    order_id: str,
+    tracking_number: str = Body(None, embed=True),
+    carrier: str = Body("Local Courier", embed=True),
+    notify_customer: bool = Body(True, embed=True)
+):
+    """
+    Fulfill an order after arrival at warehouse.
+    Use this when product has arrived at your warehouse and you're shipping locally.
+    """
+    return await auto_sync_1688_fulfillment_to_shopify(
+        order_id,
+        FulfillmentSyncOptions(
+            fulfillment_method="warehouse",
+            tracking_number=tracking_number,
+            carrier=carrier,
+            notify_customer=notify_customer
+        )
+    )
+
+
+@router.get("/pending-sync")
+async def get_orders_pending_shopify_sync(
+    store_name: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    """
+    Get orders that have 1688 fulfillment but haven't been synced to Shopify yet.
+    These are ready to be fulfilled via DWZ or warehouse.
+    """
+    db = get_db()
+    
+    # Find orders in pipeline that are shipped from supplier but not yet fulfilled
+    query = {
+        "status": {"$in": ["shipped_from_supplier", "sent_to_dwz56"]},
+        "$or": [
+            {"stages.shopify_synced": {"$ne": True}},
+            {"stages.shopify_synced": {"$exists": False}},
+        ]
+    }
+    
+    if store_name:
+        query["store_name"] = store_name
+    
+    skip = (page - 1) * page_size
+    
+    orders = await db.fulfillment_pipeline.find(
+        query,
+        {"_id": 0}
+    ).sort("updated_at", -1).skip(skip).limit(page_size).to_list(page_size)
+    
+    total = await db.fulfillment_pipeline.count_documents(query)
+    
+    # Enrich with DWZ tracking info
+    for order in orders:
+        # Check if we have DWZ tracking
+        dwz_tracking = order.get("dwz56_tracking") or order.get("dwz_tracking")
+        alibaba_tracking = order.get("alibaba_tracking")
+        
+        order["ready_for_dwz_fulfillment"] = bool(dwz_tracking)
+        order["ready_for_warehouse_fulfillment"] = bool(alibaba_tracking) or order.get("status") == "shipped_from_supplier"
+        order["suggested_method"] = "dwz" if dwz_tracking else "warehouse"
+    
+    return {
+        "success": True,
+        "orders": orders,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "message": f"Found {total} orders pending Shopify sync",
+    }
+
+
+@router.post("/bulk-sync-to-shopify")
+async def bulk_sync_fulfillments_to_shopify(
+    order_ids: List[str] = Body(..., description="List of order IDs to sync"),
+    fulfillment_method: str = Body("dwz", description="dwz or warehouse"),
+    background_tasks: BackgroundTasks = None,
+):
+    """
+    Bulk sync multiple orders' fulfillment status to Shopify.
+    Runs in background for large batches.
+    """
+    if len(order_ids) > 50:
+        raise HTTPException(status_code=400, detail="Maximum 50 orders per batch")
+    
+    results = {
+        "success": True,
+        "total": len(order_ids),
+        "synced": 0,
+        "failed": 0,
+        "errors": [],
+        "synced_orders": [],
+    }
+    
+    for order_id in order_ids:
+        try:
+            sync_result = await auto_sync_1688_fulfillment_to_shopify(
+                order_id,
+                FulfillmentSyncOptions(
+                    fulfillment_method=fulfillment_method,
+                    notify_customer=True
+                )
+            )
+            if sync_result.get("success"):
+                results["synced"] += 1
+                results["synced_orders"].append(order_id)
+            else:
+                results["failed"] += 1
+                results["errors"].append({"order_id": order_id, "error": "Sync returned failure"})
+        except Exception as e:
+            results["failed"] += 1
+            results["errors"].append({"order_id": order_id, "error": str(e)})
+    
+    return results
+
+
+@router.get("/sync-status-summary")
+async def get_fulfillment_sync_status_summary(
+    store_name: Optional[str] = Query(None),
+):
+    """
+    Get summary of fulfillment sync statuses.
+    Shows how many orders are at each stage.
+    """
+    db = get_db()
+    
+    match_stage = {}
+    if store_name:
+        match_stage["store_name"] = store_name
+    
+    # Pipeline aggregation for status summary
+    pipeline = [
+        {"$match": match_stage} if match_stage else {"$match": {}},
+        {"$group": {
+            "_id": "$status",
+            "count": {"$sum": 1},
+            "with_1688_tracking": {"$sum": {"$cond": [{"$ne": ["$alibaba_tracking", None]}, 1, 0]}},
+            "with_dwz_tracking": {"$sum": {"$cond": [{"$ne": ["$dwz56_tracking", None]}, 1, 0]}},
+            "synced_to_shopify": {"$sum": {"$cond": [{"$eq": ["$stages.shopify_synced", True]}, 1, 0]}},
+        }},
+        {"$sort": {"_id": 1}},
+    ]
+    
+    results = await db.fulfillment_pipeline.aggregate(pipeline).to_list(100)
+    
+    # Build summary
+    summary = {
+        "total_orders": 0,
+        "by_status": {},
+        "ready_for_sync": {
+            "dwz": 0,
+            "warehouse": 0,
+            "total": 0,
+        },
+        "already_synced": 0,
+    }
+    
+    for r in results:
+        status = r["_id"] or "unknown"
+        count = r["count"]
+        summary["total_orders"] += count
+        summary["by_status"][status] = {
+            "count": count,
+            "with_1688_tracking": r["with_1688_tracking"],
+            "with_dwz_tracking": r["with_dwz_tracking"],
+            "synced_to_shopify": r["synced_to_shopify"],
+        }
+        summary["already_synced"] += r["synced_to_shopify"]
+        
+        # Count orders ready for sync
+        if status in ["shipped_from_supplier", "sent_to_dwz56"]:
+            summary["ready_for_sync"]["dwz"] += r["with_dwz_tracking"]
+            summary["ready_for_sync"]["warehouse"] += r["with_1688_tracking"]
+            summary["ready_for_sync"]["total"] += count - r["synced_to_shopify"]
+    
+    return {
+        "success": True,
+        "summary": summary,
+    }
+
+
