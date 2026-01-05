@@ -33,6 +33,7 @@ const ProductCollector = () => {
   const [publishing, setPublishing] = useState(false);
   const [activeTab, setActiveTab] = useState('collect'); // collect, draft, published
   const [draftProducts, setDraftProducts] = useState([]);
+  const [editingProduct, setEditingProduct] = useState(null); // For edit modal
 
   // Load draft products on mount
   useEffect(() => {
