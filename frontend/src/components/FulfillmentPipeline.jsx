@@ -1321,6 +1321,29 @@ const FulfillmentPipeline = () => {
           }}
         />
       )}
+      
+      {/* DWZ Import Modal */}
+      {showDWZImport && (
+        <DWZImportModal
+          store={selectedStore}
+          onClose={() => setShowDWZImport(false)}
+          onSuccess={() => {
+            fetchOrders();
+            setShowDWZImport(false);
+          }}
+        />
+      )}
+      
+      {/* Bulk Actions Modal */}
+      {showBulkActions && (
+        <BulkActionsModal
+          orders={filteredOrders}
+          store={selectedStore}
+          carrierInfo={carrierInfo}
+          onClose={() => setShowBulkActions(false)}
+          onSuccess={fetchOrders}
+        />
+      )}
     </div>
   );
 };
