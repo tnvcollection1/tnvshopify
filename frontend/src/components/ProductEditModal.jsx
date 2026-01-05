@@ -13,6 +13,8 @@ import {
   DollarSign,
   Package,
   Loader2,
+  RefreshCw,
+  Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -21,7 +23,40 @@ const API = process.env.REACT_APP_BACKEND_URL;
 const ProductEditModal = ({ product, onClose, onSave }) => {
   const [editedProduct, setEditedProduct] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState('basic'); // basic, images, variants
+
+  // Fetch full product details (images, variants) from TMAPI
+  const fetchProductDetails = async () => {
+    if (!editedProduct?.product_id) return;
+    
+    setFetching(true);
+    try {
+      const res = await fetch(`${API}/api/1688-scraper/products/${editedProduct.product_id}/fetch-details`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success(`Fetched ${data.images_count} images and ${data.variants_count} variants!`);
+        // Update local state with new data
+        if (data.product) {
+          setEditedProduct({
+            ...editedProduct,
+            ...data.product,
+            images: data.product.images || [],
+            variants: data.product.variants || [],
+          });
+        }
+      } else {
+        toast.error(data.error || 'Failed to fetch details');
+      }
+    } catch (error) {
+      toast.error('Failed to fetch product details');
+    } finally {
+      setFetching(false);
+    }
+  };
 
   useEffect(() => {
     if (product) {
