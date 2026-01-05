@@ -1,28 +1,25 @@
-// WaMerce 1688 Importer - Content Script v3.0
-// Full product scraping WITHOUT any API calls (like Dianxiaomi)
-// Runs on 1688.com product detail pages
+// WaMerce 1688 Importer - Content Script v4.0
+// FULL product scraping WITHOUT ANY API calls
+// Scrapes: title, ALL images, ALL variants/SKUs, prices, seller info
+// Works on: Product detail pages AND collection/listing pages
 
 (function() {
-  // Prevent duplicate injection
-  if (window.__wamerceImporterV3) return;
-  window.__wamerceImporterV3 = true;
+  if (window.__wamerceImporterV4) return;
+  window.__wamerceImporterV4 = true;
   
-  console.log('[WaMerce] Content script v3.0 loaded - Full scraping mode');
+  console.log('[WaMerce v4] Content script loaded - Full scraping, no API calls');
   
   // Listen for messages from popup
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('[WaMerce] Message received:', request.action);
+    console.log('[WaMerce v4] Message:', request.action);
     
     if (request.action === 'getProducts') {
       const products = scanPageForProducts();
-      console.log('[WaMerce] Found', products.length, 'products');
-      sendResponse({ products: products });
+      sendResponse({ products });
     }
     
     if (request.action === 'getFullProductData') {
-      // Scrape complete product data from detail page
       const fullData = scrapeFullProductData();
-      console.log('[WaMerce] Scraped full product data');
       sendResponse({ product: fullData });
     }
     
@@ -30,21 +27,33 @@
       sendResponse({
         url: window.location.href,
         title: document.title,
-        isDetailPage: isProductDetailPage()
+        isDetailPage: isProductDetailPage(),
+        isListingPage: isListingPage(),
+        productCount: countProductsOnPage(),
       });
     }
     
     return true;
   });
   
-  // Check if current page is a product detail page
   function isProductDetailPage() {
     return window.location.href.includes('detail.1688.com/offer/') || 
-           window.location.href.includes('/offer/') ||
-           document.querySelector('.detail-gallery, .mod-detail-gallery, #dt-tab');
+           window.location.href.includes('/offer/') && window.location.href.match(/\d{10,}/);
   }
   
-  // Scrape FULL product data from detail page (0 API calls!)
+  function isListingPage() {
+    return window.location.href.includes('/page/offerlist') ||
+           window.location.href.includes('s.1688.com') ||
+           window.location.href.includes('/offer_list') ||
+           document.querySelectorAll('[data-offer-id], .offer-list-row, .sm-offer-item').length > 3;
+  }
+  
+  function countProductsOnPage() {
+    if (isProductDetailPage()) return 1;
+    return document.querySelectorAll('[data-offer-id], .sm-offer-item, .offer-list-row-offer, a[href*="offer/"]').length;
+  }
+
+  // ============= FULL PRODUCT SCRAPING (Detail Page) =============
   function scrapeFullProductData() {
     const product = {
       product_id: null,
@@ -53,318 +62,489 @@
       price: null,
       price_range: null,
       images: [],
-      description: null,
+      main_images: [],
+      sku_images: [],
       description_images: [],
       skus: [],
       variants: [],
-      seller: {
-        name: null,
-        member_id: null,
-        shop_url: null,
-      },
+      seller: { name: null, member_id: null, shop_url: null },
       min_order: 1,
       sold_count: null,
       scraped_at: new Date().toISOString(),
-      source: 'extension_v3',
+      source: 'extension_v4_full',
     };
     
     try {
-      // 1. Extract Product ID from URL
+      // 1. Product ID from URL
       const urlMatch = window.location.href.match(/offer\/(\d+)/);
       if (urlMatch) product.product_id = urlMatch[1];
       
-      // 2. Try to get data from window objects (most reliable)
-      if (window.iDetailData) {
-        const d = window.iDetailData;
-        product.title_cn = d.offerTitle || d.subject;
-        product.price = d.price;
-        product.price_range = d.priceRange;
-        
-        // SKUs from iDetailData
-        if (d.sku && d.sku.skuInfoMap) {
-          Object.entries(d.sku.skuInfoMap).forEach(([specId, info]) => {
+      // 2. Get data from window objects (most reliable)
+      extractFromWindowObjects(product);
+      
+      // 3. Scrape from DOM as fallback/supplement
+      scrapeFromDOM(product);
+      
+      // 4. Extract ALL images comprehensively
+      extractAllImages(product);
+      
+      // 5. Extract ALL SKUs/variants
+      extractAllVariants(product);
+      
+      // 6. Combine images
+      product.images = [...new Set([...product.main_images, ...product.sku_images])];
+      
+      console.log('[WaMerce v4] Scraped:', {
+        id: product.product_id,
+        title: product.title_cn?.substring(0, 30),
+        images: product.images.length,
+        skus: product.skus.length,
+      });
+      
+    } catch (e) {
+      console.error('[WaMerce v4] Scrape error:', e);
+    }
+    
+    return product;
+  }
+  
+  function extractFromWindowObjects(product) {
+    // Try iDetailData
+    if (window.iDetailData) {
+      const d = window.iDetailData;
+      product.title_cn = product.title_cn || d.offerTitle || d.subject;
+      product.price = product.price || d.price;
+      product.price_range = d.priceRange;
+      
+      // SKU info map
+      if (d.sku?.skuInfoMap) {
+        Object.entries(d.sku.skuInfoMap).forEach(([specId, info]) => {
+          product.skus.push({
+            spec_id: specId,
+            price: info.price || info.discountPrice,
+            stock: info.canBookCount || info.amountOnSale || 0,
+            props_names: info.specAttrs || '',
+            image: info.skuPic,
+          });
+          if (info.skuPic) product.sku_images.push(cleanImageUrl(info.skuPic));
+        });
+      }
+      
+      // Seller
+      if (d.sellerInfo) {
+        product.seller.name = d.sellerInfo.sellerName || d.sellerInfo.companyName;
+        product.seller.member_id = d.sellerInfo.loginId || d.sellerInfo.memberId;
+      }
+    }
+    
+    // Try __INIT_DATA__
+    if (window.__INIT_DATA__) {
+      const init = window.__INIT_DATA__;
+      
+      if (init.offerModel) {
+        product.title_cn = product.title_cn || init.offerModel.subject;
+        product.min_order = init.offerModel.beginAmount || 1;
+      }
+      
+      if (init.skuModel?.skuInfoMap) {
+        Object.entries(init.skuModel.skuInfoMap).forEach(([specId, info]) => {
+          if (!product.skus.find(s => s.spec_id === specId)) {
             product.skus.push({
               spec_id: specId,
-              price: info.price || info.discountPrice,
-              stock: info.canBookCount || info.amountOnSale || 0,
+              price: info.price,
+              stock: info.canBookCount || 0,
               props_names: info.specAttrs || '',
-              image: info.skuPic,
             });
-          });
-        }
-        
-        // Seller info
-        if (d.sellerInfo) {
-          product.seller.name = d.sellerInfo.sellerName || d.sellerInfo.companyName;
-          product.seller.member_id = d.sellerInfo.loginId || d.sellerInfo.memberId;
-        }
+          }
+        });
       }
       
-      // 3. Try window.__INIT_DATA__ (another common location)
-      if (window.__INIT_DATA__) {
-        const initData = window.__INIT_DATA__;
-        if (initData.offerModel) {
-          const offer = initData.offerModel;
-          product.title_cn = product.title_cn || offer.subject;
-          product.min_order = offer.beginAmount || 1;
+      // Images from init data
+      if (init.offerModel?.images) {
+        init.offerModel.images.forEach(img => {
+          const url = cleanImageUrl(img);
+          if (url && !product.main_images.includes(url)) {
+            product.main_images.push(url);
+          }
+        });
+      }
+    }
+    
+    // Try globalData
+    if (window.globalData?.tempModel) {
+      const temp = window.globalData.tempModel;
+      if (temp.images) {
+        temp.images.forEach(img => {
+          const url = cleanImageUrl(typeof img === 'string' ? img : img.url);
+          if (url && !product.main_images.includes(url)) {
+            product.main_images.push(url);
+          }
+        });
+      }
+    }
+    
+    // Try to find data in script tags
+    document.querySelectorAll('script').forEach(script => {
+      const text = script.textContent || '';
+      
+      // Look for image arrays
+      const imgMatch = text.match(/"images"\s*:\s*\[([^\]]+)\]/);
+      if (imgMatch) {
+        try {
+          const urls = imgMatch[1].match(/"([^"]+)"/g);
+          if (urls) {
+            urls.forEach(url => {
+              const clean = cleanImageUrl(url.replace(/"/g, ''));
+              if (clean && !product.main_images.includes(clean)) {
+                product.main_images.push(clean);
+              }
+            });
+          }
+        } catch (e) {}
+      }
+      
+      // Look for SKU data
+      const skuMatch = text.match(/skuInfoMap['"]\s*:\s*(\{[^}]+(?:\{[^}]*\}[^}]*)*\})/);
+      if (skuMatch) {
+        try {
+          // This is complex JSON, skip for now - DOM extraction will handle it
+        } catch (e) {}
+      }
+    });
+  }
+  
+  function scrapeFromDOM(product) {
+    // Title
+    if (!product.title_cn) {
+      const titleSelectors = [
+        'h1.d-title', 
+        '.mod-detail-title h1', 
+        '.detail-title', 
+        'h1[class*="title"]', 
+        '.offer-title h1',
+        '.title-text',
+        '.d-title'
+      ];
+      for (const sel of titleSelectors) {
+        const el = document.querySelector(sel);
+        if (el?.textContent?.trim()) {
+          product.title_cn = el.textContent.trim();
+          break;
         }
-        if (initData.skuModel && initData.skuModel.skuInfoMap) {
-          Object.entries(initData.skuModel.skuInfoMap).forEach(([specId, info]) => {
-            if (!product.skus.find(s => s.spec_id === specId)) {
-              product.skus.push({
-                spec_id: specId,
-                price: info.price,
-                stock: info.canBookCount || 0,
-                props_names: info.specAttrs || '',
-              });
+      }
+    }
+    
+    // Price
+    if (!product.price) {
+      const priceEl = document.querySelector('.price-value, .price-now, .price-original-value, [class*="price"] .value');
+      if (priceEl) {
+        const match = priceEl.textContent.match(/[\d.]+/);
+        if (match) product.price = parseFloat(match[0]);
+      }
+    }
+    
+    // Seller
+    if (!product.seller.name) {
+      const sellerEl = document.querySelector('.company-name a, .shop-name a, [class*="seller-name"] a, .contact-name');
+      if (sellerEl) {
+        product.seller.name = sellerEl.textContent.trim();
+        product.seller.shop_url = sellerEl.href;
+        const memberMatch = sellerEl.href?.match(/memberId=([^&]+)|winport\/([^\/]+)/);
+        if (memberMatch) product.seller.member_id = memberMatch[1] || memberMatch[2];
+      }
+    }
+    
+    // Sold count
+    const soldEl = document.querySelector('.sale-count, [class*="sold"], [class*="sale"]');
+    if (soldEl) {
+      const match = soldEl.textContent.match(/\d+/);
+      if (match) product.sold_count = parseInt(match[0]);
+    }
+    
+    product.title = product.title_cn;
+  }
+  
+  function extractAllImages(product) {
+    // 1. Main gallery images (high priority)
+    const gallerySelectors = [
+      '.detail-gallery-img img',
+      '.mod-detail-gallery img',
+      '.vertical-img img',
+      '.thumb-list img',
+      '.detail-gallery img',
+      '.image-list img',
+      '#dt-tab img',
+      '.tab-pane img',
+      '.detail-main-img img',
+      '.main-img-list img',
+    ];
+    
+    gallerySelectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(img => {
+        const url = cleanImageUrl(img.src || img.dataset.src || img.dataset.lazySrc || img.dataset.original);
+        if (url && !product.main_images.includes(url)) {
+          product.main_images.push(url);
+        }
+      });
+    });
+    
+    // 2. SKU/Variant images
+    const skuImgSelectors = [
+      '.obj-sku img',
+      '.sku-item img', 
+      '[class*="sku"] img',
+      '.prop-img img',
+      '.sku-color img',
+      '.color-item img',
+    ];
+    
+    skuImgSelectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(img => {
+        const url = cleanImageUrl(img.src || img.dataset.src);
+        if (url && !product.sku_images.includes(url)) {
+          product.sku_images.push(url);
+        }
+      });
+    });
+    
+    // 3. Look for images in data attributes
+    document.querySelectorAll('[data-imgs], [data-images], [data-big-img]').forEach(el => {
+      try {
+        const data = el.dataset.imgs || el.dataset.images || el.dataset.bigImg;
+        if (data) {
+          if (data.startsWith('[')) {
+            JSON.parse(data).forEach(img => {
+              const url = cleanImageUrl(typeof img === 'string' ? img : img.url);
+              if (url && !product.main_images.includes(url)) {
+                product.main_images.push(url);
+              }
+            });
+          } else {
+            const url = cleanImageUrl(data);
+            if (url && !product.main_images.includes(url)) {
+              product.main_images.push(url);
             }
-          });
-        }
-      }
-      
-      // 4. Fallback: Scrape from DOM
-      if (!product.title_cn) {
-        const titleSelectors = ['h1.d-title', '.mod-detail-title h1', '.detail-title', 'h1[class*="title"]', '.offer-title'];
-        for (const sel of titleSelectors) {
-          const el = document.querySelector(sel);
-          if (el && el.textContent.trim()) {
-            product.title_cn = el.textContent.trim();
-            break;
           }
         }
+      } catch (e) {}
+    });
+    
+    // 4. Description images (lower priority)
+    document.querySelectorAll('.detail-content img, .offer-description img, .desc-content img').forEach(img => {
+      const url = cleanImageUrl(img.src || img.dataset.src);
+      if (url && !product.description_images.includes(url)) {
+        product.description_images.push(url);
       }
+    });
+  }
+  
+  function extractAllVariants(product) {
+    // If we already have SKUs from window objects, enhance them with DOM data
+    
+    // Get color options
+    const colorOptions = [];
+    document.querySelectorAll('.obj-sku .obj-content li, [class*="sku-prop"]:first-of-type li, .sku-color li').forEach((item, idx) => {
+      const name = item.textContent?.trim() || item.title || item.dataset.value || `Color ${idx + 1}`;
+      const img = item.querySelector('img');
+      const imgUrl = img ? cleanImageUrl(img.src || img.dataset.src) : null;
+      const specId = item.dataset.specId || item.dataset.value || item.dataset.skuId;
       
-      // 5. Extract all images
-      // Main gallery images
-      const galleryImages = document.querySelectorAll('.detail-gallery img, .mod-detail-gallery img, .vertical-img img, .tab-content img');
-      galleryImages.forEach(img => {
-        let src = img.src || img.dataset.src || img.dataset.lazySrc;
-        if (src) {
-          if (src.startsWith('//')) src = 'https:' + src;
-          // Get high-res version
-          src = src.replace(/_\d+x\d+\.(jpg|png|webp)/i, '.$1').replace(/\?.+$/, '');
-          if (!product.images.includes(src) && src.includes('alicdn')) {
-            product.images.push(src);
-          }
-        }
+      colorOptions.push({ 
+        name: name.substring(0, 30), 
+        image: imgUrl,
+        specId 
       });
+    });
+    
+    // Get size options
+    const sizeOptions = [];
+    document.querySelectorAll('.obj-sku:nth-of-type(2) .obj-content li, [class*="sku-prop"]:nth-of-type(2) li, .sku-size li').forEach((item, idx) => {
+      const name = item.textContent?.trim() || item.title || item.dataset.value || `Size ${idx + 1}`;
+      const specId = item.dataset.specId || item.dataset.value || item.dataset.skuId;
       
-      // SKU images (color/variant images)
-      const skuImages = document.querySelectorAll('.obj-sku img, .sku-item img, [class*="sku"] img');
-      skuImages.forEach(img => {
-        let src = img.src || img.dataset.src;
-        if (src) {
-          if (src.startsWith('//')) src = 'https:' + src;
-          src = src.replace(/_\d+x\d+\.(jpg|png|webp)/i, '.$1').replace(/\?.+$/, '');
-          if (!product.images.includes(src) && src.includes('alicdn')) {
-            product.images.push(src);
-          }
-        }
+      sizeOptions.push({ 
+        name: name.substring(0, 20),
+        specId 
       });
-      
-      // 6. Extract price from DOM if not found
-      if (!product.price) {
-        const priceEl = document.querySelector('.price-value, .price-now, [class*="price"]');
-        if (priceEl) {
-          const priceText = priceEl.textContent.replace(/[^\d.]/g, '');
-          if (priceText) product.price = parseFloat(priceText);
-        }
-      }
-      
-      // 7. Extract variants/SKU options from DOM
-      const colorItems = document.querySelectorAll('.obj-sku .obj-content li, [class*="sku-color"] li, [class*="sku-prop"] li');
-      const colorOptions = [];
-      const sizeOptions = [];
-      
-      colorItems.forEach(item => {
-        const name = item.textContent.trim() || item.title || item.dataset.value;
-        const img = item.querySelector('img');
-        const imgSrc = img ? (img.src || img.dataset.src) : null;
-        
-        // Determine if color or size based on parent or class
-        const parent = item.closest('.obj-sku, [class*="sku"]');
-        const label = parent ? parent.querySelector('.obj-title, .sku-title')?.textContent : '';
-        
-        if (label.includes('颜色') || label.includes('color') || imgSrc) {
-          colorOptions.push({ name, image: imgSrc });
-        } else if (label.includes('尺码') || label.includes('size') || label.includes('规格')) {
-          sizeOptions.push({ name });
-        }
-      });
-      
-      // Build variants array if SKUs not found from JS
-      if (product.skus.length === 0 && (colorOptions.length > 0 || sizeOptions.length > 0)) {
+    });
+    
+    // If no SKUs from window objects, build from DOM
+    if (product.skus.length === 0) {
+      if (colorOptions.length > 0 || sizeOptions.length > 0) {
         let idx = 0;
-        colorOptions.forEach((color, ci) => {
-          if (sizeOptions.length > 0) {
+        
+        if (colorOptions.length > 0 && sizeOptions.length > 0) {
+          // Both color and size
+          colorOptions.forEach((color, ci) => {
             sizeOptions.forEach((size, si) => {
               product.skus.push({
-                spec_id: `${ci}_${si}`,
+                spec_id: `${color.specId || ci}_${size.specId || si}`,
                 color: color.name,
                 size: size.name,
                 props_names: `颜色:${color.name};尺码:${size.name}`,
                 image: color.image,
                 price: product.price,
+                stock: 100,
               });
-              idx++;
             });
-          } else {
+          });
+        } else if (colorOptions.length > 0) {
+          // Only color
+          colorOptions.forEach((color, ci) => {
             product.skus.push({
-              spec_id: `${ci}`,
+              spec_id: color.specId || `color_${ci}`,
               color: color.name,
               props_names: `颜色:${color.name}`,
               image: color.image,
               price: product.price,
+              stock: 100,
             });
+          });
+        } else if (sizeOptions.length > 0) {
+          // Only size
+          sizeOptions.forEach((size, si) => {
+            product.skus.push({
+              spec_id: size.specId || `size_${si}`,
+              size: size.name,
+              props_names: `尺码:${size.name}`,
+              price: product.price,
+              stock: 100,
+            });
+          });
+        }
+      }
+    }
+    
+    // Enhance existing SKUs with color/size names if missing
+    product.skus.forEach(sku => {
+      if (sku.props_names && !sku.color && !sku.size) {
+        const parts = sku.props_names.split(';');
+        parts.forEach(part => {
+          const [key, value] = part.split(':');
+          if (key?.includes('颜色') || key?.toLowerCase().includes('color')) {
+            sku.color = value;
+          }
+          if (key?.includes('尺码') || key?.includes('尺寸') || key?.toLowerCase().includes('size')) {
+            sku.size = value;
           }
         });
       }
-      
-      // 8. Extract description images
-      const descImages = document.querySelectorAll('.detail-content img, .offer-description img, [class*="desc"] img');
-      descImages.forEach(img => {
-        let src = img.src || img.dataset.src;
-        if (src) {
-          if (src.startsWith('//')) src = 'https:' + src;
-          if (!product.description_images.includes(src) && src.includes('alicdn')) {
-            product.description_images.push(src);
-          }
-        }
-      });
-      
-      // 9. Extract seller info from DOM
-      if (!product.seller.name) {
-        const sellerEl = document.querySelector('.company-name a, .shop-name, [class*="seller"] a');
-        if (sellerEl) {
-          product.seller.name = sellerEl.textContent.trim();
-          product.seller.shop_url = sellerEl.href;
-          // Extract member_id from shop URL
-          const memberMatch = sellerEl.href?.match(/memberId=([^&]+)|shop\/([^\/]+)/);
-          if (memberMatch) product.seller.member_id = memberMatch[1] || memberMatch[2];
-        }
-      }
-      
-      // 10. Extract sold count
-      const soldEl = document.querySelector('.sale-count, [class*="sold"], [class*="sale"]');
-      if (soldEl) {
-        const soldMatch = soldEl.textContent.match(/\d+/);
-        if (soldMatch) product.sold_count = parseInt(soldMatch[0]);
-      }
-      
-      // 11. Set title (prefer Chinese, we'll translate later)
-      product.title = product.title_cn;
-      
-    } catch (e) {
-      console.error('[WaMerce] Error scraping product:', e);
-    }
+    });
     
-    console.log('[WaMerce] Scraped product:', product.product_id, 'Images:', product.images.length, 'SKUs:', product.skus.length);
-    return product;
+    product.variants = product.skus;
   }
   
-  // Scan page for product IDs (for listing pages)
+  function cleanImageUrl(url) {
+    if (!url) return null;
+    
+    // Remove quotes
+    url = url.replace(/["']/g, '');
+    
+    // Add protocol if missing
+    if (url.startsWith('//')) url = 'https:' + url;
+    
+    // Only accept alicdn images
+    if (!url.includes('alicdn') && !url.includes('1688.com')) return null;
+    
+    // Remove thumbnail size suffix to get full image
+    url = url.replace(/_\d+x\d+\.(\w+)(\?.*)?$/, '.$1');
+    url = url.replace(/\.(jpg|png|webp)_.+$/, '.$1');
+    
+    // Remove query params except for essential ones
+    url = url.split('?')[0];
+    
+    return url;
+  }
+  
+  // ============= LISTING PAGE SCANNING =============
   function scanPageForProducts() {
     const products = [];
     const seen = new Set();
     
-    // If on detail page, scrape full data
+    // If on detail page, get full data
     if (isProductDetailPage()) {
       const fullData = scrapeFullProductData();
       if (fullData.product_id) {
         products.push({
           id: fullData.product_id,
-          title: fullData.title,
+          title: fullData.title_cn || fullData.title,
           price: fullData.price ? `¥${fullData.price}` : '',
-          image: fullData.images[0] || '',
+          image: fullData.images[0] || fullData.main_images[0] || '',
           url: window.location.href,
           isCurrentPage: true,
-          fullData: fullData, // Include full data!
+          fullData: fullData, // Include complete scraped data!
         });
       }
       return products;
     }
     
-    // For listing pages, scan for product cards
-    const selectors = [
-      'a[href*="offer/"]',
-      'a[href*="detail.1688.com"]',
-      '[data-offer-id]',
-      '.sm-offer-item',
-      '.offer-list-row-offer',
-      '.space-offer-card-box'
-    ];
+    // For listing/search/collection pages
+    const productCards = document.querySelectorAll(`
+      .sm-offer-item,
+      .offer-list-row-offer,
+      .space-offer-card-box,
+      [data-offer-id],
+      .offer-item,
+      .product-item,
+      .card-item
+    `);
     
-    selectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(el => {
-        let productId = null;
-        
-        // Method 1: From href
-        const link = el.tagName === 'A' ? el : el.querySelector('a[href*="offer/"]');
-        if (link && link.href) {
+    productCards.forEach(card => {
+      let productId = card.dataset.offerId || card.dataset.id;
+      
+      // Try to get ID from link
+      if (!productId) {
+        const link = card.querySelector('a[href*="offer/"]');
+        if (link) {
           const match = link.href.match(/offer\/(\d{10,})/);
           if (match) productId = match[1];
         }
+      }
+      
+      if (productId && !seen.has(productId)) {
+        seen.add(productId);
         
-        // Method 2: From data attribute
-        if (!productId && el.dataset) {
-          productId = el.dataset.offerId || el.dataset.auctionId || el.dataset.id;
-        }
+        // Extract basic info from card
+        const titleEl = card.querySelector('.title, [class*="title"], h4, h3, .name');
+        const priceEl = card.querySelector('.price, [class*="price"]');
+        const imgEl = card.querySelector('img');
         
-        if (productId && !seen.has(productId) && productId.length >= 10) {
-          seen.add(productId);
-          
-          const container = el.closest('.sm-offer-item, .offer-item, .offer-list-row-offer, .space-offer-card-box, [class*="card"], [class*="item"]') || el;
-          
-          let title = '';
-          let price = '';
-          let image = '';
-          
-          // Find title
-          const titleSelectors = ['.title', '[class*="title"]', 'h4', 'h3', '.name', '[class*="name"]'];
-          for (const ts of titleSelectors) {
-            const titleEl = container.querySelector(ts);
-            if (titleEl && titleEl.textContent.trim()) {
-              title = titleEl.textContent.trim().substring(0, 80);
-              break;
-            }
-          }
-          
-          // Find price
-          const priceSelectors = ['.price', '[class*="price"]', '.value'];
-          for (const ps of priceSelectors) {
-            const priceEl = container.querySelector(ps);
-            if (priceEl) {
-              const priceText = priceEl.textContent.trim();
-              const priceMatch = priceText.match(/[\d.]+/);
-              if (priceMatch) {
-                price = '¥' + priceMatch[0];
-                break;
-              }
-            }
-          }
-          
-          // Find image
-          const imgEl = container.querySelector('img');
-          if (imgEl) {
-            image = imgEl.src || imgEl.dataset.src || imgEl.dataset.lazySrc || '';
-            if (image.startsWith('//')) image = 'https:' + image;
-          }
+        products.push({
+          id: productId,
+          title: titleEl?.textContent?.trim()?.substring(0, 80) || `Product ${productId.substring(0, 8)}`,
+          price: priceEl?.textContent?.match(/[\d.]+/)?.[0] ? `¥${priceEl.textContent.match(/[\d.]+/)[0]}` : '',
+          image: cleanImageUrl(imgEl?.src || imgEl?.dataset.src) || '',
+          url: `https://detail.1688.com/offer/${productId}.html`,
+          isCurrentPage: false,
+          // Note: fullData not available for listing items - need to visit detail page
+        });
+      }
+    });
+    
+    // Also check for links
+    if (products.length < 5) {
+      document.querySelectorAll('a[href*="detail.1688.com/offer/"]').forEach(link => {
+        const match = link.href.match(/offer\/(\d{10,})/);
+        if (match && !seen.has(match[1])) {
+          seen.add(match[1]);
+          const container = link.closest('[class*="item"], [class*="card"], .offer');
           
           products.push({
-            id: productId,
-            title: title || `Product ${productId.substring(0, 8)}...`,
-            price: price,
-            image: image,
-            url: `https://detail.1688.com/offer/${productId}.html`
+            id: match[1],
+            title: container?.querySelector('[class*="title"]')?.textContent?.trim()?.substring(0, 80) || link.textContent?.trim()?.substring(0, 80) || `Product ${match[1].substring(0, 8)}`,
+            price: container?.querySelector('[class*="price"]')?.textContent?.match(/[\d.]+/)?.[0] ? `¥${container.querySelector('[class*="price"]').textContent.match(/[\d.]+/)[0]}` : '',
+            image: cleanImageUrl(container?.querySelector('img')?.src) || '',
+            url: link.href,
+            isCurrentPage: false,
           });
         }
       });
-    });
+    }
     
     return products;
   }
   
-  // Create floating import button
+  // ============= FLOATING UI =============
   function createFloatingButton() {
     const existing = document.getElementById('wamerce-fab');
     if (existing) existing.remove();
@@ -372,15 +552,57 @@
     const fab = document.createElement('div');
     fab.id = 'wamerce-fab';
     fab.innerHTML = `
+      <style>
+        #wamerce-fab {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          z-index: 999999;
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .wamerce-fab-main {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 20px;
+          background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+          color: white;
+          border-radius: 50px;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+          transition: transform 0.2s, box-shadow 0.2s;
+          font-weight: 600;
+        }
+        .wamerce-fab-main:hover {
+          transform: scale(1.05);
+          box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+        }
+        .wamerce-fab-count {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          background: #22c55e;
+          color: white;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: bold;
+        }
+      </style>
       <div class="wamerce-fab-main">
-        <span class="wamerce-fab-icon">🛒</span>
-        <span class="wamerce-fab-text">WaMerce</span>
+        <span>🛒</span>
+        <span>WaMerce Import</span>
       </div>
       <div class="wamerce-fab-count" style="display: none;">0</div>
     `;
     
     document.body.appendChild(fab);
     
+    // Update count on hover
     fab.addEventListener('mouseenter', () => {
       const products = scanPageForProducts();
       const countEl = fab.querySelector('.wamerce-fab-count');
@@ -389,18 +611,13 @@
     });
     
     fab.addEventListener('click', () => {
-      showNotification('Click the WaMerce icon in your toolbar to import products!', 'info');
+      const products = scanPageForProducts();
+      if (products.length > 0) {
+        alert(`Found ${products.length} product(s)!\n\nClick the WaMerce extension icon in your browser toolbar to import.`);
+      } else {
+        alert('No products found on this page.\n\nTry visiting a product detail page or search results page.');
+      }
     });
-  }
-  
-  // Show notification
-  function showNotification(message, type = 'info') {
-    const notif = document.createElement('div');
-    notif.className = `wamerce-notification wamerce-notification-${type}`;
-    notif.textContent = message;
-    document.body.appendChild(notif);
-    
-    setTimeout(() => notif.remove(), 4000);
   }
   
   // Initialize
