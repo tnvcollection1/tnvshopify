@@ -1220,6 +1220,267 @@ async def get_tmapi_status():
     }
 
 
+# ==================== TAOBAO SHOP SCRAPING API ====================
+
+class TaobaoShopRequest(BaseModel):
+    """Request for Taobao shop scraping"""
+    shop_url: str = Field(..., description="Taobao shop URL (home page)")
+    page: int = Field(1, description="Page number")
+    page_size: int = Field(20, description="Items per page (fixed at 20)")
+
+
+@router.post("/taobao/shop/products")
+async def get_taobao_shop_products(request: TaobaoShopRequest):
+    """
+    Get products from a Taobao shop using TMAPI.
+    
+    Note: This API may have limitations. Check TMAPI docs for latest status.
+    
+    API Reference: http://api.tmapi.top/taobao/shop/items/v4
+    
+    Example shop_url: https://shop123456.taobao.com or https://abc.taobao.com
+    """
+    if not TMAPI_TOKEN:
+        raise HTTPException(status_code=400, detail="TMAPI token not configured")
+    
+    try:
+        # Try v4 endpoint first (may be under maintenance)
+        url = f"{TMAPI_BASE_URL}/taobao/shop/items/v4"
+        params = {
+            "apiToken": TMAPI_TOKEN,
+            "shop_url": request.shop_url,
+            "page": request.page,
+            "page_size": request.page_size,
+        }
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(url, params=params)
+            result = response.json()
+            
+            # Check response code
+            if result.get("code") == 200:
+                data = result.get("data", {})
+                items = data.get("items", [])
+                
+                # Parse products
+                products = []
+                for item in items:
+                    product = {
+                        "product_id": str(item.get("item_id", "")),
+                        "title": item.get("title", ""),
+                        "price": item.get("price") or item.get("sale_price"),
+                        "image": item.get("main_img"),
+                        "url": item.get("url"),
+                        "sales_count": item.get("sales_count"),
+                        "platform": "taobao",
+                    }
+                    products.append(product)
+                
+                return {
+                    "success": True,
+                    "shop_id": data.get("shop_id"),
+                    "seller_id": data.get("seller_id"),
+                    "total": data.get("total", len(products)),
+                    "page": data.get("page", request.page),
+                    "page_size": data.get("page_size", request.page_size),
+                    "products": products,
+                    "api_version": "v4",
+                }
+            
+            elif result.get("code") == 417:
+                # API under maintenance - try alternative endpoint
+                return {
+                    "success": False,
+                    "error": "Taobao shop API is under maintenance",
+                    "message": "Please use item_detail API for individual products instead",
+                    "code": 417,
+                    "alternative": "Use /api/1688-scraper/taobao/product/{product_id} for individual products",
+                }
+            
+            else:
+                return {
+                    "success": False,
+                    "error": result.get("msg", "Unknown error"),
+                    "code": result.get("code"),
+                }
+                
+    except Exception as e:
+        print(f"[Taobao Shop] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+
+@router.get("/taobao/product/{product_id}")
+async def get_taobao_product(product_id: str):
+    """
+    Get a single Taobao/Tmall product by ID using TMAPI.
+    This is more reliable than the shop scraping API.
+    
+    product_id: The item ID from a Taobao/Tmall URL (e.g., from item.taobao.com/item.htm?id=XXXXX)
+    """
+    if not TMAPI_TOKEN:
+        raise HTTPException(status_code=400, detail="TMAPI token not configured")
+    
+    db = get_db()
+    
+    try:
+        # Log TMAPI call
+        await db.tmapi_logs.insert_one({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "endpoint": "taobao/item_detail",
+            "product_id": product_id,
+            "cost": 50,  # Approximate cost
+        })
+        
+        product = await fetch_taobao_product_via_tmapi(product_id)
+        
+        if product:
+            # Save to scraped_products for history
+            product["scraped_at"] = datetime.now(timezone.utc).isoformat()
+            product["source_url"] = f"https://item.taobao.com/item.htm?id={product_id}"
+            
+            await db.scraped_products.update_one(
+                {"product_id": product_id},
+                {"$set": product},
+                upsert=True
+            )
+            
+            return {
+                "success": True,
+                "product": product,
+                "platform": product.get("platform", "taobao"),
+            }
+        else:
+            return {
+                "success": False,
+                "error": "Product not found or API error",
+                "product_id": product_id,
+            }
+            
+    except Exception as e:
+        print(f"[Taobao Product] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+
+@router.post("/taobao/batch-import")
+async def batch_import_taobao_products(
+    product_ids: List[str] = Body(..., description="List of Taobao product IDs"),
+    translate: bool = Body(True, description="Translate to English"),
+    background_tasks: BackgroundTasks = None,
+):
+    """
+    Batch import multiple Taobao/Tmall products.
+    Products are processed in background.
+    """
+    import uuid
+    
+    if not product_ids:
+        raise HTTPException(status_code=400, detail="No product IDs provided")
+    
+    # Clean product IDs (extract from URLs if needed)
+    clean_ids = []
+    for pid in product_ids:
+        pid = pid.strip()
+        if not pid:
+            continue
+        # Extract from URL if needed
+        match = re.search(r'[?&]id=(\d+)', pid)
+        if match:
+            clean_ids.append(match.group(1))
+        elif pid.isdigit():
+            clean_ids.append(pid)
+    
+    if not clean_ids:
+        raise HTTPException(status_code=400, detail="No valid product IDs found")
+    
+    job_id = str(uuid.uuid4())[:8]
+    
+    scrape_jobs[job_id] = {
+        "status": "started",
+        "url": "taobao_batch_import",
+        "progress": 0,
+        "total": len(clean_ids),
+        "products_scraped": 0,
+        "errors": [],
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "platform": "taobao",
+    }
+    
+    # Run in background
+    if background_tasks:
+        background_tasks.add_task(
+            run_taobao_batch_import,
+            job_id,
+            clean_ids,
+            translate
+        )
+    
+    return {
+        "success": True,
+        "job_id": job_id,
+        "message": f"Importing {len(clean_ids)} Taobao products",
+        "product_ids": clean_ids,
+    }
+
+
+async def run_taobao_batch_import(job_id: str, product_ids: List[str], translate: bool):
+    """Background task for Taobao batch import"""
+    db = get_db()
+    
+    scrape_jobs[job_id]["status"] = "processing"
+    
+    for i, product_id in enumerate(product_ids):
+        try:
+            # Log TMAPI call
+            await db.tmapi_logs.insert_one({
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "endpoint": "taobao/item_detail",
+                "product_id": product_id,
+                "cost": 50,
+            })
+            
+            product = await fetch_taobao_product_via_tmapi(product_id)
+            
+            if product and product.get("title"):
+                # Translate if requested
+                if translate:
+                    try:
+                        product = await translate_product(product)
+                    except Exception as trans_error:
+                        print(f"Translation failed for {product_id}: {trans_error}")
+                
+                # Save to database
+                product["scraped_at"] = datetime.now(timezone.utc).isoformat()
+                product["source_url"] = f"https://item.taobao.com/item.htm?id={product_id}"
+                
+                await db.scraped_products.update_one(
+                    {"product_id": product_id},
+                    {"$set": product},
+                    upsert=True
+                )
+                
+                scrape_jobs[job_id]["products_scraped"] += 1
+            else:
+                scrape_jobs[job_id]["errors"].append(f"Product {product_id}: Not found")
+                
+        except Exception as e:
+            scrape_jobs[job_id]["errors"].append(f"Product {product_id}: {str(e)}")
+        
+        scrape_jobs[job_id]["progress"] = int((i + 1) / len(product_ids) * 100)
+    
+    scrape_jobs[job_id]["status"] = "completed"
+    scrape_jobs[job_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+
 # ==================== IMAGE SEARCH API ====================
 
 class ImageSearchRequest(BaseModel):
