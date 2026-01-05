@@ -4,6 +4,13 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
+import {
   X,
   Save,
   Trash2,
@@ -15,6 +22,8 @@ import {
   Loader2,
   RefreshCw,
   Download,
+  Upload,
+  Store,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -24,7 +33,75 @@ const ProductEditModal = ({ product, onClose, onSave }) => {
   const [editedProduct, setEditedProduct] = useState(null);
   const [saving, setSaving] = useState(false);
   const [fetching, setFetching] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [activeTab, setActiveTab] = useState('basic'); // basic, images, variants
+  const [shopifyStores, setShopifyStores] = useState([]);
+  const [selectedStore, setSelectedStore] = useState('');
+
+  // Fetch Shopify stores on mount
+  useEffect(() => {
+    const fetchStores = async () => {
+      try {
+        const res = await fetch(`${API}/api/1688-scraper/shopify/stores`);
+        const data = await res.json();
+        if (data.success && data.stores?.length > 0) {
+          setShopifyStores(data.stores);
+          setSelectedStore(data.stores[0]?.store_name || '');
+        }
+      } catch (err) {
+        console.error('Failed to fetch Shopify stores:', err);
+      }
+    };
+    fetchStores();
+  }, []);
+
+  // Publish to Shopify
+  const publishToShopify = async () => {
+    if (!selectedStore) {
+      toast.error('Please select a Shopify store');
+      return;
+    }
+    if (!editedProduct?.product_id) return;
+    
+    // Check if product has images and variants
+    if (editedProduct.images.length === 0 || editedProduct.variants.length === 0) {
+      toast.error('Please fetch images & variants first before publishing');
+      return;
+    }
+    
+    setPublishing(true);
+    try {
+      const res = await fetch(`${API}/api/1688-scraper/shopify/publish-batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_ids: [editedProduct.product_id],
+          store_name: selectedStore,
+          price_multiplier: 2.5,
+          currency_rate: 20.0,
+        }),
+      });
+      const data = await res.json();
+      
+      if (data.success && data.published?.length > 0) {
+        toast.success(`Published to Shopify! ID: ${data.published[0].shopify_id}`);
+        // Update local state
+        setEditedProduct(prev => ({
+          ...prev,
+          shopify_product_id: data.published[0].shopify_id,
+          shopify_store: selectedStore,
+        }));
+        if (onSave) onSave({ ...editedProduct, shopify_product_id: data.published[0].shopify_id });
+      } else {
+        const errorMsg = data.failed?.[0]?.error || data.error || 'Failed to publish';
+        toast.error(errorMsg);
+      }
+    } catch (err) {
+      toast.error('Failed to publish: ' + err.message);
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   // Fetch full product details (images, variants) from TMAPI
   const fetchProductDetails = async () => {
