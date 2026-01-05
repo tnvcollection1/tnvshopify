@@ -56,6 +56,7 @@ from services.whatsapp_notifications import router as whatsapp_notifications_rou
 from services.fulfillment_pipeline_service import router as fulfillment_pipeline_router
 from services.shopify_fulfillment_sync import router as shopify_fulfillment_sync_router
 from services.dwz56_sync_service import router as dwz56_sync_router
+from services.email_notification_service import router as email_notification_router
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
