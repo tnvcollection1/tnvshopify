@@ -45,6 +45,36 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
   const [selectedSpecId, setSelectedSpecId] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [productLinks, setProductLinks] = useState({}); // Store 1688 links for each SKU
+  
+  // 1688 Account Selection
+  const [alibaba1688Accounts, setAlibaba1688Accounts] = useState([]);
+  const [selected1688Account, setSelected1688Account] = useState('');
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
+
+  // Fetch 1688 accounts on mount
+  useEffect(() => {
+    fetch1688Accounts();
+  }, []);
+
+  const fetch1688Accounts = async () => {
+    setLoadingAccounts(true);
+    try {
+      const res = await fetch(`${API}/api/1688/accounts`);
+      const data = await res.json();
+      if (data.success && data.accounts) {
+        setAlibaba1688Accounts(data.accounts);
+        // Auto-select default account
+        const defaultAcc = data.accounts.find(a => a.is_default) || data.accounts[0];
+        if (defaultAcc) {
+          setSelected1688Account(defaultAcc.account_id);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch 1688 accounts:', err);
+    } finally {
+      setLoadingAccounts(false);
+    }
+  };
 
   useEffect(() => {
     if (order) {
