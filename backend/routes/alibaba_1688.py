@@ -1395,6 +1395,7 @@ class CreatePurchaseOrderRequest(BaseModel):
     spec_id: Optional[str] = Field(None, description="1688 SKU/specId for specific variant")
     shopify_order_id: Optional[str] = Field(None, description="Related Shopify order ID")
     notes: Optional[str] = Field(None, description="Order notes")
+    account_id: Optional[str] = Field(None, description="1688 account ID to use for ordering")
 
 
 @router.post("/create-purchase-order")
@@ -1402,15 +1403,41 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
     """
     Create a purchase order on 1688 for a product
     Uses the alibaba.trade.fastCreateOrder API
+    Optionally uses a specific 1688 account if account_id is provided
     """
     db = get_db()
+    
+    # Determine which access token to use
+    access_token = ALIBABA_ACCESS_TOKEN
+    account_name = "Default"
+    
+    # If account_id is provided, look up the account's access token
+    if request.account_id:
+        account = await db.alibaba_1688_accounts.find_one({"account_id": request.account_id})
+        if account and account.get("access_token"):
+            access_token = account["access_token"]
+            account_name = account.get("account_name", account.get("member_id", request.account_id))
+            print(f"[1688 Order] Using account: {account_name}")
+        else:
+            return {
+                "success": False,
+                "error": "Account not found or no access token",
+                "message": f"Could not find 1688 account with ID: {request.account_id}"
+            }
+    
+    if not access_token:
+        return {
+            "success": False,
+            "error": "No access token configured",
+            "message": "Please configure 1688 access token or add an account"
+        }
     
     try:
         # First, get the shipping address
         address_result = await make_api_request(
             "com.alibaba.trade/alibaba.trade.receiveAddress.get",
             {},
-            access_token=ALIBABA_ACCESS_TOKEN
+            access_token=access_token
         )
         
         # Handle nested response structure
@@ -1421,7 +1448,7 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
             return {
                 "success": False,
                 "error": "No shipping address configured",
-                "message": "Please add a shipping address on 1688 first"
+                "message": f"Please add a shipping address on 1688 for account: {account_name}"
             }
         
         default_address = addresses[0]
