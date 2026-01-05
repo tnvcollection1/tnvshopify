@@ -476,6 +476,176 @@ async def get_carrier_config():
     }
 
 
+# ==================== DWZ Tracking Import ====================
+
+class DWZTrackingItem(BaseModel):
+    """Single DWZ tracking entry"""
+    order_id: str = Field(..., description="Shopify order ID or order number")
+    dwz_tracking: str = Field(..., description="DWZ56 tracking number")
+    auto_advance: bool = Field(True, description="Auto-advance to dwz56_shipped stage")
+
+
+class DWZTrackingImportRequest(BaseModel):
+    """Bulk DWZ tracking import request"""
+    store_name: str
+    tracking_data: List[DWZTrackingItem]
+
+
+@router.post("/pipeline/import-dwz-tracking")
+async def import_dwz_tracking(request: DWZTrackingImportRequest):
+    """
+    Bulk import DWZ tracking numbers for multiple orders.
+    Optionally auto-advances orders to 'dwz56_shipped' stage.
+    
+    Accepts CSV-like data format:
+    - order_id: Shopify order ID or order number
+    - dwz_tracking: DWZ56 tracking number
+    - auto_advance: Whether to move order to dwz56_shipped stage (default: true)
+    
+    Example:
+    {
+        "store_name": "tnvcollectionpk",
+        "tracking_data": [
+            {"order_id": "99001", "dwz_tracking": "DWZ123456", "auto_advance": true},
+            {"order_id": "99002", "dwz_tracking": "DWZ789012", "auto_advance": true}
+        ]
+    }
+    """
+    db = get_db()
+    now = datetime.now(timezone.utc).isoformat()
+    
+    results = {
+        "success": True,
+        "total": len(request.tracking_data),
+        "updated": 0,
+        "not_found": 0,
+        "errors": [],
+    }
+    
+    for item in request.tracking_data:
+        try:
+            # Handle both string and integer order_id
+            order_id = item.order_id
+            order_id_int = None
+            try:
+                order_id_int = int(order_id)
+            except (ValueError, TypeError):
+                pass
+            
+            # Build query
+            order_query = {"$or": [
+                {"shopify_order_id": order_id},
+                {"order_number": order_id},
+            ]}
+            if order_id_int is not None:
+                order_query["$or"].extend([
+                    {"shopify_order_id": order_id_int},
+                    {"order_number": order_id_int},
+                ])
+            
+            # Build update data
+            update_data = {
+                "dwz_tracking": item.dwz_tracking,
+                "updated_at": now,
+            }
+            
+            # Auto-advance to dwz56_shipped if requested
+            if item.auto_advance:
+                update_data["current_stage"] = "dwz56_shipped"
+                update_data["stage_dates.dwz56_shipped"] = now
+            
+            # Update in fulfillment_pipeline
+            result = await db.fulfillment_pipeline.update_one(
+                order_query,
+                {"$set": update_data}
+            )
+            
+            if result.modified_count > 0:
+                results["updated"] += 1
+                
+                # Also update customers collection
+                await db.customers.update_one(
+                    order_query,
+                    {"$set": {
+                        "dwz_tracking": item.dwz_tracking,
+                        "updated_at": now,
+                        **({"fulfillment_stage": "dwz56_shipped"} if item.auto_advance else {}),
+                    }}
+                )
+            else:
+                # Try to find in customers and create pipeline entry
+                customer = await db.customers.find_one(order_query, {"_id": 0})
+                if customer:
+                    pipeline_entry = {
+                        "shopify_order_id": customer.get("shopify_order_id"),
+                        "order_number": customer.get("order_number"),
+                        "customer_name": customer.get("customer_name"),
+                        "store_name": request.store_name,
+                        "dwz_tracking": item.dwz_tracking,
+                        "current_stage": "dwz56_shipped" if item.auto_advance else "1688_ordered",
+                        "created_at": customer.get("created_at", now),
+                        "updated_at": now,
+                        "stage_dates": {
+                            "shopify_order": customer.get("created_at", now),
+                            **({
+                                "1688_ordered": now,
+                                "dwz56_shipped": now,
+                            } if item.auto_advance else {"1688_ordered": now}),
+                        },
+                    }
+                    await db.fulfillment_pipeline.insert_one(pipeline_entry)
+                    results["updated"] += 1
+                else:
+                    results["not_found"] += 1
+                    results["errors"].append(f"Order {order_id} not found")
+                    
+        except Exception as e:
+            results["errors"].append(f"Error updating {item.order_id}: {str(e)}")
+    
+    return results
+
+
+@router.post("/pipeline/import-dwz-csv")
+async def import_dwz_tracking_csv(
+    store_name: str = Body(...),
+    csv_data: str = Body(..., description="CSV format: order_id,dwz_tracking (one per line)"),
+    auto_advance: bool = Body(True, description="Auto-advance all orders to dwz56_shipped"),
+):
+    """
+    Import DWZ tracking from CSV-formatted text.
+    
+    CSV format (no header required):
+    99001,DWZ123456
+    99002,DWZ789012
+    """
+    tracking_data = []
+    
+    lines = csv_data.strip().split('\n')
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+            
+        parts = line.split(',')
+        if len(parts) >= 2:
+            tracking_data.append(DWZTrackingItem(
+                order_id=parts[0].strip(),
+                dwz_tracking=parts[1].strip(),
+                auto_advance=auto_advance,
+            ))
+    
+    if not tracking_data:
+        raise HTTPException(status_code=400, detail="No valid tracking data found in CSV")
+    
+    # Use the main import function
+    request = DWZTrackingImportRequest(
+        store_name=store_name,
+        tracking_data=tracking_data,
+    )
+    
+    return await import_dwz_tracking(request)
+
+
 @router.post("/pipeline/sync-from-shopify")
 async def sync_orders_from_shopify(store_name: str = Body(..., embed=True)):
     """Sync unfulfilled orders from Shopify to the pipeline"""
