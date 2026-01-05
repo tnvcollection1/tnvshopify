@@ -412,65 +412,6 @@ async def bulk_update_stage(
     }
 
 
-@router.get("/pipeline/{order_id}")
-async def get_order_pipeline_details(order_id: str):
-    """Get detailed pipeline information for a specific order"""
-    db = get_db()
-    
-    # Try fulfillment_pipeline first
-    order = await db.fulfillment_pipeline.find_one(
-        {"$or": [
-            {"shopify_order_id": order_id},
-            {"order_number": order_id},
-        ]},
-        {"_id": 0}
-    )
-    
-    if not order:
-        # Try customers collection
-        customer = await db.customers.find_one(
-            {"$or": [
-                {"shopify_order_id": order_id},
-                {"order_number": order_id},
-            ]},
-            {"_id": 0}
-        )
-        
-        if not customer:
-            raise HTTPException(status_code=404, detail="Order not found")
-        
-        order = {
-            "shopify_order_id": customer.get("shopify_order_id"),
-            "order_number": customer.get("order_number"),
-            "customer_name": customer.get("customer_name"),
-            "current_stage": customer.get("fulfillment_stage", "shopify_order"),
-            "alibaba_order_id": customer.get("alibaba_order_id"),
-            "dwz_tracking": customer.get("dwz_tracking"),
-            "local_tracking": customer.get("tracking_number"),
-            "local_carrier": customer.get("tracking_company"),
-            "store_name": customer.get("store_name"),
-            "stage_dates": customer.get("stage_dates", {}),
-        }
-    
-    # Get 1688 purchase order info
-    purchase_order = await db.purchase_orders_1688.find_one(
-        {"shopify_order_id": order.get("order_number") or order.get("shopify_order_id")},
-        {"_id": 0}
-    )
-    
-    if purchase_order:
-        order["alibaba_order_id"] = purchase_order.get("alibaba_order_id")
-        order["alibaba_status"] = purchase_order.get("status")
-        order["alibaba_product_id"] = purchase_order.get("product_id")
-    
-    return {
-        "success": True,
-        "order": order,
-        "stages": FULFILLMENT_STAGES,
-        "carrier": get_carrier_for_store(order.get("store_name", "")),
-    }
-
-
 @router.get("/carriers")
 async def get_carrier_config():
     """Get carrier configuration for all stores"""
