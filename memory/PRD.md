@@ -194,7 +194,45 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 ---
 
 ## Last Updated
-January 5, 2026 - Service Refactoring, Webhook Fulfillment Sync, WhatsApp Notifications
+January 5, 2026 - Session 7: P0 Bug Fix, Webhook Security Enhancement, Shopify Sync Improvement
+
+---
+
+## Recent Completed Work (Jan 5, 2026 - Session 7)
+
+### 1. P0 Bug Fix: /purchase-1688 Page ✅
+- **Issue**: Page was showing Excel file upload UI instead of purchase orders list
+- **Fix**: Completely refactored `Purchase1688Orders.jsx` to:
+  - Fetch orders from `/api/1688/purchase-orders` endpoint
+  - Display orders in a data table with columns: 1688 Order ID, Product, Qty, Size/Color, Shopify Order, Account, Status, Created, Actions
+  - Status filter dropdown and Shopify Order ID search
+  - Order details modal with full API response
+  - Pagination support
+- **Testing**: 12/12 tests passed (100%)
+
+### 2. Webhook Security Enhancement ✅
+- **New Features Added to `/app/backend/services/fulfillment_webhooks.py`**:
+  - Rate limiting (100 requests/minute per IP, configurable)
+  - IP whitelist support (via WEBHOOK_IP_WHITELIST env var)
+  - Timestamp-based replay attack prevention
+  - Security event logging to `security_logs` collection
+- **New Security Endpoints**:
+  - `GET /api/webhooks/fulfillment/security/config` - View security configuration
+  - `GET /api/webhooks/fulfillment/security/stats` - Security statistics
+  - `GET /api/webhooks/fulfillment/security/logs` - Security event logs
+  - `POST /api/webhooks/fulfillment/security/generate-signature` - Generate test signatures
+- **Environment Variables**:
+  - `WEBHOOK_REQUIRE_SIGNATURE=true/false` - Require signature verification
+  - `WEBHOOK_RATE_LIMIT=100` - Requests per minute per IP
+  - `WEBHOOK_IP_WHITELIST=ip1,ip2` - Comma-separated IP whitelist
+
+### 3. Shopify Sync Improvement for Large Date Ranges ✅
+- **Issue**: Syncing >90 days of orders could timeout
+- **Fix**: Modified `run_shopify_sync_background()` in `server.py` to:
+  - Process large syncs in 30-day chunks
+  - Deduplicate orders after all chunks fetched
+  - Better progress reporting with phases
+  - Proper error handling per chunk
 
 ---
 
