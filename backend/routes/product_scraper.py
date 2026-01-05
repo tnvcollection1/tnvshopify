@@ -2752,74 +2752,13 @@ async def get_import_history_endpoint(
     """
     result = await _import_history_service(page=page, limit=limit, source=source)
     return {"success": True, **result}
-        p["image"] = p.get("images", [None])[0] if p.get("images") else None
-        del p["images"]
-        if "variants" in p:
-            del p["variants"]
-    
-    total = await db.scraped_products.count_documents(query)
-    
-    # Get source statistics
-    pipeline = [
-        {"$group": {"_id": "$source", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}}
-    ]
-    source_stats = await db.scraped_products.aggregate(pipeline).to_list(20)
-    
-    return {
-        "success": True,
-        "products": products,
-        "total": total,
-        "page": page,
-        "pages": (total + limit - 1) // limit,
-        "source_stats": {s["_id"]: s["count"] for s in source_stats if s["_id"]},
-    }
 
 
 @router.get("/import-history/stats")
-async def get_import_stats():
-    """Get import statistics summary"""
-    db = get_db()
-    
-    total_products = await db.scraped_products.count_documents({})
-    
-    # Products with variants
-    with_variants = await db.scraped_products.count_documents(
-        {"variants": {"$exists": True, "$ne": []}}
-    )
-    
-    # Products with images
-    with_images = await db.scraped_products.count_documents(
-        {"images": {"$exists": True, "$ne": []}}
-    )
-    
-    # Published to Shopify
-    published = await db.scraped_products.count_documents(
-        {"shopify_product_id": {"$exists": True, "$ne": None}}
-    )
-    
-    # By source
-    pipeline = [
-        {"$group": {"_id": "$source", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}}
-    ]
-    by_source = await db.scraped_products.aggregate(pipeline).to_list(20)
-    
-    # Recent imports (last 24 hours)
-    yesterday = datetime.now(timezone.utc) - timedelta(days=1)
-    recent = await db.scraped_products.count_documents(
-        {"scraped_at": {"$gte": yesterday.isoformat()}}
-    )
-    
-    return {
-        "success": True,
-        "total_products": total_products,
-        "with_variants": with_variants,
-        "with_images": with_images,
-        "published_to_shopify": published,
-        "imported_last_24h": recent,
-        "by_source": {s["_id"]: s["count"] for s in by_source if s["_id"]},
-    }
+async def get_import_stats_endpoint():
+    """Get import statistics summary. Uses tmapi_service."""
+    result = await _import_stats_service()
+    return {"success": True, **result}
 
 
 class BulkAutoLinkRequest(BaseModel):
