@@ -54,6 +54,7 @@ from routes.tmapi_buyer import router as tmapi_buyer_router
 from services.fulfillment_webhooks import router as fulfillment_webhooks_router
 from services.whatsapp_notifications import router as whatsapp_notifications_router
 from services.fulfillment_pipeline_service import router as fulfillment_pipeline_router
+from services.shopify_fulfillment_sync import router as shopify_fulfillment_sync_router
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
