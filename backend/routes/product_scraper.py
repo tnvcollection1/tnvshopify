@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import List, Dict, Optional
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
-from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Query, BackgroundTasks, Body
 from pydantic import BaseModel, Field
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
