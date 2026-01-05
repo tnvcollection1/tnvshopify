@@ -121,13 +121,33 @@ class BatchImportRequest(BaseModel):
 
 
 class ExtensionProduct(BaseModel):
-    """Product data from browser extension"""
+    """Product data from browser extension - Full scrape v3"""
     id: str
     title: str = ""
     price: str = ""
     image: str = ""
     url: str = ""
     isCurrentPage: bool = False
+    # Full data from v3 extension (no API needed!)
+    fullData: Optional[dict] = None
+
+
+class FullProductData(BaseModel):
+    """Complete product data scraped by extension v3"""
+    product_id: str
+    title: Optional[str] = None
+    title_cn: Optional[str] = None
+    price: Optional[float] = None
+    price_range: Optional[str] = None
+    images: List[str] = []
+    description: Optional[str] = None
+    description_images: List[str] = []
+    skus: List[dict] = []
+    variants: List[dict] = []
+    seller: Optional[dict] = None
+    min_order: int = 1
+    sold_count: Optional[int] = None
+    source: str = "extension_v3"
 
 
 class ExtensionImportRequest(BaseModel):
