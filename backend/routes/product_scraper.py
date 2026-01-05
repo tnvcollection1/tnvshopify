@@ -2422,7 +2422,7 @@ async def auto_link_from_image(
         return {"success": False, "error": str(e)}
 
 
-@router.get("/products/links")
+@router.get("/product-links/all")
 async def get_all_product_links(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100)
