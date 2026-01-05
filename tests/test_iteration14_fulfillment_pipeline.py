@@ -185,62 +185,41 @@ class TestFulfillmentPipelineOrderOperations:
     
     def test_get_order_details(self):
         """Test GET /api/fulfillment/pipeline/{order_id} returns order details"""
-        # First get an order from the pipeline
-        response = requests.get(
-            f"{BASE_URL}/api/fulfillment/pipeline",
-            params={"store_name": "tnvcollectionpk"}
-        )
-        data = response.json()
+        # Use a known order that exists (string order_number)
+        order_id = "29489"  # Known order from tnvcollection store
         
-        if data.get("orders") and len(data["orders"]) > 0:
-            order = data["orders"][0]
-            order_id = order.get("order_number") or order.get("shopify_order_id")
-            
-            # Get order details
-            detail_response = requests.get(f"{BASE_URL}/api/fulfillment/pipeline/{order_id}")
-            assert detail_response.status_code == 200
-            
-            detail_data = detail_response.json()
-            assert detail_data.get("success") == True
-            assert "order" in detail_data
-            assert "stages" in detail_data
-            
-            print(f"SUCCESS: Order details returned for order {order_id}")
-        else:
-            pytest.skip("No orders in pipeline to test")
+        # Get order details
+        detail_response = requests.get(f"{BASE_URL}/api/fulfillment/pipeline/{order_id}")
+        assert detail_response.status_code == 200
+        
+        detail_data = detail_response.json()
+        assert detail_data.get("success") == True
+        assert "order" in detail_data
+        assert "stages" in detail_data
+        
+        print(f"SUCCESS: Order details returned for order {order_id}")
     
     def test_update_order_stage(self):
         """Test POST /api/fulfillment/pipeline/{order_id}/update-stage updates stage"""
-        # First get an order from the pipeline
-        response = requests.get(
-            f"{BASE_URL}/api/fulfillment/pipeline",
-            params={"store_name": "tnvcollectionpk"}
-        )
-        data = response.json()
+        # Use a known order
+        order_id = "29489"
         
-        if data.get("orders") and len(data["orders"]) > 0:
-            order = data["orders"][0]
-            order_id = order.get("order_number") or order.get("shopify_order_id")
-            current_stage = order.get("current_stage", "shopify_order")
-            
-            # Update to next stage (or same stage for testing)
-            update_response = requests.post(
-                f"{BASE_URL}/api/fulfillment/pipeline/{order_id}/update-stage",
-                json={
-                    "stage": current_stage,  # Keep same stage for non-destructive test
-                    "store_name": "tnvcollectionpk",
-                    "send_notification": False
-                }
-            )
-            assert update_response.status_code == 200
-            
-            update_data = update_response.json()
-            assert update_data.get("success") == True
-            assert "stage" in update_data
-            
-            print(f"SUCCESS: Order stage update returned for order {order_id}")
-        else:
-            pytest.skip("No orders in pipeline to test")
+        # Update to same stage for non-destructive test
+        update_response = requests.post(
+            f"{BASE_URL}/api/fulfillment/pipeline/{order_id}/update-stage",
+            json={
+                "stage": "shopify_order",  # Keep same stage for non-destructive test
+                "store_name": "tnvcollection",
+                "send_notification": False
+            }
+        )
+        assert update_response.status_code == 200
+        
+        update_data = update_response.json()
+        assert update_data.get("success") == True
+        assert "stage" in update_data
+        
+        print(f"SUCCESS: Order stage update returned for order {order_id}")
 
 
 class TestImageSearchService:
