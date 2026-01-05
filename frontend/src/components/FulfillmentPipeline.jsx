@@ -176,37 +176,96 @@ const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating,
   );
 };
 
-// Analytics Modal
+// Advanced Analytics Modal with Date Range Filtering
 const AnalyticsModal = ({ store, onClose }) => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split('T')[0];
+  });
+  const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [activeTab, setActiveTab] = useState('overview'); // overview, funnel, timeline, stuck
+  
+  const fetchAnalytics = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/api/fulfillment/pipeline/analytics-advanced?store_name=${store}&start_date=${startDate}&end_date=${endDate}&group_by=day`);
+      const data = await res.json();
+      if (data.success) {
+        setAnalytics(data);
+      }
+    } catch (e) {
+      console.error('Error fetching analytics:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        const res = await fetch(`${API}/api/fulfillment/pipeline/analytics?store_name=${store}&days=30`);
-        const data = await res.json();
-        if (data.success) {
-          setAnalytics(data);
-        }
-      } catch (e) {
-        console.error('Error fetching analytics:', e);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchAnalytics();
   }, [store]);
   
+  const handleDateChange = () => {
+    fetchAnalytics();
+  };
+  
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-6">
+      <div className="bg-white rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-purple-500" />
-            Pipeline Analytics (Last 30 Days)
+            Advanced Pipeline Analytics
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        
+        {/* Date Range Selector */}
+        <div className="flex gap-4 items-end mb-6 p-4 bg-gray-50 rounded-lg">
+          <div>
+            <label className="block text-sm font-medium mb-1">Start Date</label>
+            <input 
+              type="date" 
+              value={startDate} 
+              onChange={e => setStartDate(e.target.value)}
+              className="border rounded px-3 py-2"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">End Date</label>
+            <input 
+              type="date" 
+              value={endDate} 
+              onChange={e => setEndDate(e.target.value)}
+              className="border rounded px-3 py-2"
+            />
+          </div>
+          <Button onClick={handleDateChange} className="bg-purple-600 hover:bg-purple-700">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Update
+          </Button>
+          <div className="ml-auto text-sm text-gray-500">
+            {analytics?.date_range?.days || 0} days selected
+          </div>
+        </div>
+        
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 border-b">
+          {['overview', 'funnel', 'timeline', 'stuck'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab 
+                  ? 'border-purple-500 text-purple-600' 
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
         </div>
         
         {loading ? (
@@ -214,58 +273,179 @@ const AnalyticsModal = ({ store, onClose }) => {
             <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
           </div>
         ) : analytics ? (
-          <div className="space-y-6">
-            <div className="grid grid-cols-4 gap-4">
-              <Card className="bg-blue-50">
-                <CardContent className="p-4 text-center">
-                  <p className="text-3xl font-bold text-blue-600">{analytics.total_orders}</p>
-                  <p className="text-sm text-gray-600">Total Orders</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-green-50">
-                <CardContent className="p-4 text-center">
-                  <p className="text-3xl font-bold text-green-600">{analytics.completed_orders}</p>
-                  <p className="text-sm text-gray-600">Completed</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-yellow-50">
-                <CardContent className="p-4 text-center">
-                  <p className="text-3xl font-bold text-yellow-600">{analytics.stuck_orders}</p>
-                  <p className="text-sm text-gray-600">Stuck (3+ days)</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-purple-50">
-                <CardContent className="p-4 text-center">
-                  <p className="text-3xl font-bold text-purple-600">{analytics.completion_rate}</p>
-                  <p className="text-sm text-gray-600">Completion Rate</p>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-3">Stage Distribution</h3>
-              <div className="space-y-2">
-                {FULFILLMENT_STAGES.map(stage => {
-                  const count = analytics.stage_distribution?.[stage.key] || 0;
-                  const total = analytics.total_orders || 1;
-                  const percentage = (count / total * 100).toFixed(0);
-                  
-                  return (
-                    <div key={stage.key} className="flex items-center gap-2">
-                      <span className="w-32 text-sm">{stage.label}</span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-4">
-                        <div 
-                          className="bg-blue-500 h-4 rounded-full"
-                          style={{ width: `${percentage}%` }}
-                        />
+          <>
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-4 gap-4">
+                  <Card className="bg-blue-50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-3xl font-bold text-blue-600">{analytics.summary?.total_orders || 0}</p>
+                      <p className="text-sm text-gray-600">Total Orders</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-green-50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-3xl font-bold text-green-600">{analytics.summary?.completed_orders || 0}</p>
+                      <p className="text-sm text-gray-600">Completed</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-yellow-50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-3xl font-bold text-yellow-600">{analytics.summary?.stuck_orders || 0}</p>
+                      <p className="text-sm text-gray-600">Stuck (3+ days)</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-purple-50">
+                    <CardContent className="p-4 text-center">
+                      <p className="text-3xl font-bold text-purple-600">{analytics.summary?.completion_rate || '0%'}</p>
+                      <p className="text-sm text-gray-600">Completion Rate</p>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Stage Distribution */}
+                <div>
+                  <h3 className="font-semibold mb-3">Stage Distribution</h3>
+                  <div className="space-y-2">
+                    {analytics.stage_distribution?.map(stage => (
+                      <div key={stage.stage} className="flex items-center gap-2">
+                        <span className="w-36 text-sm">{stage.label}</span>
+                        <div className="flex-1 bg-gray-200 rounded-full h-4">
+                          <div 
+                            className="bg-blue-500 h-4 rounded-full transition-all"
+                            style={{ width: `${stage.percentage}%` }}
+                          />
+                        </div>
+                        <span className="w-20 text-sm text-right">{stage.count} ({stage.percentage}%)</span>
                       </div>
-                      <span className="w-16 text-sm text-right">{count} ({percentage}%)</span>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Average Stage Times */}
+                {analytics.avg_stage_times?.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-3">Average Time per Stage</h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      {analytics.avg_stage_times?.map(time => (
+                        <Card key={time.stage} className="bg-gray-50">
+                          <CardContent className="p-3">
+                            <p className="text-sm text-gray-600">{time.label}</p>
+                            <p className="text-lg font-bold">{time.avg_days} days</p>
+                            <p className="text-xs text-gray-400">({time.sample_size} orders)</p>
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
-                  );
-                })}
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
+            )}
+            
+            {/* Funnel Tab */}
+            {activeTab === 'funnel' && (
+              <div className="space-y-4">
+                <h3 className="font-semibold">Conversion Funnel</h3>
+                <div className="space-y-2">
+                  {analytics.conversion_funnel?.map((stage, idx) => {
+                    const widthPercent = stage.reached > 0 
+                      ? (stage.reached / (analytics.conversion_funnel[0]?.reached || 1)) * 100 
+                      : 0;
+                    
+                    return (
+                      <div key={stage.stage} className="flex items-center gap-4">
+                        <span className="w-8 text-center text-gray-400">{idx + 1}</span>
+                        <div className="flex-1">
+                          <div 
+                            className="bg-gradient-to-r from-purple-500 to-purple-300 h-10 rounded flex items-center px-4 text-white font-medium"
+                            style={{ width: `${Math.max(widthPercent, 10)}%` }}
+                          >
+                            {stage.label}
+                          </div>
+                        </div>
+                        <div className="w-24 text-right">
+                          <p className="font-bold">{stage.reached}</p>
+                          <p className="text-xs text-gray-500">{stage.conversion_from_previous}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {/* Timeline Tab */}
+            {activeTab === 'timeline' && (
+              <div className="space-y-4">
+                <h3 className="font-semibold">Orders Over Time</h3>
+                {analytics.orders_over_time?.length > 0 ? (
+                  <div className="h-64 flex items-end gap-1">
+                    {analytics.orders_over_time?.map((point, idx) => {
+                      const maxOrders = Math.max(...analytics.orders_over_time.map(p => p.orders));
+                      const heightPercent = (point.orders / maxOrders) * 100;
+                      
+                      return (
+                        <div 
+                          key={point.date}
+                          className="flex-1 bg-blue-500 rounded-t hover:bg-blue-600 transition-colors relative group"
+                          style={{ height: `${Math.max(heightPercent, 5)}%` }}
+                        >
+                          <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
+                            {point.date}: {point.orders} orders
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No timeline data available</p>
+                )}
+                
+                {/* Fastest Completions */}
+                {analytics.fastest_completions?.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="font-semibold mb-3">Fastest Completions</h3>
+                    <div className="space-y-2">
+                      {analytics.fastest_completions?.slice(0, 5).map((order, idx) => (
+                        <div key={order.order_id} className="flex items-center gap-3 p-2 bg-green-50 rounded">
+                          <span className="text-green-600 font-bold">#{idx + 1}</span>
+                          <span className="font-mono">#{order.order_id}</span>
+                          <span className="text-gray-600">{order.customer}</span>
+                          <span className="ml-auto font-bold text-green-600">{order.days_to_complete} days</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Stuck Orders Tab */}
+            {activeTab === 'stuck' && (
+              <div className="space-y-4">
+                <h3 className="font-semibold">Stuck Orders (No update for 3+ days)</h3>
+                {analytics.stuck_orders?.length > 0 ? (
+                  <div className="space-y-2">
+                    {analytics.stuck_orders?.map(order => (
+                      <div key={order.order_id} className="flex items-center gap-4 p-3 bg-yellow-50 rounded border border-yellow-200">
+                        <span className="font-mono font-bold">#{order.order_id}</span>
+                        <Badge className="bg-yellow-200 text-yellow-800">{order.stage?.replace(/_/g, ' ')}</Badge>
+                        <span className="text-gray-600">{order.customer}</span>
+                        <span className="ml-auto text-red-600 font-bold">{order.days_stuck} days stuck</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                    <p className="text-green-600 font-medium">No stuck orders! Great job!</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         ) : (
           <p className="text-center text-gray-500">No analytics data available</p>
         )}
