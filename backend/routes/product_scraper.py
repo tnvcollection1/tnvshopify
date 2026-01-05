@@ -169,10 +169,8 @@ log_tmapi_usage = _log_tmapi_usage
 
 
 async def extract_product_ids_from_page(html: str) -> List[str]:
-    
-    params = {k: str(v) for k, v in params.items() if v is not None and str(v) != ''}
-    signature = generate_sign(api_path, params, ALIBABA_APP_SECRET)
-    params['_aop_signature'] = signature
+    """Extract product IDs from a 1688 page HTML"""
+    product_ids = []
     
     url = f"{ALIBABA_API_URL}/{api_path}"
     
