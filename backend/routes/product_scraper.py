@@ -173,16 +173,7 @@ async def extract_product_ids_from_page(html: str) -> List[str]:
     product_ids = []
     
     # Pattern 1: offer/ID.html links
-            
-            data = result.get("data", {})
-            
-            if not data:
-                print(f"[TMAPI-Taobao] No data for {product_id}")
-                return None
-            
-            # Extract images
-            images = []
-            main_imgs = data.get("main_imgs", []) or data.get("images", [])
+    offer_pattern = r'offer/(\d{10,})'
             for img in main_imgs[:10]:
                 if img:
                     if img.startswith("//"):
