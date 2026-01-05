@@ -304,7 +304,14 @@ const ProductEditModal = ({ product, onClose, onSave }) => {
         <div className="flex items-center justify-between p-4 border-b bg-gray-50">
           <div>
             <h2 className="text-xl font-bold">Edit Product</h2>
-            <p className="text-sm text-gray-500">ID: {editedProduct.product_id}</p>
+            <p className="text-sm text-gray-500">
+              ID: {editedProduct.product_id}
+              {editedProduct.shopify_product_id && (
+                <Badge className="ml-2 bg-green-100 text-green-700">
+                  Published: {editedProduct.shopify_product_id}
+                </Badge>
+              )}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             {/* Fetch Details Button - Gets images & variants from TMAPI */}
@@ -317,6 +324,33 @@ const ProductEditModal = ({ product, onClose, onSave }) => {
               {fetching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
               Fetch Images & Variants
             </Button>
+            
+            {/* Publish to Shopify */}
+            {!editedProduct.shopify_product_id && shopifyStores.length > 0 && (
+              <div className="flex items-center gap-1">
+                <Select value={selectedStore} onValueChange={setSelectedStore}>
+                  <SelectTrigger className="w-32 h-9">
+                    <SelectValue placeholder="Store" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {shopifyStores.map(store => (
+                      <SelectItem key={store.store_name} value={store.store_name}>
+                        {store.store_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  onClick={publishToShopify} 
+                  disabled={publishing || !selectedStore}
+                  className="gap-2 bg-blue-500 hover:bg-blue-600"
+                >
+                  {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  Publish to Shopify
+                </Button>
+              </div>
+            )}
+            
             <Button onClick={handleSave} disabled={saving} className="bg-green-500 hover:bg-green-600 gap-2">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Changes
