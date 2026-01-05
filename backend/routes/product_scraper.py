@@ -2425,6 +2425,27 @@ async def auto_link_from_image(
 @router.get("/product-links/all")
 async def get_all_product_links(
     page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=100)
+):
+    """Get all product links (Shopify -> 1688 mappings)"""
+    db = get_db()
+    
+    skip = (page - 1) * limit
+    
+    links = await db.product_links.find(
+        {},
+        {"_id": 0}
+    ).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.product_links.count_documents({})
+    
+    return {
+        "success": True,
+        "links": links,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit,
+    }
 
 
 class BulkAutoLinkRequest(BaseModel):
