@@ -570,6 +570,84 @@ const OrderDetailModal = ({ order, carrierInfo, onClose, onUpdateStage, onRefres
   );
 };
 
+// Tracking Prompt Modal
+const TrackingPromptModal = ({ order, stage, trackingConfig, carrierInfo, onClose, onConfirm }) => {
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [skipTracking, setSkipTracking] = useState(false);
+  
+  const handleConfirm = () => {
+    if (!trackingNumber.trim() && !skipTracking) {
+      toast.error('Please enter a tracking number or check "Skip for now"');
+      return;
+    }
+    
+    const additionalData = {};
+    if (trackingNumber.trim()) {
+      if (trackingConfig.type === 'dwz') {
+        additionalData.dwz_tracking = trackingNumber;
+      } else {
+        additionalData.local_tracking = trackingNumber;
+        additionalData.local_carrier = carrierInfo?.carrier || 'Local Carrier';
+      }
+    }
+    
+    onConfirm(order._id || order.shopify_order_id, stage, additionalData);
+    onClose();
+  };
+  
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold">Enter Tracking Number</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+          <p className="text-sm text-blue-700">
+            Moving order <strong>#{order.order_number || order.shopify_order_id}</strong> to <strong>{stage.replace(/_/g, ' ')}</strong>
+          </p>
+        </div>
+        
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">{trackingConfig.label}</label>
+          <Input
+            placeholder={`Enter ${trackingConfig.type === 'dwz' ? 'DWZ56' : carrierInfo?.carrier || 'Local'} tracking number`}
+            value={trackingNumber}
+            onChange={e => setTrackingNumber(e.target.value)}
+            className="w-full"
+            autoFocus
+          />
+          {trackingConfig.type === 'local' && (
+            <p className="text-xs text-gray-500 mt-1">
+              Carrier: {carrierInfo?.carrier} ({carrierInfo?.country})
+            </p>
+          )}
+        </div>
+        
+        <div className="mb-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={skipTracking}
+              onChange={e => setSkipTracking(e.target.checked)}
+              className="rounded"
+            />
+            Skip for now (can add tracking later)
+          </label>
+        </div>
+        
+        <div className="flex gap-2 justify-end">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleConfirm} className="bg-blue-600 hover:bg-blue-700">
+            {skipTracking ? 'Continue Without Tracking' : 'Add & Continue'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main Component
 const FulfillmentPipeline = () => {
   const [stores, setStores] = useState([]);
@@ -584,6 +662,7 @@ const FulfillmentPipeline = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updating, setUpdating] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [trackingPrompt, setTrackingPrompt] = useState(null); // {order, stage, config}
 
   const getCarrierInfo = useCallback(() => {
     return STORE_CARRIERS[selectedStore] || { carrier: 'Local Carrier', country: 'Unknown' };
