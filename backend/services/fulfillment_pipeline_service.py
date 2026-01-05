@@ -280,11 +280,26 @@ async def update_order_stage(
         }}
     )
     
+    # Send WhatsApp notification if enabled
+    notification_sent = False
+    if request.send_notification:
+        # Get the updated order for notification
+        updated_order = await db.fulfillment_pipeline.find_one(
+            {"$or": [
+                {"shopify_order_id": order_id},
+                {"order_number": order_id},
+            ]},
+            {"_id": 0}
+        )
+        if updated_order:
+            notification_sent = await send_whatsapp_stage_notification(updated_order, request.stage)
+    
     return {
         "success": True,
         "message": f"Order moved to {request.stage}",
         "order_id": order_id,
         "stage": request.stage,
+        "notification_sent": notification_sent,
     }
 
 
