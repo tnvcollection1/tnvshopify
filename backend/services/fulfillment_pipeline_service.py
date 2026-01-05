@@ -57,6 +57,7 @@ class StageUpdateRequest(BaseModel):
     local_tracking: Optional[str] = None
     local_carrier: Optional[str] = None
     notes: Optional[str] = None
+    send_notification: bool = Field(True, description="Send WhatsApp notification on stage change")
 
 
 def get_carrier_for_store(store_name: str) -> Dict:
