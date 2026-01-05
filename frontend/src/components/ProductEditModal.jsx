@@ -128,6 +128,19 @@ const ProductEditModal = ({ product, onClose, onSave }) => {
         tags: product.tags || [],
         category: product.category || '',
       });
+      
+      // Auto-fetch details if product has no variants or few images
+      // This enriches extension-scraped products with full TMAPI data
+      if ((product.variants || []).length === 0 || (product.images || []).length < 3) {
+        // Don't auto-fetch if source already indicates TMAPI data
+        if (product.source !== 'tmapi' && product.source !== 'tmapi_enriched') {
+          console.log('[ProductEditModal] Auto-fetching details for product with incomplete data');
+          // Delay slightly to allow modal to render first
+          setTimeout(() => {
+            fetchProductDetails();
+          }, 500);
+        }
+      }
     }
   }, [product]);
 
