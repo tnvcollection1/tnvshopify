@@ -101,6 +101,7 @@ scrape_collection_page = _scrape_collection
 run_scrape_job = _run_scrape_job
 run_batch_import = _run_batch_import
 run_extension_import = _run_extension_import
+run_taobao_batch_import = _run_taobao_batch_import
 
 
 class ScrapeRequest(BaseModel):
