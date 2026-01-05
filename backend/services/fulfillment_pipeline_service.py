@@ -801,13 +801,24 @@ async def bulk_send_notifications(
     failed = 0
     
     for order_id in order_ids:
-        order = await db.fulfillment_pipeline.find_one(
-            {"$or": [
-                {"shopify_order_id": order_id},
-                {"order_number": order_id},
-            ]},
-            {"_id": 0}
-        )
+        # Handle both string and integer
+        order_id_int = None
+        try:
+            order_id_int = int(order_id)
+        except (ValueError, TypeError):
+            pass
+        
+        query = {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": order_id},
+        ]}
+        if order_id_int is not None:
+            query["$or"].extend([
+                {"shopify_order_id": order_id_int},
+                {"order_number": order_id_int},
+            ])
+        
+        order = await db.fulfillment_pipeline.find_one(query, {"_id": 0})
         
         if order:
             target_stage = stage or order.get("current_stage")
@@ -825,6 +836,79 @@ async def bulk_send_notifications(
         "failed": failed,
         "total": len(order_ids),
     }
+
+
+@router.post("/pipeline/notify-by-stage")
+async def notify_all_orders_in_stage(
+    store_name: str = Body(...),
+    stage: str = Body(...),
+    notification_type: str = Body("stage_update"),
+):
+    """
+    Send batch WhatsApp notifications to all orders in a specific stage.
+    Useful for sending updates to all orders that just shipped, arrived, etc.
+    """
+    db = get_db()
+    
+    # Get all orders in the specified stage
+    orders = await db.fulfillment_pipeline.find(
+        {
+            "store_name": store_name,
+            "current_stage": stage,
+        },
+        {"_id": 0}
+    ).to_list(500)
+    
+    results = {
+        "success": True,
+        "stage": stage,
+        "total_orders": len(orders),
+        "notifications_sent": 0,
+        "notifications_failed": 0,
+        "skipped_no_phone": 0,
+        "details": [],
+    }
+    
+    for order in orders:
+        phone = order.get("customer_phone") or order.get("phone")
+        order_id = order.get("order_number") or order.get("shopify_order_id")
+        
+        if not phone:
+            results["skipped_no_phone"] += 1
+            continue
+        
+        try:
+            success = await send_whatsapp_stage_notification(order, stage)
+            if success:
+                results["notifications_sent"] += 1
+                results["details"].append({
+                    "order_id": str(order_id),
+                    "status": "sent",
+                })
+            else:
+                results["notifications_failed"] += 1
+                results["details"].append({
+                    "order_id": str(order_id),
+                    "status": "failed",
+                })
+        except Exception as e:
+            results["notifications_failed"] += 1
+            results["details"].append({
+                "order_id": str(order_id),
+                "status": "error",
+                "error": str(e),
+            })
+    
+    # Log the batch notification
+    await db.notification_batch_logs.insert_one({
+        "store_name": store_name,
+        "stage": stage,
+        "notification_type": notification_type,
+        "results": results,
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+    })
+    
+    return results
 
 
 # ==================== Export & Reporting ====================
