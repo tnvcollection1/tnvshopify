@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://easysourcer.preview.emergentagent.com/api'
+base_url = 'https://asian-mart-hub.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
