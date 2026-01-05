@@ -62,6 +62,80 @@ const ProductScraper = () => {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null); // For edit modal
 
+  // Image Search state
+  const [imageSearchUrl, setImageSearchUrl] = useState('');
+  const [imageSearchResults, setImageSearchResults] = useState([]);
+  const [imageSearchTotal, setImageSearchTotal] = useState(0);
+  const [imageSearchLoading, setImageSearchLoading] = useState(false);
+  const [imageSearchPage, setImageSearchPage] = useState(1);
+  const [imageSearchSort, setImageSearchSort] = useState('default');
+
+  // Image Search function
+  const handleImageSearch = async (page = 1) => {
+    if (!imageSearchUrl.trim()) {
+      toast.error('Please enter an image URL');
+      return;
+    }
+    
+    setImageSearchLoading(true);
+    setImageSearchPage(page);
+    
+    try {
+      const response = await fetch(`${API}/api/1688-scraper/image-search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_url: imageSearchUrl.trim(),
+          page: page,
+          page_size: 20,
+          sort: imageSearchSort,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setImageSearchResults(data.products || []);
+        setImageSearchTotal(data.total || 0);
+        toast.success(`Found ${data.total} similar products!`);
+      } else {
+        toast.error(data.error || 'Image search failed');
+        setImageSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Image search error:', error);
+      toast.error('Image search failed: ' + error.message);
+    } finally {
+      setImageSearchLoading(false);
+    }
+  };
+
+  // Import product from image search results
+  const importFromImageSearch = async (product) => {
+    try {
+      const response = await fetch(`${API}/api/1688-scraper/batch-import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_ids: [product.product_id],
+          translate: true,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success || data.job_id) {
+        toast.success(`Started importing product ${product.product_id}`);
+        setCurrentJobId(data.job_id);
+        setIsLoading(true);
+      } else {
+        toast.error(data.error || 'Import failed');
+      }
+    } catch (error) {
+      toast.error('Import failed: ' + error.message);
+    }
+  };
+
   // Fetch scraped products
   const fetchProducts = useCallback(async () => {
     setLoadingProducts(true);
