@@ -570,15 +570,26 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                       </div>
                     )}
 
-                    {/* Order Button */}
-                    {item.product_id_1688 && item.status !== 'ordered' && (
+                    {/* Order Button - works with both manual and auto-detected links */}
+                    {(item.product_id_1688 || link?.product_1688_id) && item.status !== 'ordered' && (
                       <Button
                         size="sm"
-                        onClick={() => openOrderingPanel(index)}
+                        onClick={() => {
+                          // Use manual link first, fall back to auto-detected
+                          if (!item.product_id_1688 && link?.product_1688_id) {
+                            // Set the product ID from auto-detected link
+                            setLineItems(prev => {
+                              const updated = [...prev];
+                              updated[index].product_id_1688 = link.product_1688_id;
+                              return updated;
+                            });
+                          }
+                          openOrderingPanel(index);
+                        }}
                         className="bg-green-500 hover:bg-green-600 text-white h-7"
                       >
                         <Zap className="w-3 h-3 mr-1" />
-                        Order
+                        Order on 1688
                       </Button>
                     )}
 
@@ -595,7 +606,20 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
                   {orderingItemIndex === index && (
                     <div className="mt-3 pt-3 border-t bg-gray-50 rounded-lg p-3 space-y-3">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-sm">Place Order on 1688</h4>
+                        <h4 className="font-medium text-sm flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-green-500" />
+                          Place Order on 1688
+                          {link && (
+                            <a 
+                              href={link.product_1688_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-orange-500 hover:underline"
+                            >
+                              ({link.product_1688_id})
+                            </a>
+                          )}
+                        </h4>
                         <Button size="sm" variant="ghost" onClick={() => setOrderingItemIndex(null)}>
                           <X className="w-4 h-4" />
                         </Button>
