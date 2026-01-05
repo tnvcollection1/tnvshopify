@@ -23,6 +23,8 @@ import {
   BarChart3,
   Bell,
   Upload,
+  Clock,
+  History,
 } from 'lucide-react';
 import {
   Select,
