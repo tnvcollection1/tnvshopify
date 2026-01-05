@@ -70,7 +70,6 @@ from services.job_manager_service import (
     run_scrape_job as _run_scrape_job,
     run_batch_import as _run_batch_import,
     run_extension_import as _run_extension_import,
-    run_taobao_batch_import as _run_taobao_batch_import,
 )
 from services.shopify_publishing_service import (
     publish_product_to_shopify,
