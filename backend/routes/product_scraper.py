@@ -166,11 +166,9 @@ fetch_product_via_api = _fetch_official_api
 fetch_product_via_tmapi = _fetch_tmapi
 fetch_taobao_product_via_tmapi = _fetch_taobao_tmapi
 log_tmapi_usage = _log_tmapi_usage
-        "productID": int(product_id),
-        "webSite": "1688",
-        "access_token": ALIBABA_ACCESS_TOKEN,
-        "_aop_timestamp": str(int(_time.time() * 1000)),
-    }
+
+
+async def extract_product_ids_from_page(html: str) -> List[str]:
     
     params = {k: str(v) for k, v in params.items() if v is not None and str(v) != ''}
     signature = generate_sign(api_path, params, ALIBABA_APP_SECRET)
