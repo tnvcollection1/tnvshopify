@@ -8,6 +8,7 @@ Note: Much of the logic has been moved to service modules:
 - services/product_linking_service.py - Product linking logic
 - services/tmapi_service.py - TMAPI operations and monitoring
 - services/image_search_service.py - Image search functionality
+- services/product_fetcher_service.py - Product fetching from APIs
 """
 
 import httpx
@@ -38,6 +39,16 @@ from services.tmapi_service import (
     get_import_history as _import_history_service,
     get_import_stats as _import_stats_service,
 )
+from services.product_fetcher_service import (
+    fetch_product_via_tmapi as _fetch_tmapi,
+    fetch_taobao_product_via_tmapi as _fetch_taobao_tmapi,
+    fetch_product_via_official_api as _fetch_official_api,
+    fetch_product_auto,
+    detect_product_platform,
+    save_product_to_db,
+    batch_fetch_products,
+    log_tmapi_usage as _log_tmapi_usage,
+)
 
 load_dotenv()
 
@@ -58,6 +69,7 @@ router = APIRouter(prefix="/api/1688-scraper", tags=["1688 Scraper"])
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
 
 # NOTE: translate_to_english and translate_product are now imported from services/translation_service.py
+# NOTE: Product fetching functions now imported from services/product_fetcher_service.py
 
 
 class ScrapeRequest(BaseModel):
