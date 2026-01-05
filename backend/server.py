@@ -1615,10 +1615,12 @@ async def run_shopify_sync_background(
                     await db.customers.insert_one(new_customer)
                     customers_created += 1
                 
-                # Update progress every 10 orders
+                # Update progress every 10 orders (processing is 30-100% of overall progress)
                 if i % 10 == 0:
-                    shopify_sync_jobs[job_id]["progress"] = int((i + 1) / total * 100)
+                    process_progress = int((i + 1) / total * 70)  # 70% for processing (30-100%)
+                    shopify_sync_jobs[job_id]["progress"] = 30 + process_progress
                     shopify_sync_jobs[job_id]["orders_processed"] = i + 1
+                    shopify_sync_jobs[job_id]["phase"] = f"Processing order {i + 1}/{total}..."
                     
             except Exception as e:
                 shopify_sync_jobs[job_id]["errors"].append(f"Order {order_data.get('order_number')}: {str(e)}")
