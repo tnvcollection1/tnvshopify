@@ -54,6 +54,7 @@ import UserManagement from "@/components/UserManagement";
 import TmapiMonitor from "@/components/TmapiMonitor";
 import ShopifyHistoricalSync from "@/components/ShopifyHistoricalSync";
 import FulfillmentSync from "@/components/FulfillmentSync";
+import BulkOrder1688 from "@/components/BulkOrder1688";
 import PricingPage from "@/components/PricingPage";
 import NotificationSettings from "@/components/NotificationSettings";
 import FacebookLeadAds from "@/components/FacebookLeadAds";
