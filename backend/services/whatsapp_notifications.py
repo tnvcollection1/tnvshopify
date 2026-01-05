@@ -178,10 +178,15 @@ async def get_fulfillment_data(order_id: str) -> Optional[Dict]:
 
 async def send_whatsapp_message(phone: str, message: str) -> Dict:
     """Send a WhatsApp message via Meta Business API"""
+    clean_phone = clean_phone_number(phone)
+    
+    # URL-encode message for wa.me link
+    import urllib.parse
+    encoded_message = urllib.parse.quote(message[:500])
+    wa_url = f"https://wa.me/{clean_phone}?text={encoded_message}"
+    
     if not WHATSAPP_PHONE_NUMBER_ID or not WHATSAPP_ACCESS_TOKEN:
         # Fallback: return wa.me link
-        clean_phone = clean_phone_number(phone)
-        wa_url = f"https://wa.me/{clean_phone}?text={message[:500]}"
         return {
             "success": True,
             "method": "wa_link",
@@ -198,7 +203,7 @@ async def send_whatsapp_message(phone: str, message: str) -> Dict:
         
         payload = {
             "messaging_product": "whatsapp",
-            "to": clean_phone_number(phone),
+            "to": clean_phone,
             "type": "text",
             "text": {"body": message},
         }
@@ -211,18 +216,27 @@ async def send_whatsapp_message(phone: str, message: str) -> Dict:
                 return {
                     "success": True,
                     "method": "api",
+                    "wa_url": wa_url,
                     "message_id": result.get("messages", [{}])[0].get("id"),
                 }
             else:
+                # API failed - return wa.me link as fallback
                 return {
-                    "success": False,
-                    "error": result.get("error", {}).get("message", "Unknown error"),
-                    "code": response.status_code,
+                    "success": True,  # Return success since wa.me works
+                    "method": "wa_link_fallback",
+                    "wa_url": wa_url,
+                    "api_error": result.get("error", {}).get("message", "API call failed"),
                 }
                 
     except Exception as e:
         logger.error(f"WhatsApp API error: {e}")
-        return {"success": False, "error": str(e)}
+        # Return wa.me link on any error
+        return {
+            "success": True,
+            "method": "wa_link_fallback",
+            "wa_url": wa_url,
+            "error": str(e),
+        }
 
 
 # ==================== API Endpoints ====================
