@@ -168,16 +168,7 @@ fetch_taobao_product_via_tmapi = _fetch_taobao_tmapi
 log_tmapi_usage = _log_tmapi_usage
 
 
-async def fetch_taobao_product_via_tmapi(product_id: str) -> Optional[Dict]:
-    """
-    Fetch product details from Taobao/Tmall using TMAPI.
-    Works for Taobao and Tmall products.
-    
-    API: http://api.tmapi.top/taobao/item_detail?apiToken=xxx&item_id=xxx
-    """
-    if not TMAPI_TOKEN:
-        print(f"[TMAPI-Taobao] No API token configured")
-        return None
+def detect_product_platform(product_id_or_url: str) -> str:
     
     url = f"{TMAPI_BASE_URL}/taobao/item_detail"
     params = {
