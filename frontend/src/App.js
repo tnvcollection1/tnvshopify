@@ -492,6 +492,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/fulfillment-pipeline" 
+        element={
+          <ProtectedRoute>
+            <FulfillmentPipeline />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/bulk-order-1688" 
         element={
           <ProtectedRoute>
