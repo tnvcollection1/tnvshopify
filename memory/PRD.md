@@ -194,30 +194,59 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 ---
 
 ## Last Updated
-January 5, 2026 - TMAPI Monitor integration complete, Chrome Extension v5.0 with one-click import
+January 5, 2026 - Shopify Historical Sync UI, 1688 Account Selection, Taobao APIs implemented
 
 ---
 
-## Recent Completed Work (Jan 5, 2026)
+## Recent Completed Work (Jan 5, 2026 - Session 2)
 
-### 1. TMAPI Monitor Page ✅
-- **Feature**: New dashboard to track API usage and product imports
-- **Route**: `/tmapi-monitor`
-- **Components**: 
-  - `TmapiMonitor.jsx` - Main monitor component
-  - Added to `App.js` routing and `Sidebar.jsx` navigation
-- **Shows**:
-  - Today's API calls with estimated points
-  - Success rate
-  - Total estimated points used (7 days)
-  - Failed calls
-  - Product Import Statistics (total, with images, with variants, published, last 24h)
-  - Usage by Endpoint breakdown
-  - Recent API Calls table
+### 1. Shopify Historical Sync UI ✅
+- **Feature**: New page for batch-syncing historical Shopify orders
+- **Route**: `/shopify-sync`
+- **Component**: `ShopifyHistoricalSync.jsx`
+- **Features**:
+  - Store selector dropdown
+  - Three sync modes: Quick Select, Date Range, Days Back
+  - Time period presets (30, 60, 90 days, 6 months, 12 months, All time)
+  - Date range picker for custom periods
+  - Days slider (7-365 days)
+  - Progress tracking for running sync jobs
+  - Recent sync jobs history (stored in localStorage)
+  - Tips section for users
 
-### 2. Chrome Extension v5.0 ✅
+### 2. 1688 Account Selection for Orders ✅
+- **Feature**: Select which 1688 account to use when placing orders
+- **Component**: `OrderFulfillmentModal.jsx`
+- **Changes**:
+  - Fetches 1688 accounts on modal open
+  - Shows account selector dropdown when accounts exist
+  - Default account auto-selected
+  - account_id passed to create-purchase-order API
+  - Account name shown in order confirmation
+
+### 3. Taobao/Tmall APIs ✅
+- **New Endpoints**:
+  - `POST /api/1688-scraper/taobao/shop/products` - Get products from Taobao shop (may return 417 if under maintenance)
+  - `GET /api/1688-scraper/taobao/product/{product_id}` - Get single Taobao product details
+  - `POST /api/1688-scraper/taobao/batch-import` - Batch import Taobao products
+- **Features**:
+  - Full product data retrieval via TMAPI
+  - Automatic translation support
+  - Product saved to `scraped_products` collection
+  - TMAPI usage logging
+
+### 4. Chrome Extension v5.0 ✅
 - **Key Change**: Removed manual URL configuration - now uses hardcoded deployment URL
 - **One-Click Import**: Users just click the WaMerce icon to collect products
 - **Deployment URL**: `https://asian-mart-hub.preview.emergentagent.com`
 - **Files Updated**: `popup.html`, `popup.js`, `manifest.json`
 - **Download**: `/app/browser-extension/wamerce-1688-extension.zip`
+
+### 5. TMAPI Monitor Page ✅
+- **Feature**: Dashboard to track API usage and product imports
+- **Route**: `/tmapi-monitor`
+- **Shows**: API calls, success rate, points used, product import stats
+
+---
+
+## Previous Completed Work (Jan 5, 2026 - Session 1)
