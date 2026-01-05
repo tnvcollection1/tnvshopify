@@ -447,6 +447,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/1688-accounts" 
+        element={
+          <ProtectedRoute>
+            <Alibaba1688Accounts />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/inventory-clearance" 
         element={
           <ProtectedRoute>
