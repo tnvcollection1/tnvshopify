@@ -1260,6 +1260,15 @@ async def get_taobao_shop_products(request: TaobaoShopRequest):
             # Check response code
             if result.get("code") == 200:
                 data = result.get("data", {})
+                
+                # Handle case where data might be a string (error message)
+                if isinstance(data, str):
+                    return {
+                        "success": False,
+                        "error": data,
+                        "message": "API returned string data instead of object",
+                    }
+                
                 items = data.get("items", [])
                 
                 # Parse products
