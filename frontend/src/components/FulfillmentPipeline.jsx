@@ -987,6 +987,7 @@ const FulfillmentPipeline = () => {
               onUpdateStage={updateOrderStage}
               updating={updating}
               onNotify={sendNotification}
+              onPromptTracking={(order, stage, config) => setTrackingPrompt({ order, stage, config })}
             />
           ))}
         </div>
