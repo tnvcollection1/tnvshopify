@@ -194,4 +194,30 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 ---
 
 ## Last Updated
-January 5, 2026 - Product Edit Modal fix (images/variants display) complete
+January 5, 2026 - TMAPI Monitor integration complete, Chrome Extension v5.0 with one-click import
+
+---
+
+## Recent Completed Work (Jan 5, 2026)
+
+### 1. TMAPI Monitor Page ✅
+- **Feature**: New dashboard to track API usage and product imports
+- **Route**: `/tmapi-monitor`
+- **Components**: 
+  - `TmapiMonitor.jsx` - Main monitor component
+  - Added to `App.js` routing and `Sidebar.jsx` navigation
+- **Shows**:
+  - Today's API calls with estimated points
+  - Success rate
+  - Total estimated points used (7 days)
+  - Failed calls
+  - Product Import Statistics (total, with images, with variants, published, last 24h)
+  - Usage by Endpoint breakdown
+  - Recent API Calls table
+
+### 2. Chrome Extension v5.0 ✅
+- **Key Change**: Removed manual URL configuration - now uses hardcoded deployment URL
+- **One-Click Import**: Users just click the WaMerce icon to collect products
+- **Deployment URL**: `https://asian-mart-hub.preview.emergentagent.com`
+- **Files Updated**: `popup.html`, `popup.js`, `manifest.json`
+- **Download**: `/app/browser-extension/wamerce-1688-extension.zip`
