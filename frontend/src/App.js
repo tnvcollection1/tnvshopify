@@ -473,6 +473,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/shopify-sync" 
+        element={
+          <ProtectedRoute>
+            <ShopifyHistoricalSync />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/pricing" 
         element={
           <ProtectedRoute>
