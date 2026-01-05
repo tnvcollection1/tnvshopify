@@ -805,7 +805,7 @@ const BulkActionsModal = ({ orders, store, carrierInfo, onClose, onSuccess }) =>
         body.local_carrier = carrierInfo?.carrier || 'TCS';
       }
       
-      const res = await fetch(`${API}/api/fulfillment/pipeline/bulk-update`, {
+      const res = await fetch(`${API}/api/fulfillment/pipeline/bulk-update-stage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
