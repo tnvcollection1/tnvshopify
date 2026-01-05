@@ -59,7 +59,9 @@ const ShopifyHistoricalSync = () => {
     if (savedJobs) {
       try {
         setSyncJobs(JSON.parse(savedJobs));
-      } catch {}
+      } catch (e) {
+        console.error('Failed to parse saved jobs:', e);
+      }
     }
   }, []);
 
