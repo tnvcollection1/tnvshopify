@@ -60,6 +60,7 @@ const ProductScraper = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null); // For edit modal
 
   // Fetch scraped products
   const fetchProducts = useCallback(async () => {
