@@ -906,6 +906,271 @@ const BulkActionsModal = ({ orders, store, carrierInfo, onClose, onSuccess }) =>
   );
 };
 
+// Order History Timeline Modal
+const OrderHistoryModal = ({ orderId, onClose }) => {
+  const [loading, setLoading] = useState(true);
+  const [history, setHistory] = useState(null);
+  
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch(`${API}/api/dwz56-sync/order-history/${orderId}`);
+        const data = await res.json();
+        if (data.success) {
+          setHistory(data);
+        }
+      } catch (e) {
+        console.error('Error fetching history:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchHistory();
+  }, [orderId]);
+  
+  const formatDate = (timestamp) => {
+    if (!timestamp) return '';
+    try {
+      return new Date(timestamp).toLocaleString();
+    } catch {
+      return timestamp;
+    }
+  };
+  
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            <History className="w-5 h-5 text-blue-500" />
+            Order Timeline - #{orderId}
+          </h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          </div>
+        ) : history ? (
+          <>
+            {/* Current State Summary */}
+            {history.current_state && (
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-700 mb-2">Current Status</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-500">Stage:</span>
+                    <Badge className="ml-2">{history.current_state.stage?.replace(/_/g, ' ')}</Badge>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Customer:</span>
+                    <span className="ml-2">{history.current_state.customer || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">DWZ Tracking:</span>
+                    <span className="ml-2 font-mono">{history.current_state.dwz_tracking || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Local Tracking:</span>
+                    <span className="ml-2 font-mono">{history.current_state.local_tracking || '-'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Timeline */}
+            <div className="relative">
+              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+              
+              {history.timeline && history.timeline.length > 0 ? (
+                <div className="space-y-4">
+                  {history.timeline.map((event, idx) => (
+                    <div key={idx} className="relative pl-10">
+                      <div className="absolute left-0 w-8 h-8 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center text-lg">
+                        {event.icon || '📦'}
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex justify-between items-start">
+                          <p className="font-medium">{event.label}</p>
+                          <span className="text-xs text-gray-500">{formatDate(event.timestamp)}</span>
+                        </div>
+                        {event.details && (
+                          <div className="text-sm text-gray-600 mt-1">
+                            {event.details.from && event.details.to && (
+                              <span>{event.details.from} → {event.details.to}</span>
+                            )}
+                            {event.details.tracking && (
+                              <span className="font-mono">Tracking: {event.details.tracking}</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">No history events yet</p>
+              )}
+            </div>
+          </>
+        ) : (
+          <p className="text-gray-500 text-center py-8">Order not found</p>
+        )}
+        
+        <div className="mt-6 flex justify-end">
+          <Button variant="outline" onClick={onClose}>Close</Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// DWZ Auto-Sync Button Component
+const DWZSyncButton = ({ store, onSyncComplete }) => {
+  const [syncing, setSyncing] = useState(false);
+  const [results, setResults] = useState(null);
+  
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch(`${API}/api/dwz56-sync/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ store_name: store, days_back: 30 }),
+      });
+      const data = await res.json();
+      setResults(data);
+      
+      if (data.success) {
+        toast.success(`Synced ${data.matched} orders, ${data.updated} stage changes`);
+        if (data.updated > 0 && onSyncComplete) {
+          onSyncComplete();
+        }
+      } else {
+        toast.error('DWZ sync failed');
+      }
+    } catch (e) {
+      toast.error('Failed to sync with DWZ');
+    } finally {
+      setSyncing(false);
+    }
+  };
+  
+  return (
+    <Button 
+      variant="outline" 
+      size="sm" 
+      onClick={handleSync}
+      disabled={syncing}
+      className="border-cyan-300 text-cyan-600 hover:bg-cyan-50"
+      title="Fetch tracking updates from DWZ56"
+    >
+      {syncing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+      Sync DWZ
+    </Button>
+  );
+};
+
+// Batch Notify Modal
+const BatchNotifyModal = ({ store, orders, onClose, onSuccess }) => {
+  const [selectedStage, setSelectedStage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [results, setResults] = useState(null);
+  
+  const handleSend = async () => {
+    if (!selectedStage) {
+      toast.error('Select a stage');
+      return;
+    }
+    
+    setSending(true);
+    try {
+      const res = await fetch(`${API}/api/fulfillment/pipeline/notify-by-stage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          store_name: store,
+          stage: selectedStage,
+        }),
+      });
+      const data = await res.json();
+      setResults(data);
+      
+      if (data.success) {
+        toast.success(`Sent ${data.notifications_sent} notifications`);
+      }
+    } catch (e) {
+      toast.error('Failed to send notifications');
+    } finally {
+      setSending(false);
+    }
+  };
+  
+  // Count orders per stage
+  const stageCounts = FULFILLMENT_STAGES.reduce((acc, stage) => {
+    acc[stage.key] = orders.filter(o => o.current_stage === stage.key).length;
+    return acc;
+  }, {});
+  
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            <Bell className="w-5 h-5 text-green-500" />
+            Batch WhatsApp Notifications
+          </h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">Select Stage to Notify</label>
+          <Select value={selectedStage} onValueChange={setSelectedStage}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select stage" />
+            </SelectTrigger>
+            <SelectContent>
+              {FULFILLMENT_STAGES.map(stage => (
+                <SelectItem key={stage.key} value={stage.key}>
+                  {stage.label} ({stageCounts[stage.key] || 0} orders)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-gray-500 mt-1">
+            All customers with orders in this stage will receive a WhatsApp notification
+          </p>
+        </div>
+        
+        {results && (
+          <div className={`mb-4 p-3 rounded-lg ${results.notifications_failed > 0 ? 'bg-yellow-50' : 'bg-green-50'}`}>
+            <p className="font-medium">Results:</p>
+            <ul className="text-sm mt-1">
+              <li>✅ Sent: {results.notifications_sent}</li>
+              <li>❌ Failed: {results.notifications_failed}</li>
+              <li>⏭️ Skipped (no phone): {results.skipped_no_phone}</li>
+            </ul>
+          </div>
+        )}
+        
+        <div className="flex gap-2 justify-end">
+          <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button 
+            onClick={handleSend}
+            disabled={sending || !selectedStage}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {sending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+            Send Notifications
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main Component
 const FulfillmentPipeline = () => {
   const [stores, setStores] = useState([]);
@@ -920,9 +1185,11 @@ const FulfillmentPipeline = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updating, setUpdating] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [trackingPrompt, setTrackingPrompt] = useState(null); // {order, stage, config}
+  const [trackingPrompt, setTrackingPrompt] = useState(null);
   const [showDWZImport, setShowDWZImport] = useState(false);
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [showBatchNotify, setShowBatchNotify] = useState(false);
+  const [showOrderHistory, setShowOrderHistory] = useState(null);
 
   const getCarrierInfo = useCallback(() => {
     return STORE_CARRIERS[selectedStore] || { carrier: 'Local Carrier', country: 'Unknown' };
