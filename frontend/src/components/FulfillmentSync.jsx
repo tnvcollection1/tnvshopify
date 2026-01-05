@@ -279,7 +279,7 @@ const FulfillmentSync = () => {
                   <SelectValue placeholder="All stores" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All stores</SelectItem>
+                  <SelectItem value="all">All stores</SelectItem>
                   {stores.map(store => (
                     <SelectItem key={store.store_name} value={store.store_name}>
                       {store.store_name}
