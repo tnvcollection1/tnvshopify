@@ -586,14 +586,20 @@ const ProductScraper = () => {
                     {imageSearchResults.map((product, idx) => (
                       <div 
                         key={`${product.product_id}-${idx}`}
-                        className="border rounded-lg overflow-hidden bg-white hover:shadow-lg transition-shadow"
+                        className="border rounded-lg overflow-hidden bg-white hover:shadow-lg transition-shadow group"
                       >
-                        <div className="aspect-square bg-gray-100 relative">
+                        {/* Clickable Image */}
+                        <a 
+                          href={product.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="block aspect-square bg-gray-100 relative cursor-pointer"
+                        >
                           {product.image ? (
                             <img 
                               src={product.image.startsWith('//') ? 'https:' + product.image : product.image}
                               alt={product.title}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                               onError={(e) => { e.target.src = 'https://placehold.co/200x200?text=No+Image'; }}
                             />
                           ) : (
@@ -604,11 +610,25 @@ const ProductScraper = () => {
                           {product.is_factory && (
                             <Badge className="absolute top-1 left-1 bg-green-500 text-xs">Factory</Badge>
                           )}
-                        </div>
+                          {/* Hover overlay */}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span className="text-white text-xs font-medium flex items-center gap-1">
+                              <ExternalLink className="w-3 h-3" />
+                              View on 1688
+                            </span>
+                          </div>
+                        </a>
                         <div className="p-2">
-                          <h4 className="text-xs font-medium text-gray-800 line-clamp-2 h-8" title={product.title}>
+                          {/* Clickable Title */}
+                          <a 
+                            href={product.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium text-gray-800 line-clamp-2 h-8 hover:text-orange-600 transition-colors"
+                            title={product.title}
+                          >
                             {product.title}
-                          </h4>
+                          </a>
                           <div className="mt-1 flex items-center justify-between">
                             <span className="text-sm font-bold text-orange-600">
                               ¥{product.price}
@@ -621,6 +641,17 @@ const ProductScraper = () => {
                           </div>
                           <p className="text-xs text-gray-500 truncate mt-1" title={product.shop_name}>
                             {product.shop_name}
+                          </p>
+                          {/* Product ID link */}
+                          <p className="text-xs text-gray-400 mt-1">
+                            ID: <a 
+                              href={product.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-orange-500 underline"
+                            >
+                              {product.product_id}
+                            </a>
                           </p>
                           <div className="mt-2 flex gap-1">
                             <Button
