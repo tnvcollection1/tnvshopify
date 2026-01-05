@@ -396,8 +396,11 @@ async def bulk_update_stage(
     order_ids: List[str] = Body(...),
     stage: str = Body(...),
     store_name: str = Body(...),
+    dwz_tracking: Optional[str] = Body(None),
+    local_tracking: Optional[str] = Body(None),
+    local_carrier: Optional[str] = Body(None),
 ):
-    """Bulk update multiple orders to a new stage"""
+    """Bulk update multiple orders to a new stage with optional tracking"""
     db = get_db()
     
     if stage not in FULFILLMENT_STAGES:
@@ -405,30 +408,53 @@ async def bulk_update_stage(
     
     now = datetime.now(timezone.utc).isoformat()
     
+    # Convert order_ids to handle both string and integer
+    order_ids_str = [str(oid) for oid in order_ids]
+    order_ids_int = []
+    for oid in order_ids:
+        try:
+            order_ids_int.append(int(oid))
+        except (ValueError, TypeError):
+            pass
+    
     update_data = {
         "current_stage": stage,
         "updated_at": now,
         f"stage_dates.{stage}": now,
     }
     
+    # Add tracking if provided
+    if dwz_tracking:
+        update_data["dwz_tracking"] = dwz_tracking
+    if local_tracking:
+        update_data["local_tracking"] = local_tracking
+    if local_carrier:
+        update_data["local_carrier"] = local_carrier
+    
+    # Build query to match both string and integer versions
+    order_query = {"$or": [
+        {"shopify_order_id": {"$in": order_ids_str}},
+        {"order_number": {"$in": order_ids_str}},
+    ]}
+    if order_ids_int:
+        order_query["$or"].extend([
+            {"shopify_order_id": {"$in": order_ids_int}},
+            {"order_number": {"$in": order_ids_int}},
+        ])
+    
     # Update in fulfillment_pipeline
     result = await db.fulfillment_pipeline.update_many(
-        {"$or": [
-            {"shopify_order_id": {"$in": order_ids}},
-            {"order_number": {"$in": order_ids}},
-        ]},
+        order_query,
         {"$set": update_data}
     )
     
     # Also update customers collection
     await db.customers.update_many(
-        {"$or": [
-            {"shopify_order_id": {"$in": order_ids}},
-            {"order_number": {"$in": order_ids}},
-        ]},
+        order_query,
         {"$set": {
             "fulfillment_stage": stage,
             "updated_at": now,
+            **({k: v for k, v in update_data.items() if k not in ["current_stage", "updated_at", f"stage_dates.{stage}"]}),
         }}
     )
     
@@ -436,6 +462,7 @@ async def bulk_update_stage(
         "success": True,
         "message": f"Updated {result.modified_count} orders to {stage}",
         "updated_count": result.modified_count,
+        "stage": stage,
     }
 
 
