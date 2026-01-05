@@ -58,8 +58,63 @@ const ProductEditModal = ({ product, onClose, onSave }) => {
     }
   };
 
+  // Helper to parse props_names like "颜色:棕色加绒;尺码:40" into color/size
+  const parseVariantProps = (variant) => {
+    let color = variant.color || '';
+    let size = variant.size || '';
+    let price = variant.price || variant.sale_price || 0;
+    
+    // Parse props_names if color/size not set
+    const propsNames = variant.props_names || '';
+    if (propsNames && (!color || !size)) {
+      propsNames.split(';').forEach(part => {
+        const [key, value] = part.split(':');
+        if (key && value) {
+          const keyLower = key.trim().toLowerCase();
+          if (keyLower.includes('颜色') || keyLower.includes('color') || keyLower.includes('款式')) {
+            color = color || value.trim();
+          }
+          if (keyLower.includes('尺码') || keyLower.includes('尺寸') || keyLower.includes('size') || keyLower.includes('规格')) {
+            size = size || value.trim();
+          }
+        }
+      });
+    }
+    
+    // Also try attributes array (TMAPI format)
+    if (variant.attributes && Array.isArray(variant.attributes)) {
+      variant.attributes.forEach(attr => {
+        const name = (attr.name || attr.attributeName || '').toLowerCase();
+        const value = attr.value || attr.attributeValue || '';
+        if (name.includes('颜色') || name.includes('color') || name.includes('款式')) {
+          color = color || value;
+        }
+        if (name.includes('尺码') || name.includes('尺寸') || name.includes('size') || name.includes('规格')) {
+          size = size || value;
+        }
+      });
+    }
+    
+    // Parse sale_price string to number
+    if (typeof price === 'string') {
+      price = parseFloat(price.replace(/[^\d.]/g, '')) || 0;
+    }
+    
+    return {
+      ...variant,
+      color,
+      size,
+      price,
+      spec_id: variant.spec_id || variant.specid || variant.sku_id || variant.skuid || `var_${Math.random().toString(36).substr(2, 9)}`,
+      stock: variant.stock || variant.canBookCount || variant.amountOnSale || 0,
+    };
+  };
+
   useEffect(() => {
     if (product) {
+      // Parse all variants to ensure color/size are extracted
+      const parsedVariants = (product.variants || []).map(parseVariantProps);
+      
       setEditedProduct({
         ...product,
         title_en: product.title_en || product.title || '',
@@ -69,7 +124,7 @@ const ProductEditModal = ({ product, onClose, onSave }) => {
         compare_price: product.compare_price || 0,
         cost: product.cost || product.price || 0,
         images: product.images || [],
-        variants: product.variants || [],
+        variants: parsedVariants,
         tags: product.tags || [],
         category: product.category || '',
       });
