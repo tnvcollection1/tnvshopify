@@ -223,6 +223,12 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
       return;
     }
 
+    // Check if account is selected
+    if (alibaba1688Accounts.length > 0 && !selected1688Account) {
+      toast.error('Please select a 1688 account');
+      return;
+    }
+
     setLoading(true);
     
     try {
@@ -237,6 +243,7 @@ const OrderFulfillmentModal = ({ order, onClose, onUpdate }) => {
           spec_id: selectedSpecId,
           shopify_order_id: order.order_number || order.order_id,
           notes: `${item.name || 'Product'} - ${item.variant_title || ''}`,
+          account_id: selected1688Account || undefined,
         }),
       });
       
