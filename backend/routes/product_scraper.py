@@ -2,6 +2,12 @@
 1688 Product Scraper Service
 Scrapes products from 1688 store/collection pages and creates them in Shopify
 Includes Chinese to English translation for product data
+
+Note: Much of the logic has been moved to service modules:
+- services/translation_service.py - Translation functions
+- services/product_linking_service.py - Product linking logic
+- services/tmapi_service.py - TMAPI operations and monitoring
+- services/image_search_service.py - Image search functionality
 """
 
 import httpx
@@ -18,6 +24,21 @@ from pydantic import BaseModel, Field
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 
+# Import from service modules
+from services.translation_service import translate_to_english, translate_product
+from services.product_linking_service import (
+    link_product_to_1688 as _link_product_service,
+    get_1688_link as _get_link_service,
+    auto_link_from_image as _auto_link_service,
+    get_all_product_links as _get_all_links_service,
+)
+from services.tmapi_service import (
+    get_tmapi_usage_stats,
+    get_tmapi_usage_summary as _tmapi_summary_service,
+    get_import_history as _import_history_service,
+    get_import_stats as _import_stats_service,
+)
+
 load_dotenv()
 
 # Database connection
@@ -33,7 +54,7 @@ def get_db():
 
 router = APIRouter(prefix="/api/1688-scraper", tags=["1688 Scraper"])
 
-# Translation setup
+# Translation setup - Now using service module
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
 
 
