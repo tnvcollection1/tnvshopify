@@ -1718,6 +1718,7 @@ def parse_variant_props(variant: dict) -> dict:
 async def fetch_product_from_tmapi(product_id: str) -> Optional[dict]:
     """
     Fetch full product data from TMAPI (like Dianxiaomi).
+    First tries Global API (pre-translated English), falls back to standard API.
     Returns parsed product dict or None if failed.
     """
     TMAPI_TOKEN = os.environ.get("TMAPI_TOKEN", "")
@@ -1728,62 +1729,182 @@ async def fetch_product_from_tmapi(product_id: str) -> Optional[dict]:
     
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
+            # First try Global API (returns English translations)
+            print(f"[TMAPI] Trying Global API for {product_id}")
             response = await client.get(
-                f"{TMAPI_BASE_URL}/1688/item_detail",
+                f"{TMAPI_BASE_URL}/1688/global/item_detail",
                 params={
                     "apiToken": TMAPI_TOKEN,
                     "item_id": product_id,
+                    "language": "en",  # Get English translations
                 }
             )
             data = response.json()
-        
-        if data.get("code") != 200:
-            print(f"[TMAPI] Failed for {product_id}: {data.get('msg', 'Unknown error')}")
-            return None
-        
-        item = data.get("data", {})
-        
-        # Extract images
-        images = []
-        main_imgs = item.get("main_imgs", []) or item.get("images", [])
-        for img in main_imgs[:20]:
-            if img:
-                if img.startswith("//"):
-                    img = "https:" + img
-                images.append(img)
-        
-        # Extract variants with proper parsing
-        variants = []
-        sku_list = item.get("skus", [])
-        for sku in sku_list[:100]:
-            parsed = parse_variant_props(sku)
-            variants.append(parsed)
-        
-        # Extract price
-        price_info = item.get("price_info", {})
-        price = float(price_info.get("price", 0) or price_info.get("price_min", 0) or item.get("price", 0) or 0)
-        
-        # Build product dict
-        product = {
-            "product_id": product_id,
-            "url": f"https://detail.1688.com/offer/{product_id}.html",
-            "title": item.get("title"),
-            "title_cn": item.get("title"),
-            "price": price,
-            "images": images,
-            "description": item.get("desc"),
-            "variants": variants,
-            "min_order": item.get("mixed_batch", {}).get("mix_num", 1) or 1,
-            "sold_count": item.get("sale_count"),
-            "seller_name": item.get("shop_info", {}).get("shop_name"),
-            "seller_member_id": item.get("shop_info", {}).get("shop_id"),
-        }
-        
-        return product
-        
+            
+            if data.get("code") == 200:
+                # Global API success - use pre-translated data
+                item = data.get("data", {})
+                print(f"[TMAPI] Global API success for {product_id}")
+                
+                # Log TMAPI usage
+                await log_tmapi_usage("global/item_detail", product_id, True)
+                
+                return parse_global_api_response(item, product_id)
+            
+            elif data.get("code") == 404:
+                # Product not cross-border, try standard API
+                print(f"[TMAPI] Not cross-border, trying standard API for {product_id}")
+                response = await client.get(
+                    f"{TMAPI_BASE_URL}/1688/item_detail",
+                    params={
+                        "apiToken": TMAPI_TOKEN,
+                        "item_id": product_id,
+                    }
+                )
+                data = response.json()
+                
+                if data.get("code") == 200:
+                    item = data.get("data", {})
+                    print(f"[TMAPI] Standard API success for {product_id}")
+                    
+                    # Log TMAPI usage
+                    await log_tmapi_usage("item_detail", product_id, True)
+                    
+                    return parse_standard_api_response(item, product_id)
+                else:
+                    print(f"[TMAPI] Standard API failed: {data.get('msg', 'Unknown error')}")
+                    await log_tmapi_usage("item_detail", product_id, False, data.get('msg'))
+                    return None
+            else:
+                print(f"[TMAPI] Global API failed: {data.get('msg', 'Unknown error')}")
+                await log_tmapi_usage("global/item_detail", product_id, False, data.get('msg'))
+                return None
+                
     except Exception as e:
         print(f"[TMAPI] Exception for {product_id}: {e}")
+        await log_tmapi_usage("item_detail", product_id, False, str(e))
         return None
+
+
+def parse_global_api_response(item: dict, product_id: str) -> dict:
+    """Parse Global API response (already has English translations)"""
+    # Extract images
+    images = []
+    for img in (item.get("main_imgs") or [])[:20]:
+        if img:
+            images.append(img if not img.startswith("//") else "https:" + img)
+    
+    # Extract variants with proper parsing
+    variants = []
+    for sku in (item.get("skus") or [])[:100]:
+        props_names = sku.get("props_names", "")
+        color = ""
+        size = ""
+        
+        if props_names:
+            # Format: "Color:value" or "Color:value;Size:value"
+            for part in props_names.split(";"):
+                if ":" in part:
+                    key, value = part.split(":", 1)
+                    key_lower = key.strip().lower()
+                    if "color" in key_lower or "颜色" in key_lower:
+                        color = value.strip()
+                    if "size" in key_lower or "尺码" in key_lower:
+                        size = value.strip()
+        
+        variants.append({
+            "sku_id": sku.get("skuid"),
+            "spec_id": sku.get("specid"),
+            "price": float(sku.get("sale_price") or sku.get("origin_price") or 0),
+            "stock": sku.get("stock", 0),
+            "props_names": props_names,
+            "color": color or props_names.split(":")[-1] if props_names else "",
+            "size": size,
+        })
+    
+    # Extract price
+    price_info = item.get("price_info", {})
+    price = float(price_info.get("price", 0) or price_info.get("price_min", 0) or 0)
+    
+    shop_info = item.get("shop_info", {})
+    
+    return {
+        "product_id": product_id,
+        "url": item.get("product_url") or f"https://detail.1688.com/offer/{product_id}.html",
+        "title": item.get("title"),  # Already in English from Global API
+        "title_en": item.get("title"),
+        "title_cn": item.get("title"),  # May need separate fetch for Chinese
+        "price": price,
+        "price_min": float(price_info.get("price_min", 0) or 0),
+        "price_max": float(price_info.get("price_max", 0) or 0),
+        "images": images,
+        "video_url": item.get("video_url"),
+        "description": item.get("detail_url"),
+        "variants": variants,
+        "min_order": item.get("mixed_batch", {}).get("mix_num", 1) or 1,
+        "sold_count": item.get("sale_count"),
+        "stock": item.get("stock", 0),
+        "seller_name": shop_info.get("shop_name"),
+        "seller_member_id": shop_info.get("seller_member_id"),
+        "seller_url": shop_info.get("shop_url"),
+        "location": item.get("delivery_info", {}).get("location"),
+        "support_dropshipping": item.get("support_drop_shipping", False),
+        "support_cross_border": item.get("support_cross_border", False),
+        "category_id": item.get("category_id"),
+        "service_tags": item.get("service_tags", []),
+        "is_global_api": True,
+    }
+
+
+def parse_standard_api_response(item: dict, product_id: str) -> dict:
+    """Parse Standard API response (needs translation)"""
+    # Extract images
+    images = []
+    main_imgs = item.get("main_imgs", []) or item.get("images", [])
+    for img in main_imgs[:20]:
+        if img:
+            images.append(img if not img.startswith("//") else "https:" + img)
+    
+    # Extract variants with proper parsing
+    variants = []
+    for sku in (item.get("skus") or [])[:100]:
+        parsed = parse_variant_props(sku)
+        variants.append(parsed)
+    
+    # Extract price
+    price_info = item.get("price_info", {})
+    price = float(price_info.get("price", 0) or price_info.get("price_min", 0) or item.get("price", 0) or 0)
+    
+    return {
+        "product_id": product_id,
+        "url": f"https://detail.1688.com/offer/{product_id}.html",
+        "title": item.get("title"),
+        "title_cn": item.get("title"),
+        "price": price,
+        "images": images,
+        "description": item.get("desc"),
+        "variants": variants,
+        "min_order": item.get("mixed_batch", {}).get("mix_num", 1) or 1,
+        "sold_count": item.get("sale_count"),
+        "seller_name": item.get("shop_info", {}).get("shop_name"),
+        "seller_member_id": item.get("shop_info", {}).get("shop_id"),
+        "is_global_api": False,
+    }
+
+
+async def log_tmapi_usage(endpoint: str, product_id: str, success: bool, error_msg: str = None):
+    """Log TMAPI API usage for monitoring"""
+    db = get_db()
+    try:
+        await db.tmapi_usage_logs.insert_one({
+            "endpoint": endpoint,
+            "product_id": product_id,
+            "success": success,
+            "error": error_msg,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+    except Exception as e:
+        print(f"[TMAPI] Failed to log usage: {e}")
 
 
 async def run_extension_import(
