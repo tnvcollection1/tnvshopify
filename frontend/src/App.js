@@ -53,6 +53,7 @@ import InventoryClearance from "@/components/InventoryClearance";
 import UserManagement from "@/components/UserManagement";
 import TmapiMonitor from "@/components/TmapiMonitor";
 import ShopifyHistoricalSync from "@/components/ShopifyHistoricalSync";
+import FulfillmentSync from "@/components/FulfillmentSync";
 import PricingPage from "@/components/PricingPage";
 import NotificationSettings from "@/components/NotificationSettings";
 import FacebookLeadAds from "@/components/FacebookLeadAds";
