@@ -88,7 +88,7 @@ const StageProgressBar = ({ currentStage }) => {
 };
 
 // Order Card Component
-const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating, onNotify, onPromptTracking }) => {
+const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating, onNotify, onPromptTracking, onViewHistory }) => {
   const getStageIndex = (stage) => FULFILLMENT_STAGES.findIndex(s => s.key === stage);
   const currentIndex = getStageIndex(order.current_stage);
   const nextStage = FULFILLMENT_STAGES[currentIndex + 1];
