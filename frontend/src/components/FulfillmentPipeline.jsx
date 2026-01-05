@@ -1461,6 +1461,7 @@ const FulfillmentPipeline = () => {
           <Upload className="h-4 w-4 mr-2" />
           Import DWZ
         </Button>
+        <DWZSyncButton store={selectedStore} onSyncComplete={fetchOrders} />
         <Button 
           variant="outline" 
           size="sm" 
@@ -1471,6 +1472,17 @@ const FulfillmentPipeline = () => {
         >
           <Package className="h-4 w-4 mr-2" />
           Bulk Update
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setShowBatchNotify(true)}
+          className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+          title="Send batch WhatsApp notifications by stage"
+          disabled={orders.length === 0}
+        >
+          <Bell className="h-4 w-4 mr-2" />
+          Batch Notify
         </Button>
       </div>
       
