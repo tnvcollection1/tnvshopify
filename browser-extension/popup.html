@@ -57,7 +57,7 @@
     .connection-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       padding: 10px 16px;
       background: white;
       border-bottom: 1px solid #e5e5e5;
@@ -85,43 +85,6 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
     }
-    
-    /* Server URL Input */
-    .server-section {
-      padding: 12px 16px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #e5e5e5;
-    }
-    
-    .server-input-group {
-      display: flex;
-      gap: 8px;
-    }
-    
-    .server-input {
-      flex: 1;
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 12px;
-    }
-    
-    .server-input:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-    
-    .save-btn {
-      padding: 8px 16px;
-      background: #667eea;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    
-    .save-btn:hover { background: #5a6fd6; }
     
     /* Main Content */
     .main-content {
@@ -409,23 +372,14 @@
         <span class="logo-icon">🛒</span>
         <span class="logo-text">WaMerce Importer</span>
       </div>
-      <div class="version">v2.0 - Like Dianxiaomi, but yours!</div>
+      <div class="version">v3.0 - One-Click Import</div>
     </div>
     
     <!-- Connection Status -->
     <div class="connection-bar">
       <div class="status">
         <div class="status-dot" id="statusDot"></div>
-        <span id="statusText">Checking...</span>
-      </div>
-      <button class="save-btn" id="settingsBtn" style="padding: 4px 10px; font-size: 11px;">⚙️ Settings</button>
-    </div>
-    
-    <!-- Server URL (hidden by default) -->
-    <div class="server-section" id="serverSection" style="display: none;">
-      <div class="server-input-group">
-        <input type="text" class="server-input" id="serverUrl" placeholder="https://your-wamerce-url.com">
-        <button class="save-btn" id="saveServer">Save</button>
+        <span id="statusText">Checking connection...</span>
       </div>
     </div>
     
