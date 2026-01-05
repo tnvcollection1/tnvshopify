@@ -273,8 +273,13 @@ async def receive_dwz56_webhook(
     """
     Webhook endpoint for DWZ56 shipping status updates.
     Called when DWZ56 shipment status changes.
+    
+    Security: Verifies signature, rate limits, and IP whitelist.
     """
     db = get_db()
+    
+    # Security verification
+    client_ip = await verify_webhook_security(request)
     
     try:
         # Log the webhook
@@ -284,6 +289,7 @@ async def receive_dwz56_webhook(
             "order_number": payload.orderNo,
             "status": payload.status,
             "payload": payload.dict(),
+            "source_ip": client_ip,
             "received_at": datetime.now(timezone.utc).isoformat(),
         })
         
