@@ -2729,125 +2729,29 @@ async def get_tmapi_usage_endpoint(
     """
     stats = await get_tmapi_usage_stats(days=days)
     return {"success": True, **stats}
-    
-    # Group by endpoint
-    by_endpoint = {}
-    for log in logs:
-        endpoint = log.get("endpoint", "unknown")
-        if endpoint not in by_endpoint:
-            by_endpoint[endpoint] = {"total": 0, "success": 0, "failed": 0}
-        by_endpoint[endpoint]["total"] += 1
-        if log.get("success"):
-            by_endpoint[endpoint]["success"] += 1
-        else:
-            by_endpoint[endpoint]["failed"] += 1
-    
-    # Group by day
-    by_day = {}
-    for log in logs:
-        day = log.get("timestamp", "")[:10]
-        if day not in by_day:
-            by_day[day] = 0
-        by_day[day] += 1
-    
-    # Estimate points used (rough estimate: ~50 points per call)
-    estimated_points_used = total_calls * 50
-    
-    return {
-        "success": True,
-        "period_days": days,
-        "total_calls": total_calls,
-        "successful_calls": successful_calls,
-        "failed_calls": failed_calls,
-        "success_rate": f"{(successful_calls/total_calls*100):.1f}%" if total_calls > 0 else "0%",
-        "estimated_points_used": estimated_points_used,
-        "by_endpoint": by_endpoint,
-        "by_day": dict(sorted(by_day.items())),
-        "recent_logs": logs[:20],
-    }
 
 
 @router.get("/tmapi/usage/summary")
-async def get_tmapi_usage_summary():
-    """Get quick summary of TMAPI usage"""
-    db = get_db()
-    
-    # Today's usage
-    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    today_count = await db.tmapi_usage_logs.count_documents(
-        {"timestamp": {"$gte": today.isoformat()}}
-    )
-    
-    # This week's usage
-    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
-    week_count = await db.tmapi_usage_logs.count_documents(
-        {"timestamp": {"$gte": week_ago.isoformat()}}
-    )
-    
-    # This month's usage
-    month_ago = datetime.now(timezone.utc) - timedelta(days=30)
-    month_count = await db.tmapi_usage_logs.count_documents(
-        {"timestamp": {"$gte": month_ago.isoformat()}}
-    )
-    
-    # Total
-    total_count = await db.tmapi_usage_logs.count_documents({})
-    
-    return {
-        "success": True,
-        "today": today_count,
-        "this_week": week_count,
-        "this_month": month_count,
-        "all_time": total_count,
-        "estimated_points": {
-            "today": today_count * 50,
-            "this_week": week_count * 50,
-            "this_month": month_count * 50,
-        }
-    }
+async def get_tmapi_usage_summary_endpoint():
+    """Get quick summary of TMAPI usage. Uses tmapi_service."""
+    summary = await _tmapi_summary_service()
+    return {"success": True, **summary}
 
 
 # ============= PRODUCT IMPORT HISTORY =============
 
 @router.get("/import-history")
-async def get_import_history(
+async def get_import_history_endpoint(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
     source: Optional[str] = Query(None),
 ):
     """
     Get product import history with details.
+    Uses tmapi_service for the history lookup.
     """
-    db = get_db()
-    
-    query = {}
-    if source:
-        query["source"] = {"$regex": source, "$options": "i"}
-    
-    skip = (page - 1) * limit
-    
-    products = await db.scraped_products.find(
-        query,
-        {
-            "_id": 0,
-            "product_id": 1,
-            "title": 1,
-            "title_cn": 1,
-            "price": 1,
-            "images": {"$slice": 1},  # Only first image
-            "variants": {"$size": "$variants"},  # Count variants
-            "source": 1,
-            "scraped_at": 1,
-            "is_global_api": 1,
-        }
-    ).sort("scraped_at", -1).skip(skip).limit(limit).to_list(limit)
-    
-    # Fix variants count (MongoDB $size doesn't work in projection like this)
-    for p in products:
-        if isinstance(p.get("variants"), list):
-            p["variants_count"] = len(p.get("variants", []))
-        else:
-            p["variants_count"] = p.get("variants", 0)
+    result = await _import_history_service(page=page, limit=limit, source=source)
+    return {"success": True, **result}
         p["image"] = p.get("images", [None])[0] if p.get("images") else None
         del p["images"]
         if "variants" in p:
