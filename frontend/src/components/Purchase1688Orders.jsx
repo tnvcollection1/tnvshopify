@@ -366,25 +366,6 @@ const Purchase1688Orders = () => {
                           {order.status || 'Unknown'}
                         </Badge>
                       </td>
-                            {order.shopify_order_id}
-                          </Badge>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-1 text-sm">
-                          <User className="h-3 w-3 text-gray-400" />
-                          <span className="truncate max-w-[100px]" title={order.account_name}>
-                            {order.account_name || 'Default'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <Badge className={`${getStatusColor(order.status)} border`}>
-                          {order.status || 'Unknown'}
-                        </Badge>
-                      </td>
                       <td className="p-3">
                         <div className="flex items-center gap-1 text-sm text-gray-600">
                           <Calendar className="h-3 w-3" />
