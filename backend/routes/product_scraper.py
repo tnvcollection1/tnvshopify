@@ -2661,25 +2661,3 @@ async def get_orders_with_linkable_products(
         "orders": result_orders,
         "total": len(result_orders),
     }
-
-    limit: int = Query(50, ge=1, le=100)
-):
-    """Get all product links (Shopify -> 1688 mappings)"""
-    db = get_db()
-    
-    skip = (page - 1) * limit
-    
-    links = await db.product_links.find(
-        {},
-        {"_id": 0}
-    ).skip(skip).limit(limit).to_list(limit)
-    
-    total = await db.product_links.count_documents({})
-    
-    return {
-        "success": True,
-        "links": links,
-        "total": total,
-        "page": page,
-        "pages": (total + limit - 1) // limit,
-    }
