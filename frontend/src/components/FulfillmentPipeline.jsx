@@ -741,6 +741,29 @@ const FulfillmentPipeline = () => {
     }
   };
 
+  const syncAllToShopify = async () => {
+    try {
+      const res = await fetch(`${API}/api/fulfillment-sync/sync-stage/local_shipped`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ store_name: selectedStore }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        const results = data.results || {};
+        toast.success(`Shopify sync: ${results.synced || 0} synced, ${results.already_synced || 0} already done`);
+        if (results.failed > 0) {
+          toast.warning(`${results.failed} orders failed to sync`);
+        }
+        fetchOrders();
+      } else {
+        toast.error(data.detail || 'Sync failed');
+      }
+    } catch (e) {
+      toast.error('Failed to sync to Shopify');
+    }
+  };
+
   const carrierInfo = getCarrierInfo();
 
   return (
