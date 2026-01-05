@@ -101,7 +101,7 @@ async def fetch_product_via_official_api(product_id: str) -> Optional[Dict]:
     Only works for products from suppliers you've ordered from.
     """
     if not ALIBABA_ACCESS_TOKEN or not ALIBABA_APP_SECRET:
-        logger.debug(f"1688 Official API not configured")
+        logger.debug("1688 Official API not configured")
         return None
     
     api_path = f"param2/1/com.alibaba.product/alibaba.product.simple.get/{ALIBABA_APP_KEY}"
