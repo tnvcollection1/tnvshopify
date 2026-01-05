@@ -578,11 +578,11 @@ const FulfillmentPipeline = () => {
     try {
       const res = await fetch(`${API}/api/stores`);
       const data = await res.json();
-      if (data.success && data.stores) {
-        setStores(data.stores);
-        if (data.stores.length > 0) {
-          setSelectedStore(data.stores[0].store_name);
-        }
+      // API returns array directly or {success: true, stores: [...]}
+      const storesList = Array.isArray(data) ? data : (data.success && data.stores ? data.stores : []);
+      if (storesList.length > 0) {
+        setStores(storesList);
+        setSelectedStore(storesList[0].store_name);
       }
     } catch (e) {
       console.error('Error fetching stores:', e);
