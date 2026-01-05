@@ -757,9 +757,9 @@ async def link_product_by_image_search(
         raise HTTPException(status_code=404, detail="Order not found")
     
     # Use image search service
-    from services.image_search_service import search_by_image
+    from services.image_search_service import search_products_by_image
     
-    results = await search_by_image(image_url)
+    results = await search_products_by_image(image_url)
     
     if not results.get("success"):
         return {"success": False, "error": results.get("error", "Image search failed")}
