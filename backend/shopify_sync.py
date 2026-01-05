@@ -614,7 +614,7 @@ class ShopifyOrderSync:
                 locations = shopify.Location.find()
                 if locations:
                     fulfillment.location_id = locations[0].id
-            except:
+            except Exception:
                 pass
             
             fulfillment.save()
