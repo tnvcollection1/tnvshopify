@@ -268,9 +268,7 @@ January 5, 2026 - Session 10: Fulfillment Pipeline Enhancements (Sync, Export, A
 **Automated DWZ Tracking Fetch**:
 - "Sync DWZ" button in pipeline UI (cyan)
 - Fetches real-time tracking status from DWZ56 API
-- Auto-updates order stages based on DWZ status:
-  - Status 1 (Sent) → In Transit
-  - Status 3 (Delivered) → Warehouse Arrived
+- Auto-updates order stages based on DWZ status (Sent → In Transit, Delivered → Warehouse Arrived)
 - Logs all syncs to `dwz_sync_logs` collection
 - Endpoints:
   - `POST /api/dwz56-sync/sync` - Trigger sync
@@ -285,16 +283,44 @@ January 5, 2026 - Session 10: Fulfillment Pipeline Enhancements (Sync, Export, A
 
 **Order History Timeline**:
 - History icon (🔵) on each order card
-- Shows complete order timeline with events:
-  - Order Created, Shopify Received, 1688 Ordered
-  - DWZ Shipped, In Transit, Warehouse Arrived
-  - Local Shipped, DWZ Sync events
+- Shows complete order timeline with events
 - Current status summary with tracking numbers
 - Endpoints:
   - `GET /api/dwz56-sync/order-history/{order_id}` - Get timeline
   - `POST /api/dwz56-sync/log-event` - Log custom events
 
-**Testing**: Iteration 17 - All 20 tests passed (100%)
+### Scheduled Auto-Sync, Email Notifications & Advanced Analytics ✅ NEW (Session 10 Part 4)
+
+**Scheduled DWZ Auto-Sync (Cron Job)**:
+- Added to `/app/backend/scheduler.py`
+- Runs every 4 hours automatically
+- Fetches tracking from DWZ56 API and updates pipeline
+- Logs progress to backend logs
+
+**Email Notifications Service**:
+- New service: `/app/backend/services/email_notification_service.py`
+- Supports SendGrid and SMTP (fallback)
+- Email templates for all 7 pipeline stages
+- Endpoints:
+  - `GET /api/email-notifications/config` - Check config status
+  - `GET /api/email-notifications/templates` - List all templates
+  - `PUT /api/email-notifications/templates/{stage}` - Update template
+  - `POST /api/email-notifications/send/{order_id}` - Send to order
+  - `POST /api/email-notifications/send-by-stage` - Batch send by stage
+  - `GET /api/email-notifications/logs` - View send logs
+- **Note**: SendGrid/SMTP not configured - templates ready but sending disabled
+
+**Advanced Analytics with Date Range Filtering**:
+- Enhanced Analytics modal with 4 tabs:
+  1. **Overview**: Total/Completed/Stuck/Rate + Stage Distribution
+  2. **Funnel**: Visual conversion funnel with percentages
+  3. **Timeline**: Orders over time bar chart + Fastest completions
+  4. **Stuck**: List of orders stuck 3+ days with details
+- Date range picker (Start Date, End Date, Update button)
+- Group by: day/week/month
+- Endpoint: `GET /api/fulfillment/pipeline/analytics-advanced`
+
+**Testing**: Iteration 18 - All 26 tests passed (100%)
 
 **CSV Format**:
 ```
