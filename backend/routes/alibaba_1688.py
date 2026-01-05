@@ -3236,3 +3236,323 @@ async def get_purchased_product_detail(product_id: str):
             return {"success": False, "error": "Product not found or not from purchased merchant"}
     except Exception as e:
         return {"success": False, "error": str(e), "source": "1688_official"}
+
+
+# ==================== Multi-Account 1688 Authorization ====================
+
+class Alibaba1688Account(BaseModel):
+    """1688 Account model"""
+    account_name: str
+    member_id: Optional[str] = None
+    access_token: str
+    refresh_token: Optional[str] = None
+    expires_at: Optional[str] = None
+    authorized_at: str
+    is_active: bool = True
+
+
+@router.get("/accounts")
+async def list_1688_accounts():
+    """List all authorized 1688 accounts"""
+    db = get_db()
+    
+    try:
+        accounts = await db.alibaba_1688_accounts.find(
+            {},
+            {"_id": 0, "access_token": 0, "refresh_token": 0}  # Don't expose tokens
+        ).to_list(100)
+        
+        return {
+            "success": True,
+            "accounts": accounts,
+            "count": len(accounts),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.get("/accounts/{account_id}")
+async def get_1688_account(account_id: str):
+    """Get a specific 1688 account (without exposing full token)"""
+    db = get_db()
+    
+    try:
+        account = await db.alibaba_1688_accounts.find_one(
+            {"account_id": account_id},
+            {"_id": 0}
+        )
+        
+        if account:
+            # Mask the token for security
+            if account.get("access_token"):
+                account["access_token"] = account["access_token"][:8] + "..." + account["access_token"][-4:]
+            return {"success": True, "account": account}
+        else:
+            return {"success": False, "error": "Account not found"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.post("/accounts/authorize")
+async def initiate_1688_authorization(
+    redirect_uri: str = Body("https://wamerce.com/api/1688/accounts/callback"),
+    account_name: str = Body("My 1688 Account"),
+):
+    """
+    Generate OAuth URL to authorize a new 1688 account.
+    User should be redirected to this URL to authorize.
+    """
+    import uuid
+    
+    # Generate state for security
+    state = str(uuid.uuid4())
+    
+    # Store pending authorization
+    db = get_db()
+    await db.pending_1688_auth.update_one(
+        {"state": state},
+        {"$set": {
+            "state": state,
+            "account_name": account_name,
+            "redirect_uri": redirect_uri,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }},
+        upsert=True
+    )
+    
+    # Build OAuth URL
+    auth_url = (
+        f"https://auth.1688.com/oauth/authorize?"
+        f"client_id={ALIBABA_APP_KEY}&"
+        f"redirect_uri={redirect_uri}&"
+        f"response_type=code&"
+        f"state={state}&"
+        f"view=web"
+    )
+    
+    return {
+        "success": True,
+        "auth_url": auth_url,
+        "state": state,
+        "instructions": [
+            "1. Click the auth_url to open 1688 authorization page",
+            "2. Login with your 1688 account",
+            "3. Verify with SMS code",
+            "4. Click Confirm (确定) to authorize",
+            "5. You'll be redirected back with the access token",
+        ],
+    }
+
+
+@router.get("/accounts/callback")
+async def handle_1688_oauth_callback(
+    code: str = Query(None, description="Authorization code from 1688"),
+    state: str = Query(None, description="State parameter for security"),
+    error: str = Query(None, description="Error if authorization failed"),
+):
+    """
+    Handle OAuth callback from 1688.
+    Exchange authorization code for access token.
+    """
+    from fastapi.responses import RedirectResponse
+    
+    if error:
+        return RedirectResponse(
+            url=f"/1688-accounts?error={error}",
+            status_code=302
+        )
+    
+    if not code or not state:
+        return {"success": False, "error": "Missing code or state parameter"}
+    
+    db = get_db()
+    
+    # Verify state
+    pending = await db.pending_1688_auth.find_one({"state": state})
+    if not pending:
+        return {"success": False, "error": "Invalid or expired state"}
+    
+    account_name = pending.get("account_name", "1688 Account")
+    
+    try:
+        # Exchange code for access token
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            token_url = "https://gw.open.1688.com/openapi/http/1/system.oauth2/getToken"
+            
+            response = await client.post(
+                token_url,
+                data={
+                    "grant_type": "authorization_code",
+                    "need_refresh_token": "true",
+                    "client_id": ALIBABA_APP_KEY,
+                    "client_secret": ALIBABA_APP_SECRET,
+                    "redirect_uri": pending.get("redirect_uri", "https://wamerce.com/api/1688/accounts/callback"),
+                    "code": code,
+                }
+            )
+            
+            token_data = response.json()
+        
+        if token_data.get("access_token"):
+            import uuid
+            account_id = str(uuid.uuid4())[:8]
+            
+            # Get member info
+            member_id = token_data.get("memberId") or token_data.get("resource_owner")
+            
+            # Save account to database
+            account = {
+                "account_id": account_id,
+                "account_name": account_name,
+                "member_id": member_id,
+                "access_token": token_data["access_token"],
+                "refresh_token": token_data.get("refresh_token"),
+                "expires_in": token_data.get("expires_in"),
+                "expires_at": (datetime.now(timezone.utc) + timedelta(seconds=int(token_data.get("expires_in", 86400)))).isoformat() if token_data.get("expires_in") else None,
+                "authorized_at": datetime.now(timezone.utc).isoformat(),
+                "is_active": True,
+            }
+            
+            await db.alibaba_1688_accounts.update_one(
+                {"account_id": account_id},
+                {"$set": account},
+                upsert=True
+            )
+            
+            # Clean up pending auth
+            await db.pending_1688_auth.delete_one({"state": state})
+            
+            # Redirect to success page
+            return RedirectResponse(
+                url=f"/1688-accounts?success=true&account={account_name}",
+                status_code=302
+            )
+        else:
+            error_msg = token_data.get("error_description") or token_data.get("error") or "Token exchange failed"
+            return RedirectResponse(
+                url=f"/1688-accounts?error={error_msg}",
+                status_code=302
+            )
+            
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.post("/accounts/add-token")
+async def add_1688_account_manually(
+    account_name: str = Body(...),
+    access_token: str = Body(...),
+    member_id: str = Body(None),
+):
+    """
+    Manually add a 1688 account with access token.
+    Use this if you already have a token from 1688 Open Platform.
+    """
+    import uuid
+    db = get_db()
+    
+    try:
+        account_id = str(uuid.uuid4())[:8]
+        
+        account = {
+            "account_id": account_id,
+            "account_name": account_name,
+            "member_id": member_id,
+            "access_token": access_token,
+            "refresh_token": None,
+            "authorized_at": datetime.now(timezone.utc).isoformat(),
+            "is_active": True,
+            "added_manually": True,
+        }
+        
+        await db.alibaba_1688_accounts.insert_one(account)
+        
+        return {
+            "success": True,
+            "account_id": account_id,
+            "message": f"Account '{account_name}' added successfully",
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.delete("/accounts/{account_id}")
+async def delete_1688_account(account_id: str):
+    """Delete a 1688 account"""
+    db = get_db()
+    
+    try:
+        result = await db.alibaba_1688_accounts.delete_one({"account_id": account_id})
+        
+        if result.deleted_count > 0:
+            return {"success": True, "message": "Account deleted"}
+        else:
+            return {"success": False, "error": "Account not found"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.post("/accounts/{account_id}/set-default")
+async def set_default_1688_account(account_id: str):
+    """Set a 1688 account as the default for API calls"""
+    global ALIBABA_ACCESS_TOKEN
+    db = get_db()
+    
+    try:
+        account = await db.alibaba_1688_accounts.find_one({"account_id": account_id})
+        
+        if not account:
+            return {"success": False, "error": "Account not found"}
+        
+        # Update global token
+        ALIBABA_ACCESS_TOKEN = account["access_token"]
+        
+        # Mark as default in DB
+        await db.alibaba_1688_accounts.update_many({}, {"$set": {"is_default": False}})
+        await db.alibaba_1688_accounts.update_one(
+            {"account_id": account_id},
+            {"$set": {"is_default": True}}
+        )
+        
+        return {
+            "success": True,
+            "message": f"Account '{account['account_name']}' set as default",
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.post("/accounts/{account_id}/test")
+async def test_1688_account(account_id: str):
+    """Test if a 1688 account's token is valid"""
+    db = get_db()
+    
+    try:
+        account = await db.alibaba_1688_accounts.find_one({"account_id": account_id})
+        
+        if not account:
+            return {"success": False, "error": "Account not found"}
+        
+        # Test the token by making a simple API call
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.receiveAddress.get",
+            {},
+            access_token=account["access_token"]
+        )
+        
+        if "error" in str(result).lower() or "unauthorized" in str(result).lower():
+            return {
+                "success": False,
+                "status": "invalid",
+                "message": "Token is invalid or expired",
+                "error": str(result),
+            }
+        else:
+            return {
+                "success": True,
+                "status": "valid",
+                "message": "Token is working",
+                "account_name": account["account_name"],
+            }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
