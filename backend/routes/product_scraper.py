@@ -2425,6 +2425,222 @@ async def auto_link_from_image(
 @router.get("/product-links/all")
 async def get_all_product_links(
     page: int = Query(1, ge=1),
+
+
+class BulkAutoLinkRequest(BaseModel):
+    skus: List[str]  # List of Shopify SKUs to auto-link
+    use_image_search: bool = False  # Whether to use image search for matching
+
+
+@router.post("/product-links/bulk-auto-link")
+async def bulk_auto_link_products(request: BulkAutoLinkRequest):
+    """
+    Bulk auto-link multiple Shopify SKUs to 1688 products.
+    First tries to extract product ID from SKU, then optionally uses image search.
+    """
+    db = get_db()
+    TMAPI_TOKEN = os.environ.get("TMAPI_TOKEN", "")
+    
+    results = {
+        "success": True,
+        "linked": [],
+        "not_found": [],
+        "errors": [],
+        "total": len(request.skus),
+    }
+    
+    for sku in request.skus:
+        try:
+            # Try to extract 1688 ID from SKU
+            import re
+            match = re.search(r'(\d{12,})', sku)
+            
+            if match:
+                product_1688_id = match.group(1)
+                # Check if product exists in our database
+                product = await db.scraped_products.find_one(
+                    {"product_id": product_1688_id},
+                    {"_id": 0, "product_id": 1, "title": 1, "title_cn": 1, "price": 1, "images": 1, "variants": 1}
+                )
+                
+                if product:
+                    # Create link
+                    link_data = {
+                        "shopify_sku": sku,
+                        "product_1688_id": product_1688_id,
+                        "product_1688_url": f"https://detail.1688.com/offer/{product_1688_id}.html",
+                        "product_1688_title": product.get("title") or product.get("title_cn"),
+                        "product_1688_price": product.get("price"),
+                        "product_1688_image": (product.get("images") or [None])[0],
+                        "variants_count": len(product.get("variants") or []),
+                        "linked_at": datetime.now(timezone.utc).isoformat(),
+                        "source": "bulk_auto_link",
+                    }
+                    
+                    await db.product_links.update_one(
+                        {"shopify_sku": sku},
+                        {"$set": link_data},
+                        upsert=True
+                    )
+                    
+                    results["linked"].append({
+                        "sku": sku,
+                        "product_1688_id": product_1688_id,
+                        "title": link_data["product_1688_title"],
+                    })
+                else:
+                    results["not_found"].append({
+                        "sku": sku,
+                        "product_1688_id": product_1688_id,
+                        "reason": "Product not in database - needs import"
+                    })
+            else:
+                results["not_found"].append({
+                    "sku": sku,
+                    "reason": "No 1688 product ID found in SKU"
+                })
+                
+        except Exception as e:
+            results["errors"].append({
+                "sku": sku,
+                "error": str(e)
+            })
+    
+    results["success"] = len(results["errors"]) == 0
+    results["message"] = f"Linked {len(results['linked'])} products, {len(results['not_found'])} not found, {len(results['errors'])} errors"
+    
+    return results
+
+
+@router.post("/product-links/link-by-title-match")
+async def link_by_title_match(
+    shopify_sku: str = Query(...),
+    shopify_title: str = Query(...)
+):
+    """
+    Try to find a matching 1688 product by searching scraped products with similar titles.
+    Uses fuzzy matching to find the best match.
+    """
+    db = get_db()
+    
+    # Search scraped products for similar titles
+    # Use regex for basic matching
+    search_words = shopify_title.lower().split()[:3]  # First 3 words
+    
+    # Build regex pattern for any of the words
+    pattern = "|".join([re.escape(word) for word in search_words if len(word) > 2])
+    
+    if not pattern:
+        return {"success": False, "error": "Title too short for matching"}
+    
+    products = await db.scraped_products.find(
+        {
+            "$or": [
+                {"title": {"$regex": pattern, "$options": "i"}},
+                {"title_cn": {"$regex": pattern, "$options": "i"}},
+            ]
+        },
+        {"_id": 0, "product_id": 1, "title": 1, "title_cn": 1, "price": 1, "images": 1, "variants": 1}
+    ).limit(5).to_list(5)
+    
+    if not products:
+        return {
+            "success": True,
+            "matches": [],
+            "message": "No matching products found"
+        }
+    
+    matches = []
+    for p in products:
+        matches.append({
+            "product_1688_id": p.get("product_id"),
+            "product_1688_url": f"https://detail.1688.com/offer/{p.get('product_id')}.html",
+            "title": p.get("title") or p.get("title_cn"),
+            "price": p.get("price"),
+            "image": (p.get("images") or [None])[0],
+            "variants_count": len(p.get("variants") or []),
+        })
+    
+    return {
+        "success": True,
+        "shopify_sku": shopify_sku,
+        "shopify_title": shopify_title,
+        "matches": matches,
+    }
+
+
+@router.get("/orders/with-linkable-products")
+async def get_orders_with_linkable_products(
+    store_name: Optional[str] = Query(None),
+    limit: int = Query(50, ge=1, le=200)
+):
+    """
+    Get orders that have products which can be linked to 1688.
+    Returns orders with line items and their link status.
+    """
+    db = get_db()
+    
+    query = {}
+    if store_name:
+        query["store_name"] = store_name
+    
+    orders = await db.customers.find(
+        query,
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    result_orders = []
+    
+    for order in orders:
+        order_data = {
+            "order_number": order.get("order_number"),
+            "store_name": order.get("store_name"),
+            "customer": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip(),
+            "total": order.get("total_price"),
+            "currency": order.get("currency"),
+            "created_at": order.get("created_at"),
+            "line_items": [],
+            "linkable_count": 0,
+            "linked_count": 0,
+        }
+        
+        for item in (order.get("line_items") or []):
+            sku = item.get("sku", "")
+            
+            # Check if already linked
+            link = await db.product_links.find_one({"shopify_sku": sku}, {"_id": 0})
+            
+            # Check if SKU contains 1688 ID
+            import re
+            match = re.search(r'(\d{12,})', sku)
+            
+            item_data = {
+                "sku": sku,
+                "name": item.get("name") or item.get("title"),
+                "quantity": item.get("quantity", 1),
+                "price": item.get("price"),
+                "variant_title": item.get("variant_title"),
+                "is_linked": link is not None,
+                "has_1688_id_in_sku": match is not None,
+                "extracted_1688_id": match.group(1) if match else None,
+                "link": link,
+            }
+            
+            order_data["line_items"].append(item_data)
+            
+            if link:
+                order_data["linked_count"] += 1
+            if match or link:
+                order_data["linkable_count"] += 1
+        
+        result_orders.append(order_data)
+    
+    return {
+        "success": True,
+        "orders": result_orders,
+        "total": len(result_orders),
+    }
+
     limit: int = Query(50, ge=1, le=100)
 ):
     """Get all product links (Shopify -> 1688 mappings)"""
