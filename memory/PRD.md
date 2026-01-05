@@ -100,9 +100,12 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
    - Should scrape basic info (title, price, image, ID) from listings
 
 ### P2 - Medium Priority
-4. **1688 Image Search** - BLOCKED
-   - TMAPI `search_by_pic` returns "no Route matched"
-   - Likely requires premium TMAPI plan upgrade
+4. **1688 Image Search** ✅ COMPLETED
+   - Implemented `POST /api/1688-scraper/image-search` endpoint
+   - Uses TMAPI endpoint `/1688/search/image`
+   - UI: Image Search tab with URL input, sort dropdown, search button
+   - Results display in grid with Factory badges
+   - One-click import to add products to collection
 
 5. **Shopify OAuth redirect_uri Issue**
    - Affects new store connections
