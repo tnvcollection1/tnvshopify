@@ -168,6 +168,12 @@ const Sidebar = () => {
       badge: 'New'
     },
     { 
+      icon: Activity, 
+      label: 'API Monitor', 
+      path: '/tmapi-monitor',
+      badge: ''
+    },
+    { 
       icon: Truck, 
       label: 'Fulfillment', 
       path: '/fulfillment',
