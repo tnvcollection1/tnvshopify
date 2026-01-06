@@ -43,8 +43,15 @@ const Purchase1688Orders = () => {
         url += `&shopify_order_id=${searchShopifyId}`;
       }
 
+      console.log('[Purchase1688Orders] Fetching:', url);
       const res = await fetch(url);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      
       const data = await res.json();
+      console.log('[Purchase1688Orders] Response:', data);
 
       if (data.success) {
         setOrders(data.orders || []);
@@ -53,8 +60,8 @@ const Purchase1688Orders = () => {
         toast.error(data.message || 'Failed to fetch orders');
       }
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      toast.error('Failed to fetch 1688 purchase orders');
+      console.error('[Purchase1688Orders] Error:', error);
+      toast.error(`Failed to fetch 1688 purchase orders: ${error.message}`);
     } finally {
       setLoading(false);
     }
