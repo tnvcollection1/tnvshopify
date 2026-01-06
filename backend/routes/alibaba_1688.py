@@ -1863,6 +1863,7 @@ async def auto_order_from_shopify(
         fulfillment_record = {
             "shopify_order_id": shopify_order_id,
             "order_number": shopify_order.get("order_number"),
+            "store_name": shopify_order.get("store_name"),  # Include store for proper filtering
             "alibaba_order_id": str(alibaba_order_id),
             "status": "purchased",
             "stages": {
@@ -1888,14 +1889,14 @@ async def auto_order_from_shopify(
         }
         
         await db.fulfillment_pipeline.update_one(
-            {"shopify_order_id": shopify_order_id},
+            {"shopify_order_id": shopify_order_id, "store_name": shopify_order.get("store_name")},
             {"$set": fulfillment_record},
             upsert=True
         )
         
-        # Update Shopify order status
+        # Update Shopify order status - use correct field and include store_name
         await db.customers.update_one(
-            {"order_id": shopify_order_id},
+            {"shopify_order_id": shopify_order_id, "store_name": shopify_order.get("store_name")},
             {"$set": {
                 "alibaba_order_id": str(alibaba_order_id),
                 "purchase_status": "ordered_on_1688",
