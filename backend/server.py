@@ -1814,6 +1814,10 @@ async def sync_specific_orders(store_name: str, order_numbers: List[str] = Query
                 sizes = []
                 
                 for item in order.get("line_items", []):
+                    # Skip removed items (fulfillable_quantity = 0 means item was removed/refunded)
+                    if item.get("fulfillable_quantity", 1) == 0 and item.get("fulfillment_status") is None:
+                        continue
+                    
                     sku = item.get("sku", "") or ""
                     line_items.append({
                         "product_id": item.get("product_id"),
