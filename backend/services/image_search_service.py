@@ -56,19 +56,26 @@ async def search_products_by_image(image_url: str, limit: int = 20) -> Dict:
         # Step 1: Convert non-Alibaba images to Alibaba CDN format
         img_url = image_url
         if not any(domain in img_url.lower() for domain in ['alicdn.com', '1688.com', 'taobao.com', 'tmall.com']):
-            convert_url = "http://api.tmapi.top/1688/img_url_transfer"
-            convert_params = {
-                "apiToken": tmapi_token,
-                "url": img_url,
-            }
+            # Use POST request with JSON body as per TMAPI docs
+            convert_url = "http://api.tmapi.top/1688/tools/image/convert_url"
             
             async with httpx.AsyncClient(timeout=30.0) as client:
-                convert_response = await client.get(convert_url, params=convert_params)
+                convert_response = await client.post(
+                    convert_url,
+                    params={"apiToken": tmapi_token},
+                    json={"url": img_url},
+                    headers={"Content-Type": "application/json"}
+                )
                 convert_result = convert_response.json()
                 
-                if convert_result.get("code") == 200 and convert_result.get("data", {}).get("img_url"):
-                    img_url = convert_result["data"]["img_url"]
-                    print(f"[Image Search] Converted image URL: {img_url[:80]}...")
+                if convert_result.get("code") == 200:
+                    data = convert_result.get("data", {})
+                    converted_url = data.get("img_url") or data.get("url")
+                    if converted_url:
+                        img_url = converted_url
+                        print(f"[Image Search] Converted image URL: {img_url[:80]}...")
+                    else:
+                        print(f"[Image Search] Conversion succeeded but no URL in response")
                 else:
                     print(f"[Image Search] Could not convert image: {convert_result.get('msg', 'Unknown error')}")
                     # Still try with original URL
