@@ -558,6 +558,7 @@ async def list_shipped_records(
     tracking_number: Optional[str] = Query(None, description="Tracking number search (comma-separated for multiple)"),
     status_mask: Optional[str] = Query(None, description="11-char status mask for filtering states 0-10"),
     audit_status: Optional[bool] = Query(None, description="Filter by payment audit status"),
+    store_name: Optional[str] = Query(None, description="Filter by Shopify store name for data isolation"),
 ):
     """
     List shipped records with tracking status
@@ -619,18 +620,21 @@ async def list_shipped_records(
                 ref_order_nums.append(int(order_part))
     
     # Batch lookup Shopify orders by tracking number AND order number
-    # Search in both tnvcollection and tnvcollectionpk stores
+    # Filter by store_name if provided for data isolation
     shopify_orders = {}
     shopify_by_order = {}
     shopify_by_x_tracking = {}  # For X-prefix matching
     
+    # Build store filter - use specific store if provided, otherwise search all stores
+    store_filter = {"store_name": store_name} if store_name else {"store_name": {"$in": ["tnvcollection", "tnvcollectionpk", "ashmiaa", "asmia"]}}
+    
     try:
-        # Lookup by tracking number from both stores
+        # Lookup by tracking number with store isolation
         if all_nums:
             cursor = db.customers.find(
                 {
                     "tracking_number": {"$in": all_nums},
-                    "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}
+                    **store_filter
                 },
                 {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
             )
@@ -644,12 +648,12 @@ async def list_shipped_records(
                         "total_spent": order.get("total_spent")
                     }
         
-        # Lookup by order number from reference field (both stores)
+        # Lookup by order number from reference field with store isolation
         if ref_order_nums:
             cursor = db.customers.find(
                 {
                     "order_number": {"$in": ref_order_nums},
-                    "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}
+                    **store_filter
                 },
                 {"_id": 0, "order_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
             )
@@ -668,7 +672,7 @@ async def list_shipped_records(
             cursor = db.customers.find(
                 {
                     "tracking_number": {"$regex": "^X", "$options": "i"},
-                    "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}
+                    **store_filter
                 },
                 {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
             )
