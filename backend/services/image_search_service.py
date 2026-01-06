@@ -55,7 +55,7 @@ async def search_products_by_image(image_url: str, limit: int = 20) -> Dict:
         url = "http://api.tmapi.top/1688/search/image"
         params = {
             "apiToken": tmapi_token,
-            "image_url": image_url,
+            "img_url": image_url,  # API expects img_url not image_url
             "page_size": min(limit, 50),
         }
         
