@@ -661,6 +661,14 @@ function AppRoutes() {
         path="/store/:storeName/cart" 
         element={<StorefrontWrapper page="cart" />} 
       />
+      <Route 
+        path="/store/:storeName/checkout" 
+        element={<StorefrontWrapper page="checkout" />} 
+      />
+      <Route 
+        path="/store/:storeName/order-confirmation/:orderId" 
+        element={<StorefrontWrapper page="confirmation" />} 
+      />
     </Routes>
   );
 }
