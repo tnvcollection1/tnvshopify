@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Search, Menu, X, Heart, User, ChevronRight, ChevronDown } from 'lucide-react';
+import { ShoppingBag, Search, Menu, X, Heart, User, ChevronRight, ChevronDown, Package } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
