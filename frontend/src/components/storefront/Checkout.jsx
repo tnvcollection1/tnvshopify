@@ -422,9 +422,10 @@ const Checkout = ({ storeName = 'tnvcollection' }) => {
               });
 
               if (verifyResponse.data.success) {
+                setOrderPlaced(true);  // Prevent cart empty redirect
                 clearCart();
-                navigate(`/shop/order-confirmation/${verifyResponse.data.order_id}`);
                 toast.success('Payment successful! Order placed.');
+                navigate(`/shop/order-confirmation/${verifyResponse.data.order_id}`);
               } else {
                 toast.error('Payment verification failed');
               }
