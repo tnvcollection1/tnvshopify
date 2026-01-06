@@ -1419,10 +1419,6 @@ const FulfillmentPipeline = () => {
   }, [orders, searchQuery, stageFilter]);
 
   useEffect(() => {
-    fetchStores();
-  }, [fetchStores]);
-
-  useEffect(() => {
     if (globalStore) {
       fetchOrders();
     }
