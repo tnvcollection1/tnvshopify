@@ -21,9 +21,10 @@ export const CartProvider = ({ children }) => {
   }, [cart]);
 
   const addToCart = (product, variant, quantity = 1) => {
+    const productId = product.shopify_product_id || product.id;
     setCart(prev => {
       const existingIndex = prev.findIndex(
-        item => item.productId === product.id && item.variantId === variant.id
+        item => item.productId === productId && item.variantId === variant.id
       );
       
       if (existingIndex >= 0) {
@@ -33,12 +34,12 @@ export const CartProvider = ({ children }) => {
       }
       
       return [...prev, {
-        productId: product.id,
+        productId: productId,
         variantId: variant.id,
         title: product.title,
         variantTitle: variant.title,
         price: parseFloat(variant.price),
-        image: product.images?.[0]?.src || product.image,
+        image: product.images?.[0]?.src || product.image_url || product.image,
         quantity,
         sku: variant.sku
       }];
