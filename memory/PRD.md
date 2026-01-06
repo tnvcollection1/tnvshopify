@@ -61,7 +61,7 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
   - Tracking number and courier display when shipped
   - Status history with timestamps
   - Track Order icon in storefront header
-- **Testing**: 100% tests passed (50/50 across 3 iterations)
+- **Testing**: 100% tests passed (70/70 across 4 iterations)
 
 #### 2. DWZ56 Store Data Isolation (Jan 6, 2026) ✅ NEW
 - **All DWZ56 APIs now support `store_name` filter**:
