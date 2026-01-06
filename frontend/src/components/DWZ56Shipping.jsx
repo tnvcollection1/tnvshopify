@@ -688,17 +688,9 @@ export default function DWZ56Shipping() {
                 </div>
                 <div>
                   <Label>Store</Label>
-                  <Select value={globalStore} onValueChange={setSelectedStore}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All stores" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All stores</SelectItem>
-                      {importStats?.stores?.map((store, i) => (
-                        <SelectItem key={i} value={store}>{store}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm h-10 flex items-center">
+                    {globalStore || 'Select from sidebar'}
+                  </div>
                 </div>
                 <div>
                   <Label>Match Status</Label>
