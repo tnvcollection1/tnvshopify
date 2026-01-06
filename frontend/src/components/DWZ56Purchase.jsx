@@ -642,7 +642,7 @@ export default function DWZ56Purchase() {
                   </div>
                 </>
               ) : (
-                <p className="text-center text-gray-500 py-8">Click "Load Fees" to view payment records</p>
+                <p className="text-center text-gray-500 py-8">Click &quot;Load Fees&quot; to view payment records</p>
               )}
             </CardContent>
           </Card>
