@@ -55,7 +55,7 @@ const StatusBadge = ({ status, label }) => {
 };
 
 export default function DWZ56Purchase() {
-  const { selectedStore: globalStore, getStoreName } = useStore();
+  const { globalStore: globalStore, getStoreName } = useStore();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -151,8 +151,8 @@ export default function DWZ56Purchase() {
       if (data.success) {
         let filteredRecords = data.records;
         
-        if (selectedStore && selectedStore) {
-          filteredRecords = filteredRecords.filter(r => r.shopify_store === selectedStore);
+        if (globalStore && globalStore) {
+          filteredRecords = filteredRecords.filter(r => r.shopify_store === globalStore);
         }
         
         if (matchFilter === 'matched') {
@@ -173,7 +173,7 @@ export default function DWZ56Purchase() {
     } finally {
       setLoading(false);
     }
-  }, [dateRange, searchTracking, selectedCourier, selectedStatus, selectedStore, matchFilter]);
+  }, [dateRange, searchTracking, selectedCourier, selectedStatus, globalStore, matchFilter]);
   
   const fetchFeeList = useCallback(async (page = 1) => {
     setLoading(true);
@@ -437,7 +437,7 @@ export default function DWZ56Purchase() {
                 </div>
                 <div>
                   <Label>Store</Label>
-                  <Select value={selectedStore} onValueChange={setSelectedStore}>
+                  <Select value={globalStore} onValueChange={setSelectedStore}>
                     <SelectTrigger>
                       <SelectValue placeholder="All stores" />
                     </SelectTrigger>
