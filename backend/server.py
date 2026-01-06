@@ -775,56 +775,169 @@ async def change_agent_password(password_data: PasswordChange):
 
 
 @api_router.post("/migrate-preview-data")
-async def migrate_preview_data():
+async def migrate_preview_data(force: bool = False):
     """
-    One-time migration endpoint to copy data from preview to production
-    This should only be called once after initial deployment
+    One-time migration endpoint to copy data from preview to production via HTTP API
+    This fetches data from the preview environment and saves to production database
     """
+    import httpx
+    
+    PREVIEW_URL = "https://aliexpress-bridge.preview.emergentagent.com/api"
+    
     try:
         # Check if data already exists (to prevent accidental re-migration)
         existing_customers = await db.customers.count_documents({})
-        if existing_customers > 100:
+        if existing_customers > 100 and not force:
             return {
                 "success": False,
-                "message": f"Database already has {existing_customers} customers. Migration already completed or not needed."
+                "message": f"Database already has {existing_customers} customers. Use force=true to override."
             }
         
-        logger.info("🔄 Starting database migration from preview to production...")
-        
-        # Connect to preview database (localhost MongoDB)
-        preview_client = AsyncIOMotorClient("mongodb://localhost:27017")
-        preview_db = preview_client.shopify_customers_db
-        
-        # Collections to migrate
-        collections_to_migrate = ["agents", "customers", "stores", "stock", "tcs_config", "status_checks"]
-        
+        logger.info("🔄 Starting database migration from preview to production via HTTP...")
         migration_results = {}
         
-        for collection_name in collections_to_migrate:
+        async with httpx.AsyncClient(timeout=300) as client:
+            # 1. Migrate stores
+            logger.info("📦 Migrating stores...")
             try:
-                # Get all documents from preview
-                preview_docs = await preview_db[collection_name].find({}, {"_id": 0}).to_list(None)
-                
-                if preview_docs:
-                    # Insert into production database
-                    await db[collection_name].insert_many(preview_docs)
-                    migration_results[collection_name] = len(preview_docs)
-                    logger.info(f"✅ Migrated {len(preview_docs)} documents to {collection_name}")
-                else:
-                    migration_results[collection_name] = 0
-                    logger.info(f"⚠️  No documents to migrate for {collection_name}")
-                    
+                resp = await client.get(f"{PREVIEW_URL}/stores")
+                stores = resp.json()
+                if stores:
+                    # Clear existing stores first
+                    await db.stores.delete_many({})
+                    for store in stores:
+                        if '_id' in store:
+                            del store['_id']
+                        # Ensure shopify_domain is set
+                        if not store.get('shopify_domain') and store.get('shop_url'):
+                            store['shopify_domain'] = store['shop_url']
+                    await db.stores.insert_many(stores)
+                    migration_results['stores'] = len(stores)
+                    logger.info(f"✅ Migrated {len(stores)} stores")
             except Exception as e:
-                logger.error(f"❌ Error migrating {collection_name}: {str(e)}")
-                migration_results[collection_name] = f"Error: {str(e)}"
-        
-        preview_client.close()
+                logger.error(f"❌ Error migrating stores: {str(e)}")
+                migration_results['stores'] = f"Error: {str(e)}"
+            
+            # 2. Migrate agents/users
+            logger.info("👥 Migrating agents...")
+            try:
+                resp = await client.get(f"{PREVIEW_URL}/agents")
+                agents = resp.json()
+                if agents and isinstance(agents, list):
+                    await db.agents.delete_many({})
+                    for agent in agents:
+                        if '_id' in agent:
+                            del agent['_id']
+                    await db.agents.insert_many(agents)
+                    migration_results['agents'] = len(agents)
+                    logger.info(f"✅ Migrated {len(agents)} agents")
+            except Exception as e:
+                logger.error(f"❌ Error migrating agents: {str(e)}")
+                migration_results['agents'] = f"Error: {str(e)}"
+            
+            # 3. Migrate customers in batches (large dataset)
+            logger.info("🛒 Migrating customers (this may take a while)...")
+            try:
+                # First get total count
+                resp = await client.get(f"{PREVIEW_URL}/customers?limit=1")
+                data = resp.json()
+                total = data.get('total', 0)
+                
+                if total > 0:
+                    # Clear existing customers
+                    await db.customers.delete_many({})
+                    
+                    # Fetch in batches of 1000
+                    batch_size = 1000
+                    migrated = 0
+                    
+                    for offset in range(0, total, batch_size):
+                        logger.info(f"  Fetching customers {offset} to {offset + batch_size}...")
+                        resp = await client.get(f"{PREVIEW_URL}/customers?limit={batch_size}&skip={offset}")
+                        batch_data = resp.json()
+                        customers = batch_data.get('customers', [])
+                        
+                        if customers:
+                            for c in customers:
+                                if '_id' in c:
+                                    del c['_id']
+                            await db.customers.insert_many(customers)
+                            migrated += len(customers)
+                            logger.info(f"  ✅ Migrated {migrated}/{total} customers")
+                    
+                    migration_results['customers'] = migrated
+                    logger.info(f"✅ Migrated {migrated} customers total")
+                else:
+                    migration_results['customers'] = 0
+            except Exception as e:
+                logger.error(f"❌ Error migrating customers: {str(e)}")
+                migration_results['customers'] = f"Error: {str(e)}"
+            
+            # 4. Migrate inventory
+            logger.info("📊 Migrating inventory...")
+            try:
+                resp = await client.get(f"{PREVIEW_URL}/inventory?limit=10000")
+                data = resp.json()
+                inventory = data.get('items', data) if isinstance(data, dict) else data
+                if inventory and isinstance(inventory, list) and len(inventory) > 0:
+                    await db.inventory_v2.delete_many({})
+                    for item in inventory:
+                        if '_id' in item:
+                            del item['_id']
+                    await db.inventory_v2.insert_many(inventory)
+                    migration_results['inventory'] = len(inventory)
+                    logger.info(f"✅ Migrated {len(inventory)} inventory items")
+                else:
+                    migration_results['inventory'] = 0
+            except Exception as e:
+                logger.error(f"❌ Error migrating inventory: {str(e)}")
+                migration_results['inventory'] = f"Error: {str(e)}"
+            
+            # 5. Migrate 1688 products
+            logger.info("🏭 Migrating 1688 products...")
+            try:
+                resp = await client.get(f"{PREVIEW_URL}/1688/products?limit=10000")
+                data = resp.json()
+                products = data.get('products', [])
+                if products:
+                    await db.products_1688.delete_many({})
+                    for p in products:
+                        if '_id' in p:
+                            del p['_id']
+                    await db.products_1688.insert_many(products)
+                    migration_results['products_1688'] = len(products)
+                    logger.info(f"✅ Migrated {len(products)} 1688 products")
+                else:
+                    migration_results['products_1688'] = 0
+            except Exception as e:
+                logger.error(f"❌ Error migrating 1688 products: {str(e)}")
+                migration_results['products_1688'] = f"Error: {str(e)}"
+            
+            # 6. Migrate purchase orders
+            logger.info("📋 Migrating purchase orders...")
+            try:
+                resp = await client.get(f"{PREVIEW_URL}/1688/purchase-orders?limit=10000")
+                data = resp.json()
+                orders = data.get('orders', [])
+                if orders:
+                    await db.purchase_orders_1688.delete_many({})
+                    for o in orders:
+                        if '_id' in o:
+                            del o['_id']
+                    await db.purchase_orders_1688.insert_many(orders)
+                    migration_results['purchase_orders'] = len(orders)
+                    logger.info(f"✅ Migrated {len(orders)} purchase orders")
+                else:
+                    migration_results['purchase_orders'] = 0
+            except Exception as e:
+                logger.error(f"❌ Error migrating purchase orders: {str(e)}")
+                migration_results['purchase_orders'] = f"Error: {str(e)}"
         
         logger.info("✅ Database migration completed!")
         
         return {
             "success": True,
-            "message": "Database migration completed successfully",
+            "message": "Database migration from preview completed successfully",
             "migrated": migration_results
         }
         
