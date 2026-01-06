@@ -377,9 +377,10 @@ const Checkout = ({ storeName = 'tnvcollection' }) => {
         const response = await axios.post(`${API}/api/storefront/orders`, orderData);
         
         if (response.data.success) {
+          setOrderPlaced(true);  // Prevent cart empty redirect
           clearCart();
-          navigate(`/shop/order-confirmation/${response.data.order_id}`);
           toast.success('Order placed successfully!');
+          navigate(`/shop/order-confirmation/${response.data.order_id}`);
         } else {
           throw new Error(response.data.message || 'Failed to create order');
         }
