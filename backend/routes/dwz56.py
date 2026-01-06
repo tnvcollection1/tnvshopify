@@ -745,7 +745,7 @@ async def list_shipped_records(
 
 @router.get("/import-stats")
 async def get_import_stats(
-    store_filter: Optional[str] = Query(None, description="Filter by Shopify store name"),
+    store_name: Optional[str] = Query(None, description="Filter by Shopify store name for data isolation"),
 ):
     """
     Get import statistics including total sale value by store.
@@ -755,14 +755,16 @@ async def get_import_stats(
     
     try:
         # Build query for China imports (X-prefix tracking numbers)
-        # These are from both tnvcollection and tnvcollectionpk stores
+        # Filter by specific store for data isolation
         query = {
-            "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]},
             "tracking_number": {"$regex": "^X", "$options": "i"}
         }
         
-        if store_filter and store_filter != 'all':
-            query["store_name"] = store_filter
+        # Apply store filter for data isolation
+        if store_name:
+            query["store_name"] = store_name
+        else:
+            query["store_name"] = {"$in": ["tnvcollection", "tnvcollectionpk", "ashmiaa", "asmia"]}
         
         # Get import statistics by store
         pipeline = [
@@ -1098,6 +1100,7 @@ async def get_purchase_tracking_list(
     tracking_number: str = None,
     status_mask: str = None,
     courier_type: str = None,
+    store_name: Optional[str] = Query(None, description="Filter by Shopify store name for data isolation"),
 ):
     """Get tracking records from purchase account (for reconciliation)"""
     extra_params = {
@@ -1146,15 +1149,18 @@ async def get_purchase_tracking_list(
                     ref_order_nums.append(order_part)
                     ref_order_nums.append(int(order_part))
         
-        # Lookup Shopify orders
+        # Lookup Shopify orders with store isolation
         shopify_orders = {}
         shopify_by_order = {}
         shopify_by_x_tracking = {}
         
+        # Build store filter for data isolation
+        purchase_store_filter = {"store_name": store_name} if store_name else {"store_name": {"$in": ["tnvcollection", "tnvcollectionpk", "ashmiaa", "asmia"]}}
+        
         try:
             if all_nums:
                 cursor = db.customers.find(
-                    {"tracking_number": {"$in": all_nums}, "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}},
+                    {"tracking_number": {"$in": all_nums}, **purchase_store_filter},
                     {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
                 )
                 async for order in cursor:
@@ -1169,7 +1175,7 @@ async def get_purchase_tracking_list(
             
             if ref_order_nums:
                 cursor = db.customers.find(
-                    {"order_number": {"$in": ref_order_nums}, "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}},
+                    {"order_number": {"$in": ref_order_nums}, **purchase_store_filter},
                     {"_id": 0, "order_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
                 )
                 async for order in cursor:
@@ -1181,11 +1187,11 @@ async def get_purchase_tracking_list(
                         "total_spent": order.get("total_spent")
                     }
             
-            # X-prefix matching
+            # X-prefix matching with store isolation
             x_prefix_nums = [num for num in all_nums if num and num.upper().startswith('X')]
             if x_prefix_nums:
                 cursor = db.customers.find(
-                    {"tracking_number": {"$regex": "^X", "$options": "i"}, "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}},
+                    {"tracking_number": {"$regex": "^X", "$options": "i"}, **purchase_store_filter},
                     {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "first_name": 1, "last_name": 1, "total_spent": 1}
                 )
                 async for order in cursor:
