@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import Dashboard from "@/components/DashboardOptimized";
 import Login from "@/components/Login";
 import Layout from "@/components/Layout";
@@ -97,9 +97,6 @@ function StorefrontWrapper({ page = 'home' }) {
     </StorefrontLayout>
   );
 }
-
-// We need useParams for StorefrontWrapper
-import { useParams } from 'react-router-dom';
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
