@@ -844,8 +844,13 @@ async def migrate_preview_data(force: bool = False):
                 total = data.get('total', 0)
                 
                 if total > 0:
-                    # Clear existing customers
+                    # Clear existing customers and drop problematic index
                     await db.customers.delete_many({})
+                    try:
+                        await db.customers.drop_index("customer_id_1")
+                        logger.info("  Dropped customer_id index to avoid conflicts")
+                    except Exception:
+                        pass  # Index may not exist
                     
                     # Fetch in batches of 1000
                     batch_size = 1000
