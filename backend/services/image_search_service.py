@@ -45,7 +45,8 @@ async def search_products_by_image(image_url: str, limit: int = 20) -> Dict:
     Returns:
         Dict with success status and products list
     """
-    if not TMAPI_TOKEN:
+    tmapi_token = get_tmapi_token()
+    if not tmapi_token:
         return {"success": False, "error": "TMAPI token not configured"}
     
     db = get_db()
@@ -53,7 +54,7 @@ async def search_products_by_image(image_url: str, limit: int = 20) -> Dict:
     try:
         url = "http://api.tmapi.top/1688/search/image"
         params = {
-            "apiToken": TMAPI_TOKEN,
+            "apiToken": tmapi_token,
             "image_url": image_url,
             "page_size": min(limit, 50),
         }
