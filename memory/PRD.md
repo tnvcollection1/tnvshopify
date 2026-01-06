@@ -161,15 +161,10 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 - None currently
 
 ### P1 - High Priority
-1. **Razorpay Live Key Authentication** (IN PROGRESS)
-   - Live keys returning "Authentication failed" in some cases
-   - COD flow works perfectly as fallback
-   - May need to verify API key permissions in Razorpay dashboard
-
-2. **Admin UI Redesign** (IN PROGRESS)
-   - ShopifySidebar.jsx created with new navigation
-   - Dark green sidebar with Shopify-style design
-   - Remaining admin pages need consistent styling
+1. **Continue Admin UI Redesign** (IN PROGRESS)
+   - Dashboard page needs refresh with consistent styling
+   - Orders page needs update to match new design
+   - Products page needs Shopify-style table
 
 ### P2 - Medium Priority
 1. **Chrome Extension Direct Scraping** (IN PROGRESS)
