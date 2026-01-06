@@ -294,7 +294,7 @@ export default function DWZ56Purchase() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div 
                     className="text-center p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:bg-green-50 transition-all border-2 border-transparent hover:border-green-200"
-                    onClick={() => { setSelectedStore('all'); setMatchFilter('matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
+                    onClick={() => { setMatchFilter('matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
                   >
                     <p className="text-3xl font-bold text-green-600">
                       Rs.{importStats.total_sale_value?.toLocaleString(undefined, {maximumFractionDigits: 0}) || '0'}
@@ -304,7 +304,7 @@ export default function DWZ56Purchase() {
                   </div>
                   <div 
                     className="text-center p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:bg-blue-50 transition-all border-2 border-transparent hover:border-blue-200"
-                    onClick={() => { setSelectedStore('all'); setMatchFilter('matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
+                    onClick={() => { setMatchFilter('matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
                   >
                     <p className="text-3xl font-bold text-blue-600">
                       {importStats.matched_orders?.toLocaleString() || '0'}
@@ -314,7 +314,7 @@ export default function DWZ56Purchase() {
                   </div>
                   <div 
                     className="text-center p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:bg-purple-50 transition-all border-2 border-transparent hover:border-purple-200"
-                    onClick={() => { setSelectedStore('all'); setMatchFilter('all'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
+                    onClick={() => { setMatchFilter('all'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
                   >
                     <p className="text-3xl font-bold text-purple-600">
                       {importStats.total_dwz56_records?.toLocaleString() || '0'}
@@ -324,7 +324,7 @@ export default function DWZ56Purchase() {
                   </div>
                   <div 
                     className="text-center p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:bg-red-50 transition-all border-2 border-transparent hover:border-red-200"
-                    onClick={() => { setSelectedStore('all'); setMatchFilter('not_matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
+                    onClick={() => { setMatchFilter('not_matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
                   >
                     <p className="text-3xl font-bold text-red-600">
                       {(importStats.total_dwz56_records - importStats.matched_orders) || '0'}
@@ -342,7 +342,7 @@ export default function DWZ56Purchase() {
                         <div 
                           key={idx} 
                           className="flex justify-between items-center p-3 bg-white rounded cursor-pointer hover:bg-blue-50 hover:shadow-md transition-all border-2 border-transparent hover:border-blue-200"
-                          onClick={() => { setSelectedStore(store.store); setMatchFilter('matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
+                          onClick={() => { setMatchFilter('matched'); setActiveTab('tracking'); setTimeout(() => fetchTrackingList(1), 100); }}
                         >
                           <div className="flex items-center gap-2">
                             <Badge variant="outline" className="bg-orange-100">{store.store || 'Unknown'}</Badge>
