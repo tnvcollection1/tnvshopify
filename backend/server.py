@@ -5994,7 +5994,12 @@ async def create_store(store: StoreCreate):
         if existing:
             raise HTTPException(status_code=400, detail="Store with this name already exists")
         
-        store_obj = Store(**store.model_dump())
+        store_data = store.model_dump()
+        # Auto-set shopify_domain from shop_url if not provided
+        if not store_data.get('shopify_domain') and store_data.get('shop_url'):
+            store_data['shopify_domain'] = store_data['shop_url']
+        
+        store_obj = Store(**store_data)
         doc = store_obj.model_dump()
         await db.stores.insert_one(doc)
         logger.info(f"Created store: {store.store_name}")
