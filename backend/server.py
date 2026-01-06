@@ -804,6 +804,36 @@ async def migrate_preview_data():
         raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
 
 
+@api_router.post("/fix-store-domains")
+async def fix_store_domains():
+    """
+    Fix store domains by copying shop_url to shopify_domain where missing
+    """
+    try:
+        # Find all stores where shopify_domain is null
+        stores = await db.stores.find({"shopify_domain": None}).to_list(None)
+        
+        updated = 0
+        for store in stores:
+            shop_url = store.get('shop_url')
+            if shop_url:
+                await db.stores.update_one(
+                    {"_id": store["_id"]},
+                    {"$set": {"shopify_domain": shop_url}}
+                )
+                updated += 1
+                logger.info(f"Fixed domain for {store.get('store_name')}: {shop_url}")
+        
+        return {
+            "success": True,
+            "message": f"Fixed {updated} store domains",
+            "updated_count": updated
+        }
+    except Exception as e:
+        logger.error(f"Error fixing store domains: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/init-admin")
 async def initialize_admin():
     """
