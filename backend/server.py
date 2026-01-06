@@ -6006,6 +6006,27 @@ async def update_store_token(store_name: str, token: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.put("/stores/{store_name}/domain")
+async def update_store_domain(store_name: str, domain: str):
+    """
+    Update store's Shopify domain
+    """
+    try:
+        result = await db.stores.update_one(
+            {"store_name": store_name},
+            {"$set": {"shopify_domain": domain}}
+        )
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Store not found")
+        logger.info(f"Updated domain for store: {store_name}")
+        return {"success": True, "message": f"Domain updated for {store_name}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating store domain: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.delete("/stores/{store_id}")
 async def delete_store(store_id: str):
     """
