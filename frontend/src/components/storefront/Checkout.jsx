@@ -277,13 +277,15 @@ const Checkout = ({ storeName = 'tnvcollection' }) => {
     zip: '',
     country: 'IN'
   });
+  
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   useEffect(() => {
-    // Redirect if cart is empty
-    if (cart.length === 0) {
+    // Redirect if cart is empty (but not if order was just placed)
+    if (cart.length === 0 && !orderPlaced) {
       navigate('/shop/cart');
     }
-  }, [cart, navigate]);
+  }, [cart, navigate, orderPlaced]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
