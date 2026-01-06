@@ -67,6 +67,8 @@ import StorefrontHome from "@/components/storefront/StorefrontHome";
 import ProductListing from "@/components/storefront/ProductListing";
 import ProductDetail from "@/components/storefront/ProductDetail";
 import ShoppingCart from "@/components/storefront/ShoppingCart";
+import Checkout from "@/components/storefront/Checkout";
+import OrderConfirmation from "@/components/storefront/OrderConfirmation";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
