@@ -1394,6 +1394,8 @@ class CreatePurchaseOrderRequest(BaseModel):
     color: Optional[str] = Field(None, description="Product color")
     spec_id: Optional[str] = Field(None, description="1688 SKU/specId for specific variant")
     shopify_order_id: Optional[str] = Field(None, description="Related Shopify order ID")
+    sku: Optional[str] = Field(None, description="Shopify SKU for this line item")
+    product_name: Optional[str] = Field(None, description="Product name for this line item")
     notes: Optional[str] = Field(None, description="Order notes")
     account_id: Optional[str] = Field(None, description="1688 account ID to use for ordering")
 
