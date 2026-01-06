@@ -237,6 +237,35 @@ async def startup_event():
     # Initialize default users FIRST
     await init_default_users()
     
+    # Fix stores with missing shopify_domain
+    async def fix_store_domains_on_startup():
+        try:
+            logger.info("🔧 Checking stores for missing domains...")
+            stores = await db.stores.find({"$or": [
+                {"shopify_domain": None},
+                {"shopify_domain": {"$exists": False}}
+            ]}).to_list(None)
+            
+            updated = 0
+            for store in stores:
+                shop_url = store.get('shop_url')
+                if shop_url:
+                    await db.stores.update_one(
+                        {"_id": store["_id"]},
+                        {"$set": {"shopify_domain": shop_url}}
+                    )
+                    updated += 1
+                    logger.info(f"  Fixed domain for {store.get('store_name')}: {shop_url}")
+            
+            if updated > 0:
+                logger.info(f"✅ Fixed {updated} store domains")
+            else:
+                logger.info("✅ All store domains are set correctly")
+        except Exception as e:
+            logger.error(f"❌ Error fixing store domains: {str(e)}")
+    
+    await fix_store_domains_on_startup()
+    
     scheduler = get_scheduler()
     scheduler.start()
     logger.info("✅ Background scheduler initialized")
