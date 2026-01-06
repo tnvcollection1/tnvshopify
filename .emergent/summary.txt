@@ -2,184 +2,199 @@
 
 PRODUCT REQUIREMENTS:
 1.  **Product Scraping**: A Chrome Extension to collect product information from 1688.com.
-2.  **Dianxiaomi-style UI**: A Product Collector interface to edit and manage scraped products (titles, descriptions, images, variants).
+2.  **Dianxiaomi-style UI**: A Product Collector interface to edit and manage scraped products.
 3.  **Publish to Shopify**: One-click functionality to publish the edited products to the user's Shopify store.
 4.  **1688 Image Search**: A feature to find 1688 products by uploading or providing an image URL.
 5.  **Order Automation**: A system to link incoming Shopify orders to their corresponding 1688 products and streamline the ordering process. This includes fulfillment status sync.
-6.  **Multi-Stage Fulfillment Pipeline**: A new UI and backend to track orders through a detailed pipeline:  →  →  →  →  →  → , with support for different last-mile carriers (TCS, DTDC).
-7.  **Pipeline Enhancements**: The pipeline page should include features for auto-syncing from Shopify, WhatsApp notifications on stage changes, image search for product linking, and CSV export.
-8.  **Monitoring & History**: Provide UI for TMAPI credit usage and product import history.
-9.  **Fulfillment Automation**: Implement bulk updates, automated DWZ tracking import (CSV & API), batch notifications, order history timeline, and scheduled background jobs for syncing.
-10. **Advanced Analytics**: Add date-range filtering and multiple tabs (Funnel, Timeline, Stuck) to the analytics modal.
-11. **Product Linking**: The user wants to be able to link products from their Shopify store () to 1688.com from the  page.
+6.  **Multi-Stage Fulfillment Pipeline**: A new UI and backend to track orders through a detailed pipeline.
+7.  **Product Linking**: The user wants to be able to link products from their Shopify stores (, ) to 1688.com.
+8.  **Per-SKU Ordering**: When a Shopify order has multiple line items (SKUs), each SKU should be ordered and tracked on 1688 independently.
 
 **User's preferred language**: English
 
 **what currently exists?**
-*   A comprehensive Shopify-1688 integration application is in place, featuring product scraping, a Product Collector UI, and order management.
-*   The backend has been refactored into a service-oriented architecture.
-*   A multi-stage Fulfillment Pipeline feature is fully implemented at  with extensive automation capabilities.
-*   This pipeline includes auto-sync from Shopify, image search for product linking, WhatsApp & Email notifications, CSV/JSON export, bulk updates, automated DWZ tracking import (CSV & API), a detailed order history timeline, and advanced analytics with date-range filtering.
-*   A background scheduler (APScheduler) is implemented and runs an automated DWZ tracking sync job.
-*   A product catalog page exists at  which shows Shopify products and their 1688 linking status.
+*   A comprehensive Shopify-1688 integration application is in place, featuring product scraping, a Product Collector UI, order management, and a multi-stage fulfillment pipeline.
+*   A bulk auto-linking feature is now available on the  page. It uses an AI image search (via TMAPI) to find and link unlinked Shopify products to their 1688 counterparts. This includes a background job manager and a new UI modal for starting and monitoring the process.
+*   The 1688 API authentication for creating purchase orders is now fixed, using a valid user-provided access token.
+*   The UI on the  page is customized to hide the auto-link feature for the ashmiaa store, as requested.
+*   A new MongoDB Atlas cluster has been created by the user to serve as the production database.
+*   Initial backend and frontend changes have been made to support per-SKU order tracking from 1688, but this is not fully tested.
 
 **Last working item**:
-- **Last item agent was working**: The user requested to link products for the tnvcollectionpk store on the  page. The agent began investigating this by viewing the  page and attempting to fetch the products via an API call. A discrepancy was found: the screenshot showed 6,338 products, but the API call for the  store returned 0 products. The agent was about to investigate this discrepancy.
-- **Status**: IN PROGRESS
-- **Agent Testing Done**: N
-- **Which testing method agent to use?**: manual testing by curl. The agent needs to investigate the backend endpoint that serves the  page to understand why it's returning an empty list for a specific store.
-- **User Testing Done**: N
+*   **Last item agent was working**: The agent was assisting the user in configuring their production deployment to connect to a new MongoDB Atlas database. The preview environment has network restrictions preventing a connection, so the agent explained that the production environment will work correctly. The agent provided the final connection string and instructed the user to update the  environment variable in their deployment settings and re-deploy.
+*   **Status**: USER VERIFICATION PENDING
+*   **Agent Testing Done**: N/A
+*   **Which testing method agent to use?**: manual testing by curl/screenshot tool. After the user redeploys with the correct , the next agent must guide the user to test the deployed application by syncing data and verifying functionality.
+*   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-*   **Issue 1**: Discrepancy on  page: UI shows products, but API returns none for . (P0)
-*   **Issue 2**: Long-standing Shopify OAuth  and login stability issues are still pending investigation. (P2)
+*   **Issue 1**: Production Database Configuration and Data Sync (P0)
+*   **Issue 2**: Failed to fetch 1688 purchase orders error in production (P1)
+*   **Issue 3**: Per-SKU Order Tracking Verification (P1)
+*   **Issue 4**: Long-standing Shopify OAuth and login stability issues (P2)
 
 **Issues Detail**:
-*   **Issue 1: Product Catalog API returning empty list**
-    *   **Attempted fixes**: The agent took a screenshot confirming products are visible in the UI and ran a  command against the products API for the  store, which returned an empty list.
+*   **Issue 1: Production Database Configuration and Data Sync**
+    *   **Attempted fixes**: Guided user through creating a MongoDB Atlas cluster. Identified that the preview environment has network restrictions. Provided the correct connection string for the user to update in their production deployment settings.
     *   **Next debug checklist**:
-        1.  Identify the exact backend endpoint and function responsible for fetching products for the  catalog page.
-        2.  Inspect the code of that function to understand how it filters by store name.
-        3.  Check the database directly to confirm products for  exist and how the store name is formatted.
-        4.  Correct the backend logic to properly query and return the products.
-    *   **Why fix this issue and what will be achieved with the fix?**: This is a direct user request and is blocking the ability to link products to 1688, a core feature.
-    *   **Status**: IN PROGRESS
+        1.  Confirm the user has updated the  in their production deployment settings and re-deployed.
+        2.  Guide the user to the deployed application URL.
+        3.  Instruct the user to use the Sync buttons on the dashboard and product pages to populate the new production database with orders and products from Shopify.
+        4.  Verify that data appears correctly in the UI.
+    *   **Why fix this issue and what will be achieved with the fix?**: This is critical for the application to function in production and will resolve the empty data issue reported by the user.
+    *   **Status**: USER VERIFICATION PENDING
     *   **Is recurring issue?**: N
-    *   **Should Test frontend/backend/both after fix?**: Both
+    *   **Should Test frontend/backend/both after fix?**: Both (on the production URL).
+    *   **Blocked on other issue**: This issue blocks all other production testing.
 
-*   **Issue 2: Pending Shopify OAuth and login issues**
-    *   **Attempted fixes**: None in recent sessions.
-    *   **Next debug checklist**: Conduct a thorough review of the Shopify authentication flow, server-side session management, and related libraries to identify the root cause of instability for new store connections.
-    *   **Why fix this issue and what will be achieved with the fix?**: This improves core platform reliability, user trust, and the onboarding experience.
+*   **Issue 2: Failed to fetch 1688 purchase orders error in production**
+    *   **Attempted fixes**: Added error handling to the frontend component. Set  to  to ensure the frontend calls the backend on the same domain in production.
+    *   **Next debug checklist**:
+        1.  Once the production deployment is working (after Issue 1 is resolved), navigate to the  page.
+        2.  Open browser developer tools to check for any CORS or Failed to fetch errors in the console/network tabs.
+    *   **Why fix this issue and what will be achieved with the fix?**: This fixes a broken page in the user's production application.
+    *   **Status**: TESTING PENDING
+    *   **Is recurring issue?**: Y
+    *   **Should Test frontend/backend/both after fix?**: Frontend (browser dev tools).
+    *   **Blocked on other issue**: Issue 1.
+
+*   **Issue 3: Per-SKU Order Tracking Verification**
+    *   **Attempted fixes**:
+        -   : UI modified to show per-SKU status.
+        -   :  endpoint updated to accept SKU-level data.
+    *   **Next debug checklist**:
+        1.  In the production environment, find a Shopify order with multiple line items.
+        2.  Attempt to create a 1688 purchase order for a single SKU from that order.
+        3.  Verify in the UI that the status of only that specific SKU changes.
+        4.  Check the production database to confirm the data is stored correctly at the line-item level.
+    *   **Why fix this issue and what will be achieved with the fix?**: Fulfills a core business requirement for handling multi-item orders accurately.
+    *   **Status**: TESTING PENDING
+    *   **Is recurring issue?**: N
+    *   **Should Test frontend/backend/both after fix?**: Both.
+    *   **Blocked on other issue**: Issue 1.
+
+*   **Issue 4: Long-standing Shopify OAuth and login stability issues**
+    *   **Attempted fixes**: None.
+    *   **Next debug checklist**: Conduct a full review of the Shopify authentication flow in , including server-side session management.
+    *   **Why fix this issue and what will be achieved with the fix?**: Improves core platform reliability and the new user onboarding experience.
     *   **Status**: NOT STARTED
     *   **Is recurring issue?**: Y
-    *   **Should Test frontend/backend/both after fix?**: Both
+    *   **Should Test frontend/backend/both after fix?**: Both.
 
 **In progress Task List**:
-*   **Task 1: Enable Product Linking on  page**
-    *   **Where to resume**: Resume by debugging the backend API endpoint for the product catalog. The immediate goal is to fix the data discrepancy where the API returns 0 products for the  store.
-    *   **What will be achieved with this?**: The user will be able to view their products on the catalog page and proceed with linking them to 1688.
+*   **Task 1: Complete Product Auto-Linking in Production**
+    *   **Where to resume**: The auto-linking jobs for  and  were interrupted. Guide the user to restart these jobs using the new Auto-Link by Image button on the  page once their production environment is populated with data.
+    *   **What will be achieved with this?**: This will complete the user's request to automatically link their product catalogs to 1688.
     *   **Status**: IN PROGRESS
-    *   **Should Test frontend/backend/both after fix?**: Both
-    *   **Blocked on something**: Resolving Issue 1.
+    *   **Should Test frontend/backend/both after fix?**: Both.
+    *   **Blocked on something**: Issue 1.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks**:
-    *   (P2) **Email Notification Configuration**: The email notification service has been created, but it requires the user to provide SendGrid API keys via  variables to be functional. The agent should prompt the user for these credentials.
-    *   (P2) **Chrome Extension Enhancement**: The user mentioned enhancing collection/search page scraping. While the agent found existing functionality, a dedicated review and test with the user would be beneficial.
+    *   (P2) **Email Notification Configuration**: Prompt user for SendGrid API keys to enable the email notification service.
+    *   (P2) **Chrome Extension Enhancement**: Review scraping for collection/search pages with the user.
 *   **Future Tasks**:
-    *   (P2) **Investigate Shopify OAuth Instability**: Address the long-standing issue with Shopify login and  problems to improve new user onboarding.
-    *   (P3) **Enhance Analytics**: Implement more advanced analytics features like cohort analysis or product performance tracking.
+    *   (P2) **Investigate Shopify OAuth Instability**.
+    *   (P3) **Refactor ** and **** into smaller components.
+    *   (P3) **Enhance Analytics**.
 
 **Completed work in this session**
-- **Fulfillment Pipeline Enhancements (Verified)**:
-  - Fixed FastAPI route ordering issue for  and .
-  - Fixed a frontend bug where the store dropdown was not populating.
-  - Successfully implemented and verified four new features: Image Search Linking, Auto-sync button, WhatsApp notifications, and CSV/JSON Export.
-- **Shopify Large Sync Validation**: Confirmed that the background job for syncing historical Shopify orders now works reliably for large date ranges (>90 days) by using monthly chunking, preventing timeouts.
-- **Chrome Extension Endpoint Verified**: Tested and validated the backend endpoint that receives product data from the browser extension.
-- **Auto-Sync 1688 Fulfillment to Shopify**: Created a new service () that automatically creates fulfillments in Shopify when an order reaches the  stage in the pipeline.
-- **Fulfillment Pipeline UX Enhancements**:
-  - Implemented a modal to prompt for tracking numbers when advancing an order to a stage that requires one (e.g., ).
-  - Fixed a critical bug where order stage updates were failing due to an integer vs. string mismatch in the  field.
-- **Bulk Operations and DWZ Automation**:
-  - Implemented and tested endpoints and UI for bulk updating order stages and importing DWZ tracking numbers via CSV paste.
-  - Implemented an automated background job to sync tracking information directly from the DWZ56 API.
-  - Implemented UI and backend for sending batch WhatsApp notifications.
-- **Order History Timeline**: Added a View History button to each order card, which opens a modal displaying a detailed timeline of all stage changes and events for that order.
-- **Advanced Analytics**: Enhanced the analytics modal with a date-range picker and tabs for Overview, Funnel, Timeline, and Stuck orders.
-- **Email Notifications**: Created a new service () and integrated it, laying the groundwork for sending email alerts (pending API key configuration).
+*   **Product Catalog Bug Resolved**: Confirmed the  endpoint works correctly, and the issue of missing products was transient.
+*   **Bulk Auto-Linking Feature Implemented**: Created a new feature with a background job and UI to automatically link Shopify products to 1688 via image search. Successfully debugged and fixed the complex TMAPI integration, including URL conversion and parameter correction.
+*   **1688 Purchase Order Auth Fixed**: Diagnosed and fixed a  error by guiding the user to provide a valid .
+*   **UI Customization**: Hid the Auto-Link by Image button for the 'ashmiaa' store as requested.
+*   **Production Database Setup**: Guided the user through creating a MongoDB Atlas account and provided instructions for configuring it in their production deployment.
+*   **Per-SKU Ordering Logic (Initial)**: Implemented initial backend and frontend code changes to support tracking 1688 orders at a line-item level.
 
 **Earlier issues found/mentioned but not fixed**
-*   **Issue 1: Shopify OAuth & Login Instability**
-    *   **Debug checklist**: Investigate server-side session management, Shopify OAuth library configuration, and potential race conditions during the auth callback.
-    *   **Why to solve this issue and what will be achieved with this?**: Resolving this will improve the reliability of connecting new Shopify stores, a critical part of user onboarding.
-    *   **Should Test frontend/backend/both after fix**: Both
-    *   **Is recurring issue?**: Y
+*   **Shopify OAuth & Login Instability**: A known recurring issue that has been deferred.
 
 **Known issue recurrence from previous fork**
 *   **Issue recurrence in previous fork**: Shopify OAuth and login issues.
-*   **Recurrence count**: 2+
+*   **Recurrence count**: 3+
 *   **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Monolith to Microservices**: The backend uses a service-oriented architecture.
-*   **Complex Fulfillment Logic**: A custom, 7-stage fulfillment pipeline models a complex business workflow.
-*   **Background Jobs**:  is used for running recurring tasks like syncing tracking data from the DWZ56 API.
-*   **FastAPI Routing**: Extensive use of FastAPI routers to modularize the application.
-*   **React Frontend**: The frontend is built with React, using components like Shadcn UI and libraries like .
+*   **Background Jobs**: Used for the long-running bulk auto-linking task.
+*   **3rd Party API Debugging**: Extensive work on the TMAPI service to fix image search.
+*   **Cloud Database Configuration**: Guided user through setting up MongoDB Atlas.
+*   **Production vs. Preview Environments**: Handled differences in environment variables and network capabilities.
 
 **key DB schema**
-*   ****: Stores orders and their current stage. Contains a  array which logs every stage change with timestamps.
-*   ****, ****, ****, ****: Existing core collections.
+*   :  field is populated by the auto-link job.
+*   : Schema updated to support per-SKU 1688 order data (requires verification).
+*   : New collection to track background job status.
 
 **All files of reference**
-*    (Heavily modified for new features)
-*    (Heavily modified for new endpoints)
-*    (Modified to include new routers and scheduler jobs)
-*    (Modified to add DWZ sync job)
-*    (New file)
-*    (New file)
-*    (New file)
-*   
-*   
-
-**Areas that need refactoring**:
-*   The  component has grown to over 1600 lines. It should be broken down into smaller, more manageable sub-components (e.g., , , , ).
-
-**key api endpoints**
-*   : GET, POST (bulk update)
-*   : GET (with date range)
-*   : POST
-*   : POST
-*   : POST
-*   : GET
-
-**Critical Info for New Agent**
-*   **Top Priority**: The user's immediate request is to link products on the  page. Your first task is to fix the bug where the API is returning 0 products for the  store, even though the data exists.
-*   **Refactoring Needed**: The main frontend component, , is very large. Plan to refactor it into smaller components after addressing the user's immediate request.
-*   **Configuration Required**: The new email notification feature will not work until the user provides  and  in the  file. You should inform the user about this.
-
-**documents and test reports created in this job**
-*    (Latest)
-*   
-*   
-*   
-*   
+*    (Heavily modified for TMAPI image search fix)
+*    (Heavily modified for auto-link UI)
+*    (Added bulk-auto-link endpoint)
+*    (Updated for per-SKU logic and token fix)
+*    (Updated for per-SKU UI)
+*    (Updated with new 1688 token)
 *    (Updated)
 
+**Areas that need refactoring**:
+*    (>1600 lines) and  (grown significantly) should be broken down into smaller, more manageable sub-components.
+
+**key api endpoints**
+*    (POST)
+*    (GET)
+*    (POST)
+*    (GET)
+
+**Critical Info for New Agent**
+*   **Production vs. Preview**: The app is in a dual-environment state. The preview environment uses a local MongoDB and has network restrictions. The production environment is configured for MongoDB Atlas. **Do not attempt to connect to Atlas from the preview environment; it will fail.** The immediate priority is guiding the user to finalize their production setup.
+*   **User Action Required**: The user must update their production deployment's  variable with the Atlas string and redeploy. Afterward, they must sync all data from Shopify into the new, empty production database.
+*   **1688 Auth is Fixed**: The purchase order API authentication is resolved. The next step is to test the per-SKU ordering logic.
+*   **Image Search is Fixed**: The TMAPI image search is fully functional. The logic is in .
+
+**documents and test reports created in this job**
+*   
+
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks to implement scheduled auto-sync, email notifications, and advanced analytics. (DONE)
-2.  **User**: Asks to link products for the  store on the  page. (IN PROGRESS)
-3.  **Agent**: Acknowledged, started investigating the  page. (IN PROGRESS)
-4.  **Agent**: Took a screenshot of the  page, confirming products are visible in the UI. (IN PROGRESS)
-5.  **Agent**: Ran a  command to fetch products for , which returned 0 results, identifying a discrepancy. (IN PROGRESS)
+1.  **User**: Asks for final deployment URL to be .
+2.  **User**: Reports that an order with 3 SKUs is marked ordered after only one is processed.
+3.  **User**: Reports the deployed app is empty and provides a screenshot.
+4.  **Agent**: Explains this is due to separate production/preview databases.
+5.  **User**: Asks for help configuring the production database.
+6.  **Agent**: Guides the user through creating a MongoDB Atlas account.
+7.  **User**: Provides a series of screenshots showing their progress in the Atlas UI.
+8.  **Agent**: Provides the final connection string and instructions.
+9.  **User**: Sends a screenshot showing they can't find where to edit the .
+10. **Agent**: Points to the edit icon in the screenshot and provides the value to paste. The user's last message confirms this value.
 
 **Project Health Check:**
-*   **Broken**: The product listing functionality on the  page is broken for at least one store () due to an API issue.
+*   **Broken**:
+    *   The production environment is non-functional as it needs to be connected to the new database and synced with Shopify data.
+    *   The 1688 purchase order flow does not correctly handle multi-SKU orders (an initial fix is implemented but untested).
 *   **Mocked**: None.
 
 **3rd Party Integrations**
 *   **TMAPI**: Core integration for product data.
 *   **1688 Open Platform**: Used for authenticated actions (ordering).
-*   **Shopify Admin API**: Used for order syncing and product creation/fulfillment.
-*   **Meta Business API (WhatsApp)**: Used for sending order notifications.
+*   **Shopify Admin API**: Used for order syncing and product management.
+*   **Meta Business API (WhatsApp)**: For sending order notifications.
 *   **OpenAI GPT-4o**: Used for ad-hoc translations. Uses Emergent LLM Key.
-*   **DWZ56 API**: Used for fetching shipping and tracking information.
-*   **SendGrid**: Service created for email notifications, requires user API key.
+*   **DWZ56 API**: For fetching shipping and tracking information.
+*   **SendGrid**: Service created, requires user API key.
+*   **MongoDB Atlas**: Newly introduced for the production database. Requires user configuration.
 
 **Testing status**
-*   **Testing agent used after significant changes**: YES, the testing agent was used after every major feature cluster was implemented, resulting in high test coverage.
+*   **Testing agent used after significant changes**: NO
 *   **Troubleshoot agent used after agent stuck in loop**: NO
-*   **Test files created**: The testing agent created and updated multiple test scripts, reports are in .
-*   **Known regressions**: None.
+*   **Test files created**: None
+*   **Known regressions**: None
 
 **Credentials to test flow:**
 *   **Admin Login**:  / 
-*   **TMAPI Token**: Located in .
+*   **1688 Access Token**: 
+*   **MongoDB Atlas (for production config)**:
+    *   **Connection String**: 
 
 **What agent forgot to execute**
-*   The agent successfully identified the discrepancy on the  page but has not yet debugged the root cause in the backend code. The next step is to investigate the API logic that fetches the product catalog.</analysis>
+*   The end-to-end flow for the per-SKU ordering fix was never tested after implementation.
+*    attributes were not added to the new UI elements in  (e.g., Auto-Link by Image button, modal elements), violating coding guidelines.</analysis>
