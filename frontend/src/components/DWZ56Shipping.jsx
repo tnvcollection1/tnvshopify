@@ -60,6 +60,7 @@ const StatusBadge = ({ status, label }) => {
 };
 
 export default function DWZ56Shipping() {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -83,7 +84,6 @@ export default function DWZ56Shipping() {
   const [searchTracking, setSearchTracking] = useState('');
   const [selectedCourier, setSelectedCourier] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
-  const [selectedStore, setSelectedStore] = useState('');
   const [matchFilter, setMatchFilter] = useState('all'); // 'all', 'matched', 'not_matched'
   
   // Stats
