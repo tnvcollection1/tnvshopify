@@ -468,6 +468,22 @@ const ProductsCatalog = () => {
           </p>
         </div>
         <div className="flex gap-2">
+          {storeFilter !== 'all' && (
+            <Button 
+              variant="outline" 
+              onClick={() => setAutoLinkModal(true)}
+              disabled={startingAutoLink}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 hover:from-purple-600 hover:to-pink-600"
+              data-testid="auto-link-btn"
+            >
+              {startingAutoLink ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Zap className="h-4 w-4 mr-2" />
+              )}
+              Auto-Link by Image
+            </Button>
+          )}
           <Button 
             variant="outline" 
             onClick={handleSyncAll}
