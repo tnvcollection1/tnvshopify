@@ -406,9 +406,8 @@ const StorefrontOrders = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (selectedStore && selectedStore !== 'all') {
-        params.append('store_name', selectedStore);
-      }
+      // Note: Storefront orders are not filtered by store since they come from the public storefront
+      // The store_name in storefront orders represents where the order was placed
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
       }
