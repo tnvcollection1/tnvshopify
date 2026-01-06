@@ -2570,6 +2570,40 @@ async def get_product_sync_status(store_name: str = None):
         return {"success": True, "statuses": [], "total_products": 0}
 
 
+@api_router.get("/shopify/products/{product_id}")
+async def get_single_shopify_product(product_id: str, store_name: str = None):
+    """Get a single Shopify product by ID - used by storefront"""
+    try:
+        query = {"id": product_id}
+        if store_name:
+            query["store_name"] = store_name
+        
+        # Try to find by string ID first
+        product = await db.shopify_products.find_one(query, {"_id": 0})
+        
+        # If not found, try converting to int
+        if not product:
+            try:
+                query["id"] = int(product_id)
+                product = await db.shopify_products.find_one(query, {"_id": 0})
+            except ValueError:
+                pass
+        
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        return {
+            "success": True,
+            "product": product
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching product {product_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/shopify/products/{product_id}/link-1688")
 async def link_product_to_1688(product_id: str, data: dict = Body(...)):
     """
