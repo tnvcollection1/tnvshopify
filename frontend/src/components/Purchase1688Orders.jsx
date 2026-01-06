@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
+import { useStore } from '../contexts/StoreContext';
 import {
   ShoppingCart,
   ExternalLink,
@@ -23,6 +24,7 @@ import { toast } from 'sonner';
 const API = process.env.REACT_APP_BACKEND_URL;
 
 const Purchase1688Orders = () => {
+  const { selectedStore: globalStore, getStoreName } = useStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -33,9 +35,10 @@ const Purchase1688Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const fetchOrders = useCallback(async () => {
+    if (!globalStore) return;
     setLoading(true);
     try {
-      let url = `${API}/api/1688/purchase-orders?page=${page}&page_size=${pageSize}`;
+      let url = `${API}/api/1688/purchase-orders?page=${page}&page_size=${pageSize}&store_name=${globalStore}`;
       if (statusFilter) {
         url += `&status=${statusFilter}`;
       }
