@@ -1481,7 +1481,7 @@ async def sync_shopify_orders(store_name: str, days_back: int = 3650, full_sync:
             # Check if customer exists
             existing = await db.customers.find_one({"customer_id": customer_id, "store_name": store_name}, {"_id": 0})
             
-            # Extract SKUs from line items
+            # Extract SKUs from line items (use current line_items only, not merged)
             order_skus = [item['sku'].upper() for item in order_data['line_items'] if item['sku']]
             
             # Extract sizes from line item names
@@ -1495,13 +1495,8 @@ async def sync_shopify_orders(store_name: str, days_back: int = 3650, full_sync:
                     sizes.append(size)
             
             if existing:
-                # Merge with existing customer
-                existing_skus = set(existing.get('order_skus', []))
-                merged_skus = list(existing_skus.union(set(order_skus)))
-                
-                existing_sizes = set(existing.get('shoe_sizes', []))
-                merged_sizes = list(existing_sizes.union(set(sizes)))
-                
+                # Update existing customer - REPLACE line_items and SKUs with current order data
+                # Don't merge SKUs as order may have been edited/changed
                 await db.customers.update_one(
                     {"customer_id": customer_id, "store_name": store_name},
                     {"$set": {
@@ -1510,8 +1505,8 @@ async def sync_shopify_orders(store_name: str, days_back: int = 3650, full_sync:
                         "email": order_data['email'] or existing.get('email'),
                         "phone": order_data['phone'] or existing.get('phone'),
                         "country_code": order_data['country_code'] or existing.get('country_code'),
-                        "order_skus": merged_skus,
-                        "shoe_sizes": merged_sizes,
+                        "order_skus": order_skus,  # Replace, don't merge
+                        "shoe_sizes": sizes if sizes else existing.get('shoe_sizes', ['Unknown']),  # Replace, don't merge
                         "line_items": order_data.get('line_items', []),
                         "order_number": str(order_data['order_number']),
                         "shopify_order_id": order_data.get('shopify_order_id'),
