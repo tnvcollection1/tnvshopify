@@ -1108,6 +1108,122 @@ async def fix_store_domains():
         logger.error(f"Error fixing store domains: {str(e)}")
 
 
+@api_router.post("/sync-single-order/{store_name}/{shopify_order_id}")
+async def sync_single_order(store_name: str, shopify_order_id: str):
+    """
+    Manually sync a single order from Shopify by its ID
+    """
+    try:
+        # Get store credentials
+        store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
+        if not store:
+            raise HTTPException(status_code=404, detail=f"Store {store_name} not found")
+        
+        shopify_domain = store.get("shopify_domain")
+        shopify_token = store.get("shopify_token")
+        
+        if not shopify_domain or not shopify_token:
+            raise HTTPException(status_code=400, detail="Store missing Shopify credentials")
+        
+        import httpx
+        
+        # Fetch order from Shopify
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"https://{shopify_domain}/admin/api/2024-01/orders/{shopify_order_id}.json",
+                headers={"X-Shopify-Access-Token": shopify_token},
+                timeout=30
+            )
+            
+            if resp.status_code != 200:
+                raise HTTPException(status_code=resp.status_code, detail=f"Shopify API error: {resp.text}")
+            
+            order = resp.json().get("order", {})
+        
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found in Shopify")
+        
+        # Parse order data
+        customer = order.get("customer", {})
+        shipping = order.get("shipping_address", {}) or {}
+        
+        line_items = []
+        order_skus = []
+        sizes = []
+        
+        for item in order.get("line_items", []):
+            sku = item.get("sku", "") or ""
+            line_items.append({
+                "product_id": item.get("product_id"),
+                "variant_id": item.get("variant_id"),
+                "sku": sku,
+                "name": item.get("name"),
+                "quantity": item.get("quantity"),
+                "price": float(item.get("price", 0))
+            })
+            if sku:
+                order_skus.append(sku.upper())
+            name = item.get("name", "")
+            if "/" in name:
+                parts = name.split("/")
+                size = parts[-1].strip() if len(parts) > 1 else "Unknown"
+                sizes.append(size)
+        
+        tracking_number = None
+        tracking_company = "TCS Pakistan"
+        fulfillments = order.get("fulfillments", [])
+        if fulfillments:
+            tracking_number = fulfillments[0].get("tracking_number")
+            tracking_company = fulfillments[0].get("tracking_company") or "TCS Pakistan"
+        
+        order_doc = {
+            "id": str(uuid.uuid4()),
+            "customer_id": f"shopify_{customer.get('id', order['id'])}",
+            "first_name": shipping.get("first_name") or customer.get("first_name") or "",
+            "last_name": shipping.get("last_name") or customer.get("last_name") or "",
+            "email": customer.get("email", ""),
+            "phone": shipping.get("phone") or customer.get("phone") or "",
+            "country_code": shipping.get("country_code", ""),
+            "store_name": store_name,
+            "order_skus": order_skus,
+            "shoe_sizes": sizes if sizes else ["Unknown"],
+            "line_items": line_items,
+            "order_count": 1,
+            "order_number": str(order.get("order_number", "")),
+            "shopify_order_id": str(order.get("id")),
+            "last_order_date": order.get("created_at"),
+            "fulfilled_at": order.get("fulfilled_at"),
+            "total_spent": float(order.get("total_price", 0)),
+            "fulfillment_status": order.get("fulfillment_status") or "unfulfilled",
+            "payment_status": order.get("financial_status"),
+            "tracking_number": tracking_number,
+            "tracking_company": tracking_company,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Upsert to database
+        result = await db.customers.update_one(
+            {"shopify_order_id": str(order.get("id")), "store_name": store_name},
+            {"$set": order_doc},
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": f"Order #{order.get('order_number')} synced successfully",
+            "order_number": order.get("order_number"),
+            "customer": f"{order_doc['first_name']} {order_doc['last_name']}",
+            "upserted": result.upserted_id is not None,
+            "modified": result.modified_count > 0
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error syncing single order: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/prepare-migration")
 async def prepare_migration():
     """
