@@ -6,11 +6,14 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 2. **Order Automation & SKU Handling**: Automate placing Shopify orders on 1688 with correct variant selection
 3. **Shopify Order Sync**: Sync orders from Shopify stores with performance optimization
 4. **Zero-API Product Scraping**: Chrome Extension that scrapes full product details without relying on paid APIs (Dianxiaomi-style)
+5. **Customer-Facing Storefront**: Public e-commerce storefront for each store (Net-a-Porter style)
+6. **Admin UI Overhaul**: Shopify-style admin backend with data isolation between stores
 
 ## Core User Personas
 - E-commerce store owners running Shopify stores
 - Dropshippers sourcing products from Chinese marketplaces
 - Business administrators managing multiple stores
+- End customers shopping on the public storefront
 
 ## Tech Stack
 - **Frontend**: React + Tailwind CSS + Shadcn UI
@@ -25,7 +28,41 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 
 ### Completed Features ✅
 
-#### 1. TMAPI Integration (Dec 2024)
+#### 1. Customer-Facing Storefront (Jan 6, 2026) ✅ NEW
+- **Public Routes**: No authentication required
+  - `/shop` - Homepage with hero, categories, featured products, newsletter
+  - `/shop/products` - Product listing with filters (sort, price, availability)
+  - `/shop/product/{id}` - Product detail with variants, add to cart
+  - `/shop/cart` - Shopping cart with order summary
+  - `/store/{storeName}` - Store-specific storefront routes
+- **Net-a-Porter Style Design**: Modern e-commerce UI with:
+  - Full-width hero section
+  - Category cards with hover effects
+  - Product grid with hover images and sale badges
+  - Sticky header with cart icon
+  - Professional footer with social links
+- **Cart Functionality**: LocalStorage-based cart with:
+  - Add/remove items
+  - Quantity updates
+  - Order summary with shipping calculation
+  - Free shipping threshold (₹5,000)
+- **Testing**: 100% tests passed (19/19)
+
+#### 2. DWZ56 Store Data Isolation (Jan 6, 2026) ✅ NEW
+- **All DWZ56 APIs now support `store_name` filter**:
+  - `GET /api/dwz56/tracking-list?store_name=tnvcollection`
+  - `GET /api/dwz56/import-stats?store_name=tnvcollection`
+  - `POST /api/dwz56/purchase/tracking-list?store_name=tnvcollection`
+  - `GET /api/dwz56/purchase/import-stats?store_name=tnvcollection`
+- **Complete data isolation** between stores (tnvcollection, tnvcollectionpk, ashmiaa)
+- **Testing**: 100% tests passed
+
+#### 3. Single Product API Endpoint (Jan 6, 2026) ✅ NEW
+- `GET /api/shopify/products/{product_id}` - Fetch single product by ID
+- Supports both `shopify_product_id` and legacy `id` fields
+- Store-specific filtering with `store_name` parameter
+
+#### 4. TMAPI Integration (Dec 2024)
 - Integrated third-party TMAPI service for reliable product data fetching
 - Supports 1688, Taobao, and Tmall products
 - Fetches full variant/SKU data including `props_names`, `spec_id`, prices, stock
