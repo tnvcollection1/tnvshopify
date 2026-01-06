@@ -151,7 +151,7 @@ export default function DWZ56Shipping() {
     setLoadingStats(true);
     try {
       let url = `${API_URL}/api/dwz56/import-stats`;
-      if (selectedStore && selectedStore !== 'all') {
+      if (selectedStore && selectedStore) {
         url += `?store_filter=${selectedStore}`;
       }
       const res = await fetch(url);
@@ -208,7 +208,7 @@ export default function DWZ56Shipping() {
         let filteredRecords = data.records;
         
         // Filter by store if selected
-        if (selectedStore && selectedStore !== 'all') {
+        if (selectedStore && selectedStore) {
           filteredRecords = filteredRecords.filter(r => r.shopify_store === selectedStore);
         }
         

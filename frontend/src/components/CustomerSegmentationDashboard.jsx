@@ -20,7 +20,7 @@ const CustomerSegmentationDashboard = () => {
   const fetchSegments = useCallback(async () => {
     try {
       setLoading(true);
-      const storeParam = globalStore !== 'all' ? `?store_name=${globalStore}` : '';
+      const storeParam = globalStore ? `?store_name=${globalStore}` : '';
       const res = await axios.get(`${API_URL}/api/customers/segments${storeParam}`);
       setSegments(res.data);
       setLoading(false);
@@ -159,7 +159,7 @@ const CustomerSegmentationDashboard = () => {
       setPageLoading(true);
       if (page === 1) setLoading(true);
       
-      const storeParam = globalStore !== 'all' ? `store_name=${globalStore}&` : '';
+      const storeParam = globalStore ? `store_name=${globalStore}&` : '';
       const res = await axios.get(`${API_URL}/api/customers/export-segment/${segment}?${storeParam}page=${page}&limit=50`);
       
       if (!res.data.customers || res.data.customers.length === 0) {

@@ -46,7 +46,7 @@ const DTDCReconciliation = () => {
   const [codLoading, setCodLoading] = useState(false);
 
   useEffect(() => {
-    if (globalStore && globalStore !== 'all') {
+    if (globalStore && globalStore) {
       fetchReconciliation();
       fetchCodReconciliation();
     } else {
@@ -61,7 +61,7 @@ const DTDCReconciliation = () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (globalStore !== 'all') params.append('store_name', globalStore);
+      if (globalStore) params.append('store_name', globalStore);
       if (filter !== 'all') params.append('status', filter);
       
       const response = await axios.get(`${API}/finance/dtdc-payment-reconciliation?${params}`);
@@ -91,7 +91,7 @@ const DTDCReconciliation = () => {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (globalStore === 'all') {
+    if (!globalStore) {
       toast.error('Please select a specific store first');
       return;
     }
@@ -127,7 +127,7 @@ const DTDCReconciliation = () => {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (globalStore === 'all') {
+    if (!globalStore) {
       toast.error('Please select a specific store first');
       return;
     }
@@ -159,7 +159,7 @@ const DTDCReconciliation = () => {
   };
 
   const handleClearData = async () => {
-    if (globalStore === 'all') {
+    if (!globalStore) {
       toast.error('Please select a specific store first');
       return;
     }
@@ -213,7 +213,7 @@ const DTDCReconciliation = () => {
             <h1 className="text-2xl font-bold text-gray-900">DTDC Payment Reconciliation</h1>
             <p className="text-sm text-gray-500 mt-1">
               Match DTDC COD collections with bank deposits
-              {globalStore !== 'all' && <span className="text-green-600 font-medium"> • Store: {globalStore}</span>}
+              {globalStore && <span className="text-green-600 font-medium"> • Store: {globalStore}</span>}
             </p>
           </div>
           <div className="flex gap-3">
@@ -222,7 +222,7 @@ const DTDCReconciliation = () => {
                 onClick={handleClearData} 
                 variant="outline" 
                 className="text-red-600 border-red-200 hover:bg-red-50"
-                disabled={clearing || globalStore === 'all'}
+                disabled={clearing || !globalStore}
               >
                 {clearing ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
                 Clear Data
@@ -232,7 +232,7 @@ const DTDCReconciliation = () => {
         </div>
         
         {/* Store Selection Warning */}
-        {globalStore === 'all' && (
+        {!globalStore && (
           <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-amber-800 text-sm">
               <AlertCircle className="w-4 h-4 inline mr-2" />
@@ -376,10 +376,10 @@ const DTDCReconciliation = () => {
                   accept=".xlsx,.xls,.csv"
                   onChange={handleDTDCUpload}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  disabled={uploadingDTDC || globalStore === 'all'}
+                  disabled={uploadingDTDC || !globalStore}
                 />
                 <Button 
-                  className={`w-full ${globalStore === 'all' ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700'} pointer-events-none`}
+                  className={`w-full ${!globalStore ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700'} pointer-events-none`}
                 >
                   {uploadingDTDC ? (
                     <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Uploading...</>
@@ -409,10 +409,10 @@ const DTDCReconciliation = () => {
                   accept=".xlsx,.xls,.csv"
                   onChange={handleBankUpload}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  disabled={uploadingBank || globalStore === 'all' || records.length === 0}
+                  disabled={uploadingBank || !globalStore || records.length === 0}
                 />
                 <Button 
-                  className={`w-full ${(globalStore === 'all' || records.length === 0) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} pointer-events-none`}
+                  className={`w-full ${(!globalStore || records.length === 0) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} pointer-events-none`}
                 >
                   {uploadingBank ? (
                     <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Uploading...</>
@@ -421,7 +421,7 @@ const DTDCReconciliation = () => {
                   )}
                 </Button>
               </div>
-              {records.length === 0 && globalStore !== 'all' && (
+              {records.length === 0 && globalStore && (
                 <p className="text-xs text-amber-600 mt-2">⚠️ Upload DTDC report first</p>
               )}
             </CardContent>
@@ -480,7 +480,7 @@ const DTDCReconciliation = () => {
               ) : filteredRecords.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-                    {globalStore === 'all' 
+                    {!globalStore 
                       ? 'Please select a store to view DTDC payment data'
                       : 'No DTDC payment records found. Upload a DTDC report to get started.'}
                   </TableCell>
@@ -642,7 +642,7 @@ const DTDCReconciliation = () => {
                   ) : codRecords.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-                        {globalStore === 'all' 
+                        {!globalStore 
                           ? 'Please select a store'
                           : 'No COD orders found. Upload finance reconciliation sheet with COD amounts first.'}
                       </TableCell>

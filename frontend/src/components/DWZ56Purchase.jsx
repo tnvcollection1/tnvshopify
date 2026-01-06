@@ -150,7 +150,7 @@ export default function DWZ56Purchase() {
       if (data.success) {
         let filteredRecords = data.records;
         
-        if (selectedStore && selectedStore !== 'all') {
+        if (selectedStore && selectedStore) {
           filteredRecords = filteredRecords.filter(r => r.shopify_store === selectedStore);
         }
         

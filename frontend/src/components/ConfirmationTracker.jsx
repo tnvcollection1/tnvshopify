@@ -321,7 +321,7 @@ const ConfirmationTracker = () => {
     try {
       toast.loading("Syncing stock status for all unfulfilled orders...");
       const params = new URLSearchParams();
-      if (globalStore && globalStore !== 'all') {
+      if (globalStore && globalStore) {
         params.append('store_name', globalStore);
       }
       const response = await axios.post(`${API}/customers/sync-stock-status?${params.toString()}`);
