@@ -557,6 +557,66 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      
+      {/* Public Storefront Routes - No Auth Required */}
+      <Route 
+        path="/shop" 
+        element={
+          <StorefrontLayout storeName="TNC Collection">
+            <StorefrontHome storeName="tnvcollection" />
+          </StorefrontLayout>
+        } 
+      />
+      <Route 
+        path="/shop/products" 
+        element={
+          <StorefrontLayout storeName="TNC Collection">
+            <ProductListing storeName="tnvcollection" />
+          </StorefrontLayout>
+        } 
+      />
+      <Route 
+        path="/shop/product/:productId" 
+        element={
+          <StorefrontLayout storeName="TNC Collection">
+            <ProductDetail storeName="tnvcollection" />
+          </StorefrontLayout>
+        } 
+      />
+      <Route 
+        path="/shop/cart" 
+        element={
+          <StorefrontLayout storeName="TNC Collection">
+            <ShoppingCart />
+          </StorefrontLayout>
+        } 
+      />
+      <Route 
+        path="/shop/:category" 
+        element={
+          <StorefrontLayout storeName="TNC Collection">
+            <ProductListing storeName="tnvcollection" />
+          </StorefrontLayout>
+        } 
+      />
+      
+      {/* Store-Specific Storefront Routes */}
+      <Route 
+        path="/store/:storeName" 
+        element={<StorefrontWrapper />} 
+      />
+      <Route 
+        path="/store/:storeName/products" 
+        element={<StorefrontWrapper page="listing" />} 
+      />
+      <Route 
+        path="/store/:storeName/product/:productId" 
+        element={<StorefrontWrapper page="detail" />} 
+      />
+      <Route 
+        path="/store/:storeName/cart" 
+        element={<StorefrontWrapper page="cart" />} 
+      />
     </Routes>
   );
 }
