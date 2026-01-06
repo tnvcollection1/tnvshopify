@@ -78,7 +78,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 
 // Dynamic Storefront Wrapper for store-specific routes
 function StorefrontWrapper({ page = 'home' }) {
-  const { storeName, productId } = useParams();
+  const { storeName, productId, orderId } = useParams();
   
   // Map store names to display names
   const storeDisplayNames = {
@@ -96,6 +96,8 @@ function StorefrontWrapper({ page = 'home' }) {
       {page === 'listing' && <ProductListing storeName={storeName} />}
       {page === 'detail' && <ProductDetail storeName={storeName} />}
       {page === 'cart' && <ShoppingCart />}
+      {page === 'checkout' && <Checkout storeName={storeName} />}
+      {page === 'confirmation' && <OrderConfirmation />}
     </StorefrontLayout>
   );
 }
