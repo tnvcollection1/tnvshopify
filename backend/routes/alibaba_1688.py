@@ -1702,18 +1702,30 @@ async def sync_products_from_orders():
 
 
 @router.post("/auto-order-from-shopify")
-async def auto_order_from_shopify(shopify_order_id: str = Body(..., embed=True)):
+async def auto_order_from_shopify(
+    shopify_order_id: str = Body(..., embed=True),
+    store_name: Optional[str] = Body(None, embed=True)
+):
     """
     Automatically create a 1688 purchase order from a Shopify order
     Matches products and creates the order on 1688
     """
     db = get_db()
     
+    # Build query - always include store_name if provided to avoid cross-store issues
+    query = {"shopify_order_id": shopify_order_id}
+    if store_name:
+        query["store_name"] = store_name
+    
     # Get Shopify order
-    shopify_order = await db.customers.find_one(
-        {"order_id": shopify_order_id},
-        {"_id": 0}
-    )
+    shopify_order = await db.customers.find_one(query, {"_id": 0})
+    
+    if not shopify_order:
+        # Try alternate field name for backwards compatibility
+        query_alt = {"order_id": shopify_order_id}
+        if store_name:
+            query_alt["store_name"] = store_name
+        shopify_order = await db.customers.find_one(query_alt, {"_id": 0})
     
     if not shopify_order:
         raise HTTPException(status_code=404, detail="Shopify order not found")
