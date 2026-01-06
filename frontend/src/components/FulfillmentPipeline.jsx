@@ -1566,20 +1566,12 @@ const FulfillmentPipeline = () => {
         </div>
         
         <div className="flex gap-2 flex-wrap">
-          <Select value={globalStore} onValueChange={setSelectedStore}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select store" />
-            </SelectTrigger>
-            <SelectContent>
-              {stores.map(store => (
-                <SelectItem key={store.store_name} value={store.store_name}>
-                  {store.store_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Store is selected from sidebar - show current store */}
+          <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm">
+            📍 {globalStore ? getStoreName(globalStore) : 'Select store from sidebar'}
+          </div>
           
-          <Button variant="outline" onClick={syncFromShopify} disabled={syncing}>
+          <Button variant="outline" onClick={syncFromShopify} disabled={syncing || !globalStore}>
             {syncing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
             Sync Shopify
           </Button>
