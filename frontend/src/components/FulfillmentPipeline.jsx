@@ -1357,7 +1357,7 @@ const BatchNotifyModal = ({ store, orders, onClose, onSuccess }) => {
 
 // Main Component
 const FulfillmentPipeline = () => {
-  const { selectedStore: globalStore, getStoreName, stores: globalStores } = useStore();
+  const { globalStore: globalStore, getStoreName, stores: globalStores } = useStore();
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -1394,7 +1394,7 @@ const FulfillmentPipeline = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedStore]);
+  }, [globalStore]);
 
   const filterOrders = useCallback(() => {
     let filtered = [...orders];
@@ -1423,10 +1423,10 @@ const FulfillmentPipeline = () => {
   }, [fetchStores]);
 
   useEffect(() => {
-    if (selectedStore) {
+    if (globalStore) {
       fetchOrders();
     }
-  }, [selectedStore, fetchOrders]);
+  }, [globalStore, fetchOrders]);
 
   useEffect(() => {
     filterOrders();
@@ -1440,7 +1440,7 @@ const FulfillmentPipeline = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           stage: newStage,
-          store_name: selectedStore,
+          store_name: globalStore,
           send_notification: true,
           ...additionalData,
         }),
@@ -1465,7 +1465,7 @@ const FulfillmentPipeline = () => {
       const res = await fetch(`${API}/api/fulfillment/pipeline/sync-from-shopify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ store_name: selectedStore }),
+        body: JSON.stringify({ store_name: globalStore }),
       });
       const data = await res.json();
       if (data.success) {
@@ -1483,7 +1483,7 @@ const FulfillmentPipeline = () => {
 
   const exportData = async (format) => {
     try {
-      const res = await fetch(`${API}/api/fulfillment/pipeline/export?store_name=${selectedStore}&format=${format}`);
+      const res = await fetch(`${API}/api/fulfillment/pipeline/export?store_name=${globalStore}&format=${format}`);
       const data = await res.json();
       
       if (data.success) {
@@ -1492,7 +1492,7 @@ const FulfillmentPipeline = () => {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `fulfillment_pipeline_${selectedStore}_${new Date().toISOString().split('T')[0]}.csv`;
+          a.download = `fulfillment_pipeline_${globalStore}_${new Date().toISOString().split('T')[0]}.csv`;
           a.click();
           URL.revokeObjectURL(url);
           toast.success('CSV exported successfully');
@@ -1501,7 +1501,7 @@ const FulfillmentPipeline = () => {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `fulfillment_pipeline_${selectedStore}_${new Date().toISOString().split('T')[0]}.json`;
+          a.download = `fulfillment_pipeline_${globalStore}_${new Date().toISOString().split('T')[0]}.json`;
           a.click();
           URL.revokeObjectURL(url);
           toast.success('JSON exported successfully');
@@ -1535,7 +1535,7 @@ const FulfillmentPipeline = () => {
       const res = await fetch(`${API}/api/fulfillment-sync/sync-stage/local_shipped`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ store_name: selectedStore }),
+        body: JSON.stringify({ store_name: globalStore }),
       });
       const data = await res.json();
       if (data.success) {
@@ -1570,7 +1570,7 @@ const FulfillmentPipeline = () => {
         </div>
         
         <div className="flex gap-2 flex-wrap">
-          <Select value={selectedStore} onValueChange={setSelectedStore}>
+          <Select value={globalStore} onValueChange={setSelectedStore}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Select store" />
             </SelectTrigger>
@@ -1629,7 +1629,7 @@ const FulfillmentPipeline = () => {
           <Upload className="h-4 w-4 mr-2" />
           Import DWZ
         </Button>
-        <DWZSyncButton store={selectedStore} onSyncComplete={fetchOrders} />
+        <DWZSyncButton store={globalStore} onSyncComplete={fetchOrders} />
         <Button 
           variant="outline" 
           size="sm" 
@@ -1752,7 +1752,7 @@ const FulfillmentPipeline = () => {
       {/* Analytics Modal */}
       {showAnalytics && (
         <AnalyticsModal 
-          store={selectedStore}
+          store={globalStore}
           onClose={() => setShowAnalytics(false)}
         />
       )}
@@ -1775,7 +1775,7 @@ const FulfillmentPipeline = () => {
       {/* DWZ Import Modal */}
       {showDWZImport && (
         <DWZImportModal
-          store={selectedStore}
+          store={globalStore}
           onClose={() => setShowDWZImport(false)}
           onSuccess={() => {
             fetchOrders();
@@ -1788,7 +1788,7 @@ const FulfillmentPipeline = () => {
       {showBulkActions && (
         <BulkActionsModal
           orders={filteredOrders}
-          store={selectedStore}
+          store={globalStore}
           carrierInfo={carrierInfo}
           onClose={() => setShowBulkActions(false)}
           onSuccess={fetchOrders}
@@ -1798,7 +1798,7 @@ const FulfillmentPipeline = () => {
       {/* Batch Notify Modal */}
       {showBatchNotify && (
         <BatchNotifyModal
-          store={selectedStore}
+          store={globalStore}
           orders={orders}
           onClose={() => setShowBatchNotify(false)}
           onSuccess={fetchOrders}
