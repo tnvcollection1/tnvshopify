@@ -109,12 +109,13 @@ const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
   const price = product.variants?.[0]?.price || product.price || '0';
   const comparePrice = product.variants?.[0]?.compare_at_price;
-  const image = product.images?.[0]?.src || product.image || 'https://via.placeholder.com/400';
+  const image = product.images?.[0]?.src || product.image_url || product.image || 'https://via.placeholder.com/400';
   const hoverImage = product.images?.[1]?.src;
+  const productId = product.shopify_product_id || product.id;
 
   return (
     <Link 
-      to={`/shop/product/${product.id}`}
+      to={`/shop/product/${productId}`}
       className="group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -165,7 +166,7 @@ const FeaturedProducts = ({ title = "New Arrivals", products = [] }) => (
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
         {products.slice(0, 8).map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard key={product.shopify_product_id || product.id} product={product} />
         ))}
       </div>
     </div>
