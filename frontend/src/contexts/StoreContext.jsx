@@ -7,7 +7,7 @@ const StoreContext = createContext(null);
 
 export const StoreProvider = ({ children }) => {
   const [stores, setStores] = useState([]);
-  const [selectedStore, setSelectedStore] = useState('all');
+  const [selectedStore, setSelectedStore] = useState(null); // Default to null, will be set to first store
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(null);
@@ -16,12 +16,18 @@ export const StoreProvider = ({ children }) => {
   const fetchStores = useCallback(async () => {
     try {
       const response = await axios.get(`${API_URL}/api/stores`);
-      setStores(response.data || []);
+      const storesList = response.data || [];
+      setStores(storesList);
       
-      // Restore last selected store from localStorage
+      // Restore last selected store from localStorage or default to first store
       const savedStore = localStorage.getItem('selectedStore');
-      if (savedStore && response.data?.some(s => s.store_name === savedStore)) {
+      if (savedStore && savedStore !== 'all' && storesList.some(s => s.store_name === savedStore)) {
         setSelectedStore(savedStore);
+      } else if (storesList.length > 0) {
+        // Default to first store if no valid saved store
+        const firstStore = storesList[0].store_name;
+        setSelectedStore(firstStore);
+        localStorage.setItem('selectedStore', firstStore);
       }
     } catch (error) {
       console.error('Error fetching stores:', error);
@@ -36,6 +42,7 @@ export const StoreProvider = ({ children }) => {
 
   // Switch store and persist selection
   const switchStore = useCallback((storeName) => {
+    if (storeName === 'all') return; // Ignore 'all' - not allowed anymore
     setSelectedStore(storeName);
     localStorage.setItem('selectedStore', storeName);
     
@@ -47,9 +54,9 @@ export const StoreProvider = ({ children }) => {
   const syncStoreData = useCallback(async (storeName = null) => {
     const storeToSync = storeName || selectedStore;
     
-    if (storeToSync === 'all') {
-      alert('Please select a specific store to sync');
-      return { success: false, message: 'Please select a specific store' };
+    if (!storeToSync) {
+      alert('Please select a store first');
+      return { success: false, message: 'Please select a store' };
     }
 
     setSyncing(true);
