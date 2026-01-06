@@ -618,6 +618,22 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/shop/checkout" 
+        element={
+          <StorefrontLayout storeName="TNC Collection">
+            <Checkout storeName="tnvcollection" />
+          </StorefrontLayout>
+        } 
+      />
+      <Route 
+        path="/shop/order-confirmation/:orderId" 
+        element={
+          <StorefrontLayout storeName="TNC Collection">
+            <OrderConfirmation />
+          </StorefrontLayout>
+        } 
+      />
+      <Route 
         path="/shop/:category" 
         element={
           <StorefrontLayout storeName="TNC Collection">
