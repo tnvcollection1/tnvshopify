@@ -13,81 +13,79 @@ PRODUCT REQUIREMENTS:
 **User's preferred language**: English
 
 **what currently exists?**
-*   A comprehensive Shopify-1688 integration application is in place, featuring product scraping, a Product Collector UI, order management, and a multi-stage fulfillment pipeline.
-*   A bulk auto-linking feature is now available on the  page. It uses an AI image search (via TMAPI) to find and link unlinked Shopify products to their 1688 counterparts. This includes a background job manager and a new UI modal for starting and monitoring the process.
-*   The 1688 API authentication for creating purchase orders is now fixed, using a valid user-provided access token.
-*   The UI on the  page is customized to hide the auto-link feature for the ashmiaa store, as requested.
-*   A new MongoDB Atlas cluster has been created by the user to serve as the production database.
-*   Initial backend and frontend changes have been made to support per-SKU order tracking from 1688, but this is not fully tested.
+*   A comprehensive Shopify-1688 integration application is in place, featuring product scraping, order management, and a multi-stage fulfillment pipeline.
+*   The frontend environment has been corrected to point to the production backend URL, resolving a Failed to fetch CORS error.
+*   The user has been guided to configure their MongoDB Atlas IP Access List to allow connections from the production server, which was the root cause of an  error.
+*   The application remains non-functional in production pending a final redeployment by the user with the correct database configuration.
 
 **Last working item**:
-*   **Last item agent was working**: The agent was assisting the user in configuring their production deployment to connect to a new MongoDB Atlas database. The preview environment has network restrictions preventing a connection, so the agent explained that the production environment will work correctly. The agent provided the final connection string and instructed the user to update the  environment variable in their deployment settings and re-deploy.
-*   **Status**: USER VERIFICATION PENDING
-*   **Agent Testing Done**: N/A
-*   **Which testing method agent to use?**: manual testing by curl/screenshot tool. After the user redeploys with the correct , the next agent must guide the user to test the deployed application by syncing data and verifying functionality.
-*   **User Testing Done**: N
+- **Last item agent was working**: The agent was resolving an  error on the  page in the user's production environment. The root cause was identified as the production server's IP address not being allowlisted in MongoDB Atlas. The agent successfully guided the user to add  to the IP Access List.
+- **Status**: USER VERIFICATION PENDING
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: manual testing by curl/screenshot tool. The next agent must guide the user to confirm the Atlas change is Active, ensure the  is set in the deployment settings, and then redeploy. Afterward, the user must test the  page on their production site.
+- **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-*   **Issue 1**: Production Database Configuration and Data Sync (P0)
-*   **Issue 2**: Failed to fetch 1688 purchase orders error in production (P1)
+*   **Issue 1**: Production  Error on  endpoint (P0)
+*   **Issue 2**: Production Database Data Sync (P1)
 *   **Issue 3**: Per-SKU Order Tracking Verification (P1)
 *   **Issue 4**: Long-standing Shopify OAuth and login stability issues (P2)
 
 **Issues Detail**:
-*   **Issue 1: Production Database Configuration and Data Sync**
-    *   **Attempted fixes**: Guided user through creating a MongoDB Atlas cluster. Identified that the preview environment has network restrictions. Provided the correct connection string for the user to update in their production deployment settings.
-    *   **Next debug checklist**:
-        1.  Confirm the user has updated the  in their production deployment settings and re-deployed.
-        2.  Guide the user to the deployed application URL.
-        3.  Instruct the user to use the Sync buttons on the dashboard and product pages to populate the new production database with orders and products from Shopify.
-        4.  Verify that data appears correctly in the UI.
-    *   **Why fix this issue and what will be achieved with the fix?**: This is critical for the application to function in production and will resolve the empty data issue reported by the user.
-    *   **Status**: USER VERIFICATION PENDING
-    *   **Is recurring issue?**: N
-    *   **Should Test frontend/backend/both after fix?**: Both (on the production URL).
-    *   **Blocked on other issue**: This issue blocks all other production testing.
+- **Issue 1: Production  Error on  endpoint**
+    - **Attempted fixes**:
+        - Corrected  in  to fix the initial Failed to fetch error.
+        - Diagnosed the subsequent  error as a database connection failure.
+        - Guided the user to add  to the MongoDB Atlas IP Access List.
+    - **Next debug checklist**:
+        1.  Confirm with the user that the  entry in their MongoDB Atlas IP Access List shows as Active.
+        2.  Re-confirm that the user has set the  environment variable correctly in their production deployment settings.
+        3.  Instruct the user to **Redeploy** their application to apply all changes.
+        4.  Ask the user to test the  page on their live site to see if the error is resolved.
+    - **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker preventing the entire production application from functioning.
+    - **Status**: USER VERIFICATION PENDING
+    - **Is recurring issue?**: Y
+    - **Should Test frontend/backend/both after fix?**: Both (on the production URL).
+    - **Blocked on other issue**: User action is required to redeploy.
 
-*   **Issue 2: Failed to fetch 1688 purchase orders error in production**
-    *   **Attempted fixes**: Added error handling to the frontend component. Set  to  to ensure the frontend calls the backend on the same domain in production.
-    *   **Next debug checklist**:
-        1.  Once the production deployment is working (after Issue 1 is resolved), navigate to the  page.
-        2.  Open browser developer tools to check for any CORS or Failed to fetch errors in the console/network tabs.
-    *   **Why fix this issue and what will be achieved with the fix?**: This fixes a broken page in the user's production application.
-    *   **Status**: TESTING PENDING
-    *   **Is recurring issue?**: Y
-    *   **Should Test frontend/backend/both after fix?**: Frontend (browser dev tools).
-    *   **Blocked on other issue**: Issue 1.
+- **Issue 2: Production Database Data Sync**
+    - **Attempted fixes**: User was guided to create the production DB.
+    - **Next debug checklist**:
+        1.  Once Issue 1 is resolved, guide the user to the deployed application.
+        2.  Instruct the user to use the Sync buttons on the dashboard and product pages to populate the new production database.
+        3.  Verify that data appears correctly in the UI.
+    - **Why fix this issue and what will be achieved with the fix?**: The production database is currently empty. This will populate it with the user's Shopify data, making the application usable.
+    - **Status**: NOT STARTED
+    - **Is recurring issue?**: N
+    - **Should Test frontend/backend/both after fix?**: Both.
+    - **Blocked on other issue**: Issue 1.
 
-*   **Issue 3: Per-SKU Order Tracking Verification**
-    *   **Attempted fixes**:
-        -   : UI modified to show per-SKU status.
-        -   :  endpoint updated to accept SKU-level data.
-    *   **Next debug checklist**:
-        1.  In the production environment, find a Shopify order with multiple line items.
-        2.  Attempt to create a 1688 purchase order for a single SKU from that order.
-        3.  Verify in the UI that the status of only that specific SKU changes.
-        4.  Check the production database to confirm the data is stored correctly at the line-item level.
-    *   **Why fix this issue and what will be achieved with the fix?**: Fulfills a core business requirement for handling multi-item orders accurately.
-    *   **Status**: TESTING PENDING
-    *   **Is recurring issue?**: N
-    *   **Should Test frontend/backend/both after fix?**: Both.
-    *   **Blocked on other issue**: Issue 1.
+- **Issue 3: Per-SKU Order Tracking Verification**
+    - **Attempted fixes**: Initial backend and frontend code changes were implemented in a previous session.
+    - **Next debug checklist**:
+        1.  Once the production environment is stable (Issues 1 & 2 are resolved), find a Shopify order with multiple line items.
+        2.  Guide the user to create a 1688 purchase order for a single SKU and verify that only that SKU's status updates in the UI.
+    - **Why fix this issue and what will be achieved with the fix?**: Fulfills a core business requirement for handling multi-item orders.
+    - **Status**: TESTING PENDING
+    - **Is recurring issue?**: N
+    - **Should Test frontend/backend/both after fix?**: Both.
+    - **Blocked on other issue**: Issue 1, Issue 2.
 
-*   **Issue 4: Long-standing Shopify OAuth and login stability issues**
-    *   **Attempted fixes**: None.
-    *   **Next debug checklist**: Conduct a full review of the Shopify authentication flow in , including server-side session management.
-    *   **Why fix this issue and what will be achieved with the fix?**: Improves core platform reliability and the new user onboarding experience.
-    *   **Status**: NOT STARTED
-    *   **Is recurring issue?**: Y
-    *   **Should Test frontend/backend/both after fix?**: Both.
+- **Issue 4: Long-standing Shopify OAuth and login stability issues**
+    - **Attempted fixes**: None.
+    - **Next debug checklist**: Conduct a full review of the Shopify authentication flow in .
+    - **Why fix this issue and what will be achieved with the fix?**: Improves core platform reliability.
+    - **Status**: NOT STARTED
+    - **Is recurring issue?**: Y
+    - **Should Test frontend/backend/both after fix?**: Both.
 
 **In progress Task List**:
-*   **Task 1: Complete Product Auto-Linking in Production**
-    *   **Where to resume**: The auto-linking jobs for  and  were interrupted. Guide the user to restart these jobs using the new Auto-Link by Image button on the  page once their production environment is populated with data.
-    *   **What will be achieved with this?**: This will complete the user's request to automatically link their product catalogs to 1688.
-    *   **Status**: IN PROGRESS
-    *   **Should Test frontend/backend/both after fix?**: Both.
-    *   **Blocked on something**: Issue 1.
+- **Task 1: Complete Product Auto-Linking in Production**
+    - **Where to resume**: Guide the user to restart the auto-linking jobs for  and  from the  page.
+    - **What will be achieved with this?**: This will complete the user's request to automatically link their product catalogs to 1688.
+    - **Status**: IN PROGRESS
+    - **Should Test frontend/backend/both after fix?**: Both.
+    - **Blocked on something**: Issue 1, Issue 2.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks**:
@@ -99,29 +97,25 @@ PRODUCT REQUIREMENTS:
     *   (P3) **Enhance Analytics**.
 
 **Completed work in this session**
-*   **Product Catalog Bug Resolved**: Confirmed the  endpoint works correctly, and the issue of missing products was transient.
-*   **Bulk Auto-Linking Feature Implemented**: Created a new feature with a background job and UI to automatically link Shopify products to 1688 via image search. Successfully debugged and fixed the complex TMAPI integration, including URL conversion and parameter correction.
-*   **1688 Purchase Order Auth Fixed**: Diagnosed and fixed a  error by guiding the user to provide a valid .
-*   **UI Customization**: Hid the Auto-Link by Image button for the 'ashmiaa' store as requested.
-*   **Production Database Setup**: Guided the user through creating a MongoDB Atlas account and provided instructions for configuring it in their production deployment.
-*   **Per-SKU Ordering Logic (Initial)**: Implemented initial backend and frontend code changes to support tracking 1688 orders at a line-item level.
+- Diagnosed and fixed a Failed to fetch CORS error by correcting  in .
+- Diagnosed the subsequent  error, isolating it to the production MongoDB Atlas connection being blocked by a missing IP allowlist rule.
+- Successfully guided the user through the MongoDB Atlas UI to add the required  IP Access List entry.
 
 **Earlier issues found/mentioned but not fixed**
-*   **Shopify OAuth & Login Instability**: A known recurring issue that has been deferred.
+- **Shopify OAuth & Login Instability**: A known recurring issue that has been deferred.
 
 **Known issue recurrence from previous fork**
-*   **Issue recurrence in previous fork**: Shopify OAuth and login issues.
-*   **Recurrence count**: 3+
-*   **Status**: NOT STARTED
+- **Issue recurrence in previous fork**: Shopify OAuth and login issues.
+- **Recurrence count**: 3+
+- **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Background Jobs**: Used for the long-running bulk auto-linking task.
-*   **3rd Party API Debugging**: Extensive work on the TMAPI service to fix image search.
-*   **Cloud Database Configuration**: Guided user through setting up MongoDB Atlas.
-*   **Production vs. Preview Environments**: Handled differences in environment variables and network capabilities.
+*   **Production vs. Preview Environments**: Debugging differences in environment variables and network capabilities.
+*   **Cloud Firewall Configuration**: Guiding a user to configure MongoDB Atlas's IP Access List.
+*   **CORS & Network Debugging**: Differentiating between frontend network failures (Failed to fetch) and backend server errors (HTTP 500).
 
 **key DB schema**
 *   :  field is populated by the auto-link job.
@@ -129,48 +123,40 @@ PRODUCT REQUIREMENTS:
 *   : New collection to track background job status.
 
 **All files of reference**
-*    (Heavily modified for TMAPI image search fix)
-*    (Heavily modified for auto-link UI)
-*    (Added bulk-auto-link endpoint)
-*    (Updated for per-SKU logic and token fix)
-*    (Updated for per-SKU UI)
-*    (Updated with new 1688 token)
-*    (Updated)
+*    (Updated to fix CORS error)
+*    (Inspected during debugging)
 
 **Areas that need refactoring**:
-*    (>1600 lines) and  (grown significantly) should be broken down into smaller, more manageable sub-components.
+*    (>1600 lines) and  should be broken down into smaller components.
 
 **key api endpoints**
-*    (POST)
-*    (GET)
-*    (POST)
-*    (GET)
+*    (GET) - This is the endpoint that is currently failing in production.
 
 **Critical Info for New Agent**
-*   **Production vs. Preview**: The app is in a dual-environment state. The preview environment uses a local MongoDB and has network restrictions. The production environment is configured for MongoDB Atlas. **Do not attempt to connect to Atlas from the preview environment; it will fail.** The immediate priority is guiding the user to finalize their production setup.
-*   **User Action Required**: The user must update their production deployment's  variable with the Atlas string and redeploy. Afterward, they must sync all data from Shopify into the new, empty production database.
-*   **1688 Auth is Fixed**: The purchase order API authentication is resolved. The next step is to test the per-SKU ordering logic.
-*   **Image Search is Fixed**: The TMAPI image search is fully functional. The logic is in .
+*   **The Problem is Configuration, Not Code**: The application code works correctly in the preview environment. The current  error in production is due to environment configuration.
+*   **User Action is Required**: The user **must** take the final steps. The immediate priority is to confirm the MongoDB Atlas IP Access change is Active and then **redeploy** the application with the correct . You cannot fix this for them.
+*   **Follow the Plan**: Your first action should be to check in with the user on the status of the MongoDB Atlas change and guide them to redeploy. Once the production site is working, proceed to have them sync their data (Issue #2). Do not work on other features until production is stable.
 
 **documents and test reports created in this job**
-*   
+*    (from previous session)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks for final deployment URL to be .
-2.  **User**: Reports that an order with 3 SKUs is marked ordered after only one is processed.
-3.  **User**: Reports the deployed app is empty and provides a screenshot.
-4.  **Agent**: Explains this is due to separate production/preview databases.
-5.  **User**: Asks for help configuring the production database.
-6.  **Agent**: Guides the user through creating a MongoDB Atlas account.
-7.  **User**: Provides a series of screenshots showing their progress in the Atlas UI.
-8.  **Agent**: Provides the final connection string and instructions.
-9.  **User**: Sends a screenshot showing they can't find where to edit the .
-10. **Agent**: Points to the edit icon in the screenshot and provides the value to paste. The user's last message confirms this value.
+1.  **User**: Reports Failed to fetch error on the production site.
+2.  **Agent**: Fixes frontend  and asks user to redeploy.
+3.  **User**: Reports new HTTP 500 error.
+4.  **Agent**: Diagnoses it as a backend DB connection issue. Asks user to check Atlas IP settings.
+5.  **User**: Confirms they haven't added the IP and asks the agent to check the  for them.
+6.  **Agent**: Explains it cannot see production settings and provides instructions for adding the IP to Atlas.
+7.  **User**: Sends screenshot of the wrong Atlas page (Database Users).
+8.  **Agent**: Corrects the user, directing them to the IP Access List page.
+9.  **User**: Sends another screenshot, still on the wrong page.
+10. **Agent**: Repeats directions to click IP Access List.
+11. **User**: Sends a screenshot showing the IP address  has been added and is in Pending status.
+12. **Agent**: Confirms the user's action is correct and provides the final steps: wait for Active status, ensure  is set, and redeploy.
 
 **Project Health Check:**
 *   **Broken**:
-    *   The production environment is non-functional as it needs to be connected to the new database and synced with Shopify data.
-    *   The 1688 purchase order flow does not correctly handle multi-SKU orders (an initial fix is implemented but untested).
+    *   The entire production application is down due to the  database connection error.
 *   **Mocked**: None.
 
 **3rd Party Integrations**
@@ -181,7 +167,7 @@ PRODUCT REQUIREMENTS:
 *   **OpenAI GPT-4o**: Used for ad-hoc translations. Uses Emergent LLM Key.
 *   **DWZ56 API**: For fetching shipping and tracking information.
 *   **SendGrid**: Service created, requires user API key.
-*   **MongoDB Atlas**: Newly introduced for the production database. Requires user configuration.
+*   **MongoDB Atlas**: The production database. Connection is currently blocked at the network level, pending user redeployment.
 
 **Testing status**
 *   **Testing agent used after significant changes**: NO
@@ -196,5 +182,4 @@ PRODUCT REQUIREMENTS:
     *   **Connection String**: 
 
 **What agent forgot to execute**
-*   The end-to-end flow for the per-SKU ordering fix was never tested after implementation.
-*    attributes were not added to the new UI elements in  (e.g., Auto-Link by Image button, modal elements), violating coding guidelines.</analysis>
+*   The previous handoff noted that  attributes were missing from new UI elements. This remains a low-priority technical debt item. The agent correctly prioritized the production-down issue over this.</analysis>
