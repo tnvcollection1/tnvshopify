@@ -2215,6 +2215,197 @@ async def unlink_product_from_1688(product_id: str, data: dict = Body(...)):
 
 
 # ========================================
+# BULK AUTO-LINK BY IMAGE SEARCH
+# ========================================
+
+# Track bulk link jobs in memory
+bulk_link_jobs = {}
+
+@api_router.post("/shopify/products/bulk-auto-link")
+async def bulk_auto_link_products(
+    store_name: str = Body(...),
+    limit: int = Body(100, description="Max products to process"),
+    background_tasks: BackgroundTasks = None
+):
+    """
+    Bulk auto-link Shopify products to 1688 using image search.
+    Processes unlinked products from the specified store.
+    """
+    import uuid as uuid_module
+    
+    # Create job ID
+    job_id = str(uuid_module.uuid4())[:8]
+    
+    bulk_link_jobs[job_id] = {
+        "status": "started",
+        "store_name": store_name,
+        "total": 0,
+        "processed": 0,
+        "linked": 0,
+        "failed": 0,
+        "skipped": 0,
+        "results": [],
+        "started_at": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    # Start background task
+    background_tasks.add_task(
+        run_bulk_auto_link,
+        job_id,
+        store_name,
+        limit
+    )
+    
+    return {
+        "success": True,
+        "job_id": job_id,
+        "message": f"Bulk auto-link started for {store_name}",
+        "status_url": f"/api/shopify/products/bulk-auto-link/status/{job_id}"
+    }
+
+
+@api_router.get("/shopify/products/bulk-auto-link/status/{job_id}")
+async def get_bulk_link_status(job_id: str):
+    """Get status of bulk auto-link job"""
+    if job_id not in bulk_link_jobs:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    return {
+        "success": True,
+        "job": bulk_link_jobs[job_id]
+    }
+
+
+async def run_bulk_auto_link(job_id: str, store_name: str, limit: int):
+    """Background task to auto-link products by image search"""
+    from services.image_search_service import search_products_by_image
+    import asyncio
+    
+    try:
+        bulk_link_jobs[job_id]["status"] = "fetching_products"
+        
+        # Get unlinked products from the store
+        query = {
+            "store_name": store_name,
+            "$or": [
+                {"linked_1688_product_id": {"$exists": False}},
+                {"linked_1688_product_id": None},
+                {"linked_1688_product_id": ""}
+            ]
+        }
+        
+        # Filter to only products with images
+        products = await db.shopify_products.find(
+            query,
+            {"_id": 0, "shopify_product_id": 1, "title": 1, "image_url": 1, "images": 1, "handle": 1}
+        ).limit(limit).to_list(limit)
+        
+        bulk_link_jobs[job_id]["total"] = len(products)
+        bulk_link_jobs[job_id]["status"] = "processing"
+        
+        logger.info(f"[Bulk Link {job_id}] Found {len(products)} unlinked products for {store_name}")
+        
+        for i, product in enumerate(products):
+            try:
+                shopify_id = product.get("shopify_product_id")
+                title = product.get("title", "Unknown")
+                
+                # Get image URL
+                image_url = product.get("image_url")
+                if not image_url and product.get("images"):
+                    images = product.get("images", [])
+                    if images and len(images) > 0:
+                        if isinstance(images[0], dict):
+                            image_url = images[0].get("src")
+                        else:
+                            image_url = images[0]
+                
+                bulk_link_jobs[job_id]["processed"] = i + 1
+                bulk_link_jobs[job_id]["current_product"] = title[:50]
+                
+                if not image_url:
+                    bulk_link_jobs[job_id]["skipped"] += 1
+                    bulk_link_jobs[job_id]["results"].append({
+                        "shopify_id": shopify_id,
+                        "title": title[:50],
+                        "status": "skipped",
+                        "reason": "No image"
+                    })
+                    continue
+                
+                # Search for similar products on 1688
+                search_result = await search_products_by_image(image_url, limit=5)
+                
+                if not search_result.get("success") or not search_result.get("products"):
+                    bulk_link_jobs[job_id]["failed"] += 1
+                    bulk_link_jobs[job_id]["results"].append({
+                        "shopify_id": shopify_id,
+                        "title": title[:50],
+                        "status": "failed",
+                        "reason": search_result.get("error", "No matches found")
+                    })
+                    # Small delay to avoid rate limiting
+                    await asyncio.sleep(1)
+                    continue
+                
+                # Get the best match
+                best_match = search_result["products"][0]
+                alibaba_product_id = best_match.get("product_id")
+                
+                if not alibaba_product_id:
+                    bulk_link_jobs[job_id]["failed"] += 1
+                    continue
+                
+                # Link the product
+                await db.shopify_products.update_one(
+                    {"shopify_product_id": shopify_id, "store_name": store_name},
+                    {"$set": {
+                        "linked_1688_product_id": alibaba_product_id,
+                        "linked_1688_title": best_match.get("title", ""),
+                        "linked_1688_price": best_match.get("price", ""),
+                        "linked_1688_image": best_match.get("image", ""),
+                        "linked_1688_url": best_match.get("url", ""),
+                        "linked_at": datetime.now(timezone.utc).isoformat(),
+                        "linked_by": "auto_image_search"
+                    }}
+                )
+                
+                bulk_link_jobs[job_id]["linked"] += 1
+                bulk_link_jobs[job_id]["results"].append({
+                    "shopify_id": shopify_id,
+                    "title": title[:50],
+                    "status": "linked",
+                    "alibaba_id": alibaba_product_id,
+                    "alibaba_title": best_match.get("title", "")[:50]
+                })
+                
+                logger.info(f"[Bulk Link {job_id}] Linked {title[:30]}... -> {alibaba_product_id}")
+                
+                # Rate limiting delay (TMAPI image search costs credits)
+                await asyncio.sleep(2)
+                
+            except Exception as e:
+                logger.error(f"[Bulk Link {job_id}] Error processing product: {e}")
+                bulk_link_jobs[job_id]["failed"] += 1
+                bulk_link_jobs[job_id]["results"].append({
+                    "shopify_id": product.get("shopify_product_id"),
+                    "title": product.get("title", "")[:50],
+                    "status": "error",
+                    "reason": str(e)
+                })
+        
+        bulk_link_jobs[job_id]["status"] = "completed"
+        bulk_link_jobs[job_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
+        
+        logger.info(f"[Bulk Link {job_id}] Completed: {bulk_link_jobs[job_id]['linked']} linked, {bulk_link_jobs[job_id]['failed']} failed, {bulk_link_jobs[job_id]['skipped']} skipped")
+        
+    except Exception as e:
+        logger.error(f"[Bulk Link {job_id}] Fatal error: {e}")
+        bulk_link_jobs[job_id]["status"] = "error"
+        bulk_link_jobs[job_id]["error"] = str(e)
+
+
+# ========================================
 # DRAFT ORDERS ENDPOINTS
 # ========================================
 
