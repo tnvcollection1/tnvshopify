@@ -60,7 +60,7 @@ const StatusBadge = ({ status, label }) => {
 };
 
 export default function DWZ56Shipping() {
-  const { selectedStore: globalStore, getStoreName } = useStore();
+  const { globalStore: globalStore, getStoreName } = useStore();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -152,8 +152,8 @@ export default function DWZ56Shipping() {
     setLoadingStats(true);
     try {
       let url = `${API_URL}/api/dwz56/import-stats`;
-      if (selectedStore && selectedStore) {
-        url += `?store_filter=${selectedStore}`;
+      if (globalStore && globalStore) {
+        url += `?store_filter=${globalStore}`;
       }
       const res = await fetch(url);
       const data = await res.json();
@@ -165,7 +165,7 @@ export default function DWZ56Shipping() {
     } finally {
       setLoadingStats(false);
     }
-  }, [selectedStore]);
+  }, [globalStore]);
   
   // Fetch status summary
   const fetchStatusSummary = useCallback(async () => {
@@ -209,8 +209,8 @@ export default function DWZ56Shipping() {
         let filteredRecords = data.records;
         
         // Filter by store if selected
-        if (selectedStore && selectedStore) {
-          filteredRecords = filteredRecords.filter(r => r.shopify_store === selectedStore);
+        if (globalStore && globalStore) {
+          filteredRecords = filteredRecords.filter(r => r.shopify_store === globalStore);
         }
         
         // Filter by match status
@@ -232,7 +232,7 @@ export default function DWZ56Shipping() {
     } finally {
       setLoading(false);
     }
-  }, [dateRange, searchTracking, selectedCourier, selectedStatus, selectedStore, matchFilter]);
+  }, [dateRange, searchTracking, selectedCourier, selectedStatus, globalStore, matchFilter]);
   
   // Fetch pre-input list
   const fetchPreInputList = useCallback(async () => {
@@ -688,7 +688,7 @@ export default function DWZ56Shipping() {
                 </div>
                 <div>
                   <Label>Store</Label>
-                  <Select value={selectedStore} onValueChange={setSelectedStore}>
+                  <Select value={globalStore} onValueChange={setSelectedStore}>
                     <SelectTrigger>
                       <SelectValue placeholder="All stores" />
                     </SelectTrigger>
