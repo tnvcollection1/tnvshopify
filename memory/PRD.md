@@ -130,15 +130,15 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 - None currently
 
 ### P1 - High Priority
-1. **Checkout Flow for Storefront** (NOT STARTED)
-   - Implement checkout process for the customer-facing storefront
-   - Payment gateway integration (Razorpay already in .env)
-   - Order creation in Shopify
+1. **Razorpay Live Key Authentication** (IN PROGRESS)
+   - Live keys returning "Authentication failed" in some cases
+   - COD flow works perfectly as fallback
+   - May need to verify API key permissions in Razorpay dashboard
 
 2. **Admin UI Redesign** (IN PROGRESS)
    - ShopifySidebar.jsx created with new navigation
-   - Remaining admin pages need restyling to match Shopify aesthetic
-   - Loading animations using ShopifyLoading.jsx
+   - Dark green sidebar with Shopify-style design
+   - Remaining admin pages need consistent styling
 
 ### P2 - Medium Priority
 1. **Chrome Extension Direct Scraping** (IN PROGRESS)
