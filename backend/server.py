@@ -782,7 +782,7 @@ async def migrate_preview_data(force: bool = False):
     """
     import httpx
     
-    PREVIEW_URL = "https://aliexpress-bridge.preview.emergentagent.com/api"
+    PREVIEW_URL = "https://shopify1688.preview.emergentagent.com/api"
     
     try:
         # Check if data already exists (to prevent accidental re-migration)
@@ -958,7 +958,7 @@ async def migrate_products():
     """
     import httpx
     
-    PREVIEW_URL = "https://aliexpress-bridge.preview.emergentagent.com/api"
+    PREVIEW_URL = "https://shopify1688.preview.emergentagent.com/api"
     
     try:
         migration_results = {}

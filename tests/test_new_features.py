@@ -12,7 +12,7 @@ import requests
 import os
 
 # Get backend URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://aliexpress-bridge.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://shopify1688.preview.emergentagent.com')
 
 
 @pytest.fixture

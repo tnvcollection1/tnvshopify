@@ -1,185 +1,178 @@
-<analysis>**original_problem_statement**: The user wants to build a Shopify application that deeply integrates with 1688.com, Taobao, and Tmall. The primary goal is to replicate the product scraping and management workflow of a competitor, Dianxiaomi.
+<analysis>**original_problem_statement**: The user wants to build a Shopify application that deeply integrates with 1688.com, Taobao, and Tmall, replicating a competitor's workflow.
 
 PRODUCT REQUIREMENTS:
 1.  **Product Scraping**: A Chrome Extension to collect product information from 1688.com.
-2.  **Dianxiaomi-style UI**: A Product Collector interface to edit and manage scraped products.
-3.  **Publish to Shopify**: One-click functionality to publish the edited products to the user's Shopify store.
-4.  **1688 Image Search**: A feature to find 1688 products by uploading or providing an image URL.
-5.  **Order Automation**: A system to link incoming Shopify orders to their corresponding 1688 products and streamline the ordering process. This includes fulfillment status sync.
-6.  **Multi-Stage Fulfillment Pipeline**: A new UI and backend to track orders through a detailed pipeline.
-7.  **Product Linking**: The user wants to be able to link products from their Shopify stores (, ) to 1688.com.
-8.  **Per-SKU Ordering**: When a Shopify order has multiple line items (SKUs), each SKU should be ordered and tracked on 1688 independently.
+2.  **Dianxiaomi-style UI**: A Product Collector interface to manage scraped products.
+3.  **Publish to Shopify**: One-click functionality to publish products to Shopify.
+4.  **1688 Image Search**: Feature to find 1688 products via image search.
+5.  **Order Automation**: Link Shopify orders to 1688 products and streamline ordering.
+6.  **Multi-Stage Fulfillment Pipeline**: A UI to track orders through a detailed pipeline.
+7.  **Product Linking**: Link products from Shopify stores to 1688.com.
+8.  **Per-SKU Ordering**: Order and track each SKU from a multi-item Shopify order independently.
+9.  **NEW: UI/UX Overhaul**:
+    *   Redesign the entire admin backend to look and feel like Shopify's admin UI, including loading animations.
+    *   Enforce complete data isolation between stores; remove the All Stores view and ensure every feature (orders, products, tracking, purchasing) is filtered by the selected store.
+10. **NEW: Customer-Facing Storefront**:
+    *   Build a new, public, customer-facing e-commerce storefront for each store, with a design inspired by .
 
 **User's preferred language**: English
 
 **what currently exists?**
-*   A comprehensive Shopify-1688 integration application is in place, featuring product scraping, order management, and a multi-stage fulfillment pipeline.
-*   The frontend environment has been corrected to point to the production backend URL, resolving a Failed to fetch CORS error.
-*   The user has been guided to configure their MongoDB Atlas IP Access List to allow connections from the production server, which was the root cause of an  error.
-*   The application remains non-functional in production pending a final redeployment by the user with the correct database configuration.
+*   An existing Shopify-1688 integration application with features for product and order management.
+*   The application has undergone significant debugging related to production data migration, including fixing duplicate orders, missing data, and incorrect data handling for edited orders.
+*   A major UI/UX overhaul is in progress. The All Stores view has been removed from the frontend, and many components were refactored to enforce store isolation.
+*   The admin UI redesign has started, with a new Shopify-style sidebar () and theme created and integrated.
+*   Skeleton components for the new customer-facing storefront (, , etc.) have been created.
 
 **Last working item**:
-- **Last item agent was working**: The agent was resolving an  error on the  page in the user's production environment. The root cause was identified as the production server's IP address not being allowlisted in MongoDB Atlas. The agent successfully guided the user to add  to the IP Access List.
-- **Status**: USER VERIFICATION PENDING
+- **Last item agent was working**: Scaffolding the new customer-facing storefront. The agent created several new placeholder components (, , , , ) and added the new routes to the main application router.
+- **Status**: IN PROGRESS
 - **Agent Testing Done**: N
-- **Which testing method agent to use?**: manual testing by curl/screenshot tool. The next agent must guide the user to confirm the Atlas change is Active, ensure the  is set in the deployment settings, and then redeploy. Afterward, the user must test the  page on their production site.
+- **Which testing method agent to use?**: Frontend testing agent. The new storefront components need to be built out with UI, logic, and connected to backend data sources. A comprehensive test plan is required to verify the end-to-end shopping experience.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-*   **Issue 1**: Production  Error on  endpoint (P0)
-*   **Issue 2**: Production Database Data Sync (P1)
-*   **Issue 3**: Per-SKU Order Tracking Verification (P1)
-*   **Issue 4**: Long-standing Shopify OAuth and login stability issues (P2)
+*   **Issue 1**: Production Data Inconsistency and Incompleteness (P0)
+*   **Issue 2**: DWZ56 Tracking Cross-Store Data Contamination (P1)
+*   **Issue 3**: Long-standing Shopify OAuth and login stability issues (P2)
 
 **Issues Detail**:
-- **Issue 1: Production  Error on  endpoint**
-    - **Attempted fixes**:
-        - Corrected  in  to fix the initial Failed to fetch error.
-        - Diagnosed the subsequent  error as a database connection failure.
-        - Guided the user to add  to the MongoDB Atlas IP Access List.
+- **Issue 1: Production Data Inconsistency and Incompleteness**
+    - **Attempted fixes**: The agent performed a complex and fraught data migration from a preview environment to production. This involved creating multiple custom API endpoints for migration, deduplication, and fixing data. The process was plagued by timeouts and resulted in an inconsistent data state (e.g., only 967 orders were present after a process that should have yielded over 42,000). The agent then initiated full store syncs, which also timed out.
     - **Next debug checklist**:
-        1.  Confirm with the user that the  entry in their MongoDB Atlas IP Access List shows as Active.
-        2.  Re-confirm that the user has set the  environment variable correctly in their production deployment settings.
-        3.  Instruct the user to **Redeploy** their application to apply all changes.
-        4.  Ask the user to test the  page on their live site to see if the error is resolved.
-    - **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker preventing the entire production application from functioning.
-    - **Status**: USER VERIFICATION PENDING
+        1.  Create a robust, idempotent data sync script or management command in the backend.
+        2.  Clear all transactional data (customers/orders, products) from the production database to ensure a clean slate.
+        3.  Execute the sync for each store sequentially, monitoring the logs to ensure successful completion without timeouts.
+        4.  Verify data integrity post-sync by checking counts and looking for duplicates.
+    - **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker. The application is unusable in production with incomplete and incorrect data. A stable data foundation is required before building new features.
+    - **Status**: IN PROGRESS
     - **Is recurring issue?**: Y
-    - **Should Test frontend/backend/both after fix?**: Both (on the production URL).
-    - **Blocked on other issue**: User action is required to redeploy.
+    - **Should Test frontend/backend/both after fix?**: Both.
 
-- **Issue 2: Production Database Data Sync**
-    - **Attempted fixes**: User was guided to create the production DB.
+- **Issue 2: DWZ56 Tracking Cross-Store Data Contamination**
+    - **Attempted fixes**: The agent identified that the DWZ56 tracking logic in  queries for orders by number across multiple stores ( and ) without store-specific filtering. This can lead to incorrect tracking data being displayed if order numbers overlap. The issue was identified but not fixed.
     - **Next debug checklist**:
-        1.  Once Issue 1 is resolved, guide the user to the deployed application.
-        2.  Instruct the user to use the Sync buttons on the dashboard and product pages to populate the new production database.
-        3.  Verify that data appears correctly in the UI.
-    - **Why fix this issue and what will be achieved with the fix?**: The production database is currently empty. This will populate it with the user's Shopify data, making the application usable.
+        1.  Review all database queries within .
+        2.  Ensure that every query to the  collection includes a  filter based on the currently selected store context.
+        3.  Pass the  as a parameter from the API endpoints down to the database access layer.
+    - **Why fix this issue and what will be achieved with the fix?**: This directly addresses the user's core requirement for complete data isolation and prevents critical business logic errors.
     - **Status**: NOT STARTED
-    - **Is recurring issue?**: N
-    - **Should Test frontend/backend/both after fix?**: Both.
-    - **Blocked on other issue**: Issue 1.
+    - **Is recurring issue?**: Y
+    - **Should Test frontend/backend/both after fix?**: Backend.
 
-- **Issue 3: Per-SKU Order Tracking Verification**
-    - **Attempted fixes**: Initial backend and frontend code changes were implemented in a previous session.
-    - **Next debug checklist**:
-        1.  Once the production environment is stable (Issues 1 & 2 are resolved), find a Shopify order with multiple line items.
-        2.  Guide the user to create a 1688 purchase order for a single SKU and verify that only that SKU's status updates in the UI.
-    - **Why fix this issue and what will be achieved with the fix?**: Fulfills a core business requirement for handling multi-item orders.
-    - **Status**: TESTING PENDING
-    - **Is recurring issue?**: N
-    - **Should Test frontend/backend/both after fix?**: Both.
-    - **Blocked on other issue**: Issue 1, Issue 2.
-
-- **Issue 4: Long-standing Shopify OAuth and login stability issues**
-    - **Attempted fixes**: None.
-    - **Next debug checklist**: Conduct a full review of the Shopify authentication flow in .
-    - **Why fix this issue and what will be achieved with the fix?**: Improves core platform reliability.
+- **Issue 3: Long-standing Shopify OAuth and login stability issues**
+    - **Attempted fixes**: None. This is a known issue from a previous session.
+    - **Next debug checklist**: Conduct a full review of the Shopify authentication flow in  and the user login flow in .
+    - **Why fix this issue and what will be achieved with the fix?**: Improves core application reliability and user trust.
     - **Status**: NOT STARTED
     - **Is recurring issue?**: Y
     - **Should Test frontend/backend/both after fix?**: Both.
 
 **In progress Task List**:
-- **Task 1: Complete Product Auto-Linking in Production**
-    - **Where to resume**: Guide the user to restart the auto-linking jobs for  and  from the  page.
-    - **What will be achieved with this?**: This will complete the user's request to automatically link their product catalogs to 1688.
+- **Task 1: Complete UI/UX Overhaul (P0)**
+    - **Where to resume**: The agent has implemented a new  and theme. Now, all other admin pages (Dashboard, Orders, Products, etc.) need to be restyled to match the clean, modern aesthetic of Shopify's admin UI, using the new loading components and design patterns.
+    - **What will be achieved with this?**: A consistent, professional, and user-friendly admin interface that meets the user's specific design requirements.
+    - **Status**: IN PROGRESS
+    - **Should Test frontend/backend/both after fix?**: Frontend.
+    - **Blocked on something**: Production data stability (Issue #1).
+
+- **Task 2: Build Customer-Facing Storefront (P1)**
+    - **Where to resume**: The agent has created skeleton components in . The next steps are to:
+        1.  Integrate these components into the main application router, likely under dynamic routes like  and .
+        2.  Build the UI for the homepage, product listing, and product detail pages, inspired by .
+        3.  Create new backend endpoints to publicly serve product, category, and store information.
+        4.  Implement cart functionality (add to cart, view cart, update quantities).
+    - **What will be achieved with this?**: A fully functional, public e-commerce storefront for each of the user's stores.
     - **Status**: IN PROGRESS
     - **Should Test frontend/backend/both after fix?**: Both.
-    - **Blocked on something**: Issue 1, Issue 2.
+    - **Blocked on something**: Production data stability (Issue #1).
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks**:
-    *   (P2) **Email Notification Configuration**: Prompt user for SendGrid API keys to enable the email notification service.
-    *   (P2) **Chrome Extension Enhancement**: Review scraping for collection/search pages with the user.
+    *   (P1) Implement checkout flow for the new customer-facing storefront.
 *   **Future Tasks**:
-    *   (P2) **Investigate Shopify OAuth Instability**.
-    *   (P3) **Refactor ** and **** into smaller components.
-    *   (P3) **Enhance Analytics**.
+    *   (P2) **Email Notification Configuration**: Prompt user for SendGrid API keys.
+    - (P2) **Investigate Shopify OAuth Instability**.
+    *   (P3) Refactor legacy components (, ).
 
 **Completed work in this session**
-- Diagnosed and fixed a Failed to fetch CORS error by correcting  in .
-- Diagnosed the subsequent  error, isolating it to the production MongoDB Atlas connection being blocked by a missing IP allowlist rule.
-- Successfully guided the user through the MongoDB Atlas UI to add the required  IP Access List entry.
-
-**Earlier issues found/mentioned but not fixed**
-- **Shopify OAuth & Login Instability**: A known recurring issue that has been deferred.
-
-**Known issue recurrence from previous fork**
-- **Issue recurrence in previous fork**: Shopify OAuth and login issues.
-- **Recurrence count**: 3+
-- **Status**: NOT STARTED
+- **Data Integrity Fixes**:
+    - Fixed a bug causing edited Shopify orders to show duplicate line items by filtering based on .
+    - Fixed a bug where 1688 purchase order fulfillment did not respect  isolation.
+    - Manually synced a missing Shopify order by creating a temporary endpoint.
+- **UI/UX Overhaul (In Progress)**:
+    - Enforced strict store isolation by removing the All Stores option and refactoring numerous components to use a global store context.
+    - Initiated a complete redesign of the admin UI to mimic Shopify, creating a new  and CSS theme file.
+    - Scaffolding created for the new -style customer-facing storefront.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Production vs. Preview Environments**: Debugging differences in environment variables and network capabilities.
-*   **Cloud Firewall Configuration**: Guiding a user to configure MongoDB Atlas's IP Access List.
-*   **CORS & Network Debugging**: Differentiating between frontend network failures (Failed to fetch) and backend server errors (HTTP 500).
+*   **Data Migration & Recovery**: Attempted to move large datasets between environments using custom API endpoints, leading to issues with timeouts and data duplication. This highlights the need for robust, background-job-based data synchronization.
+*   **UI/UX Refactoring for Isolation**: A major architectural change in the frontend to move from a shared-view model (All Stores) to a strict single-store context, improving data safety and aligning with user requirements.
+*   **Feature Scaffolding**: The process of creating empty placeholder components and files as a first step in building a large new feature (the storefront).
 
 **key DB schema**
-*   :  field is populated by the auto-link job.
-*   : Schema updated to support per-SKU 1688 order data (requires verification).
-*   : New collection to track background job status.
+- : This collection was the source of major data duplication issues during migration. The sync logic in  was updated to correctly replace  instead of merging them, fixing how edited orders are handled.
+- : Logic updated in  to correctly populate  from  on creation and startup.
 
 **All files of reference**
-*    (Updated to fix CORS error)
-*    (Inspected during debugging)
+*   : Heavily modified with temporary migration endpoints, fixes to Shopify sync logic, and startup scripts.
+*   : Core logic updated to enforce single-store selection.
+*   : New component defining the new admin navigation.
+*   : Updated to integrate the new sidebar.
+*   : New directory containing placeholder components for the public e-commerce site.
+*   Multiple components updated for store isolation: , , , , .
 
 **Areas that need refactoring**:
-*    (>1600 lines) and  should be broken down into smaller components.
+*   The  file is cluttered with single-use migration endpoints (, , , etc.). These should be cleaned up or moved to a separate management script once the production database is stable.
 
 **key api endpoints**
-*    (GET) - This is the endpoint that is currently failing in production.
+*    (GET): Updated to filter by .
+*    (POST): New endpoint to fix data duplication. Intended for one-time use.
+*    (POST): New endpoint to manually sync a specific missing order.
 
 **Critical Info for New Agent**
-*   **The Problem is Configuration, Not Code**: The application code works correctly in the preview environment. The current  error in production is due to environment configuration.
-*   **User Action is Required**: The user **must** take the final steps. The immediate priority is to confirm the MongoDB Atlas IP Access change is Active and then **redeploy** the application with the correct . You cannot fix this for them.
-*   **Follow the Plan**: Your first action should be to check in with the user on the status of the MongoDB Atlas change and guide them to redeploy. Once the production site is working, proceed to have them sync their data (Issue #2). Do not work on other features until production is stable.
+*   **PRIORITY 1: Stabilize Production Data.** The production database is in an unknown and likely incomplete state due to failed/timed-out migration and sync attempts. Before any new feature work, you MUST ensure a full, clean, and verified data sync is completed for all stores. All other work depends on this foundation.
+*   **User's New Vision is Ambitious.** The request for a Shopify-clone admin UI and a Net-a-Porter-clone storefront is a major project. Break it down into small, verifiable steps. Manage user expectations about the timeline.
+*   **Strict Store Isolation is Non-Negotiable.** The user was very explicit. Every feature, old and new, must operate only within the context of the selected store. Audit all backend endpoints and frontend components to ensure this is enforced.
+*   **Clean Up Temporary Code.** The  file contains several temporary endpoints for data migration. Once the data is stable, plan to remove this technical debt.
 
 **documents and test reports created in this job**
-*    (from previous session)
+*   None
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Reports Failed to fetch error on the production site.
-2.  **Agent**: Fixes frontend  and asks user to redeploy.
-3.  **User**: Reports new HTTP 500 error.
-4.  **Agent**: Diagnoses it as a backend DB connection issue. Asks user to check Atlas IP settings.
-5.  **User**: Confirms they haven't added the IP and asks the agent to check the  for them.
-6.  **Agent**: Explains it cannot see production settings and provides instructions for adding the IP to Atlas.
-7.  **User**: Sends screenshot of the wrong Atlas page (Database Users).
-8.  **Agent**: Corrects the user, directing them to the IP Access List page.
-9.  **User**: Sends another screenshot, still on the wrong page.
-10. **Agent**: Repeats directions to click IP Access List.
-11. **User**: Sends a screenshot showing the IP address  has been added and is in Pending status.
-12. **Agent**: Confirms the user's action is correct and provides the final steps: wait for Active status, ensure  is set, and redeploy.
+10. **User:** (Provides screenshot) this - showing that an edited order in Shopify has a Removed item, but the app UI shows both.
+9.  **Agent:** Explains the fix and asks the user to deploy.
+8.  **User:** deployed
+7.  **User:** all these 3 stores are seperate how can u store data seperatelonly have switch option to avoid any issue rest purchase n tracking should be same no all store option toavoid duplication - **CRITICAL: User wants full data isolation.**
+6.  **User:** even for purchase and 1688 and tracking everything should be seperate - Reinforces the need for isolation.
+5.  **User:** also i need to make online store front for each store https://www.net-a-porter.com/en-us/ like this and back end just like shopify also i need ui to be like shopify even the loading - **CRITICAL: Major new feature request.**
+4.  **Agent:** Proposes deploying current fixes before starting the large new feature.
+3.  **User:** go ahead
+2.  **Agent:** Confirms starting work on the new UI.
+1.  **User:** go ahead - Approving the agent to continue with the new storefront/UI work.
 
 **Project Health Check:**
-*   **Broken**:
-    *   The entire production application is down due to the  database connection error.
+*   **Broken**: Production data integrity. The  and  collections are not reliably synced, making the production application non-functional.
 *   **Mocked**: None.
 
 **3rd Party Integrations**
-*   **TMAPI**: Core integration for product data.
-*   **1688 Open Platform**: Used for authenticated actions (ordering).
-*   **Shopify Admin API**: Used for order syncing and product management.
-*   **Meta Business API (WhatsApp)**: For sending order notifications.
-*   **OpenAI GPT-4o**: Used for ad-hoc translations. Uses Emergent LLM Key.
-*   **DWZ56 API**: For fetching shipping and tracking information.
-*   **SendGrid**: Service created, requires user API key.
-*   **MongoDB Atlas**: The production database. Connection is currently blocked at the network level, pending user redeployment.
+*   **Shopify Admin API**: Core for syncing orders, products, and customers.
+*   **1688 Open Platform**: For creating purchase orders.
+*   **MongoDB Atlas**: Production database.
+*   **Other integrations from previous sessions**: TMAPI, Meta Business API, OpenAI GPT-4o, DWZ56 API, SendGrid.
 
 **Testing status**
 *   **Testing agent used after significant changes**: NO
 *   **Troubleshoot agent used after agent stuck in loop**: NO
 *   **Test files created**: None
-*   **Known regressions**: None
+*   **Known regressions**: Production data has been wiped/partially synced multiple times, so it's in a regressed state compared to the preview environment's data.
 
 **Credentials to test flow:**
-*   **Admin Login**:  / 
-*   **1688 Access Token**: 
-*   **MongoDB Atlas (for production config)**:
-    *   **Connection String**: 
+*   **Admin Login**:  /  (The password was reset during the session)
 
 **What agent forgot to execute**
-*   The previous handoff noted that  attributes were missing from new UI elements. This remains a low-priority technical debt item. The agent correctly prioritized the production-down issue over this.</analysis>
+*   The agent did not fix the identified **DWZ56 cross-store contamination issue** in .
+*   The agent failed to ensure the production data syncs completed successfully, acknowledging timeouts but moving on to new tasks. This is the most critical unresolved issue.</analysis>
