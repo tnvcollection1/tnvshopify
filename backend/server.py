@@ -1032,6 +1032,53 @@ async def migrate_products():
         raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
 
 
+@api_router.post("/deduplicate-customers")
+async def deduplicate_customers():
+    """
+    Remove duplicate customers/orders based on shopify_order_id
+    Keeps the first occurrence and removes duplicates
+    """
+    try:
+        logger.info("🔧 Starting customer deduplication...")
+        
+        # Find all unique shopify_order_ids
+        pipeline = [
+            {"$group": {
+                "_id": "$shopify_order_id",
+                "count": {"$sum": 1},
+                "docs": {"$push": "$_id"}
+            }},
+            {"$match": {"count": {"$gt": 1}}}
+        ]
+        
+        duplicates = await db.customers.aggregate(pipeline).to_list(None)
+        
+        total_removed = 0
+        for dup in duplicates:
+            # Keep the first document, remove the rest
+            docs_to_remove = dup['docs'][1:]  # Skip first one
+            if docs_to_remove:
+                result = await db.customers.delete_many({"_id": {"$in": docs_to_remove}})
+                total_removed += result.deleted_count
+        
+        # Get new count
+        new_count = await db.customers.count_documents({})
+        
+        logger.info(f"✅ Deduplication complete. Removed {total_removed} duplicates. New total: {new_count}")
+        
+        return {
+            "success": True,
+            "message": f"Removed {total_removed} duplicate records",
+            "duplicates_found": len(duplicates),
+            "records_removed": total_removed,
+            "new_total": new_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Error during deduplication: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/fix-store-domains")
 async def fix_store_domains():
     """
