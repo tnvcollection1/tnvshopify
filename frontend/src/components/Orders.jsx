@@ -1110,31 +1110,29 @@ const Orders = () => {
 
   const handleShopifySync = async () => {
     try {
+      // Only sync the currently selected store
+      if (!globalStore) {
+        toast.error("Please select a store first");
+        return;
+      }
+      
       setLoading(true);
-      toast.info("Syncing orders from Shopify...");
+      toast.info(`Syncing orders from Shopify for ${globalStore}...`);
 
-      // Sync all stores
-      const stores = ["tnvcollection", "tnvcollectionpk", "asmia"];
-      let totalSynced = 0;
-
-      for (const store of stores) {
-        try {
-          const response = await axios.post(`${API}/shopify/sync-fast/${store}`, null, {
-            params: { days_back: 30 }
-          });
-          
-          if (response.data.success) {
-            totalSynced += response.data.total_synced || 0;
-            toast.success(`✅ ${store}: ${response.data.total_synced || 0} orders synced`);
-          }
-        } catch (error) {
-          console.error(`Error syncing ${store}:`, error);
-          const errorMsg = error.response?.data?.detail || `Failed to sync ${store}`;
-          toast.error(errorMsg);
+      try {
+        const response = await axios.post(`${API}/shopify/sync-fast/${globalStore}`, null, {
+          params: { days_back: 30 }
+        });
+        
+        if (response.data.success) {
+          toast.success(`✅ ${response.data.total_synced || 0} orders synced for ${globalStore}`);
         }
+      } catch (error) {
+        console.error(`Error syncing ${globalStore}:`, error);
+        const errorMsg = error.response?.data?.detail || `Failed to sync ${globalStore}`;
+        toast.error(errorMsg);
       }
 
-      toast.success(`🎉 Total: ${totalSynced} orders synced from all stores!`);
       await fetchOrders(); // Refresh the orders list
     } catch (error) {
       console.error("Error syncing Shopify:", error);
