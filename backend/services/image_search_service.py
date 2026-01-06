@@ -70,15 +70,13 @@ async def search_products_by_image(image_url: str, limit: int = 20) -> Dict:
                 
                 if convert_result.get("code") == 200:
                     data = convert_result.get("data", {})
-                    # Response can have 'image_url' or 'img_url' key
+                    # Response has 'image_url' key with path like '/search/imgextra4/xxx.jpeg'
+                    # IMPORTANT: Use the raw path, NOT the full URL for image search
                     converted_path = data.get("image_url") or data.get("img_url") or data.get("url")
                     if converted_path:
-                        # TMAPI returns a relative path, need to construct full URL
-                        if converted_path.startswith("/"):
-                            img_url = f"https://cbu01.alicdn.com{converted_path}"
-                        else:
-                            img_url = converted_path
-                        print(f"[Image Search] Converted image URL: {img_url[:80]}...")
+                        # Use the raw path directly - DO NOT prepend domain
+                        img_url = converted_path
+                        print(f"[Image Search] Converted image path: {img_url}")
                     else:
                         print(f"[Image Search] Conversion succeeded but no URL in response: {data}")
                 else:
