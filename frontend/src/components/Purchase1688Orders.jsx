@@ -68,11 +68,13 @@ const Purchase1688Orders = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, statusFilter, searchShopifyId]);
+  }, [page, pageSize, statusFilter, searchShopifyId, globalStore]);
 
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    if (globalStore) {
+      fetchOrders();
+    }
+  }, [fetchOrders, globalStore]);
 
   const totalPages = Math.ceil(totalOrders / pageSize);
 
