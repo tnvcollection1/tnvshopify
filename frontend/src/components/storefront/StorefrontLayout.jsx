@@ -132,6 +132,13 @@ export const StorefrontHeader = ({ storeName = 'TNC Collection' }) => {
             >
               <Search className="w-5 h-5" />
             </button>
+            <Link 
+              to="/shop/track"
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors hidden sm:block"
+              title="Track Order"
+            >
+              <Package className="w-5 h-5" />
+            </Link>
             <button className="p-2 hover:bg-gray-100 rounded-full transition-colors hidden sm:block">
               <Heart className="w-5 h-5" />
             </button>
