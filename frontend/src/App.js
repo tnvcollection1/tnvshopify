@@ -637,6 +637,22 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/shop/track" 
+        element={
+          <StorefrontLayout storeName="TNC Collection">
+            <OrderTracking />
+          </StorefrontLayout>
+        } 
+      />
+      <Route 
+        path="/shop/track/:orderId" 
+        element={
+          <StorefrontLayout storeName="TNC Collection">
+            <OrderTracking />
+          </StorefrontLayout>
+        } 
+      />
+      <Route 
         path="/shop/:category" 
         element={
           <StorefrontLayout storeName="TNC Collection">
