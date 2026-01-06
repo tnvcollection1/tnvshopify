@@ -951,6 +951,87 @@ async def migrate_preview_data(force: bool = False):
         raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
 
 
+@api_router.post("/migrate-products")
+async def migrate_products():
+    """
+    Migrate Shopify products from preview to production
+    """
+    import httpx
+    
+    PREVIEW_URL = "https://aliexpress-bridge.preview.emergentagent.com/api"
+    
+    try:
+        migration_results = {}
+        
+        async with httpx.AsyncClient(timeout=300) as client:
+            # 1. Migrate Shopify products in batches
+            logger.info("📦 Migrating Shopify products...")
+            try:
+                # Get total count
+                resp = await client.get(f"{PREVIEW_URL}/shopify/products?limit=1")
+                data = resp.json()
+                total = data.get('total', 0)
+                
+                if total > 0:
+                    # Clear existing
+                    await db.shopify_products.delete_many({})
+                    
+                    # Fetch in batches
+                    batch_size = 500
+                    migrated = 0
+                    
+                    for offset in range(0, total, batch_size):
+                        logger.info(f"  Fetching products {offset} to {offset + batch_size}...")
+                        resp = await client.get(f"{PREVIEW_URL}/shopify/products?limit={batch_size}&skip={offset}")
+                        batch_data = resp.json()
+                        products = batch_data.get('products', [])
+                        
+                        if products:
+                            for p in products:
+                                if '_id' in p:
+                                    del p['_id']
+                            await db.shopify_products.insert_many(products)
+                            migrated += len(products)
+                            logger.info(f"  ✅ Migrated {migrated}/{total} Shopify products")
+                    
+                    migration_results['shopify_products'] = migrated
+                else:
+                    migration_results['shopify_products'] = 0
+            except Exception as e:
+                logger.error(f"❌ Error migrating Shopify products: {str(e)}")
+                migration_results['shopify_products'] = f"Error: {str(e)}"
+            
+            # 2. Migrate 1688 scraped products
+            logger.info("🏭 Migrating 1688 products...")
+            try:
+                resp = await client.get(f"{PREVIEW_URL}/1688/products?limit=10000")
+                data = resp.json()
+                products = data.get('products', [])
+                
+                if products:
+                    await db.products_1688.delete_many({})
+                    for p in products:
+                        if '_id' in p:
+                            del p['_id']
+                    await db.products_1688.insert_many(products)
+                    migration_results['products_1688'] = len(products)
+                else:
+                    migration_results['products_1688'] = 0
+            except Exception as e:
+                logger.error(f"❌ Error migrating 1688 products: {str(e)}")
+                migration_results['products_1688'] = f"Error: {str(e)}"
+        
+        return {
+            "success": True,
+            "message": "Products migration completed",
+            "migrated": migration_results
+        }
+        
+    except Exception as e:
+        logger.error(f"Error during products migration: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
+
 @api_router.post("/fix-store-domains")
 async def fix_store_domains():
     """
