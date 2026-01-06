@@ -415,6 +415,37 @@ const ProductsCatalog = () => {
     }
   };
   
+  const startAutoLink = async () => {
+    if (storeFilter === 'all') {
+      alert('Please select a specific store to auto-link products');
+      return;
+    }
+    
+    setStartingAutoLink(true);
+    try {
+      const res = await fetch(`${API}/api/shopify/products/bulk-auto-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          store_name: storeFilter,
+          limit: autoLinkLimit
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAutoLinkJob({ job_id: data.job_id, status: 'started', processed: 0, total: autoLinkLimit, linked: 0, failed: 0 });
+        setAutoLinkModal(true);
+      } else {
+        alert(data.message || 'Failed to start auto-link');
+      }
+    } catch (error) {
+      console.error('Auto-link failed:', error);
+      alert('Failed to start auto-link job');
+    } finally {
+      setStartingAutoLink(false);
+    }
+  };
+  
   const totalPages = Math.ceil(total / pageSize);
   
   // Calculate linked stats
