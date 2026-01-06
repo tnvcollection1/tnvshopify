@@ -77,7 +77,31 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 - Supports both `shopify_product_id` and legacy `id` fields
 - Store-specific filtering with `store_name` parameter
 
-#### 4. TMAPI Integration (Dec 2024)
+#### 4. Storefront Orders Admin View (Jan 6, 2026) ✅ NEW
+- **Admin Route**: `/storefront-orders`
+- **Stats Cards**: Total, Pending, Confirmed, Shipped, Delivered counts (clickable filters)
+- **Search**: Filter by order ID, customer name, email, phone
+- **Status Filter**: Dropdown with all status options + Clear button
+- **Orders Table**: Order, Date, Customer, Status, Payment, Total, Actions columns
+- **View Order Modal**: Complete order details including:
+  - Customer info (name, email, phone)
+  - Shipping address
+  - Order items with prices
+  - Payment summary (subtotal, shipping, total)
+  - Status history with timestamps
+- **Update Status Modal**: 
+  - Status dropdown (pending → confirmed → processing → shipped → out_for_delivery → delivered → cancelled)
+  - Tracking number and courier fields (for shipped status)
+  - Note field for status change comments
+- **Testing**: 100% tests passed (20/20)
+
+#### 5. Admin UI Shopify-Style Redesign (Jan 6, 2026) ✅ IN PROGRESS
+- **ShopifySidebar.jsx**: Dark green theme with expandable menu sections
+- **Navigation Structure**: Home, Sales (Orders, Storefront Orders, Fulfillment, Analytics), Products, 1688 Sourcing, Shipping, Customers, Messaging
+- **Store Selector**: Dropdown at top of sidebar
+- **Consistent Design**: Shopify-style color palette (#008060 primary), rounded corners, subtle shadows
+
+#### 6. TMAPI Integration (Dec 2024)
 - Integrated third-party TMAPI service for reliable product data fetching
 - Supports 1688, Taobao, and Tmall products
 - Fetches full variant/SKU data including `props_names`, `spec_id`, prices, stock
