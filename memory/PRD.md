@@ -54,7 +54,14 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
   - Razorpay payment gateway integration
   - Order creation in MongoDB + Shopify
   - Order confirmation with "What's Next" info
-- **Testing**: 100% tests passed (31/31 across 2 iterations)
+- **Order Tracking** (Jan 6, 2026):
+  - `/shop/track` - Order search by order number
+  - `/shop/track/{orderId}` - Direct tracking link
+  - Visual status timeline (Order Placed → Confirmed → Processing → Shipped → Out for Delivery → Delivered)
+  - Tracking number and courier display when shipped
+  - Status history with timestamps
+  - Track Order icon in storefront header
+- **Testing**: 100% tests passed (50/50 across 3 iterations)
 
 #### 2. DWZ56 Store Data Isolation (Jan 6, 2026) ✅ NEW
 - **All DWZ56 APIs now support `store_name` filter**:
