@@ -327,23 +327,7 @@ const Sidebar = () => {
                 <p className="text-xs text-gray-400 font-medium px-2">SELECT STORE</p>
               </div>
               
-              {/* All Stores Option */}
-              <button
-                onClick={() => { switchStore('all'); setShowStoreDropdown(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
-                  selectedStore === 'all' 
-                    ? 'bg-[#25d366]/20 text-[#25d366]' 
-                    : 'text-gray-300 hover:bg-[#2a3942]'
-                }`}
-              >
-                <Layers className="w-4 h-4" />
-                <span className="flex-1 text-left">All Stores</span>
-                {selectedStore === 'all' && <Check className="w-4 h-4" />}
-              </button>
-              
-              <div className="border-t border-[#2a3942] my-1" />
-              
-              {/* Individual Stores */}
+              {/* Individual Stores Only - No "All Stores" option */}
               {stores.map((store) => (
                 <button
                   key={store.id}
@@ -364,7 +348,7 @@ const Sidebar = () => {
         </div>
 
         {/* Sync Button - Only for admin */}
-        {isAdmin() && selectedStore !== 'all' && (
+        {isAdmin() && selectedStore && (
           <button
             onClick={handleSync}
             disabled={syncing}
