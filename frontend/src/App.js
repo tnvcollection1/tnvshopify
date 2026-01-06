@@ -61,6 +61,7 @@ import NotificationSettings from "@/components/NotificationSettings";
 import FacebookLeadAds from "@/components/FacebookLeadAds";
 import SuperAdminDashboard from "@/components/SuperAdminDashboard";
 import WhatsAppCaseStudy from "@/components/WhatsAppCaseStudy";
+import StorefrontOrders from "@/components/StorefrontOrders";
 // Storefront Components
 import { StorefrontLayout, CartProvider } from "@/components/storefront/StorefrontLayout";
 import StorefrontHome from "@/components/storefront/StorefrontHome";
