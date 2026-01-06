@@ -7,6 +7,7 @@ import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { useStore } from '../contexts/StoreContext';
 import { 
   Package, Truck, DollarSign, RefreshCw, Search, 
   CheckCircle, XCircle, Clock, AlertTriangle, MapPin,
