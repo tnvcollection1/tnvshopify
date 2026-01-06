@@ -1356,8 +1356,7 @@ const BatchNotifyModal = ({ store, orders, onClose, onSuccess }) => {
 
 // Main Component
 const FulfillmentPipeline = () => {
-  const [stores, setStores] = useState([]);
-  const [selectedStore, setSelectedStore] = useState('');
+  const { selectedStore: globalStore, getStoreName, stores: globalStores } = useStore();
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -1375,29 +1374,14 @@ const FulfillmentPipeline = () => {
   const [showOrderHistory, setShowOrderHistory] = useState(null);
 
   const getCarrierInfo = useCallback(() => {
-    return STORE_CARRIERS[selectedStore] || { carrier: 'Local Carrier', country: 'Unknown' };
-  }, [selectedStore]);
-
-  const fetchStores = useCallback(async () => {
-    try {
-      const res = await fetch(`${API}/api/stores`);
-      const data = await res.json();
-      // API returns array directly or {success: true, stores: [...]}
-      const storesList = Array.isArray(data) ? data : (data.success && data.stores ? data.stores : []);
-      if (storesList.length > 0) {
-        setStores(storesList);
-        setSelectedStore(storesList[0].store_name);
-      }
-    } catch (e) {
-      console.error('Error fetching stores:', e);
-    }
-  }, []);
+    return STORE_CARRIERS[globalStore] || { carrier: 'Local Carrier', country: 'Unknown' };
+  }, [globalStore]);
 
   const fetchOrders = useCallback(async () => {
-    if (!selectedStore) return;
+    if (!globalStore) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/fulfillment/pipeline?store_name=${selectedStore}`);
+      const res = await fetch(`${API}/api/fulfillment/pipeline?store_name=${globalStore}`);
       const data = await res.json();
       if (data.success) {
         setOrders(data.orders || []);
