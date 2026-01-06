@@ -913,7 +913,7 @@ const DWZImportModal = ({ store, onClose, onSuccess }) => {
               onChange={e => setAutoAdvance(e.target.checked)}
               className="rounded"
             />
-            Auto-advance orders to "DWZ56 Shipped" stage
+            Auto-advance orders to &quot;DWZ56 Shipped&quot; stage
           </label>
         </div>
         
