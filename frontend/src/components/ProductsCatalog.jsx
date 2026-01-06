@@ -308,10 +308,38 @@ const ProductsCatalog = () => {
   const [total, setTotal] = useState(0);
   const pageSize = 24;
   
+  // Auto-link state
+  const [autoLinkModal, setAutoLinkModal] = useState(false);
+  const [autoLinkJob, setAutoLinkJob] = useState(null);
+  const [autoLinkLimit, setAutoLinkLimit] = useState(100);
+  const [startingAutoLink, setStartingAutoLink] = useState(false);
+  
   useEffect(() => {
     fetchProducts();
     fetchSyncStatus();
   }, [page, storeFilter, linkFilter]);
+  
+  // Poll auto-link job status
+  useEffect(() => {
+    if (autoLinkJob && autoLinkJob.status !== 'completed' && autoLinkJob.status !== 'error') {
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch(`${API}/api/shopify/products/bulk-auto-link/status/${autoLinkJob.job_id}`);
+          const data = await res.json();
+          if (data.success && data.job) {
+            setAutoLinkJob({ ...data.job, job_id: autoLinkJob.job_id });
+            if (data.job.status === 'completed' || data.job.status === 'error') {
+              fetchProducts();
+              fetchSyncStatus();
+            }
+          }
+        } catch (error) {
+          console.error('Error polling job status:', error);
+        }
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [autoLinkJob]);
   
   const fetchProducts = async () => {
     setLoading(true);
