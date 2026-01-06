@@ -427,7 +427,7 @@ const StorefrontOrders = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedStore, statusFilter, page]);
+  }, [statusFilter, page]);
 
   useEffect(() => {
     fetchOrders();
