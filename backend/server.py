@@ -51,6 +51,7 @@ from routes.alibaba_1688 import router as alibaba_1688_router
 from routes.fulfillment import router as fulfillment_router
 from routes.product_scraper import router as product_scraper_router
 from routes.tmapi_buyer import router as tmapi_buyer_router
+from routes.storefront import router as storefront_router, set_database as set_storefront_db
 from services.fulfillment_webhooks import router as fulfillment_webhooks_router
 from services.whatsapp_notifications import router as whatsapp_notifications_router
 from services.fulfillment_pipeline_service import router as fulfillment_pipeline_router
