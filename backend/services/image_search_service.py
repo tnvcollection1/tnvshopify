@@ -9,10 +9,18 @@ import os
 import httpx
 import re
 from motor.motor_asyncio import AsyncIOMotorClient
+from pathlib import Path
+from dotenv import load_dotenv
 
-# TMAPI Configuration
-TMAPI_BASE_URL = os.environ.get('TMAPI_BASE_URL', 'http://api.tmapi.top/1688')
-TMAPI_TOKEN = os.environ.get('TMAPI_TOKEN', '')
+# Load .env file
+load_dotenv(Path(__file__).parent.parent / '.env')
+
+# TMAPI Configuration - loaded dynamically to pick up .env values
+def get_tmapi_token():
+    return os.environ.get('TMAPI_TOKEN', '')
+
+def get_tmapi_base_url():
+    return os.environ.get('TMAPI_BASE_URL', 'http://api.tmapi.top/1688')
 
 # Database connection
 _db = None
@@ -22,7 +30,7 @@ def get_db():
     if _db is None:
         mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
         client = AsyncIOMotorClient(mongo_url)
-        _db = client['shopify_customers_db']
+        _db = client[os.environ.get('DB_NAME', 'shopify_customers_db')]
     return _db
 
 
