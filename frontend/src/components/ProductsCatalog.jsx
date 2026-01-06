@@ -468,7 +468,7 @@ const ProductsCatalog = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          {storeFilter !== 'all' && (
+          {storeFilter !== 'all' && storeFilter !== 'ashmiaa' && (
             <Button 
               variant="outline" 
               onClick={() => setAutoLinkModal(true)}
