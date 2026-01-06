@@ -1159,14 +1159,61 @@ Thank you for your understanding.`;
                     </div>
                   </div>
 
-                  {/* 1688 Fulfillment Info */}
+                  {/* 1688 Fulfillment Info - Per SKU */}
                   <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
                     <h3 className="font-medium text-orange-800 mb-4 flex items-center gap-2">
                       <Package className="w-4 h-4" />
                       1688 Fulfillment
                     </h3>
-                    {selectedOrderFulfillment?.order_1688_id ? (
-                      <div className="space-y-2 text-sm">
+                    
+                    {/* Per-SKU 1688 Order Status */}
+                    <div className="space-y-3">
+                      {selectedOrder.line_items?.map((item, index) => {
+                        // Check if this specific SKU has been ordered on 1688
+                        const skuOrder = selectedOrderFulfillment?.line_item_orders?.find(
+                          o => o.sku === item.sku || o.product_name === item.name
+                        );
+                        const productName = item.name || item.title || `Item ${index + 1}`;
+                        const variant = item.variant_title || '';
+                        
+                        return (
+                          <div key={index} className={`p-3 rounded-lg border ${skuOrder ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">{productName}</p>
+                                {variant && <p className="text-xs text-gray-500">{variant}</p>}
+                                <p className="text-xs text-gray-400">Qty: {item.quantity || 1}</p>
+                              </div>
+                              <div className="ml-2">
+                                {skuOrder ? (
+                                  <Badge className="bg-green-500 text-white text-xs">Ordered</Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-orange-600 border-orange-300 text-xs">Pending</Badge>
+                                )}
+                              </div>
+                            </div>
+                            {skuOrder && (
+                              <div className="mt-2 pt-2 border-t border-green-200 text-xs space-y-1">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">1688 Order:</span>
+                                  <code className="bg-green-100 px-1 rounded text-green-800 font-mono">{skuOrder.alibaba_order_id}</code>
+                                </div>
+                                {skuOrder.dwz_tracking && (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-500">DWZ:</span>
+                                    <code className="bg-blue-100 px-1 rounded text-blue-800 font-mono">{skuOrder.dwz_tracking}</code>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Legacy single order display */}
+                    {selectedOrderFulfillment?.order_1688_id && !selectedOrderFulfillment?.line_item_orders?.length && (
+                      <div className="mt-3 pt-3 border-t border-orange-200 space-y-2 text-sm">
                         <div className="flex justify-between items-center">
                           <span className="text-gray-600">1688 Order:</span>
                           <code className="bg-orange-100 px-2 py-1 rounded text-orange-800 font-mono text-xs">
@@ -1193,9 +1240,12 @@ Thank you for your understanding.`;
                           <Badge className="bg-green-500 text-white">Ordered on 1688</Badge>
                         </div>
                       </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <p className="text-sm text-gray-600">No 1688 order linked yet.</p>
+                    )}
+                    
+                    {/* Order button if not all SKUs are ordered */}
+                    {(!selectedOrderFulfillment?.line_item_orders?.length || 
+                      selectedOrderFulfillment?.line_item_orders?.length < (selectedOrder.line_items?.length || 0)) && (
+                      <div className="mt-3 pt-3 border-t border-orange-200">
                         <Button
                           size="sm"
                           className="w-full bg-orange-500 hover:bg-orange-600"
@@ -1205,7 +1255,7 @@ Thank you for your understanding.`;
                           }}
                         >
                           <Zap className="w-4 h-4 mr-2" />
-                          Order on 1688
+                          Order Remaining on 1688
                         </Button>
                       </div>
                     )}
