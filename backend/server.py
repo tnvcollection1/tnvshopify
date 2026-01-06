@@ -978,6 +978,36 @@ async def fix_store_domains():
         }
     except Exception as e:
         logger.error(f"Error fixing store domains: {str(e)}")
+
+
+@api_router.post("/prepare-migration")
+async def prepare_migration():
+    """
+    Prepare database for migration by dropping problematic indexes
+    """
+    try:
+        dropped_indexes = []
+        
+        # Drop customer_id unique index that causes conflicts
+        try:
+            await db.customers.drop_index("customer_id_1")
+            dropped_indexes.append("customers.customer_id_1")
+            logger.info("Dropped customers.customer_id_1 index")
+        except Exception as e:
+            logger.info(f"Index customers.customer_id_1 may not exist: {e}")
+        
+        # Clear customers collection
+        delete_result = await db.customers.delete_many({})
+        
+        return {
+            "success": True,
+            "message": "Database prepared for migration",
+            "dropped_indexes": dropped_indexes,
+            "deleted_customers": delete_result.deleted_count
+        }
+    except Exception as e:
+        logger.error(f"Error preparing migration: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 
