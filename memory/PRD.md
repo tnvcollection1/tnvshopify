@@ -34,6 +34,8 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
   - `/shop/products` - Product listing with filters (sort, price, availability)
   - `/shop/product/{id}` - Product detail with variants, add to cart
   - `/shop/cart` - Shopping cart with order summary
+  - `/shop/checkout` - Two-step checkout (shipping + payment)
+  - `/shop/order-confirmation/{orderId}` - Order confirmation page
   - `/store/{storeName}` - Store-specific storefront routes
 - **Net-a-Porter Style Design**: Modern e-commerce UI with:
   - Full-width hero section
@@ -46,7 +48,13 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
   - Quantity updates
   - Order summary with shipping calculation
   - Free shipping threshold (₹5,000)
-- **Testing**: 100% tests passed (19/19)
+- **Checkout Flow** (Jan 6, 2026): 
+  - Shipping address form with validation
+  - Payment method selection (Razorpay online / COD)
+  - Razorpay payment gateway integration
+  - Order creation in MongoDB + Shopify
+  - Order confirmation with "What's Next" info
+- **Testing**: 100% tests passed (31/31 across 2 iterations)
 
 #### 2. DWZ56 Store Data Isolation (Jan 6, 2026) ✅ NEW
 - **All DWZ56 APIs now support `store_name` filter**:
