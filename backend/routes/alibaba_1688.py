@@ -1501,20 +1501,49 @@ async def create_purchase_order(request: CreatePurchaseOrderRequest):
         
         if alibaba_order_id:
             # Save to database for tracking
-            await db.purchase_orders_1688.insert_one({
+            order_record = {
                 "alibaba_order_id": str(alibaba_order_id),
                 "product_id": request.product_id,
                 "quantity": request.quantity,
                 "size": request.size,
                 "color": request.color,
                 "shopify_order_id": request.shopify_order_id,
+                "shopify_order_number": request.shopify_order_id,  # Also store as order_number
+                "sku": request.sku if hasattr(request, 'sku') else None,
+                "product_name": request.product_name if hasattr(request, 'product_name') else None,
                 "notes": request.notes,
                 "account_id": request.account_id,
                 "account_name": account_name,
                 "status": "created",
                 "api_response": create_result,
                 "created_at": datetime.now(timezone.utc).isoformat(),
-            })
+            }
+            await db.purchase_orders_1688.insert_one(order_record)
+            
+            # Also update the customers collection with line_item_orders for per-SKU tracking
+            line_item_order = {
+                "alibaba_order_id": str(alibaba_order_id),
+                "product_id": request.product_id,
+                "sku": request.sku if hasattr(request, 'sku') else None,
+                "product_name": request.product_name if hasattr(request, 'product_name') else None,
+                "size": request.size,
+                "color": request.color,
+                "quantity": request.quantity,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            
+            # Update the customer/order record with this line item order
+            await db.customers.update_one(
+                {"$or": [
+                    {"shopify_order_id": request.shopify_order_id},
+                    {"order_number": request.shopify_order_id},
+                    {"order_number": str(request.shopify_order_id)},
+                ]},
+                {
+                    "$push": {"line_item_orders": line_item_order},
+                    "$set": {"order_1688_id": str(alibaba_order_id)}  # Keep legacy field for backward compatibility
+                }
+            )
             
             return {
                 "success": True,
