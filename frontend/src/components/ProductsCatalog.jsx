@@ -654,6 +654,165 @@ const ProductsCatalog = () => {
           )}
         </>
       )}
+      
+      {/* Auto-Link Modal */}
+      {autoLinkModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Zap className="w-5 h-5 text-purple-500" />
+                Auto-Link Products by Image
+              </h2>
+              <button onClick={() => setAutoLinkModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {!autoLinkJob || autoLinkJob.status === 'completed' || autoLinkJob.status === 'error' ? (
+              // Configuration View
+              <div className="space-y-4">
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <p className="text-sm text-purple-800">
+                    <strong>Store:</strong> {storeFilter}
+                  </p>
+                  <p className="text-sm text-purple-600 mt-1">
+                    This will use AI image search to find matching 1688 products for unlinked Shopify products.
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Number of products to process
+                  </label>
+                  <select 
+                    value={autoLinkLimit} 
+                    onChange={(e) => setAutoLinkLimit(parseInt(e.target.value))}
+                    className="w-full border rounded-lg px-3 py-2"
+                  >
+                    <option value={50}>50 products (~2.5 min)</option>
+                    <option value={100}>100 products (~5 min)</option>
+                    <option value={250}>250 products (~12 min)</option>
+                    <option value={500}>500 products (~25 min)</option>
+                    <option value={1000}>1000 products (~50 min)</option>
+                  </select>
+                </div>
+                
+                <div className="bg-amber-50 rounded-lg p-3 text-sm">
+                  <p className="text-amber-800">
+                    <strong>Note:</strong> Each image search uses TMAPI credits (~110 per product). 
+                    Progress is saved automatically.
+                  </p>
+                </div>
+                
+                {autoLinkJob?.status === 'completed' && (
+                  <div className="bg-green-50 rounded-lg p-3">
+                    <p className="text-green-800 font-medium">✅ Previous job completed!</p>
+                    <p className="text-green-600 text-sm">
+                      Linked: {autoLinkJob.linked} | Failed: {autoLinkJob.failed} | Skipped: {autoLinkJob.skipped}
+                    </p>
+                  </div>
+                )}
+                
+                {autoLinkJob?.status === 'error' && (
+                  <div className="bg-red-50 rounded-lg p-3">
+                    <p className="text-red-800 font-medium">❌ Previous job failed</p>
+                    <p className="text-red-600 text-sm">{autoLinkJob.error}</p>
+                  </div>
+                )}
+                
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setAutoLinkModal(false)}>Cancel</Button>
+                  <Button 
+                    onClick={startAutoLink}
+                    disabled={startingAutoLink}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  >
+                    {startingAutoLink ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Play className="w-4 h-4 mr-2" />
+                    )}
+                    Start Auto-Linking
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // Progress View
+              <div className="space-y-4">
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-blue-800">
+                      {autoLinkJob.status === 'processing' ? 'Processing...' : autoLinkJob.status}
+                    </span>
+                    <span className="text-sm text-blue-600">
+                      {autoLinkJob.processed}/{autoLinkJob.total}
+                    </span>
+                  </div>
+                  <div className="w-full bg-blue-200 rounded-full h-3">
+                    <div 
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${(autoLinkJob.processed / autoLinkJob.total) * 100}%` }}
+                    />
+                  </div>
+                  {autoLinkJob.current_product && (
+                    <p className="text-xs text-blue-600 mt-2 truncate">
+                      Current: {autoLinkJob.current_product}
+                    </p>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-green-50 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-green-600">{autoLinkJob.linked || 0}</div>
+                    <div className="text-xs text-green-800">Linked</div>
+                  </div>
+                  <div className="bg-red-50 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-red-600">{autoLinkJob.failed || 0}</div>
+                    <div className="text-xs text-red-800">Failed</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-gray-600">{autoLinkJob.skipped || 0}</div>
+                    <div className="text-xs text-gray-800">Skipped</div>
+                  </div>
+                </div>
+                
+                {/* Recent Results */}
+                {autoLinkJob.results && autoLinkJob.results.length > 0 && (
+                  <div className="max-h-40 overflow-y-auto border rounded-lg">
+                    <div className="p-2 space-y-1">
+                      {autoLinkJob.results.slice(-5).reverse().map((r, i) => (
+                        <div key={i} className={`text-xs p-2 rounded ${
+                          r.status === 'linked' ? 'bg-green-50 text-green-800' :
+                          r.status === 'failed' ? 'bg-red-50 text-red-800' :
+                          'bg-gray-50 text-gray-600'
+                        }`}>
+                          <span className="font-medium">{r.title?.substring(0, 35)}...</span>
+                          {r.status === 'linked' && r.alibaba_id && (
+                            <span className="ml-2">→ {r.alibaba_id}</span>
+                          )}
+                          {r.status === 'failed' && r.reason && (
+                            <span className="ml-2">({r.reason})</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setAutoLinkModal(false)}
+                  >
+                    Close (Job continues in background)
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
