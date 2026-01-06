@@ -441,7 +441,7 @@ export default function DWZ56Purchase() {
                       <SelectValue placeholder="All stores" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All stores</SelectItem>
+                      
                       <SelectItem value="tnvcollectionpk">tnvcollectionpk</SelectItem>
                       <SelectItem value="tnvcollection">tnvcollection</SelectItem>
                     </SelectContent>

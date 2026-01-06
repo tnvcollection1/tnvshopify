@@ -736,7 +736,7 @@ const Inventory = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Stores</SelectItem>
+                    
                     {stores.map(store => (
                       <SelectItem key={store.store_name} value={store.store_name}>
                         {store.store_name}

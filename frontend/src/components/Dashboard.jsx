@@ -1027,7 +1027,7 @@ const Dashboard = () => {
                     <SelectValue placeholder="Select store" />
                   </SelectTrigger>
                   <SelectContent data-testid="store-filter-content">
-                    <SelectItem value="all" data-testid="store-option-all">All Stores</SelectItem>
+                    
                     {stores.map((store) => (
                       <SelectItem key={store.id} value={store.store_name} data-testid={`store-option-${store.store_name}`}>{store.store_name}</SelectItem>
                     ))}

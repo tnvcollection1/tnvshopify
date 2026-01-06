@@ -389,7 +389,7 @@ const WhatsAppMessaging = () => {
                       <SelectValue placeholder="Store" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Stores</SelectItem>
+                      
                       {stores.map((s) => (
                         <SelectItem key={s.id} value={s.store_name}>
                           {s.store_name}
