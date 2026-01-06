@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from './ui/dialog';
 import { Textarea } from './ui/textarea';
+import { useStore } from '../contexts/StoreContext';
 import { 
   Package, Truck, DollarSign, RefreshCw, Search, Plus, 
   CheckCircle, XCircle, Clock, AlertTriangle, MapPin,
