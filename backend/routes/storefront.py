@@ -376,3 +376,124 @@ async def health_check():
         "razorpay_configured": razorpay_client is not None,
         "razorpay_key": RAZORPAY_KEY_ID[:10] + "..." if RAZORPAY_KEY_ID else None
     }
+
+
+@router.get("/orders/{order_id}/track")
+async def track_order(order_id: str, email: Optional[str] = None):
+    """Track order status - public endpoint for customers"""
+    db = get_db()
+    
+    # Build query
+    query = {"order_id": order_id}
+    
+    # Optional email verification for additional security
+    if email:
+        query["customer.email"] = email.lower()
+    
+    order = await db.storefront_orders.find_one(query, {"_id": 0})
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Return order with tracking info
+    return {
+        "success": True,
+        "order": order
+    }
+
+
+class StatusUpdate(BaseModel):
+    status: str
+    note: Optional[str] = ""
+    tracking_number: Optional[str] = None
+    courier: Optional[str] = None
+
+
+@router.put("/orders/{order_id}/status")
+async def update_order_status(order_id: str, update: StatusUpdate):
+    """Update order status - admin endpoint"""
+    db = get_db()
+    
+    # Valid statuses
+    valid_statuses = ['pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled']
+    
+    if update.status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
+    
+    # Check if order exists
+    order = await db.storefront_orders.find_one({"order_id": order_id})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Build update
+    update_doc = {
+        "status": update.status,
+        "updated_at": now
+    }
+    
+    # Add tracking number if provided
+    if update.tracking_number:
+        update_doc["tracking_number"] = update.tracking_number
+    if update.courier:
+        update_doc["courier"] = update.courier
+    
+    # Add to status history
+    status_entry = {
+        "status": update.status,
+        "timestamp": now,
+        "note": update.note or f"Status updated to {update.status}"
+    }
+    
+    await db.storefront_orders.update_one(
+        {"order_id": order_id},
+        {
+            "$set": update_doc,
+            "$push": {"status_history": status_entry}
+        }
+    )
+    
+    return {
+        "success": True,
+        "order_id": order_id,
+        "new_status": update.status,
+        "message": f"Order status updated to {update.status}"
+    }
+
+
+@router.get("/orders")
+async def list_storefront_orders(
+    store_name: Optional[str] = None,
+    status: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50
+):
+    """List storefront orders - admin endpoint"""
+    db = get_db()
+    
+    query = {"source": "storefront"}
+    if store_name:
+        query["store_name"] = store_name
+    if status:
+        query["status"] = status
+    
+    skip = (page - 1) * limit
+    
+    orders = await db.storefront_orders.find(query, {"_id": 0}) \
+        .sort("created_at", -1) \
+        .skip(skip) \
+        .limit(limit) \
+        .to_list(limit)
+    
+    total = await db.storefront_orders.count_documents(query)
+    
+    return {
+        "success": True,
+        "orders": orders,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit
+    }
+
