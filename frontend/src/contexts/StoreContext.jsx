@@ -100,7 +100,7 @@ export const StoreProvider = ({ children }) => {
 
   // Get store-specific query parameter
   const getStoreParam = useCallback(() => {
-    if (selectedStore === 'all') return '';
+    if (!selectedStore) return '';
     return `store_name=${selectedStore}`;
   }, [selectedStore]);
 
@@ -110,15 +110,14 @@ export const StoreProvider = ({ children }) => {
       'tnvcollection': 'TNC Collection (IN)',
       'tnvcollectionpk': 'TNC Collection (PK)',
       'ashmiaa': 'Ashmiaa',
-      'asmia': 'Asmia',
-      'all': 'All Stores'
+      'asmia': 'Asmia'
     };
     return storeNames[storeId] || storeId;
   }, []);
 
   // Get current store info
   const getCurrentStore = useCallback(() => {
-    if (selectedStore === 'all') return null;
+    if (!selectedStore) return null;
     return stores.find(s => s.store_name === selectedStore);
   }, [selectedStore, stores]);
 
