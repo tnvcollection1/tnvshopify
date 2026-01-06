@@ -23,6 +23,9 @@ import {
   Box,
   ChevronDown,
   AlertCircle,
+  Zap,
+  Play,
+  Pause,
 } from 'lucide-react';
 
 const API = process.env.REACT_APP_BACKEND_URL;
