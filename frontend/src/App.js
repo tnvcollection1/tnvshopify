@@ -74,6 +74,33 @@ import { StoreProvider } from "@/contexts/StoreContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
+// Dynamic Storefront Wrapper for store-specific routes
+function StorefrontWrapper({ page = 'home' }) {
+  const { storeName, productId } = useParams();
+  
+  // Map store names to display names
+  const storeDisplayNames = {
+    'tnvcollection': 'TNC Collection',
+    'tnvcollectionpk': 'TNC Collection PK',
+    'ashmiaa': 'Ashmiaa',
+    'asmia': 'Asmia'
+  };
+  
+  const displayName = storeDisplayNames[storeName] || storeName;
+  
+  return (
+    <StorefrontLayout storeName={displayName}>
+      {page === 'home' && <StorefrontHome storeName={storeName} />}
+      {page === 'listing' && <ProductListing storeName={storeName} />}
+      {page === 'detail' && <ProductDetail storeName={storeName} />}
+      {page === 'cart' && <ShoppingCart />}
+    </StorefrontLayout>
+  );
+}
+
+// We need useParams for StorefrontWrapper
+import { useParams } from 'react-router-dom';
+
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
   const { agent, loading } = useAuth();
