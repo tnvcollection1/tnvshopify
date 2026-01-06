@@ -194,7 +194,7 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 ---
 
 ## Last Updated
-January 6, 2026 - Session 11: Product Catalog Verification & Product Linking
+January 6, 2026 - Session 11: Bulk Auto-Link by Image Feature
 
 ---
 
@@ -214,11 +214,50 @@ January 6, 2026 - Session 11: Product Catalog Verification & Product Linking
 - API endpoint `/api/shopify/products?store_name=tnvcollectionpk` returns 1,168 products correctly
 - Store filter dropdown shows all stores with counts
 
-**Product Linking Feature Verified** ✅
-- "Link to 1688" button opens modal
-- User can paste 1688 product URL or ID
-- "Link Product" button saves the association
-- Linked products show "Linked" badge and "View on 1688" button
+### Bulk Auto-Link by Image Feature ✅ (NEW)
+
+**Feature**: Automatically link Shopify products to 1688 using AI image search.
+
+**Implementation**:
+1. **Backend Endpoint**: `POST /api/shopify/products/bulk-auto-link`
+   - Accepts `store_name` and `limit` parameters
+   - Runs as background job with status tracking
+   - Converts Shopify images to Alibaba CDN format using TMAPI
+   - Searches 1688 by image and auto-links best match
+
+2. **Image URL Conversion Fix**:
+   - Fixed TMAPI image search by using raw path (not full URL)
+   - Correctly calls `POST /1688/tools/image/convert_url` endpoint
+   - Returns `/search/imgextra4/xxx.jpeg` format for image search
+
+3. **UI: "Auto-Link by Image" Button**:
+   - Added to Products Catalog page (visible when store is selected)
+   - Purple/pink gradient button with ⚡ Zap icon
+   - Opens modal with:
+     - Store selection confirmation
+     - Product count selector (50, 100, 250, 500, 1000)
+     - TMAPI credits note
+     - Real-time progress tracking
+     - Results display (linked/failed/skipped)
+
+4. **Job Status Endpoint**: `GET /api/shopify/products/bulk-auto-link/status/{job_id}`
+   - Returns processing progress
+   - Shows linked/failed/skipped counts
+   - Includes result details for each product
+
+**Data Persistence**: ✅ All linked products are stored in MongoDB `shopify_products` collection with fields:
+- `linked_1688_product_id`
+- `linked_1688_title`
+- `linked_1688_price`
+- `linked_1688_image`
+- `linked_1688_url`
+- `linked_at`
+- `linked_by: "auto_image_search"`
+
+**Current Stats (tnvcollectionpk)**:
+- Total: 1,168 products
+- Linked: 85+ (job running)
+- Processing: ~3 seconds per product
 
 ---
 
