@@ -37,6 +37,7 @@ def get_db():
 async def search_products_by_image(image_url: str, limit: int = 20) -> Dict:
     """
     Search for similar products on 1688 using image URL.
+    Automatically converts non-Alibaba images to Alibaba CDN format.
     
     Args:
         image_url: URL of the image to search
@@ -52,15 +53,37 @@ async def search_products_by_image(image_url: str, limit: int = 20) -> Dict:
     db = get_db()
     
     try:
-        url = "http://api.tmapi.top/1688/search/image"
+        # Step 1: Convert non-Alibaba images to Alibaba CDN format
+        img_url = image_url
+        if not any(domain in img_url.lower() for domain in ['alicdn.com', '1688.com', 'taobao.com', 'tmall.com']):
+            convert_url = "http://api.tmapi.top/1688/img_url_transfer"
+            convert_params = {
+                "apiToken": tmapi_token,
+                "url": img_url,
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                convert_response = await client.get(convert_url, params=convert_params)
+                convert_result = convert_response.json()
+                
+                if convert_result.get("code") == 200 and convert_result.get("data", {}).get("img_url"):
+                    img_url = convert_result["data"]["img_url"]
+                    print(f"[Image Search] Converted image URL: {img_url[:80]}...")
+                else:
+                    print(f"[Image Search] Could not convert image: {convert_result.get('msg', 'Unknown error')}")
+                    # Still try with original URL
+        
+        # Step 2: Search by converted image
+        search_url = "http://api.tmapi.top/1688/search/image"
         params = {
             "apiToken": tmapi_token,
-            "img_url": image_url,  # API expects img_url not image_url
-            "page_size": min(limit, 50),
+            "img_url": img_url,
+            "page_size": min(limit, 20),  # Max 20 per TMAPI docs
+            "sort": "sales",  # Prioritize popular products
         }
         
         async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.get(url, params=params)
+            response = await client.get(search_url, params=params)
             result = response.json()
             
             # Log usage
