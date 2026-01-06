@@ -424,6 +424,8 @@ class Store(BaseModel):
 class StoreCreate(BaseModel):
     store_name: str
     shop_url: str
+    shopify_domain: Optional[str] = None
+    shopify_token: Optional[str] = None
 
 
 class InventoryItemCreate(BaseModel):
