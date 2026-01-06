@@ -6,7 +6,7 @@ import { useCart } from './StorefrontLayout';
 const CartItem = ({ item, onUpdateQuantity, onRemove }) => (
   <div className="flex gap-4 py-6 border-b border-gray-200">
     {/* Image */}
-    <Link to={`/shop/product/${item.productId}`} className="w-24 h-32 bg-gray-100 flex-shrink-0">
+    <Link to={`/shop/product/${item.productId || item.shopify_product_id}`} className="w-24 h-32 bg-gray-100 flex-shrink-0">
       <img
         src={item.image || 'https://via.placeholder.com/200'}
         alt={item.title}
@@ -19,7 +19,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => (
       <div className="flex justify-between">
         <div>
           <Link 
-            to={`/shop/product/${item.productId}`}
+            to={`/shop/product/${item.productId || item.shopify_product_id}`}
             className="font-medium hover:underline"
           >
             {item.title}
