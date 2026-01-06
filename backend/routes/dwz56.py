@@ -1258,16 +1258,21 @@ async def get_purchase_tracking_list(
 
 
 @router.get("/purchase/import-stats")
-async def get_purchase_import_stats():
+async def get_purchase_import_stats(
+    store_name: Optional[str] = Query(None, description="Filter by Shopify store name for data isolation"),
+):
     """Get purchase account import statistics with store-wise breakdown"""
     db = get_db()
     
     try:
-        # Get all X-prefix tracking orders from Shopify for both stores
+        # Build store filter for data isolation
+        import_store_filter = {"store_name": store_name} if store_name else {"store_name": {"$in": ["tnvcollection", "tnvcollectionpk", "ashmiaa", "asmia"]}}
+        
+        # Get all X-prefix tracking orders from Shopify with store isolation
         cursor = db.customers.find(
             {
                 "tracking_number": {"$regex": "^X", "$options": "i"},
-                "store_name": {"$in": ["tnvcollection", "tnvcollectionpk"]}
+                **import_store_filter
             },
             {"_id": 0, "order_number": 1, "tracking_number": 1, "store_name": 1, "total_spent": 1, "total_price": 1}
         )
