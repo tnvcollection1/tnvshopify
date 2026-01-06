@@ -197,6 +197,11 @@ async def create_order(order: OrderCreate):
     
     try:
         order_number = generate_order_number()
+        now = datetime.now(timezone.utc).isoformat()
+        
+        # Calculate estimated delivery (5-7 business days)
+        from datetime import timedelta
+        estimated_delivery = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
         
         # Save order to database
         order_doc = {
@@ -211,7 +216,12 @@ async def create_order(order: OrderCreate):
             "shipping": order.shipping,
             "total": order.total,
             "status": "pending",
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "status_history": [
+                {"status": "pending", "timestamp": now, "note": "Order placed"}
+            ],
+            "estimated_delivery": estimated_delivery,
+            "created_at": now,
+            "updated_at": now,
             "source": "storefront"
         }
         
