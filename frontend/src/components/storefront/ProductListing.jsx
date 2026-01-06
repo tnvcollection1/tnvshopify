@@ -10,12 +10,13 @@ const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
   const price = product.variants?.[0]?.price || product.price || '0';
   const comparePrice = product.variants?.[0]?.compare_at_price;
-  const image = product.images?.[0]?.src || product.image || 'https://via.placeholder.com/400';
+  const image = product.images?.[0]?.src || product.image_url || product.image || 'https://via.placeholder.com/400';
   const hoverImage = product.images?.[1]?.src;
+  const productId = product.shopify_product_id || product.id;
 
   return (
     <Link 
-      to={`/shop/product/${product.id}`}
+      to={`/shop/product/${productId}`}
       className="group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -268,7 +269,7 @@ const ProductListing = ({ storeName = 'tnvcollection' }) => {
           ) : filteredProducts.length > 0 ? (
             <div className={`grid ${viewMode === 'grid' ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-1'} gap-6`}>
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.shopify_product_id || product.id} product={product} />
               ))}
             </div>
           ) : (
