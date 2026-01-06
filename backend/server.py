@@ -2574,23 +2574,39 @@ async def get_product_sync_status(store_name: str = None):
 async def get_single_shopify_product(product_id: str, store_name: str = None):
     """Get a single Shopify product by ID - used by storefront"""
     try:
-        query = {"id": product_id}
+        query = {}
         if store_name:
             query["store_name"] = store_name
         
-        # Try to find by string ID first
-        product = await db.shopify_products.find_one(query, {"_id": 0})
+        # Try to find by shopify_product_id (main field)
+        query_with_id = {**query, "shopify_product_id": product_id}
+        product = await db.shopify_products.find_one(query_with_id, {"_id": 0})
         
         # If not found, try converting to int
         if not product:
             try:
-                query["id"] = int(product_id)
-                product = await db.shopify_products.find_one(query, {"_id": 0})
+                query_with_id = {**query, "shopify_product_id": int(product_id)}
+                product = await db.shopify_products.find_one(query_with_id, {"_id": 0})
             except ValueError:
                 pass
         
+        # Also try with 'id' field for backwards compatibility
+        if not product:
+            query_with_id = {**query, "id": product_id}
+            product = await db.shopify_products.find_one(query_with_id, {"_id": 0})
+            if not product:
+                try:
+                    query_with_id = {**query, "id": int(product_id)}
+                    product = await db.shopify_products.find_one(query_with_id, {"_id": 0})
+                except ValueError:
+                    pass
+        
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
+        
+        # Add 'id' field for frontend compatibility if missing
+        if 'id' not in product and 'shopify_product_id' in product:
+            product['id'] = product['shopify_product_id']
         
         return {
             "success": True,
