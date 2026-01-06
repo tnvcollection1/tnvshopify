@@ -2376,6 +2376,7 @@ async def list_purchase_orders(
     page_size: int = Query(20, ge=1, le=100),
     status: Optional[str] = Query(None),
     shopify_order_id: Optional[str] = Query(None),
+    store_name: Optional[str] = Query(None),
 ):
     """
     List purchase orders created on 1688 with fulfillment data
@@ -2388,6 +2389,8 @@ async def list_purchase_orders(
         query["status"] = status
     if shopify_order_id:
         query["shopify_order_id"] = shopify_order_id
+    if store_name:
+        query["store_name"] = store_name
     
     skip = (page - 1) * page_size
     
