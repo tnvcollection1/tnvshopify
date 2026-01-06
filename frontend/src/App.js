@@ -61,6 +61,12 @@ import NotificationSettings from "@/components/NotificationSettings";
 import FacebookLeadAds from "@/components/FacebookLeadAds";
 import SuperAdminDashboard from "@/components/SuperAdminDashboard";
 import WhatsAppCaseStudy from "@/components/WhatsAppCaseStudy";
+// Storefront Components
+import { StorefrontLayout, CartProvider } from "@/components/storefront/StorefrontLayout";
+import StorefrontHome from "@/components/storefront/StorefrontHome";
+import ProductListing from "@/components/storefront/ProductListing";
+import ProductDetail from "@/components/storefront/ProductDetail";
+import ShoppingCart from "@/components/storefront/ShoppingCart";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
