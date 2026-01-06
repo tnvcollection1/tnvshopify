@@ -2,7 +2,7 @@
 // One-click import with hardcoded deployment URL
 
 // HARDCODED DEPLOYMENT URL - No user configuration needed
-const SERVER_URL = 'https://shopify1688sync.preview.emergentagent.com';
+const SERVER_URL = 'https://chinaimportapp.preview.emergentagent.com';
 
 let products = [];
 let pageInfo = { type: 'unknown', title: '', url: '' };

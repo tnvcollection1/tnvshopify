@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://shopify1688sync.preview.emergentagent.com/api'
+base_url = 'https://chinaimportapp.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 

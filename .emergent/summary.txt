@@ -9,55 +9,45 @@ PRODUCT REQUIREMENTS:
 6.  **Multi-Stage Fulfillment Pipeline**: A new UI and backend to track orders through a detailed pipeline:  →  →  →  →  →  → , with support for different last-mile carriers (TCS, DTDC).
 7.  **Pipeline Enhancements**: The pipeline page should include features for auto-syncing from Shopify, WhatsApp notifications on stage changes, image search for product linking, and CSV export.
 8.  **Monitoring & History**: Provide UI for TMAPI credit usage and product import history.
+9.  **Fulfillment Automation**: Implement bulk updates, automated DWZ tracking import (CSV & API), batch notifications, order history timeline, and scheduled background jobs for syncing.
+10. **Advanced Analytics**: Add date-range filtering and multiple tabs (Funnel, Timeline, Stuck) to the analytics modal.
+11. **Product Linking**: The user wants to be able to link products from their Shopify store () to 1688.com from the  page.
 
 **User's preferred language**: English
 
 **what currently exists?**
-*   A mature Shopify-1688 integration application is in place, featuring product scraping, a Product Collector UI, one-click publishing to Shopify, and order management.
-*   The monolithic backend file  has been completely refactored into a series of focused service modules (, , , , , etc.), significantly improving code organization and maintainability.
-*   A brand new, multi-stage Fulfillment Pipeline feature has been built. This includes a dedicated UI page () and a full backend service () to manage and track orders through a 7-stage process.
-*   The  page, which was previously broken, has been fixed and enhanced to display detailed fulfillment tracking information (Shopify Order #, Supplier Status, DWZ Tracking).
-*   Webhook security has been enhanced with rate limiting, IP whitelisting, and improved logging.
+*   A comprehensive Shopify-1688 integration application is in place, featuring product scraping, a Product Collector UI, and order management.
+*   The backend has been refactored into a service-oriented architecture.
+*   A multi-stage Fulfillment Pipeline feature is fully implemented at  with extensive automation capabilities.
+*   This pipeline includes auto-sync from Shopify, image search for product linking, WhatsApp & Email notifications, CSV/JSON export, bulk updates, automated DWZ tracking import (CSV & API), a detailed order history timeline, and advanced analytics with date-range filtering.
+*   A background scheduler (APScheduler) is implemented and runs an automated DWZ tracking sync job.
+*   A product catalog page exists at  which shows Shopify products and their 1688 linking status.
 
 **Last working item**:
-- **Last item agent was working**: Implementing four user-requested enhancements for the new Fulfillment Pipeline page:
-    1.  Image search to link existing products to 1688.
-    2.  An Auto-sync from Shopify unfulfilled orders button.
-    3.  WhatsApp notifications on stage changes.
-    4.  An export/reporting feature for pipeline analytics.
-    The agent updated the backend service  with the required logic and overwrote the frontend component  with a new version that includes the UI for these features. The agent's final action was to initiate linting and testing of the new code.
+- **Last item agent was working**: The user requested to link products for the tnvcollectionpk store on the  page. The agent began investigating this by viewing the  page and attempting to fetch the products via an API call. A discrepancy was found: the screenshot showed 6,338 products, but the API call for the  store returned 0 products. The agent was about to investigate this discrepancy.
 - **Status**: IN PROGRESS
 - **Agent Testing Done**: N
-- **Which testing method agent to use?**: Frontend testing agent. The agent should first check the results of the last linting command. If successful, it should proceed to test the four new features on the  page: verify the functionality of the Sync Shopify Orders and Export CSV buttons, test the image search modal, and confirm that updating an order's stage triggers the backend notification logic.
+- **Which testing method agent to use?**: manual testing by curl. The agent needs to investigate the backend endpoint that serves the  page to understand why it's returning an empty list for a specific store.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-*   **Issue 1**: Complete and verify the four new features for the Fulfillment Pipeline. (P0)
-*   **Issue 2**: The fix for Shopify sync timeouts (monthly chunking) has been implemented but not validated with a large dataset. (P1)
-*   **Issue 3**: Long-standing Shopify OAuth  and login stability issues are still pending investigation. (P2)
+*   **Issue 1**: Discrepancy on  page: UI shows products, but API returns none for . (P0)
+*   **Issue 2**: Long-standing Shopify OAuth  and login stability issues are still pending investigation. (P2)
 
 **Issues Detail**:
-*   **Issue 1: Verify Fulfillment Pipeline Enhancements**
-    *   **Attempted fixes**: The agent has already written and placed the backend and frontend code for all four features.
+*   **Issue 1: Product Catalog API returning empty list**
+    *   **Attempted fixes**: The agent took a screenshot confirming products are visible in the UI and ran a  command against the products API for the  store, which returned an empty list.
     *   **Next debug checklist**:
-        1.  Check the observation from the last  and  commands to ensure no syntax or basic errors were introduced.
-        2.  Use  to test the new backend endpoints in  (, , ).
-        3.  Use the  tool to navigate to  and visually verify the new buttons and modals.
-        4.  Use the  to perform a full E2E test of the new functionalities.
-    *   **Why fix this issue and what will be achieved with the fix?**: This will complete the user's latest feature request, making the new Fulfillment Pipeline a powerful and automated tracking tool.
+        1.  Identify the exact backend endpoint and function responsible for fetching products for the  catalog page.
+        2.  Inspect the code of that function to understand how it filters by store name.
+        3.  Check the database directly to confirm products for  exist and how the store name is formatted.
+        4.  Correct the backend logic to properly query and return the products.
+    *   **Why fix this issue and what will be achieved with the fix?**: This is a direct user request and is blocking the ability to link products to 1688, a core feature.
     *   **Status**: IN PROGRESS
     *   **Is recurring issue?**: N
     *   **Should Test frontend/backend/both after fix?**: Both
 
-*   **Issue 2: Shopify sync for large date ranges might time out**
-    *   **Attempted fixes**: The background sync logic in  was modified to process orders in monthly chunks instead of all at once.
-    *   **Next debug checklist**: This is difficult to test without a large dataset. The fix is likely sufficient for now. The agent should consider it resolved unless the user reports further issues.
-    *   **Why fix this issue and what will be achieved with the fix?**: Ensures reliable import of a user's entire Shopify order history.
-    *   **Status**: RESOLVED (pending user validation on large scale)
-    *   **Is recurring issue?**: Y
-    *   **Should Test frontend/backend/both after fix?**: Backend
-
-*   **Issue 3: Pending Shopify OAuth and login issues**
+*   **Issue 2: Pending Shopify OAuth and login issues**
     *   **Attempted fixes**: None in recent sessions.
     *   **Next debug checklist**: Conduct a thorough review of the Shopify authentication flow, server-side session management, and related libraries to identify the root cause of instability for new store connections.
     *   **Why fix this issue and what will be achieved with the fix?**: This improves core platform reliability, user trust, and the onboarding experience.
@@ -66,25 +56,39 @@ PRODUCT REQUIREMENTS:
     *   **Should Test frontend/backend/both after fix?**: Both
 
 **In progress Task List**:
-*   **Task 1: Complete Fulfillment Pipeline Enhancements**
-    *   **Where to resume**: Check the results of the last  command, then proceed with testing the new features on the  page.
-    *   **What will be achieved with this?**: The user will have a fully functional fulfillment tracking page with automation (sync, notifications), analytics (export), and data management (image linking) capabilities.
+*   **Task 1: Enable Product Linking on  page**
+    *   **Where to resume**: Resume by debugging the backend API endpoint for the product catalog. The immediate goal is to fix the data discrepancy where the API returns 0 products for the  store.
+    *   **What will be achieved with this?**: The user will be able to view their products on the catalog page and proceed with linking them to 1688.
     *   **Status**: IN PROGRESS
     *   **Should Test frontend/backend/both after fix?**: Both
-    *   **Blocked on something**: No.
+    *   **Blocked on something**: Resolving Issue 1.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks**:
-    *   (P1) **Validate Shopify Large Sync**: If the user has a large store, explicitly ask them to test the historical sync with a large date range to confirm the chunking solution works under load.
+    *   (P2) **Email Notification Configuration**: The email notification service has been created, but it requires the user to provide SendGrid API keys via  variables to be functional. The agent should prompt the user for these credentials.
+    *   (P2) **Chrome Extension Enhancement**: The user mentioned enhancing collection/search page scraping. While the agent found existing functionality, a dedicated review and test with the user would be beneficial.
 *   **Future Tasks**:
     *   (P2) **Investigate Shopify OAuth Instability**: Address the long-standing issue with Shopify login and  problems to improve new user onboarding.
+    *   (P3) **Enhance Analytics**: Implement more advanced analytics features like cohort analysis or product performance tracking.
 
 **Completed work in this session**
-- **Bug Fix & Enhancement**: Fixed the  page to correctly display purchase orders and enhanced it by adding detailed fulfillment tracking columns (Shopify #, Supplier Status, DWZ Tracking).
-- **Major Backend Refactoring**: Completed the full refactoring of the monolithic  (originally 3,355 lines, now 1,756 lines) into multiple focused service modules: , , , , and .
-- **New Feature: Fulfillment Pipeline**: Built a comprehensive, multi-stage fulfillment tracking system from scratch, including a new UI at  and a complete backend service .
-- **Shopify Sync Robustness**: Improved the background job for historical Shopify order sync in  to use monthly chunking, preventing timeouts on large stores.
-- **Security Enhancement**: Fortified webhook security in  by adding rate limiting, IP whitelisting, and enhanced logging.
+- **Fulfillment Pipeline Enhancements (Verified)**:
+  - Fixed FastAPI route ordering issue for  and .
+  - Fixed a frontend bug where the store dropdown was not populating.
+  - Successfully implemented and verified four new features: Image Search Linking, Auto-sync button, WhatsApp notifications, and CSV/JSON Export.
+- **Shopify Large Sync Validation**: Confirmed that the background job for syncing historical Shopify orders now works reliably for large date ranges (>90 days) by using monthly chunking, preventing timeouts.
+- **Chrome Extension Endpoint Verified**: Tested and validated the backend endpoint that receives product data from the browser extension.
+- **Auto-Sync 1688 Fulfillment to Shopify**: Created a new service () that automatically creates fulfillments in Shopify when an order reaches the  stage in the pipeline.
+- **Fulfillment Pipeline UX Enhancements**:
+  - Implemented a modal to prompt for tracking numbers when advancing an order to a stage that requires one (e.g., ).
+  - Fixed a critical bug where order stage updates were failing due to an integer vs. string mismatch in the  field.
+- **Bulk Operations and DWZ Automation**:
+  - Implemented and tested endpoints and UI for bulk updating order stages and importing DWZ tracking numbers via CSV paste.
+  - Implemented an automated background job to sync tracking information directly from the DWZ56 API.
+  - Implemented UI and backend for sending batch WhatsApp notifications.
+- **Order History Timeline**: Added a View History button to each order card, which opens a modal displaying a detailed timeline of all stage changes and events for that order.
+- **Advanced Analytics**: Enhanced the analytics modal with a date-range picker and tabs for Overview, Funnel, Timeline, and Stuck orders.
+- **Email Notifications**: Created a new service () and integrated it, laying the groundwork for sending email alerts (pending API key configuration).
 
 **Earlier issues found/mentioned but not fixed**
 *   **Issue 1: Shopify OAuth & Login Instability**
@@ -93,58 +97,84 @@ PRODUCT REQUIREMENTS:
     *   **Should Test frontend/backend/both after fix**: Both
     *   **Is recurring issue?**: Y
 
+**Known issue recurrence from previous fork**
+*   **Issue recurrence in previous fork**: Shopify OAuth and login issues.
+*   **Recurrence count**: 2+
+*   **Status**: NOT STARTED
+
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Monolith to Microservices**: The backend has been successfully refactored from a single large file into a service-oriented architecture, with clear separation of concerns. This is a major improvement for maintainability.
-*   **Complex Fulfillment Logic**: A highly custom, multi-stage fulfillment pipeline has been implemented, demonstrating the ability to model complex business workflows.
-*   **Iterative Development**: The agent demonstrated strong iterative development by building a feature, getting user feedback, and immediately implementing enhancements in the next cycle.
+*   **Monolith to Microservices**: The backend uses a service-oriented architecture.
+*   **Complex Fulfillment Logic**: A custom, 7-stage fulfillment pipeline models a complex business workflow.
+*   **Background Jobs**:  is used for running recurring tasks like syncing tracking data from the DWZ56 API.
+*   **FastAPI Routing**: Extensive use of FastAPI routers to modularize the application.
+*   **React Frontend**: The frontend is built with React, using components like Shadcn UI and libraries like .
 
 **key DB schema**
-*   ****: (New) Core collection for the new fulfillment tracking feature. Stores orders and their current stage in the pipeline (e.g., , , ).
-*   ****: Now joined with  to display comprehensive tracking data.
-*   ****, ****: Existing core collections.
+*   ****: Stores orders and their current stage. Contains a  array which logs every stage change with timestamps.
+*   ****, ****, ****, ****: Existing core collections.
 
 **All files of reference**
-*    (File being worked on)
-*    (File being worked on)
-*    (Modified for new routes)
-*    (Modified for new routes)
-*    (Modified for new page link)
-*    (Recently fixed and enhanced)
-*    (Recently refactored)
+*    (Heavily modified for new features)
+*    (Heavily modified for new endpoints)
+*    (Modified to include new routers and scheduler jobs)
+*    (Modified to add DWZ sync job)
+*    (New file)
+*    (New file)
+*    (New file)
 *   
+*   
+
+**Areas that need refactoring**:
+*   The  component has grown to over 1600 lines. It should be broken down into smaller, more manageable sub-components (e.g., , , , ).
+
+**key api endpoints**
+*   : GET, POST (bulk update)
+*   : GET (with date range)
+*   : POST
+*   : POST
+*   : POST
+*   : GET
 
 **Critical Info for New Agent**
-*   **Top Priority**: Your immediate task is to verify the four enhancements made to the Fulfillment Pipeline feature. The code has been written; you need to check the last tool output for linting results and then proceed with functional testing of the new buttons and modals on the  page.
-*   **Refactoring Complete**: The massive refactoring of  is finished. You should now operate within the new service-oriented architecture, placing new logic in the appropriate service files.
-*   **User Engagement**: The user is highly engaged and providing rapid, specific feedback. Be prepared to work iteratively, finishing a feature and then immediately actioning the user's follow-up requests.
+*   **Top Priority**: The user's immediate request is to link products on the  page. Your first task is to fix the bug where the API is returning 0 products for the  store, even though the data exists.
+*   **Refactoring Needed**: The main frontend component, , is very large. Plan to refactor it into smaller components after addressing the user's immediate request.
+*   **Configuration Required**: The new email notification feature will not work until the user provides  and  in the  file. You should inform the user about this.
 
 **documents and test reports created in this job**
+*    (Latest)
 *   
-*    (Heavily updated)
+*   
+*   
+*   
+*    (Updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks for  refactoring to continue, specifying job management, Shopify creation, and collection scraping functions. (DONE)
-2.  **User**: Defines a complex, multi-stage fulfillment pipeline with specific last-mile carriers. (DONE - Foundation Built)
-3.  **User**: Requests four enhancements for the new pipeline page: image search linking, auto-sync button, WhatsApp notifications, and CSV export. (IN PROGRESS)
+1.  **User**: Asks to implement scheduled auto-sync, email notifications, and advanced analytics. (DONE)
+2.  **User**: Asks to link products for the  store on the  page. (IN PROGRESS)
+3.  **Agent**: Acknowledged, started investigating the  page. (IN PROGRESS)
+4.  **Agent**: Took a screenshot of the  page, confirming products are visible in the UI. (IN PROGRESS)
+5.  **Agent**: Ran a  command to fetch products for , which returned 0 results, identifying a discrepancy. (IN PROGRESS)
 
 **Project Health Check:**
-*   **Broken**: Nothing is critically broken. The last work was adding new features, which are pending verification.
+*   **Broken**: The product listing functionality on the  page is broken for at least one store () due to an API issue.
 *   **Mocked**: None.
 
 **3rd Party Integrations**
 *   **TMAPI**: Core integration for product data.
 *   **1688 Open Platform**: Used for authenticated actions (ordering).
-*   **Shopify Admin API**: Used for order syncing and product creation.
+*   **Shopify Admin API**: Used for order syncing and product creation/fulfillment.
 *   **Meta Business API (WhatsApp)**: Used for sending order notifications.
 *   **OpenAI GPT-4o**: Used for ad-hoc translations. Uses Emergent LLM Key.
+*   **DWZ56 API**: Used for fetching shipping and tracking information.
+*   **SendGrid**: Service created for email notifications, requires user API key.
 
 **Testing status**
-*   **Testing agent used after significant changes**: YES, the agent used the testing agent after implementing the webhook security enhancements.
+*   **Testing agent used after significant changes**: YES, the testing agent was used after every major feature cluster was implemented, resulting in high test coverage.
 *   **Troubleshoot agent used after agent stuck in loop**: NO
-*   **Test files created**: No new test files were created in this session, but multiple new service files were created that are candidates for future test coverage.
+*   **Test files created**: The testing agent created and updated multiple test scripts, reports are in .
 *   **Known regressions**: None.
 
 **Credentials to test flow:**
@@ -152,4 +182,4 @@ PRODUCT REQUIREMENTS:
 *   **TMAPI Token**: Located in .
 
 **What agent forgot to execute**
-*   The agent has not yet verified the implementation of the four new features on the Fulfillment Pipeline page after writing the code. The next logical step is to check the linting/testing results and proceed with verification.</analysis>
+*   The agent successfully identified the discrepancy on the  page but has not yet debugged the root cause in the backend code. The next step is to investigate the API logic that fetches the product catalog.</analysis>
