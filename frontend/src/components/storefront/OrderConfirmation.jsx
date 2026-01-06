@@ -124,13 +124,21 @@ const OrderConfirmation = () => {
 
       {/* Continue Shopping */}
       <div className="text-center space-y-4">
-        <Link
-          to="/shop"
-          className="inline-flex items-center gap-2 bg-black text-white px-8 py-4 font-medium hover:bg-gray-800 transition-colors"
-        >
-          Continue Shopping
-          <ArrowRight className="w-5 h-5" />
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            to={`/shop/track/${orderId}`}
+            className="inline-flex items-center justify-center gap-2 border-2 border-black text-black px-8 py-4 font-medium hover:bg-black hover:text-white transition-colors"
+          >
+            Track Order
+          </Link>
+          <Link
+            to="/shop"
+            className="inline-flex items-center justify-center gap-2 bg-black text-white px-8 py-4 font-medium hover:bg-gray-800 transition-colors"
+          >
+            Continue Shopping
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
         
         <p className="text-sm text-gray-500">
           Have questions?{' '}
