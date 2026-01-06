@@ -76,6 +76,7 @@ const ShopifySidebar = () => {
       icon: ShoppingCart,
       children: [
         { label: 'Orders', path: '/orders', icon: FileText },
+        { label: 'Storefront Orders', path: '/storefront-orders', icon: Store },
         { label: 'Fulfillment', path: '/fulfillment', icon: Truck },
         { label: 'Analytics', path: '/analytics', icon: BarChart3 },
       ]
