@@ -1,734 +1,115 @@
-# Wamerce - 1688 Integration Platform PRD
+# Shopify 1688 Integration Platform - PRD
 
 ## Original Problem Statement
-Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao, and Tmall for:
-1. **Product Syncing & Scraping**: Reliable scraping of product data (variants, SKUs, prices) with translation
-2. **Order Automation & SKU Handling**: Automate placing Shopify orders on 1688 with correct variant selection
-3. **Shopify Order Sync**: Sync orders from Shopify stores with performance optimization
-4. **Zero-API Product Scraping**: Chrome Extension that scrapes full product details without relying on paid APIs (Dianxiaomi-style)
-5. **Customer-Facing Storefront**: Public e-commerce storefront for each store (Net-a-Porter style)
-6. **Admin UI Overhaul**: Shopify-style admin backend with data isolation between stores
+Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tmall for e-commerce operations.
 
-## Core User Personas
-- E-commerce store owners running Shopify stores
-- Dropshippers sourcing products from Chinese marketplaces
-- Business administrators managing multiple stores
-- End customers shopping on the public storefront
+## Core Requirements
 
-## Tech Stack
-- **Frontend**: React + Tailwind CSS + Shadcn UI
-- **Backend**: FastAPI (Python)
-- **Database**: MongoDB
-- **3rd Party APIs**: TMAPI (product data fallback), Shopify Admin API, OpenAI GPT-4o (translation)
-- **Chrome Extension**: v4.0 for client-side scraping
+### 1. Product Scraping
+- Chrome Extension to collect product information from 1688.com
+- "Product Collector" interface (Dianxiaomi-style UI)
+
+### 2. Shopify Integration
+- One-click publish to Shopify
+- Product linking between Shopify and 1688
+- Data sync management dashboard
+
+### 3. Image Search & Auto-Link
+- 1688 image search to find supplier products
+- Auto-link Shopify products to 1688 suppliers via image matching
+
+### 4. Order Management
+- Link Shopify orders to 1688 products
+- Per-SKU ordering and tracking
+- Multi-stage fulfillment pipeline
+
+### 5. Admin UI
+- Shopify-style admin panel
+- Complete data isolation between stores
+- Warehouse receiving interface (mobile-friendly)
+
+### 6. Customer Storefront
+- Public e-commerce storefront (net-a-porter inspired)
+- Storefront CMS for content management
+
+### 7. Competitor Analysis
+- Google Vision API for image-based competitor search
+- Price comparison dashboard
 
 ---
 
 ## What's Been Implemented
 
-### Completed Features ✅
+### Completed Features (as of Jan 7, 2025)
+- ✅ Complete e-commerce storefront with Razorpay checkout
+- ✅ Order tracking system
+- ✅ Storefront CMS with image upload
+- ✅ Data Sync Dashboard for Shopify
+- ✅ PIN-protected Warehouse Scanning Interface
+- ✅ Email notifications via SendGrid (requires API keys)
+- ✅ Competitor Price Dashboard with Google Vision API
+- ✅ **Auto-Link Feature** - Bulk linking Shopify products to 1688 via image search
+- ✅ Admin panel with Shopify-style UI
 
-#### 1. Customer-Facing Storefront (Jan 6, 2026) ✅ NEW
-- **Public Routes**: No authentication required
-  - `/shop` - Homepage with hero, categories, featured products, newsletter
-  - `/shop/products` - Product listing with filters (sort, price, availability)
-  - `/shop/product/{id}` - Product detail with variants, add to cart
-  - `/shop/cart` - Shopping cart with order summary
-  - `/shop/checkout` - Two-step checkout (shipping + payment)
-  - `/shop/order-confirmation/{orderId}` - Order confirmation page
-  - `/store/{storeName}` - Store-specific storefront routes
-- **Net-a-Porter Style Design**: Modern e-commerce UI with:
-  - Full-width hero section
-  - Category cards with hover effects
-  - Product grid with hover images and sale badges
-  - Sticky header with cart icon
-  - Professional footer with social links
-- **Cart Functionality**: LocalStorage-based cart with:
-  - Add/remove items
-  - Quantity updates
-  - Order summary with shipping calculation
-  - Free shipping threshold (₹5,000)
-- **Checkout Flow** (Jan 6, 2026): 
-  - Shipping address form with validation
-  - Payment method selection (Razorpay online / COD)
-  - Razorpay payment gateway integration
-  - Order creation in MongoDB + Shopify
-  - Order confirmation with "What's Next" info
-- **Order Tracking** (Jan 6, 2026):
-  - `/shop/track` - Order search by order number
-  - `/shop/track/{orderId}` - Direct tracking link
-  - Visual status timeline (Order Placed → Confirmed → Processing → Shipped → Out for Delivery → Delivered)
-  - Tracking number and courier display when shipped
-  - Status history with timestamps
-  - Track Order icon in storefront header
-- **Testing**: 100% tests passed (70/70 across 4 iterations)
-
-#### 2. DWZ56 Store Data Isolation (Jan 6, 2026) ✅ NEW
-- **All DWZ56 APIs now support `store_name` filter**:
-  - `GET /api/dwz56/tracking-list?store_name=tnvcollection`
-  - `GET /api/dwz56/import-stats?store_name=tnvcollection`
-  - `POST /api/dwz56/purchase/tracking-list?store_name=tnvcollection`
-  - `GET /api/dwz56/purchase/import-stats?store_name=tnvcollection`
-- **Complete data isolation** between stores (tnvcollection, tnvcollectionpk, ashmiaa)
-- **Testing**: 100% tests passed
-
-#### 3. Single Product API Endpoint (Jan 6, 2026) ✅ NEW
-- `GET /api/shopify/products/{product_id}` - Fetch single product by ID
-- Supports both `shopify_product_id` and legacy `id` fields
-- Store-specific filtering with `store_name` parameter
-
-#### 4. Storefront Orders Admin View (Jan 6, 2026) ✅ NEW
-- **Admin Route**: `/storefront-orders`
-- **Stats Cards**: Total, Pending, Confirmed, Shipped, Delivered counts (clickable filters)
-- **Search**: Filter by order ID, customer name, email, phone
-- **Status Filter**: Dropdown with all status options + Clear button
-- **Orders Table**: Order, Date, Customer, Status, Payment, Total, Actions columns
-- **View Order Modal**: Complete order details including:
-  - Customer info (name, email, phone)
-  - Shipping address
-  - Order items with prices
-  - Payment summary (subtotal, shipping, total)
-  - Status history with timestamps
-- **Update Status Modal**: 
-  - Status dropdown (pending → confirmed → processing → shipped → out_for_delivery → delivered → cancelled)
-  - Tracking number and courier fields (for shipped status)
-  - Note field for status change comments
-- **Testing**: 100% tests passed (20/20)
-
-#### 5. Admin UI Shopify-Style Redesign (Jan 6, 2026) ✅ IN PROGRESS
-- **ShopifySidebar.jsx**: Dark green theme with expandable menu sections
-- **Navigation Structure**: Home, Sales (Orders, Storefront Orders, Fulfillment, Analytics), Products, 1688 Sourcing, Shipping, Customers, Messaging
-- **Store Selector**: Dropdown at top of sidebar
-- **Consistent Design**: Shopify-style color palette (#008060 primary), rounded corners, subtle shadows
-
-#### 6. TMAPI Integration (Dec 2024)
-- Integrated third-party TMAPI service for reliable product data fetching
-- Supports 1688, Taobao, and Tmall products
-- Fetches full variant/SKU data including `props_names`, `spec_id`, prices, stock
-
-#### 2. Product Importer (`/product-scraper`)
-- TMAPI-powered import for 1688/Taobao/Tmall products
-- Chrome extension for bulk product scraping
-- Batch import capability
-
-#### 3. SKU/Variant Display Fix (Jan 4, 2026) ✅
-- **Issue**: SKU dropdown showed "SKU 1, SKU 2..." instead of descriptive names
-- **Fix**: Updated `OrderFulfillmentModal.jsx` to parse `props_names` field
-- **Result**: Dropdown now shows "黑色 / 46 - ¥298.00 (100 in stock)"
-
-#### 4. Non-Blocking Shopify Sync
-- Background job system for order syncing
-- Progress polling prevents UI hanging
-- Job status tracking in `shopify_sync_jobs` collection
-
-#### 5. Specific Order Sync Endpoint
-- `POST /api/shopify/sync-orders/{store_name}` for syncing specific order numbers
-- Workaround for production timeout issues
-
-#### 6. Chrome Extension v4.0 (Jan 5, 2026) ✅
-- Enhanced scraping of product data directly from 1688 DOM
-- Scrapes images from multiple sources (scripts, gallery, DOM)
-- Extracts SKU/variant data including color and size
-- **NEW**: Improved collection/search page scraping with multiple selector patterns
-- Download available at `/api/download/chrome-extension`
-
-#### 7. Product Edit Modal Fix (Jan 5, 2026) ✅
-- **Issue**: Edit modal showed empty Color/Size fields and 0 images
-- **Fix**: 
-  - Updated `ProductEditModal.jsx` to parse `props_names` into color/size fields
-  - Fixed `fetch_product_details` endpoint to correctly extract TMAPI response
-  - Backend now parses variants with proper color/size extraction
-  - **Auto-fetch**: Products with 0 variants automatically fetch data when modal opens
-- **Result**: Modal now displays 11 images and 50 variants with actual color/size names
-
-#### 8. Multi-Account 1688 OAuth ✅
-- Users can connect multiple 1688 accounts
-- OAuth flow implemented at `/api/1688/auth/authorize`
-- Tokens stored in `alibaba_accounts` collection
-
-#### 9. Publish to Shopify Feature (Jan 5, 2026) ✅ NEW
-- **Feature**: One-click publish scraped products to Shopify with all variants and images
-- **Endpoint**: `POST /api/1688-scraper/shopify/publish-batch`
-- **UI**: Store selector dropdown + "Publish to Shopify" button in Edit modal
-- **Price Conversion**: Automatic CNY to target currency with configurable markup
-- **Tested**: Successfully published product 850596274690 to Shopify (ID: 10111038882075)
+### Auto-Link Feature Status (Verified Jan 7, 2025)
+- Backend endpoint: `POST /api/shopify/products/bulk-auto-link`
+- Uses TMAPI for 1688 image search
+- Test run: 9/10 products successfully linked (90% success rate)
+- Frontend button available at `/products` page
 
 ---
 
-## Known Issues & Pending Work
+## Prioritized Backlog
 
 ### P0 - Critical
-- None currently
+- None currently blocking
 
 ### P1 - High Priority
-1. **Continue Admin UI Redesign** (IN PROGRESS)
-   - Dashboard page needs refresh with consistent styling
-   - Orders page needs update to match new design
-   - Products page needs Shopify-style table
+- Complete `server.py` refactoring (remove duplicated endpoints)
+- Currency conversion in Competitor Dashboard
 
 ### P2 - Medium Priority
-1. **Chrome Extension Direct Scraping** (IN PROGRESS)
-   - Extension enhanced but untested on actual 1688 pages
-   - Goal: Scrape full product data without any API calls
-   - Current: Falls back to "Fetch Images & Variants" which uses TMAPI
+- Shopify OAuth/session stability fixes
+- Competitor search fallback (product title search)
+- UI polish across admin pages
 
-2. **Shopify Sync Timeout for Large Date Ranges** ✅ VALIDATED
-   - **Fixed**: Syncing >90 days now processes in 30-day chunks
-   - **Tested**: 120-day sync completed successfully (336 orders in 4 chunks)
-   - **Features**: Deduplication, progress tracking, error handling per chunk
-
-3. **Collection/Search Page Scraping**
-   - Extension needs testing for bulk scraping from search results
-   - Should scrape basic info (title, price, image, ID) from listings
-
-### P2 - Medium Priority
-4. **1688 Image Search** ✅ COMPLETED
-   - Implemented `POST /api/1688-scraper/image-search` endpoint
-   - Uses TMAPI endpoint `/1688/search/image`
-   - UI: Image Search tab with URL input, sort dropdown, search button
-   - Results display in grid with Factory badges
-   - One-click import to add products to collection
-
-5. **Shopify OAuth redirect_uri Issue**
-   - Affects new store connections
-
-6. **Publish to Shopify Feature**
-   - Build `POST /api/shopify/products/create-batch` endpoint
-   - One-click publish scraped products to Shopify
+### P3 - Low Priority
+- Chrome Extension testing on live 1688 pages
 
 ---
 
-## Upcoming Tasks
+## Technical Architecture
 
-### Phase 1: UI Polish (P1 - ONGOING)
-- Continue refining UI components across pages
-- Ensure consistent Shopify-style design
+### Stack
+- Frontend: React + Shadcn UI
+- Backend: FastAPI (Python)
+- Database: MongoDB
+- External APIs: Shopify, TMAPI (1688), Google Vision, Razorpay, SendGrid
 
-### Phase 2: Server.py Phase 2 Refactoring (P3)
-- Move old endpoints from server.py to new routers 
-- Delete duplicate endpoints once confirmed working
-- Goal: Reduce server.py to under 3000 lines
-
-### Phase 3: Production Improvements
-- Robust sync verification
-- Timeout handling for large datasets
-- Rate limiting for APIs
-
-### Key New API Endpoints Added
-- `POST /api/storefront-cms/upload` - Upload images
-- `GET /api/storefront-cms/media/{path}` - Serve media
-- `GET /api/marketing/stats` - Marketing dashboard stats
-- `GET /api/marketing/campaigns` - Campaign management
-- `GET /api/settings/auto-sync` - Auto-sync settings
-- `GET /api/settings/notifications` - Notification settings
-- `GET /api/whatsapp/conversations` - WhatsApp conversations
-- `POST /api/whatsapp/marketing/campaign` - Send WhatsApp campaigns
-
----
-
-## Key API Endpoints
-
-### Shopify Sync
-- `POST /api/shopify/sync-background/{store_name}` - Start non-blocking sync
-- `GET /api/shopify/sync-status/{job_id}` - Check sync progress
-- `POST /api/shopify/sync-orders/{store_name}` - Sync specific order numbers
-- `POST /api/sync-single-order/{store_name}/{order_id}` - Sync single order
-
-### Storefront CMS
-- `GET /api/storefront-cms/banners?store_name=X` - Get store banners
-- `POST /api/storefront-cms/banners` - Create banner
-- `PUT /api/storefront-cms/banners/{id}` - Update banner
-- `DELETE /api/storefront-cms/banners/{id}` - Delete banner
-- `GET /api/storefront-cms/collections?store_name=X` - Get store collections
-- `POST /api/storefront-cms/collections` - Create collection
-- `GET /api/storefront-cms/settings/{store_name}` - Get storefront settings
-- `PUT /api/storefront-cms/settings` - Update storefront settings
-- `GET /api/storefront-cms/public/{store_name}/homepage` - Public homepage content
-- `POST /api/storefront-cms/upload?store_name=X` - Upload images for CMS
-- `GET /api/storefront-cms/media/{path}` - Serve uploaded media
-- `DELETE /api/storefront-cms/media/{path}` - Delete uploaded media
-
-### Warehouse Scanner
-- `POST /api/warehouse/auth` - Authenticate with PIN
-- `GET /api/warehouse/scan/{fulfillment_number}` - Get shipment details
-- `POST /api/warehouse/receive` - Mark shipment as received
-- `POST /api/warehouse/ship` - Mark shipment as shipped
-- `GET /api/warehouse/label/{fulfillment_number}` - Get shipping label
-
-### 1688 Integration
-- `GET /api/1688/product-skus/{product_id}` - Fetch SKU/variant data via TMAPI
-- `POST /api/1688/create-purchase-order` - Place order on 1688
-- `POST /api/1688-scraper/batch-import` - Import products via TMAPI
-- `POST /api/1688-scraper/products/{product_id}/fetch-details` - Enrich product with TMAPI
-
-### Product Scraper
-- `POST /api/1688-scraper/extension-import` - Chrome extension endpoint
-- `PUT /api/1688-scraper/products/{product_id}` - Update scraped product
-- `GET /api/download/chrome-extension` - Download extension zip
-
----
-
-## Key Files
-
-### Backend
-- `/app/backend/server.py` - Main server, Shopify sync logic
-- `/app/backend/routes/alibaba_1688.py` - 1688 API integration, multi-account OAuth
-- `/app/backend/routes/product_scraper.py` - TMAPI import logic, extension import
-- `/app/backend/routes/storefront.py` - Storefront order and tracking APIs
-- `/app/backend/routes/storefront_cms.py` - CMS for banners, collections, settings
-
-### Frontend
-- `/app/frontend/src/components/ShopifyDashboard.jsx` - Main dashboard (Shopify-style)
-- `/app/frontend/src/components/ShopifyOrders.jsx` - Orders management
+### Key Files
+- `/app/backend/server.py` - Main API server (needs refactoring)
+- `/app/backend/routes/shopify_sync.py` - Shopify sync endpoints
+- `/app/backend/services/image_search_service.py` - 1688 image search
 - `/app/frontend/src/components/ShopifyProducts.jsx` - Products catalog
-- `/app/frontend/src/components/ShopifySidebar.jsx` - Navigation sidebar
-- `/app/frontend/src/components/StorefrontCMS.jsx` - CMS admin UI
-- `/app/frontend/src/components/StorefrontOrders.jsx` - Storefront orders admin
-- `/app/frontend/src/components/storefront/*.jsx` - Public storefront components
 
-### Browser Extension
-- `/app/browser-extension/content.js` - v4.0 with enhanced scraping
-- `/app/browser-extension/manifest.json` - Extension manifest
+### Database Collections
+- `stores` - Store configurations
+- `shopify_products` - Synced product data
+- `product_links` - Shopify-1688 product links
+- `competitor_analyses` - Competitor analysis results
 
 ---
 
-## Database Collections
-- `customers` - Shopify orders
-- `scraped_products` - Imported products with variant data
-- `product_catalog_1688` - 1688 product catalog
-- `shopify_sync_jobs` - Background sync job tracking
-- `purchase_orders_1688` - 1688 purchase order records
-- `alibaba_accounts` - Connected 1688 accounts with tokens
-- `storefront_orders` - Public storefront orders
-- `storefront_banners` - CMS banners
-- `storefront_collections` - CMS collections
-- `storefront_settings` - CMS settings
+## Credentials Required
+- Admin Login: `admin` / `admin`
+- Warehouse PIN: `1688`
+- Google Vision API Key: Configured in .env
+- SendGrid API Key: Required for email features
+- TMAPI Token: Configured in .env
 
 ---
 
-## Storefront URLs
-- **TNC Collection (IN)**: `/store/tnvcollection`
-- **TNC Collection (PK)**: `/store/tnvcollectionpk`
-- **Ashmiaa**: `/store/ashmiaa`
-- **Default Shop**: `/shop` (TNC Collection)
-
----
-
-## Credentials (for testing)
-- **Admin Login**: admin / admin
-
----
-
-## Cleanup Completed (Jan 7, 2026)
-- ✅ Removed legacy components: `Dashboard.jsx`, `DashboardOptimized.jsx`, `Orders.jsx`, `ProductsCatalog.jsx`
-- ✅ Removed temporary migration endpoints: `migrate-preview-data`, `migrate-products`, `deduplicate-customers`, `fix-store-domains`
-- ✅ Removed empty "asmia" store
-- ✅ Updated routes to use new Shopify-styled components
-
----
-
-## Last Updated
-January 7, 2026 - Session 13: Competitor Price Dashboard, Email Notifications, Server Refactoring
-
----
-
-## Recent Completed Work (Jan 7, 2026 - Session 13)
-
-### 1. Competitor Price Dashboard ✅ NEW
-**Feature**: Google Cloud Vision API integration for discovering competitor pricing
-
-**Implementation**:
-- Backend service: `/app/backend/services/vision_api_service.py`
-- API routes: `/app/backend/routes/competitor_analysis.py`
-- Frontend: `/app/frontend/src/components/CompetitorDashboard.jsx`
-
-**How it works**:
-1. Upload a product image
-2. Google Vision API finds pages with similar/matching images
-3. System scrapes competitor pages for prices
-4. Dashboard shows price comparison (Your Price vs Market Avg)
-5. Recommendations: "Competitive", "Consider Lowering", "Premium Pricing"
-
-**Key Endpoints**:
-- `POST /api/competitor/analyze-image` - Upload image for analysis
-- `GET /api/competitor/analysis/{id}` - Get analysis results
-- `GET /api/competitor/analyses` - List all analyses
-- `GET /api/competitor/dashboard-stats` - Dashboard statistics
-- `POST /api/competitor/extract-prices` - Extract prices from URLs
-
-**Required Config** (in `/app/backend/.env`):
-```
-GOOGLE_VISION_API_KEY=your_google_cloud_vision_api_key
-```
-
-**Access**: Sidebar → 1688 Sourcing → Competitor Prices
-
-### 2. File Upload for Storefront CMS ✅
-- Drag-and-drop image uploader for banners/collections
-- Backend: `POST /api/storefront-cms/upload`
-- Storage: `/app/backend/static/uploads/cms/{store_name}/`
-
-### 3. Email Notifications for Storefront ✅
-- SendGrid integration for transactional emails
-- Order confirmation, shipment notification, delivery confirmation
-- **Requires**: `SENDGRID_API_KEY`, `SENDER_EMAIL` in `/app/backend/.env`
-
-### 4. Server.py Refactoring (P3 - Phase 1) ✅
-New modular routers:
-- `routes/shopify_sync.py` - Shopify sync endpoints
-- `routes/whatsapp_api.py` - WhatsApp messaging
-- `routes/marketing.py` - Marketing stats/campaigns
-- `routes/settings.py` - System settings
-- `routes/competitor_analysis.py` - Competitor price analysis
-
----
-
-## Recent Completed Work (Jan 6, 2026 - Session 11)
-
-### Products Catalog Verification ✅
-
-**Investigation**: The previous session reported a discrepancy where the `/api/shopify/products` API was returning 0 products for `tnvcollectionpk` store even though the UI showed data.
-
-**Findings**: 
-- The API is now working correctly
-- Database `shopify_products` collection contains:
-  - `ashmiaa`: 4,290 products
-  - `tnvcollection`: 880 products
-  - `tnvcollectionpk`: 1,168 products
-  - **Total**: 6,338 products
-- API endpoint `/api/shopify/products?store_name=tnvcollectionpk` returns 1,168 products correctly
-- Store filter dropdown shows all stores with counts
-
-### Bulk Auto-Link by Image Feature ✅ (NEW)
-
-**Feature**: Automatically link Shopify products to 1688 using AI image search.
-
-**Implementation**:
-1. **Backend Endpoint**: `POST /api/shopify/products/bulk-auto-link`
-   - Accepts `store_name` and `limit` parameters
-   - Runs as background job with status tracking
-   - Converts Shopify images to Alibaba CDN format using TMAPI
-   - Searches 1688 by image and auto-links best match
-
-2. **Image URL Conversion Fix**:
-   - Fixed TMAPI image search by using raw path (not full URL)
-   - Correctly calls `POST /1688/tools/image/convert_url` endpoint
-   - Returns `/search/imgextra4/xxx.jpeg` format for image search
-
-3. **UI: "Auto-Link by Image" Button**:
-   - Added to Products Catalog page (visible when store is selected)
-   - Purple/pink gradient button with ⚡ Zap icon
-   - Opens modal with:
-     - Store selection confirmation
-     - Product count selector (50, 100, 250, 500, 1000)
-     - TMAPI credits note
-     - Real-time progress tracking
-     - Results display (linked/failed/skipped)
-
-4. **Job Status Endpoint**: `GET /api/shopify/products/bulk-auto-link/status/{job_id}`
-   - Returns processing progress
-   - Shows linked/failed/skipped counts
-   - Includes result details for each product
-
-**Data Persistence**: ✅ All linked products are stored in MongoDB `shopify_products` collection with fields:
-- `linked_1688_product_id`
-- `linked_1688_title`
-- `linked_1688_price`
-- `linked_1688_image`
-- `linked_1688_url`
-- `linked_at`
-- `linked_by: "auto_image_search"`
-
-**Current Stats (tnvcollectionpk)**:
-- Total: 1,168 products
-- Linked: 85+ (job running)
-- Processing: ~3 seconds per product
-
----
-
-## Recent Completed Work (Jan 5, 2026 - Session 10)
-
-### Fulfillment Pipeline Enhancements ✅ (VERIFIED)
-
-**Four New Features Implemented and Tested**:
-
-1. **Auto-Sync from Shopify** ✅
-   - "Sync Shopify" button in pipeline header
-   - Endpoint: `POST /api/fulfillment/pipeline/sync-from-shopify`
-   - Syncs unfulfilled, paid orders into the pipeline
-
-2. **CSV Export/Reporting** ✅
-   - "Export CSV" and "Export JSON" buttons
-   - Endpoint: `GET /api/fulfillment/pipeline/export?format=csv`
-   - Downloads pipeline data with all order details
-
-3. **Analytics Dashboard** ✅
-   - "Analytics" button opens modal with:
-     - Total Orders, Completed, Stuck (3+ days), Completion Rate
-     - Stage Distribution bar chart
-   - Endpoint: `GET /api/fulfillment/pipeline/analytics?days=30`
-
-4. **Image Search for Product Linking** ✅
-   - Order detail modal has "Find by Image" button
-   - Endpoint: `POST /api/fulfillment/pipeline/{order_id}/link-product-by-image`
-   - Uses TMAPI image search to find matching 1688 products
-   - Links selected product to order
-
-**WhatsApp Notifications** (integrated into stage updates):
-- Stage changes automatically trigger WhatsApp notifications
-- Manual notify button on order cards
-- Endpoints: `POST /api/fulfillment/pipeline/{order_id}/notify-whatsapp`
-
-### Auto-Sync 1688 Fulfillment to Shopify ✅ NEW
-
-**New Service**: `/app/backend/services/shopify_fulfillment_sync.py`
-
-**Features**:
-1. **Auto-Sync on Stage Change**: When order reaches `local_shipped` stage, automatically creates fulfillment in Shopify
-2. **Manual Sync Button**: "Sync to Shopify" button in pipeline UI syncs all pending orders
-3. **Tracking Info Sync**: Sends tracking number and carrier to Shopify
-4. **Customer Notification**: Shopify sends fulfillment email to customer
-
-**Endpoints**:
-- `POST /api/fulfillment-sync/sync-order/{order_id}` - Sync single order
-- `POST /api/fulfillment-sync/sync-stage/local_shipped` - Sync all orders in stage
-- `GET /api/fulfillment-sync/pending-sync` - Get orders pending sync
-- `GET /api/fulfillment-sync/sync-logs` - View sync history
-
-### Bulk Operations & DWZ Import ✅ NEW (Session 10 Part 2)
-
-**Bulk Stage Updates**:
-- "Bulk Update" button in pipeline UI (orange)
-- Select multiple orders → choose target stage → update all at once
-- Supports optional tracking number for DWZ/local shipped stages
-- Endpoint: `POST /api/fulfillment/pipeline/bulk-update-stage`
-
-**Automated DWZ Tracking Import**:
-- "Import DWZ" button in pipeline UI (purple)
-- Import DWZ tracking numbers via CSV format
-- Auto-advances orders to "DWZ56 Shipped" stage (optional)
-- Endpoints:
-  - `POST /api/fulfillment/pipeline/import-dwz-tracking` - JSON format
-  - `POST /api/fulfillment/pipeline/import-dwz-csv` - CSV text format
-
-### DWZ Auto-Sync & Timeline ✅ NEW (Session 10 Part 3)
-
-**Automated DWZ Tracking Fetch**:
-- "Sync DWZ" button in pipeline UI (cyan)
-- Fetches real-time tracking status from DWZ56 API
-- Auto-updates order stages based on DWZ status (Sent → In Transit, Delivered → Warehouse Arrived)
-- Logs all syncs to `dwz_sync_logs` collection
-- Endpoints:
-  - `POST /api/dwz56-sync/sync` - Trigger sync
-  - `GET /api/dwz56-sync/tracking/{tracking_number}` - Get single tracking
-  - `GET /api/dwz56-sync/sync-logs` - View sync history
-
-**Batch WhatsApp Notifications**:
-- "Batch Notify" button in pipeline UI (emerald)
-- Send notifications to ALL orders in a specific stage
-- Shows order counts per stage before sending
-- Endpoint: `POST /api/fulfillment/pipeline/notify-by-stage`
-
-**Order History Timeline**:
-- History icon (🔵) on each order card
-- Shows complete order timeline with events
-- Current status summary with tracking numbers
-- Endpoints:
-  - `GET /api/dwz56-sync/order-history/{order_id}` - Get timeline
-  - `POST /api/dwz56-sync/log-event` - Log custom events
-
-### Scheduled Auto-Sync, Email Notifications & Advanced Analytics ✅ NEW (Session 10 Part 4)
-
-**Scheduled DWZ Auto-Sync (Cron Job)**:
-- Added to `/app/backend/scheduler.py`
-- Runs every 4 hours automatically
-- Fetches tracking from DWZ56 API and updates pipeline
-- Logs progress to backend logs
-
-**Email Notifications Service**:
-- New service: `/app/backend/services/email_notification_service.py`
-- Supports SendGrid and SMTP (fallback)
-- Email templates for all 7 pipeline stages
-- Endpoints:
-  - `GET /api/email-notifications/config` - Check config status
-  - `GET /api/email-notifications/templates` - List all templates
-  - `PUT /api/email-notifications/templates/{stage}` - Update template
-  - `POST /api/email-notifications/send/{order_id}` - Send to order
-  - `POST /api/email-notifications/send-by-stage` - Batch send by stage
-  - `GET /api/email-notifications/logs` - View send logs
-- **Note**: SendGrid/SMTP not configured - templates ready but sending disabled
-
-**Advanced Analytics with Date Range Filtering**:
-- Enhanced Analytics modal with 4 tabs:
-  1. **Overview**: Total/Completed/Stuck/Rate + Stage Distribution
-  2. **Funnel**: Visual conversion funnel with percentages
-  3. **Timeline**: Orders over time bar chart + Fastest completions
-  4. **Stuck**: List of orders stuck 3+ days with details
-- Date range picker (Start Date, End Date, Update button)
-- Group by: day/week/month
-- Endpoint: `GET /api/fulfillment/pipeline/analytics-advanced`
-
-**Testing**: Iteration 18 - All 26 tests passed (100%)
-
-**CSV Format**:
-```
-order_number,dwz_tracking
-99001,DWZ123456789
-99002,DWZ987654321
-```
-
-**Bug Fixes**:
-- Fixed route ordering - moved `/{order_id}` to end of routes to prevent catching `/export`, `/analytics`
-- Fixed store dropdown to handle both array and object API responses
-- Fixed order queries to handle both string and integer `order_number` types
-
-**Testing**: 13/13 backend tests passed (100%) - All features verified
-
-### Chrome Extension Testing
-
-**Status**: Extension code is functional, but 1688 uses CAPTCHA/blocking for automated access
-- Extension v4 content.js has comprehensive scraping logic
-- Must be tested manually by user in real browser with cookies
-- Backend `/api/1688-scraper/extension-import` endpoint verified working
-
----
-
-## Recent Completed Work (Jan 5, 2026 - Session 9)
-
-### Multi-Stage Fulfillment Pipeline ✅
-
-**Flow**: SHOPIFY → 1688 → DWZ56 → TRANSIT → WAREHOUSE ARRIVED → RECEIVED → SHIP TO CUSTOMER
-
-**Store-Specific Carriers**:
-- `tnvcollectionpk` → TCS (Pakistan)
-- `tnvcollection` → DTDC (India)
-
-**New Components**:
-1. **`FulfillmentPipeline.jsx`** - Full pipeline tracking UI with:
-   - 7-stage progress visualization
-   - Order cards with tracking info
-   - Stage filter and search
-   - Bulk stage updates
-   - Add tracking number modal
-   - Store-specific carrier display
-
-2. **`fulfillment_pipeline_service.py`** - Backend service with endpoints:
-   - `GET /api/fulfillment/pipeline` - Get orders with current stage
-   - `GET /api/fulfillment/pipeline/stats` - Get counts by stage
-   - `POST /api/fulfillment/pipeline/{order_id}/update-stage` - Move order to next stage
-   - `POST /api/fulfillment/pipeline/{order_id}/add-tracking` - Add tracking number
-   - `POST /api/fulfillment/pipeline/bulk-update-stage` - Bulk update
-   - `GET /api/fulfillment/carriers` - Get carrier configuration
-   - `POST /api/fulfillment/pipeline/sync-from-shopify` - Sync unfulfilled orders
-
-**Database Collections**:
-- `fulfillment_pipeline` - Stores order pipeline state
-- `customers` - Synced with fulfillment stage
-
----
-
-## Recent Completed Work (Jan 5, 2026 - Session 8)
-
-### Complete Service Module Refactoring ✅
-
-**Final Line Count**: `product_scraper.py` reduced from **3,355 → 1,756 lines** (~47% reduction, -1,599 lines)
-
-**New Services Created**:
-1. `translation_service.py` (132 lines) - Chinese to English translation
-2. `product_linking_service.py` (389 lines) - Shopify to 1688 product linking
-3. `product_fetcher_service.py` (555 lines) - Product fetching from APIs
-4. `scraper_service.py` (373 lines) - Web scraping functions
-   - `scrape_product_details()` - Single product scraping
-   - `scrape_collection_with_playwright()` - Playwright collection scraping
-   - `scrape_collection_page()` - Collection page scraping
-   - `extract_product_ids_from_html()` - HTML parsing
-5. `job_manager_service.py` (509 lines) - Background job management
-   - `run_scrape_job()` - Collection scraping jobs
-   - `run_batch_import()` - Batch product imports
-   - `run_extension_import()` - Browser extension imports
-   - Job status tracking and progress management
-
-**Extended Services**:
-- `tmapi_service.py` - Usage summary, import history, stats
-- `shopify_publishing_service.py` - Used for product creation
-
-**Total Service Modules**: 11 modules managing distinct functionality
-
-### Session 7 Completed Work (Jan 5, 2026)
-
-### 1. P0 Bug Fix: /purchase-1688 Page ✅
-- **Issue**: Page was showing Excel file upload UI instead of purchase orders list
-- **Fix**: Completely refactored `Purchase1688Orders.jsx` to:
-  - Fetch orders from `/api/1688/purchase-orders` endpoint
-  - Display orders in a data table with columns: 1688 Order ID, Product, Shopify #, Supplier Status, DWZ Tracking, Size/Color, Order Status, Created, Actions
-  - Status filter dropdown and Shopify Order ID search
-  - Order details modal with full API response and fulfillment status section
-  - Pagination support
-- **Backend Enhancement**: Modified `/api/1688/purchase-orders` endpoint to enrich orders with fulfillment data from `fulfillment_pipeline` and `customers` collections
-- **Testing**: 12/12 tests passed (100%)
-
-### 2. Webhook Security Enhancement ✅
-- **New Features Added to `/app/backend/services/fulfillment_webhooks.py`**:
-  - Rate limiting (100 requests/minute per IP, configurable)
-  - IP whitelist support (via WEBHOOK_IP_WHITELIST env var)
-  - Timestamp-based replay attack prevention
-  - Security event logging to `security_logs` collection
-- **New Security Endpoints**:
-  - `GET /api/webhooks/fulfillment/security/config` - View security configuration
-  - `GET /api/webhooks/fulfillment/security/stats` - Security statistics
-  - `GET /api/webhooks/fulfillment/security/logs` - Security event logs
-  - `POST /api/webhooks/fulfillment/security/generate-signature` - Generate test signatures
-- **Environment Variables**:
-  - `WEBHOOK_REQUIRE_SIGNATURE=true/false` - Require signature verification
-  - `WEBHOOK_RATE_LIMIT=100` - Requests per minute per IP
-  - `WEBHOOK_IP_WHITELIST=ip1,ip2` - Comma-separated IP whitelist
-
-### 3. Shopify Sync Improvement for Large Date Ranges ✅
-- **Issue**: Syncing >90 days of orders could timeout
-- **Fix**: Modified `run_shopify_sync_background()` in `server.py` to:
-  - Process large syncs in 30-day chunks
-  - Deduplicate orders after all chunks fetched
-  - Better progress reporting with phases
-  - Proper error handling per chunk
-
----
-
-## Recent Completed Work (Jan 5, 2026 - Session 6)
-
-### 1. Service Module Refactoring ✅
-- **New Modules Created**:
-  - `/app/backend/services/image_search_service.py` - Image search and product linking
-  - `/app/backend/services/fulfillment_webhooks.py` - Webhook-based fulfillment sync
-  - `/app/backend/services/whatsapp_notifications.py` - Order notifications
-
-### 2. Webhook-Based Fulfillment Sync ✅
-- **Endpoints**:
-  - `POST /api/webhooks/fulfillment/status-update` - Generic status updates
-  - `POST /api/webhooks/fulfillment/dwz56` - DWZ56 shipping webhooks
-  - `POST /api/webhooks/fulfillment/1688` - 1688 order webhooks
-  - `POST /api/webhooks/fulfillment/test` - Test webhook generation
-  - `GET /api/webhooks/fulfillment/logs` - Webhook history
-- **Features**:
-  - Signature verification (HMAC-SHA256)
-  - Status mapping for DWZ56 and 1688
-  - Auto-trigger Shopify sync on delivery
-  - Webhook logging
-
-### 3. WhatsApp Order Notifications ✅
-- **Endpoints**:
-  - `POST /api/notifications/whatsapp/send` - Send single notification
-  - `POST /api/notifications/whatsapp/send-bulk` - Bulk notifications
-  - `GET /api/notifications/whatsapp/templates` - Available templates
-  - `GET /api/notifications/whatsapp/logs` - Notification history
-- **Templates** (English & Urdu):
-  - order_confirmed, order_shipped, order_delivered, order_1688_placed, order_in_transit
-- **Fallback**: wa.me links when API token expired
-
-### 4. Dashboard Widget ✅
-- `Widget1688Status.jsx` showing order pipeline and quick actions
-
-### Testing: 18/18 tests passed (100%)
-
----
-
-## All Sessions Summary (Jan 5, 2026)
+## Known Issues
+1. `server.py` has duplicated endpoints (routers created but old code not removed)
+2. Competitor Dashboard doesn't convert currencies
+3. Shopify OAuth sessions may drop intermittently
