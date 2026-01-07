@@ -57,15 +57,22 @@ class PriceExtractionResult(BaseModel):
     title: Optional[str] = None
 
 
-# Price extraction patterns for common currencies
-PRICE_PATTERNS = [
-    r'₹\s*([\d,]+(?:\.\d{2})?)',  # Indian Rupee
-    r'Rs\.?\s*([\d,]+(?:\.\d{2})?)',  # Rs format
-    r'\$\s*([\d,]+(?:\.\d{2})?)',  # USD
-    r'€\s*([\d,]+(?:\.\d{2})?)',  # Euro
-    r'£\s*([\d,]+(?:\.\d{2})?)',  # GBP
-    r'([\d,]+(?:\.\d{2})?)\s*(?:INR|USD|EUR|GBP)',  # Currency suffix
+# Price extraction patterns for common currencies with currency detection
+PRICE_PATTERNS_WITH_CURRENCY = [
+    (r'₹\s*([\d,]+(?:\.\d{2})?)', 'INR'),  # Indian Rupee
+    (r'Rs\.?\s*([\d,]+(?:\.\d{2})?)', 'INR'),  # Rs format
+    (r'\$\s*([\d,]+(?:\.\d{2})?)', 'USD'),  # USD
+    (r'€\s*([\d,]+(?:\.\d{2})?)', 'EUR'),  # Euro
+    (r'£\s*([\d,]+(?:\.\d{2})?)', 'GBP'),  # GBP
+    (r'¥\s*([\d,]+(?:\.\d{2})?)', 'CNY'),  # Chinese Yuan / Japanese Yen
+    (r'([\d,]+(?:\.\d{2})?)\s*INR', 'INR'),  # Currency suffix
+    (r'([\d,]+(?:\.\d{2})?)\s*USD', 'USD'),
+    (r'([\d,]+(?:\.\d{2})?)\s*EUR', 'EUR'),
+    (r'([\d,]+(?:\.\d{2})?)\s*GBP', 'GBP'),
 ]
+
+# Legacy patterns (without currency, for backwards compatibility)
+PRICE_PATTERNS = [p[0] for p in PRICE_PATTERNS_WITH_CURRENCY]
 
 
 def extract_domain(url: str) -> str:
@@ -79,15 +86,16 @@ def extract_domain(url: str) -> str:
         return url
 
 
-async def extract_prices_from_url(url: str) -> Dict[str, Any]:
+async def extract_prices_from_url(url: str, base_currency: str = "INR") -> Dict[str, Any]:
     """
-    Scrape a competitor page and extract prices.
+    Scrape a competitor page and extract prices with currency conversion.
     
     Args:
         url: Competitor page URL
+        base_currency: Target currency for conversion (default: INR)
     
     Returns:
-        Dictionary with extracted prices and metadata
+        Dictionary with extracted prices, currencies, and metadata
     """
     try:
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
@@ -108,20 +116,77 @@ async def extract_prices_from_url(url: str) -> Dict[str, Any]:
             # Extract text content
             text_content = soup.get_text()
             
-            # Find all prices using patterns
+            # Detect currency from URL domain
+            detected_currency = currency_service.detect_currency("", url)
+            
+            # Find all prices using patterns with currency detection
             all_prices = []
-            for pattern in PRICE_PATTERNS:
+            original_prices = []
+            
+            for pattern, currency in PRICE_PATTERNS_WITH_CURRENCY:
                 matches = re.findall(pattern, text_content)
                 for match in matches:
                     try:
                         # Clean and convert price
                         price_str = match.replace(',', '')
                         price = float(price_str)
-                        # Filter reasonable prices (₹10 to ₹10,00,000)
-                        if 10 <= price <= 1000000:
+                        
+                        # Filter reasonable prices based on currency
+                        if currency in ['USD', 'EUR', 'GBP']:
+                            if not (1 <= price <= 10000):
+                                continue
+                        elif currency == 'CNY':
+                            if not (1 <= price <= 100000):
+                                continue
+                        else:  # INR and others
+                            if not (10 <= price <= 1000000):
+                                continue
+                        
+                        # Store original price with currency
+                        original_prices.append({
+                            'price': price,
+                            'currency': currency
+                        })
+                        
+                        # Convert to base currency
+                        if currency != base_currency:
+                            converted, rate = await currency_service.convert_price(
+                                price, currency, base_currency
+                            )
+                            all_prices.append(converted)
+                        else:
                             all_prices.append(price)
+                            
                     except ValueError:
                         continue
+            
+            # If no prices found with currency patterns, use domain-based detection
+            if not all_prices:
+                for pattern in PRICE_PATTERNS:
+                    matches = re.findall(pattern, text_content)
+                    for match in matches:
+                        try:
+                            price_str = match.replace(',', '')
+                            price = float(price_str)
+                            if 10 <= price <= 1000000:
+                                # Convert using domain-detected currency
+                                if detected_currency != base_currency:
+                                    converted, rate = await currency_service.convert_price(
+                                        price, detected_currency, base_currency
+                                    )
+                                    all_prices.append(converted)
+                                    original_prices.append({
+                                        'price': price,
+                                        'currency': detected_currency
+                                    })
+                                else:
+                                    all_prices.append(price)
+                                    original_prices.append({
+                                        'price': price,
+                                        'currency': base_currency
+                                    })
+                        except ValueError:
+                            continue
             
             # Remove duplicates and sort
             unique_prices = sorted(list(set(all_prices)))
@@ -130,7 +195,11 @@ async def extract_prices_from_url(url: str) -> Dict[str, Any]:
                 "url": url,
                 "domain": extract_domain(url),
                 "title": title,
-                "prices": unique_prices[:10],  # Top 10 unique prices
+                "prices": unique_prices[:10],  # Top 10 unique prices (in base currency)
+                "prices_converted": True,
+                "base_currency": base_currency,
+                "detected_currency": detected_currency,
+                "original_prices": original_prices[:10],
                 "price_count": len(unique_prices),
                 "success": True
             }
