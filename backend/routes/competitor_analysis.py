@@ -134,6 +134,100 @@ async def extract_prices_from_url(url: str) -> Dict[str, Any]:
         return {"url": url, "error": str(e), "prices": [], "success": False}
 
 
+# Pydantic model for URL-based analysis
+class AnalyzeFromURLRequest(BaseModel):
+    image_url: str
+    product_id: str
+    product_name: str
+    your_price: float
+    category: str = "general"
+    store_name: Optional[str] = None
+
+
+@router.post("/analyze-from-url")
+async def analyze_from_url(
+    request: AnalyzeFromURLRequest,
+    background_tasks: BackgroundTasks = None
+):
+    """
+    Analyze a product using an existing image URL (from Shopify products).
+    Uses Google Cloud Vision API for web detection.
+    """
+    db = get_db()
+    
+    try:
+        # Call Vision API with image URL
+        vision_result = await vision_api_service.detect_web_entities(image_url=request.image_url)
+        
+        if not vision_result.get("success", False) and "error" in vision_result:
+            # If Vision API not configured, return mock data for testing
+            if "not configured" in str(vision_result.get("error", "")):
+                vision_result = {
+                    "success": True,
+                    "pages_with_matching_images": [],
+                    "web_entities": [],
+                    "best_guess_labels": [],
+                    "full_matching_images": [],
+                    "partial_matching_images": [],
+                    "visually_similar_images": [],
+                    "message": "Vision API not configured. Add GOOGLE_VISION_API_KEY to enable."
+                }
+            else:
+                raise HTTPException(status_code=500, detail=vision_result.get("error"))
+        
+        # Create analysis record
+        analysis_id = str(uuid.uuid4())[:12]
+        analysis_record = {
+            "analysis_id": analysis_id,
+            "product_id": request.product_id,
+            "product_name": request.product_name,
+            "your_price": request.your_price,
+            "category": request.category,
+            "store_name": request.store_name,
+            "image_url": request.image_url,
+            "competitor_pages": vision_result.get("pages_with_matching_images", []),
+            "full_matches": vision_result.get("full_matching_images", []),
+            "partial_matches": vision_result.get("partial_matching_images", []),
+            "similar_images": vision_result.get("visually_similar_images", []),
+            "web_entities": vision_result.get("web_entities", []),
+            "best_guess_labels": vision_result.get("best_guess_labels", []),
+            "competitor_prices": [],  # Will be populated by background task
+            "status": "completed" if not vision_result.get("message") else "limited",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Save to database
+        await db.competitor_analyses.insert_one(analysis_record)
+        
+        # Start background price extraction if we have competitor pages
+        competitor_urls = [p["url"] for p in vision_result.get("pages_with_matching_images", [])]
+        if competitor_urls and background_tasks:
+            background_tasks.add_task(
+                extract_competitor_prices,
+                analysis_id,
+                competitor_urls[:20]  # Limit to 20 URLs
+            )
+        
+        return {
+            "success": True,
+            "analysis_id": analysis_id,
+            "product_name": request.product_name,
+            "your_price": request.your_price,
+            "competitor_count": len(vision_result.get("pages_with_matching_images", [])),
+            "competitor_pages": vision_result.get("pages_with_matching_images", [])[:20],
+            "web_entities": vision_result.get("web_entities", [])[:10],
+            "best_guess_labels": vision_result.get("best_guess_labels", []),
+            "status": analysis_record["status"],
+            "message": vision_result.get("message")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error analyzing image URL: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/analyze-image")
 async def analyze_competitor_image(
     file: UploadFile = File(...),
