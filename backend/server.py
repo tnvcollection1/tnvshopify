@@ -95,6 +95,7 @@ set_shopify_oauth_db(db)
 set_lead_ads_db(db)
 set_super_admin_db(db)
 set_storefront_db(db)
+set_storefront_cms_db(db)
 
 # ==================== Initialize Default Users ====================
 async def init_default_users():
