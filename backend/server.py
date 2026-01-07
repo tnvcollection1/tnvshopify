@@ -101,6 +101,7 @@ set_storefront_db(db)
 set_storefront_cms_db(db)
 set_warehouse_db(db)
 set_sync_dependencies(db)
+set_shopify_sync_deps(db)
 
 # ==================== Initialize Default Users ====================
 async def init_default_users():
