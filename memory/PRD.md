@@ -204,16 +204,25 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 - Continue refining UI components across pages
 - Ensure consistent Shopify-style design
 
-### Phase 2: Server.py Continued Refactoring (P3)
-- Extract WhatsApp endpoints to separate router
-- Extract Marketing/Campaign endpoints
-- Extract Settings endpoints
+### Phase 2: Server.py Phase 2 Refactoring (P3)
+- Move old endpoints from server.py to new routers 
+- Delete duplicate endpoints once confirmed working
 - Goal: Reduce server.py to under 3000 lines
 
 ### Phase 3: Production Improvements
 - Robust sync verification
 - Timeout handling for large datasets
 - Rate limiting for APIs
+
+### Key New API Endpoints Added
+- `POST /api/storefront-cms/upload` - Upload images
+- `GET /api/storefront-cms/media/{path}` - Serve media
+- `GET /api/marketing/stats` - Marketing dashboard stats
+- `GET /api/marketing/campaigns` - Campaign management
+- `GET /api/settings/auto-sync` - Auto-sync settings
+- `GET /api/settings/notifications` - Notification settings
+- `GET /api/whatsapp/conversations` - WhatsApp conversations
+- `POST /api/whatsapp/marketing/campaign` - Send WhatsApp campaigns
 
 ---
 
