@@ -345,7 +345,7 @@ async def get_customer_segments():
                 try:
                     last_order_date = datetime.fromisoformat(last_order.replace('Z', '+00:00'))
                     days_since_order = (now - last_order_date).days
-                except:
+                except Exception:
                     pass
             
             # Categorize
