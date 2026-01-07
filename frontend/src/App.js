@@ -41,7 +41,7 @@ import DWZ56Shipping from "@/components/DWZ56Shipping";
 import DWZ56Purchase from "@/components/DWZ56Purchase";
 import Products1688 from "@/components/Products1688";
 import FulfillmentDashboard from "@/components/FulfillmentDashboard";
-import ProductsCatalog from "@/components/ProductsCatalog";
+import ShopifyProducts from "@/components/ShopifyProducts";
 import Purchase1688Orders from "@/components/Purchase1688Orders";
 import ProductScraper from "@/components/ProductScraper";
 import WhatsAppInboxStandalone from "@/components/WhatsAppInboxStandalone";
