@@ -265,14 +265,15 @@ class TestWhatsAppConversationsEndpoint:
         assert "conversations" in data, "Response should have 'conversations' field"
         assert isinstance(data["conversations"], list), "conversations should be a list"
     
-    def test_whatsapp_conversations_has_total(self):
-        """Test WhatsApp conversations response has total count"""
+    def test_whatsapp_conversations_has_count(self):
+        """Test WhatsApp conversations response has count field"""
         response = requests.get(f"{BASE_URL}/api/whatsapp/conversations")
         assert response.status_code == 200
         
         data = response.json()
-        assert "total" in data, "Response should have 'total' field"
-        assert isinstance(data["total"], int), "total should be integer"
+        # The whatsapp_crm_routes endpoint returns 'count' instead of 'total'
+        assert "count" in data, "Response should have 'count' field"
+        assert isinstance(data["count"], int), "count should be integer"
 
 
 class TestCompetitorDashboardStats:
