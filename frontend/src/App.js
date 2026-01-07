@@ -187,7 +187,7 @@ function AppRoutes() {
         path="/orders" 
         element={
           <ProtectedRoute>
-            <DraftsPage />
+            <Orders />
           </ProtectedRoute>
         } 
       />
