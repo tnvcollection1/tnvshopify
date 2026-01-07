@@ -155,31 +155,80 @@ async def analyze_from_url(
     """
     Analyze a product using an existing image URL (from Shopify products).
     Uses Google Cloud Vision API for web detection.
+    Falls back to title-based search if no image matches found.
     """
     db = get_db()
     
     try:
-        # Call Vision API with image URL
+        search_method = "image_search"
+        vision_result = None
+        title_result = None
+        
+        # Step 1: Try Vision API image search first
         vision_result = await vision_api_service.detect_web_entities(image_url=request.image_url)
         
-        if not vision_result.get("success", False) and "error" in vision_result:
-            # If Vision API not configured, return mock data for testing
-            if "not configured" in str(vision_result.get("error", "")):
+        has_image_results = (
+            vision_result.get("success", False) and 
+            len(vision_result.get("pages_with_matching_images", [])) > 0
+        )
+        
+        # Step 2: If no image matches, fallback to title-based search
+        if not has_image_results:
+            logger.info(f"[Competitor] No image matches for '{request.product_name}', trying title search")
+            search_method = "title_fallback"
+            
+            title_result = await web_search_service.search_by_title(
+                product_title=request.product_name,
+                category=request.category,
+                max_results=20
+            )
+            
+            if title_result.get("success") and title_result.get("pages_with_matching_products"):
+                # Convert title search results to the same format
                 vision_result = {
                     "success": True,
-                    "pages_with_matching_images": [],
-                    "web_entities": [],
-                    "best_guess_labels": [],
+                    "pages_with_matching_images": title_result.get("pages_with_matching_products", []),
+                    "web_entities": title_result.get("web_entities", []),
+                    "best_guess_labels": title_result.get("best_guess_labels", []),
                     "full_matching_images": [],
                     "partial_matching_images": [],
                     "visually_similar_images": [],
-                    "message": "Vision API not configured. Add GOOGLE_VISION_API_KEY to enable."
+                    "search_method": title_result.get("search_method", "title_search"),
+                    "search_query": title_result.get("query", request.product_name)
                 }
-            else:
+                logger.info(f"[Competitor] Title search found {len(vision_result['pages_with_matching_images'])} results")
+        
+        # Handle case where Vision API is not configured
+        if not vision_result or (not vision_result.get("success", False) and "error" in vision_result):
+            if vision_result and "not configured" in str(vision_result.get("error", "")):
+                # Try title search as the primary method if Vision API is not configured
+                logger.info("[Competitor] Vision API not configured, using title search")
+                search_method = "title_only"
+                
+                title_result = await web_search_service.search_by_title(
+                    product_title=request.product_name,
+                    category=request.category,
+                    max_results=20
+                )
+                
+                vision_result = {
+                    "success": title_result.get("success", False),
+                    "pages_with_matching_images": title_result.get("pages_with_matching_products", []),
+                    "web_entities": title_result.get("web_entities", []),
+                    "best_guess_labels": title_result.get("best_guess_labels", []),
+                    "full_matching_images": [],
+                    "partial_matching_images": [],
+                    "visually_similar_images": [],
+                    "search_method": "title_search",
+                    "message": "Vision API not configured. Using title-based search."
+                }
+            elif vision_result:
                 raise HTTPException(status_code=500, detail=vision_result.get("error"))
         
         # Create analysis record
         analysis_id = str(uuid.uuid4())[:12]
+        competitor_pages = vision_result.get("pages_with_matching_images", [])
+        
         analysis_record = {
             "analysis_id": analysis_id,
             "product_id": request.product_id,
@@ -188,14 +237,16 @@ async def analyze_from_url(
             "category": request.category,
             "store_name": request.store_name,
             "image_url": request.image_url,
-            "competitor_pages": vision_result.get("pages_with_matching_images", []),
+            "search_method": search_method,
+            "search_query": vision_result.get("search_query", ""),
+            "competitor_pages": competitor_pages,
             "full_matches": vision_result.get("full_matching_images", []),
             "partial_matches": vision_result.get("partial_matching_images", []),
             "similar_images": vision_result.get("visually_similar_images", []),
             "web_entities": vision_result.get("web_entities", []),
             "best_guess_labels": vision_result.get("best_guess_labels", []),
             "competitor_prices": [],  # Will be populated by background task
-            "status": "completed" if not vision_result.get("message") else "limited",
+            "status": "completed" if len(competitor_pages) > 0 else "no_results",
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         
@@ -203,7 +254,7 @@ async def analyze_from_url(
         await db.competitor_analyses.insert_one(analysis_record)
         
         # Start background price extraction if we have competitor pages
-        competitor_urls = [p["url"] for p in vision_result.get("pages_with_matching_images", [])]
+        competitor_urls = [p["url"] for p in competitor_pages]
         if competitor_urls and background_tasks:
             background_tasks.add_task(
                 extract_competitor_prices,
@@ -216,12 +267,16 @@ async def analyze_from_url(
             "analysis_id": analysis_id,
             "product_name": request.product_name,
             "your_price": request.your_price,
-            "competitor_count": len(vision_result.get("pages_with_matching_images", [])),
-            "competitor_pages": vision_result.get("pages_with_matching_images", [])[:20],
+            "search_method": search_method,
+            "search_query": vision_result.get("search_query", ""),
+            "competitor_count": len(competitor_pages),
+            "competitor_pages": competitor_pages[:20],
             "web_entities": vision_result.get("web_entities", [])[:10],
             "best_guess_labels": vision_result.get("best_guess_labels", []),
             "status": analysis_record["status"],
-            "message": vision_result.get("message")
+            "message": vision_result.get("message") or (
+                f"Found {len(competitor_pages)} competitors via {search_method.replace('_', ' ')}"
+            )
         }
         
     except HTTPException:
