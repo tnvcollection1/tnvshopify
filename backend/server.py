@@ -5514,8 +5514,13 @@ async def get_marketing_stats():
                 return None
             try:
                 if isinstance(date_str, datetime):
+                    if date_str.tzinfo is None:
+                        return date_str.replace(tzinfo=timezone.utc)
                     return date_str
-                return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return dt
             except:
                 return None
         
