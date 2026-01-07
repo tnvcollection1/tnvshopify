@@ -277,9 +277,9 @@ async def notify_order_status(data: dict = Body(...)):
         # Generate status message
         status_messages = {
             "processing": f"Hi {customer.get('first_name', 'there')}! Your order is being processed.",
-            "shipped": f"Great news! Your order has been shipped!",
-            "delivered": f"Your order has been delivered. Thank you for shopping with us!",
-            "cancelled": f"Your order has been cancelled. Please contact support for details."
+            "shipped": "Great news! Your order has been shipped!",
+            "delivered": "Your order has been delivered. Thank you for shopping with us!",
+            "cancelled": "Your order has been cancelled. Please contact support for details."
         }
         
         message = status_messages.get(new_status, f"Your order status has been updated to: {new_status}")
