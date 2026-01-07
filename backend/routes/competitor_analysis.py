@@ -615,3 +615,89 @@ async def delete_analysis(analysis_id: str):
         raise HTTPException(status_code=404, detail="Analysis not found")
     
     return {"success": True, "message": "Analysis deleted"}
+
+
+# Pydantic model for title-based search
+class TitleSearchRequest(BaseModel):
+    product_name: str
+    product_id: Optional[str] = None
+    your_price: float = 0
+    category: str = "general"
+    store_name: Optional[str] = None
+
+
+@router.post("/search-by-title")
+async def search_by_title(
+    request: TitleSearchRequest,
+    background_tasks: BackgroundTasks = None
+):
+    """
+    Search for competitors using product title only (no image required).
+    Useful for products with unique/custom images that won't match via image search.
+    """
+    db = get_db()
+    
+    try:
+        # Perform title-based search
+        title_result = await web_search_service.search_by_title(
+            product_title=request.product_name,
+            category=request.category,
+            max_results=20
+        )
+        
+        competitor_pages = title_result.get("pages_with_matching_products", [])
+        
+        # Create analysis record
+        analysis_id = str(uuid.uuid4())[:12]
+        analysis_record = {
+            "analysis_id": analysis_id,
+            "product_id": request.product_id or f"title_{analysis_id}",
+            "product_name": request.product_name,
+            "your_price": request.your_price,
+            "category": request.category,
+            "store_name": request.store_name,
+            "image_url": None,
+            "search_method": "title_search",
+            "search_query": title_result.get("query", request.product_name),
+            "competitor_pages": competitor_pages,
+            "full_matches": [],
+            "partial_matches": [],
+            "similar_images": [],
+            "web_entities": title_result.get("web_entities", []),
+            "best_guess_labels": title_result.get("best_guess_labels", []),
+            "competitor_prices": [],
+            "status": "completed" if len(competitor_pages) > 0 else "no_results",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Save to database
+        await db.competitor_analyses.insert_one(analysis_record)
+        
+        # Start background price extraction if we have competitor pages
+        competitor_urls = [p["url"] for p in competitor_pages]
+        if competitor_urls and background_tasks:
+            background_tasks.add_task(
+                extract_competitor_prices,
+                analysis_id,
+                competitor_urls[:20]
+            )
+        
+        return {
+            "success": True,
+            "analysis_id": analysis_id,
+            "product_name": request.product_name,
+            "your_price": request.your_price,
+            "search_method": "title_search",
+            "search_query": title_result.get("query", request.product_name),
+            "competitor_count": len(competitor_pages),
+            "competitor_pages": competitor_pages[:20],
+            "web_entities": title_result.get("web_entities", [])[:10],
+            "best_guess_labels": title_result.get("best_guess_labels", []),
+            "status": analysis_record["status"],
+            "message": f"Found {len(competitor_pages)} competitors via title search"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in title search: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
