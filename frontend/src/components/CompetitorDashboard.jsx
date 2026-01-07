@@ -177,7 +177,7 @@ const ProductSelector = ({ onSelectProduct, selectedStore }) => {
 
 // ==================== Analysis Dialog ====================
 const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedStore, onStoreChange }) => {
-  const [mode, setMode] = useState('select'); // 'select' or 'upload'
+  const [mode, setMode] = useState('select'); // 'select', 'upload', or 'title'
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -233,7 +233,45 @@ const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedS
     reader.readAsDataURL(file);
   };
 
+  // Title-only search
+  const handleTitleSearch = async () => {
+    if (!form.product_name) {
+      toast.error('Please enter a product name');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const response = await axios.post(
+        `${API}/api/competitor/search-by-title`,
+        {
+          product_id: form.product_id || `title_${Date.now()}`,
+          product_name: form.product_name,
+          your_price: parseFloat(form.your_price) || 0,
+          category: form.category,
+          store_name: selectedStore
+        },
+        { timeout: 120000 }
+      );
+
+      const searchMethod = response.data.search_method || 'title_search';
+      toast.success(`Found ${response.data.competitor_count} competitors via title search!`);
+      onAnalysisComplete(response.data);
+      onClose();
+    } catch (error) {
+      console.error('Title search error:', error);
+      toast.error(error.response?.data?.detail || 'Title search failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async () => {
+    // For title-only mode, use dedicated handler
+    if (mode === 'title') {
+      return handleTitleSearch();
+    }
+
     if ((!selectedProduct && !selectedFile) || !form.product_name || !form.your_price) {
       toast.error('Please fill in all required fields');
       return;
