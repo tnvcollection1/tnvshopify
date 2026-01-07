@@ -642,6 +642,16 @@ function AppRoutes() {
         } 
       />
       
+      {/* Warehouse Scanner - PIN Protected (No Login Required) */}
+      <Route 
+        path="/warehouse" 
+        element={<WarehouseScanner />} 
+      />
+      <Route 
+        path="/warehouse/scan" 
+        element={<WarehouseScanner />} 
+      />
+      
       {/* Public Storefront Routes - No Auth Required */}
       <Route 
         path="/shop" 
