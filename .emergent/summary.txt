@@ -9,59 +9,575 @@ PRODUCT REQUIREMENTS:
 6.  **Multi-Stage Fulfillment Pipeline**: A UI to track orders through a detailed pipeline.
 7.  **Product Linking**: Link products from Shopify stores to 1688.com.
 8.  **Per-SKU Ordering**: Order and track each SKU from a multi-item Shopify order independently.
-9.  **NEW: UI/UX Overhaul**:
+9.  **UI/UX Overhaul**:
     *   Redesign the entire admin backend to look and feel like Shopify's admin UI, including loading animations.
-    *   Enforce complete data isolation between stores; remove the All Stores view and ensure every feature (orders, products, tracking, purchasing) is filtered by the selected store.
-10. **NEW: Customer-Facing Storefront**:
+    *   Enforce complete data isolation between stores; remove the All Stores view and ensure every feature is filtered by the selected store.
+10. **Customer-Facing Storefront**:
     *   Build a new, public, customer-facing e-commerce storefront for each store, with a design inspired by .
 
 **User's preferred language**: English
 
 **what currently exists?**
-*   An existing Shopify-1688 integration application with features for product and order management.
-*   The application has undergone significant debugging related to production data migration, including fixing duplicate orders, missing data, and incorrect data handling for edited orders.
-*   A major UI/UX overhaul is in progress. The All Stores view has been removed from the frontend, and many components were refactored to enforce store isolation.
-*   The admin UI redesign has started, with a new Shopify-style sidebar () and theme created and integrated.
-*   Skeleton components for the new customer-facing storefront (, , etc.) have been created.
+*   A full-stack application (React, FastAPI, MongoDB) with existing Shopify-1688 integration features.
+*   A complete, customer-facing e-commerce storefront has been built, featuring a homepage, product listings, product details, a full shopping cart, a Razorpay-integrated checkout flow, and a real-time order tracking page.
+*   The admin panel UI/UX overhaul is significantly underway. It includes a Shopify-style sidebar, and new pages for managing storefront orders () and redesigned pages for the main Dashboard (), Orders (), and Products ().
+*   A critical backend bug causing cross-store data contamination in the DWZ56 tracking feature has been fixed.
 
 **Last working item**:
-- **Last item agent was working**: Scaffolding the new customer-facing storefront. The agent created several new placeholder components (, , , , ) and added the new routes to the main application router.
-- **Status**: IN PROGRESS
+- **Last item agent was working**: The agent was performing a major redesign of the admin UI. It had just replaced the old , , and  components with new, cleaner, Shopify-themed components: , , and . The agent was about to test these changes when the user reported a critical session/login issue.
+- **Status**: BLOCKED
 - **Agent Testing Done**: N
-- **Which testing method agent to use?**: Frontend testing agent. The new storefront components need to be built out with UI, logic, and connected to backend data sources. A comprehensive test plan is required to verify the end-to-end shopping experience.
+- **Which testing method agent to use?**: Frontend testing agent. Once the blocking issue is resolved, the agent should run a comprehensive test of the new admin pages (, , ) to ensure they function correctly.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-*   **Issue 1**: Production Data Inconsistency and Incompleteness (P0)
-*   **Issue 2**: DWZ56 Tracking Cross-Store Data Contamination (P1)
+*   **Issue 1**: new session is not opening (P0 - BLOCKER)
+*   **Issue 2**: Production Data Inconsistency and Incompleteness (P1)
 *   **Issue 3**: Long-standing Shopify OAuth and login stability issues (P2)
 
 **Issues Detail**:
-- **Issue 1: Production Data Inconsistency and Incompleteness**
-    - **Attempted fixes**: The agent performed a complex and fraught data migration from a preview environment to production. This involved creating multiple custom API endpoints for migration, deduplication, and fixing data. The process was plagued by timeouts and resulted in an inconsistent data state (e.g., only 967 orders were present after a process that should have yielded over 42,000). The agent then initiated full store syncs, which also timed out.
+- **Issue 1: new session is not opening**
+    - **Attempted fixes**: None. The agent was about to investigate when the job ended. The user's last message reported this critical failure.
     - **Next debug checklist**:
-        1.  Create a robust, idempotent data sync script or management command in the backend.
-        2.  Clear all transactional data (customers/orders, products) from the production database to ensure a clean slate.
-        3.  Execute the sync for each store sequentially, monitoring the logs to ensure successful completion without timeouts.
-        4.  Verify data integrity post-sync by checking counts and looking for duplicates.
-    - **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker. The application is unusable in production with incomplete and incorrect data. A stable data foundation is required before building new features.
-    - **Status**: IN PROGRESS
+        1.  Examine backend supervisor logs for runtime errors: ==> /var/log/supervisor/backend.err.log <==
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [86]
+INFO:     Started server process [259]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'routes/dwz56.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [259]
+WARNING:  WatchFiles detected changes in 'routes/dwz56.py'. Reloading...
+WARNING:  WatchFiles detected changes in 'routes/dwz56.py'. Reloading...
+INFO:     Started server process [613]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'routes/dwz56.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [613]
+WARNING:  WatchFiles detected changes in 'routes/dwz56.py'. Reloading...
+INFO:     Started server process [736]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'routes/dwz56.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [736]
+INFO:     Started server process [800]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [800]
+INFO:     Started server process [1178]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1178]
+INFO:     Started server process [1719]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'routes/storefront.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1719]
+INFO:     Started server process [3753]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3753]
+INFO:     Started server process [3845]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3845]
+INFO:     Started server process [3936]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3936]
+INFO:     Started server process [4058]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'routes/storefront.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [4058]
+INFO:     Started server process [7235]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'routes/storefront.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [7235]
+INFO:     Started server process [7342]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [48] using WatchFiles
+INFO:     Started server process [86]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [48] using WatchFiles
+
+==> /var/log/supervisor/backend.out.log <==
+2026-01-06 19:11:33,216 - tcs_tracking - INFO - No COD payment data for 77237101183 - might be prepaid or not settled
+2026-01-06 19:11:37,790 - tcs_tracking - INFO - No COD payment data for 77237101178 - might be prepaid or not settled
+2026-01-06 19:11:37,809 - auto_tcs_sync - INFO - ✅ Batch complete: 0/20 synced
+2026-01-06 19:11:37,809 - auto_tcs_sync - INFO - ⏳ Waiting 60s before next batch...
+2026-01-06 19:12:37,812 - auto_tcs_sync - INFO - 📦 Processing batch of 20 orders...
+2026-01-06 19:12:39,456 - tcs_tracking - INFO - No COD payment data for 77237106927 - might be prepaid or not settled
+2026-01-06 19:12:44,012 - tcs_tracking - INFO - No COD payment data for 77237102302 - might be prepaid or not settled
+2026-01-06 19:12:48,621 - tcs_tracking - INFO - No COD payment data for 77237103026 - might be prepaid or not settled
+2026-01-06 19:12:53,199 - tcs_tracking - INFO - No COD payment data for 77237102216 - might be prepaid or not settled
+2026-01-06 19:12:58,950 - tcs_tracking - INFO - No COD payment data for 77237109281 - might be prepaid or not settled
+2026-01-06 19:13:03,544 - tcs_tracking - INFO - No COD payment data for 77237110516 - might be prepaid or not settled
+2026-01-06 19:13:08,124 - tcs_tracking - INFO - No COD payment data for 77237107214 - might be prepaid or not settled
+2026-01-06 19:13:12,778 - tcs_tracking - INFO - No COD payment data for 77237107494 - might be prepaid or not settled
+2026-01-06 19:13:17,525 - tcs_tracking - INFO - No COD payment data for 77237112505 - might be prepaid or not settled
+2026-01-06 19:13:22,362 - tcs_tracking - INFO - No COD payment data for 77237107637 - might be prepaid or not settled
+2026-01-06 19:13:27,122 - tcs_tracking - INFO - No COD payment data for 77237102204 - might be prepaid or not settled
+2026-01-06 19:13:34,961 - tcs_tracking - INFO - No COD payment data for 77237109453 - might be prepaid or not settled
+2026-01-06 19:13:39,779 - tcs_tracking - INFO - No COD payment data for 77237110485 - might be prepaid or not settled
+2026-01-06 19:13:44,792 - tcs_tracking - INFO - No COD payment data for 77237101182 - might be prepaid or not settled
+2026-01-06 19:13:49,418 - tcs_tracking - INFO - No COD payment data for 77237101186 - might be prepaid or not settled
+2026-01-06 19:13:54,060 - tcs_tracking - INFO - No COD payment data for 77237103112 - might be prepaid or not settled
+2026-01-06 19:13:58,704 - tcs_tracking - INFO - No COD payment data for 77237110732 - might be prepaid or not settled
+2026-01-06 19:14:03,371 - tcs_tracking - INFO - No COD payment data for 77237101172 - might be prepaid or not settled
+2026-01-06 19:14:08,041 - tcs_tracking - INFO - No COD payment data for 77237101183 - might be prepaid or not settled
+2026-01-06 19:14:12,747 - tcs_tracking - INFO - No COD payment data for 77237101178 - might be prepaid or not settled
+2026-01-06 19:14:12,766 - auto_tcs_sync - INFO - ✅ Batch complete: 0/20 synced
+2026-01-06 19:14:12,766 - auto_tcs_sync - INFO - ⏳ Waiting 60s before next batch...
+2026-01-06 19:15:12,769 - auto_tcs_sync - INFO - 📦 Processing batch of 20 orders...
+2026-01-06 19:15:14,392 - tcs_tracking - INFO - No COD payment data for 77237106927 - might be prepaid or not settled
+2026-01-06 19:15:19,016 - tcs_tracking - INFO - No COD payment data for 77237102302 - might be prepaid or not settled
+2026-01-06 19:15:23,669 - tcs_tracking - INFO - No COD payment data for 77237103026 - might be prepaid or not settled
+2026-01-06 19:15:28,425 - tcs_tracking - INFO - No COD payment data for 77237102216 - might be prepaid or not settled
+2026-01-06 19:15:33,151 - tcs_tracking - INFO - No COD payment data for 77237109281 - might be prepaid or not settled
+2026-01-06 19:15:37,803 - tcs_tracking - INFO - No COD payment data for 77237110516 - might be prepaid or not settled
+2026-01-06 19:15:42,538 - tcs_tracking - INFO - No COD payment data for 77237107214 - might be prepaid or not settled
+2026-01-06 19:15:47,159 - tcs_tracking - INFO - No COD payment data for 77237107494 - might be prepaid or not settled
+2026-01-06 19:15:51,828 - tcs_tracking - INFO - No COD payment data for 77237112505 - might be prepaid or not settled
+2026-01-06 19:15:56,461 - tcs_tracking - INFO - No COD payment data for 77237107637 - might be prepaid or not settled
+2026-01-06 19:16:01,102 - tcs_tracking - INFO - No COD payment data for 77237102204 - might be prepaid or not settled
+2026-01-06 19:16:05,739 - tcs_tracking - INFO - No COD payment data for 77237109453 - might be prepaid or not settled
+2026-01-06 19:16:10,390 - tcs_tracking - INFO - No COD payment data for 77237110485 - might be prepaid or not settled
+2026-01-06 19:16:14,991 - tcs_tracking - INFO - No COD payment data for 77237101182 - might be prepaid or not settled
+2026-01-06 19:16:19,667 - tcs_tracking - INFO - No COD payment data for 77237101186 - might be prepaid or not settled
+2026-01-06 19:16:24,277 - tcs_tracking - INFO - No COD payment data for 77237103112 - might be prepaid or not settled
+2026-01-06 19:16:28,927 - tcs_tracking - INFO - No COD payment data for 77237110732 - might be prepaid or not settled
+2026-01-06 19:16:33,476 - tcs_tracking - INFO - No COD payment data for 77237101172 - might be prepaid or not settled
+2026-01-06 19:16:38,160 - tcs_tracking - INFO - No COD payment data for 77237101183 - might be prepaid or not settled
+2026-01-06 19:16:42,731 - tcs_tracking - INFO - No COD payment data for 77237101178 - might be prepaid or not settled
+2026-01-06 19:16:42,750 - auto_tcs_sync - INFO - ✅ Batch complete: 0/20 synced
+2026-01-06 19:16:42,750 - auto_tcs_sync - INFO - ⏳ Waiting 60s before next batch...
+2026-01-06 19:17:42,753 - auto_tcs_sync - INFO - 📦 Processing batch of 20 orders...
+2026-01-06 19:17:44,463 - tcs_tracking - INFO - No COD payment data for 77237106927 - might be prepaid or not settled
+2026-01-06 19:17:49,058 - tcs_tracking - INFO - No COD payment data for 77237102302 - might be prepaid or not settled
+2026-01-06 19:17:53,724 - tcs_tracking - INFO - No COD payment data for 77237103026 - might be prepaid or not settled
+2026-01-06 19:17:58,278 - tcs_tracking - INFO - No COD payment data for 77237102216 - might be prepaid or not settled
+2026-01-06 19:18:03,009 - tcs_tracking - INFO - No COD payment data for 77237109281 - might be prepaid or not settled
+2026-01-06 19:18:07,641 - tcs_tracking - INFO - No COD payment data for 77237110516 - might be prepaid or not settled
+2026-01-06 19:18:12,356 - tcs_tracking - INFO - No COD payment data for 77237107214 - might be prepaid or not settled
+2026-01-06 19:18:17,022 - tcs_tracking - INFO - No COD payment data for 77237107494 - might be prepaid or not settled
+2026-01-06 19:18:21,672 - tcs_tracking - INFO - No COD payment data for 77237112505 - might be prepaid or not settled
+2026-01-06 19:18:26,220 - tcs_tracking - INFO - No COD payment data for 77237107637 - might be prepaid or not settled
+2026-01-06 19:18:30,958 - tcs_tracking - INFO - No COD payment data for 77237102204 - might be prepaid or not settled
+INFO:     10.64.129.93:40828 - "GET /api/stores HTTP/1.1" 200 OK
+INFO:     10.64.129.93:40828 - "GET /api/stores HTTP/1.1" 200 OK
+2026-01-06 19:18:35,568 - tcs_tracking - INFO - No COD payment data for 77237109453 - might be prepaid or not settled
+2026-01-06 19:18:40,178 - tcs_tracking - INFO - No COD payment data for 77237110485 - might be prepaid or not settled
+2026-01-06 19:18:44,736 - tcs_tracking - INFO - No COD payment data for 77237101182 - might be prepaid or not settled
+2026-01-06 19:18:49,480 - tcs_tracking - INFO - No COD payment data for 77237101186 - might be prepaid or not settled
+2026-01-07 01:56:04,555 - routes.subscriptions - INFO - Razorpay client initialized
+✅ WhatsApp CRM routes loaded
+✅ Legacy WhatsApp routes loaded
+2026-01-07 01:56:04,982 - server - INFO - 🚀 Starting server...
+✅ Default users already exist
+2026-01-07 01:56:04,989 - server - INFO - 🔧 Checking stores for missing domains...
+2026-01-07 01:56:04,991 - server - INFO - ✅ All store domains are set correctly
+2026-01-07 01:56:04,999 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-01-07 01:56:04,999 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-01-07 01:56:04,999 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-01-07 01:56:04,999 - apscheduler.scheduler - INFO - Added job "Shopify Orders Sync (Hourly - All Stores)" to job store "default"
+2026-01-07 01:56:04,999 - apscheduler.scheduler - INFO - Added job "TCS Delivery Status Sync (Every 2 Hours)" to job store "default"
+2026-01-07 01:56:04,999 - apscheduler.scheduler - INFO - Added job "DWZ56 Tracking Sync (Every 4 Hours)" to job store "default"
+2026-01-07 01:56:04,999 - apscheduler.scheduler - INFO - Scheduler started
+2026-01-07 01:56:04,999 - scheduler - INFO - ✅ Background scheduler started
+2026-01-07 01:56:04,999 - scheduler - INFO - 📅 Shopify sync: Every 1 hour (incremental)
+2026-01-07 01:56:04,999 - scheduler - INFO - 📅 TCS delivery sync: Every 2 hours
+2026-01-07 01:56:04,999 - scheduler - INFO - 📅 DWZ56 tracking sync: Every 4 hours
+2026-01-07 01:56:04,999 - scheduler - INFO - 📅 Dynamic pricing sync: Every 30 minutes
+2026-01-07 01:56:04,999 - scheduler - INFO - ⏸️  TCS COD payment sync: DISABLED (waiting for API credentials)
+2026-01-07 01:56:04,999 - server - INFO - ✅ Background scheduler initialized
+2026-01-07 01:56:05,004 - server - INFO - 📊 Creating database indexes for performance...
+2026-01-07 01:56:05,005 - server - INFO - 🔥 Warming up inventory cache...
+2026-01-07 01:56:05,008 - server - INFO - 🔥 Warming up dynamic pricing cache...
+2026-01-07 01:56:05,009 - server - INFO - 🚀 Starting automatic TCS sync service...
+2026-01-07 01:56:05,009 - server - INFO - ✅ Automatic TCS sync service started successfully
+2026-01-07 01:56:05,009 - auto_tcs_sync - INFO - ============================================================
+2026-01-07 01:56:05,009 - auto_tcs_sync - INFO - 🚀 AUTO TCS SYNC SERVICE STARTED
+2026-01-07 01:56:05,009 - auto_tcs_sync - INFO -    Batch size: 20 orders
+2026-01-07 01:56:05,009 - auto_tcs_sync - INFO -    Delay between orders: 3s
+2026-01-07 01:56:05,009 - auto_tcs_sync - INFO -    Delay between batches: 60s
+2026-01-07 01:56:05,009 - auto_tcs_sync - INFO - ============================================================
+2026-01-07 01:56:05,010 - tcs_tracking - INFO - TCS tracker initialized with bearer token. Expires: 2028-12-03 10:23:00+00:00
+2026-01-07 01:56:05,123 - server - INFO - ✅ Pricing cache already exists
+2026-01-07 01:56:05,126 - server - INFO - ✅ Inventory cache refreshed: 9718 items, 3418 in stock
+2026-01-07 01:56:05,127 - server - INFO - ✅ Inventory cache warmed up
+2026-01-07 01:56:05,159 - auto_tcs_sync - INFO - 📦 Processing batch of 20 orders...
+2026-01-07 01:56:06,797 - tcs_tracking - INFO - No COD payment data for 77237106927 - might be prepaid or not settled
+2026-01-07 01:56:06,799 - server - WARNING - ⚠️ Index creation warning (may already exist): Index build failed: 1883f9d3-3c40-419a-9a41-fa487b3ba2a7: Collection shopify_customers_db.customers ( 7117212b-5b56-442d-866a-aac13b68075c ) :: caused by :: E11000 duplicate key error collection: shopify_customers_db.customers index: customer_id_1 dup key: { customer_id: null }, full error: {'ok': 0.0, 'errmsg': 'Index build failed: 1883f9d3-3c40-419a-9a41-fa487b3ba2a7: Collection shopify_customers_db.customers ( 7117212b-5b56-442d-866a-aac13b68075c ) :: caused by :: E11000 duplicate key error collection: shopify_customers_db.customers index: customer_id_1 dup key: { customer_id: null }', 'code': 11000, 'codeName': 'DuplicateKey', 'keyPattern': {'customer_id': 1}, 'keyValue': {'customer_id': None}}
+2026-01-07 01:56:11,375 - tcs_tracking - INFO - No COD payment data for 77237102302 - might be prepaid or not settled
+INFO:     10.64.128.6:38294 - "GET /api/stores HTTP/1.1" 200 OK
+INFO:     10.64.128.8:55962 - "GET /api/stores HTTP/1.1" 200 OK
+2026-01-07 01:56:15,940 - tcs_tracking - INFO - No COD payment data for 77237103026 - might be prepaid or not settled
+2026-01-07 01:56:20,459 - tcs_tracking - INFO - No COD payment data for 77237102216 - might be prepaid or not settled
+2026-01-07 01:56:25,034 - tcs_tracking - INFO - No COD payment data for 77237109281 - might be prepaid or not settled
+2026-01-07 01:56:29,534 - tcs_tracking - INFO - No COD payment data for 77237110516 - might be prepaid or not settled
+2026-01-07 01:56:34,122 - tcs_tracking - INFO - No COD payment data for 77237107214 - might be prepaid or not settled
+2026-01-07 01:56:38,773 - tcs_tracking - INFO - No COD payment data for 77237107494 - might be prepaid or not settled
+2026-01-07 01:56:43,343 - tcs_tracking - INFO - No COD payment data for 77237112505 - might be prepaid or not settled
+2026-01-07 01:56:47,879 - tcs_tracking - INFO - No COD payment data for 77237107637 - might be prepaid or not settled
+2026-01-07 01:56:52,446 - tcs_tracking - INFO - No COD payment data for 77237102204 - might be prepaid or not settled
+2026-01-07 01:56:56,988 - tcs_tracking - INFO - No COD payment data for 77237109453 - might be prepaid or not settled
+2026-01-07 01:57:01,602 - tcs_tracking - INFO - No COD payment data for 77237110485 - might be prepaid or not settled
+2026-01-07 01:57:06,122 - tcs_tracking - INFO - No COD payment data for 77237101182 - might be prepaid or not settled
+2026-01-07 01:57:10,819 - tcs_tracking - INFO - No COD payment data for 77237101186 - might be prepaid or not settled
+2026-01-07 01:57:15,332 - tcs_tracking - INFO - No COD payment data for 77237103112 - might be prepaid or not settled
+2026-01-07 01:57:19,919 - tcs_tracking - INFO - No COD payment data for 77237110732 - might be prepaid or not settled
+2026-01-07 01:57:24,431 - tcs_tracking - INFO - No COD payment data for 77237101172 - might be prepaid or not settled
+2026-01-07 01:57:29,001 - tcs_tracking - INFO - No COD payment data for 77237101183 - might be prepaid or not settled
+2026-01-07 01:57:33,522 - tcs_tracking - INFO - No COD payment data for 77237101178 - might be prepaid or not settled
+2026-01-07 01:57:33,542 - auto_tcs_sync - INFO - ✅ Batch complete: 0/20 synced
+2026-01-07 01:57:33,542 - auto_tcs_sync - INFO - ⏳ Waiting 60s before next batch...
+2026-01-07 01:58:33,546 - auto_tcs_sync - INFO - 📦 Processing batch of 20 orders...
+2026-01-07 01:58:35,208 - tcs_tracking - INFO - No COD payment data for 77237106927 - might be prepaid or not settled
+2026-01-07 01:58:39,758 - tcs_tracking - INFO - No COD payment data for 77237102302 - might be prepaid or not settled
+2026-01-07 01:58:44,307 - tcs_tracking - INFO - No COD payment data for 77237103026 - might be prepaid or not settled
+2026-01-07 01:58:48,918 - tcs_tracking - INFO - No COD payment data for 77237102216 - might be prepaid or not settled
+2026-01-07 01:58:53,444 - tcs_tracking - INFO - No COD payment data for 77237109281 - might be prepaid or not settled
+2026-01-07 01:58:58,016 - tcs_tracking - INFO - No COD payment data for 77237110516 - might be prepaid or not settled
+2026-01-07 01:59:02,552 - tcs_tracking - INFO - No COD payment data for 77237107214 - might be prepaid or not settled
+2026-01-07 01:59:07,304 - tcs_tracking - INFO - No COD payment data for 77237107494 - might be prepaid or not settled
+2026-01-07 01:59:11,815 - tcs_tracking - INFO - No COD payment data for 77237112505 - might be prepaid or not settled
+2026-01-07 01:59:16,396 - tcs_tracking - INFO - No COD payment data for 77237107637 - might be prepaid or not settled
+2026-01-07 01:59:20,923 - tcs_tracking - INFO - No COD payment data for 77237102204 - might be prepaid or not settled
+2026-01-07 01:59:25,514 - tcs_tracking - INFO - No COD payment data for 77237109453 - might be prepaid or not settled
+2026-01-07 01:59:30,047 - tcs_tracking - INFO - No COD payment data for 77237110485 - might be prepaid or not settled
+2026-01-07 01:59:34,633 - tcs_tracking - INFO - No COD payment data for 77237101182 - might be prepaid or not settled
+2026-01-07 01:59:39,230 - tcs_tracking - INFO - No COD payment data for 77237101186 - might be prepaid or not settled
+2026-01-07 01:59:43,816 - tcs_tracking - INFO - No COD payment data for 77237103112 - might be prepaid or not settled
+2026-01-07 01:59:48,369 - tcs_tracking - INFO - No COD payment data for 77237110732 - might be prepaid or not settled
+2026-01-07 01:59:52,934 - tcs_tracking - INFO - No COD payment data for 77237101172 - might be prepaid or not settled
+2026-01-07 01:59:57,505 - tcs_tracking - INFO - No COD payment data for 77237101183 - might be prepaid or not settled
+2026-01-07 02:00:02,096 - tcs_tracking - INFO - No COD payment data for 77237101178 - might be prepaid or not settled
+2026-01-07 02:00:02,115 - auto_tcs_sync - INFO - ✅ Batch complete: 0/20 synced
+2026-01-07 02:00:02,116 - auto_tcs_sync - INFO - ⏳ Waiting 60s before next batch...
+2026-01-07 02:01:02,120 - auto_tcs_sync - INFO - 📦 Processing batch of 20 orders...
+2026-01-07 02:01:03,628 - tcs_tracking - INFO - No COD payment data for 77237106927 - might be prepaid or not settled
+2026-01-07 02:01:08,238 - tcs_tracking - INFO - No COD payment data for 77237102302 - might be prepaid or not settled
+2026-01-07 02:01:12,799 - tcs_tracking - INFO - No COD payment data for 77237103026 - might be prepaid or not settled
+2026-01-07 02:01:17,379 - tcs_tracking - INFO - No COD payment data for 77237102216 - might be prepaid or not settled
+2026-01-07 02:01:21,933 - tcs_tracking - INFO - No COD payment data for 77237109281 - might be prepaid or not settled
+2026-01-07 02:01:26,563 - tcs_tracking - INFO - No COD payment data for 77237110516 - might be prepaid or not settled
+2026-01-07 02:01:31,160 - tcs_tracking - INFO - No COD payment data for 77237107214 - might be prepaid or not settled
+2026-01-07 02:01:35,777 - tcs_tracking - INFO - No COD payment data for 77237107494 - might be prepaid or not settled
+2026-01-07 02:01:40,310 - tcs_tracking - INFO - No COD payment data for 77237112505 - might be prepaid or not settled
+2026-01-07 02:01:44,879 - tcs_tracking - INFO - No COD payment data for 77237107637 - might be prepaid or not settled
+2026-01-07 02:01:49,456 - tcs_tracking - INFO - No COD payment data for 77237102204 - might be prepaid or not settled
+2026-01-07 02:01:54,040 - tcs_tracking - INFO - No COD payment data for 77237109453 - might be prepaid or not settled
+2026-01-07 02:01:58,622 - tcs_tracking - INFO - No COD payment data for 77237110485 - might be prepaid or not settled
+2026-01-07 02:02:03,341 - tcs_tracking - INFO - No COD payment data for 77237101182 - might be prepaid or not settled
+2026-01-07 02:02:07,868 - tcs_tracking - INFO - No COD payment data for 77237101186 - might be prepaid or not settled
+2026-01-07 02:02:12,469 - tcs_tracking - INFO - No COD payment data for 77237103112 - might be prepaid or not settled
+2026-01-07 02:02:17,018 - tcs_tracking - INFO - No COD payment data for 77237110732 - might be prepaid or not settled
+2026-01-07 02:02:21,595 - tcs_tracking - INFO - No COD payment data for 77237101172 - might be prepaid or not settled
+2026-01-07 02:02:26,157 - tcs_tracking - INFO - No COD payment data for 77237101183 - might be prepaid or not settled
+2026-01-07 02:02:30,721 - tcs_tracking - INFO - No COD payment data for 77237101178 - might be prepaid or not settled
+2026-01-07 02:02:30,741 - auto_tcs_sync - INFO - ✅ Batch complete: 0/20 synced
+2026-01-07 02:02:30,741 - auto_tcs_sync - INFO - ⏳ Waiting 60s before next batch...
+2026-01-07 02:03:30,744 - auto_tcs_sync - INFO - 📦 Processing batch of 20 orders...
+2026-01-07 02:03:33,097 - tcs_tracking - INFO - No COD payment data for 77237106927 - might be prepaid or not settled
+2026-01-07 02:03:37,660 - tcs_tracking - INFO - No COD payment data for 77237102302 - might be prepaid or not settled
+2026-01-07 02:03:42,206 - tcs_tracking - INFO - No COD payment data for 77237103026 - might be prepaid or not settled
+2026-01-07 02:03:46,761 - tcs_tracking - INFO - No COD payment data for 77237102216 - might be prepaid or not settled
+2026-01-07 02:03:51,345 - tcs_tracking - INFO - No COD payment data for 77237109281 - might be prepaid or not settled
+2026-01-07 02:03:55,876 - tcs_tracking - INFO - No COD payment data for 77237110516 - might be prepaid or not settled
+2026-01-07 02:04:00,434 - tcs_tracking - INFO - No COD payment data for 77237107214 - might be prepaid or not settled
+2026-01-07 02:04:04,975 - tcs_tracking - INFO - No COD payment data for 77237107494 - might be prepaid or not settled
+2026-01-07 02:04:09,523 - tcs_tracking - INFO - No COD payment data for 77237112505 - might be prepaid or not settled
+2026-01-07 02:04:14,075 - tcs_tracking - INFO - No COD payment data for 77237107637 - might be prepaid or not settled
+2026-01-07 02:04:18,618 - tcs_tracking - INFO - No COD payment data for 77237102204 - might be prepaid or not settled
+2026-01-07 02:04:23,238 - tcs_tracking - INFO - No COD payment data for 77237109453 - might be prepaid or not settled
+2026-01-07 02:04:27,800 - tcs_tracking - INFO - No COD payment data for 77237110485 - might be prepaid or not settled
+2026-01-07 02:04:32,390 - tcs_tracking - INFO - No COD payment data for 77237101182 - might be prepaid or not settled
+2026-01-07 02:04:36,939 - tcs_tracking - INFO - No COD payment data for 77237101186 - might be prepaid or not settled
+2026-01-07 02:04:41,481 - tcs_tracking - INFO - No COD payment data for 77237103112 - might be prepaid or not settled
+2026-01-07 02:04:46,004 - tcs_tracking - INFO - No COD payment data for 77237110732 - might be prepaid or not settled
+2026-01-07 02:04:50,559 - tcs_tracking - INFO - No COD payment data for 77237101172 - might be prepaid or not settled
+2026-01-07 02:04:55,089 - tcs_tracking - INFO - No COD payment data for 77237101183 - might be prepaid or not settled
+2026-01-07 02:04:59,627 - tcs_tracking - INFO - No COD payment data for 77237101178 - might be prepaid or not settled
+2026-01-07 02:04:59,646 - auto_tcs_sync - INFO - ✅ Batch complete: 0/20 synced
+2026-01-07 02:04:59,646 - auto_tcs_sync - INFO - ⏳ Waiting 60s before next batch....
+        2.  Examine frontend supervisor logs for compilation or javascript errors: ==> /var/log/supervisor/frontend.err.log <==
+(node:272) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:272) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(node:87) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:87) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+
+==> /var/log/supervisor/frontend.out.log <==
+If this was unintentional, check that you haven't mistakenly set it in your shell.
+Learn more here: https://cra.link/advanced-config
+
+Starting the development server...
+
+Compiled successfully!
+
+You can now view frontend in the browser.
+
+  Local:            http://localhost:3000
+  On Your Network:  http://10.64.141.204:3000
+
+Note that the development build is not optimized.
+To create a production build, use yarn build.
+
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/App.js
+Syntax error: Identifier 'useParams' has already been declared. (102:9) (102:9)
+ERROR in ./src/App.js
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /app/frontend/src/App.js: Identifier 'useParams' has already been declared. (102:9)
+
+  100 |
+  101 | // We need useParams for StorefrontWrapper
+> 102 | import { useParams } from 'react-router-dom';
+      |          ^
+  103 |
+  104 | // Protected Route wrapper
+  105 | function ProtectedRoute({ children }) {
+    at constructor (/app/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/app/frontend/node_modules/@babel/parser/lib/index.js:6624:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/app/frontend/node_modules/@babel/parser/lib/index.js:1646:19)
+    at FlowScopeHandler.declareName (/app/frontend/node_modules/@babel/parser/lib/index.js:1612:12)
+    at FlowScopeHandler.declareName (/app/frontend/node_modules/@babel/parser/lib/index.js:1713:11)
+    at FlowParserMixin.declareNameFromIdentifier (/app/frontend/node_modules/@babel/parser/lib/index.js:7594:16)
+    at FlowParserMixin.checkIdentifier (/app/frontend/node_modules/@babel/parser/lib/index.js:7590:12)
+    at FlowParserMixin.checkLVal (/app/frontend/node_modules/@babel/parser/lib/index.js:7527:12)
+    at FlowParserMixin.finishImportSpecifier (/app/frontend/node_modules/@babel/parser/lib/index.js:14342:10)
+    at FlowParserMixin.parseImportSpecifier (/app/frontend/node_modules/@babel/parser/lib/index.js:3485:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/app/frontend/node_modules/@babel/parser/lib/index.js:14478:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/app/frontend/node_modules/@babel/parser/lib/index.js:14318:37)
+    at FlowParserMixin.parseImport (/app/frontend/node_modules/@babel/parser/lib/index.js:14311:17)
+    at FlowParserMixin.parseStatementContent (/app/frontend/node_modules/@babel/parser/lib/index.js:12952:27)
+    at FlowParserMixin.parseStatementLike (/app/frontend/node_modules/@babel/parser/lib/index.js:12843:17)
+    at FlowParserMixin.parseStatementLike (/app/frontend/node_modules/@babel/parser/lib/index.js:2945:24)
+    at FlowParserMixin.parseModuleItem (/app/frontend/node_modules/@babel/parser/lib/index.js:12820:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/app/frontend/node_modules/@babel/parser/lib/index.js:13392:36)
+    at FlowParserMixin.parseBlockBody (/app/frontend/node_modules/@babel/parser/lib/index.js:13385:10)
+    at FlowParserMixin.parseProgram (/app/frontend/node_modules/@babel/parser/lib/index.js:12698:10)
+    at FlowParserMixin.parseTopLevel (/app/frontend/node_modules/@babel/parser/lib/index.js:12688:25)
+    at FlowParserMixin.parseTopLevel (/app/frontend/node_modules/@babel/parser/lib/index.js:3714:28)
+    at FlowParserMixin.parse (/app/frontend/node_modules/@babel/parser/lib/index.js:14568:25)
+    at parse (/app/frontend/node_modules/@babel/parser/lib/index.js:14602:38)
+    at parser (/app/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/app/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/app/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/app/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/app/frontend/node_modules/gensync/index.js:261:32)
+    at /app/frontend/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/app/frontend/node_modules/gensync/index.js:223:11)
+
+ERROR in [eslint] 
+src/App.js
+  Line 102:9:  Parsing error: Identifier 'useParams' has already been declared. (102:9)
+
+webpack compiled with 2 errors
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+yarn run v1.22.22
+$ craco start
+Attempting to bind to HOST environment variable: 0.0.0.0
+If this was unintentional, check that you haven't mistakenly set it in your shell.
+Learn more here: https://cra.link/advanced-config
+
+Starting the development server...
+
+Compiled successfully!
+
+You can now view frontend in the browser.
+
+  Local:            http://localhost:3000
+  On Your Network:  http://10.64.130.142:3000
+
+Note that the development build is not optimized.
+To create a production build, use yarn build.
+
+webpack compiled successfully
+yarn run v1.22.22
+$ craco start.
+        3.  Review the most recent code changes, particularly in  and the new components (, , ), for routing conflicts, infinite loops, or incorrect state handling.
+        4.  Use the screenshot tool to attempt a login and navigate to the dashboard, capturing any browser console errors.
+    - **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker. The application is currently unusable for the user. Fixing it will restore access and allow development to continue.
+    - **Status**: NOT STARTED
+    - **Is recurring issue?**: Y (likely related to the general login instability).
+    - **Should Test frontend/backend/both after fix?**: Both.
+
+- **Issue 2: Production Data Inconsistency and Incompleteness**
+    - **Attempted fixes**: Previous syncs timed out. The current agent performed a brief count check, which seemed plausible, but no robust, verifiable sync has been completed.
+    - **Next debug checklist**:
+        1.  Design and create a robust, idempotent data synchronization script or management command in the backend.
+        2.  Plan to clear transactional data (customers/orders, products) from the production database to ensure a clean slate before a full sync.
+        3.  Execute the sync for each store sequentially, monitoring logs to ensure completion without timeouts.
+    - **Why fix this issue and what will be achieved with the fix?**: A stable data foundation is required for the application to be usable in production and for new features to work reliably.
+    - **Status**: NOT STARTED
     - **Is recurring issue?**: Y
     - **Should Test frontend/backend/both after fix?**: Both.
 
-- **Issue 2: DWZ56 Tracking Cross-Store Data Contamination**
-    - **Attempted fixes**: The agent identified that the DWZ56 tracking logic in  queries for orders by number across multiple stores ( and ) without store-specific filtering. This can lead to incorrect tracking data being displayed if order numbers overlap. The issue was identified but not fixed.
-    - **Next debug checklist**:
-        1.  Review all database queries within .
-        2.  Ensure that every query to the  collection includes a  filter based on the currently selected store context.
-        3.  Pass the  as a parameter from the API endpoints down to the database access layer.
-    - **Why fix this issue and what will be achieved with the fix?**: This directly addresses the user's core requirement for complete data isolation and prevents critical business logic errors.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?**: Y
-    - **Should Test frontend/backend/both after fix?**: Backend.
-
 - **Issue 3: Long-standing Shopify OAuth and login stability issues**
-    - **Attempted fixes**: None. This is a known issue from a previous session.
+    - **Attempted fixes**: None. This is a known issue from a previous session. The latest session failure is likely a symptom of this.
     - **Next debug checklist**: Conduct a full review of the Shopify authentication flow in  and the user login flow in .
     - **Why fix this issue and what will be achieved with the fix?**: Improves core application reliability and user trust.
     - **Status**: NOT STARTED
@@ -69,110 +585,122 @@ PRODUCT REQUIREMENTS:
     - **Should Test frontend/backend/both after fix?**: Both.
 
 **In progress Task List**:
-- **Task 1: Complete UI/UX Overhaul (P0)**
-    - **Where to resume**: The agent has implemented a new  and theme. Now, all other admin pages (Dashboard, Orders, Products, etc.) need to be restyled to match the clean, modern aesthetic of Shopify's admin UI, using the new loading components and design patterns.
-    - **What will be achieved with this?**: A consistent, professional, and user-friendly admin interface that meets the user's specific design requirements.
+- **Task 1: Complete Admin UI/UX Overhaul**
+    - **Where to resume**: First, resolve the new session is not opening blocker (Issue #1). After that, thoroughly test the new admin pages (, , ) to ensure they load and display data correctly. Continue by restyling other admin pages to match the new aesthetic.
+    - **What will be achieved with this?**: A consistent, professional, and user-friendly admin interface that meets the user's design requirements.
     - **Status**: IN PROGRESS
     - **Should Test frontend/backend/both after fix?**: Frontend.
-    - **Blocked on something**: Production data stability (Issue #1).
-
-- **Task 2: Build Customer-Facing Storefront (P1)**
-    - **Where to resume**: The agent has created skeleton components in . The next steps are to:
-        1.  Integrate these components into the main application router, likely under dynamic routes like  and .
-        2.  Build the UI for the homepage, product listing, and product detail pages, inspired by .
-        3.  Create new backend endpoints to publicly serve product, category, and store information.
-        4.  Implement cart functionality (add to cart, view cart, update quantities).
-    - **What will be achieved with this?**: A fully functional, public e-commerce storefront for each of the user's stores.
-    - **Status**: IN PROGRESS
-    - **Should Test frontend/backend/both after fix?**: Both.
-    - **Blocked on something**: Production data stability (Issue #1).
+    - **Blocked on something**: Issue #1: new session is not opening.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks**:
-    *   (P1) Implement checkout flow for the new customer-facing storefront.
+    *   (P1) **Implement Storefront Email Notifications**: Implement automatic email sending for storefront order status updates (e.g., order confirmation, shipment with tracking).
 *   **Future Tasks**:
-    *   (P2) **Email Notification Configuration**: Prompt user for SendGrid API keys.
-    - (P2) **Investigate Shopify OAuth Instability**.
-    *   (P3) Refactor legacy components (, ).
+    *   (P2) **Refactor/Delete Old Components**: Remove the now-unused components (, , ) to clean up the codebase.
+    *   (P2) **Email Notification Configuration**: Prompt user for SendGrid API keys if required.
+    *   (P3) **Cleanup **: Remove temporary, one-time-use data migration endpoints.
 
 **Completed work in this session**
-- **Data Integrity Fixes**:
-    - Fixed a bug causing edited Shopify orders to show duplicate line items by filtering based on .
-    - Fixed a bug where 1688 purchase order fulfillment did not respect  isolation.
-    - Manually synced a missing Shopify order by creating a temporary endpoint.
-- **UI/UX Overhaul (In Progress)**:
-    - Enforced strict store isolation by removing the All Stores option and refactoring numerous components to use a global store context.
-    - Initiated a complete redesign of the admin UI to mimic Shopify, creating a new  and CSS theme file.
-    - Scaffolding created for the new -style customer-facing storefront.
+- **Customer-Facing Storefront & Checkout Flow**:
+    - Built a complete, public e-commerce storefront from scratch, including homepage, product listing/detail pages, and a full shopping cart.
+    - Implemented a multi-step checkout process integrated with Razorpay.
+    - Created an order confirmation page and backend logic to create .
+- **Real-Time Order Tracking Feature**:
+    - Developed a customer-facing page where users can track their order status in real-time.
+    - Created backend endpoints to fetch order status and allow admins to post updates (e.g., Confirmed, Shipped, Delivered) with notes and tracking numbers.
+- **Admin Management for Storefront**:
+    - Added a new Storefront Orders page to the admin panel for viewing, searching, filtering, and managing all orders from the public storefront.
+    - Included a modal for admins to update order statuses directly.
+- **Admin UI Redesign (In Progress)**:
+    - Replaced the primary admin dashboard, orders, and products pages with new, cleaner components (, , ) that match the Shopify aesthetic.
+- **Bug Fix & Stability**:
+    - Resolved a critical bug in  that caused cross-store data leakage.
+    - Reset the admin password to  to restore access to the admin panel during development.
+
+**Earlier issues found/mentioned but not fixed**
+- The technical debt of temporary data migration endpoints in  was identified in the initial handoff but has not yet been addressed.
+
+**Known issue recurrence from previous fork**
+- **Issue recurrence in previous fork**: Long-standing Shopify OAuth and login stability issues. The user's final message in this session, new session is not opening, confirms that core login/session stability remains a recurring problem.
+- **Recurrence count**: 2+
+- **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Data Migration & Recovery**: Attempted to move large datasets between environments using custom API endpoints, leading to issues with timeouts and data duplication. This highlights the need for robust, background-job-based data synchronization.
-*   **UI/UX Refactoring for Isolation**: A major architectural change in the frontend to move from a shared-view model (All Stores) to a strict single-store context, improving data safety and aligning with user requirements.
-*   **Feature Scaffolding**: The process of creating empty placeholder components and files as a first step in building a large new feature (the storefront).
+*   **Full-Stack Feature Development**: The agent demonstrated the ability to build an entire e-commerce flow, from frontend React components to backend FastAPI APIs and MongoDB database interactions.
+*   **Component-Based UI Refactoring**: A large-scale UI overhaul was initiated by replacing older, complex components with new, single-responsibility, styled components (, , ).
+*   **Payment Gateway Integration**: A checkout flow was successfully built on top of the existing Razorpay configuration.
+*   **Dynamic Routing & Context**:  and  were used to create a dynamic, multi-store-aware public storefront.
 
 **key DB schema**
-- : This collection was the source of major data duplication issues during migration. The sync logic in  was updated to correctly replace  instead of merging them, fixing how edited orders are handled.
-- : Logic updated in  to correctly populate  from  on creation and startup.
+- : (New Collection) Stores orders from the public storefront. Fields include , ,  (array of status updates with timestamps), , , , , and .
 
 **All files of reference**
-*   : Heavily modified with temporary migration endpoints, fixes to Shopify sync logic, and startup scripts.
-*   : Core logic updated to enforce single-store selection.
-*   : New component defining the new admin navigation.
-*   : Updated to integrate the new sidebar.
-*   : New directory containing placeholder components for the public e-commerce site.
-*   Multiple components updated for store isolation: , , , , .
+*   **/app/frontend/src/App.js**: Contains all routing logic for both the admin panel and the new public storefront. Key file for debugging the session issue.
+*   **/app/backend/routes/storefront.py**: Contains all backend logic for the new storefront, including order creation, tracking, and status updates.
+*   **/app/frontend/src/components/ShopifyDashboard.jsx**: The new admin dashboard component.
+*   **/app/frontend/src/components/ShopifyOrders.jsx**: The new admin page for Shopify orders.
+*   **/app/frontend/src/components/ShopifyProducts.jsx**: The new admin page for Shopify products.
+*   **/app/frontend/src/components/StorefrontOrders.jsx**: The admin page for managing new storefront orders.
+*   **/app/var/log/supervisor/**: Location of backend and frontend logs needed to debug the current session/login blocker.
 
 **Areas that need refactoring**:
-*   The  file is cluttered with single-use migration endpoints (, , , etc.). These should be cleaned up or moved to a separate management script once the production database is stable.
+*   The old admin components (, , ) should be deleted to prevent confusion and reduce codebase size.
+*   One-time-use data migration endpoints in  should be removed.
 
 **key api endpoints**
-*    (GET): Updated to filter by .
-*    (POST): New endpoint to fix data duplication. Intended for one-time use.
-*    (POST): New endpoint to manually sync a specific missing order.
+*    (POST): Creates a new order from the public storefront checkout.
+*    (GET): Retrieves the status and history for a specific storefront order.
+*    (POST): Allows an admin to update the status of a storefront order.
+*    (GET): Fetches all storefront orders for the admin panel.
 
 **Critical Info for New Agent**
-*   **PRIORITY 1: Stabilize Production Data.** The production database is in an unknown and likely incomplete state due to failed/timed-out migration and sync attempts. Before any new feature work, you MUST ensure a full, clean, and verified data sync is completed for all stores. All other work depends on this foundation.
-*   **User's New Vision is Ambitious.** The request for a Shopify-clone admin UI and a Net-a-Porter-clone storefront is a major project. Break it down into small, verifiable steps. Manage user expectations about the timeline.
-*   **Strict Store Isolation is Non-Negotiable.** The user was very explicit. Every feature, old and new, must operate only within the context of the selected store. Audit all backend endpoints and frontend components to ensure this is enforced.
-*   **Clean Up Temporary Code.** The  file contains several temporary endpoints for data migration. Once the data is stable, plan to remove this technical debt.
+*   **P0 BLOCKER: FIX LOGIN/SESSION ISSUE.** Your absolute first priority is to resolve the new session is not opening bug reported by the user. Investigate frontend and backend logs immediately. This is likely a critical error in the new admin components or a manifestation of the long-standing login instability. The app is unusable until this is fixed.
+*   **Admin Password**: The credentials for the local admin user are  / .
+*   **UI Overhaul In Progress**: You are in the middle of a major UI refactor. The dashboard, orders, and products pages have been replaced with new files. After fixing the blocker, you must test these new pages and then continue applying the Shopify aesthetic to the remaining admin sections.
+*   **Data Integrity is still a concern**: Although a quick check was done, the underlying need for a robust production data sync process has not been addressed. This remains a high-priority background risk.
 
 **documents and test reports created in this job**
-*   None
+*   /app/test_reports/iteration_19.json
+*   /app/test_reports/iteration_20.json
+*   /app/test_reports/iteration_21.json
+*   /app/test_reports/iteration_22.json
+*   /app/memory/PRD.md (updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **User:** (Provides screenshot) this - showing that an edited order in Shopify has a Removed item, but the app UI shows both.
-9.  **Agent:** Explains the fix and asks the user to deploy.
-8.  **User:** deployed
-7.  **User:** all these 3 stores are seperate how can u store data seperatelonly have switch option to avoid any issue rest purchase n tracking should be same no all store option toavoid duplication - **CRITICAL: User wants full data isolation.**
-6.  **User:** even for purchase and 1688 and tracking everything should be seperate - Reinforces the need for isolation.
-5.  **User:** also i need to make online store front for each store https://www.net-a-porter.com/en-us/ like this and back end just like shopify also i need ui to be like shopify even the loading - **CRITICAL: Major new feature request.**
-4.  **Agent:** Proposes deploying current fixes before starting the large new feature.
-3.  **User:** go ahead
-2.  **Agent:** Confirms starting work on the new UI.
-1.  **User:** go ahead - Approving the agent to continue with the new storefront/UI work.
+- **1. new session is not opening (LATEST & PENDING)**: User is reporting a critical, blocking issue where they cannot access the application.
+- 2. yes go ahead: User approved the agent's plan to implement real-time order tracking.
+- 3. all: User confirmed they want the agent to work on all proposed next steps (Checkout, UI Redesign, Data Verification).
+- 4. yes go ahead: User approved starting work on the checkout flow.
+- 5. go ahead: User approved continuing with the UI/storefront work.
+- 6. go ahead: User approved agent's plan to deploy fixes before starting major new features.
+- 7. go ahead: General approval.
+- 8. deployed: User confirmed deployment.
+- 9. all these 3 stores are seperate... : User provided critical requirement for complete data isolation.
+- 10. (Provides screenshot): User reported a UI bug with edited orders.
 
 **Project Health Check:**
-*   **Broken**: Production data integrity. The  and  collections are not reliably synced, making the production application non-functional.
+*   **Broken**: User Login/Sessions. The application is currently inaccessible to the user due to the new session is not opening error.
 *   **Mocked**: None.
 
 **3rd Party Integrations**
-*   **Shopify Admin API**: Core for syncing orders, products, and customers.
+*   **Shopify Admin API**: Core for syncing orders, products, customers.
+*   **Razorpay**: Integrated for the storefront checkout flow.
 *   **1688 Open Platform**: For creating purchase orders.
-*   **MongoDB Atlas**: Production database.
-*   **Other integrations from previous sessions**: TMAPI, Meta Business API, OpenAI GPT-4o, DWZ56 API, SendGrid.
+*   **DWZ56 API**: For shipping and tracking.
+*   **Other integrations**: TMAPI, Meta Business API, OpenAI GPT-4o, SendGrid.
 
 **Testing status**
-*   **Testing agent used after significant changes**: NO
-*   **Troubleshoot agent used after agent stuck in loop**: NO
-*   **Test files created**: None
-*   **Known regressions**: Production data has been wiped/partially synced multiple times, so it's in a regressed state compared to the preview environment's data.
+- **Testing agent used after significant changes**: YES
+- **Troubleshoot agent used after agent stuck in loop**: NO
+- **Test files created**: Test cases were added by the testing agent to .
+- **Known regressions**: The entire session/login functionality is broken as of the user's last message, preventing access to the application.
 
 **Credentials to test flow:**
-*   **Admin Login**:  /  (The password was reset during the session)
+*   **Admin Login**:  / 
 
 **What agent forgot to execute**
-*   The agent did not fix the identified **DWZ56 cross-store contamination issue** in .
-*   The agent failed to ensure the production data syncs completed successfully, acknowledging timeouts but moving on to new tasks. This is the most critical unresolved issue.</analysis>
+*   The agent did not delete the old, replaced admin components (, , ), creating technical debt.
+*   The agent did not remove the temporary data migration endpoints from  as noted in the initial handoff.</analysis>
