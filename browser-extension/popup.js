@@ -1,7 +1,8 @@
-// WaMerce 1688 Importer - Popup Script v3.0
-// One-click import with hardcoded deployment URL
+// WaMerce 1688 Importer - Popup Script v3.1
+// One-click import with deployment URL configuration
 
-// HARDCODED DEPLOYMENT URL - No user configuration needed
+// DEPLOYMENT URL - Can be updated for different environments
+// For production: Replace with your deployed URL
 const SERVER_URL = 'https://dropship-hub-154.preview.emergentagent.com';
 
 let products = [];
