@@ -7036,6 +7036,9 @@ app.include_router(storefront_cms_router)
 app.include_router(warehouse_router)
 app.include_router(sync_service_router)
 app.include_router(shopify_sync_router)
+app.include_router(whatsapp_api_router)
+app.include_router(marketing_router)
+app.include_router(settings_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 # ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================
