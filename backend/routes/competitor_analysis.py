@@ -749,6 +749,61 @@ async def delete_analysis(analysis_id: str):
     return {"success": True, "message": "Analysis deleted"}
 
 
+class BulkLookupRequest(BaseModel):
+    product_ids: List[str]
+    store_name: Optional[str] = None
+
+
+@router.post("/bulk-lookup")
+async def bulk_lookup_analyses(request: BulkLookupRequest):
+    """
+    Look up competitor analyses for multiple products at once.
+    Returns a map of product_id -> analysis data.
+    """
+    db = get_db()
+    
+    try:
+        # Build query
+        query = {"product_id": {"$in": request.product_ids}}
+        if request.store_name:
+            query["store_name"] = request.store_name
+        
+        # Get most recent analysis for each product
+        pipeline = [
+            {"$match": query},
+            {"$sort": {"created_at": -1}},
+            {"$group": {
+                "_id": "$product_id",
+                "analysis": {"$first": "$$ROOT"}
+            }}
+        ]
+        
+        results = await db.competitor_analyses.aggregate(pipeline).to_list(len(request.product_ids))
+        
+        # Build map
+        analyses_map = {}
+        for result in results:
+            product_id = result["_id"]
+            analysis = result["analysis"]
+            # Remove MongoDB _id
+            if "_id" in analysis:
+                del analysis["_id"]
+            analyses_map[product_id] = analysis
+        
+        return {
+            "success": True,
+            "analyses": analyses_map,
+            "found": len(analyses_map),
+            "requested": len(request.product_ids)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in bulk lookup: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
 # Pydantic model for title-based search
 class TitleSearchRequest(BaseModel):
     product_name: str
