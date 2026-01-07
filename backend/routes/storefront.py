@@ -460,7 +460,7 @@ class StatusUpdate(BaseModel):
 
 
 @router.put("/orders/{order_id}/status")
-async def update_order_status(order_id: str, update: StatusUpdate):
+async def update_order_status(order_id: str, update: StatusUpdate, background_tasks: BackgroundTasks):
     """Update order status - admin endpoint"""
     db = get_db()
     
@@ -471,7 +471,7 @@ async def update_order_status(order_id: str, update: StatusUpdate):
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
     
     # Check if order exists
-    order = await db.storefront_orders.find_one({"order_id": order_id})
+    order = await db.storefront_orders.find_one({"order_id": order_id}, {"_id": 0})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
@@ -503,6 +503,44 @@ async def update_order_status(order_id: str, update: StatusUpdate):
             "$push": {"status_history": status_entry}
         }
     )
+    
+    # Send email notifications based on status
+    email_svc = get_email_service()
+    if email_svc:
+        customer = order.get('customer', {})
+        email_order = {
+            "order_id": order_id,
+            "customer": {
+                "name": f"{customer.get('first_name', '')} {customer.get('last_name', '')}",
+                "email": customer.get('email'),
+                "phone": customer.get('phone')
+            },
+            "items": [
+                {
+                    "title": item.get('title', 'Product'),
+                    "quantity": item.get('quantity', 1),
+                    "price": item.get('price', 0),
+                    "image": item.get('image', '')
+                }
+                for item in order.get('line_items', [])
+            ],
+            "total": order.get('total', 0)
+        }
+        
+        if update.status == 'shipped' and update.tracking_number:
+            # Send shipment notification
+            background_tasks.add_task(
+                email_svc.send_shipment_notification,
+                email_order,
+                update.tracking_number,
+                update.courier or "DWZ56"
+            )
+            logger.info(f"Shipment email queued for order {order_id}")
+        
+        elif update.status == 'delivered':
+            # Send delivery confirmation
+            background_tasks.add_task(email_svc.send_delivery_confirmation, email_order)
+            logger.info(f"Delivery confirmation email queued for order {order_id}")
     
     return {
         "success": True,
