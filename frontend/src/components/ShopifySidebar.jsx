@@ -173,6 +173,12 @@ const ShopifySidebar = () => {
       icon: FileText,
       path: '/reports',
     },
+    {
+      id: 'sync',
+      label: 'Data Sync',
+      icon: RefreshCw,
+      path: '/sync-dashboard',
+    },
   ];
 
   const NavItem = ({ item, depth = 0 }) => {
