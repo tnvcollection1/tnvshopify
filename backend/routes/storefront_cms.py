@@ -2,16 +2,24 @@
 Backend for managing storefront content - banners, collections, homepage sections
 """
 from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, timezone
 import logging
 import uuid
+import os
+import shutil
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 # Will be injected from server.py
 db = None
+
+# Upload directory for CMS images
+UPLOAD_DIR = Path(__file__).parent.parent / "static" / "uploads" / "cms"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 def set_database(database):
     """Set database from server.py"""
