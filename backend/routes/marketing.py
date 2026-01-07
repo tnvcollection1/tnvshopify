@@ -63,7 +63,7 @@ async def get_marketing_stats():
                 if isinstance(date_str, datetime):
                     return date_str
                 return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-            except:
+            except Exception:
                 return None
         
         # Calculate revenues
@@ -90,7 +90,7 @@ async def get_marketing_stats():
         pending_orders = len([c for c in all_customers if c.get('fulfillment_status', '').lower() in ['unfulfilled', 'pending']])
         
         # WhatsApp sent count
-        whatsapp_sent = len([c for c in all_customers if c.get('messaged') == True])
+        whatsapp_sent = len([c for c in all_customers if c.get('messaged') is True])
         
         # Get inventory value
         inventory_items = await db.inventory_v2.find({}, {"_id": 0, "sale_price": 1, "cost": 1}).to_list(10000)
