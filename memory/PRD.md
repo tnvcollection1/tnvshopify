@@ -200,24 +200,14 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 
 ## Upcoming Tasks
 
-### Phase 1: Complete Chrome Extension Testing
-- Test extension on actual 1688 product pages
-- Verify image and variant scraping works
-- Test collection/search page scraping
+### Phase 1: Email Notifications (P1 - Deferred)
+- Order confirmation emails
+- Shipment notification with tracking
+- Requires SendGrid or Resend integration
 
-### Phase 2: Publish to Shopify (P1)
-- Build product creation endpoint
-- Connect UI for one-click publishing
-- Handle variant and image upload
-
-### Phase 3: Batch Historical Sync (P1)
-- Create UI for month-by-month sync selection
-- Process in smaller chunks to avoid timeouts
-
-### Phase 4: Enhanced Features (P2)
-- Account selection when placing 1688 orders
-- Auto-sync 1688 fulfillment status back to Shopify
-- Bulk order from dashboard
+### Phase 2: Production Data Sync Improvements
+- Robust sync verification
+- Timeout handling for large datasets
 
 ---
 
@@ -227,6 +217,18 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 - `POST /api/shopify/sync-background/{store_name}` - Start non-blocking sync
 - `GET /api/shopify/sync-status/{job_id}` - Check sync progress
 - `POST /api/shopify/sync-orders/{store_name}` - Sync specific order numbers
+- `POST /api/sync-single-order/{store_name}/{order_id}` - Sync single order
+
+### Storefront CMS
+- `GET /api/storefront-cms/banners?store_name=X` - Get store banners
+- `POST /api/storefront-cms/banners` - Create banner
+- `PUT /api/storefront-cms/banners/{id}` - Update banner
+- `DELETE /api/storefront-cms/banners/{id}` - Delete banner
+- `GET /api/storefront-cms/collections?store_name=X` - Get store collections
+- `POST /api/storefront-cms/collections` - Create collection
+- `GET /api/storefront-cms/settings/{store_name}` - Get storefront settings
+- `PUT /api/storefront-cms/settings` - Update storefront settings
+- `GET /api/storefront-cms/public/{store_name}/homepage` - Public homepage content
 
 ### 1688 Integration
 - `GET /api/1688/product-skus/{product_id}` - Fetch SKU/variant data via TMAPI
@@ -247,11 +249,17 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 - `/app/backend/server.py` - Main server, Shopify sync logic
 - `/app/backend/routes/alibaba_1688.py` - 1688 API integration, multi-account OAuth
 - `/app/backend/routes/product_scraper.py` - TMAPI import logic, extension import
+- `/app/backend/routes/storefront.py` - Storefront order and tracking APIs
+- `/app/backend/routes/storefront_cms.py` - CMS for banners, collections, settings
 
 ### Frontend
-- `/app/frontend/src/components/ProductEditModal.jsx` - Product editing with variant parsing
-- `/app/frontend/src/components/ProductScraper.jsx` - Product importer page
-- `/app/frontend/src/components/ProductCollector.jsx` - Dianxiaomi-style product management
+- `/app/frontend/src/components/ShopifyDashboard.jsx` - Main dashboard (Shopify-style)
+- `/app/frontend/src/components/ShopifyOrders.jsx` - Orders management
+- `/app/frontend/src/components/ShopifyProducts.jsx` - Products catalog
+- `/app/frontend/src/components/ShopifySidebar.jsx` - Navigation sidebar
+- `/app/frontend/src/components/StorefrontCMS.jsx` - CMS admin UI
+- `/app/frontend/src/components/StorefrontOrders.jsx` - Storefront orders admin
+- `/app/frontend/src/components/storefront/*.jsx` - Public storefront components
 
 ### Browser Extension
 - `/app/browser-extension/content.js` - v4.0 with enhanced scraping
@@ -266,17 +274,36 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 - `shopify_sync_jobs` - Background sync job tracking
 - `purchase_orders_1688` - 1688 purchase order records
 - `alibaba_accounts` - Connected 1688 accounts with tokens
+- `storefront_orders` - Public storefront orders
+- `storefront_banners` - CMS banners
+- `storefront_collections` - CMS collections
+- `storefront_settings` - CMS settings
+
+---
+
+## Storefront URLs
+- **TNC Collection (IN)**: `/store/tnvcollection`
+- **TNC Collection (PK)**: `/store/tnvcollectionpk`
+- **Ashmiaa**: `/store/ashmiaa`
+- **Default Shop**: `/shop` (TNC Collection)
 
 ---
 
 ## Credentials (for testing)
-- **Admin Login**: admin / Sunny345!
-- **TMAPI Token**: Stored in `backend/.env` as `TMAPI_TOKEN`
+- **Admin Login**: admin / admin
+
+---
+
+## Cleanup Completed (Jan 7, 2026)
+- ✅ Removed legacy components: `Dashboard.jsx`, `DashboardOptimized.jsx`, `Orders.jsx`, `ProductsCatalog.jsx`
+- ✅ Removed temporary migration endpoints: `migrate-preview-data`, `migrate-products`, `deduplicate-customers`, `fix-store-domains`
+- ✅ Removed empty "asmia" store
+- ✅ Updated routes to use new Shopify-styled components
 
 ---
 
 ## Last Updated
-January 6, 2026 - Session 11: Bulk Auto-Link by Image Feature
+January 7, 2026 - Session 12: Storefront CMS, Sidebar Restoration, Code Cleanup
 
 ---
 
