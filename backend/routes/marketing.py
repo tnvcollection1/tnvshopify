@@ -55,23 +55,34 @@ async def get_marketing_stats():
         # Get all customers
         all_customers = await db.customers.find({}, {"_id": 0}).to_list(100000)
         
+        # Helper function to parse date strings
+        def parse_date(date_str):
+            if not date_str:
+                return None
+            try:
+                if isinstance(date_str, datetime):
+                    return date_str
+                return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            except:
+                return None
+        
         # Calculate revenues
         today_revenue = sum(
             c.get('total_spent', 0) 
             for c in all_customers 
-            if c.get('created_at') and c.get('created_at') >= today_start.isoformat()
+            if parse_date(c.get('created_at')) and parse_date(c.get('created_at')) >= today_start
         )
         
         week_revenue = sum(
             c.get('total_spent', 0)
             for c in all_customers
-            if c.get('created_at') and c.get('created_at') >= week_start.isoformat()
+            if parse_date(c.get('created_at')) and parse_date(c.get('created_at')) >= week_start
         )
         
         month_revenue = sum(
             c.get('total_spent', 0)
             for c in all_customers
-            if c.get('created_at') and c.get('created_at') >= month_start.isoformat()
+            if parse_date(c.get('created_at')) and parse_date(c.get('created_at')) >= month_start
         )
         
         # Count orders
