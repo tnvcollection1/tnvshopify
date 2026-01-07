@@ -176,7 +176,7 @@ class EmailService:
                             <p style="margin: 0; font-weight: 500;">
                                 {order.get('payment_method', 'Online Payment').replace('_', ' ').title()}
                             </p>
-                            {f"<p style='margin: 4px 0 0; color: #22c55e; font-size: 13px;'>✓ Payment received</p>" if order.get('payment_status') == 'paid' else "<p style='margin: 4px 0 0; color: #f59e0b; font-size: 13px;'>Payment pending</p>"}
+                            {"<p style='margin: 4px 0 0; color: #22c55e; font-size: 13px;'>✓ Payment received</p>" if order.get('payment_status') == 'paid' else "<p style='margin: 4px 0 0; color: #f59e0b; font-size: 13px;'>Payment pending</p>"}
                         </div>
                     </div>
                     
