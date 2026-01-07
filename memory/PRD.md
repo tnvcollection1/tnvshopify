@@ -36,6 +36,7 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - Google Vision API for image-based competitor search
 - **Title-based fallback search** when image search yields no results
 - **Currency conversion** for accurate multi-region price comparisons
+- **Price alert notifications** when competitors lower prices
 - Price comparison dashboard
 
 ---
@@ -54,32 +55,34 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - ✅ Admin panel with Shopify-style UI
 - ✅ **Competitor Title Search Fallback** (Jan 7, 2025)
 - ✅ **Currency Conversion Service** (Jan 7, 2025)
-  - Live exchange rates from open.er-api.com
-  - Converts USD/EUR/GBP/CNY/AED → INR
-  - Currency detection based on URL domain
-  - `GET /api/competitor/currency-rates` endpoint
-- ✅ **server.py Refactoring** (Jan 7, 2025)
-  - Removed ~290 lines of duplicate code
-  - Settings endpoints moved to `/routes/settings.py`
-  - Marketing endpoints moved to `/routes/marketing.py`
-  - Fixed datetime comparison bug in marketing stats
+- ✅ **server.py Refactoring** (Jan 7, 2025) - 395 lines removed
+- ✅ **Price Alert Notifications** (Jan 7, 2025)
+  - PriceAlertService monitors competitor prices
+  - Auto-triggers when competitor < your price
+  - In-app notification bell with unread count
+  - Email alerts via SendGrid (optional)
+  - Per-product alert settings
 
-### Auto-Link Feature Status (Verified Jan 7, 2025)
-- Backend endpoint: `POST /api/shopify/products/bulk-auto-link`
-- Uses TMAPI for 1688 image search
-- Test run: 9/10 products successfully linked (90% success rate)
-- Frontend button available at `/products` page
+### Price Alert System (Jan 7, 2025)
+- Backend: `price_alert_service.py`
+- MongoDB collections: `notifications`, `price_alerts`
+- Frontend: NotificationBell component with real-time polling
+- Endpoints:
+  - `GET /api/competitor/notifications`
+  - `POST /api/competitor/notifications/{id}/read`
+  - `POST /api/competitor/notifications/mark-all-read`
+  - `POST /api/competitor/check-alerts/{analysis_id}`
+  - `GET/POST /api/competitor/alerts/settings`
+- Tests: 19/19 passed (100%)
 
-### Competitor Title Search (Jan 7, 2025)
-- Backend: `web_search_service.py`, `competitor_analysis.py`
-- New endpoint: `POST /api/competitor/search-by-title`
-- Fallback in: `POST /api/competitor/analyze-from-url`
-- Tests: 14/14 passed (100%)
-
-### Currency Conversion (Jan 7, 2025)
-- Backend: `currency_service.py`
-- Live rates: USD=90.21, EUR=105.48, GBP=121.74 (to INR)
-- Tests: 32/32 passed (100%)
+### Server.py Refactoring Summary
+- Original: 7,205 lines
+- Current: 6,810 lines
+- **Total Removed: 395 lines**
+- Duplicates removed:
+  - Settings auto-sync endpoints → `/routes/settings.py`
+  - Marketing stats/campaigns → `/routes/marketing.py`
+  - WhatsApp marketing → `/routes/whatsapp_api.py`
 
 ---
 
@@ -93,12 +96,11 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ### P2 - Medium Priority
 - Shopify OAuth/session stability fixes
-- UI polish across admin pages
 - Chrome Extension testing on live 1688 pages
+- Scheduled competitor price checks
 
 ### P3 - Low Priority
-- Additional server.py cleanup (potential remaining duplicates)
-- Price alert notifications
+- Additional server.py cleanup (Shopify sync endpoints)
 
 ---
 
@@ -111,20 +113,18 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - External APIs: Shopify, TMAPI (1688), Google Vision, Razorpay, SendGrid
 
 ### Key Files
-- `/app/backend/server.py` - Main API server (refactored, 6918 lines)
-- `/app/backend/routes/shopify_sync.py` - Shopify sync endpoints
-- `/app/backend/routes/competitor_analysis.py` - Competitor analysis
-- `/app/backend/routes/marketing.py` - Marketing endpoints
-- `/app/backend/routes/settings.py` - Settings endpoints
+- `/app/backend/server.py` - Main API server (6,810 lines)
+- `/app/backend/routes/competitor_analysis.py` - Competitor + notifications
+- `/app/backend/services/price_alert_service.py` - Price alert logic
 - `/app/backend/services/currency_service.py` - Currency conversion
-- `/app/backend/services/web_search_service.py` - Title-based web search
-- `/app/frontend/src/components/CompetitorDashboard.jsx` - Competitor analysis UI
+- `/app/frontend/src/components/CompetitorDashboard.jsx` - Dashboard + notifications
 
 ### Database Collections
 - `stores` - Store configurations
 - `shopify_products` - Synced product data
-- `product_links` - Shopify-1688 product links
-- `competitor_analyses` - Competitor analysis results (includes `search_method`, `base_currency` fields)
+- `competitor_analyses` - Analysis results
+- `notifications` - Price alert notifications
+- `price_alerts` - Per-product alert settings
 
 ---
 
@@ -139,4 +139,4 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ## Known Issues
 1. Shopify OAuth sessions may drop intermittently (P2)
-2. Potential remaining duplicate code in server.py (P3)
+2. Some Shopify sync endpoints still duplicated in server.py (P3)
