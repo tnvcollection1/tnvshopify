@@ -106,6 +106,7 @@ const ShopifySidebar = () => {
         { label: 'Purchase Orders', path: '/purchase-1688', icon: CreditCard },
         { label: 'Bulk Order', path: '/bulk-order-1688', icon: Box },
         { label: 'Image Search', path: '/image-search', icon: Search },
+        { label: 'Competitor Prices', path: '/competitor-dashboard', icon: TrendingUp },
         { label: 'Product Collector', path: '/product-collector', icon: Package },
         { label: '1688 Accounts', path: '/1688-accounts', icon: Users },
         { label: 'Taobao Import', path: '/taobao-import', icon: Globe },
