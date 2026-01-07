@@ -562,6 +562,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/sync-dashboard" 
+        element={
+          <ProtectedRoute>
+            <SyncDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/pricing" 
         element={
           <ProtectedRoute>
