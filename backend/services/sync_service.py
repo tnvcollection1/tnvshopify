@@ -143,7 +143,7 @@ async def record_sync_history(job_id: str, store_name: str, sync_type: str,
 async def sync_orders_chunked(job_id: str, store_name: str, incremental: bool, 
                                days_back: int, chunk_size: int):
     """Sync orders in chunks with progress tracking"""
-    from routes.shopify_oauth import ShopifySync
+    from shopify_sync import ShopifyOrderSync
     
     try:
         # Get store credentials
@@ -157,7 +157,7 @@ async def sync_orders_chunked(job_id: str, store_name: str, incremental: bool,
         if not shopify_domain or not shopify_token:
             raise Exception("Store missing Shopify credentials")
         
-        sync = ShopifySync(shopify_domain, shopify_token)
+        sync = ShopifyOrderSync(shopify_domain, shopify_token)
         
         # Determine sync start date
         if incremental:
