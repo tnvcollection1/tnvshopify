@@ -63,6 +63,7 @@ import SuperAdminDashboard from "@/components/SuperAdminDashboard";
 import WhatsAppCaseStudy from "@/components/WhatsAppCaseStudy";
 import StorefrontOrders from "@/components/StorefrontOrders";
 import StorefrontCMS from "@/components/StorefrontCMS";
+import SyncDashboard from "@/components/SyncDashboard";
 // Storefront Components
 import { StorefrontLayout, CartProvider } from "@/components/storefront/StorefrontLayout";
 import StorefrontHome from "@/components/storefront/StorefrontHome";
