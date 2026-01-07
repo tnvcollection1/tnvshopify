@@ -95,6 +95,7 @@ const ShopifySidebar = () => {
         { label: 'Inventory', path: '/inventory', icon: Layers },
         { label: 'Inventory Health', path: '/inventory-health', icon: Activity },
         { label: 'Inventory Clearance', path: '/inventory-clearance', icon: Box },
+        { label: 'Stock Upload', path: '/stock-upload', icon: FileText },
       ]
     },
     {
@@ -107,6 +108,7 @@ const ShopifySidebar = () => {
         { label: 'Image Search', path: '/image-search', icon: Search },
         { label: 'Product Collector', path: '/product-collector', icon: Package },
         { label: '1688 Accounts', path: '/1688-accounts', icon: Users },
+        { label: 'Taobao Import', path: '/taobao-import', icon: Globe },
       ]
     },
     {
