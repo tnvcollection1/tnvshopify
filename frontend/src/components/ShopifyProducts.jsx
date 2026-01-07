@@ -445,11 +445,47 @@ const ShopifyProducts = () => {
                 {total.toLocaleString()} products • Link to 1688 for auto-fulfillment
               </p>
             </div>
-            <Button onClick={handleSyncAll} disabled={syncing} className="bg-[#008060] hover:bg-[#006e52]">
-              <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-              {syncing ? 'Syncing...' : 'Sync Products'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={handleBulkAutoLink} 
+                disabled={bulkLinking || storeFilter === 'all'} 
+                className="bg-orange-500 hover:bg-orange-600"
+                title={storeFilter === 'all' ? 'Select a store first' : 'Auto-link unlinked products using image search'}
+              >
+                <Zap className={`w-4 h-4 mr-2 ${bulkLinking ? 'animate-pulse' : ''}`} />
+                {bulkLinking ? 'Auto-Linking...' : 'Auto-Link to 1688'}
+              </Button>
+              <Button onClick={handleSyncAll} disabled={syncing} className="bg-[#008060] hover:bg-[#006e52]">
+                <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+                {syncing ? 'Syncing...' : 'Sync Products'}
+              </Button>
+            </div>
           </div>
+          
+          {/* Bulk Link Progress */}
+          {bulkLinkJob && bulkLinkJob.status !== 'completed' && (
+            <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-orange-800">
+                  Auto-linking in progress...
+                </span>
+                <span className="text-sm text-orange-600">
+                  {bulkLinkJob.processed || 0} / {bulkLinkJob.total || 0} products
+                </span>
+              </div>
+              <div className="w-full bg-orange-200 rounded-full h-2">
+                <div 
+                  className="bg-orange-500 h-2 rounded-full transition-all"
+                  style={{ width: `${bulkLinkJob.total ? (bulkLinkJob.processed / bulkLinkJob.total) * 100 : 0}%` }}
+                />
+              </div>
+              {bulkLinkJob.linked > 0 && (
+                <p className="text-xs text-orange-600 mt-1">
+                  ✓ {bulkLinkJob.linked} linked successfully
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
