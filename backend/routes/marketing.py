@@ -55,14 +55,21 @@ async def get_marketing_stats():
         # Get all customers
         all_customers = await db.customers.find({}, {"_id": 0}).to_list(100000)
         
-        # Helper function to parse date strings
+        # Helper function to parse date strings with timezone awareness
         def parse_date(date_str):
             if not date_str:
                 return None
             try:
                 if isinstance(date_str, datetime):
+                    # Ensure timezone awareness
+                    if date_str.tzinfo is None:
+                        return date_str.replace(tzinfo=timezone.utc)
                     return date_str
-                return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                # Parse ISO format string
+                dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return dt
             except Exception:
                 return None
         
