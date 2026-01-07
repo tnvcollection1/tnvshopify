@@ -560,6 +560,7 @@ async def get_analysis(analysis_id: str):
     # Calculate price comparison if we have competitor prices
     your_price = analysis.get("your_price", 0)
     competitor_prices = analysis.get("competitor_prices", [])
+    base_currency = analysis.get("base_currency", "INR")
     
     if competitor_prices and your_price > 0:
         all_prices = []
@@ -580,10 +581,37 @@ async def get_analysis(analysis_id: str):
                 "price_difference_percent": round(((your_price - avg_competitor_price) / avg_competitor_price) * 100, 1) if avg_competitor_price > 0 else 0,
                 "recommendation": "competitive" if abs(your_price - avg_competitor_price) / avg_competitor_price < 0.1 else (
                     "consider_lowering" if your_price > avg_competitor_price else "premium_pricing"
-                )
+                ),
+                "currency": base_currency,
+                "prices_converted": any(cp.get("prices_converted") for cp in competitor_prices)
             }
     
     return {"success": True, "analysis": analysis}
+
+
+@router.get("/currency-rates")
+async def get_currency_rates():
+    """Get current exchange rates for supported currencies"""
+    try:
+        rates = {}
+        base = currency_service.base_currency
+        
+        for currency in ['USD', 'EUR', 'GBP', 'CNY', 'AED']:
+            rate = await currency_service.get_exchange_rate(currency, base)
+            rates[currency] = round(rate, 4)
+        
+        return {
+            "success": True,
+            "base_currency": base,
+            "rates": rates,
+            "note": "Rates show conversion to base currency"
+        }
+    except Exception as e:
+        logger.error(f"Error fetching currency rates: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
 
 @router.get("/analyses")
@@ -611,10 +639,11 @@ async def get_recent_analyses(
 
 
 @router.post("/extract-prices")
-async def extract_prices_endpoint(urls: List[str]):
+async def extract_prices_endpoint(urls: List[str], base_currency: str = "INR"):
     """
     Manually extract prices from a list of competitor URLs.
     Useful for re-extracting or testing specific URLs.
+    Prices are converted to the specified base currency.
     """
     if len(urls) > 10:
         raise HTTPException(status_code=400, detail="Maximum 10 URLs per request")
