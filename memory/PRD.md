@@ -34,6 +34,7 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ### 7. Competitor Analysis
 - Google Vision API for image-based competitor search
+- **NEW: Title-based fallback search** when image search yields no results
 - Price comparison dashboard
 
 ---
@@ -50,12 +51,24 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - ✅ Competitor Price Dashboard with Google Vision API
 - ✅ **Auto-Link Feature** - Bulk linking Shopify products to 1688 via image search
 - ✅ Admin panel with Shopify-style UI
+- ✅ **NEW: Competitor Title Search Fallback** (Jan 7, 2025)
+  - WebSearchService using DuckDuckGo for title-based search
+  - `POST /api/competitor/search-by-title` endpoint
+  - Auto-fallback when image search returns no results
+  - "Title Search Only" tab in UI
+  - Search method badges (Image Match, Title Fallback, Title Search)
 
 ### Auto-Link Feature Status (Verified Jan 7, 2025)
 - Backend endpoint: `POST /api/shopify/products/bulk-auto-link`
 - Uses TMAPI for 1688 image search
 - Test run: 9/10 products successfully linked (90% success rate)
 - Frontend button available at `/products` page
+
+### Competitor Title Search (Jan 7, 2025)
+- Backend: `web_search_service.py`, `competitor_analysis.py`
+- New endpoint: `POST /api/competitor/search-by-title`
+- Fallback in: `POST /api/competitor/analyze-from-url`
+- Tests: 14/14 passed (100%)
 
 ---
 
@@ -66,11 +79,10 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ### P1 - High Priority
 - Complete `server.py` refactoring (remove duplicated endpoints)
-- Currency conversion in Competitor Dashboard
+- Currency conversion in Competitor Dashboard (USD/EUR → INR)
 
 ### P2 - Medium Priority
 - Shopify OAuth/session stability fixes
-- Competitor search fallback (product title search)
 - UI polish across admin pages
 
 ### P3 - Low Priority
@@ -89,14 +101,17 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 ### Key Files
 - `/app/backend/server.py` - Main API server (needs refactoring)
 - `/app/backend/routes/shopify_sync.py` - Shopify sync endpoints
+- `/app/backend/routes/competitor_analysis.py` - Competitor analysis
 - `/app/backend/services/image_search_service.py` - 1688 image search
+- `/app/backend/services/web_search_service.py` - Title-based web search
 - `/app/frontend/src/components/ShopifyProducts.jsx` - Products catalog
+- `/app/frontend/src/components/CompetitorDashboard.jsx` - Competitor analysis UI
 
 ### Database Collections
 - `stores` - Store configurations
 - `shopify_products` - Synced product data
 - `product_links` - Shopify-1688 product links
-- `competitor_analyses` - Competitor analysis results
+- `competitor_analyses` - Competitor analysis results (includes `search_method` field)
 
 ---
 
@@ -111,5 +126,5 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ## Known Issues
 1. `server.py` has duplicated endpoints (routers created but old code not removed)
-2. Competitor Dashboard doesn't convert currencies
+2. Competitor Dashboard doesn't convert currencies between regions
 3. Shopify OAuth sessions may drop intermittently
