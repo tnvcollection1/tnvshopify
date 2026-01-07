@@ -330,7 +330,7 @@ const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedS
         </DialogHeader>
 
         {/* Mode Tabs */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 flex-wrap">
           <Button
             variant={mode === 'select' ? 'default' : 'outline'}
             size="sm"
@@ -347,6 +347,21 @@ const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedS
             <Upload className="w-4 h-4 mr-2" />
             Upload Image
           </Button>
+          <Button
+            variant={mode === 'title' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setMode('title')}
+          >
+            <Search className="w-4 h-4 mr-2" />
+            Title Search Only
+          </Button>
+        </div>
+
+        {/* Info about search methods */}
+        <div className="text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded">
+          {mode === 'select' && '🖼️ Image search with automatic title fallback if no exact image matches found'}
+          {mode === 'upload' && '🖼️ Upload your own image - falls back to title search if needed'}
+          {mode === 'title' && '📝 Search by product name only - best for unique/custom products'}
         </div>
 
         {/* Store Selector */}
@@ -373,6 +388,44 @@ const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedS
             selectedStore={selectedStore} 
             onSelectProduct={handleProductSelect} 
           />
+        ) : mode === 'title' ? (
+          /* Title Search Form */
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Product Name *</label>
+              <Input
+                placeholder="Enter product name to search..."
+                value={form.product_name}
+                onChange={(e) => setForm(f => ({ ...f, product_name: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-1 block">Your Price (optional)</label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={form.your_price}
+                  onChange={(e) => setForm(f => ({ ...f, your_price: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Category</label>
+                <select
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                  value={form.category}
+                  onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))}
+                >
+                  <option value="general">General</option>
+                  <option value="apparel">Apparel</option>
+                  <option value="electronics">Electronics</option>
+                  <option value="home">Home & Garden</option>
+                  <option value="beauty">Beauty</option>
+                  <option value="sports">Sports</option>
+                </select>
+              </div>
+            </div>
+          </div>
         ) : (
           <div
             onClick={() => fileInputRef.current?.click()}
