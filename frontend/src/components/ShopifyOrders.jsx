@@ -242,10 +242,12 @@ const ShopifyOrders = () => {
   }, [selectedStore]);
 
   const fetchOrders = useCallback(async () => {
+    // Don't fetch until store is selected
+    if (!selectedStore) return;
+    
     setLoading(true);
     try {
-      const params = { limit: 50, page };
-      if (selectedStore && selectedStore !== 'all') params.store_name = selectedStore;
+      const params = { limit: 50, page, store_name: selectedStore };
       if (filters.fulfillment !== 'all') params.fulfillment_status = filters.fulfillment;
       if (filters.payment !== 'all') params.payment_status = filters.payment;
       if (filters.delivery !== 'all') params.delivery_status = filters.delivery;
