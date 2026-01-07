@@ -586,7 +586,7 @@ const CompetitorDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stores, setStores] = useState([]);
-  const [analysisStore, setAnalysisStore] = useState(selectedStore || 'ashmiaa');
+  const [analysisStore, setAnalysisStore] = useState('ashmiaa');
 
   const loadStores = useCallback(async () => {
     try {
