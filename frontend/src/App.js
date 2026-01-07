@@ -545,6 +545,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/storefront-cms" 
+        element={
+          <ProtectedRoute>
+            <StorefrontCMS />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/bulk-order-1688" 
         element={
           <ProtectedRoute>
