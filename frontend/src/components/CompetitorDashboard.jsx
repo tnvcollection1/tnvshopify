@@ -15,7 +15,11 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
-  ImagePlus
+  ImagePlus,
+  Package,
+  Store,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,21 +29,156 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { useStore } from '../contexts/StoreContext';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// ==================== Image Upload Dialog ====================
-const ImageUploadDialog = ({ isOpen, onClose, onAnalysisComplete }) => {
+// ==================== Product Selector ====================
+const ProductSelector = ({ onSelectProduct, selectedStore }) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 12;
+
+  const loadProducts = useCallback(async () => {
+    if (!selectedStore) return;
+    
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        store_name: selectedStore,
+        page: page.toString(),
+        page_size: pageSize.toString()
+      });
+      
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+      
+      const response = await axios.get(`${API}/api/shopify/products?${params}`);
+      setProducts(response.data.products || []);
+      setTotal(response.data.total || 0);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedStore, page, searchQuery]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setPage(1);
+    loadProducts();
+  };
+
+  const totalPages = Math.ceil(total / pageSize);
+
+  return (
+    <div className="space-y-4">
+      {/* Search Bar */}
+      <form onSubmit={handleSearch} className="flex gap-2">
+        <Input
+          placeholder="Search products..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-1"
+        />
+        <Button type="submit" disabled={loading}>
+          <Search className="w-4 h-4" />
+        </Button>
+      </form>
+
+      {/* Products Grid */}
+      {loading ? (
+        <div className="grid grid-cols-3 gap-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-gray-100 rounded-lg h-40 animate-pulse" />
+          ))}
+        </div>
+      ) : products.length > 0 ? (
+        <div className="grid grid-cols-3 gap-3 max-h-[400px] overflow-y-auto">
+          {products.map((product) => (
+            <div
+              key={product.shopify_product_id}
+              onClick={() => product.image_url && onSelectProduct(product)}
+              className={`
+                border rounded-lg overflow-hidden cursor-pointer transition-all hover:shadow-md
+                ${!product.image_url ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-500'}
+              `}
+            >
+              <div className="aspect-square bg-gray-100 relative">
+                {product.image_url ? (
+                  <img 
+                    src={product.image_url} 
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <Image className="w-8 h-8 text-gray-300" />
+                  </div>
+                )}
+              </div>
+              <div className="p-2">
+                <p className="text-xs font-medium truncate">{product.title}</p>
+                <p className="text-sm font-bold text-green-600">₹{product.price?.toLocaleString()}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <Package className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+          <p>No products found</p>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-2 border-t">
+          <span className="text-sm text-gray-500">
+            {total} products total
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-sm">
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ==================== Analysis Dialog ====================
+const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedStore, onStoreChange }) => {
+  const [mode, setMode] = useState('select'); // 'select' or 'upload'
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -51,6 +190,28 @@ const ImageUploadDialog = ({ isOpen, onClose, onAnalysisComplete }) => {
     category: 'general'
   });
   const fileInputRef = useRef(null);
+
+  // Reset when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setMode('select');
+      setSelectedProduct(null);
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setForm({ product_id: '', product_name: '', your_price: '', category: 'general' });
+    }
+  }, [isOpen]);
+
+  const handleProductSelect = (product) => {
+    setSelectedProduct(product);
+    setForm({
+      product_id: product.shopify_product_id,
+      product_name: product.title,
+      your_price: product.price?.toString() || '',
+      category: product.product_type || 'general'
+    });
+    setPreviewUrl(product.image_url);
+  };
 
   const handleFile = (file) => {
     if (!file) return;
@@ -66,45 +227,54 @@ const ImageUploadDialog = ({ isOpen, onClose, onAnalysisComplete }) => {
     }
     
     setSelectedFile(file);
+    setSelectedProduct(null);
     const reader = new FileReader();
     reader.onloadend = () => setPreviewUrl(reader.result);
     reader.readAsDataURL(file);
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setDragActive(false);
-    handleFile(e.dataTransfer.files[0]);
-  };
-
   const handleSubmit = async () => {
-    if (!selectedFile || !form.product_name || !form.your_price) {
+    if ((!selectedProduct && !selectedFile) || !form.product_name || !form.your_price) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('product_id', form.product_id || `prod_${Date.now()}`);
-      formData.append('product_name', form.product_name);
-      formData.append('your_price', form.your_price);
-      formData.append('category', form.category);
+      let response;
 
-      const response = await axios.post(
-        `${API}/api/competitor/analyze-image`,
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 }
-      );
+      if (selectedProduct && selectedProduct.image_url) {
+        // Use product image URL
+        response = await axios.post(
+          `${API}/api/competitor/analyze-from-url`,
+          {
+            image_url: selectedProduct.image_url,
+            product_id: form.product_id || `prod_${Date.now()}`,
+            product_name: form.product_name,
+            your_price: parseFloat(form.your_price),
+            category: form.category,
+            store_name: selectedStore
+          },
+          { timeout: 120000 }
+        );
+      } else if (selectedFile) {
+        // Upload file
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('product_id', form.product_id || `prod_${Date.now()}`);
+        formData.append('product_name', form.product_name);
+        formData.append('your_price', form.your_price);
+        formData.append('category', form.category);
+
+        response = await axios.post(
+          `${API}/api/competitor/analyze-image`,
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 }
+        );
+      }
 
       toast.success(`Found ${response.data.competitor_count} competitors!`);
       onAnalysisComplete(response.data);
-      
-      // Reset form
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      setForm({ product_id: '', product_name: '', your_price: '', category: 'general' });
       onClose();
     } catch (error) {
       console.error('Analysis error:', error);
@@ -116,25 +286,67 @@ const ImageUploadDialog = ({ isOpen, onClose, onAnalysisComplete }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Analyze Product for Competitors</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Drop Zone */}
+        {/* Mode Tabs */}
+        <div className="flex gap-2 mb-4">
+          <Button
+            variant={mode === 'select' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setMode('select')}
+          >
+            <Package className="w-4 h-4 mr-2" />
+            Select from Products
+          </Button>
+          <Button
+            variant={mode === 'upload' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setMode('upload')}
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Image
+          </Button>
+        </div>
+
+        {/* Store Selector */}
+        {mode === 'select' && (
+          <div className="mb-4">
+            <label className="text-sm font-medium mb-1 block">Select Store</label>
+            <select
+              className="w-full border rounded-md px-3 py-2 text-sm"
+              value={selectedStore}
+              onChange={(e) => onStoreChange(e.target.value)}
+            >
+              {stores.map((store) => (
+                <option key={store.store_name} value={store.store_name}>
+                  {store.display_name || store.store_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Content based on mode */}
+        {mode === 'select' ? (
+          <ProductSelector 
+            selectedStore={selectedStore} 
+            onSelectProduct={handleProductSelect} 
+          />
+        ) : (
           <div
             onClick={() => fileInputRef.current?.click()}
-            onDrop={handleDrop}
+            onDrop={(e) => { e.preventDefault(); setDragActive(false); handleFile(e.dataTransfer.files[0]); }}
             onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
             onDragLeave={() => setDragActive(false)}
             className={`
               border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all
               ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
-              ${uploading ? 'opacity-50 cursor-wait' : ''}
             `}
           >
-            {previewUrl ? (
+            {previewUrl && !selectedProduct ? (
               <div className="space-y-2">
                 <img src={previewUrl} alt="Preview" className="max-h-32 mx-auto rounded" />
                 <p className="text-sm text-gray-600">{selectedFile?.name}</p>
@@ -147,59 +359,85 @@ const ImageUploadDialog = ({ isOpen, onClose, onAnalysisComplete }) => {
               </div>
             )}
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => handleFile(e.target.files[0])}
-          />
+        )}
 
-          {/* Form Fields */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
-              <label className="text-sm font-medium">Product Name *</label>
-              <Input
-                value={form.product_name}
-                onChange={(e) => setForm({ ...form, product_name: e.target.value })}
-                placeholder="e.g., Blue Wireless Headphones"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Your Price (₹) *</label>
-              <Input
-                type="number"
-                value={form.your_price}
-                onChange={(e) => setForm({ ...form, your_price: e.target.value })}
-                placeholder="1999"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Category</label>
-              <select
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-              >
-                <option value="general">General</option>
-                <option value="electronics">Electronics</option>
-                <option value="fashion">Fashion</option>
-                <option value="home">Home & Living</option>
-                <option value="beauty">Beauty</option>
-              </select>
-            </div>
-          </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => handleFile(e.target.files[0])}
+        />
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose} disabled={uploading}>Cancel</Button>
-            <Button onClick={handleSubmit} disabled={uploading || !selectedFile}>
-              {uploading ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing...</>
-              ) : (
-                <><Search className="w-4 h-4 mr-2" /> Find Competitors</>
-              )}
+        {/* Selected Product Preview */}
+        {selectedProduct && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-3">
+            <img 
+              src={selectedProduct.image_url} 
+              alt={selectedProduct.title}
+              className="w-16 h-16 object-cover rounded"
+            />
+            <div className="flex-1">
+              <p className="font-medium">{selectedProduct.title}</p>
+              <p className="text-sm text-gray-600">₹{selectedProduct.price?.toLocaleString()}</p>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => { setSelectedProduct(null); setPreviewUrl(null); }}
+            >
+              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
+        )}
+
+        {/* Form Fields */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="col-span-2">
+            <label className="text-sm font-medium">Product Name *</label>
+            <Input
+              value={form.product_name}
+              onChange={(e) => setForm({ ...form, product_name: e.target.value })}
+              placeholder="e.g., Blue Wireless Headphones"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Your Price (₹) *</label>
+            <Input
+              type="number"
+              value={form.your_price}
+              onChange={(e) => setForm({ ...form, your_price: e.target.value })}
+              placeholder="1999"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Category</label>
+            <select
+              className="w-full border rounded-md px-3 py-2 text-sm"
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+            >
+              <option value="general">General</option>
+              <option value="electronics">Electronics</option>
+              <option value="fashion">Fashion</option>
+              <option value="home">Home & Living</option>
+              <option value="beauty">Beauty</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+          <Button variant="outline" onClick={onClose} disabled={uploading}>Cancel</Button>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={uploading || (!selectedProduct && !selectedFile)}
+          >
+            {uploading ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing...</>
+            ) : (
+              <><Search className="w-4 h-4 mr-2" /> Find Competitors</>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -249,7 +487,7 @@ const AnalysisResultsCard = ({ analysis, onRefresh }) => {
         <div>
           <h3 className="font-semibold text-lg">{analysis.product_name}</h3>
           <p className="text-sm text-gray-500">
-            {analysis.competitor_count} competitors found
+            {analysis.competitor_count || analysis.competitor_pages?.length || 0} competitors found
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={loadFullAnalysis} disabled={loading}>
@@ -341,11 +579,26 @@ const AnalysisResultsCard = ({ analysis, onRefresh }) => {
 
 // ==================== Main Dashboard ====================
 const CompetitorDashboard = () => {
-  const [showUpload, setShowUpload] = useState(false);
+  const { selectedStore } = useStore();
+  const [showDialog, setShowDialog] = useState(false);
   const [analyses, setAnalyses] = useState([]);
   const [currentAnalysis, setCurrentAnalysis] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [stores, setStores] = useState([]);
+  const [analysisStore, setAnalysisStore] = useState(selectedStore || 'ashmiaa');
+
+  const loadStores = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/api/stores`);
+      setStores(response.data.stores || []);
+      if (!analysisStore && response.data.stores?.length > 0) {
+        setAnalysisStore(response.data.stores[0].store_name);
+      }
+    } catch (error) {
+      console.error('Error loading stores:', error);
+    }
+  }, [analysisStore]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -364,8 +617,15 @@ const CompetitorDashboard = () => {
   }, []);
 
   useEffect(() => {
+    loadStores();
     loadData();
-  }, [loadData]);
+  }, [loadStores, loadData]);
+
+  useEffect(() => {
+    if (selectedStore) {
+      setAnalysisStore(selectedStore);
+    }
+  }, [selectedStore]);
 
   const handleAnalysisComplete = (result) => {
     setCurrentAnalysis(result);
@@ -395,11 +655,11 @@ const CompetitorDashboard = () => {
             <div>
               <h1 className="text-xl font-semibold">Competitor Price Dashboard</h1>
               <p className="text-sm text-gray-500">
-                Analyze product images to discover competitor pricing
+                Analyze your products to discover competitor pricing
               </p>
             </div>
-            <Button onClick={() => setShowUpload(true)}>
-              <Upload className="w-4 h-4 mr-2" />
+            <Button onClick={() => setShowDialog(true)}>
+              <Search className="w-4 h-4 mr-2" />
               Analyze Product
             </Button>
           </div>
@@ -435,7 +695,7 @@ const CompetitorDashboard = () => {
             <div className="bg-white rounded-lg border p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 rounded-lg">
-                  <Search className="w-5 h-5 text-purple-600" />
+                  <Store className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Avg Competitors</p>
@@ -451,7 +711,7 @@ const CompetitorDashboard = () => {
                 <div>
                   <p className="text-sm text-gray-500">API Status</p>
                   <p className="text-sm font-medium text-yellow-600">
-                    {process.env.GOOGLE_VISION_API_KEY ? 'Active' : 'Not Configured'}
+                    Add API Key
                   </p>
                 </div>
               </div>
@@ -470,11 +730,11 @@ const CompetitorDashboard = () => {
               <AnalysisResultsCard analysis={currentAnalysis} onRefresh={loadData} />
             ) : (
               <div className="bg-white rounded-lg border p-12 text-center">
-                <Image className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                <Package className="w-12 h-12 mx-auto text-gray-300 mb-4" />
                 <p className="text-gray-500 mb-4">No analysis selected</p>
-                <Button onClick={() => setShowUpload(true)}>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Product Image
+                <Button onClick={() => setShowDialog(true)}>
+                  <Search className="w-4 h-4 mr-2" />
+                  Analyze Product
                 </Button>
               </div>
             )}
@@ -544,11 +804,14 @@ const CompetitorDashboard = () => {
         </div>
       </div>
 
-      {/* Upload Dialog */}
-      <ImageUploadDialog
-        isOpen={showUpload}
-        onClose={() => setShowUpload(false)}
+      {/* Analysis Dialog */}
+      <AnalysisDialog
+        isOpen={showDialog}
+        onClose={() => setShowDialog(false)}
         onAnalysisComplete={handleAnalysisComplete}
+        stores={stores}
+        selectedStore={analysisStore}
+        onStoreChange={setAnalysisStore}
       />
     </div>
   );
