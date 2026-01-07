@@ -7348,6 +7348,7 @@ app.include_router(shopify_fulfillment_sync_router)
 app.include_router(dwz56_sync_router)
 app.include_router(email_notification_router)
 app.include_router(storefront_router)
+app.include_router(storefront_cms_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 # ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================
