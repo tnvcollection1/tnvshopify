@@ -59,6 +59,7 @@ from services.fulfillment_pipeline_service import router as fulfillment_pipeline
 from services.shopify_fulfillment_sync import router as shopify_fulfillment_sync_router
 from services.dwz56_sync_service import router as dwz56_sync_router
 from services.email_notification_service import router as email_notification_router
+from services.sync_service import router as sync_service_router, set_dependencies as set_sync_dependencies
 from inventory_clearance_engine import InventoryClearanceEngine
 
 
