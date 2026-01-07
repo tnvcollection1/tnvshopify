@@ -322,40 +322,54 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 ---
 
 ## Last Updated
-January 7, 2026 - Session 13: File Upload for CMS, UI Polish
+January 7, 2026 - Session 13: Email Notifications, CMS File Upload, Shopify Sync Refactor
 
 ---
 
 ## Recent Completed Work (Jan 7, 2026 - Session 13)
 
-### File Upload for Storefront CMS ✅ NEW
-
+### 1. File Upload for Storefront CMS ✅ NEW
 **Feature**: Direct image uploads for banners and collections (previously required pasting URLs)
 
 **Implementation**:
-1. **Backend Endpoints**:
-   - `POST /api/storefront-cms/upload?store_name=X` - Upload images
-   - `GET /api/storefront-cms/media/{path}` - Serve uploaded images
-   - `DELETE /api/storefront-cms/media/{path}` - Delete images
+- Backend endpoints: `POST /api/storefront-cms/upload`, `GET/DELETE /api/storefront-cms/media/{path}`
+- Frontend ImageUploader component with drag-and-drop, file validation (JPG/PNG/GIF/WEBP, 10MB max)
+- Used in Banner Form, Collection Form, and Settings
+- Storage: `/app/backend/static/uploads/cms/{store_name}/`
 
-2. **Frontend ImageUploader Component**:
-   - Drag-and-drop support
-   - File type validation (JPG, PNG, GIF, WEBP)
-   - Size limit (10MB max)
-   - Live preview with replace/delete options
-   - Fallback URL input for external images
-   - Used in Banner Form, Collection Form, and Settings
+### 2. Email Notifications for Storefront ✅ NEW
+**Feature**: Automated transactional emails via SendGrid
 
-3. **Storage**: Files stored in `/app/backend/static/uploads/cms/{store_name}/`
+**Implementation**:
+- Created `/app/backend/services/email_service.py` with:
+  - `send_order_confirmation()` - Beautiful HTML email with order details, items, shipping address
+  - `send_shipment_notification()` - Tracking number, courier info, delivery tips
+  - `send_delivery_confirmation()` - Delivery success with review request
+- Integrated into storefront order creation and status update endpoints
+- Background task processing for non-blocking email delivery
+- Graceful fallback if SendGrid not configured
 
-**Testing**: Upload endpoint returns 200 with file URL, media serving works correctly
+**Required Config** (in `/app/backend/.env`):
+```
+SENDGRID_API_KEY=your_key
+SENDER_EMAIL=noreply@yourdomain.com
+SENDER_NAME=Your Store Name
+```
 
-### Warehouse Scanner Verification ✅
+### 3. Server.py Refactoring (P3 - Started) ✅ NEW
+**Goal**: Break down 7000+ line file into smaller routers
 
-**Feature**: PIN-protected scanner works on **BOTH desktop and mobile devices**
-- Desktop: Enter fulfillment number in search bar
-- Mobile/Tablet: Use camera button for barcode scanning
-- Access: `/warehouse` with PIN: `1688`
+**Completed**:
+- Extracted Shopify sync functionality into `/app/backend/routes/shopify_sync.py`
+- New endpoints: `/api/shopify/sync/{store}`, `/api/shopify/products`, `/api/shopify/products/bulk-auto-link`
+- Reduced server.py complexity
+
+### 4. Chrome Extension Verified ✅
+**Feature**: Extension is packaged and ready for download
+
+**Location**: `/app/browser-extension/` and `/app/wamerce-1688-extension.zip`
+**Download**: `GET /api/extension/download`
+**Features**: Full product scraping (images, SKUs, variants), listing page support, floating import button
 
 ---
 
