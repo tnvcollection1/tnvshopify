@@ -14,168 +14,192 @@ PRODUCT REQUIREMENTS:
 11. **Storefront CMS**: A backend system to manage content (banners, collections) on the public storefront.
 12. **Data Sync Management**: A dashboard to manage, monitor, and schedule data synchronization from Shopify.
 13. **Warehouse Receiving Interface**: A mobile-friendly interface for warehouse staff to scan and receive shipments.
+14. **Competitor Price Comparison**: A dashboard to find competitor products using image search and compare their prices.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A mature full-stack application (React, FastAPI, MongoDB) with a redesigned Shopify-style admin panel and a fully functional, CMS-driven public storefront. Key features implemented include:
-*   A complete customer-facing e-commerce storefront with a Razorpay checkout and order tracking.
-*   A **Storefront CMS** for admins to manage homepage banners and product collections dynamically.
-*   A comprehensive **Data Sync Dashboard** allowing admins to run, schedule, and monitor incremental or full data syncs from Shopify with progress tracking and history.
-*   A **Warehouse Scanning Interface** for warehouse staff to use a PIN to log in, scan shipment barcodes, view order details (products, customer info), and update shipment status.
-*   The admin panel UI has been significantly overhauled, with missing features (Marketing, Meta Ads, etc.) restored and new pages added for all backend functionalities.
-*   Legacy code and temporary migration endpoints have been cleaned up.
+A mature full-stack application (React, FastAPI, MongoDB) with a Shopify-style admin panel and a CMS-driven public storefront.
+Key features implemented include:
+*   A complete e-commerce storefront with Razorpay checkout and order tracking.
+*   A **Storefront CMS** for managing homepage content, now with direct image upload functionality.
+*   A comprehensive **Data Sync Dashboard** for managing Shopify data synchronization.
+*   A PIN-protected **Warehouse Scanning Interface**.
+*   **Storefront Email Notifications** via SendGrid for order confirmations and shipping updates (requires API keys).
+*   A new **Competitor Price Dashboard** that uses Google Vision API to find competitors by exact image match. It allows selecting products directly from the user's Shopify store for analysis.
+*   The admin panel UI has been significantly overhauled, with many features restored and new pages added.
+*   Initial refactoring of the monolithic  has begun, with several routers created, though the original code has not yet been removed.
 
 **Last working item**:
-- **Last item agent was working**: The agent built a complete **Warehouse Scanning & Receiving Interface** as requested by the user. This new feature includes a PIN-protected, mobile-friendly frontend and a backend to fetch and update shipment details. Warehouse staff can scan a fulfillment number, see the associated products, SKUs, colors, and customer details, and then mark the shipment as received.
-- **Status**: USER VERIFICATION PENDING
-- **Agent Testing Done**: Y
-- **Which testing method agent to use?**: Manual testing by user. The user has been provided with the URL () and PIN () to test the new interface on a mobile device or tablet.
+- **Last item agent was working**: Debugging the Auto Link feature. The user reported that this feature is not working on the deployed application. The agent had confirmed the correct API endpoint () and verified the frontend is calling it correctly. The investigation was moving to the backend service logic in  and  when the session ended.
+- **Status**: IN PROGRESS
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: backend testing agent. The agent should trace the execution path from the API endpoint through the services, adding logging to pinpoint the failure.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-*   Issue 1: Long-standing Shopify OAuth and login stability issues (P2)
+- **Issue 1**: Auto Link feature is not working (P0)
+- **Issue 2**: Incomplete  refactoring (P2)
+- **Issue 3**: Long-standing Shopify OAuth and login stability issues (P2)
+- **Issue 4**: Currency conversion in Competitor Dashboard (P3)
 
 **Issues Detail**:
-- **Issue 1: Long-standing Shopify OAuth and login stability issues**
-    - **Attempted fixes**: None in this session. The agent encountered multiple Session expired events, which indicates the underlying instability from previous forks persists.
-    - **Next debug checklist**:
-        1.  Conduct a full review of the authentication flow in  and the main session handling in .
-        2.  Analyze the token refresh logic and session cookie configuration.
-        3.  Implement more robust error handling and logging around authentication to capture the root cause of session drops.
-    - **Why fix this issue and what will be achieved with the fix?**: This is a recurring issue that degrades user experience and trust in the application. Fixing it will improve core reliability.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?**: Y
-    - **Should Test frontend/backend/both after fix?**: Both.
+- **Issue 1: Auto Link feature is not working**
+  - **Attempted fixes**: Verified the correct API endpoint is being called by the frontend. Started investigating backend logic.
+  - **Next debug checklist**:
+    1.  Trace the execution of the  function in .
+    2.  Inspect the  function in .
+    3.  Add logging to both functions to check the inputs (product data, image URLs) and outputs at each step.
+    4.  Verify that the background job is being created and executed correctly.
+  - **Why fix this issue and what will be achieved with the fix?**: This is a core feature for automating the link between Shopify products and 1688 suppliers. Fixing it is critical for the user's workflow.
+  - **Status**: IN PROGRESS
+  - **Is recurring issue?**: N
+  - **Should Test frontend/backend/both after fix?**: Both.
+- **Issue 2: Incomplete  refactoring**
+  - **Attempted fixes**: The agent created new router files (, , , ) and copied the relevant endpoint logic into them.
+  - **Next debug checklist**: The core problem is that the original endpoint code still exists in , causing bloat and potential conflicts. The next step is to remove the duplicated code blocks from  after confirming the new routers are working correctly.
+  - **Why fix this issue and what will be achieved with the fix?**: Completing the refactor will significantly improve code maintainability, reduce the risk of conflicting routes, and make the application easier to debug and extend.
+  - **Status**: IN PROGRESS
+  - **Is recurring issue?**: N
+  - **Should Test frontend/backend/both after fix?**: Backend (regression testing of all moved endpoints).
+- **Issue 3: Long-standing Shopify OAuth and login stability issues**
+  - **Attempted fixes**: None in this session. The agent experienced a session timeout (message 322), confirming the issue persists.
+  - **Next debug checklist**:
+    1.  Review the Shopify OAuth flow in .
+    2.  Analyze session cookie configuration and token refresh logic in .
+    3.  Implement robust logging around authentication to capture the root cause of session drops.
+  - **Why fix this issue and what will be achieved with the fix?**: This is a recurring core stability problem that harms user experience.
+  - **Status**: NOT STARTED
+  - **Is recurring issue?**: Y
+  - **Should Test frontend/backend/both after fix?**: Both.
+- **Issue 4: Currency conversion in Competitor Dashboard**
+  - **Attempted fixes**: None. The issue was identified when scraped prices from Zappos (in USD) were compared directly to the user's price (in INR).
+  - **Next debug checklist**:
+    1.  In , modify the web scraping logic to detect the currency symbol (e.g., $, €, £) alongside the price.
+    2.  Integrate a currency conversion library or API (e.g., ) to convert all scraped prices to a base currency (INR).
+    3.  Update the  database schema and frontend to store and display both the original and converted prices.
+  - **Why fix this issue and what will be achieved with the fix?**: The price comparison feature is misleading without accurate currency conversion.
+  - **Status**: NOT STARTED
+  - **Is recurring issue?**: N
+  - **Should Test frontend/backend/both after fix?**: Both.
 
 **In progress Task List**:
-*   None. The last task is complete pending user verification.
+*   None.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks**:
-    *   (P1) **Continue UI Polish**: The user requested to Continue UI polish on other pages. This is a general task to refine the new UI components and ensure consistency. (File: various frontend components)
-    *   (P2) **Implement File Upload for Storefront CMS**: The agent suggested enabling direct image uploads for banners and collections in the Storefront Manager, which currently uses placeholder URLs. (File: , )
+    *   (P1) **Complete  Refactoring**: Remove the duplicated endpoints from .
+    *   (P1) **Fix Currency Conversion**: Implement currency detection and conversion in the Competitor Price Dashboard.
+    *   (P2) **Enhance Competitor Search with Product Titles**: As a fallback for products with unique images, implement a Google Shopping search by product title to find competitors.
+    *   (P2) **Continue UI Polish**: Conduct a proper review and refinement of UI components across all admin pages.
 *   **Future Tasks**:
-    *   (P2) **Implement Storefront Email Notifications**: The user deferred this task. It involves sending automated emails for order confirmation and shipment updates.
-    *   (P3) **Refactor **: Although some endpoints were removed, the file is still very large and could benefit from being broken down into smaller, more focused routers.
+    *   (P3) **Chrome Extension direct scraping testing on live 1688 pages**.
 
 **Completed work in this session**
-- **Critical Bug Fixes & UI Restoration**:
-  - Resolved the new session is not opening blocker from the previous fork.
-  - Fixed the Shopify Orders page to correctly filter by store and use the proper component ().
-  - Restored numerous missing features to the admin sidebar () that were lost in the UI redesign.
-- **Storefront CMS (New Feature)**:
-  - Built a full backend () and frontend () to allow admins to manage public storefront banners and collections.
-  - Updated the storefront homepage () to be fully dynamic based on CMS content.
-- **Data Sync Dashboard (New Feature)**:
-  - Built a comprehensive backend service () and frontend UI () for managing Shopify data synchronization.
-  - Features include incremental/full sync, chunking, auto-retry, history, and scheduling configuration.
-- **Warehouse Scanning Interface (New Feature)**:
-  - Built a PIN-protected, mobile-friendly interface ( and ) for warehouse staff to scan and receive shipments.
-- **Code Cleanup & Feature Completion**:
-  - Deleted legacy admin components (, , ).
-  - Removed temporary data migration endpoints from .
-  - Added frontend UI for several existing but inaccessible backend APIs, including **Bulk Auto-Link by Image**, **Stock CSV Upload**, **Taobao Import**, **TMAPI Monitor**, and **Security Logs**.
-- **Store Management**:
-  - Deleted the asmia store via API as requested by the user.
+- **Competitor Price Dashboard (New Feature)**:
+  - Integrated Google Cloud Vision API for finding competitors by exact product image match.
+  - Built a full-stack dashboard (, ) to allow users to select existing Shopify products, trigger analysis, and view results.
+  - Successfully guided the user through setting up Google Cloud API keys and enabling billing to resolve 403 errors.
+  - Updated the dashboard to fetch products directly from the user's store instead of requiring manual image uploads.
+- **File Upload for Storefront CMS**:
+  - Implemented backend () and frontend () for direct image uploads for banners and collections.
+- **Storefront Email Notifications**:
+  - Integrated SendGrid () to send order confirmation and shipment notification emails. Requires user to provide API keys.
+- **Initial  Refactoring**:
+  - Extracted Shopify Sync, WhatsApp, Marketing, and Settings endpoints into new, modular router files.
+- **Bug Fixes & Triage**:
+  - Fixed a datetime comparison bug in the  endpoint.
+  - Diagnosed that a user-reported URL not loading issue was due to them using a production URL instead of the active preview URL.
 
 **Earlier issues found/mentioned but not fixed**
-- The root cause of the recurring session instability was not investigated or resolved, though the agent was able to work around it during the session.
+- The refactoring of  is incomplete. The agent copied code to new router files but did not remove the original code from , leaving the file bloated and at risk of conflicts.
 
 **Known issue recurrence from previous fork**
 - **Issue recurrence in previous fork**: Long-standing Shopify OAuth and login stability issues
-- **Recurrence count**: 3+
+- **Recurrence count**: 4+
 - **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Full-Stack Feature Development**: Rapidly built three major features (CMS, Sync Dashboard, Warehouse Scanner) from backend to frontend.
-*   **Dynamic Content Management**: Created a CMS to decouple frontend presentation from hardcoded data.
-*   **Background Job Management**: Implemented a robust system for managing long-running data synchronization tasks with a user-facing dashboard.
-*   **API-First Development**: Identified missing UI for existing backend APIs and implemented the necessary frontend components.
-*   **Code Refactoring and Cleanup**: Removed dead code (legacy components) and temporary utility endpoints.
+*   **3rd Party API Integration**: Integrated Google Cloud Vision API for image recognition and SendGrid for emails.
+*   **User-Guided Setup**: Successfully walked the user through a complex multi-step process of enabling a cloud service, creating credentials, and enabling billing.
+*   **Web Scraping**: Used BeautifulSoup to scrape competitor websites for pricing information.
+*   **Feature Pivoting**: Adapted the competitor analysis feature based on technical limitations (unique vs. stock images) and user feedback.
+*   **Code Refactoring (Partial)**: Began breaking down a monolithic server file into modular, feature-specific routers.
 
 **key DB schema**
-- : (New) Stores data for public storefront banners. .
-- : (New) Stores data for public storefront product collections. .
-- : (New) Stores metadata and history for data sync jobs. .
+- : (New) Stores results of competitor analysis runs. 
 
 **changes in tech stack**
-- None.
+- **Backend**: Added , ,  to .
 
 **All files of reference**
-*   **/app/backend/routes/warehouse.py**: Backend logic for the new warehouse scanner.
-*   **/app/frontend/src/components/WarehouseScanner.jsx**: Frontend for the new warehouse scanner.
-*   **/app/backend/routes/sync_service.py**: Backend for the new data sync dashboard.
-*   **/app/frontend/src/components/SyncDashboard.jsx**: Frontend for the new data sync dashboard.
-*   **/app/backend/routes/storefront_cms.py**: Backend for the new storefront CMS.
-*   **/app/frontend/src/components/StorefrontCMS.jsx**: Frontend for the new storefront CMS.
-*   **/app/frontend/src/components/ShopifySidebar.jsx**: Central navigation file, heavily updated.
-*   **/app/frontend/src/App.js**: Main routing file, heavily updated.
-*   **/app/backend/server.py**: Main server file, cleaned and updated.
-*   **/app/memory/PRD.md**: Product Requirements Document, updated with completed work.
+*   /app/backend/routes/competitor_analysis.py
+*   /app/frontend/src/components/CompetitorDashboard.jsx
+*   /app/backend/services/vision_api_service.py
+*   /app/backend/services/email_service.py
+*   /app/backend/routes/shopify_sync.py
+*   /app/backend/server.py
 
 **Areas that need refactoring**:
-*   ****: This file is over 7000 lines. It should be progressively broken down into smaller, more manageable routers to improve maintainability.
-*   **Authentication Flow**: The recurring session drops indicate a need to review and potentially refactor the entire Shopify OAuth and user session management logic.
+*   ****: Critically needs the duplicated endpoint code (for Shopify Sync, Marketing, Settings, WhatsApp) removed to complete the refactoring task.
+*   ****: Needs to be updated with currency detection and conversion logic to make price comparisons accurate.
 
 **key api endpoints**
-*   : Authenticates warehouse staff via PIN.
-*   : Fetches shipment details for scanning.
-*   : Initiates a new data synchronization job.
-*   : Checks the status of an active sync job.
-*   : Retrieves the history of past sync jobs.
-*   : Creates a new banner.
-*   : Fetches all CMS content for a store.
-*   : Starts a bulk image-based linking job.
+*   : Starts analysis from an uploaded image.
+*   : Starts analysis from an existing product's image URL.
+*   : Gets statistics for the dashboard.
+*   : Gets history of past analyses.
+*   : (New) Uploads an image for the CMS.
+*   : The endpoint for the broken Auto Link feature under investigation.
 
 **Critical Info for New Agent**
-*   **Your immediate priority is to wait for user feedback on the Warehouse Scanner feature.** The user has been asked to test it. Do not start new work until they respond.
-*   The application is stable and all major blockers from the previous fork have been resolved.
-*   The agent has implemented a significant number of new features and fixes. Be sure to review the Completed work section to understand the current state of the app.
-*   Be aware of the **recurring session instability**. While not a hard blocker, it is a known issue that may surface during development and testing. If the user experiences login problems again, the root cause in the OAuth flow should be investigated.
-*   The user is highly engaged. Propose clear, actionable plans and await their approval before proceeding.
+*   **Your immediate priority is to fix the broken Auto Link feature.** This is the current blocker for the user. Start by debugging the backend services.
+*   **The  refactoring is a trap.** The previous agent copied code to new routers but **did not remove the old code**. You must remove the duplicated endpoints from  to prevent bugs and code bloat. This should be your next priority after the auto-link fix.
+*   The **Competitor Price Dashboard** works but has two key limitations to address: it only finds competitors for products with **exact image matches** (not visually similar), and it **does not convert currency**, leading to incorrect price comparisons.
+*   The user requires API keys for **SendGrid** (for emails) and has already provided a key for **Google Cloud Vision**.
 
 **documents and test reports created in this job**
-- **/app/memory/PRD.md** (updated)
+- /app/memory/PRD.md (updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **what about auto link for 1688 button i cant find it**: User reported a missing UI feature. (Completed: Agent added the button).
-2.  **are there anything missing ui which exist in backend api ?**: User asked for an audit of missing UI. (Completed: Agent found and implemented several missing pages).
-3.  **All of the above**: User approved implementing all missing UI features found in the audit.
-4.  **we want the product image/sku/ color / customer details to be visible to them after they scan shipment at there warehouse please guide us**: User requested the new Warehouse Scanning feature.
-5.  **e) All of the above, c) Both options**: User confirmed the detailed requirements for the Warehouse Scanner.
-6.  **remove the Asmia store, Continue UI polish on other pages, what about front end online store did u built it as icant see any back end to update banners and collection**: User gave three directives. (Completed: Agent deleted store and built a full CMS for the storefront).
-7.  **all the futures in previous ui are not for example whatsapp meta ad measurement mrekting dashboard velocity pricing all are not present ? where did they go ?**: User reported many features missing from the redesigned UI. (Completed: Agent restored all links in the sidebar).
-8.  **i cant see shopify stores & order ?**: User reported that the main Shopify orders page was not working correctly. (Completed: Agent fixed routing and filtering bugs).
-9.  **P1: Email Notifications i will fix it later on, P2 Tasks continue**: User deferred email notifications and approved cleanup tasks.
-10. **f) All of the above**: User approved the detailed implementation plan for the new Data Sync Dashboard.
+1.  **auto link is not working on final deployement**: User reported the Auto Link feature is broken. (IN PROGRESS)
+2.  **i did analyse one product but no result**: User reported the competitor analysis wasn't working for their product. (Resolved: Agent diagnosed it was due to unique product images and found a product with stock images that worked).
+3.  **i want uto find exact image and share links and scrap those links and list prices**: User clarified the exact requirement for the competitor feature. (Completed).
+4.  **why not using google api?**: User questioned the suggestion of using SerpApi instead of a native Google API for reverse image search. (Resolved: Agent explained the limitations of Google's public APIs).
+5.  **i want to do google image search if same image or someones selling should show compare price**: User clarified the core goal of the competitor analysis feature.
+6.  **done check now**: User confirmed they enabled billing for Google Cloud. (Resolved: Vision API started working).
+7.  **share the error u getting**: User asked for the specific error from the Vision API. (Resolved: Agent provided the Billing Not Enabled error).
+8.  **i think these r old apis 2016**: User noted that the initial Google API keys were very old. (Resolved: Agent guided user to create a new key).
+9.  **[API Key]**: User provided the new Google Vision API key.
+10. **https://shopifycrm.emergent.host/ this not loading**: User reported production URL was down. (Resolved: Agent explained the difference between production and the working preview URL).
 
 **Project Health Check:**
-*   **Broken**: None.
+*   **Broken**: Auto Link feature.
 *   **Mocked**: None.
 
 **3rd Party Integrations**
 *   Shopify Admin API
 *   Razorpay
 *   1688 Open Platform
-*   DWZ56 API
-*   TMAPI
-*   Meta Business API
-*   OpenAI GPT-4o
-*   SendGrid
+*   Google Cloud Vision API — requires User API Key
+*   SendGrid — requires User API Key
+*   (Others from previous fork: DWZ56, TMAPI, Meta, OpenAI)
 
 **Testing status**
 - **Testing agent used after significant changes**: NO
 - **Troubleshoot agent used after agent stuck in loop**: NO
 - **Test files created**: []
-- **Known regressions**: The underlying session instability remains, though it is not currently blocking the application's use.
+- **Known regressions**: The underlying session instability remains.
 
 **Credentials to test flow:**
 *   **Admin Login**:  / 
 *   **Warehouse PIN**: 
+*   **Google Vision API Key**: Is in 
+*   **SendGrid API Key**: Needs to be added to  to test email functionality.
 
 **What agent forgot to execute**
-*   The agent successfully completed all user requests in this session. The only outstanding item is not something forgotten, but rather a deeper, unaddressed technical debt: investigating the root cause of the recurring session instability.</analysis>
+*   The agent critically forgot to **remove the original endpoint code from ** after copying it to new router files. This leaves the refactoring half-done and the code bloated and prone to conflicts.
+*   The agent did not address the currency conversion issue in the new Competitor Price Dashboard.</analysis>

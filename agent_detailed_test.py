@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://asian-source.preview.emergentagent.com/api'
+base_url = 'https://dropship-hub-154.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 

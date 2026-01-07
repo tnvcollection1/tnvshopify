@@ -2,7 +2,7 @@
 // One-click import with hardcoded deployment URL
 
 // HARDCODED DEPLOYMENT URL - No user configuration needed
-const SERVER_URL = 'https://asian-source.preview.emergentagent.com';
+const SERVER_URL = 'https://dropship-hub-154.preview.emergentagent.com';
 
 let products = [];
 let pageInfo = { type: 'unknown', title: '', url: '' };
