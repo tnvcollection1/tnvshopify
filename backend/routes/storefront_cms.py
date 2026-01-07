@@ -337,3 +337,105 @@ async def get_homepage_content(store_name: str):
     except Exception as e:
         logger.error(f"Error fetching homepage content: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============ Image Upload Endpoint ============
+
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+
+@router.post("/upload")
+async def upload_image(file: UploadFile = File(...), store_name: str = None):
+    """Upload an image for CMS use (banners, collections)"""
+    try:
+        # Validate file extension
+        file_ext = Path(file.filename).suffix.lower()
+        if file_ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"File type not allowed. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
+        
+        # Read file content to check size
+        content = await file.read()
+        if len(content) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=400, detail="File too large. Maximum size is 10MB")
+        
+        # Generate unique filename
+        unique_id = str(uuid.uuid4())[:8]
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d")
+        safe_filename = f"{timestamp}_{unique_id}{file_ext}"
+        
+        # Create store-specific subdirectory if provided
+        if store_name:
+            store_dir = UPLOAD_DIR / store_name
+            store_dir.mkdir(parents=True, exist_ok=True)
+            file_path = store_dir / safe_filename
+            relative_path = f"cms/{store_name}/{safe_filename}"
+        else:
+            file_path = UPLOAD_DIR / safe_filename
+            relative_path = f"cms/{safe_filename}"
+        
+        # Write file
+        with open(file_path, "wb") as f:
+            f.write(content)
+        
+        # Return the URL path (will be served as static)
+        return {
+            "success": True,
+            "filename": safe_filename,
+            "url": f"/api/storefront-cms/media/{relative_path}",
+            "size": len(content),
+            "content_type": file.content_type
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading image: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/media/{file_path:path}")
+async def serve_media(file_path: str):
+    """Serve uploaded media files"""
+    try:
+        # Construct full path
+        full_path = Path(__file__).parent.parent / "static" / "uploads" / file_path
+        
+        if not full_path.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        # Security: Ensure path is within upload directory
+        upload_base = Path(__file__).parent.parent / "static" / "uploads"
+        if not str(full_path.resolve()).startswith(str(upload_base.resolve())):
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        return FileResponse(full_path)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error serving media: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/media/{file_path:path}")
+async def delete_media(file_path: str):
+    """Delete an uploaded media file"""
+    try:
+        full_path = Path(__file__).parent.parent / "static" / "uploads" / file_path
+        
+        if not full_path.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        # Security check
+        upload_base = Path(__file__).parent.parent / "static" / "uploads"
+        if not str(full_path.resolve()).startswith(str(upload_base.resolve())):
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        os.remove(full_path)
+        return {"success": True, "message": "File deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting media: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
