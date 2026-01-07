@@ -214,33 +214,45 @@ const Newsletter = () => (
 );
 
 // Main Homepage Component
-const StorefrontHome = ({ storeName = 'TNC Collection' }) => {
+const StorefrontHome = ({ storeName = 'tnvcollection' }) => {
   const [products, setProducts] = useState([]);
+  const [cmsData, setCmsData] = useState({ settings: {}, collections: [], banners: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
         // Get store name from URL or default
         const storeParam = storeName.toLowerCase().replace(/\s+/g, '');
-        const response = await axios.get(`${API}/api/shopify/products?store_name=${storeParam}&limit=8`);
-        setProducts(response.data.products || []);
+        
+        // Fetch products and CMS content in parallel
+        const [productsRes, cmsRes] = await Promise.all([
+          axios.get(`${API}/api/shopify/products?store_name=${storeParam}&limit=8`),
+          axios.get(`${API}/api/storefront-cms/public/${storeParam}/homepage`).catch(() => ({ data: {} }))
+        ]);
+        
+        setProducts(productsRes.data.products || []);
+        setCmsData({
+          settings: cmsRes.data.settings || {},
+          collections: cmsRes.data.collections || [],
+          banners: cmsRes.data.banners || []
+        });
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchData();
   }, [storeName]);
 
   return (
     <div>
-      <HeroSection storeName={storeName} />
-      <FeaturedCategories />
+      <HeroSection storeName={storeName} settings={cmsData.settings} />
+      <FeaturedCategories collections={cmsData.collections} />
       <FeaturedProducts title="New Arrivals" products={products} />
-      <Newsletter />
+      {cmsData.settings?.newsletter_enabled !== false && <Newsletter />}
     </div>
   );
 };
