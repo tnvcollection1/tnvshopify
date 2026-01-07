@@ -53,6 +53,7 @@ from routes.product_scraper import router as product_scraper_router
 from routes.tmapi_buyer import router as tmapi_buyer_router
 from routes.storefront import router as storefront_router, set_database as set_storefront_db
 from routes.storefront_cms import router as storefront_cms_router, set_database as set_storefront_cms_db
+from routes.warehouse import router as warehouse_router, set_database as set_warehouse_db
 from services.fulfillment_webhooks import router as fulfillment_webhooks_router
 from services.whatsapp_notifications import router as whatsapp_notifications_router
 from services.fulfillment_pipeline_service import router as fulfillment_pipeline_router
