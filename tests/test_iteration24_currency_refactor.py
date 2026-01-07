@@ -231,21 +231,20 @@ class TestSettingsGeneralEndpoint:
 class TestShopifySyncStatusEndpoint:
     """Tests for Shopify sync status endpoint"""
     
-    def test_shopify_sync_status_endpoint_exists(self):
-        """Test that Shopify sync status endpoint returns 200"""
-        # Using a dummy job_id - should return not_found status
+    def test_shopify_sync_status_endpoint_returns_404_for_nonexistent_job(self):
+        """Test that Shopify sync status endpoint returns 404 for non-existent job"""
+        # Using a dummy job_id - should return 404
         response = requests.get(f"{BASE_URL}/api/shopify/sync-status/test-job-123")
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+        assert response.status_code == 404, f"Expected 404 for non-existent job, got {response.status_code}: {response.text}"
     
-    def test_shopify_sync_status_response_structure(self):
-        """Test Shopify sync status response has correct structure"""
+    def test_shopify_sync_status_response_structure_for_nonexistent(self):
+        """Test Shopify sync status response has correct structure for non-existent job"""
         response = requests.get(f"{BASE_URL}/api/shopify/sync-status/nonexistent-job")
-        assert response.status_code == 200
+        assert response.status_code == 404
         
         data = response.json()
-        assert "status" in data, "Response should have 'status' field"
-        # For non-existent job, status should be 'not_found'
-        assert data["status"] == "not_found", f"Expected 'not_found' status for non-existent job"
+        assert "detail" in data, "Response should have 'detail' field for 404"
+        assert "not found" in data["detail"].lower(), f"Expected 'not found' in detail"
 
 
 class TestWhatsAppConversationsEndpoint:
