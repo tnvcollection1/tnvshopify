@@ -5,37 +5,43 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Hero Section
-const HeroSection = ({ storeName }) => (
-  <section className="relative h-[80vh] min-h-[600px] bg-gray-100 overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20" />
-    <img
-      src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1920&q=80"
-      alt="Hero"
-      className="absolute inset-0 w-full h-full object-cover"
-    />
-    <div className="relative z-10 h-full flex items-center">
-      <div className="max-w-7xl mx-auto px-4 w-full">
-        <div className="max-w-xl">
-          <p className="text-white/80 text-sm tracking-widest uppercase mb-4">New Collection</p>
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            Elevate Your Style
-          </h1>
-          <p className="text-white/80 text-lg mb-8">
-            Discover our latest collection of premium footwear and accessories.
-          </p>
-          <Link
-            to="/shop/products"
-            className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 font-medium hover:bg-gray-100 transition-colors"
-          >
-            Shop Now
-            <ArrowRight className="w-5 h-5" />
-          </Link>
+// Hero Section - Now uses CMS data
+const HeroSection = ({ storeName, settings }) => {
+  const heroTitle = settings?.hero_title || 'Elevate Your Style';
+  const heroSubtitle = settings?.hero_subtitle || 'Discover our latest collection of premium products.';
+  const heroImage = settings?.hero_image || 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1920&q=80';
+  
+  return (
+    <section className="relative h-[80vh] min-h-[600px] bg-gray-100 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20" />
+      <img
+        src={heroImage}
+        alt="Hero"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="relative z-10 h-full flex items-center">
+        <div className="max-w-7xl mx-auto px-4 w-full">
+          <div className="max-w-xl">
+            <p className="text-white/80 text-sm tracking-widest uppercase mb-4">New Collection</p>
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+              {heroTitle}
+            </h1>
+            <p className="text-white/80 text-lg mb-8">
+              {heroSubtitle}
+            </p>
+            <Link
+              to="/shop/products"
+              className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 font-medium hover:bg-gray-100 transition-colors"
+            >
+              Shop Now
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 // Category Card
 const CategoryCard = ({ title, image, link, count }) => (
