@@ -896,10 +896,13 @@ const CompetitorDashboard = () => {
                 Analyze your products to discover competitor pricing
               </p>
             </div>
-            <Button onClick={() => setShowDialog(true)}>
-              <Search className="w-4 h-4 mr-2" />
-              Analyze Product
-            </Button>
+            <div className="flex items-center gap-3">
+              <NotificationBell />
+              <Button onClick={() => setShowDialog(true)}>
+                <Search className="w-4 h-4 mr-2" />
+                Analyze Product
+              </Button>
+            </div>
           </div>
         </div>
       </div>
