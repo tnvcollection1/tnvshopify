@@ -371,6 +371,66 @@ const ShopifyProducts = () => {
     }
   };
 
+  // Bulk Auto-Link to 1688 using image search
+  const handleBulkAutoLink = async () => {
+    if (storeFilter === 'all') {
+      toast.error('Please select a specific store to auto-link');
+      return;
+    }
+    
+    setBulkLinking(true);
+    try {
+      const res = await fetch(`${API}/api/shopify/products/bulk-auto-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          store_name: storeFilter,
+          limit: 100  // Process 100 unlinked products at a time
+        })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success('Auto-link job started! This may take a few minutes.');
+        setBulkLinkJob({ job_id: data.job_id, status: 'starting' });
+        
+        // Poll for status
+        const pollStatus = async () => {
+          try {
+            const statusRes = await fetch(`${API}/api/shopify/products/bulk-auto-link/status/${data.job_id}`);
+            const statusData = await statusRes.json();
+            const job = statusData.job;
+            
+            setBulkLinkJob(job);
+            
+            if (job.status === 'completed') {
+              toast.success(`Auto-link completed! ${job.linked} products linked, ${job.failed} failed`);
+              fetchProducts();
+              setBulkLinking(false);
+            } else if (job.status === 'error') {
+              toast.error(`Auto-link failed: ${job.error}`);
+              setBulkLinking(false);
+            } else {
+              // Still processing, poll again
+              setTimeout(pollStatus, 3000);
+            }
+          } catch (err) {
+            console.error('Error polling status:', err);
+            setBulkLinking(false);
+          }
+        };
+        
+        setTimeout(pollStatus, 2000);
+      } else {
+        toast.error(data.message || 'Failed to start auto-link');
+        setBulkLinking(false);
+      }
+    } catch (error) {
+      toast.error('Failed to start auto-link');
+      setBulkLinking(false);
+    }
+  };
+
   const totalPages = Math.ceil(total / pageSize);
 
   return (
