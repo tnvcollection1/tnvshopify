@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Image,
   Layout,
@@ -12,7 +12,12 @@ import {
   Eye,
   EyeOff,
   ExternalLink,
-  RefreshCw
+  RefreshCw,
+  Upload,
+  ImagePlus,
+  Loader2,
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +40,152 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+// ==================== Image Upload Component ====================
+const ImageUploader = ({ value, onChange, storeName, aspectRatio = "3/1", label = "Image" }) => {
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFile = async (file) => {
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please upload a valid image (JPG, PNG, GIF, WEBP)');
+      return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File too large. Maximum size is 10MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await axios.post(
+        `${API}/api/storefront-cms/upload?store_name=${storeName}`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+
+      if (response.data.success) {
+        // Use the full URL for the uploaded image
+        const imageUrl = `${API}${response.data.url}`;
+        onChange(imageUrl);
+        toast.success('Image uploaded successfully');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragActive(false);
+    const file = e.dataTransfer.files[0];
+    handleFile(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragActive(false);
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium">{label}</label>
+      
+      {/* Upload Area */}
+      <div
+        onClick={() => !uploading && fileInputRef.current?.click()}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`
+          relative border-2 border-dashed rounded-lg transition-all cursor-pointer
+          ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
+          ${uploading ? 'cursor-wait opacity-70' : ''}
+        `}
+        style={{ aspectRatio }}
+      >
+        {value ? (
+          <div className="relative w-full h-full">
+            <img 
+              src={value} 
+              alt="Preview" 
+              className="w-full h-full object-cover rounded-lg"
+            />
+            <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+              >
+                <Upload className="w-4 h-4 mr-1" />
+                Replace
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={(e) => { e.stopPropagation(); onChange(''); }}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
+            {uploading ? (
+              <>
+                <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-2" />
+                <span className="text-sm">Uploading...</span>
+              </>
+            ) : (
+              <>
+                <ImagePlus className="w-10 h-10 mb-2 text-gray-400" />
+                <span className="text-sm font-medium">Click or drag image to upload</span>
+                <span className="text-xs text-gray-400 mt-1">JPG, PNG, GIF, WEBP up to 10MB</span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => handleFile(e.target.files[0])}
+      />
+
+      {/* URL Input (alternative) */}
+      <div className="flex gap-2 items-center">
+        <span className="text-xs text-gray-500">or paste URL:</span>
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://..."
+          className="flex-1 text-sm"
+        />
+      </div>
+    </div>
+  );
+};
 
 // ==================== Banner Management ====================
 const BannerCard = ({ banner, onEdit, onDelete, onToggle }) => (
@@ -79,7 +230,7 @@ const BannerCard = ({ banner, onEdit, onDelete, onToggle }) => (
   </div>
 );
 
-const BannerForm = ({ banner, onSave, onCancel }) => {
+const BannerForm = ({ banner, onSave, onCancel, storeName }) => {
   const [form, setForm] = useState({
     title: banner?.title || '',
     subtitle: banner?.subtitle || '',
@@ -89,6 +240,17 @@ const BannerForm = ({ banner, onSave, onCancel }) => {
     position: banner?.position || 0,
     is_active: banner?.is_active ?? true
   });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!form.title || !form.image_url) {
+      toast.error('Please fill in required fields');
+      return;
+    }
+    setSaving(true);
+    await onSave(form);
+    setSaving(false);
+  };
 
   return (
     <div className="space-y-4">
@@ -108,17 +270,16 @@ const BannerForm = ({ banner, onSave, onCancel }) => {
           placeholder="Discover our latest styles"
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">Image URL *</label>
-        <Input
-          value={form.image_url}
-          onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-          placeholder="https://images.unsplash.com/..."
-        />
-        {form.image_url && (
-          <img src={form.image_url} alt="Preview" className="mt-2 h-24 object-cover rounded" />
-        )}
-      </div>
+      
+      {/* Image Upload */}
+      <ImageUploader
+        value={form.image_url}
+        onChange={(url) => setForm({ ...form, image_url: url })}
+        storeName={storeName}
+        aspectRatio="3/1"
+        label="Banner Image *"
+      />
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">Button Text</label>
@@ -156,8 +317,8 @@ const BannerForm = ({ banner, onSave, onCancel }) => {
       </div>
       <div className="flex justify-end gap-2 pt-4 border-t">
         <Button variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button onClick={() => onSave(form)} disabled={!form.title || !form.image_url}>
-          <Save className="w-4 h-4 mr-2" />
+        <Button onClick={handleSave} disabled={!form.title || !form.image_url || saving}>
+          {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           Save Banner
         </Button>
       </div>
@@ -201,7 +362,7 @@ const CollectionCard = ({ collection, onEdit, onDelete, onToggle }) => (
   </div>
 );
 
-const CollectionForm = ({ collection, onSave, onCancel }) => {
+const CollectionForm = ({ collection, onSave, onCancel, storeName }) => {
   const [form, setForm] = useState({
     name: collection?.name || '',
     description: collection?.description || '',
@@ -211,6 +372,17 @@ const CollectionForm = ({ collection, onSave, onCancel }) => {
     position: collection?.position || 0,
     is_active: collection?.is_active ?? true
   });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!form.name || !form.image_url) {
+      toast.error('Please fill in required fields');
+      return;
+    }
+    setSaving(true);
+    await onSave(form);
+    setSaving(false);
+  };
 
   return (
     <div className="space-y-4">
@@ -231,17 +403,16 @@ const CollectionForm = ({ collection, onSave, onCancel }) => {
           rows={2}
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">Image URL *</label>
-        <Input
-          value={form.image_url}
-          onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-          placeholder="https://images.unsplash.com/..."
-        />
-        {form.image_url && (
-          <img src={form.image_url} alt="Preview" className="mt-2 h-24 w-24 object-cover rounded" />
-        )}
-      </div>
+      
+      {/* Image Upload */}
+      <ImageUploader
+        value={form.image_url}
+        onChange={(url) => setForm({ ...form, image_url: url })}
+        storeName={storeName}
+        aspectRatio="1/1"
+        label="Collection Image *"
+      />
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">Link URL</label>
@@ -279,8 +450,8 @@ const CollectionForm = ({ collection, onSave, onCancel }) => {
       </div>
       <div className="flex justify-end gap-2 pt-4 border-t">
         <Button variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button onClick={() => onSave(form)} disabled={!form.name || !form.image_url}>
-          <Save className="w-4 h-4 mr-2" />
+        <Button onClick={handleSave} disabled={!form.name || !form.image_url || saving}>
+          {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           Save Collection
         </Button>
       </div>
@@ -289,7 +460,7 @@ const CollectionForm = ({ collection, onSave, onCancel }) => {
 };
 
 // ==================== Settings Tab ====================
-const SettingsForm = ({ settings, onSave }) => {
+const SettingsForm = ({ settings, onSave, storeName }) => {
   const [form, setForm] = useState({
     hero_title: settings?.hero_title || 'Elevate Your Style',
     hero_subtitle: settings?.hero_subtitle || 'Discover our latest collection',
@@ -332,17 +503,15 @@ const SettingsForm = ({ settings, onSave }) => {
             rows={2}
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Hero Background Image</label>
-          <Input
-            value={form.hero_image}
-            onChange={(e) => setForm({ ...form, hero_image: e.target.value })}
-            placeholder="https://images.unsplash.com/..."
-          />
-          {form.hero_image && (
-            <img src={form.hero_image} alt="Hero Preview" className="mt-2 h-32 w-full object-cover rounded" />
-          )}
-        </div>
+        
+        {/* Hero Image Upload */}
+        <ImageUploader
+          value={form.hero_image}
+          onChange={(url) => setForm({ ...form, hero_image: url })}
+          storeName={storeName}
+          aspectRatio="16/9"
+          label="Hero Background Image"
+        />
       </div>
 
       <div className="bg-white rounded-lg border p-6 space-y-4">
@@ -350,14 +519,16 @@ const SettingsForm = ({ settings, onSave }) => {
           <Layout className="w-5 h-5" />
           Branding
         </h3>
-        <div>
-          <label className="block text-sm font-medium mb-1">Logo URL</label>
-          <Input
-            value={form.logo_url}
-            onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
-            placeholder="https://yourstore.com/logo.png"
-          />
-        </div>
+        
+        {/* Logo Upload */}
+        <ImageUploader
+          value={form.logo_url}
+          onChange={(url) => setForm({ ...form, logo_url: url })}
+          storeName={storeName}
+          aspectRatio="3/1"
+          label="Logo"
+        />
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Primary Color</label>
@@ -366,7 +537,7 @@ const SettingsForm = ({ settings, onSave }) => {
                 type="color"
                 value={form.primary_color}
                 onChange={(e) => setForm({ ...form, primary_color: e.target.value })}
-                className="h-10 w-16 rounded cursor-pointer"
+                className="h-10 w-16 rounded cursor-pointer border"
               />
               <Input
                 value={form.primary_color}
@@ -382,7 +553,7 @@ const SettingsForm = ({ settings, onSave }) => {
                 type="color"
                 value={form.accent_color}
                 onChange={(e) => setForm({ ...form, accent_color: e.target.value })}
-                className="h-10 w-16 rounded cursor-pointer"
+                className="h-10 w-16 rounded cursor-pointer border"
               />
               <Input
                 value={form.accent_color}
@@ -420,7 +591,7 @@ const SettingsForm = ({ settings, onSave }) => {
       </div>
 
       <Button onClick={handleSave} disabled={saving} className="w-full">
-        {saving ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+        {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
         Save Settings
       </Button>
     </div>
@@ -555,7 +726,10 @@ const StorefrontCMS = () => {
   if (!selectedStore) {
     return (
       <div className="min-h-screen bg-[#f1f1f1] flex items-center justify-center">
-        <p className="text-gray-500">Please select a store first</p>
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-500">Please select a store first</p>
+        </div>
       </div>
     );
   }
@@ -619,12 +793,19 @@ const StorefrontCMS = () => {
             </div>
             {loading ? (
               <div className="text-center py-12">
-                <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
+                <Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" />
               </div>
             ) : banners.length === 0 ? (
               <div className="bg-white rounded-lg border p-12 text-center">
                 <Image className="w-12 h-12 mx-auto text-gray-300 mb-4" />
                 <p className="text-gray-500">No banners yet. Create your first banner!</p>
+                <Button 
+                  onClick={() => { setEditingBanner(null); setShowBannerForm(true); }}
+                  className="mt-4"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Banner
+                </Button>
               </div>
             ) : (
               <div className="space-y-4">
@@ -652,12 +833,19 @@ const StorefrontCMS = () => {
             </div>
             {loading ? (
               <div className="text-center py-12">
-                <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
+                <Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" />
               </div>
             ) : collections.length === 0 ? (
               <div className="bg-white rounded-lg border p-12 text-center">
                 <Layout className="w-12 h-12 mx-auto text-gray-300 mb-4" />
                 <p className="text-gray-500">No collections yet. Create your first collection!</p>
+                <Button 
+                  onClick={() => { setEditingCollection(null); setShowCollectionForm(true); }}
+                  className="mt-4"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Collection
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -677,14 +865,14 @@ const StorefrontCMS = () => {
           {/* Settings Tab */}
           <TabsContent value="settings" className="mt-6">
             <h2 className="text-lg font-semibold mb-4">Storefront Settings</h2>
-            <SettingsForm settings={settings} onSave={saveSettings} />
+            <SettingsForm settings={settings} onSave={saveSettings} storeName={selectedStore} />
           </TabsContent>
         </Tabs>
       </div>
 
       {/* Banner Form Dialog */}
       <Dialog open={showBannerForm} onOpenChange={setShowBannerForm}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingBanner ? 'Edit Banner' : 'Add Banner'}</DialogTitle>
           </DialogHeader>
@@ -692,13 +880,14 @@ const StorefrontCMS = () => {
             banner={editingBanner}
             onSave={saveBanner}
             onCancel={() => { setShowBannerForm(false); setEditingBanner(null); }}
+            storeName={selectedStore}
           />
         </DialogContent>
       </Dialog>
 
       {/* Collection Form Dialog */}
       <Dialog open={showCollectionForm} onOpenChange={setShowCollectionForm}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingCollection ? 'Edit Collection' : 'Add Collection'}</DialogTitle>
           </DialogHeader>
@@ -706,6 +895,7 @@ const StorefrontCMS = () => {
             collection={editingCollection}
             onSave={saveCollection}
             onCancel={() => { setShowCollectionForm(false); setEditingCollection(null); }}
+            storeName={selectedStore}
           />
         </DialogContent>
       </Dialog>
