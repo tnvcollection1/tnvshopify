@@ -616,7 +616,13 @@ const AnalysisResultsCard = ({ analysis, onRefresh }) => {
           <>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <p className="text-xs text-gray-600 mb-1">Avg Competitor</p>
-              <p className="text-2xl font-bold text-gray-700">₹{priceAnalysis.avg_competitor_price?.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-700">
+                {priceAnalysis.currency === 'INR' ? '₹' : priceAnalysis.currency + ' '}
+                {priceAnalysis.avg_competitor_price?.toLocaleString()}
+              </p>
+              {priceAnalysis.prices_converted && (
+                <p className="text-xs text-green-600 mt-1">✓ Currency converted</p>
+              )}
             </div>
             <div className={`text-center p-3 ${indicator?.bg} rounded-lg`}>
               <p className="text-xs text-gray-600 mb-1">Difference</p>
@@ -639,7 +645,7 @@ const AnalysisResultsCard = ({ analysis, onRefresh }) => {
       {/* Competitor List */}
       {competitorPrices.length > 0 && (
         <div className="p-4 border-t">
-          <h4 className="font-medium mb-3">Competitor Prices</h4>
+          <h4 className="font-medium mb-3">Competitor Prices (converted to ₹ INR)</h4>
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {competitorPrices.map((cp, idx) => (
               <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
@@ -653,6 +659,11 @@ const AnalysisResultsCard = ({ analysis, onRefresh }) => {
                     {cp.domain}
                     <ExternalLink className="w-3 h-3" />
                   </a>
+                  {cp.original_currency && cp.original_currency !== 'INR' && (
+                    <span className="text-xs text-gray-400 ml-2">
+                      (from {cp.original_currency})
+                    </span>
+                  )}
                 </div>
                 <div className="text-right">
                   {cp.prices && cp.prices.length > 0 ? (
