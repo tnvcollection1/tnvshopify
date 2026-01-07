@@ -67,6 +67,7 @@ import SyncDashboard from "@/components/SyncDashboard";
 import StockUpload from "@/components/StockUpload";
 import SecurityLogs from "@/components/SecurityLogs";
 import TaobaoImport from "@/components/TaobaoImport";
+import WarehouseScanner from "@/components/WarehouseScanner";
 // Storefront Components
 import { StorefrontLayout, CartProvider } from "@/components/storefront/StorefrontLayout";
 import StorefrontHome from "@/components/storefront/StorefrontHome";
