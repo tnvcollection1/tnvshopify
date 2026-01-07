@@ -208,7 +208,7 @@ async def create_shopify_order(store_name: str, order_data: dict) -> dict:
 
 
 @router.post("/orders")
-async def create_order(order: OrderCreate):
+async def create_order(order: OrderCreate, background_tasks: BackgroundTasks):
     """Create a new order (COD or after payment verification)"""
     db = get_db()
     
@@ -257,6 +257,39 @@ async def create_order(order: OrderCreate):
                 )
         except Exception as e:
             print(f"Warning: Could not create Shopify order: {e}")
+        
+        # Send order confirmation email in background
+        email_svc = get_email_service()
+        if email_svc:
+            # Build email order data
+            customer_info = order.customer.dict()
+            email_order = {
+                "order_id": order_number,
+                "customer": {
+                    "name": f"{customer_info['first_name']} {customer_info['last_name']}",
+                    "email": customer_info['email'],
+                    "phone": customer_info['phone']
+                },
+                "items": [
+                    {
+                        "title": item.title,
+                        "quantity": item.quantity,
+                        "price": item.price,
+                        "size": item.variant_title if item.variant_title else None,
+                        "image": ""  # Add image URL if available
+                    }
+                    for item in order.line_items
+                ],
+                "shipping_address": order.shipping_address.dict(),
+                "subtotal": order.subtotal,
+                "shipping": order.shipping,
+                "total": order.total,
+                "payment_method": order.payment_method,
+                "payment_status": "paid" if order.payment_method != "cod" else "pending",
+                "tracking_url": f"/order/{order_number}"
+            }
+            background_tasks.add_task(email_svc.send_order_confirmation, email_order)
+            logger.info(f"Order confirmation email queued for {customer_info['email']}")
         
         return {
             "success": True,
