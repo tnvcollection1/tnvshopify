@@ -540,6 +540,31 @@ async def extract_competitor_prices(analysis_id: str, urls: List[str], base_curr
         
         logger.info(f"Extracted prices for analysis {analysis_id}: {len(prices_data)} competitors (base: {base_currency})")
         
+        # Auto-check for price alerts after extraction
+        if prices_data:
+            try:
+                from services.price_alert_service import price_alert_service
+                price_alert_service.set_database(db)
+                
+                # Get the analysis to get product details
+                analysis = await db.competitor_analyses.find_one(
+                    {"analysis_id": analysis_id},
+                    {"_id": 0, "product_id": 1, "product_name": 1, "your_price": 1, "store_name": 1}
+                )
+                
+                if analysis and analysis.get("your_price", 0) > 0:
+                    alerts = await price_alert_service.check_price_alerts(
+                        product_id=analysis.get("product_id", analysis_id),
+                        product_name=analysis.get("product_name", "Unknown"),
+                        your_price=analysis.get("your_price", 0),
+                        competitor_prices=prices_data,
+                        store_name=analysis.get("store_name")
+                    )
+                    if alerts:
+                        logger.info(f"Triggered {len(alerts)} price alerts for analysis {analysis_id}")
+            except Exception as alert_error:
+                logger.warning(f"Failed to check price alerts: {alert_error}")
+        
     except Exception as e:
         logger.error(f"Error extracting prices for {analysis_id}: {str(e)}")
 
