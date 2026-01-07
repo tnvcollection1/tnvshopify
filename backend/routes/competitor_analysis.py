@@ -1,6 +1,7 @@
 """
 Competitor Price Analysis Routes
 Endpoints for product image analysis and competitor price discovery
+Includes fallback to title-based search when image search yields no results
 """
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, BackgroundTasks
 from pydantic import BaseModel
@@ -33,6 +34,8 @@ def get_db():
 
 # Import Vision API service
 from services.vision_api_service import vision_api_service
+# Import Web Search service for title-based fallback
+from services.web_search_service import web_search_service
 
 
 # Pydantic Models
