@@ -62,7 +62,7 @@ const ShopifySidebar = () => {
 
   const isActive = (path) => location.pathname === path;
 
-  // Navigation structure
+  // Navigation structure - Full feature set
   const navigation = [
     {
       id: 'home',
@@ -77,7 +77,9 @@ const ShopifySidebar = () => {
       children: [
         { label: 'Orders', path: '/orders', icon: FileText },
         { label: 'Storefront Orders', path: '/storefront-orders', icon: Store },
+        { label: 'Drafts', path: '/drafts', icon: FileText },
         { label: 'Fulfillment', path: '/fulfillment', icon: Truck },
+        { label: 'Fulfillment Pipeline', path: '/fulfillment-pipeline', icon: Truck },
         { label: 'Analytics', path: '/analytics', icon: BarChart3 },
       ]
     },
@@ -89,6 +91,8 @@ const ShopifySidebar = () => {
         { label: 'Catalog', path: '/products', icon: ShoppingBag },
         { label: '1688 Products', path: '/1688-products', icon: Globe },
         { label: 'Inventory', path: '/inventory', icon: Layers },
+        { label: 'Inventory Health', path: '/inventory-health', icon: Activity },
+        { label: 'Inventory Clearance', path: '/inventory-clearance', icon: Box },
       ]
     },
     {
@@ -98,7 +102,9 @@ const ShopifySidebar = () => {
       children: [
         { label: 'Purchase Orders', path: '/purchase-1688', icon: CreditCard },
         { label: 'Bulk Order', path: '/bulk-order-1688', icon: Box },
-        { label: 'Image Search', path: '/1688-image-search', icon: Search },
+        { label: 'Image Search', path: '/image-search', icon: Search },
+        { label: 'Product Collector', path: '/product-collector', icon: Package },
+        { label: '1688 Accounts', path: '/1688-accounts', icon: Users },
       ]
     },
     {
@@ -108,19 +114,62 @@ const ShopifySidebar = () => {
       children: [
         { label: 'DWZ56 Tracking', path: '/dwz56-purchase', icon: Activity },
         { label: 'DWZ56 Shipping', path: '/dwz56-shipping', icon: Send },
+        { label: 'Dispatch Tracker', path: '/dispatch-tracker', icon: Truck },
+      ]
+    },
+    {
+      id: 'marketing',
+      label: 'Marketing',
+      icon: BarChart3,
+      children: [
+        { label: 'Dashboard', path: '/marketing', icon: Home },
+        { label: 'Meta Ads', path: '/meta-ads', icon: Activity },
+        { label: 'Facebook Marketing', path: '/facebook-marketing', icon: Globe },
+        { label: 'Lead Ads', path: '/lead-ads', icon: Users },
+        { label: 'Campaigns', path: '/campaigns', icon: Send },
+        { label: 'Flash Sales', path: '/flash-sales', icon: Activity },
+        { label: 'Performance', path: '/performance-comparison', icon: BarChart3 },
       ]
     },
     {
       id: 'customers',
       label: 'Customers',
       icon: Users,
-      path: '/customers',
+      children: [
+        { label: 'All Customers', path: '/customers', icon: Users },
+        { label: 'Segments', path: '/segments', icon: Layers },
+        { label: 'Bundles', path: '/bundles', icon: Package },
+      ]
     },
     {
       id: 'messaging',
       label: 'Messaging',
       icon: MessageCircle,
-      path: '/whatsapp',
+      children: [
+        { label: 'WhatsApp', path: '/whatsapp', icon: MessageCircle },
+        { label: 'Inbox', path: '/whatsapp-inbox', icon: FileText },
+        { label: 'Templates', path: '/whatsapp-templates', icon: FileText },
+        { label: 'Campaigns', path: '/whatsapp-campaigns', icon: Send },
+        { label: 'Analytics', path: '/whatsapp-analytics', icon: BarChart3 },
+        { label: 'Business Setup', path: '/whatsapp-business', icon: Settings },
+      ]
+    },
+    {
+      id: 'finance',
+      label: 'Finance',
+      icon: CreditCard,
+      children: [
+        { label: 'Reconciliation', path: '/finance-reconciliation', icon: CreditCard },
+        { label: 'DTDC Reconciliation', path: '/dtdc-reconciliation', icon: Truck },
+        { label: 'Dynamic Pricing', path: '/dynamic-pricing', icon: Activity },
+        { label: 'Pricing', path: '/pricing', icon: CreditCard },
+      ]
+    },
+    {
+      id: 'reports',
+      label: 'Reports',
+      icon: FileText,
+      path: '/reports',
     },
   ];
 
