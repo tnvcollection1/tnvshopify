@@ -229,6 +229,16 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 - `GET /api/storefront-cms/settings/{store_name}` - Get storefront settings
 - `PUT /api/storefront-cms/settings` - Update storefront settings
 - `GET /api/storefront-cms/public/{store_name}/homepage` - Public homepage content
+- `POST /api/storefront-cms/upload?store_name=X` - Upload images for CMS
+- `GET /api/storefront-cms/media/{path}` - Serve uploaded media
+- `DELETE /api/storefront-cms/media/{path}` - Delete uploaded media
+
+### Warehouse Scanner
+- `POST /api/warehouse/auth` - Authenticate with PIN
+- `GET /api/warehouse/scan/{fulfillment_number}` - Get shipment details
+- `POST /api/warehouse/receive` - Mark shipment as received
+- `POST /api/warehouse/ship` - Mark shipment as shipped
+- `GET /api/warehouse/label/{fulfillment_number}` - Get shipping label
 
 ### 1688 Integration
 - `GET /api/1688/product-skus/{product_id}` - Fetch SKU/variant data via TMAPI
