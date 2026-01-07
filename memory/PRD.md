@@ -328,39 +328,58 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 ---
 
 ## Last Updated
-January 7, 2026 - Session 13: Email Notifications, CMS File Upload, Server Refactoring
+January 7, 2026 - Session 13: Competitor Price Dashboard, Email Notifications, Server Refactoring
 
 ---
 
 ## Recent Completed Work (Jan 7, 2026 - Session 13)
 
-### 1. File Upload for Storefront CMS ✅
+### 1. Competitor Price Dashboard ✅ NEW
+**Feature**: Google Cloud Vision API integration for discovering competitor pricing
+
+**Implementation**:
+- Backend service: `/app/backend/services/vision_api_service.py`
+- API routes: `/app/backend/routes/competitor_analysis.py`
+- Frontend: `/app/frontend/src/components/CompetitorDashboard.jsx`
+
+**How it works**:
+1. Upload a product image
+2. Google Vision API finds pages with similar/matching images
+3. System scrapes competitor pages for prices
+4. Dashboard shows price comparison (Your Price vs Market Avg)
+5. Recommendations: "Competitive", "Consider Lowering", "Premium Pricing"
+
+**Key Endpoints**:
+- `POST /api/competitor/analyze-image` - Upload image for analysis
+- `GET /api/competitor/analysis/{id}` - Get analysis results
+- `GET /api/competitor/analyses` - List all analyses
+- `GET /api/competitor/dashboard-stats` - Dashboard statistics
+- `POST /api/competitor/extract-prices` - Extract prices from URLs
+
+**Required Config** (in `/app/backend/.env`):
+```
+GOOGLE_VISION_API_KEY=your_google_cloud_vision_api_key
+```
+
+**Access**: Sidebar → 1688 Sourcing → Competitor Prices
+
+### 2. File Upload for Storefront CMS ✅
 - Drag-and-drop image uploader for banners/collections
-- Backend: `POST /api/storefront-cms/upload`, `GET/DELETE /api/storefront-cms/media/{path}`
-- Supports JPG, PNG, GIF, WEBP up to 10MB
+- Backend: `POST /api/storefront-cms/upload`
 - Storage: `/app/backend/static/uploads/cms/{store_name}/`
 
-### 2. Email Notifications for Storefront ✅
-- Created `/app/backend/services/email_service.py` with SendGrid integration
-- Templates: Order Confirmation, Shipment Notification, Delivery Confirmation
-- Background task processing for non-blocking delivery
-- Auto-sends on order creation and status updates (shipped, delivered)
-- **Requires Config**: `SENDGRID_API_KEY`, `SENDER_EMAIL`, `SENDER_NAME` in `/app/backend/.env`
+### 3. Email Notifications for Storefront ✅
+- SendGrid integration for transactional emails
+- Order confirmation, shipment notification, delivery confirmation
+- **Requires**: `SENDGRID_API_KEY`, `SENDER_EMAIL` in `/app/backend/.env`
 
-### 3. Server.py Refactoring (P3 - Phase 1) ✅
-**New modular routers created:**
-- `/app/backend/routes/shopify_sync.py` - Shopify sync endpoints
-- `/app/backend/routes/whatsapp_api.py` - WhatsApp messaging/campaigns
-- `/app/backend/routes/marketing.py` - Marketing stats/campaigns
-- `/app/backend/routes/settings.py` - System settings (auto-sync, notifications)
-
-**Fixed bugs:**
-- Marketing stats datetime comparison errors
-
-### 4. Chrome Extension Verified ✅
-- Extension packaged at `/app/wamerce-1688-extension.zip`
-- Download: `GET /api/extension/download`
-- Full product scraping from 1688 pages
+### 4. Server.py Refactoring (P3 - Phase 1) ✅
+New modular routers:
+- `routes/shopify_sync.py` - Shopify sync endpoints
+- `routes/whatsapp_api.py` - WhatsApp messaging
+- `routes/marketing.py` - Marketing stats/campaigns
+- `routes/settings.py` - System settings
+- `routes/competitor_analysis.py` - Competitor price analysis
 
 ---
 
