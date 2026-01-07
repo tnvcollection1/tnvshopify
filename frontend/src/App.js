@@ -68,6 +68,7 @@ import StockUpload from "@/components/StockUpload";
 import SecurityLogs from "@/components/SecurityLogs";
 import TaobaoImport from "@/components/TaobaoImport";
 import WarehouseScanner from "@/components/WarehouseScanner";
+import CompetitorDashboard from "@/components/CompetitorDashboard";
 // Storefront Components
 import { StorefrontLayout, CartProvider } from "@/components/storefront/StorefrontLayout";
 import StorefrontHome from "@/components/storefront/StorefrontHome";
