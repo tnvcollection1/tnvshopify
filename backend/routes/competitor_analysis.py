@@ -650,11 +650,12 @@ async def extract_prices_endpoint(urls: List[str], base_currency: str = "INR"):
     
     results = []
     for url in urls:
-        result = await extract_prices_from_url(url)
+        result = await extract_prices_from_url(url, base_currency)
         results.append(result)
     
     return {
         "success": True,
+        "base_currency": base_currency,
         "results": results
     }
 
