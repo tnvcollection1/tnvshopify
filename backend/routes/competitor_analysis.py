@@ -808,3 +808,190 @@ async def search_by_title(
         logger.error(f"Error in title search: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# ==================== Price Alert & Notification Endpoints ====================
+
+from services.price_alert_service import price_alert_service
+
+# Initialize price alert service with database
+@router.on_event("startup")
+async def init_price_alert_service():
+    price_alert_service.set_database(get_db())
+
+
+class AlertSettingsRequest(BaseModel):
+    product_id: str
+    enabled: bool = True
+    threshold_percent: float = 0  # 0 = alert on any lower price
+    notify_email: bool = True
+    notify_in_app: bool = True
+    email_recipients: Optional[List[str]] = None
+
+
+@router.get("/notifications")
+async def get_notifications(
+    store_name: Optional[str] = None,
+    unread_only: bool = False,
+    limit: int = 50
+):
+    """Get price alert notifications"""
+    try:
+        price_alert_service.set_database(get_db())
+        notifications = await price_alert_service.get_notifications(
+            store_name=store_name,
+            unread_only=unread_only,
+            limit=limit
+        )
+        unread_count = await price_alert_service.get_unread_count(store_name)
+        
+        return {
+            "success": True,
+            "notifications": notifications,
+            "unread_count": unread_count,
+            "total": len(notifications)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching notifications: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str):
+    """Mark a notification as read"""
+    try:
+        price_alert_service.set_database(get_db())
+        success = await price_alert_service.mark_notification_read(notification_id)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        
+        return {"success": True, "message": "Notification marked as read"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error marking notification read: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/notifications/mark-all-read")
+async def mark_all_notifications_read(store_name: Optional[str] = None):
+    """Mark all notifications as read"""
+    try:
+        price_alert_service.set_database(get_db())
+        count = await price_alert_service.mark_all_read(store_name)
+        
+        return {
+            "success": True,
+            "message": f"Marked {count} notifications as read",
+            "count": count
+        }
+    except Exception as e:
+        logger.error(f"Error marking all notifications read: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/alerts/settings/{product_id}")
+async def get_alert_settings(product_id: str):
+    """Get price alert settings for a product"""
+    try:
+        price_alert_service.set_database(get_db())
+        settings = await price_alert_service.get_alert_settings(product_id)
+        
+        return {
+            "success": True,
+            "settings": settings
+        }
+    except Exception as e:
+        logger.error(f"Error fetching alert settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/alerts/settings")
+async def update_alert_settings(request: AlertSettingsRequest):
+    """Update price alert settings for a product"""
+    try:
+        price_alert_service.set_database(get_db())
+        settings = await price_alert_service.update_alert_settings(
+            product_id=request.product_id,
+            enabled=request.enabled,
+            threshold_percent=request.threshold_percent,
+            notify_email=request.notify_email,
+            notify_in_app=request.notify_in_app,
+            email_recipients=request.email_recipients
+        )
+        
+        return {
+            "success": True,
+            "message": "Alert settings updated",
+            "settings": settings
+        }
+    except Exception as e:
+        logger.error(f"Error updating alert settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/check-alerts/{analysis_id}")
+async def check_price_alerts(analysis_id: str):
+    """
+    Check an analysis for price alerts and create notifications if triggered.
+    Called automatically after price extraction completes.
+    """
+    db = get_db()
+    price_alert_service.set_database(db)
+    
+    try:
+        # Get the analysis
+        analysis = await db.competitor_analyses.find_one(
+            {"analysis_id": analysis_id},
+            {"_id": 0}
+        )
+        
+        if not analysis:
+            raise HTTPException(status_code=404, detail="Analysis not found")
+        
+        competitor_prices = analysis.get("competitor_prices", [])
+        your_price = analysis.get("your_price", 0)
+        
+        if not competitor_prices or your_price <= 0:
+            return {
+                "success": True,
+                "alerts_triggered": 0,
+                "message": "No competitor prices to check"
+            }
+        
+        # Check for alerts
+        alerts = await price_alert_service.check_price_alerts(
+            product_id=analysis.get("product_id", analysis_id),
+            product_name=analysis.get("product_name", "Unknown Product"),
+            your_price=your_price,
+            competitor_prices=competitor_prices,
+            store_name=analysis.get("store_name")
+        )
+        
+        # Get alert settings to check if email should be sent
+        settings = await price_alert_service.get_alert_settings(
+            analysis.get("product_id", analysis_id)
+        )
+        
+        # Send email alerts if enabled and we have alerts
+        if alerts and settings.get("notify_email") and settings.get("email_recipients"):
+            for alert in alerts:
+                await price_alert_service.send_email_alert(
+                    alert,
+                    settings["email_recipients"]
+                )
+        
+        return {
+            "success": True,
+            "alerts_triggered": len(alerts),
+            "alerts": alerts,
+            "message": f"Triggered {len(alerts)} price alerts" if alerts else "No price alerts triggered"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error checking price alerts: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
