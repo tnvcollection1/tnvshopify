@@ -200,23 +200,20 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 
 ## Upcoming Tasks
 
-### Phase 1: UI Polish (P1 - IN PROGRESS)
+### Phase 1: UI Polish (P1 - ONGOING)
 - Continue refining UI components across pages
 - Ensure consistent Shopify-style design
-- Dashboard, Orders, Products pages need updates
 
-### Phase 2: Email Notifications (P2 - Deferred)
-- Order confirmation emails
-- Shipment notification with tracking
-- Requires SendGrid or Resend integration
+### Phase 2: Server.py Continued Refactoring (P3)
+- Extract WhatsApp endpoints to separate router
+- Extract Marketing/Campaign endpoints
+- Extract Settings endpoints
+- Goal: Reduce server.py to under 3000 lines
 
-### Phase 3: Production Data Sync Improvements
+### Phase 3: Production Improvements
 - Robust sync verification
 - Timeout handling for large datasets
-
-### Phase 4: Refactor `server.py` (P3)
-- File is 7000+ lines, needs breaking into smaller routers
-- Improves maintainability
+- Rate limiting for APIs
 
 ---
 
