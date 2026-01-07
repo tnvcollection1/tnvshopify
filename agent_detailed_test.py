@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://chinaconnect-1.preview.emergentagent.com/api'
+base_url = 'https://asian-source.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
