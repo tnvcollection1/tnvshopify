@@ -78,3 +78,4 @@ uvicorn==0.25.0
 watchfiles==1.1.1
 playwright==1.57.0
 sendgrid==6.12.5
+beautifulsoup4==4.14.3
