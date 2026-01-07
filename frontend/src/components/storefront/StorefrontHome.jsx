@@ -62,28 +62,31 @@ const CategoryCard = ({ title, image, link, count }) => (
   </Link>
 );
 
-// Featured Categories
-const FeaturedCategories = () => {
-  const categories = [
+// Featured Categories - Now uses CMS collections
+const FeaturedCategories = ({ collections = [] }) => {
+  // Default categories if none from CMS
+  const defaultCategories = [
     {
-      title: 'Shoes',
-      image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
-      link: '/shop/shoes',
-      count: 124
+      name: 'Shoes',
+      image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
+      link_url: '/shop/shoes',
+      product_count: 124
     },
     {
-      title: 'Bags',
-      image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80',
-      link: '/shop/bags',
-      count: 86
+      name: 'Bags',
+      image_url: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80',
+      link_url: '/shop/bags',
+      product_count: 86
     },
     {
-      title: 'Accessories',
-      image: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=600&q=80',
-      link: '/shop/accessories',
-      count: 52
+      name: 'Accessories',
+      image_url: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=600&q=80',
+      link_url: '/shop/accessories',
+      product_count: 52
     },
   ];
+  
+  const displayCategories = collections.length > 0 ? collections : defaultCategories;
 
   return (
     <section className="py-20 bg-white">
@@ -101,8 +104,14 @@ const FeaturedCategories = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {categories.map((cat) => (
-            <CategoryCard key={cat.title} {...cat} />
+          {displayCategories.map((cat) => (
+            <CategoryCard 
+              key={cat.name} 
+              title={cat.name}
+              image={cat.image_url}
+              link={cat.link_url}
+              count={cat.product_count}
+            />
           ))}
         </div>
       </div>
