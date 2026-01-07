@@ -653,6 +653,16 @@ function AppRoutes() {
         element={<WarehouseScanner />} 
       />
       
+      {/* Competitor Price Dashboard */}
+      <Route 
+        path="/competitor-dashboard" 
+        element={
+          <ProtectedRoute>
+            <CompetitorDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      
       {/* Public Storefront Routes - No Auth Required */}
       <Route 
         path="/shop" 
