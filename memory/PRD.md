@@ -143,3 +143,14 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 ## Known Issues
 1. Shopify OAuth sessions may drop intermittently (P2)
 2. Some Shopify sync endpoints still duplicated in server.py (P3)
+
+---
+
+## Recent Updates (Jan 7, 2025)
+
+### Price Comparison Catalog
+- New `/price-comparison` page showing all products with competitor data
+- Columns: Product, Your Price, Competitor (domain), Competitor Price, % Difference
+- Filters: All / Analyzed / Not Analyzed / Cheaper Competitors
+- Bulk analyze feature
+- Tests: 18/18 passed (100%)
