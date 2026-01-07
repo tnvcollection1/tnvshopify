@@ -663,6 +663,16 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+
+      {/* Competitor Price Catalog - Product Comparison View */}
+      <Route 
+        path="/price-comparison" 
+        element={
+          <ProtectedRoute>
+            <CompetitorPriceCatalog />
+          </ProtectedRoute>
+        } 
+      />
       
       {/* Public Storefront Routes - No Auth Required */}
       <Route 
