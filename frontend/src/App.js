@@ -616,6 +616,30 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/stock-upload" 
+        element={
+          <ProtectedRoute>
+            <StockUpload />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/security-logs" 
+        element={
+          <ProtectedRoute>
+            <SecurityLogs />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/taobao-import" 
+        element={
+          <ProtectedRoute>
+            <TaobaoImport />
+          </ProtectedRoute>
+        } 
+      />
       
       {/* Public Storefront Routes - No Auth Required */}
       <Route 
