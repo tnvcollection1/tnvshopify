@@ -98,6 +98,7 @@ set_lead_ads_db(db)
 set_super_admin_db(db)
 set_storefront_db(db)
 set_storefront_cms_db(db)
+set_warehouse_db(db)
 set_sync_dependencies(db)
 
 # ==================== Initialize Default Users ====================
