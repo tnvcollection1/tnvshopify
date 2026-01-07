@@ -486,9 +486,26 @@ const AnalysisResultsCard = ({ analysis, onRefresh }) => {
       <div className="p-4 border-b flex items-center justify-between">
         <div>
           <h3 className="font-semibold text-lg">{analysis.product_name}</h3>
-          <p className="text-sm text-gray-500">
-            {analysis.competitor_count || analysis.competitor_pages?.length || 0} competitors found
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-sm text-gray-500">
+              {analysis.competitor_count || analysis.competitor_pages?.length || 0} competitors found
+            </p>
+            {analysis.search_method && (
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                analysis.search_method === 'image_search' 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : analysis.search_method === 'title_fallback'
+                  ? 'bg-orange-100 text-orange-700'
+                  : 'bg-purple-100 text-purple-700'
+              }`}>
+                {analysis.search_method === 'image_search' 
+                  ? '🖼️ Image Match' 
+                  : analysis.search_method === 'title_fallback'
+                  ? '🔍 Title Fallback'
+                  : '📝 Title Search'}
+              </span>
+            )}
+          </div>
         </div>
         <Button variant="ghost" size="sm" onClick={loadFullAnalysis} disabled={loading}>
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
