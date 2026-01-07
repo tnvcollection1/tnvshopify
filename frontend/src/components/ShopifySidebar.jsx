@@ -181,6 +181,16 @@ const ShopifySidebar = () => {
       icon: RefreshCw,
       path: '/sync-dashboard',
     },
+    {
+      id: 'system',
+      label: 'System',
+      icon: Settings,
+      children: [
+        { label: 'TMAPI Monitor', path: '/tmapi-monitor', icon: Activity },
+        { label: 'Security Logs', path: '/security-logs', icon: FileText },
+        { label: 'Settings', path: '/settings', icon: Settings },
+      ]
+    },
   ];
 
   const NavItem = ({ item, depth = 0 }) => {
