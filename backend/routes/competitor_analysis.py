@@ -502,23 +502,27 @@ async def analyze_competitor_image(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def extract_competitor_prices(analysis_id: str, urls: List[str]):
-    """Background task to extract prices from competitor URLs"""
+async def extract_competitor_prices(analysis_id: str, urls: List[str], base_currency: str = "INR"):
+    """Background task to extract prices from competitor URLs with currency conversion"""
     db = get_db()
     
     try:
         prices_data = []
         
         for url in urls:
-            result = await extract_prices_from_url(url)
+            result = await extract_prices_from_url(url, base_currency)
             if result.get("success") and result.get("prices"):
                 prices_data.append({
                     "url": url,
                     "domain": result.get("domain"),
                     "title": result.get("title"),
-                    "prices": result.get("prices"),
+                    "prices": result.get("prices"),  # Prices in base_currency
                     "min_price": min(result["prices"]) if result["prices"] else None,
-                    "max_price": max(result["prices"]) if result["prices"] else None
+                    "max_price": max(result["prices"]) if result["prices"] else None,
+                    "base_currency": base_currency,
+                    "original_currency": result.get("detected_currency", base_currency),
+                    "original_prices": result.get("original_prices", []),
+                    "prices_converted": result.get("prices_converted", False)
                 })
         
         # Update analysis with extracted prices
@@ -527,13 +531,14 @@ async def extract_competitor_prices(analysis_id: str, urls: List[str]):
             {
                 "$set": {
                     "competitor_prices": prices_data,
+                    "base_currency": base_currency,
                     "price_extraction_complete": True,
                     "price_extraction_at": datetime.now(timezone.utc).isoformat()
                 }
             }
         )
         
-        logger.info(f"Extracted prices for analysis {analysis_id}: {len(prices_data)} competitors")
+        logger.info(f"Extracted prices for analysis {analysis_id}: {len(prices_data)} competitors (base: {base_currency})")
         
     except Exception as e:
         logger.error(f"Error extracting prices for {analysis_id}: {str(e)}")
