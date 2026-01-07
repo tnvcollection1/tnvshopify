@@ -105,6 +105,14 @@ set_storefront_cms_db(db)
 set_warehouse_db(db)
 set_sync_dependencies(db)
 set_shopify_sync_deps(db)
+set_marketing_db(db)
+set_settings_db(db)
+
+# Set WhatsApp API dependencies
+try:
+    set_whatsapp_api_deps(db, whatsapp_service, MARKETING_TEMPLATES if 'MARKETING_TEMPLATES' in dir() else None)
+except Exception as e:
+    logger.warning(f"Could not set WhatsApp API dependencies: {e}")
 
 # ==================== Initialize Default Users ====================
 async def init_default_users():
