@@ -108,6 +108,7 @@ set_sync_dependencies(db)
 set_shopify_sync_deps(db)
 set_marketing_db(db)
 set_settings_db(db)
+set_competitor_db(db)
 
 # Set WhatsApp API dependencies
 try:
