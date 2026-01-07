@@ -303,7 +303,40 @@ Build a comprehensive integration tool for Shopify stores with 1688.com, Taobao,
 ---
 
 ## Last Updated
-January 7, 2026 - Session 12: Storefront CMS, Sidebar Restoration, Code Cleanup
+January 7, 2026 - Session 13: File Upload for CMS, UI Polish
+
+---
+
+## Recent Completed Work (Jan 7, 2026 - Session 13)
+
+### File Upload for Storefront CMS ✅ NEW
+
+**Feature**: Direct image uploads for banners and collections (previously required pasting URLs)
+
+**Implementation**:
+1. **Backend Endpoints**:
+   - `POST /api/storefront-cms/upload?store_name=X` - Upload images
+   - `GET /api/storefront-cms/media/{path}` - Serve uploaded images
+   - `DELETE /api/storefront-cms/media/{path}` - Delete images
+
+2. **Frontend ImageUploader Component**:
+   - Drag-and-drop support
+   - File type validation (JPG, PNG, GIF, WEBP)
+   - Size limit (10MB max)
+   - Live preview with replace/delete options
+   - Fallback URL input for external images
+   - Used in Banner Form, Collection Form, and Settings
+
+3. **Storage**: Files stored in `/app/backend/static/uploads/cms/{store_name}/`
+
+**Testing**: Upload endpoint returns 200 with file URL, media serving works correctly
+
+### Warehouse Scanner Verification ✅
+
+**Feature**: PIN-protected scanner works on **BOTH desktop and mobile devices**
+- Desktop: Enter fulfillment number in search bar
+- Mobile/Tablet: Use camera button for barcode scanning
+- Access: `/warehouse` with PIN: `1688`
 
 ---
 
