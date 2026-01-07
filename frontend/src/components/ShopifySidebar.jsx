@@ -23,7 +23,8 @@ import {
   Layers,
   CreditCard,
   MessageCircle,
-  Send
+  Send,
+  Layout
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
