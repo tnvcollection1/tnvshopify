@@ -19,7 +19,9 @@ import {
   Package,
   Store,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Bell,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +36,121 @@ import axios from 'axios';
 import { useStore } from '../contexts/StoreContext';
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+// ==================== Notification Bell Component ====================
+const NotificationBell = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/api/competitor/notifications?limit=20`);
+      if (res.data.success) {
+        setNotifications(res.data.notifications || []);
+        setUnreadCount(res.data.unread_count || 0);
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    // Poll every 30 seconds for new notifications
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  const markAllRead = async () => {
+    try {
+      await axios.post(`${API}/api/competitor/notifications/mark-all-read`);
+      setUnreadCount(0);
+      setNotifications(notifications.map(n => ({ ...n, read: true })));
+      toast.success('All notifications marked as read');
+    } catch (err) {
+      toast.error('Failed to mark notifications as read');
+    }
+  };
+
+  const markRead = async (notificationId) => {
+    try {
+      await axios.post(`${API}/api/competitor/notifications/${notificationId}/read`);
+      setNotifications(notifications.map(n => 
+        n.notification_id === notificationId ? { ...n, read: true } : n
+      ));
+      setUnreadCount(Math.max(0, unreadCount - 1));
+    } catch (err) {
+      console.error('Error marking notification read:', err);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="relative"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <Bell className="w-5 h-5" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </Button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-96 bg-white border rounded-lg shadow-xl z-50">
+          <div className="p-3 border-b flex items-center justify-between">
+            <h3 className="font-semibold">Price Alerts</h3>
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <Button variant="ghost" size="sm" onClick={markAllRead}>
+                  Mark all read
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="max-h-96 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="p-6 text-center text-gray-500">
+                <Bell className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                <p>No price alerts yet</p>
+                <p className="text-xs mt-1">You'll be notified when competitors lower their prices</p>
+              </div>
+            ) : (
+              notifications.map((n) => (
+                <div 
+                  key={n.notification_id} 
+                  className={`p-3 border-b hover:bg-gray-50 cursor-pointer ${!n.read ? 'bg-blue-50' : ''}`}
+                  onClick={() => !n.read && markRead(n.notification_id)}
+                >
+                  <div className="flex items-start gap-2">
+                    <div className={`mt-1 w-2 h-2 rounded-full ${!n.read ? 'bg-blue-500' : 'bg-transparent'}`} />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{n.title}</p>
+                      <p className="text-xs text-gray-600 mt-1">{n.message}</p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        {new Date(n.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // ==================== Product Selector ====================
 const ProductSelector = ({ onSelectProduct, selectedStore }) => {
