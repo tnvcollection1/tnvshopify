@@ -452,7 +452,7 @@ function AppRoutes() {
         path="/products" 
         element={
           <ProtectedRoute>
-            <ProductsCatalog />
+            <ShopifyProducts />
           </ProtectedRoute>
         } 
       />
