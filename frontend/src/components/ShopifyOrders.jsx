@@ -223,11 +223,11 @@ const ShopifyOrders = () => {
   }, [searchQuery]);
 
   const fetchStats = useCallback(async () => {
+    // Don't fetch until store is selected
+    if (!selectedStore) return;
+    
     try {
-      const params = {};
-      if (selectedStore && selectedStore !== 'all') {
-        params.store_name = selectedStore;
-      }
+      const params = { store_name: selectedStore };
       const response = await axios.get(`${API}/api/customers/stats`, { params });
       const data = response.data;
       setStats({
