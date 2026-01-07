@@ -482,51 +482,53 @@ const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedS
           </div>
         )}
 
-        {/* Form Fields */}
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          <div className="col-span-2">
-            <label className="text-sm font-medium">Product Name *</label>
-            <Input
-              value={form.product_name}
-              onChange={(e) => setForm({ ...form, product_name: e.target.value })}
-              placeholder="e.g., Blue Wireless Headphones"
-            />
+        {/* Form Fields - Only show for select/upload modes, title mode has its own form */}
+        {mode !== 'title' && (
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <div className="col-span-2">
+              <label className="text-sm font-medium">Product Name *</label>
+              <Input
+                value={form.product_name}
+                onChange={(e) => setForm({ ...form, product_name: e.target.value })}
+                placeholder="e.g., Blue Wireless Headphones"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Your Price (₹) *</label>
+              <Input
+                type="number"
+                value={form.your_price}
+                onChange={(e) => setForm({ ...form, your_price: e.target.value })}
+                placeholder="1999"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Category</label>
+              <select
+                className="w-full border rounded-md px-3 py-2 text-sm"
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+              >
+                <option value="general">General</option>
+                <option value="electronics">Electronics</option>
+                <option value="fashion">Fashion</option>
+                <option value="home">Home & Living</option>
+                <option value="beauty">Beauty</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="text-sm font-medium">Your Price (₹) *</label>
-            <Input
-              type="number"
-              value={form.your_price}
-              onChange={(e) => setForm({ ...form, your_price: e.target.value })}
-              placeholder="1999"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Category</label>
-            <select
-              className="w-full border rounded-md px-3 py-2 text-sm"
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-            >
-              <option value="general">General</option>
-              <option value="electronics">Electronics</option>
-              <option value="fashion">Fashion</option>
-              <option value="home">Home & Living</option>
-              <option value="beauty">Beauty</option>
-            </select>
-          </div>
-        </div>
+        )}
 
         <div className="flex justify-end gap-2 pt-4 border-t mt-4">
           <Button variant="outline" onClick={onClose} disabled={uploading}>Cancel</Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={uploading || (!selectedProduct && !selectedFile)}
+            disabled={uploading || (mode !== 'title' && !selectedProduct && !selectedFile) || (mode === 'title' && !form.product_name)}
           >
             {uploading ? (
-              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing...</>
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {mode === 'title' ? 'Searching...' : 'Analyzing...'}</>
             ) : (
-              <><Search className="w-4 h-4 mr-2" /> Find Competitors</>
+              <><Search className="w-4 h-4 mr-2" /> {mode === 'title' ? 'Search by Title' : 'Find Competitors'}</>
             )}
           </Button>
         </div>
