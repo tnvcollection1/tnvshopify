@@ -1010,6 +1010,144 @@ async def update_alert_settings(request: AlertSettingsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+# ==================== Scheduled Price Check Endpoints ====================
+
+from services.scheduled_price_check_service import scheduled_price_check_service
+
+
+class ScheduleSettingsRequest(BaseModel):
+    enabled: bool = False
+    frequency: str = "daily"  # hourly, daily, weekly, manual
+    hour: int = 2  # 0-23
+    day_of_week: int = 0  # 0=Monday, 6=Sunday (for weekly)
+    products_per_run: int = 50
+    priority_mode: str = "not_analyzed"  # not_analyzed, oldest, random
+    auto_alert: bool = True
+    store_name: Optional[str] = None
+
+
+@router.get("/schedule/settings")
+async def get_schedule_settings(store_name: Optional[str] = None):
+    """Get current schedule settings for automated price checks"""
+    try:
+        scheduled_price_check_service.set_database(get_db())
+        settings = await scheduled_price_check_service.get_schedule_settings(store_name)
+        
+        return {
+            "success": True,
+            "settings": settings
+        }
+    except Exception as e:
+        logger.error(f"Error fetching schedule settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/schedule/settings")
+async def update_schedule_settings(request: ScheduleSettingsRequest):
+    """Update schedule settings for automated price checks"""
+    try:
+        scheduled_price_check_service.set_database(get_db())
+        settings = await scheduled_price_check_service.update_schedule_settings(
+            enabled=request.enabled,
+            frequency=request.frequency,
+            hour=request.hour,
+            day_of_week=request.day_of_week,
+            products_per_run=request.products_per_run,
+            priority_mode=request.priority_mode,
+            auto_alert=request.auto_alert,
+            store_name=request.store_name
+        )
+        
+        return {
+            "success": True,
+            "message": f"Schedule {'enabled' if request.enabled else 'disabled'}",
+            "settings": settings
+        }
+    except Exception as e:
+        logger.error(f"Error updating schedule settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/schedule/run-now")
+async def run_scheduled_check_now(
+    store_name: Optional[str] = None,
+    background_tasks: BackgroundTasks = None
+):
+    """Manually trigger a scheduled price check"""
+    try:
+        scheduled_price_check_service.set_database(get_db())
+        
+        if background_tasks:
+            # Run in background
+            background_tasks.add_task(
+                scheduled_price_check_service.run_scheduled_check,
+                store_name
+            )
+            return {
+                "success": True,
+                "message": "Scheduled check started in background",
+                "store_name": store_name or "all stores"
+            }
+        else:
+            # Run synchronously (for testing)
+            result = await scheduled_price_check_service.run_scheduled_check(store_name)
+            return result
+            
+    except Exception as e:
+        logger.error(f"Error running scheduled check: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/schedule/history")
+async def get_schedule_history(limit: int = 20):
+    """Get history of scheduled price check runs"""
+    try:
+        scheduled_price_check_service.set_database(get_db())
+        history = await scheduled_price_check_service.get_run_history(limit)
+        
+        return {
+            "success": True,
+            "history": history,
+            "total": len(history)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching schedule history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/schedule/status")
+async def get_schedule_status():
+    """Get overall status of scheduled checks"""
+    db = get_db()
+    scheduled_price_check_service.set_database(db)
+    
+    try:
+        # Get all schedules
+        schedules = await db.price_check_schedules.find({}, {"_id": 0}).to_list(100)
+        
+        # Get recent history
+        recent = await db.price_check_history.find(
+            {},
+            {"_id": 0, "run_id": 1, "started_at": 1, "total_products_checked": 1, "duration_seconds": 1}
+        ).sort("started_at", -1).limit(5).to_list(5)
+        
+        # Calculate stats
+        enabled_count = len([s for s in schedules if s.get("enabled")])
+        
+        return {
+            "success": True,
+            "schedules_enabled": enabled_count,
+            "total_schedules": len(schedules),
+            "schedules": schedules,
+            "recent_runs": recent
+        }
+    except Exception as e:
+        logger.error(f"Error fetching schedule status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @router.post("/check-alerts/{analysis_id}")
 async def check_price_alerts(analysis_id: str):
     """
