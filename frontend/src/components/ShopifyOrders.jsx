@@ -265,6 +265,11 @@ const ShopifyOrders = () => {
     }
   }, [selectedStore, filters, debouncedSearch, page]);
 
+  // Reset page when store changes
+  useEffect(() => {
+    setPage(1);
+  }, [selectedStore]);
+
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
