@@ -4,7 +4,7 @@ Public endpoints for the customer-facing storefront
 Handles checkout, order creation, and payment processing
 """
 
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, BackgroundTasks
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
@@ -13,8 +13,25 @@ import httpx
 import hashlib
 import hmac
 import razorpay
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/storefront", tags=["Storefront"])
+
+# Email service - lazy import
+_email_service = None
+
+def get_email_service():
+    global _email_service
+    if _email_service is None:
+        try:
+            from services.email_service import email_service
+            _email_service = email_service
+        except Exception as e:
+            logger.warning(f"Email service not available: {e}")
+            _email_service = False
+    return _email_service if _email_service else None
 
 # Get database reference - will be set by server.py
 _db = None
