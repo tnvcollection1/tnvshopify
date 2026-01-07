@@ -34,7 +34,8 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ### 7. Competitor Analysis
 - Google Vision API for image-based competitor search
-- **NEW: Title-based fallback search** when image search yields no results
+- **Title-based fallback search** when image search yields no results
+- **Currency conversion** for accurate multi-region price comparisons
 - Price comparison dashboard
 
 ---
@@ -51,12 +52,17 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - ✅ Competitor Price Dashboard with Google Vision API
 - ✅ **Auto-Link Feature** - Bulk linking Shopify products to 1688 via image search
 - ✅ Admin panel with Shopify-style UI
-- ✅ **NEW: Competitor Title Search Fallback** (Jan 7, 2025)
-  - WebSearchService using DuckDuckGo for title-based search
-  - `POST /api/competitor/search-by-title` endpoint
-  - Auto-fallback when image search returns no results
-  - "Title Search Only" tab in UI
-  - Search method badges (Image Match, Title Fallback, Title Search)
+- ✅ **Competitor Title Search Fallback** (Jan 7, 2025)
+- ✅ **Currency Conversion Service** (Jan 7, 2025)
+  - Live exchange rates from open.er-api.com
+  - Converts USD/EUR/GBP/CNY/AED → INR
+  - Currency detection based on URL domain
+  - `GET /api/competitor/currency-rates` endpoint
+- ✅ **server.py Refactoring** (Jan 7, 2025)
+  - Removed ~290 lines of duplicate code
+  - Settings endpoints moved to `/routes/settings.py`
+  - Marketing endpoints moved to `/routes/marketing.py`
+  - Fixed datetime comparison bug in marketing stats
 
 ### Auto-Link Feature Status (Verified Jan 7, 2025)
 - Backend endpoint: `POST /api/shopify/products/bulk-auto-link`
@@ -70,6 +76,11 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - Fallback in: `POST /api/competitor/analyze-from-url`
 - Tests: 14/14 passed (100%)
 
+### Currency Conversion (Jan 7, 2025)
+- Backend: `currency_service.py`
+- Live rates: USD=90.21, EUR=105.48, GBP=121.74 (to INR)
+- Tests: 32/32 passed (100%)
+
 ---
 
 ## Prioritized Backlog
@@ -78,15 +89,16 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - None currently blocking
 
 ### P1 - High Priority
-- Complete `server.py` refactoring (remove duplicated endpoints)
-- Currency conversion in Competitor Dashboard (USD/EUR → INR)
+- None remaining
 
 ### P2 - Medium Priority
 - Shopify OAuth/session stability fixes
 - UI polish across admin pages
+- Chrome Extension testing on live 1688 pages
 
 ### P3 - Low Priority
-- Chrome Extension testing on live 1688 pages
+- Additional server.py cleanup (potential remaining duplicates)
+- Price alert notifications
 
 ---
 
@@ -99,19 +111,20 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - External APIs: Shopify, TMAPI (1688), Google Vision, Razorpay, SendGrid
 
 ### Key Files
-- `/app/backend/server.py` - Main API server (needs refactoring)
+- `/app/backend/server.py` - Main API server (refactored, 6918 lines)
 - `/app/backend/routes/shopify_sync.py` - Shopify sync endpoints
 - `/app/backend/routes/competitor_analysis.py` - Competitor analysis
-- `/app/backend/services/image_search_service.py` - 1688 image search
+- `/app/backend/routes/marketing.py` - Marketing endpoints
+- `/app/backend/routes/settings.py` - Settings endpoints
+- `/app/backend/services/currency_service.py` - Currency conversion
 - `/app/backend/services/web_search_service.py` - Title-based web search
-- `/app/frontend/src/components/ShopifyProducts.jsx` - Products catalog
 - `/app/frontend/src/components/CompetitorDashboard.jsx` - Competitor analysis UI
 
 ### Database Collections
 - `stores` - Store configurations
 - `shopify_products` - Synced product data
 - `product_links` - Shopify-1688 product links
-- `competitor_analyses` - Competitor analysis results (includes `search_method` field)
+- `competitor_analyses` - Competitor analysis results (includes `search_method`, `base_currency` fields)
 
 ---
 
@@ -125,6 +138,5 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 ---
 
 ## Known Issues
-1. `server.py` has duplicated endpoints (routers created but old code not removed)
-2. Competitor Dashboard doesn't convert currencies between regions
-3. Shopify OAuth sessions may drop intermittently
+1. Shopify OAuth sessions may drop intermittently (P2)
+2. Potential remaining duplicate code in server.py (P3)
