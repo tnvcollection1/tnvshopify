@@ -159,6 +159,7 @@ const ShopifySidebar = () => {
         { label: 'Templates', path: '/whatsapp-templates', icon: FileText },
         { label: 'Campaigns', path: '/whatsapp-campaigns', icon: Send },
         { label: 'Analytics', path: '/whatsapp-analytics', icon: BarChart3 },
+        { label: 'Notifications', path: '/whatsapp-notifications', icon: Send },
         { label: 'Business Setup', path: '/whatsapp-business', icon: Settings },
       ]
     },

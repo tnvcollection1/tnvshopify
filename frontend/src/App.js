@@ -58,6 +58,8 @@ import FulfillmentPipeline from "@/components/FulfillmentPipeline";
 import BulkOrder1688 from "@/components/BulkOrder1688";
 import PricingPage from "@/components/PricingPage";
 import NotificationSettings from "@/components/NotificationSettings";
+import NotificationDashboard from "@/components/NotificationDashboard";
+import NotificationPreferences from "@/components/NotificationPreferences";
 import FacebookLeadAds from "@/components/FacebookLeadAds";
 import SuperAdminDashboard from "@/components/SuperAdminDashboard";
 import WhatsAppCaseStudy from "@/components/WhatsAppCaseStudy";
