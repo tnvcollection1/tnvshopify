@@ -4064,6 +4064,191 @@ async def translate_product_text(request: TranslateRequest):
         }
 
 
+# ==================== 1688 Cross-border Image Search API ====================
+
+class ImageSearchRequest(BaseModel):
+    image_url: str = Field(..., description="Image URL to search for similar products (max 2MB, 450x450 recommended)")
+    page: int = Field(1, description="Page number starting from 1")
+    price_min: Optional[str] = Field(None, description="Minimum price filter")
+    price_max: Optional[str] = Field(None, description="Maximum price filter")
+    sort_by: Optional[str] = Field(None, description="Sort: 'price:asc', 'price:desc', 'sale_amount:desc'")
+    category_id: Optional[str] = Field(None, description="Category ID filter")
+    classify: Optional[str] = Field(None, description="Product classification: 0=tops, 1=dresses, 2=bottoms, 3=bags, 4=shoes, 5=accessories, 6=snacks, 7=beauty, 8=beverages, 9=furniture, 10=toys, 11=underwear, 12=electronics, 13=other")
+
+
+@router.post("/image-search")
+async def search_by_image(request: ImageSearchRequest):
+    """
+    Search for similar products on 1688 using an image.
+    
+    API: com.alibaba.linkplus/alibaba.cross.similar.offer.search
+    
+    This is the core API for finding similar products by image.
+    Returns product IDs, titles, prices, and images.
+    
+    Note: Image must be accessible from Alibaba's servers.
+    Recommended: Use images from CDN or publicly accessible URLs.
+    """
+    try:
+        api_name = "com.alibaba.linkplus/alibaba.cross.similar.offer.search"
+        api_path = f"param2/1/{api_name}/{MERCHANT_APP_KEY}"
+        
+        access_token = MERCHANT_ACCESS_TOKEN or os.environ.get("ALIBABA_1688_ACCESS_TOKEN", "")
+        
+        if not access_token:
+            raise HTTPException(status_code=400, detail="1688 access token not configured")
+        
+        # Build parameters
+        params = {
+            "access_token": access_token,
+            "picUrl": request.image_url,
+            "page": str(request.page),
+        }
+        
+        # Add optional parameters
+        if request.price_min:
+            params["priceMin"] = request.price_min
+        if request.price_max:
+            params["priceMax"] = request.price_max
+        if request.sort_by:
+            params["sortFields"] = request.sort_by
+        if request.category_id:
+            params["categoryID"] = request.category_id
+        if request.classify:
+            params["classify"] = request.classify
+        
+        # Generate signature
+        signature = generate_sign(api_path, params, MERCHANT_APP_SECRET)
+        params["_aop_signature"] = signature
+        
+        url = f"{ALIBABA_API_URL}/{api_path}"
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                url,
+                data=params,
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+            
+            result = response.json() if response.text else {}
+            
+            if result.get("success"):
+                search_result = result.get("result", {})
+                products = search_result.get("result", [])
+                
+                # Format products for easier consumption
+                formatted_products = []
+                for p in products:
+                    formatted_products.append({
+                        "offer_id": p.get("offerId"),
+                        "title": p.get("subject"),
+                        "price": p.get("oldPrice"),
+                        "image_url": p.get("imageUrl"),
+                        "min_order_qty": p.get("quantityBegin"),
+                        "unit": p.get("unit"),
+                        "province": p.get("province"),
+                        "city": p.get("city"),
+                        "supply_amount": p.get("supplyAmount"),
+                        "category_id": p.get("categoryId"),
+                        "product_url": f"https://detail.1688.com/offer/{p.get('offerId')}.html" if p.get("offerId") else None,
+                    })
+                
+                return {
+                    "success": True,
+                    "total": search_result.get("total", 0),
+                    "page": search_result.get("page", 1),
+                    "page_size": search_result.get("pageSize", 20),
+                    "products": formatted_products,
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": result.get("message") or "Image search failed",
+                    "error_code": result.get("code"),
+                    "hint": "Ensure the image URL is publicly accessible and under 2MB/450x450px",
+                }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+
+@router.post("/image-search/from-shopify")
+async def search_from_shopify_product(
+    store_name: str = Body(..., description="Shopify store name"),
+    product_id: str = Body(..., description="Shopify product ID"),
+    page: int = Body(1, description="Page number"),
+):
+    """
+    Search for similar 1688 products using a Shopify product's image.
+    
+    This endpoint fetches the product image from Shopify and uses it
+    to find similar products on 1688.
+    """
+    try:
+        # Get store from database
+        store = await _db.stores.find_one({"store_name": store_name})
+        if not store:
+            raise HTTPException(status_code=404, detail="Store not found")
+        
+        shop_domain = store.get("shopify_domain") or store.get("shop_url")
+        token = store.get("shopify_token") or store.get("access_token")
+        
+        if not token:
+            raise HTTPException(status_code=400, detail="Store not connected to Shopify")
+        
+        # Fetch product from Shopify
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            headers = {
+                "X-Shopify-Access-Token": token,
+                "Content-Type": "application/json"
+            }
+            
+            response = await client.get(
+                f"https://{shop_domain}/admin/api/2024-01/products/{product_id}.json",
+                headers=headers
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=404, detail="Product not found in Shopify")
+            
+            product_data = response.json().get("product", {})
+            images = product_data.get("images", [])
+            
+            if not images:
+                raise HTTPException(status_code=400, detail="Product has no images")
+            
+            # Use the first image
+            image_url = images[0].get("src")
+            
+            # Search on 1688
+            search_result = await search_by_image(ImageSearchRequest(
+                image_url=image_url,
+                page=page
+            ))
+            
+            return {
+                "shopify_product": {
+                    "id": product_id,
+                    "title": product_data.get("title"),
+                    "image_url": image_url,
+                },
+                "search_result": search_result,
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+
 @router.post("/translate/batch")
 async def translate_batch(
     texts: List[str] = Body(..., description="List of texts to translate"),
