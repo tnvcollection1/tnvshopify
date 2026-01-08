@@ -5,7 +5,7 @@ import json
 import time
 
 class ShopifyCustomerAPITester:
-    def __init__(self, base_url="https://global-sourcer.preview.emergentagent.com"):
+    def __init__(self, base_url="https://taoshop-hub.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
