@@ -449,20 +449,32 @@ async def verify_and_enable_notifications(request: EnableNotificationsRequest):
         if not verify_result.get("success"):
             raise HTTPException(status_code=400, detail=verify_result.get("error"))
         
-        # Enable notifications
+        # Enable notifications in customers collection
         enable_result = await enable_whatsapp_notifications(
             phone_number=request.phone_number,
             customer_id=request.customer_id,
             store_name=request.store_name,
         )
         
-        if not enable_result.get("success"):
-            raise HTTPException(status_code=400, detail=enable_result.get("error"))
+        # Also mark the subscription as verified
+        from services.notification_preferences_service import get_db as get_notif_db, normalize_phone
+        notif_db = get_notif_db()
+        phone = normalize_phone(request.phone_number)
+        
+        await notif_db.notification_subscriptions.update_one(
+            {"phone": phone, "store_name": request.store_name},
+            {"$set": {
+                "whatsapp_verified": True,
+                "verified_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
+                "customer_id": request.customer_id,
+            }},
+            upsert=True
+        )
         
         return {
             "success": True,
             "message": "WhatsApp notifications enabled successfully",
-            "phone": enable_result.get("phone"),
+            "phone": phone[-4:].rjust(len(phone), '*'),
         }
         
     except HTTPException:
