@@ -163,6 +163,14 @@ function LandingRoute() {
   return <LandingPage />;
 }
 
+// NotificationDashboard wrapper that gets store from context
+function NotificationDashboardWrapper() {
+  const { selectedStore, getStoreName } = useStore();
+  const storeName = selectedStore && selectedStore !== 'all' ? selectedStore : '';
+  
+  return <NotificationDashboard storeName={storeName} />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
