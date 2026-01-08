@@ -192,12 +192,22 @@ async def send_login_otp(request: LoginWithOTPRequest):
         if not result.get("success"):
             raise HTTPException(status_code=400, detail=result.get("error", "Failed to send login OTP"))
         
-        return {
+        response = {
             "success": True,
             "message": "Login OTP sent to your WhatsApp",
             "phone": result.get("phone"),
             "expires_in_minutes": 10,
         }
+        
+        # Include debug info if available
+        if result.get("debug_otp"):
+            response["debug_otp"] = result.get("debug_otp")
+        if result.get("debug_whatsapp_error"):
+            response["debug_whatsapp_error"] = result.get("debug_whatsapp_error")
+        if result.get("whatsapp_delivered") is not None:
+            response["whatsapp_delivered"] = result.get("whatsapp_delivered")
+        
+        return response
         
     except HTTPException:
         raise
