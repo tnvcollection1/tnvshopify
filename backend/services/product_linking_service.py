@@ -178,6 +178,7 @@ async def auto_link_from_image(
 ) -> Dict:
     """
     Auto-suggest 1688 product links by searching with an image.
+    Uses the unified image search service which tries official 1688 API first.
     
     Args:
         shopify_sku: Shopify SKU to link
@@ -186,48 +187,44 @@ async def auto_link_from_image(
     Returns:
         Result dict with suggested matches
     """
-    if not TMAPI_TOKEN:
-        return {"success": False, "error": "TMAPI token not configured"}
+    from services.image_search_service import search_products_by_image
     
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.get(
-                f"{TMAPI_BASE_URL}/1688/search/image",
-                params={
-                    "apiToken": TMAPI_TOKEN,
-                    "img_url": image_url,
-                    "page": 1,
-                    "page_size": 10,
-                }
-            )
-            result = response.json()
+        # Use unified search service (tries official 1688 API first, then TMAPI)
+        search_result = await search_products_by_image(image_url, limit=10)
         
-        if result.get("code") != 200:
-            return {"success": False, "error": result.get("msg", "Image search failed")}
+        if not search_result.get("success"):
+            return {
+                "success": False, 
+                "error": search_result.get("error", "Image search failed"),
+                "shopify_sku": shopify_sku,
+            }
         
-        items = result.get("data", {}).get("items", [])
+        products = search_result.get("products", [])
         
         # Format results
         suggestions = []
-        for item in items[:5]:
-            product_id = str(item.get("item_id", ""))
-            shop_info = item.get("shop_info", {})
+        for item in products[:5]:
+            product_id = str(item.get("product_id", ""))
             
             suggestions.append({
                 "product_1688_id": product_id,
-                "product_1688_url": f"https://detail.1688.com/offer/{product_id}.html",
+                "product_1688_url": item.get("url") or f"https://detail.1688.com/offer/{product_id}.html",
                 "title": item.get("title"),
                 "price": item.get("price"),
-                "image": item.get("img"),
-                "shop_name": shop_info.get("company_name") or shop_info.get("login_id"),
-                "is_factory": shop_info.get("is_factory", False),
+                "image": item.get("image"),
+                "shop_name": item.get("shop_name", ""),
+                "province": item.get("province", ""),
+                "city": item.get("city", ""),
             })
         
         return {
             "success": True,
             "shopify_sku": shopify_sku,
             "suggestions": suggestions,
-            "total_found": result.get("data", {}).get("total_count", 0),
+            "total_found": search_result.get("total", len(products)),
+            "source": search_result.get("source", "unknown"),
+        }
         }
         
     except Exception as e:
