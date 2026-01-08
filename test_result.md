@@ -1,69 +1,47 @@
-# Test Results - WhatsApp Notification System
+# Test Results - All Three Features
 
 ## Test Date: 2025-01-08
 
-## Backend Tests - ALL PASSED ✅
+## Features to Test
 
-### Test Results
-| Test | Status |
-|------|--------|
-| Get Notification Types | ✅ PASSED |
-| Subscribe to Notifications | ✅ PASSED |
-| Get Preferences | ✅ PASSED |
-| Get Store Settings | ✅ PASSED |
-| Get Store Stats | ✅ PASSED |
-| Get Order Notification Stats | ✅ PASSED |
-| Send Notification OTP | ✅ PASSED |
+### 1. Auto-Notifications on Order Events
+- Integrated `send_whatsapp_stage_notification` into fulfillment pipeline
+- Triggers when order stage changes to: local_shipped, warehouse_received, in_transit
+- Uses `auto_order_notifications.py` service
 
-### Test File
-- Location: `/app/backend/tests/test_notification_system.py`
-- Tests: 7 passed in 1.81s
+### 2. Scheduled Price Checks
+- Routes already exist in `/api/competitor/schedule/*`
+- Frontend component `ScheduledPriceChecks.jsx` integrated
+- Added to sidebar under "1688 Sourcing" -> "Scheduled Checks"
+- Route: `/scheduled-price-checks`
 
-## Frontend Integration - COMPLETED ✅
+### 3. 1688 AI Tools (Translation & Title Generation)
+- Created new component `AITools1688.jsx`
+- Features: Single translation, Batch translation, AI title generation
+- Uses existing backend APIs:
+  - POST /api/1688/translate
+  - POST /api/1688/translate/batch
+  - POST /api/1688/ai/generate-title
+- Added to sidebar under "1688 Sourcing" -> "AI Tools"
+- Route: `/1688-ai-tools`
 
-### Components
-1. **NotificationDashboard.jsx** - Full dashboard with:
-   - Stats cards (Subscribers, Sent, Failed, Success Rate)
-   - Send Notifications tab
-   - Activity Log tab
-   - Settings tab with auto-send toggles
+## API Endpoints to Test
 
-2. **NotificationPreferences.jsx** - Customer-facing component with:
-   - Phone number input
-   - OTP verification flow
-   - Notification preference toggles
-   - Unsubscribe option
+### Scheduled Price Checks
+- GET /api/competitor/schedule/settings
+- POST /api/competitor/schedule/settings
+- POST /api/competitor/schedule/run-now
+- GET /api/competitor/schedule/history
+- GET /api/competitor/schedule/status
 
-### Routes Added
-- `/whatsapp-notifications` - Dashboard route with store context
+### 1688 AI Tools
+- POST /api/1688/translate
+- POST /api/1688/translate/batch
+- POST /api/1688/ai/generate-title
 
-### Sidebar Integration
-- Added "Notifications" link under Messaging section
-
-## Known Issues / Limitations
-
-### WhatsApp Business Account (BLOCKER)
-- Status: **PENDING** (not active)
-- Root cause: Missing valid payment method in Meta Business Manager
-- Impact: All WhatsApp messages are MOCKED (DEBUG_MODE=true)
-- User action required: Add payment method in Meta Business Manager
-
-### Shopify Login Stability (RECURRING)
-- Sessions expire quickly during testing
-- Needs investigation in AuthContext.jsx
-
-## API Endpoints Verified
-- `GET /api/notifications/types`
-- `GET /api/notifications/stats/{store_name}`
-- `GET /api/notifications/store-settings/{store_name}`
-- `PUT /api/notifications/store-settings/{store_name}`
-- `POST /api/notifications/subscribe`
-- `GET /api/notifications/preferences`
-- `PUT /api/notifications/preferences`
-- `POST /api/notifications/unsubscribe`
-- `GET /api/order-notifications/stats`
-- `POST /api/whatsapp-otp/notifications/send`
-- `POST /api/whatsapp-otp/notifications/verify`
+### Auto-Notifications
+- Already tested via notification system tests
 
 ## Incorporate User Feedback
-- None pending at this time
+- WhatsApp Business Account still PENDING (DEBUG_MODE=true)
+- All WhatsApp notifications are mocked until user activates account
