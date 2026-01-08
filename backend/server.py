@@ -6670,6 +6670,7 @@ app.include_router(marketing_router)
 app.include_router(settings_router)
 app.include_router(competitor_router)
 app.include_router(whatsapp_otp_router)
+app.include_router(order_notifications_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 # ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================
