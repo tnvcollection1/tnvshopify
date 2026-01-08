@@ -693,6 +693,26 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+
+      {/* Scheduled Price Checks */}
+      <Route 
+        path="/scheduled-price-checks" 
+        element={
+          <ProtectedRoute>
+            <ScheduledPriceChecks />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* 1688 AI Tools - Translation & Title Generation */}
+      <Route 
+        path="/1688-ai-tools" 
+        element={
+          <ProtectedRoute>
+            <AITools1688 />
+          </ProtectedRoute>
+        } 
+      />
       
       {/* Public Storefront Routes - No Auth Required */}
       <Route 
