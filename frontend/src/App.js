@@ -72,6 +72,8 @@ import TaobaoImport from "@/components/TaobaoImport";
 import WarehouseScanner from "@/components/WarehouseScanner";
 import CompetitorDashboard from "@/components/CompetitorDashboard";
 import CompetitorPriceCatalog from "@/components/CompetitorPriceCatalog";
+import ScheduledPriceChecks from "@/components/ScheduledPriceChecks";
+import AITools1688 from "@/components/AITools1688";
 // Storefront Components
 import { StorefrontLayout, CartProvider } from "@/components/storefront/StorefrontLayout";
 import StorefrontHome from "@/components/storefront/StorefrontHome";
