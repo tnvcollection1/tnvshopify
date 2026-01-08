@@ -112,6 +112,7 @@ set_marketing_db(db)
 set_settings_db(db)
 set_competitor_db(db)
 set_whatsapp_otp_db(db)
+set_notification_prefs_db(db)
 
 # Set WhatsApp API dependencies
 try:
