@@ -20,6 +20,103 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/fulfillment", tags=["fulfillment-pipeline"])
 
+
+# ==================== WhatsApp Notification Integration ====================
+
+async def send_whatsapp_stage_notification(order: Dict, stage: str) -> bool:
+    """
+    Send WhatsApp notification when order stage changes.
+    Integrates with auto_order_notifications service.
+    
+    Args:
+        order: Order data from fulfillment_pipeline collection
+        stage: New stage the order moved to
+    
+    Returns:
+        True if notification was sent successfully
+    """
+    try:
+        from services.auto_order_notifications import (
+            process_order_event,
+            set_database as set_notification_db
+        )
+        
+        # Set database for notification service
+        set_notification_db(get_db())
+        
+        # Get customer phone from order data
+        phone = order.get("customer_phone") or order.get("phone")
+        store_name = order.get("store_name")
+        
+        if not phone:
+            # Try to get phone from customers collection
+            db = get_db()
+            customer = await db.customers.find_one(
+                {"$or": [
+                    {"shopify_order_id": order.get("shopify_order_id")},
+                    {"order_number": order.get("order_number")},
+                ]},
+                {"phone": 1, "customer_phone": 1, "shipping_address": 1}
+            )
+            if customer:
+                phone = (
+                    customer.get("phone") or 
+                    customer.get("customer_phone") or 
+                    customer.get("shipping_address", {}).get("phone")
+                )
+        
+        if not phone:
+            logger.warning(f"No phone number for order {order.get('order_number')} - cannot send notification")
+            return False
+        
+        # Map fulfillment stage to notification event type
+        stage_to_event = {
+            'local_shipped': 'shipped',
+            'warehouse_received': 'out_for_delivery',  # Optional - for warehouse updates
+            'in_transit': 'shipped',  # International shipping notification
+        }
+        
+        event_type = stage_to_event.get(stage)
+        
+        if not event_type:
+            logger.info(f"No notification configured for stage: {stage}")
+            return False
+        
+        # Build order data for notification
+        order_data = {
+            "id": order.get("shopify_order_id"),
+            "order_id": order.get("shopify_order_id"),
+            "order_number": order.get("order_number"),
+            "name": f"#{order.get('order_number')}",
+            "customer": {
+                "first_name": order.get("customer_name", "").split()[0] if order.get("customer_name") else None,
+                "phone": phone,
+            },
+            "phone": phone,
+            "fulfillments": [{
+                "tracking_number": order.get("local_tracking") or order.get("dwz_tracking"),
+                "tracking_url": order.get("tracking_url"),
+                "tracking_company": order.get("local_carrier") or "Carrier",
+            }] if order.get("local_tracking") or order.get("dwz_tracking") else [],
+            "total_price": order.get("total_price", "0"),
+            "currency": order.get("currency", "INR"),
+        }
+        
+        # Send notification
+        result = await process_order_event(event_type, order_data, store_name)
+        
+        if result.get("success"):
+            logger.info(f"Notification sent for order {order.get('order_number')} stage {stage}")
+            return True
+        else:
+            reason = result.get("reason") or result.get("error", "Unknown")
+            logger.info(f"Notification not sent for order {order.get('order_number')}: {reason}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Error sending stage notification: {e}")
+        return False
+
 # Database connection
 _db = None
 
