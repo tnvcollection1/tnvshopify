@@ -130,6 +130,9 @@ async def send_whatsapp_otp(
         template_name = "generic_otp"
     
     # Try to send using template first, fall back to text message
+    whatsapp_sent = False
+    whatsapp_error = None
+    
     try:
         # First try with authentication template (pre-approved by Meta)
         result = await send_otp_template_message(phone, otp, otp_type, config)
@@ -144,27 +147,42 @@ async def send_whatsapp_otp(
                 {"phone": phone, "otp_hash": otp_hash},
                 {"$set": {"message_id": result.get("message_id")}}
             )
-            
+            whatsapp_sent = True
             logger.info(f"OTP sent successfully to {phone[-4:].rjust(len(phone), '*')}")
-            
-            return {
-                "success": True,
-                "message": "OTP sent successfully",
-                "phone": phone[-4:].rjust(len(phone), '*'),  # Masked phone
-                "expires_in_minutes": 10,
-                "otp_type": otp_type,
-                # For testing/development - remove in production
-                "debug_otp": otp if os.environ.get("DEBUG_MODE") == "true" else None,
-            }
         else:
-            return {
-                "success": False,
-                "error": result.get("error", "Failed to send OTP"),
-            }
+            whatsapp_error = result.get("error", "Failed to send OTP")
+            logger.warning(f"WhatsApp send failed: {whatsapp_error}")
             
     except Exception as e:
+        whatsapp_error = str(e)
         logger.error(f"Error sending OTP to {phone}: {e}")
-        return {"success": False, "error": str(e)}
+    
+    # In debug mode OR if WhatsApp failed, still return success with OTP visible
+    # This allows testing the verification flow even without WhatsApp delivery
+    is_debug = os.environ.get("DEBUG_MODE") == "true"
+    
+    if whatsapp_sent or is_debug:
+        response = {
+            "success": True,
+            "message": "OTP sent successfully" if whatsapp_sent else "OTP generated (WhatsApp delivery pending)",
+            "phone": phone[-4:].rjust(len(phone), '*'),  # Masked phone
+            "expires_in_minutes": 10,
+            "otp_type": otp_type,
+            "whatsapp_delivered": whatsapp_sent,
+        }
+        
+        # Include OTP in debug mode for testing
+        if is_debug:
+            response["debug_otp"] = otp
+            if whatsapp_error:
+                response["debug_whatsapp_error"] = whatsapp_error
+        
+        return response
+    else:
+        return {
+            "success": False,
+            "error": whatsapp_error or "Failed to send OTP",
+        }
 
 
 async def send_otp_template_message(
