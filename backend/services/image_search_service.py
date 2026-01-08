@@ -7,6 +7,8 @@ from typing import Optional, Dict, List
 from datetime import datetime, timezone
 import os
 import httpx
+import hmac
+import hashlib
 import re
 from motor.motor_asyncio import AsyncIOMotorClient
 from pathlib import Path
@@ -22,6 +24,27 @@ def get_tmapi_token():
 def get_tmapi_base_url():
     return os.environ.get('TMAPI_BASE_URL', 'http://api.tmapi.top/1688')
 
+# 1688 Official API Configuration
+def get_1688_config():
+    return {
+        "app_key": os.environ.get('ALIBABA_1688_APP_KEY', ''),
+        "app_secret": os.environ.get('ALIBABA_1688_APP_SECRET', ''),
+        "access_token": os.environ.get('ALIBABA_1688_ACCESS_TOKEN', ''),
+        "api_url": os.environ.get('ALIBABA_API_URL', 'https://gw.open.1688.com/openapi'),
+    }
+
+def generate_1688_sign(api_path: str, params: dict, secret: str) -> str:
+    """Generate HMAC-SHA1 signature for 1688 API"""
+    enc_arr = []
+    for key, value in params.items():
+        if value is not None and str(value) != '':
+            enc_arr.append(f'{key}{value}')
+    enc_arr.sort()
+    params_str = ''.join(enc_arr)
+    sign_str = api_path + params_str
+    hmac_obj = hmac.new(secret.encode('utf-8'), sign_str.encode('utf-8'), hashlib.sha1)
+    return hmac_obj.hexdigest().upper()
+
 # Database connection
 _db = None
 
@@ -34,10 +57,79 @@ def get_db():
     return _db
 
 
+async def search_with_official_1688_api(image_url: str, limit: int = 20) -> Dict:
+    """
+    Search using official 1688 Cross-border Image Search API.
+    API: com.alibaba.linkplus/alibaba.cross.similar.offer.search
+    """
+    config = get_1688_config()
+    
+    if not config["access_token"] or not config["app_key"]:
+        return {"success": False, "error": "1688 API not configured"}
+    
+    try:
+        api_name = "com.alibaba.linkplus/alibaba.cross.similar.offer.search"
+        api_path = f"param2/1/{api_name}/{config['app_key']}"
+        
+        params = {
+            "access_token": config["access_token"],
+            "picUrl": image_url,
+            "page": "1",
+        }
+        
+        signature = generate_1688_sign(api_path, params, config["app_secret"])
+        params["_aop_signature"] = signature
+        
+        url = f"{config['api_url']}/{api_path}"
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                url,
+                data=params,
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+            
+            result = response.json() if response.text else {}
+            
+            if result.get("success"):
+                search_result = result.get("result", {})
+                items = search_result.get("result", [])
+                
+                products = []
+                for item in items[:limit]:
+                    products.append({
+                        "product_id": str(item.get("offerId", "")),
+                        "title": item.get("subject", ""),
+                        "price": str(item.get("oldPrice", "0")),
+                        "image": item.get("imageUrl", ""),
+                        "url": f"https://detail.1688.com/offer/{item.get('offerId')}.html" if item.get("offerId") else "",
+                        "shop_name": "",
+                        "sales": item.get("supplyAmount", 0),
+                        "province": item.get("province", ""),
+                        "city": item.get("city", ""),
+                    })
+                
+                return {
+                    "success": True,
+                    "total": search_result.get("total", len(products)),
+                    "products": products,
+                    "source": "1688_official",
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": result.get("message", "1688 API search failed"),
+                    "error_code": result.get("code"),
+                }
+                
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 async def search_products_by_image(image_url: str, limit: int = 20) -> Dict:
     """
     Search for similar products on 1688 using image URL.
-    Automatically converts non-Alibaba images to Alibaba CDN format.
+    Tries official 1688 API first, falls back to TMAPI.
     
     Args:
         image_url: URL of the image to search
@@ -46,9 +138,30 @@ async def search_products_by_image(image_url: str, limit: int = 20) -> Dict:
     Returns:
         Dict with success status and products list
     """
+    db = get_db()
+    
+    # Try official 1688 API first (user has purchased this capability)
+    print(f"[Image Search] Trying official 1688 API...")
+    official_result = await search_with_official_1688_api(image_url, limit)
+    
+    if official_result.get("success") and official_result.get("products"):
+        print(f"[Image Search] Official 1688 API returned {len(official_result['products'])} products")
+        # Log usage
+        await db.image_search_logs.insert_one({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "source": "1688_official",
+            "image_url": image_url[:200],
+            "success": True,
+            "count": len(official_result["products"]),
+        })
+        return official_result
+    else:
+        print(f"[Image Search] Official 1688 API failed: {official_result.get('error', 'Unknown')}")
+    
+    # Fall back to TMAPI
     tmapi_token = get_tmapi_token()
     if not tmapi_token:
-        return {"success": False, "error": "TMAPI token not configured"}
+        return {"success": False, "error": "No image search source available (1688 API failed, TMAPI not configured)"}
     
     db = get_db()
     
