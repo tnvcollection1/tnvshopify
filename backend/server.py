@@ -62,6 +62,7 @@ from routes.competitor_analysis import router as competitor_router, set_database
 from routes.whatsapp_otp import router as whatsapp_otp_router, set_database as set_whatsapp_otp_db
 from services.fulfillment_webhooks import router as fulfillment_webhooks_router
 from services.whatsapp_notifications import router as whatsapp_notifications_router
+from services.notification_preferences_service import router as notification_preferences_router, set_database as set_notification_prefs_db
 from services.fulfillment_pipeline_service import router as fulfillment_pipeline_router
 from services.shopify_fulfillment_sync import router as shopify_fulfillment_sync_router
 from services.dwz56_sync_service import router as dwz56_sync_router
