@@ -3978,3 +3978,189 @@ async def find_linked_1688_products(
     
     return results
 
+
+# ==================== 1688 Translation API ====================
+
+class TranslateRequest(BaseModel):
+    text: str = Field(..., description="Text to translate (max 2000 chars)")
+    field_type: str = Field("title", description="Type: 'title' for product title, 'offer' for description")
+    source_language: str = Field("zh", description="Source language code (zh, en, etc.)")
+    target_language: str = Field("en", description="Target language code")
+
+
+@router.post("/translate")
+async def translate_product_text(request: TranslateRequest):
+    """
+    Translate product text using 1688's official translation API.
+    
+    API: com.alibaba.text/alibaba.offer.translate
+    
+    Supports:
+    - Product titles (field_type='title')
+    - Product descriptions (field_type='offer')
+    
+    Languages: zh (Chinese), en (English), and many more
+    """
+    try:
+        # Build API request
+        api_name = "com.alibaba.text/alibaba.offer.translate"
+        api_path = f"param2/1/{api_name}/{MERCHANT_APP_KEY}"
+        
+        # Get access token
+        access_token = MERCHANT_ACCESS_TOKEN or os.environ.get("ALIBABA_1688_ACCESS_TOKEN", "")
+        
+        if not access_token:
+            raise HTTPException(status_code=400, detail="1688 access token not configured")
+        
+        # Build params - note: 1688 API has a typo 'filedType' instead of 'fieldType'
+        params = {
+            "access_token": access_token,
+            "sourceText": request.text[:2000],  # Max 2000 chars
+            "filedType": request.field_type,  # Note the typo in their API
+            "sourceLanguage": request.source_language,
+            "targetLanguage": request.target_language,
+        }
+        
+        # Generate signature
+        signature = generate_sign(api_path, params, MERCHANT_APP_SECRET)
+        params["_aop_signature"] = signature
+        
+        url = f"{ALIBABA_API_URL}/{api_path}"
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                url,
+                data=params,
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+            
+            result = response.json() if response.text else {}
+            
+            if result.get("success"):
+                translate_results = result.get("translateResult", [])
+                if translate_results:
+                    return {
+                        "success": True,
+                        "original_text": request.text,
+                        "translated_text": translate_results[0].get("translateText", ""),
+                        "source_language": request.source_language,
+                        "target_language": request.target_language,
+                    }
+            
+            # Handle errors
+            return {
+                "success": False,
+                "error": result.get("errorMsg") or result.get("error_message") or "Translation failed",
+                "error_code": result.get("errorCode") or result.get("error_code"),
+                "raw_response": result,
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+
+@router.post("/translate/batch")
+async def translate_batch(
+    texts: List[str] = Body(..., description="List of texts to translate"),
+    field_type: str = Body("title", description="Type: 'title' or 'offer'"),
+    source_language: str = Body("zh"),
+    target_language: str = Body("en"),
+):
+    """
+    Translate multiple texts in batch.
+    """
+    results = []
+    
+    for text in texts[:20]:  # Limit to 20 texts per batch
+        try:
+            result = await translate_product_text(TranslateRequest(
+                text=text,
+                field_type=field_type,
+                source_language=source_language,
+                target_language=target_language,
+            ))
+            results.append({
+                "original": text,
+                "translated": result.get("translated_text", ""),
+                "success": result.get("success", False),
+            })
+        except Exception as e:
+            results.append({
+                "original": text,
+                "translated": "",
+                "success": False,
+                "error": str(e),
+            })
+    
+    return {
+        "success": True,
+        "count": len(results),
+        "translations": results,
+    }
+
+
+# ==================== 1688 AI Title Generation API ====================
+
+class TitleGenerationRequest(BaseModel):
+    image_url: str = Field(..., description="URL of product image")
+    category_id: str = Field("1036", description="1688 category ID for the product")
+
+
+@router.post("/ai/generate-title")
+async def generate_product_title(request: TitleGenerationRequest):
+    """
+    Generate intelligent product titles and selling points from an image.
+    
+    API: com.alibaba.image/image.product.intelligent.generate
+    
+    This API analyzes the product image and suggests titles and selling points.
+    """
+    try:
+        api_name = "com.alibaba.image/image.product.intelligent.generate"
+        api_path = f"param2/1/{api_name}/{MERCHANT_APP_KEY}"
+        
+        access_token = MERCHANT_ACCESS_TOKEN or os.environ.get("ALIBABA_1688_ACCESS_TOKEN", "")
+        
+        if not access_token:
+            raise HTTPException(status_code=400, detail="1688 access token not configured")
+        
+        params = {
+            "access_token": access_token,
+            "imageUrl": request.image_url,
+            "catId": request.category_id,
+        }
+        
+        signature = generate_sign(api_path, params, MERCHANT_APP_SECRET)
+        params["_aop_signature"] = signature
+        
+        url = f"{ALIBABA_API_URL}/{api_path}"
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                url,
+                data=params,
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+            
+            result = response.json() if response.text else {}
+            
+            return {
+                "success": True,
+                "image_url": request.image_url,
+                "category_id": request.category_id,
+                "generated_content": result,
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
