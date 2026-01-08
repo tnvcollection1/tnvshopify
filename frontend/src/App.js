@@ -390,6 +390,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/whatsapp-notifications" 
+        element={
+          <ProtectedRoute>
+            <NotificationDashboardWrapper />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/tracking/:identifier" 
         element={<TrackingPage />}
       />
