@@ -59,6 +59,7 @@ from routes.whatsapp_api import router as whatsapp_api_router, set_dependencies 
 from routes.marketing import router as marketing_router, set_database as set_marketing_db
 from routes.settings import router as settings_router, set_database as set_settings_db
 from routes.competitor_analysis import router as competitor_router, set_database as set_competitor_db
+from routes.whatsapp_otp import router as whatsapp_otp_router, set_database as set_whatsapp_otp_db
 from services.fulfillment_webhooks import router as fulfillment_webhooks_router
 from services.whatsapp_notifications import router as whatsapp_notifications_router
 from services.fulfillment_pipeline_service import router as fulfillment_pipeline_router
