@@ -411,12 +411,20 @@ async def send_notification_verification_otp(
         if not result.get("success"):
             raise HTTPException(status_code=400, detail=result.get("error"))
         
-        return {
+        response = {
             "success": True,
             "message": "Verification OTP sent",
             "phone": result.get("phone"),
             "expires_in_minutes": 10,
         }
+        
+        # Include debug info if available
+        if result.get("debug_otp"):
+            response["debug_otp"] = result.get("debug_otp")
+        if result.get("debug_whatsapp_error"):
+            response["debug_whatsapp_error"] = result.get("debug_whatsapp_error")
+        
+        return response
         
     except HTTPException:
         raise
