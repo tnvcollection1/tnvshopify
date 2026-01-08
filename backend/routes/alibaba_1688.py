@@ -3192,27 +3192,66 @@ async def image_search_cross_border(
 ):
     """
     Search for similar products in cross-border e-commerce pool by image
-    API: alibaba.cross.imageSearch
+    API: com.alibaba.linkplus/alibaba.cross.similar.offer.search
     """
     try:
-        result = await make_api_request(
-            "com.alibaba.product/alibaba.cross.imageSearch",
-            {
-                "imageUrl": image_url,
-                "pageNo": str(page),
-                "pageSize": str(page_size),
-            },
-            access_token=ALIBABA_ACCESS_TOKEN
-        )
+        # Use the correct API from user's purchased capabilities
+        api_name = "com.alibaba.linkplus/alibaba.cross.similar.offer.search"
+        api_path = f"param2/1/{api_name}/{MERCHANT_APP_KEY}"
         
-        products = result.get("result", {}).get("products", []) or result.get("result", [])
-        return {
-            "success": True,
-            "source": "1688_official_cross_border",
-            "total": result.get("result", {}).get("totalCount", len(products)),
-            "products": products,
-            "page": page,
+        access_token = MERCHANT_ACCESS_TOKEN or os.environ.get("ALIBABA_1688_ACCESS_TOKEN", "")
+        
+        params = {
+            "access_token": access_token,
+            "picUrl": image_url,
+            "page": str(page),
         }
+        
+        signature = generate_sign(api_path, params, MERCHANT_APP_SECRET)
+        params["_aop_signature"] = signature
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                f"{ALIBABA_API_URL}/{api_path}",
+                data=params,
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+            
+            result = response.json() if response.text else {}
+            
+            if result.get("success"):
+                search_result = result.get("result", {})
+                products = search_result.get("result", [])
+                
+                # Format products
+                formatted_products = []
+                for p in products:
+                    formatted_products.append({
+                        "offer_id": p.get("offerId"),
+                        "title": p.get("subject"),
+                        "price": p.get("oldPrice"),
+                        "image_url": p.get("imageUrl"),
+                        "min_order_qty": p.get("quantityBegin"),
+                        "unit": p.get("unit"),
+                        "province": p.get("province"),
+                        "city": p.get("city"),
+                        "product_url": f"https://detail.1688.com/offer/{p.get('offerId')}.html" if p.get("offerId") else None,
+                    })
+                
+                return {
+                    "success": True,
+                    "source": "1688_official_cross_border",
+                    "total": search_result.get("total", len(formatted_products)),
+                    "products": formatted_products,
+                    "page": page,
+                }
+            else:
+                return {
+                    "success": False, 
+                    "error": result.get("message", "Image search failed"),
+                    "error_code": result.get("code"),
+                    "source": "1688_official_cross_border"
+                }
     except Exception as e:
         return {"success": False, "error": str(e), "source": "1688_official_cross_border"}
 
