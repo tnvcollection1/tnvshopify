@@ -225,11 +225,10 @@ async def auto_link_from_image(
             "total_found": search_result.get("total", len(products)),
             "source": search_result.get("source", "unknown"),
         }
-        }
         
     except Exception as e:
         logger.error(f"Auto-link image search error: {e}")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "error": str(e), "shopify_sku": shopify_sku}
 
 
 async def get_all_product_links(
