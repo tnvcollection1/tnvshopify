@@ -2826,7 +2826,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             "address1": shopify_order.get("address1", "") or shopify_order.get("address", ""),
             "city": shopify_order.get("city", ""),
             "province": shopify_order.get("province", "") or shopify_order.get("state", ""),
-            "country": shopify_order.get("country", "") or "India",
+            "country": shopify_order.get("country", ""),  # Don't default - let country detection handle it
             "zip": shopify_order.get("zip", "") or shopify_order.get("postal_code", ""),
             "phone": shopify_order.get("phone", ""),
         }
