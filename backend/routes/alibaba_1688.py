@@ -2819,6 +2819,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         "$set": {
             "alibaba_order_id": request.alibaba_order_id,
             "alibaba_status": "SHIPPED",
+            "tracking_number_1688": request.tracking_number_1688,
             "current_stage": new_stage,
             "updated_at": now,
             f"stage_dates.{new_stage}": now,
@@ -2828,8 +2829,8 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     if dwz_tracking:
         pipeline_update["$set"]["dwz_tracking"] = dwz_tracking
     
-    # Store the custom reference number
-    pipeline_update["$set"]["dwz_reference"] = custom_reference
+    # Store the 1688 tracking as DWZ reference
+    pipeline_update["$set"]["dwz_reference"] = dwz_reference
     
     await db.fulfillment_pipeline.update_one(
         {"order_number": request.shopify_order_number, "store_name": request.store_name},
@@ -2844,9 +2845,10 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             "$set": {
                 "alibaba_order_id": request.alibaba_order_id,
                 "alibaba_status": "SHIPPED",
+                "tracking_number_1688": request.tracking_number_1688,
                 "fulfillment_stage": new_stage,
                 "dwz_tracking": dwz_tracking,
-                "dwz_reference": custom_reference,
+                "dwz_reference": dwz_reference,
                 "updated_at": now,
             }
         }
@@ -2854,14 +2856,13 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     
     return {
         "success": True,
-        "message": f"1688 order {request.alibaba_order_id} marked as shipped",
+        "message": f"1688 order marked as shipped. DWZ56 reference: {dwz_reference}",
         "shopify_order": request.shopify_order_number,
         "alibaba_order": request.alibaba_order_id,
+        "tracking_number_1688": request.tracking_number_1688,
+        "dwz_reference": dwz_reference,
         "current_stage": new_stage,
         "courier_type": courier_type,
-        "custom_reference": custom_reference,
-        "color_code": color_code,
-        "size_code": size_code,
         "dwz_shipment": dwz_result,
         "shipping_details": {
             "receiver": receiver_name,
@@ -2873,7 +2874,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
 
 
 class BulkMark1688ShippedRequest(BaseModel):
-    orders: List[dict] = Field(..., description="List of {shopify_order_number, alibaba_order_id}")
+    orders: List[dict] = Field(..., description="List of {shopify_order_number, alibaba_order_id, tracking_number_1688}")
     store_name: str = Field(default="tnvcollection")
     courier_type: Optional[str] = Field(default=None, description="DWZ56 courier type. Auto-detected if not provided")
     estimated_weight: float = Field(default=0.5)
