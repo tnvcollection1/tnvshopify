@@ -75,6 +75,7 @@ import CompetitorDashboard from "@/components/CompetitorDashboard";
 import CompetitorPriceCatalog from "@/components/CompetitorPriceCatalog";
 import ScheduledPriceChecks from "@/components/ScheduledPriceChecks";
 import AITools1688 from "@/components/AITools1688";
+import DWZ56Tracking from "@/components/DWZ56Tracking";
 // Storefront Components
 import { StorefrontLayout, CartProvider } from "@/components/storefront/StorefrontLayout";
 import StorefrontHome from "@/components/storefront/StorefrontHome";
