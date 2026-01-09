@@ -92,6 +92,7 @@ const ShopifySidebar = () => {
       label: 'Products',
       icon: Package,
       children: [
+        { label: 'Approve Products', path: '/product-approval', icon: Check },
         { label: 'Catalog', path: '/products', icon: ShoppingBag },
         { label: '1688 Products', path: '/1688-products', icon: Globe },
         { label: 'Inventory', path: '/inventory', icon: Layers },
