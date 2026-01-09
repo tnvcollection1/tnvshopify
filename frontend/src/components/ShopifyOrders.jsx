@@ -98,10 +98,76 @@ const StatCard = ({ title, value, icon: Icon, color, active, onClick }) => {
 
 // Order Detail Modal
 const OrderDetailModal = ({ order, open, onClose }) => {
+  const [linkedProduct, setLinkedProduct] = useState(null);
+  const [pipelineData, setPipelineData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch linked product and pipeline data when modal opens
+  useEffect(() => {
+    if (open && order) {
+      fetchLinkedData();
+    }
+  }, [open, order]);
+
+  const fetchLinkedData = async () => {
+    if (!order) return;
+    setLoading(true);
+    
+    try {
+      // Get first SKU from line items
+      const firstSku = order.line_items?.[0]?.sku || order.order_skus?.[0];
+      
+      if (firstSku) {
+        // Extract base SKU (product ID part)
+        const baseSku = firstSku.split('-')[0];
+        
+        // Try to get linked product
+        try {
+          const linkedRes = await axios.get(`${API}/api/product-scraper/linked-product`, {
+            params: { sku: baseSku, store_name: order.store_name }
+          });
+          if (linkedRes.data?.linked_product) {
+            setLinkedProduct(linkedRes.data.linked_product);
+          }
+        } catch (e) {
+          // No linked product found - that's ok
+        }
+      }
+
+      // Get fulfillment pipeline data
+      try {
+        const pipelineRes = await axios.get(`${API}/api/fulfillment/pipeline`, {
+          params: { 
+            store_name: order.store_name,
+            order_number: order.order_number 
+          }
+        });
+        const pipelineOrder = pipelineRes.data?.orders?.find(
+          o => String(o.order_number) === String(order.order_number)
+        );
+        if (pipelineOrder) {
+          setPipelineData(pipelineOrder);
+        }
+      } catch (e) {
+        // No pipeline data - that's ok
+      }
+    } catch (error) {
+      console.error('Error fetching linked data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!order) return null;
 
   const lineItems = order.line_items || [];
   const address = order.default_address || order.shipping_address || {};
+  
+  // Get 1688 order ID from various sources
+  const alibaba1688OrderId = order.alibaba_order_id || 
+    order.order_1688_id || 
+    pipelineData?.alibaba_order_id ||
+    order.line_item_orders?.[0]?.alibaba_order_id;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -128,10 +194,91 @@ const OrderDetailModal = ({ order, open, onClose }) => {
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-3">Shipping Address</h4>
             <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
-              {address.address1 && <p>{address.address1}</p>}
-              {address.address2 && <p>{address.address2}</p>}
-              {address.city && <p>{address.city}, {address.province} {address.zip}</p>}
-              {address.country && <p>{address.country}</p>}
+              {address.address1 || address.address ? (
+                <>
+                  {(address.address1 || address.address) && <p>{address.address1 || address.address}</p>}
+                  {address.address2 && <p>{address.address2}</p>}
+                  {(address.city || address.province || address.zip) && (
+                    <p>{[address.city, address.province, address.zip].filter(Boolean).join(', ')}</p>
+                  )}
+                  {address.country && <p>{address.country}</p>}
+                </>
+              ) : (
+                <p className="text-gray-400 italic">No shipping address available</p>
+              )}
+            </div>
+          </div>
+
+          {/* 1688 Order Info - NEW SECTION */}
+          <div className="md:col-span-2">
+            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Package className="w-4 h-4 text-orange-500" />
+              1688 Sourcing Info
+            </h4>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              {loading ? (
+                <p className="text-sm text-orange-600">Loading...</p>
+              ) : alibaba1688OrderId ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">1688 Order ID:</span>
+                    <span className="font-mono text-sm font-medium text-orange-700">{alibaba1688OrderId}</span>
+                  </div>
+                  {linkedProduct && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">1688 Product:</span>
+                        <a 
+                          href={linkedProduct.product_url || `https://detail.1688.com/offer/${linkedProduct.product_id}.html`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          {linkedProduct.product_id}
+                        </a>
+                      </div>
+                      {linkedProduct.price && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">1688 Price:</span>
+                          <span className="text-sm font-medium">¥{linkedProduct.price}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {pipelineData?.current_stage && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Pipeline Stage:</span>
+                      <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">
+                        {pipelineData.current_stage?.replace(/_/g, ' ').toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : linkedProduct ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Linked 1688 Product:</span>
+                    <a 
+                      href={`https://detail.1688.com/offer/${linkedProduct.product_id}.html`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      {linkedProduct.product_id}
+                    </a>
+                  </div>
+                  <p className="text-xs text-orange-600">
+                    ⚠️ Product linked but not yet ordered on 1688
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-2">
+                  <p className="text-sm text-gray-500">No 1688 order linked yet</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Link a product in the Fulfillment Pipeline to place 1688 orders
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -157,7 +304,7 @@ const OrderDetailModal = ({ order, open, onClose }) => {
             <div className="bg-gray-50 rounded-lg p-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Subtotal</span>
-                <span>₹{(order.subtotal_price || order.total_price || order.total_spent || 0).toLocaleString()}</span>
+                <span>₹{parseFloat(order.subtotal_price || order.total_price || order.total_spent || 0).toLocaleString()}</span>
               </div>
               {order.total_shipping_price_set && (
                 <div className="flex justify-between text-sm">
@@ -167,7 +314,7 @@ const OrderDetailModal = ({ order, open, onClose }) => {
               )}
               <div className="flex justify-between font-semibold text-base pt-2 border-t">
                 <span>Total</span>
-                <span>₹{(order.total_price || order.total_spent || 0).toLocaleString()}</span>
+                <span>₹{parseFloat(order.total_price || order.total_spent || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -178,6 +325,19 @@ const OrderDetailModal = ({ order, open, onClose }) => {
               <h4 className="text-sm font-semibold text-gray-900 mb-3">Tracking</h4>
               <div className="bg-blue-50 rounded-lg p-4">
                 <p className="font-mono text-sm">{order.tracking_number}</p>
+                {order.tracking_company && (
+                  <p className="text-xs text-blue-600 mt-1">Carrier: {order.tracking_company}</p>
+                )}
+                {order.tracking_url && (
+                  <a 
+                    href={order.tracking_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline mt-1 block"
+                  >
+                    Track Package →
+                  </a>
+                )}
                 <p className="text-xs text-blue-600 mt-1">
                   Status: {order.delivery_status || 'Unknown'}
                 </p>
