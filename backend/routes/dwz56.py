@@ -1371,3 +1371,338 @@ async def get_purchase_fee_list(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== DWZ56 Scheduler Management ====================
+
+@router.get("/scheduler/status")
+async def get_scheduler_status():
+    """
+    Get current status of the DWZ56 auto-sync scheduler.
+    Shows running status and next scheduled job times.
+    """
+    try:
+        from services.dwz56_scheduler import get_scheduler_status
+        return {
+            "success": True,
+            **get_scheduler_status()
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "running": False,
+            "jobs": []
+        }
+
+
+@router.post("/scheduler/start")
+async def start_scheduler():
+    """Start the DWZ56 scheduler if not already running."""
+    try:
+        from services.dwz56_scheduler import start_scheduler
+        start_scheduler()
+        return {
+            "success": True,
+            "message": "Scheduler started"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
+@router.post("/scheduler/stop")
+async def stop_scheduler():
+    """Stop the DWZ56 scheduler."""
+    try:
+        from services.dwz56_scheduler import stop_scheduler
+        stop_scheduler()
+        return {
+            "success": True,
+            "message": "Scheduler stopped"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
+@router.post("/scheduler/run/{job_id}")
+async def run_scheduler_job_now(job_id: str):
+    """
+    Manually trigger a scheduler job to run immediately.
+    
+    job_id options:
+    - auto_sync_dwz56: Sync shipped 1688 orders to DWZ56
+    - track_dwz56_arrivals: Track package arrival status
+    """
+    try:
+        from services.dwz56_scheduler import run_job_now
+        result = await run_job_now(job_id)
+        return result
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
+@router.get("/scheduler/logs")
+async def get_scheduler_logs(
+    job: Optional[str] = Query(None, description="Filter by job name"),
+    limit: int = Query(50, ge=1, le=500),
+):
+    """Get recent scheduler job logs."""
+    db = get_db()
+    
+    query = {}
+    if job:
+        query["job"] = job
+    
+    logs = await db.scheduler_logs.find(
+        query,
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    return {
+        "success": True,
+        "logs": logs,
+        "count": len(logs)
+    }
+
+
+# ==================== Package Tracking Status ====================
+
+@router.get("/tracking/pending")
+async def get_pending_tracking(
+    store_name: Optional[str] = Query(None, description="Filter by store"),
+    limit: int = Query(100, ge=1, le=500),
+):
+    """
+    Get list of packages with DWZ56 waybill that are still in transit.
+    These are packages that haven't been delivered yet.
+    """
+    db = get_db()
+    
+    query = {
+        "dwz_waybill": {"$exists": True, "$ne": None, "$ne": ""},
+        "$or": [
+            {"dwz_status": {"$exists": False}},
+            {"dwz_status": {"$nin": ["DELIVERED", "RETURNED", "DESTROYED"]}},
+        ]
+    }
+    
+    if store_name:
+        query["store_name"] = store_name
+    
+    shipments = await db.fulfillment_pipeline.find(
+        query,
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    return {
+        "success": True,
+        "count": len(shipments),
+        "shipments": shipments
+    }
+
+
+@router.get("/tracking/arrived")
+async def get_arrived_at_warehouse(
+    store_name: Optional[str] = Query(None, description="Filter by store"),
+    limit: int = Query(100, ge=1, le=500),
+):
+    """
+    Get list of packages that have arrived at DWZ56 warehouse.
+    These are packages with status IN_TRANSIT (state 2).
+    """
+    db = get_db()
+    
+    query = {
+        "dwz_arrived_at_warehouse": True,
+        "dwz_delivered": {"$ne": True}
+    }
+    
+    if store_name:
+        query["store_name"] = store_name
+    
+    shipments = await db.fulfillment_pipeline.find(
+        query,
+        {"_id": 0}
+    ).sort("dwz_arrived_date", -1).limit(limit).to_list(limit)
+    
+    return {
+        "success": True,
+        "count": len(shipments),
+        "shipments": shipments
+    }
+
+
+@router.get("/tracking/delivered")
+async def get_delivered_packages(
+    store_name: Optional[str] = Query(None, description="Filter by store"),
+    limit: int = Query(100, ge=1, le=500),
+):
+    """
+    Get list of packages that have been delivered.
+    These are packages with status DELIVERED (state 3).
+    """
+    db = get_db()
+    
+    query = {
+        "dwz_delivered": True
+    }
+    
+    if store_name:
+        query["store_name"] = store_name
+    
+    shipments = await db.fulfillment_pipeline.find(
+        query,
+        {"_id": 0}
+    ).sort("dwz_delivered_date", -1).limit(limit).to_list(limit)
+    
+    return {
+        "success": True,
+        "count": len(shipments),
+        "shipments": shipments
+    }
+
+
+@router.get("/tracking/summary")
+async def get_tracking_summary(
+    store_name: Optional[str] = Query(None, description="Filter by store"),
+):
+    """
+    Get summary statistics of package tracking status.
+    """
+    db = get_db()
+    
+    base_query = {"dwz_waybill": {"$exists": True, "$ne": None, "$ne": ""}}
+    if store_name:
+        base_query["store_name"] = store_name
+    
+    # Count by status
+    total = await db.fulfillment_pipeline.count_documents(base_query)
+    
+    pending = await db.fulfillment_pipeline.count_documents({
+        **base_query,
+        "$or": [
+            {"dwz_status": {"$exists": False}},
+            {"dwz_status": "NOT_SENT"},
+        ]
+    })
+    
+    in_transit = await db.fulfillment_pipeline.count_documents({
+        **base_query,
+        "dwz_status": {"$in": ["SENT", "IN_TRANSIT"]}
+    })
+    
+    arrived_at_warehouse = await db.fulfillment_pipeline.count_documents({
+        **base_query,
+        "dwz_arrived_at_warehouse": True,
+        "dwz_delivered": {"$ne": True}
+    })
+    
+    delivered = await db.fulfillment_pipeline.count_documents({
+        **base_query,
+        "dwz_delivered": True
+    })
+    
+    exceptions = await db.fulfillment_pipeline.count_documents({
+        **base_query,
+        "dwz_status": {"$in": ["TIMEOUT", "CUSTOMS_HOLD", "ADDRESS_ERROR", "LOST", "RETURNED", "OTHER_EXCEPTION"]}
+    })
+    
+    return {
+        "success": True,
+        "store": store_name or "all",
+        "summary": {
+            "total": total,
+            "pending": pending,
+            "in_transit": in_transit,
+            "arrived_at_warehouse": arrived_at_warehouse,
+            "delivered": delivered,
+            "exceptions": exceptions
+        }
+    }
+
+
+@router.post("/tracking/refresh/{waybill}")
+async def refresh_single_tracking(waybill: str):
+    """
+    Manually refresh tracking status for a single waybill.
+    """
+    db = get_db()
+    
+    # Query DWZ56 for this specific waybill
+    payload = build_request_payload("RecList", {
+        "cqNum": waybill,
+        "iPage": 1,
+        "iPagePer": 10,
+    })
+    
+    response = await make_api_request(payload)
+    
+    if "error" in response:
+        return {
+            "success": False,
+            "error": response["error"]
+        }
+    
+    records = response.get("RecList", [])
+    
+    if not records:
+        return {
+            "success": False,
+            "error": "Waybill not found in DWZ56"
+        }
+    
+    rec = records[0]
+    state = rec.get("nState", 0)
+    status_info = TRACKING_STATUS.get(state, {"code": "UNKNOWN", "label_en": "Unknown"})
+    
+    tracking_update = {
+        "dwz_status": status_info["code"],
+        "dwz_status_label": status_info["label_en"],
+        "dwz_last_update": datetime.now(timezone.utc).isoformat(),
+        "dwz_tracking_info": {
+            "state": state,
+            "awb_number": rec.get("cNo"),
+            "destination": rec.get("cDes"),
+            "weight": rec.get("fWeight"),
+            "receiver": rec.get("cReceiver"),
+            "receiver_city": rec.get("cRCity"),
+            "receiver_country": rec.get("cRCountry"),
+            "sent_date": rec.get("dSend"),
+            "delivered_date": rec.get("dReceive"),
+        }
+    }
+    
+    # Check if arrived at warehouse
+    if state == 2:
+        tracking_update["dwz_arrived_at_warehouse"] = True
+        tracking_update["dwz_arrived_date"] = datetime.now(timezone.utc).isoformat()
+    
+    # Check if delivered
+    if state == 3:
+        tracking_update["dwz_delivered"] = True
+        tracking_update["dwz_delivered_date"] = rec.get("dReceive") or datetime.now(timezone.utc).isoformat()
+    
+    # Update database
+    result = await db.fulfillment_pipeline.update_one(
+        {"dwz_waybill": waybill},
+        {"$set": tracking_update}
+    )
+    
+    return {
+        "success": True,
+        "waybill": waybill,
+        "status": status_info["code"],
+        "status_label": status_info["label_en"],
+        "updated": result.modified_count > 0,
+        "tracking_info": tracking_update["dwz_tracking_info"]
+    }
+
