@@ -473,7 +473,7 @@ const Sidebar = () => {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-2 py-1">
+      <nav className="flex-1 overflow-y-auto px-2 py-1 min-h-0">
         {menuItems.map((item, index) => {
           const Icon = item.icon;
           const hasChildren = item.children && item.children.length > 0;
