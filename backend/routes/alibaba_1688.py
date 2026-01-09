@@ -3031,6 +3031,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         "waybill": custom_waybill,
         "shopify_order": request.shopify_order_number,
         "alibaba_order_id": request.alibaba_order_id,
+        "fulfillment_number_1688": request.fulfillment_number_1688,
         "dwz_tracking": dwz_tracking,
         "color_code": color_code,
         "size_code": size_code,
@@ -3041,13 +3042,13 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             "receiver": receiver_name,
             "destination": destination,
             "city": shipping_addr.get("city", ""),
-            "country": shipping_addr.get("country", "India"),
+            "country": shipping_addr.get("country") or country_code,
         }
     }
 
 
 class BulkMark1688ShippedRequest(BaseModel):
-    orders: List[dict] = Field(..., description="List of {shopify_order_number, alibaba_order_id}")
+    orders: List[dict] = Field(..., description="List of {shopify_order_number, alibaba_order_id, fulfillment_number_1688}")
     store_name: str = Field(default="tnvcollection")
     courier_type: Optional[str] = Field(default=None, description="DWZ56 courier type. Auto-detected if not provided")
     estimated_weight: float = Field(default=0.5)
