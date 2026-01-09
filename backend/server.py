@@ -299,6 +299,14 @@ async def startup_event():
     scheduler.start()
     logger.info("✅ Background scheduler initialized")
     
+    # Start DWZ56 scheduler for auto-sync and tracking
+    try:
+        from services.dwz56_scheduler import start_scheduler as start_dwz56_scheduler
+        start_dwz56_scheduler()
+        logger.info("✅ DWZ56 auto-sync scheduler initialized")
+    except Exception as e:
+        logger.warning(f"⚠️ DWZ56 scheduler not started: {e}")
+    
     # Create database indexes for performance
     async def create_indexes():
         try:
