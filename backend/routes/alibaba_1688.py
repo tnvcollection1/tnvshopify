@@ -2757,14 +2757,15 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     """
     Mark a 1688 order as shipped and automatically create a DWZ56 shipping order.
     
-    IMPORTANT: The tracking_number_1688 MUST match the package label from 1688 supplier.
-    DWZ56 warehouse will use this number to identify and match incoming packages.
+    Creates a custom waybill number: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
+    Example: TNVIN0109R42001
     
     Workflow:
-    1. 1688 supplier ships package with tracking number (e.g., YT7358912345678)
-    2. You call this API with that tracking number
-    3. DWZ56 shipment is created with tracking_number_1688 as reference
-    4. When package arrives at DWZ56, they scan the label and match it to your shipment
+    1. 1688 order is shipped from supplier
+    2. Call this API with Shopify order + 1688 order ID
+    3. System extracts color/size from order, generates custom waybill
+    4. DWZ56 shipment created with custom waybill as tracking number
+    5. Package arrives at DWZ56, they scan 1688 order ID and match to waybill
     """
     db = get_db()
     
@@ -2787,7 +2788,6 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     # Extract shipping address
     shipping_addr = shopify_order.get("shipping_address", {})
     if not shipping_addr:
-        # Try to build from flat fields
         shipping_addr = {
             "first_name": shopify_order.get("first_name", ""),
             "last_name": shopify_order.get("last_name", ""),
@@ -2803,20 +2803,30 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     if not receiver_name:
         receiver_name = shopify_order.get("customer_name") or "Customer"
     
-    # Determine destination country and courier type
+    # Determine destination and courier
     country = shipping_addr.get("country", "") or shipping_addr.get("country_code", "")
     if country.lower() in ["in", "india"]:
-        destination = "印度"  # India in Chinese
+        destination = "印度"
         default_courier = "印度专线"
+        country_code = "IN"
     elif country.lower() in ["pk", "pakistan"]:
-        destination = "巴基斯坦"  # Pakistan in Chinese
+        destination = "巴基斯坦"
         default_courier = "巴基斯坦专线"
+        country_code = "PK"
     else:
         destination = country or "印度"
-        default_courier = "全球普货专线"  # Global general cargo line
+        default_courier = "全球普货专线"
+        country_code = STORE_COUNTRY_CODE.get(request.store_name, "IN")
     
-    # Use provided courier type or auto-detect from store or country
     courier_type = request.courier_type or STORE_COURIER_MAP.get(request.store_name) or default_courier
+    
+    # Extract color and size from order
+    extracted_color, extracted_size = extract_color_size_from_order(shopify_order)
+    color_code = request.color_override or extracted_color
+    size_code = request.size_override or extracted_size
+    
+    # Generate custom waybill: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
+    custom_waybill = await generate_tnv_waybill_number(db, country_code, color_code, size_code)
     
     # Use 1688 ORDER ID as the DWZ56 reference number
     # DWZ56 warehouse will match packages by this 1688 order number
