@@ -2899,15 +2899,15 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "cRAddr": full_address,
                 "cRCity": shipping_addr.get("city", ""),
                 "cRProvince": shipping_addr.get("province", ""),
-                "cRCountry": shipping_addr.get("country", "India"),
+                "cRCountry": shipping_addr.get("country") or destination,
                 "cRPostcode": shipping_addr.get("zip", ""),
                 "cRPhone": shipping_addr.get("phone", "") or shopify_order.get("phone", ""),
                 "cREMail": shopify_order.get("email", ""),
                 
                 # Reference numbers:
-                # cRNo = 1688 Order ID (for warehouse package matching)
+                # cRNo = 1688 Fulfillment Number (for warehouse package matching - this is on the package label)
                 # cCNo = Shopify Order ID (customer reference)
-                "cRNo": request.alibaba_order_id,
+                "cRNo": request.fulfillment_number_1688 or request.alibaba_order_id,
                 "cCNo": f"#{request.shopify_order_number}",
                 
                 # Package details
@@ -2921,7 +2921,8 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "fPrice": float(shopify_order.get("total_price", 0) or shopify_order.get("total_spent", 0) or 0),
                 
                 # Memo with all references for easy search
-                "cMemo": f"Shopify: #{request.shopify_order_number} | 1688: {request.alibaba_order_id} | {color_code}/{size_code}",
+                # Format: Shopify | 1688 Order | 1688 Fulfillment | Color/Size
+                "cMemo": f"Shopify: #{request.shopify_order_number} | 1688订单: {request.alibaba_order_id}" + (f" | 1688物流: {request.fulfillment_number_1688}" if request.fulfillment_number_1688 else "") + f" | {color_code}/{size_code}",
                 
                 # Mark for filtering
                 "cMark": f"#{request.shopify_order_number}",
