@@ -239,13 +239,25 @@ const OrderDetailModal = ({ order, open, onClose }) => {
               ) : alibaba1688OrderId ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">1688 Order ID:</span>
-                    <span className="font-mono text-sm font-medium text-orange-700">{alibaba1688OrderId}</span>
+                    <span className="text-sm text-gray-700">1688 Order ID:</span>
+                    <span className="font-mono text-sm font-semibold text-orange-700">{alibaba1688OrderId}</span>
                   </div>
+                  {purchaseOrder?.status && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-700">Status:</span>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        purchaseOrder.status === 'shipped' ? 'bg-green-100 text-green-700' :
+                        purchaseOrder.status === 'paid' ? 'bg-blue-100 text-blue-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {purchaseOrder.status.toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                   {linkedProduct && (
                     <>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">1688 Product:</span>
+                        <span className="text-sm text-gray-700">1688 Product:</span>
                         <a 
                           href={linkedProduct.product_url || `https://detail.1688.com/offer/${linkedProduct.product_id}.html`}
                           target="_blank"
@@ -257,15 +269,15 @@ const OrderDetailModal = ({ order, open, onClose }) => {
                       </div>
                       {linkedProduct.price && (
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">1688 Price:</span>
-                          <span className="text-sm font-medium">¥{linkedProduct.price}</span>
+                          <span className="text-sm text-gray-700">1688 Price:</span>
+                          <span className="text-sm font-medium text-gray-900">¥{linkedProduct.price}</span>
                         </div>
                       )}
                     </>
                   )}
                   {pipelineData?.current_stage && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Pipeline Stage:</span>
+                      <span className="text-sm text-gray-700">Pipeline Stage:</span>
                       <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">
                         {pipelineData.current_stage?.replace(/_/g, ' ').toUpperCase()}
                       </span>
@@ -275,7 +287,7 @@ const OrderDetailModal = ({ order, open, onClose }) => {
               ) : linkedProduct ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Linked 1688 Product:</span>
+                    <span className="text-sm text-gray-700">Linked 1688 Product:</span>
                     <a 
                       href={`https://detail.1688.com/offer/${linkedProduct.product_id}.html`}
                       target="_blank"
@@ -291,8 +303,8 @@ const OrderDetailModal = ({ order, open, onClose }) => {
                 </div>
               ) : (
                 <div className="text-center py-2">
-                  <p className="text-sm text-gray-500">No 1688 order linked yet</p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-sm text-gray-600">No 1688 order linked yet</p>
+                  <p className="text-xs text-gray-500 mt-1">
                     Link a product in the Fulfillment Pipeline to place 1688 orders
                   </p>
                 </div>
@@ -302,16 +314,16 @@ const OrderDetailModal = ({ order, open, onClose }) => {
 
           {/* Order Items */}
           <div className="md:col-span-2">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">Items ({lineItems.length})</h4>
-            <div className="border rounded-lg divide-y">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Items ({lineItems.length})</h4>
+            <div className="border border-gray-200 rounded-lg divide-y divide-gray-200 bg-white">
               {lineItems.map((item, idx) => (
-                <div key={idx} className="p-3 flex justify-between">
-                  <div>
-                    <p className="font-medium text-sm">{item.title || item.name}</p>
-                    {item.sku && <p className="text-xs text-gray-500">SKU: {item.sku}</p>}
+                <div key={idx} className="p-3 flex justify-between items-start">
+                  <div className="flex-1">
+                    <p className="font-medium text-sm text-gray-900">{item.title || item.name}</p>
+                    {item.sku && <p className="text-xs text-gray-500 mt-0.5">SKU: {item.sku}</p>}
                     <p className="text-xs text-gray-500">Qty: {item.quantity || 1}</p>
                   </div>
-                  <p className="font-medium text-sm">₹{parseFloat(item.price || 0).toLocaleString()}</p>
+                  <p className="font-semibold text-sm text-gray-900">₹{parseFloat(item.price || 0).toLocaleString()}</p>
                 </div>
               ))}
             </div>
