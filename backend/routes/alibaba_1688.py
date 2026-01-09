@@ -2610,11 +2610,20 @@ class Mark1688ShippedRequest(BaseModel):
     shopify_order_number: str = Field(..., description="Shopify order number")
     alibaba_order_id: str = Field(..., description="1688 order ID")
     store_name: str = Field(default="tnvcollection")
-    courier_type: str = Field(default="印专线", description="DWZ56 courier type (e.g., 印专线 for India)")
+    courier_type: Optional[str] = Field(default=None, description="DWZ56 courier type. Auto-detected based on store if not provided. Valid: 印度专线, 巴基斯坦专线")
     estimated_weight: Optional[float] = Field(default=0.5, description="Estimated weight in kg")
     goods_description: Optional[str] = Field(default="Fashion items", description="Goods description for customs")
     notes: Optional[str] = None
     auto_create_dwz: bool = Field(default=True, description="Automatically create DWZ56 shipment")
+
+
+# Store to courier type mapping for auto-selection
+STORE_COURIER_MAP = {
+    "tnvcollection": "印度专线",      # India
+    "ashmiaa": "印度专线",            # India  
+    "asmia": "印度专线",              # India
+    "tnvcollectionpk": "巴基斯坦专线", # Pakistan
+}
 
 
 @router.post("/mark-shipped")
