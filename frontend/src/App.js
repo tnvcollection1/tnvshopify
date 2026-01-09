@@ -574,6 +574,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/dwz56-tracking" 
+        element={
+          <ProtectedRoute>
+            <DWZ56Tracking />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/storefront-orders" 
         element={
           <ProtectedRoute>
