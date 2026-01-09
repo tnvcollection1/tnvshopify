@@ -1357,7 +1357,7 @@ const BatchNotifyModal = ({ store, orders, onClose, onSuccess }) => {
 
 // Main Component
 const FulfillmentPipeline = () => {
-  const { globalStore: globalStore, getStoreName, stores: globalStores } = useStore();
+  const { selectedStore: globalStore, getStoreName, stores: globalStores } = useStore();
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(false);
