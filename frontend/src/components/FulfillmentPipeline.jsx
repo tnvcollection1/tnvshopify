@@ -606,10 +606,19 @@ const OrderDetailModal = ({ order, carrierInfo, onClose, onUpdateStage, onRefres
     }
   };
   
+  // State for DWZ56 shipping dialog
+  const [showDWZDialog, setShowDWZDialog] = useState(false);
+  const [tracking1688Input, setTracking1688Input] = useState('');
+  
   // Ship to DWZ56 - Creates shipment in DWZ56 account
   const handleShipToDWZ56 = async () => {
     if (!order.alibaba_order_id) {
       toast.error('1688 Order ID is required. Please link a 1688 order first.');
+      return;
+    }
+    
+    if (!tracking1688Input.trim()) {
+      toast.error('Please enter the 1688 package tracking number');
       return;
     }
     
@@ -621,6 +630,7 @@ const OrderDetailModal = ({ order, carrierInfo, onClose, onUpdateStage, onRefres
         body: JSON.stringify({
           shopify_order_number: String(order.order_number || order.shopify_order_id),
           alibaba_order_id: order.alibaba_order_id,
+          tracking_number_1688: tracking1688Input.trim(),
           store_name: order.store_name,
           auto_create_dwz: true,
         }),
@@ -629,7 +639,9 @@ const OrderDetailModal = ({ order, carrierInfo, onClose, onUpdateStage, onRefres
       
       if (data.success) {
         if (data.dwz_shipment?.success) {
-          toast.success(`DWZ56 shipment created! Tracking: ${data.dwz_shipment.dwz_tracking || 'Pending'}`);
+          toast.success(`DWZ56 shipment created! Reference: ${data.dwz_reference}`);
+          setShowDWZDialog(false);
+          setTracking1688Input('');
         } else {
           toast.warning(`Order marked as shipped, but DWZ56 creation failed: ${data.dwz_shipment?.message || 'Unknown error'}`);
         }
