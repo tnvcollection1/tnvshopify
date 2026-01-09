@@ -2634,147 +2634,20 @@ STORE_COUNTRY_CODE = {
     "tnvcollectionpk": "PK",
 }
 
-# Color code mapping (first letter)
-COLOR_CODE_MAP = {
-    "red": "R", "maroon": "R", "burgundy": "R", "wine": "R", "crimson": "R",
-    "blue": "B", "navy": "B", "royal": "B", "cobalt": "B", "azure": "B",
-    "black": "K", "charcoal": "K", "ebony": "K",
-    "white": "W", "ivory": "W", "cream": "W", "off-white": "W",
-    "green": "G", "olive": "G", "mint": "G", "sage": "G", "emerald": "G",
-    "yellow": "Y", "gold": "Y", "mustard": "Y", "lemon": "Y",
-    "pink": "P", "rose": "P", "blush": "P", "coral": "P", "salmon": "P",
-    "purple": "V", "violet": "V", "lavender": "V", "plum": "V", "magenta": "V",
-    "orange": "O", "tangerine": "O", "peach": "O", "rust": "O",
-    "brown": "N", "tan": "N", "beige": "N", "camel": "N", "chocolate": "N", "coffee": "N",
-    "grey": "E", "gray": "E", "silver": "E", "ash": "E",
-    "multi": "M", "multicolor": "M", "print": "M", "pattern": "M",
-}
-
-
-def extract_color_size_from_order(order: dict) -> tuple:
-    """
-    Extract color and size from order line items or variant info.
-    Returns (color_code, size_code) tuple.
-    """
-    color_code = "X"  # Default unknown
-    size_code = "00"  # Default unknown
-    
-    line_items = order.get("line_items", [])
-    if not line_items:
-        return color_code, size_code
-    
-    # Get first item's variant info
-    first_item = line_items[0] if isinstance(line_items, list) else line_items
-    
-    # Try to extract from variant_title (e.g., "Red / 42" or "Black-L")
-    variant_title = first_item.get("variant_title", "") or first_item.get("title", "")
-    sku = first_item.get("sku", "")
-    
-    # Parse variant_title
-    if variant_title:
-        parts = variant_title.replace("-", "/").replace(",", "/").split("/")
-        for part in parts:
-            part_lower = part.strip().lower()
-            
-            # Check for color
-            for color_name, code in COLOR_CODE_MAP.items():
-                if color_name in part_lower:
-                    color_code = code
-                    break
-            
-            # Check for size (number or S/M/L/XL)
-            part_stripped = part.strip()
-            if part_stripped.isdigit():
-                size_code = part_stripped.zfill(2)[-2:]  # Last 2 digits
-            elif part_stripped.upper() in ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]:
-                size_map = {"XS": "XS", "S": "SM", "M": "MD", "L": "LG", "XL": "XL", "XXL": "2X", "XXXL": "3X"}
-                size_code = size_map.get(part_stripped.upper(), part_stripped.upper()[:2])
-    
-    # Also try to parse from SKU (e.g., "739758517850-black-40")
-    if sku and (color_code == "X" or size_code == "00"):
-        sku_parts = sku.lower().replace("_", "-").split("-")
-        for part in sku_parts:
-            if color_code == "X":
-                for color_name, code in COLOR_CODE_MAP.items():
-                    if color_name in part:
-                        color_code = code
-                        break
-            if size_code == "00" and part.isdigit():
-                size_code = part.zfill(2)[-2:]
-    
-    return color_code, size_code
-
-
-async def generate_dwz_reference_number(db, store_name: str, country_code: str, color_code: str, size_code: str) -> str:
-    """
-    Generate DWZ56 reference number in format: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
-    Example: TNVIN0107R42001
-    
-    - TNV = Company prefix
-    - IN/PK = Country code
-    - DDMM = Date
-    - R = Color code
-    - 42 = Size
-    - 001 = Serial number (auto-increment per day)
-    """
-    from datetime import datetime, timezone
-    
-    now = datetime.now(timezone.utc)
-    date_str = now.strftime("%d%m")  # DDMM format
-    
-    # Generate prefix for today's serial lookup
-    prefix = f"TNV{country_code}{date_str}"
-    
-    # Find the highest serial number for today
-    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
-    
-    # Query for today's shipments to get the next serial
-    latest_shipment = await db.dwz_shipments.find_one(
-        {
-            "created_at": {"$gte": today_start},
-            "reference_prefix": prefix,
-        },
-        sort=[("serial_number", -1)]
-    )
-    
-    if latest_shipment:
-        next_serial = latest_shipment.get("serial_number", 0) + 1
-    else:
-        next_serial = 1
-    
-    serial_str = str(next_serial).zfill(3)  # 001, 002, etc.
-    
-    # Build reference number: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
-    reference_number = f"TNV{country_code}{date_str}{color_code}{size_code}{serial_str}"
-    
-    # Save for serial tracking
-    await db.dwz_shipments.insert_one({
-        "reference_number": reference_number,
-        "reference_prefix": prefix,
-        "serial_number": next_serial,
-        "country_code": country_code,
-        "color_code": color_code,
-        "size_code": size_code,
-        "created_at": now.isoformat(),
-    })
-    
-    return reference_number
-
 
 @router.post("/mark-shipped")
 async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     """
     Mark a 1688 order as shipped and automatically create a DWZ56 shipping order.
     
-    This is triggered when:
-    1. 1688 order is fulfilled/shipped from supplier
-    2. You want to create DWZ56 shipment for the package
+    IMPORTANT: The tracking_number_1688 MUST match the package label from 1688 supplier.
+    DWZ56 warehouse will use this number to identify and match incoming packages.
     
-    The function will:
-    1. Update the 1688 order status to 'shipped'
-    2. Pull customer shipping details from Shopify order
-    3. Create a DWZ56 pre-input shipment order
-    4. Update the fulfillment pipeline to 'dwz56_shipped' stage
+    Workflow:
+    1. 1688 supplier ships package with tracking number (e.g., YT7358912345678)
+    2. You call this API with that tracking number
+    3. DWZ56 shipment is created with tracking_number_1688 as reference
+    4. When package arrives at DWZ56, they scan the label and match it to your shipment
     """
     db = get_db()
     
