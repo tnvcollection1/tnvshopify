@@ -3046,7 +3046,7 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
                 "success": True,
                 "shopify_order": order.get("shopify_order_number"),
                 "alibaba_order_id": order.get("alibaba_order_id"),
-                "dwz_reference": result.get("dwz_reference"),
+                "waybill": result.get("waybill"),
                 "dwz_tracking": result.get("dwz_tracking"),
                 "dwz_created": result.get("dwz_shipment", {}).get("success", False),
             })
@@ -3069,6 +3069,125 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
         "dwz_created_count": dwz_created_count,
         "error_count": error_count,
         "results": results,
+    }
+
+
+# ==================== Auto-Sync 1688 Shipped Orders to DWZ56 ====================
+
+@router.post("/auto-sync-shipped")
+async def auto_sync_shipped_orders_to_dwz(store_name: str = "tnvcollection"):
+    """
+    Auto-sync: Find all 1688 orders marked as shipped but not yet in DWZ56,
+    and automatically create DWZ56 shipments for them.
+    
+    This should be called:
+    - Periodically (e.g., every hour via cron)
+    - After marking orders as shipped in 1688
+    - Manually when you want to sync pending orders
+    """
+    db = get_db()
+    
+    # Find orders that have alibaba_order_id but no dwz_waybill
+    pending_orders = await db.purchase_orders_1688.find({
+        "alibaba_order_id": {"$exists": True, "$ne": None},
+        "alibaba_status": "SHIPPED",
+        "$or": [
+            {"dwz_waybill": {"$exists": False}},
+            {"dwz_waybill": None},
+            {"dwz_waybill": ""},
+        ]
+    }).to_list(100)
+    
+    if not pending_orders:
+        # Also check fulfillment_pipeline for orders without dwz_waybill
+        pending_orders = await db.fulfillment_pipeline.find({
+            "store_name": store_name,
+            "alibaba_order_id": {"$exists": True, "$ne": None},
+            "$or": [
+                {"dwz_waybill": {"$exists": False}},
+                {"dwz_waybill": None},
+            ]
+        }).to_list(100)
+    
+    results = []
+    synced_count = 0
+    error_count = 0
+    
+    for order in pending_orders:
+        try:
+            shopify_order_num = order.get("shopify_order_number") or order.get("order_number")
+            alibaba_order_id = order.get("alibaba_order_id")
+            
+            if not shopify_order_num or not alibaba_order_id:
+                continue
+            
+            # Create DWZ56 shipment
+            mark_request = Mark1688ShippedRequest(
+                shopify_order_number=str(shopify_order_num),
+                alibaba_order_id=str(alibaba_order_id),
+                store_name=store_name,
+                auto_create_dwz=True,
+            )
+            result = await mark_1688_order_shipped(mark_request)
+            
+            results.append({
+                "success": True,
+                "shopify_order": shopify_order_num,
+                "alibaba_order_id": alibaba_order_id,
+                "waybill": result.get("waybill"),
+                "color": result.get("color_code"),
+                "size": result.get("size_code"),
+            })
+            synced_count += 1
+            
+        except Exception as e:
+            results.append({
+                "success": False,
+                "shopify_order": order.get("shopify_order_number") or order.get("order_number"),
+                "error": str(e),
+            })
+            error_count += 1
+    
+    return {
+        "success": True,
+        "message": f"Auto-synced {synced_count} orders to DWZ56, {error_count} errors",
+        "synced_count": synced_count,
+        "error_count": error_count,
+        "pending_found": len(pending_orders),
+        "results": results,
+    }
+
+
+@router.get("/pending-dwz-sync")
+async def get_pending_dwz_sync(store_name: str = "tnvcollection"):
+    """
+    Get list of orders that have 1688 order ID but no DWZ56 waybill yet.
+    These orders are ready to be synced to DWZ56.
+    """
+    db = get_db()
+    
+    # Find orders with alibaba_order_id but no dwz_waybill
+    pending = await db.fulfillment_pipeline.find({
+        "store_name": store_name,
+        "alibaba_order_id": {"$exists": True, "$ne": None},
+        "$or": [
+            {"dwz_waybill": {"$exists": False}},
+            {"dwz_waybill": None},
+        ]
+    }, {"_id": 0}).to_list(100)
+    
+    return {
+        "success": True,
+        "pending_count": len(pending),
+        "orders": [
+            {
+                "shopify_order": o.get("order_number"),
+                "alibaba_order_id": o.get("alibaba_order_id"),
+                "customer": o.get("customer_name"),
+                "stage": o.get("current_stage"),
+            }
+            for o in pending
+        ]
     }
 
 
