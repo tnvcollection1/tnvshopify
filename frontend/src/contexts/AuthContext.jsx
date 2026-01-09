@@ -16,14 +16,11 @@ const DEFAULT_PERMISSIONS = {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [agent, setAgent] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check if agent is logged in (from localStorage)
-    const storedAgent = localStorage.getItem('agent');
-    if (storedAgent) {
-      try {
+  const [agent, setAgent] = useState(() => {
+    // Initialize from localStorage synchronously to prevent flash
+    try {
+      const storedAgent = localStorage.getItem('agent');
+      if (storedAgent) {
         const parsed = JSON.parse(storedAgent);
         // Ensure permissions exist (for backward compatibility)
         if (!parsed.permissions) {
@@ -54,13 +51,35 @@ export const AuthProvider = ({ children }) => {
             };
           }
         }
-        setAgent(parsed);
-      } catch (e) {
-        console.error('Failed to parse stored agent:', e);
-        localStorage.removeItem('agent');
+        return parsed;
       }
+    } catch (e) {
+      console.error('Failed to parse stored agent:', e);
+      localStorage.removeItem('agent');
     }
-    setLoading(false);
+    return null;
+  });
+  const [loading, setLoading] = useState(false); // Start as false since we init synchronously
+
+  // Listen for storage changes (for cross-tab sync)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'agent') {
+        if (e.newValue) {
+          try {
+            const parsed = JSON.parse(e.newValue);
+            setAgent(parsed);
+          } catch (err) {
+            console.error('Failed to parse agent from storage event:', err);
+          }
+        } else {
+          setAgent(null);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const login = (agentData) => {
