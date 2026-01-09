@@ -163,8 +163,24 @@ class ShopifyOrderSync:
             
             # Get country code from shipping address
             country_code = ''
+            shipping_address = None
             if getattr(order, 'shipping_address', None):
-                country_code = getattr(order.shipping_address, 'country_code', '') or ''
+                addr = order.shipping_address
+                country_code = getattr(addr, 'country_code', '') or ''
+                shipping_address = {
+                    'first_name': getattr(addr, 'first_name', '') or '',
+                    'last_name': getattr(addr, 'last_name', '') or '',
+                    'company': getattr(addr, 'company', '') or '',
+                    'address1': getattr(addr, 'address1', '') or '',
+                    'address2': getattr(addr, 'address2', '') or '',
+                    'city': getattr(addr, 'city', '') or '',
+                    'province': getattr(addr, 'province', '') or '',
+                    'province_code': getattr(addr, 'province_code', '') or '',
+                    'country': getattr(addr, 'country', '') or '',
+                    'country_code': country_code,
+                    'zip': getattr(addr, 'zip', '') or '',
+                    'phone': getattr(addr, 'phone', '') or '',
+                }
             
             # Extract customer info
             customer_data = {
@@ -177,6 +193,7 @@ class ShopifyOrderSync:
                 'email': email,
                 'phone': phone,
                 'country_code': country_code,
+                'shipping_address': shipping_address,  # Full shipping address
                 'order_date': order.created_at,
                 'total_price': float(order.total_price) if order.total_price else 0.0,
                 'financial_status': order.financial_status,
