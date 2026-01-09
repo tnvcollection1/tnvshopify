@@ -3063,11 +3063,12 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
     Each order in the list MUST include:
     - shopify_order_number
     - alibaba_order_id (used as reference in DWZ56)
+    - fulfillment_number_1688 (optional - 1688 tracking number for package matching)
     
     Example:
     {
         "orders": [
-            {"shopify_order_number": "29160", "alibaba_order_id": "4993919316996978802"},
+            {"shopify_order_number": "29160", "alibaba_order_id": "4993919316996978802", "fulfillment_number_1688": "YT1234567890"},
             {"shopify_order_number": "29161", "alibaba_order_id": "4993919316996978803"}
         ]
     }
@@ -3082,6 +3083,7 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
             mark_request = Mark1688ShippedRequest(
                 shopify_order_number=str(order.get("shopify_order_number")),
                 alibaba_order_id=str(order.get("alibaba_order_id")),
+                fulfillment_number_1688=order.get("fulfillment_number_1688"),
                 store_name=request.store_name,
                 courier_type=request.courier_type,
                 estimated_weight=request.estimated_weight,
@@ -3094,6 +3096,7 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
                 "success": True,
                 "shopify_order": order.get("shopify_order_number"),
                 "alibaba_order_id": order.get("alibaba_order_id"),
+                "fulfillment_number_1688": order.get("fulfillment_number_1688"),
                 "waybill": result.get("waybill"),
                 "dwz_tracking": result.get("dwz_tracking"),
                 "dwz_created": result.get("dwz_shipment", {}).get("success", False),
