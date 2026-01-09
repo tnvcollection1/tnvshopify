@@ -2805,11 +2805,6 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         ]
     }, {"_id": 0})
     
-    # DEBUG: Log order found
-    import logging
-    logging.info(f"Mark-shipped: store={request.store_name}, order={request.shopify_order_number}")
-    logging.info(f"Found order country_code: {shopify_order.get('country_code') if shopify_order else 'NOT FOUND'}")
-    
     if not shopify_order:
         raise HTTPException(status_code=404, detail=f"Shopify order #{request.shopify_order_number} not found")
     
