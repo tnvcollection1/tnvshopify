@@ -756,23 +756,34 @@ async def import_dwz_tracking_csv(
 
 @router.post("/pipeline/sync-from-shopify")
 async def sync_orders_from_shopify(store_name: str = Body(..., embed=True)):
-    """Sync unfulfilled orders from Shopify to the pipeline"""
+    """Sync unfulfilled PAID orders from Shopify to the pipeline (excludes test orders)"""
     db = get_db()
     
-    # Get unfulfilled orders from customers collection
-    # Check for both financial_status and payment_status fields
+    # Test order patterns to exclude
+    test_patterns = ['test', 'cancelled', 'e2e', 'ui test', 'demo', 'sample']
+    
+    # Get unfulfilled PAID orders from customers collection
     unfulfilled = await db.customers.find({
         "store_name": store_name,
         "fulfillment_status": {"$in": ["unfulfilled", None, ""]},
         "$or": [
             {"financial_status": "paid"},
             {"payment_status": "paid"},
-            {"payment_status": "pending"},  # Include pending orders too
         ]
     }, {"_id": 0}).to_list(500)
     
     synced = 0
+    skipped_test = 0
     for order in unfulfilled:
+        # Skip test orders based on customer name
+        customer_name = (order.get("customer_name") or 
+                        f"{order.get('first_name', '')} {order.get('last_name', '')}").lower().strip()
+        
+        is_test = any(pattern in customer_name for pattern in test_patterns)
+        if is_test:
+            skipped_test += 1
+            continue
+            
         # Check if already in pipeline
         existing = await db.fulfillment_pipeline.find_one({
             "shopify_order_id": order.get("shopify_order_id")
@@ -801,8 +812,55 @@ async def sync_orders_from_shopify(store_name: str = Body(..., embed=True)):
     
     return {
         "success": True,
-        "message": f"Synced {synced} orders to pipeline",
+        "message": f"Synced {synced} orders to pipeline (skipped {skipped_test} test orders)",
         "synced_count": synced,
+        "skipped_test_orders": skipped_test,
+    }
+
+
+@router.post("/pipeline/cleanup-test-orders")
+async def cleanup_test_orders(store_name: str = Body(..., embed=True)):
+    """Remove test orders from the pipeline"""
+    db = get_db()
+    
+    # Test order patterns to remove
+    test_patterns = ['test', 'cancelled', 'e2e', 'ui test', 'demo', 'sample', 'fake']
+    
+    # Get all pipeline orders
+    orders = await db.fulfillment_pipeline.find({
+        "store_name": store_name
+    }).to_list(None)
+    
+    removed = 0
+    removed_ids = []
+    for order in orders:
+        customer_name = (order.get("customer_name") or "").lower()
+        is_test = any(pattern in customer_name for pattern in test_patterns)
+        
+        if is_test:
+            await db.fulfillment_pipeline.delete_one({"_id": order["_id"]})
+            removed += 1
+            removed_ids.append(order.get("order_number"))
+    
+    return {
+        "success": True,
+        "message": f"Removed {removed} test orders from pipeline",
+        "removed_count": removed,
+        "removed_orders": removed_ids[:20],  # Show first 20
+    }
+
+
+@router.delete("/pipeline/clear-all")
+async def clear_all_pipeline_orders(store_name: str = Query(...)):
+    """Clear ALL orders from pipeline (use with caution)"""
+    db = get_db()
+    
+    result = await db.fulfillment_pipeline.delete_many({"store_name": store_name})
+    
+    return {
+        "success": True,
+        "message": f"Cleared {result.deleted_count} orders from pipeline",
+        "deleted_count": result.deleted_count,
     }
 
 
