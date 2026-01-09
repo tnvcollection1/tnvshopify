@@ -2966,6 +2966,9 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     if dwz_tracking:
         pipeline_update["$set"]["dwz_tracking"] = dwz_tracking
     
+    # Store the custom reference number
+    pipeline_update["$set"]["dwz_reference"] = custom_reference
+    
     await db.fulfillment_pipeline.update_one(
         {"order_number": request.shopify_order_number, "store_name": request.store_name},
         pipeline_update,
@@ -2981,6 +2984,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "alibaba_status": "SHIPPED",
                 "fulfillment_stage": new_stage,
                 "dwz_tracking": dwz_tracking,
+                "dwz_reference": custom_reference,
                 "updated_at": now,
             }
         }
@@ -2993,6 +2997,9 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         "alibaba_order": request.alibaba_order_id,
         "current_stage": new_stage,
         "courier_type": courier_type,
+        "custom_reference": custom_reference,
+        "color_code": color_code,
+        "size_code": size_code,
         "dwz_shipment": dwz_result,
         "shipping_details": {
             "receiver": receiver_name,
