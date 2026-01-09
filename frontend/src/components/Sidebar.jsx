@@ -117,6 +117,7 @@ const Sidebar = () => {
       label: 'Products', 
       section: 'products',
       children: [
+        { icon: Check, label: 'Approve Products', path: '/product-approval' },
         { icon: Package, label: 'Inventory', path: '/inventory' },
         { icon: PieChart, label: 'Overview', path: '/inventory-overview' },
         { icon: TrendingUp, label: 'Inventory Health', path: '/inventory-health' },
