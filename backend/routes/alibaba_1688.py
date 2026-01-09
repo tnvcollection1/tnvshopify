@@ -2828,10 +2828,6 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     # Generate custom waybill: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
     custom_waybill = await generate_tnv_waybill_number(db, country_code, color_code, size_code)
     
-    # Use 1688 ORDER ID as the DWZ56 reference number
-    # DWZ56 warehouse will match packages by this 1688 order number
-    dwz_reference = request.alibaba_order_id
-    
     # Build full address
     address_parts = [
         shipping_addr.get("address1", ""),
@@ -2842,17 +2838,20 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     # Create DWZ56 shipment if requested
     if request.auto_create_dwz:
         try:
-            # Import DWZ56 functions
             from routes.dwz56 import build_request_payload, make_api_request
             
             # Build shipment record for DWZ56
-            # cRNo = 1688 Order ID (reference number for package matching)
+            # cNum = Custom waybill number (TNVIN0109R42001)
+            # cRNo = 1688 Order ID (for warehouse package matching)
             shipment_record = {
-                "iID": 0,  # 0 = new record
-                "nItemType": 1,  # Package
-                "nLanguage": 0,  # China Mainland
+                "iID": 0,
+                "nItemType": 1,
+                "nLanguage": 0,
                 "cEmsKind": courier_type,
                 "cDes": destination,
+                
+                # Custom waybill number
+                "cNum": custom_waybill,
                 
                 # Receiver info
                 "cReceiver": receiver_name,
@@ -2864,24 +2863,23 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "cRPhone": shipping_addr.get("phone", "") or shopify_order.get("phone", ""),
                 "cREMail": shopify_order.get("email", ""),
                 
-                # Use 1688 Order ID as reference number
-                # DWZ56 warehouse matches packages by this number
-                "cRNo": dwz_reference,
+                # 1688 Order ID as reference (for package matching)
+                "cRNo": request.alibaba_order_id,
                 
                 # Package details
                 "fWeight": request.estimated_weight,
                 "iItem": 1,
-                "nPayWay": 0,  # Monthly billing
+                "nPayWay": 0,
                 
                 # Goods
                 "cGoods": request.goods_description or "Fashion items",
                 "iQuantity": 1,
                 "fPrice": float(shopify_order.get("total_price", 0) or shopify_order.get("total_spent", 0) or 0),
                 
-                # Memo with Shopify order for your reference
-                "cMemo": f"Shopify: #{request.shopify_order_number}",
+                # Memo with Shopify order
+                "cMemo": f"Shopify: #{request.shopify_order_number}. Color: {color_code}, Size: {size_code}",
                 
-                # Tag/Mark for easy filtering
+                # Mark for filtering
                 "cMark": f"Shopify-{request.shopify_order_number}",
             }
             
@@ -2891,12 +2889,13 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             
             if response.get("ReturnValue", 0) > 0:
                 created_ids = response.get("RecIDs", [])
-                # DWZ56 returns tracking number in ErrList even on success
                 err_list = response.get("ErrList", [])
+                
+                # DWZ56 may assign its own tracking or use our custom waybill
                 if err_list and err_list[0].get("cNum"):
                     dwz_tracking = err_list[0].get("cNum")
-                elif created_ids:
-                    dwz_tracking = f"DWZ-{created_ids[0]}"
+                else:
+                    dwz_tracking = custom_waybill
                 
                 dwz_result = {
                     "success": True,
