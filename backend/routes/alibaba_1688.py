@@ -2602,6 +2602,287 @@ async def bulk_link_1688_orders(request: BulkLink1688OrdersRequest):
         "error_count": error_count,
         "results": results,
     }
+
+
+# ==================== 1688 Order Fulfillment with Auto DWZ56 Shipment ====================
+
+class Mark1688ShippedRequest(BaseModel):
+    shopify_order_number: str = Field(..., description="Shopify order number")
+    alibaba_order_id: str = Field(..., description="1688 order ID")
+    store_name: str = Field(default="tnvcollection")
+    courier_type: str = Field(default="印专线", description="DWZ56 courier type (e.g., 印专线 for India)")
+    estimated_weight: Optional[float] = Field(default=0.5, description="Estimated weight in kg")
+    goods_description: Optional[str] = Field(default="Fashion items", description="Goods description for customs")
+    notes: Optional[str] = None
+    auto_create_dwz: bool = Field(default=True, description="Automatically create DWZ56 shipment")
+
+
+@router.post("/mark-shipped")
+async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
+    """
+    Mark a 1688 order as shipped and automatically create a DWZ56 shipping order.
+    
+    This is triggered when:
+    1. 1688 order is fulfilled/shipped from supplier
+    2. You want to create DWZ56 shipment for the package
+    
+    The function will:
+    1. Update the 1688 order status to 'shipped'
+    2. Pull customer shipping details from Shopify order
+    3. Create a DWZ56 pre-input shipment order
+    4. Update the fulfillment pipeline to 'dwz56_shipped' stage
+    """
+    db = get_db()
+    
+    # Find the Shopify order to get customer shipping details
+    shopify_order = await db.customers.find_one({
+        "store_name": request.store_name,
+        "$or": [
+            {"order_number": request.shopify_order_number},
+            {"order_number": str(request.shopify_order_number)},
+        ]
+    }, {"_id": 0})
+    
+    if not shopify_order:
+        raise HTTPException(status_code=404, detail=f"Shopify order #{request.shopify_order_number} not found")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    dwz_result = None
+    dwz_tracking = None
+    
+    # Extract shipping address
+    shipping_addr = shopify_order.get("shipping_address", {})
+    if not shipping_addr:
+        # Try to build from flat fields
+        shipping_addr = {
+            "first_name": shopify_order.get("first_name", ""),
+            "last_name": shopify_order.get("last_name", ""),
+            "address1": shopify_order.get("address1", "") or shopify_order.get("address", ""),
+            "city": shopify_order.get("city", ""),
+            "province": shopify_order.get("province", "") or shopify_order.get("state", ""),
+            "country": shopify_order.get("country", "") or "India",
+            "zip": shopify_order.get("zip", "") or shopify_order.get("postal_code", ""),
+            "phone": shopify_order.get("phone", ""),
+        }
+    
+    receiver_name = f"{shipping_addr.get('first_name', '')} {shipping_addr.get('last_name', '')}".strip()
+    if not receiver_name:
+        receiver_name = shopify_order.get("customer_name") or "Customer"
+    
+    # Determine destination country
+    country = shipping_addr.get("country", "") or shipping_addr.get("country_code", "")
+    if country.lower() in ["in", "india"]:
+        destination = "印度"  # India in Chinese
+    elif country.lower() in ["pk", "pakistan"]:
+        destination = "巴基斯坦"  # Pakistan in Chinese
+    else:
+        destination = country or "印度"
+    
+    # Build full address
+    address_parts = [
+        shipping_addr.get("address1", ""),
+        shipping_addr.get("address2", ""),
+    ]
+    full_address = ", ".join([p for p in address_parts if p])
+    
+    # Create DWZ56 shipment if requested
+    if request.auto_create_dwz:
+        try:
+            # Import DWZ56 functions
+            from routes.dwz56 import build_request_payload, make_api_request
+            
+            # Build shipment record for DWZ56
+            shipment_record = {
+                "iID": 0,  # 0 = new record
+                "nItemType": 1,  # Package
+                "nLanguage": 0,  # China Mainland
+                "cEmsKind": request.courier_type,
+                "cDes": destination,
+                
+                # Receiver info
+                "cReceiver": receiver_name,
+                "cRAddr": full_address,
+                "cRCity": shipping_addr.get("city", ""),
+                "cRProvince": shipping_addr.get("province", ""),
+                "cRCountry": shipping_addr.get("country", "India"),
+                "cRPostcode": shipping_addr.get("zip", ""),
+                "cRPhone": shipping_addr.get("phone", "") or shopify_order.get("phone", ""),
+                "cREMail": shopify_order.get("email", ""),
+                
+                # Reference number - link to Shopify order
+                "cRNo": f"{request.store_name}-{request.shopify_order_number}",
+                
+                # Package details
+                "fWeight": request.estimated_weight,
+                "iItem": 1,
+                "nPayWay": 0,  # Monthly billing
+                
+                # Goods
+                "cGoods": request.goods_description or "Fashion items",
+                "iQuantity": 1,
+                "fPrice": float(shopify_order.get("total_price", 0) or shopify_order.get("total_spent", 0) or 0),
+                
+                # Memo with 1688 order info
+                "cMemo": f"1688 Order: {request.alibaba_order_id}. Shopify: #{request.shopify_order_number}",
+            }
+            
+            # Create shipment via DWZ56 API
+            payload = build_request_payload("PreInputSet", {"RecList": [shipment_record]})
+            response = await make_api_request(payload)
+            
+            if response.get("ReturnValue", 0) > 0:
+                created_ids = response.get("RecIDs", [])
+                if created_ids:
+                    dwz_tracking = f"DWZ-{created_ids[0]}"
+                dwz_result = {
+                    "success": True,
+                    "message": f"DWZ56 shipment created",
+                    "record_ids": created_ids,
+                    "dwz_tracking": dwz_tracking,
+                }
+            else:
+                dwz_result = {
+                    "success": False,
+                    "message": f"DWZ56 API error: {response.get('ReturnValue')}",
+                    "raw_response": response,
+                }
+                
+        except Exception as e:
+            dwz_result = {
+                "success": False,
+                "message": f"Failed to create DWZ56 shipment: {str(e)}",
+                "error": str(e),
+            }
+    
+    # Update purchase_orders_1688 collection
+    await db.purchase_orders_1688.update_one(
+        {"alibaba_order_id": request.alibaba_order_id},
+        {
+            "$set": {
+                "status": "shipped",
+                "alibaba_status": "SHIPPED",
+                "shipped_at": now,
+                "updated_at": now,
+                "dwz_tracking": dwz_tracking,
+                "dwz_result": dwz_result,
+            }
+        },
+        upsert=True
+    )
+    
+    # Update fulfillment pipeline
+    new_stage = "dwz56_shipped" if dwz_result and dwz_result.get("success") else "1688_ordered"
+    
+    pipeline_update = {
+        "$set": {
+            "alibaba_order_id": request.alibaba_order_id,
+            "alibaba_status": "SHIPPED",
+            "current_stage": new_stage,
+            "updated_at": now,
+            f"stage_dates.{new_stage}": now,
+        }
+    }
+    
+    if dwz_tracking:
+        pipeline_update["$set"]["dwz_tracking"] = dwz_tracking
+    
+    await db.fulfillment_pipeline.update_one(
+        {"order_number": request.shopify_order_number, "store_name": request.store_name},
+        pipeline_update,
+        upsert=True
+    )
+    
+    # Also update customers collection for tracking
+    await db.customers.update_one(
+        {"order_number": request.shopify_order_number, "store_name": request.store_name},
+        {
+            "$set": {
+                "alibaba_order_id": request.alibaba_order_id,
+                "alibaba_status": "SHIPPED",
+                "fulfillment_stage": new_stage,
+                "dwz_tracking": dwz_tracking,
+                "updated_at": now,
+            }
+        }
+    )
+    
+    return {
+        "success": True,
+        "message": f"1688 order {request.alibaba_order_id} marked as shipped",
+        "shopify_order": request.shopify_order_number,
+        "alibaba_order": request.alibaba_order_id,
+        "current_stage": new_stage,
+        "dwz_shipment": dwz_result,
+        "shipping_details": {
+            "receiver": receiver_name,
+            "destination": destination,
+            "city": shipping_addr.get("city", ""),
+            "country": shipping_addr.get("country", "India"),
+        }
+    }
+
+
+class BulkMark1688ShippedRequest(BaseModel):
+    orders: List[dict] = Field(..., description="List of {shopify_order_number, alibaba_order_id}")
+    store_name: str = Field(default="tnvcollection")
+    courier_type: str = Field(default="印专线")
+    estimated_weight: float = Field(default=0.5)
+    auto_create_dwz: bool = Field(default=True)
+
+
+@router.post("/mark-shipped-bulk")
+async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
+    """
+    Bulk mark multiple 1688 orders as shipped and create DWZ56 shipments.
+    
+    Use this when you have multiple 1688 orders ready to ship to India/Pakistan.
+    """
+    results = []
+    success_count = 0
+    dwz_created_count = 0
+    error_count = 0
+    
+    for order in request.orders:
+        try:
+            mark_request = Mark1688ShippedRequest(
+                shopify_order_number=str(order.get("shopify_order_number")),
+                alibaba_order_id=str(order.get("alibaba_order_id")),
+                store_name=request.store_name,
+                courier_type=request.courier_type,
+                estimated_weight=request.estimated_weight,
+                goods_description=order.get("goods_description", "Fashion items"),
+                auto_create_dwz=request.auto_create_dwz,
+            )
+            result = await mark_1688_order_shipped(mark_request)
+            
+            results.append({
+                "success": True,
+                "shopify_order": order.get("shopify_order_number"),
+                "alibaba_order": order.get("alibaba_order_id"),
+                "dwz_created": result.get("dwz_shipment", {}).get("success", False),
+            })
+            success_count += 1
+            if result.get("dwz_shipment", {}).get("success"):
+                dwz_created_count += 1
+                
+        except Exception as e:
+            results.append({
+                "success": False,
+                "error": str(e),
+                **order,
+            })
+            error_count += 1
+    
+    return {
+        "success": True,
+        "message": f"Processed {success_count} orders, created {dwz_created_count} DWZ56 shipments, {error_count} errors",
+        "success_count": success_count,
+        "dwz_created_count": dwz_created_count,
+        "error_count": error_count,
+        "results": results,
+    }
+
+
 async def get_order_details(order_id: str):
     """
     Get details of a specific 1688 purchase order using alibaba.trade.get.buyerView
