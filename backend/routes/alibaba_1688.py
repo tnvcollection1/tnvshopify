@@ -2990,6 +2990,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         "$set": {
             "alibaba_order_id": request.alibaba_order_id,
             "alibaba_status": "SHIPPED",
+            "fulfillment_number_1688": request.fulfillment_number_1688,
             "current_stage": new_stage,
             "updated_at": now,
             f"stage_dates.{new_stage}": now,
@@ -3015,6 +3016,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             "$set": {
                 "alibaba_order_id": request.alibaba_order_id,
                 "alibaba_status": "SHIPPED",
+                "fulfillment_number_1688": request.fulfillment_number_1688,
                 "fulfillment_stage": new_stage,
                 "dwz_waybill": custom_waybill,
                 "dwz_tracking": dwz_tracking,
