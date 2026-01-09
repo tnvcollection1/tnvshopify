@@ -76,6 +76,19 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - `POST /api/1688/mark-shipped` - Mark single order as shipped + create DWZ56 shipment
   - `POST /api/1688/mark-shipped-bulk` - Bulk process multiple orders
 
+### Product Approval System (Jan 9, 2025)
+- ✅ **Product Approval Page** - Approve draft products to make them visible on storefront
+- ✅ **Status filtering** - View products by status (Draft, Active, Archived)
+- ✅ **Single product approval** - Approve individual products with one click
+- ✅ **Bulk approval** - Select multiple products and approve them all at once
+- ✅ **Shopify sync** - Status updates sync to Shopify Admin API in real-time
+- ✅ **Status badges** - Visual indicators for Draft (yellow), Active (green), Archived (gray)
+- ✅ **Product detail modal** - View product details before approving
+- API Endpoints:
+  - `GET /api/shopify/products?status=draft` - Get products filtered by status
+  - `POST /api/shopify/products/{id}/status` - Update single product status
+  - `POST /api/shopify/products/bulk-status` - Bulk update product statuses
+
 ### Chrome Extension (Verified Jan 7, 2025)
 - Version: 5.0.0 (Manifest V3)
 - Backend tests: 10/10 passed
