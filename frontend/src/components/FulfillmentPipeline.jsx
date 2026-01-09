@@ -565,6 +565,7 @@ const OrderDetailModal = ({ order, carrierInfo, onClose, onUpdateStage, onRefres
   const [trackingType, setTrackingType] = useState('dwz');
   const [showImageSearch, setShowImageSearch] = useState(false);
   const [sendingNotification, setSendingNotification] = useState(false);
+  const [shippingToDWZ, setShippingToDWZ] = useState(false);
   
   const getStageIndex = (stage) => FULFILLMENT_STAGES.findIndex(s => s.key === stage);
   
@@ -602,6 +603,45 @@ const OrderDetailModal = ({ order, carrierInfo, onClose, onUpdateStage, onRefres
       toast.error('Failed to send notification');
     } finally {
       setSendingNotification(false);
+    }
+  };
+  
+  // Ship to DWZ56 - Creates shipment in DWZ56 account
+  const handleShipToDWZ56 = async () => {
+    if (!order.alibaba_order_id) {
+      toast.error('1688 Order ID is required. Please link a 1688 order first.');
+      return;
+    }
+    
+    setShippingToDWZ(true);
+    try {
+      const res = await fetch(`${API}/api/1688/mark-shipped`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shopify_order_number: String(order.order_number || order.shopify_order_id),
+          alibaba_order_id: order.alibaba_order_id,
+          store_name: order.store_name,
+          auto_create_dwz: true,
+        }),
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        if (data.dwz_shipment?.success) {
+          toast.success(`DWZ56 shipment created! Tracking: ${data.dwz_shipment.dwz_tracking || 'Pending'}`);
+        } else {
+          toast.warning(`Order marked as shipped, but DWZ56 creation failed: ${data.dwz_shipment?.message || 'Unknown error'}`);
+        }
+        onRefresh && onRefresh();
+      } else {
+        toast.error(data.detail || 'Failed to ship to DWZ56');
+      }
+    } catch (e) {
+      toast.error('Failed to create DWZ56 shipment');
+      console.error(e);
+    } finally {
+      setShippingToDWZ(false);
     }
   };
   
