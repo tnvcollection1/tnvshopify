@@ -760,10 +760,15 @@ async def sync_orders_from_shopify(store_name: str = Body(..., embed=True)):
     db = get_db()
     
     # Get unfulfilled orders from customers collection
+    # Check for both financial_status and payment_status fields
     unfulfilled = await db.customers.find({
         "store_name": store_name,
         "fulfillment_status": {"$in": ["unfulfilled", None, ""]},
-        "financial_status": "paid",
+        "$or": [
+            {"financial_status": "paid"},
+            {"payment_status": "paid"},
+            {"payment_status": "pending"},  # Include pending orders too
+        ]
     }, {"_id": 0}).to_list(500)
     
     synced = 0
