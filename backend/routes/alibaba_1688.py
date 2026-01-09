@@ -2678,14 +2678,20 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     if not receiver_name:
         receiver_name = shopify_order.get("customer_name") or "Customer"
     
-    # Determine destination country
+    # Determine destination country and courier type
     country = shipping_addr.get("country", "") or shipping_addr.get("country_code", "")
     if country.lower() in ["in", "india"]:
         destination = "印度"  # India in Chinese
+        default_courier = "印度专线"
     elif country.lower() in ["pk", "pakistan"]:
         destination = "巴基斯坦"  # Pakistan in Chinese
+        default_courier = "巴基斯坦专线"
     else:
         destination = country or "印度"
+        default_courier = "全球普货专线"  # Global general cargo line
+    
+    # Use provided courier type or auto-detect from store or country
+    courier_type = request.courier_type or STORE_COURIER_MAP.get(request.store_name) or default_courier
     
     # Build full address
     address_parts = [
@@ -2705,7 +2711,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "iID": 0,  # 0 = new record
                 "nItemType": 1,  # Package
                 "nLanguage": 0,  # China Mainland
-                "cEmsKind": request.courier_type,
+                "cEmsKind": courier_type,
                 "cDes": destination,
                 
                 # Receiver info
