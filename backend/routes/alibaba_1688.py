@@ -2884,14 +2884,13 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
     
     Each order in the list MUST include:
     - shopify_order_number
-    - alibaba_order_id  
-    - tracking_number_1688 (REQUIRED - the package tracking from 1688 supplier)
+    - alibaba_order_id (used as reference in DWZ56)
     
     Example:
     {
         "orders": [
-            {"shopify_order_number": "29160", "alibaba_order_id": "123456", "tracking_number_1688": "YT7358912345678"},
-            {"shopify_order_number": "29161", "alibaba_order_id": "123457", "tracking_number_1688": "YT7358912345679"}
+            {"shopify_order_number": "29160", "alibaba_order_id": "4993919316996978802"},
+            {"shopify_order_number": "29161", "alibaba_order_id": "4993919316996978803"}
         ]
     }
     """
@@ -2902,15 +2901,9 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
     
     for order in request.orders:
         try:
-            # Validate that tracking_number_1688 is provided
-            tracking_1688 = order.get("tracking_number_1688")
-            if not tracking_1688:
-                raise ValueError("tracking_number_1688 is required for each order")
-            
             mark_request = Mark1688ShippedRequest(
                 shopify_order_number=str(order.get("shopify_order_number")),
                 alibaba_order_id=str(order.get("alibaba_order_id")),
-                tracking_number_1688=tracking_1688,
                 store_name=request.store_name,
                 courier_type=request.courier_type,
                 estimated_weight=request.estimated_weight,
@@ -2922,9 +2915,9 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
             results.append({
                 "success": True,
                 "shopify_order": order.get("shopify_order_number"),
-                "alibaba_order": order.get("alibaba_order_id"),
-                "tracking_number_1688": tracking_1688,
+                "alibaba_order_id": order.get("alibaba_order_id"),
                 "dwz_reference": result.get("dwz_reference"),
+                "dwz_tracking": result.get("dwz_tracking"),
                 "dwz_created": result.get("dwz_shipment", {}).get("success", False),
             })
             success_count += 1
