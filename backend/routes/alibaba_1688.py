@@ -2840,29 +2840,22 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         ""
     ).upper()  # Normalize to uppercase
     
-    # DEBUG logging
-    logging.info(f"Country detection: shipping_addr.country='{shipping_addr.get('country', '')}', order.country_code='{shopify_order.get('country_code', '')}', final='{country}'")
-    
     if country in ["IN", "INDIA"]:
         destination = "印度"
         default_courier = "印度专线"
         country_code = "IN"
-        logging.info(f"Detected as INDIA, country_code=IN")
     elif country in ["PK", "PAKISTAN"]:
         destination = "巴基斯坦"
         default_courier = "巴基斯坦专线"
         country_code = "PK"
-        logging.info(f"Detected as PAKISTAN, country_code=PK")
     else:
         # Fall back to store-based detection
         if "pk" in request.store_name.lower():
             destination = "巴基斯坦"
             country_code = "PK"
-            logging.info(f"Fallback to store detection: PK")
         else:
             destination = "印度"
             country_code = "IN"
-            logging.info(f"Fallback to store detection: IN")
         default_courier = STORE_COURIER_MAP.get(request.store_name, "印度专线")
     
     courier_type = request.courier_type or STORE_COURIER_MAP.get(request.store_name) or default_courier
