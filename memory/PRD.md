@@ -89,6 +89,27 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - `POST /api/shopify/products/{id}/status` - Update single product status
   - `POST /api/shopify/products/bulk-status` - Bulk update product statuses
 
+### DWZ56 Auto-Sync Scheduler (Jan 9, 2025)
+- ✅ **APScheduler Integration** - Background scheduler for automated tasks
+- ✅ **Auto-sync Job** - Automatically sync shipped 1688 orders to DWZ56 (runs every 30 minutes)
+- ✅ **Package Tracking Job** - Poll DWZ56 API for package status updates (runs every 15 minutes)
+- ✅ **Scheduler Management API** - Start/stop scheduler, run jobs manually, view logs
+- ✅ **DWZ56 Tracking Dashboard** - New UI page for tracking package status
+- ✅ **Status Summary** - Visual dashboard showing Total, Pending, In Transit, At Warehouse, Delivered, Exceptions
+- ✅ **Manual Refresh** - Refresh individual package tracking status
+- ✅ **Scheduler Modal** - View scheduler status, job schedules, and execution logs
+- API Endpoints:
+  - `GET /api/dwz56/scheduler/status` - Get scheduler status and job info
+  - `POST /api/dwz56/scheduler/start` - Start scheduler
+  - `POST /api/dwz56/scheduler/stop` - Stop scheduler
+  - `POST /api/dwz56/scheduler/run/{job_id}` - Run job manually
+  - `GET /api/dwz56/scheduler/logs` - Get scheduler execution logs
+  - `GET /api/dwz56/tracking/summary` - Get tracking status summary
+  - `GET /api/dwz56/tracking/pending` - Get pending shipments
+  - `GET /api/dwz56/tracking/arrived` - Get shipments arrived at warehouse
+  - `GET /api/dwz56/tracking/delivered` - Get delivered shipments
+  - `POST /api/dwz56/tracking/refresh/{waybill}` - Refresh single tracking status
+
 ### Chrome Extension (Verified Jan 7, 2025)
 - Version: 5.0.0 (Manifest V3)
 - Backend tests: 10/10 passed
