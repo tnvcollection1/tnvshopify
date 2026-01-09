@@ -1,214 +1,189 @@
-<analysis>**original_problem_statement**: The user wants to build a Shopify application that deeply integrates with 1688.com, Taobao, and Tmall.
+<analysis>**original_problem_statement**: The user wants to build a comprehensive Shopify application for integrating with 1688.com, covering product scraping, order management, and fulfillment.
 
-PRODUCT REQUIREMENTS:
-1.  **Product Scraping**: A Chrome Extension to collect product information from 1688.com.
-2.  **Dianxiaomi-style UI**: A Product Collector interface to manage scraped products.
-3.  **Publish to Shopify**: One-click functionality to publish products to Shopify.
-4.  **1688 Image Search**: Feature to find 1688 products via image search.
-5.  **Order Automation**: Link Shopify orders to 1688 products and streamline ordering.
-6.  **Multi-Stage Fulfillment Pipeline**: A UI to track orders through a detailed pipeline.
-7.  **Product Linking**: Link products from Shopify stores to 1688.com.
-8.  **Per-SKU Ordering**: Order and track each SKU from a multi-item Shopify order independently.
-9.  **UI/UX Overhaul**: Redesign the admin backend to look like Shopify's UI and enforce complete data isolation between stores.
-10. **Customer-Facing Storefront**: Build a public e-commerce storefront for each store, inspired by .
-11. **Storefront CMS**: A backend system to manage content (banners, collections) on the public storefront.
-12. **Data Sync Management**: A dashboard to manage, monitor, and schedule data synchronization from Shopify.
-13. **Warehouse Receiving Interface**: A mobile-friendly interface for warehouse staff to scan and receive shipments.
-14. **Competitor Price Comparison**: A dashboard to find competitor products using image search and compare their prices.
+In this session, the user's primary focus was to **automate the fulfillment workflow** by automatically creating a shipping order in their DWZ56 logistics account as soon as an order is marked as shipped by the 1688 supplier.
+
+PRODUCT REQUIREMENTS implemented in this session:
+1.  **DWZ56 Auto-Shipment**: Create a workflow that triggers when a 1688 order is fulfilled.
+2.  **Custom Waybill Generation**: Generate a unique waybill number for DWZ56 shipments using the format: . This involved parsing color and size from Shopify order data.
+3.  **Correct Reference Linking**: Ensure the DWZ56 shipment record uses the **1688 fulfillment/tracking number** for physical package matching at the warehouse, and the **Shopify order number** for user-side reference.
+4.  **Full Address Sync**: Ensure the complete Shopify shipping address (name, address, city, province, ZIP, phone) is correctly synced and passed to the DWZ56 API.
+5.  **Auto-Sync Endpoint**: Create a backend endpoint to find all pending orders and create DWZ56 shipments for them in a batch.
+6.  **UI Bug Fix**: Fix a bug where the main sidebar menu was not scrollable, preventing access to lower menu items.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A mature full-stack application with a React frontend, FastAPI backend, and MongoDB database.
-
-In this session, the agent performed several major updates:
-*   **1688 Live API Integration**: Successfully configured live 1688 AppKey/Secret, completed the OAuth flow to obtain a valid access token, and integrated three key APIs: Product Translation, AI Title Generation, and Cross-Border Image Search.
-*   **Auto-Link Feature Overhaul**: The product auto-linking feature was updated to use the new official 1688 Image Search API as the primary source, with the previous TMAPI integration as a fallback. The feature was tested and verified to work with real Shopify product images.
-*   **Shopify Order Sync Investigation**: Diagnosed a user-reported missing order (#29477) as a Shopify sync issue. Manually synced the order and 50 other recent orders to resolve the immediate problem.
-*   **WhatsApp OTP & Notification System**: Built a comprehensive backend system for WhatsApp-based functionality, including:
-    *   OTP-based user login, order confirmation, and notification opt-in.
-    *   A full customer notification preference management system.
-    *   Services for triggering automatic notifications for order events (e.g., shipped, delivered).
-    *   A  to allow testing the OTP logic while the user's WhatsApp Business account is pending activation.
+A full-stack application (React/FastAPI/MongoDB). This session heavily built out the fulfillment automation piece. A new, complex workflow now connects the 1688 order lifecycle with the DWZ56 shipping logistics provider. This includes new backend endpoints for triggering shipments, auto-syncing, and backfilling data, as well as UI changes in the fulfillment pipeline to support the new action. The Shopify data sync process was also enhanced to include full shipping addresses for all new orders.
 
 **Last working item**:
-- **Last item agent was working**: The agent was building out the frontend UI and backend triggers for the new WhatsApp notification features. It created placeholder frontend components (, ) and backend services () to send notifications automatically based on order status changes.
-- **Status**: IN PROGRESS
-- **Agent Testing Done**: N
-- **Which testing method agent to use?**: both. The backend logic for triggering automatic notifications needs to be connected to the fulfillment pipeline and tested. The frontend requires implementing the UI for notification preferences and a dashboard, then testing the full user flow.
+- **Last item agent was working**: The agent just finished implementing the complete DWZ56 auto-shipment workflow. The final step was to ensure full shipping addresses from Shopify were being synced and correctly passed to the DWZ56 API upon shipment creation.
+- **Status**: USER VERIFICATION PENDING
+- **Agent Testing Done**: Y (The agent successfully synced a shipping address for an order, created a DWZ56 shipment, and verified via an API call that all address fieldsâ€”name, street, city, province, ZIP, and phoneâ€”were populated correctly in the payload sent to DWZ56.)
+- **Which testing method agent to use?**: Manual testing by user. The user needs to check their DWZ56 account interface to confirm the latest created shipments contain the complete and accurate shipping address details.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-- **Issue 1**: WhatsApp Business Account is not active (P0 - Blocker)
-- **Issue 2**: Incomplete  refactoring (P1)
-- **Issue 3**: Long-standing Shopify OAuth and login stability issues (P2)
-- **Issue 4**: Inconsistent currency display in competitor analysis history (P3)
+- **Issue 1**: Long-standing Shopify OAuth and login stability issues (P0)
+- **Issue 2**: Sidebar scrolling is not perfect (P3)
+- **Issue 3**: WhatsApp Business Account is not active (P1 - Blocker)
+- **Issue 4**: Incomplete  refactoring (P2)
+- **Issue 5**: 1688 Single Translation API Auth Issue (P2)
+- **Issue 6**: Inconsistent currency display in competitor analysis history (P3)
 
 **Issues Detail**:
-- **Issue 1: WhatsApp Business Account is not active**
-  - **Attempted fixes**: The agent identified that the user's WhatsApp Business phone number status is  and is blocked by a Missing valid payment method warning in their Meta Business Manager. A  was implemented as a workaround to allow testing the OTP logic without actual message delivery.
-  - **Next debug checklist**: User needs to add a valid payment method in their Meta Business Manager and complete the phone number verification process. Once the number status is CONNECTED, the agent needs to set  in .
-  - **Why fix this issue and what will be achieved with the fix?**: This is a hard blocker for all live WhatsApp features (OTP, notifications). Fixing it will enable the application to send messages to real users.
-  - **Status**: BLOCKED
+- **Issue 1: Long-standing Shopify OAuth and login stability issues**
+  - **Attempted fixes**: None in this session. Prior attempts failed.
+  - **Next debug checklist**:
+    1.  Implement a robust JWT-based session strategy where the frontend validates the token with the backend on initial load, rather than relying solely on .
+    2.  Review  and  for race conditions.
+    3.  Add detailed frontend logging to trace the  state in  during page transitions to identify the exact point of failure.
+  - **Why fix this issue and what will be achieved with the fix?**: This is the highest priority blocker. It severely hampers all UI-related development, testing, and overall user experience. Fixing it will stabilize the application.
+  - **Status**: NOT STARTED
+  - **Is recurring issue?**: Y
+  - **Should Test frontend/backend/both after fix?**: Both.
+- **Issue 2: Sidebar scrolling is not perfect**
+  - **Attempted fixes**: The agent added  and  to the flex container in . This improved scrolling but did not completely fix it, as the scrollbar doesn't reach the bottom of the menu.
+  - **Next debug checklist**:
+    1.  In , inspect the parent containers of the scrollable area. The issue might be a fixed height or improper flex constraints higher up the component tree.
+    2.  Use browser developer tools to analyze the computed height of the sidebar and its scrollable child element to see what is constraining its height.
+  - **Why fix this issue and what will be achieved with the fix?**: Improves usability of the admin panel as some menu items remain difficult to access.
+  - **Status**: IN PROGRESS
+  - **Is recurring issue?**: N
+  - **Should Test frontend/backend/both after fix?**: Frontend.
+- **Issue 3: WhatsApp Business Account is not active**
+  - **Attempted fixes**: A  workaround is in place.
+  - **Next debug checklist**: User needs to add a valid payment method in their Meta Business Manager. Agent must then set  in .
+  - **Why fix this issue and what will be achieved with the fix?**: Unblocks all live WhatsApp features.
+  - **Status**: BLOCKED (on user action)
   - **Is recurring issue?**: N
   - **Should Test frontend/backend/both after fix?**: Backend.
-  - **Blocked on other issue**: None.
-- **Issue 2: Incomplete  refactoring**
-  - **Attempted fixes**: None in this session. This is a carry-over from the previous fork. The complex Shopify sync endpoints remain in .
-  - **Next debug checklist**: Compare logic in  with , merge any missing features into the new router, and remove the duplicated endpoints from .
-  - **Why fix this issue and what will be achieved with the fix?**: To reduce technical debt, improve maintainability, and prevent bugs from duplicated logic.
-  - **Status**: IN PROGRESS
-  - **Is recurring issue?**: Y
-  - **Should Test frontend/backend/both after fix?**: Backend (extensive regression testing).
-  - **Blocked on other issue**: None.
-- **Issue 3: Long-standing Shopify OAuth and login stability issues**
-  - **Attempted fixes**: None. The issue recurred, causing a screenshot attempt to fail with a blank page, which is a symptom of a failed login.
-  - **Next debug checklist**: Review the full auth flow from  to the backend  endpoint. Add detailed logging around token validation on the backend to find where the session is being invalidated.
-  - **Why fix this issue and what will be achieved with the fix?**: This is a core stability problem that severely hampers development and testing.
+- **Issue 4: Incomplete  refactoring**
+  - **Attempted fixes**: None. More logic was added to , making this refactor more urgent.
+  - **Next debug checklist**: Move Shopify sync, DWZ56, and other distinct functionalities from  and  into their own router files (e.g., , ).
+  - **Why fix this issue and what will be achieved with the fix?**: Reduces technical debt and improves maintainability.
   - **Status**: NOT STARTED
   - **Is recurring issue?**: Y
-  - **Should Test frontend/backend/both after fix?**: Both.
-  - **Blocked on other issue**: None.
-- **Issue 4: Inconsistent currency display in competitor analysis history**
-  - **Attempted fixes**: None. Carry-over from the previous fork.
-  - **Next debug checklist**: Verify if the  endpoint correctly applies currency conversion to both old and new analysis data. Consider a data migration script if needed.
-  - **Why fix this issue and what will be achieved with the fix?**: Ensures all price comparison data is accurate and consistent.
+  - **Should Test frontend/backend/both after fix?**: Backend.
+- **Issue 5: 1688 Single Translation API Auth Issue**
+  - **Attempted fixes**: None.
+  - **Next debug checklist**: In , compare the request signature generation for the single vs. batch translation endpoints.
+  - **Why fix this issue and what will be achieved with the fix?**: Enables the single product translation feature.
+  - **Status**: NOT STARTED
+  - **Is recurring issue?**: N
+  - **Should Test frontend/backend/both after fix?**: Backend.
+- **Issue 6: Inconsistent currency display in competitor analysis history**
+  - **Attempted fixes**: None.
+  - **Next debug checklist**: Check the  endpoint to ensure currency conversion is applied consistently.
+  - **Why fix this issue and what will be achieved with the fix?**: Ensures data accuracy.
   - **Status**: NOT STARTED
   - **Is recurring issue?**: N
   - **Should Test frontend/backend/both after fix?**: Both.
-  - **Blocked on other issue**: None.
 
 **In progress Task List**:
-- **Task 1: Complete Frontend for WhatsApp Notifications (P0)**
-  - **Where to resume**: The components  and  exist but are empty. They need to be fully implemented with UI elements and logic to call the backend APIs. They also need to be integrated into the application's routing in  and linked from a relevant settings page.
-  - **What will be achieved with this?**: Users will be able to manage their WhatsApp notification preferences through the UI.
-  - **Status**: IN PROGRESS
-  - **Should Test frontend/backend/both after fix?**: Frontend.
-  - **Blocked on something**: None.
-- **Task 2: Complete Scheduled Competitor Price Checks (P1)**
-  - **Where to resume**: This task was deferred. The backend service () and a placeholder frontend component () exist. It needs to be integrated into  routes and , and the background scheduling logic needs to be fully implemented and tested.
-  - **What will be achieved with this?**: Allows users to automate competitor price monitoring.
-  - **Status**: IN PROGRESS
-  - **Should Test frontend/backend/both after fix?**: Both.
-  - **Blocked on something**: None.
-- **Task 3: Implement Auto-Notifications on Order Events (P1)**
-  - **Where to resume**: The service  and router  were created. The next step is to integrate calls to this service from the relevant parts of the fulfillment pipeline (e.g., when an order status is updated in ).
-  - **What will be achieved with this?**: Customers will automatically receive WhatsApp messages when their order status changes (e.g., shipped, delivered).
-  - **Status**: IN PROGRESS
-  - **Should Test frontend/backend/both after fix?**: Backend.
-  - **Blocked on something**: Issue 1 (WhatsApp Business Account not active) for live testing.
+- None.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks**:
-    *   (P1) **Create UI for 1688 API Features**: Build frontend components to utilize the new AI Title Generation and Product Translation APIs.
-    *   (P2) **Chrome Extension E2E Testing**: Provide the user with instructions on how to load and test the Chrome Extension on a live 1688.com page.
+    *   (P0) **Automate DWZ56 Sync with Cron Job**: The user wants the auto-sync feature to run periodically. Implement a background scheduler (e.g.,  in FastAPI) to call the  endpoint automatically.
+    *   (P1) **Chrome Extension E2E Testing**: Guide the user through the steps in .
+    *   (P2) **Track Package Arrival at DWZ56**: Implement a mechanism to poll the DWZ56 API for status updates on created shipments and reflect the arrived at warehouse status in the UI.
 *   **Future Tasks**:
-    *   (P3) **CSV Export**: Add functionality to export the data from the new Competitor Price Comparison page.
-    *   (P3) **Push Notifications to Chrome Extension**: Send real-time import status updates to the Chrome Extension.
+    *   (P3) **Bulk Create DWZ Shipments UI**: Add a feature to the UI allowing users to select multiple  items and create DWZ56 shipments for them in one click.
+    - (P3) CSV Export for Competitor Price Comparison.
+    - (P3) Push Notifications to Chrome Extension.
 
 **Completed work in this session**
-- **1688 Live API Integration**: Successfully configured live credentials and integrated Product Translation, AI Title Generation, and Cross-Border Image Search APIs.
-- **Auto Link Feature Fixed & Verified**: Updated the core image search service to use the new official 1688 API, resolving previous issues and confirming it works with Shopify CDN images.
-- **WhatsApp OTP System**: Implemented a full backend system for user login, order confirmation, and notification opt-in via WhatsApp OTP, including a debug mode for testing.
-- **WhatsApp Notification System**: Built a complete backend for managing customer notification preferences and sending event-based order updates.
-- **Shopify Order Sync Investigation**: Investigated and manually resolved a missing order issue for the user.
+- **DWZ56 Auto-Shipment Workflow**:
+  - Implemented an endpoint ( in ) to auto-create a DWZ56 shipment when a 1688 order is fulfilled.
+  - Created a custom Waybill Number generation logic ().
+  - Fixed country detection (IN vs PK) to ensure the correct waybill prefix and courier type.
+  - Configured DWZ56 shipments to use the **1688 fulfillment number** as the primary reference () and the **Shopify order number** as the customer reference ().
+  - Added a Ship to DWZ56 button in the  UI.
+- **Data Sync & Integrity**:
+  - Updated  to fetch and store the full  object for new orders.
+  - Created an endpoint () to backfill missing shipping addresses for existing orders and ran it for all stores.
+- **Bug Fixes**:
+  - Fixed an issue preventing the main sidebar in  from scrolling by applying correct flexbox properties.
+- **Dependency Management**:
+  - Added  to , resolving a long-standing missing dependency issue.
+- **Documentation**:
+  - Updated  to reflect the completion of the DWZ56 automation feature.
 
 **Earlier issues found/mentioned but not fixed**
-- The refactoring of  is still incomplete. The complex Shopify sync endpoints remain as significant technical debt.
+- None. The missing  dependency mentioned in the previous handoff has been resolved.
 
 **Known issue recurrence from previous fork**
 - **Issue recurrence in previous fork**: Long-standing Shopify OAuth and login stability issues
-- **Recurrence count**: 6+ (failed a screenshot attempt in this session)
-- **Status**: NOT STARTED
+- **Recurrence count**: 5+
+- **Status**: NOT STARTED (in this session)
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Third-party API Integration**: Full lifecycle from credential setup, OAuth 2.0 authentication, signature generation (HMAC-SHA1), endpoint implementation, and error handling for the 1688 Open Platform API.
-*   **API Fallback Strategy**: Designing services () to try a primary API (1688 Official) and fall back to a secondary one (TMAPI) on failure.
-*   **OTP Authentication System**: Building a secure and robust OTP flow with generation, verification, rate-limiting, attempt-limiting, and expiry.
-*   **Feature Flagging / Debug Mode**: Using environment variables () to alter application behavior for testing purposes (e.g., exposing the OTP in API responses when WhatsApp delivery is down).
-*   **Notification Preference Management**: Creating a system for users to subscribe, unsubscribe, and customize the types of notifications they receive.
-*   **Event-Driven Notifications**: Designing services to trigger actions (like sending a WhatsApp message) based on application events (like an order status changing).
+- **API Orchestration**: Chaining multiple dependent API calls (DB lookups, DWZ56 API, DB updates) within a single backend endpoint.
+- **Stateful ID Generation**: Implemented a stateful, date-based, auto-incrementing serial number generator () that works on a per-country basis by querying a dedicated  collection.
+- **Data Backfilling**: Created a dedicated API endpoint () to retroactively fetch missing data from a third-party API (Shopify) and update the local database.
+- **Complex Data Parsing**: Extracted structured data (color, size) from unstructured string fields ( and  from Shopify orders) using regular expressions and string manipulation.
+- **Flexbox CSS Debugging**: Resolved a layout issue by applying  to a flex child to allow it to shrink and enable scrolling within its container.
 
 **key DB schema**
-- : 
-- : 
-- : 
-- :  (New)
-- :  (New)
-
-**changes in tech stack**
-- None.
+- **orders**: (Updated) The schema for this collection now expects a full  object containing fields like , , , PK-­q)\ÿÿÿÿÿÿÿÿ-PKPK-­q)\¶!-PK/M, , .
+- **waybill_serials**: (New)  - Tracks the last used serial number for each waybill prefix (, , etc.) to ensure daily auto-incrementing.
 
 **All files of reference**
-*   /app/backend/routes/alibaba_1688.py (New 1688 API endpoints)
-*   /app/backend/services/image_search_service.py (Core logic for 1688 vs TMAPI image search)
-*   /app/backend/services/product_linking_service.py (Uses the new image search for auto-linking)
-*   /app/backend/routes/whatsapp_otp.py (All OTP-related endpoints)
-*   /app/backend/services/whatsapp_otp_service.py (Core OTP logic)
-*   /app/backend/services/notification_preferences_service.py (Manages user subscriptions)
-*   /app/backend/services/auto_order_notifications.py (Logic to trigger notifications)
-*   /app/backend/server.py (Includes all the new routers)
-*   /app/backend/.env (Stores new 1688 and WhatsApp credentials)
+*   : The primary file containing all new business logic for DWZ56 automation, custom waybill generation, and data syncing.
+*   : The UI file updated with the Ship to DWZ56 button.
+*   : The Shopify sync service that was updated to include shipping addresses.
+*   : The UI component where the scrolling bug was fixed.
+*   : Updated to include the  dependency.
 
 **Areas that need refactoring**:
-*   ****: The Shopify sync endpoints must be refactored out. This remains the highest priority refactoring task.
-*   **Dead Imports in **: The agent attempted to import a non-existent file (). While the backend started, this suggests the edit failed silently or was self-corrected, but the  file should be checked for this dead import statement and cleaned up.
+- ****: This file has become a god file containing logic for 1688 APIs, DWZ56 APIs, and Shopify data syncing helpers. The DWZ56 and Shopify sync logic should be extracted into their own dedicated files within the  or a new  directory to improve separation of concerns.
+- ****: The original recommendation to refactor  still stands and is now more urgent.
 
 **key api endpoints**
-*   **1688 APIs**:
-    *   : Translates a single string.
-    *   : Translates multiple strings.
-    *   : Generates a title from an image URL.
-    *   : Unified image search (tries official API, then TMAPI).
-*   **WhatsApp OTP**:
-    *   : Sends a login OTP.
-    *   : Verifies login OTP and returns a session token.
-    *   : Sends an OTP to verify a phone number for notifications.
-    *   : Verifies the OTP and enables the notification subscription.
-*   **Notification Preferences**:
-    *   : Creates a new (unverified) subscription.
-    *   : Gets a user's current notification settings.
-    *   : Updates a user's notification settings.
+*   : Creates a DWZ56 shipment for a single order. Expects , , and the new .
+*   : An auto-sync endpoint that finds all orders ready for DWZ56 shipment and processes them in a batch.
+*   : A utility endpoint to backfill missing  data for a list of Shopify order numbers.
 
 **Critical Info for New Agent**
-*   **WhatsApp is Blocked**: The top priority is to inform the user that their WhatsApp Business account is not active. The phone number status is , likely due to a Missing valid payment method. All WhatsApp features are currently using a  workaround. Guide the user to fix their Meta Business account setup.
-*   **Focus on UI Implementation**: The immediate development task is to build the frontend for the WhatsApp notification system (, ) and integrate it into the app.
-*   **1688 API is Live**: The new 1688 APIs are integrated and working. The Auto-link feature now uses the official, purchased API. Image search requires images hosted on an accessible CDN (like Shopify's).
-*   **Agent Hallucination**: The previous agent hallucinated the creation of  and its inclusion in . The functionality works (endpoints were likely added to another router), but you should inspect  for any dead/broken import statements and remove them to prevent future errors.
+*   **Fix Auth First (P0)**: The Shopify session stability issue is a critical blocker for any further UI development or testing. This should be the absolute first priority.
+*   **DWZ56 Workflow Logic**: The custom waybill () and reference number ( vs ) logic is highly specific.  MUST be the 1688 fulfillment/tracking number for warehouse scanning.  MUST be the Shopify order number for user reference. The waybill generation depends on fragile parsing of color/size from SKU/name fields.
+*   **Data Dependencies**: The entire DWZ56 workflow now depends on the  object being present in the  collection. The agent has run a backfill sync, but be aware that any order missing this data will cause the shipment creation to fail or send incomplete information.
+*   **User Wants Automation**: The user's goal is end-to-end automation. The next logical step is to set up a cron job or scheduled task to run the  endpoint periodically. This is a high-priority upcoming task.
 
 **documents and test reports created in this job**
-None.
+- None.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  : User requested the WhatsApp notification feature. (In Progress)
-2.  : User confirmed they want both the frontend UI and the backend automation for notifications. (In Progress)
-3.  : User confirmed they have an issue with their Meta Business payment method. (Blocked)
-4.  : User shared a screenshot of the Intelligent product title API documentation. (Completed)
-5.  : User shared a screenshot of the Product Translation API documentation. (Completed)
-6.  : User shared a screenshot showing the enabled APIs in their 1688 account. (Completed)
-7.  : User shared a screenshot of the pricing page for the Image Search API. (Completed)
-8.  : User shared the second OAuth code. (Completed)
-9.  : User shared the first (expired) OAuth code. (Completed)
-10. : User asked to verify the auto-link feature after the API changes. (Completed)
+1.  **ZIP name, address... not transmitted**: User reported that full shipping details were missing in DWZ56 shipments. (Completed)
+2.  **can u also add 1688 fulfilement number**: User requested that the 1688 supplier's tracking number be included in the DWZ56 record. (Completed)
+3.  **we request u to follow [custom waybill format]**: User corrected the agent, pointing out that the custom waybill format was not extracting color/size correctly. (Completed)
+4.  **u have n t shared shopify order id ?**: User noticed the Shopify Order ID was missing from the DWZ56 UI. (Completed)
+5.  **auto-sync after 1688 is shipped**: User requested a feature to automatically process all shipped 1688 orders. (Completed - endpoint created)
+6.  **Follow this [waybill format]**: User reiterated the exact custom format for the waybill number. (Completed)
+7.  **this is perfect... u can create dwz numbers keep pending**: User confirmed the workflow of creating pre-entry shipments in DWZ56 is correct.
+8.  **left side menu is not scrolling down**: User reported a UI bug with the sidebar. (Completed)
+9.  **tracking number generated should match 1688 order number**: User clarified the reference number logic. (Completed - this was later updated again)
+10. **After order is purchased from 1688... it should create a order in dwz**: User defined the core automation requirement for the session. (Completed)
 
 **Project Health Check:**
 *   **Broken**:
-    *   The Shopify authentication/session stability remains a persistent, high-impact issue.
+    *   **Shopify Authentication/Session Stability**: Critical, recurring issue that makes the UI unusable for testing and development.
 *   **Mocked**:
-    *   All WhatsApp message sending is mocked via  because the user's WhatsApp Business account is not fully activated (pending payment method and verification). The backend logic is complete, but no real messages can be sent.
+    *   **WhatsApp Message Sending**: All WhatsApp API calls are mocked via  due to the user's inactive business account.
 
 **3rd Party Integrations**
 *   Shopify Admin API
 *   Razorpay
-*   1688 Open Platform (now with live AppKey and OAuth Access Token)
-*   Google Cloud Vision API â€” requires User API Key
-*   SendGrid â€” requires User API Key
-*    â€” for currency conversion
-*   WhatsApp Business API (via Meta) â€” requires User's active account with payment method.
-*   TMAPI (as a fallback for 1688 image search)
+*   1688 Open Platform
+*   Google Cloud Vision API
+*   SendGrid
+*   
+*   WhatsApp Business API (via Meta)
+*   TMAPI
+*   **DWZ56 API** (Heavily integrated in this session)
 
 **Testing status**
 - **Testing agent used after significant changes**: NO
@@ -219,9 +194,9 @@ None.
 **Credentials to test flow:**
 *   **Admin Login**:  / 
 *   **Warehouse PIN**: 
-*   **1688 Credentials**: Configured in  (AppKey, Secret, Access Token, Refresh Token)
-*   **WhatsApp Credentials**: Configured in , but the access token corresponds to a phone number that is  activation.
+*   **1688 Credentials**: Configured in .
+*   **DWZ56 Credentials**: Configured in .
 
 **What agent forgot to execute**
-*   The agent from the *previous* fork forgot to add  to . This was not addressed in the current session either.
-*   The agent hallucinated the creation of  and added a corresponding (now likely broken) import statement to . This needs to be investigated and cleaned up.</analysis>
+- The agent created the auto-sync endpoint () as requested, but did not implement a recurring mechanism (like a cron job or background scheduler) to run it automatically. This is a crucial missing piece of the auto-sync feature.
+- The sidebar scrolling fix was incomplete. While it improved, it didn't allow scrolling to the very bottom of the long menu.</analysis>
