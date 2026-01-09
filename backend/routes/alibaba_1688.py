@@ -3345,8 +3345,14 @@ async def sync_shipping_addresses_bulk(store_name: str, limit: int = 50):
     
     db = get_db()
     
-    # Get store credentials
-    store = await db.shopify_stores.find_one({"name": store_name}, {"_id": 0})
+    # Get store credentials - try both collections
+    store = await db.stores.find_one(
+        {"$or": [{"name": store_name}, {"shopify_domain": {"$regex": store_name, "$options": "i"}}]},
+        {"_id": 0}
+    )
+    if not store:
+        store = await db.shopify_stores.find_one({"name": store_name}, {"_id": 0})
+    
     if not store:
         raise HTTPException(status_code=404, detail=f"Store {store_name} not found")
     
