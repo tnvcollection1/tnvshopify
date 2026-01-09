@@ -2930,6 +2930,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "alibaba_status": "SHIPPED",
                 "shipped_at": now,
                 "updated_at": now,
+                "dwz_waybill": custom_waybill,
                 "dwz_tracking": dwz_tracking,
                 "dwz_result": dwz_result,
             }
@@ -2947,14 +2948,14 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             "current_stage": new_stage,
             "updated_at": now,
             f"stage_dates.{new_stage}": now,
+            "dwz_waybill": custom_waybill,
+            "color_code": color_code,
+            "size_code": size_code,
         }
     }
     
     if dwz_tracking:
         pipeline_update["$set"]["dwz_tracking"] = dwz_tracking
-    
-    # Store the 1688 order ID as DWZ reference
-    pipeline_update["$set"]["dwz_reference"] = dwz_reference
     
     await db.fulfillment_pipeline.update_one(
         {"order_number": request.shopify_order_number, "store_name": request.store_name},
@@ -2962,7 +2963,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         upsert=True
     )
     
-    # Also update customers collection for tracking
+    # Also update customers collection
     await db.customers.update_one(
         {"order_number": request.shopify_order_number, "store_name": request.store_name},
         {
@@ -2970,8 +2971,8 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "alibaba_order_id": request.alibaba_order_id,
                 "alibaba_status": "SHIPPED",
                 "fulfillment_stage": new_stage,
+                "dwz_waybill": custom_waybill,
                 "dwz_tracking": dwz_tracking,
-                "dwz_reference": dwz_reference,
                 "updated_at": now,
             }
         }
@@ -2979,11 +2980,13 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     
     return {
         "success": True,
-        "message": f"DWZ56 shipment created with 1688 Order ID as reference",
+        "message": f"DWZ56 shipment created",
+        "waybill": custom_waybill,
         "shopify_order": request.shopify_order_number,
         "alibaba_order_id": request.alibaba_order_id,
-        "dwz_reference": dwz_reference,
         "dwz_tracking": dwz_tracking,
+        "color_code": color_code,
+        "size_code": size_code,
         "current_stage": new_stage,
         "courier_type": courier_type,
         "dwz_shipment": dwz_result,
