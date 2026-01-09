@@ -2701,18 +2701,9 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     # Use provided courier type or auto-detect from store or country
     courier_type = request.courier_type or STORE_COURIER_MAP.get(request.store_name) or default_courier
     
-    # Get country code for reference number
-    country_code = STORE_COUNTRY_CODE.get(request.store_name, "IN")
-    if country.lower() in ["pk", "pakistan"]:
-        country_code = "PK"
-    
-    # Extract color and size from order, or use provided overrides
-    extracted_color, extracted_size = extract_color_size_from_order(shopify_order)
-    color_code = request.color_code or extracted_color
-    size_code = request.size_code or extracted_size
-    
-    # Generate custom reference number: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
-    custom_reference = await generate_dwz_reference_number(db, request.store_name, country_code, color_code, size_code)
+    # Use 1688 tracking number as the DWZ56 reference number
+    # This is CRITICAL - DWZ56 warehouse matches packages by this number
+    dwz_reference = request.tracking_number_1688
     
     # Build full address
     address_parts = [
@@ -2728,6 +2719,8 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             from routes.dwz56 import build_request_payload, make_api_request
             
             # Build shipment record for DWZ56
+            # IMPORTANT: cRNo must match the 1688 package tracking number
+            # so DWZ56 warehouse can scan and match the incoming package
             shipment_record = {
                 "iID": 0,  # 0 = new record
                 "nItemType": 1,  # Package
@@ -2745,11 +2738,9 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "cRPhone": shipping_addr.get("phone", "") or shopify_order.get("phone", ""),
                 "cREMail": shopify_order.get("email", ""),
                 
-                # Custom reference number: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
-                "cRNo": custom_reference,
-                
-                # Internal tracking number - use custom reference
-                "cNum": custom_reference,
+                # CRITICAL: Use 1688 tracking number as reference
+                # This must match the package label from 1688 supplier
+                "cRNo": dwz_reference,
                 
                 # Package details
                 "fWeight": request.estimated_weight,
@@ -2761,8 +2752,8 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "iQuantity": 1,
                 "fPrice": float(shopify_order.get("total_price", 0) or shopify_order.get("total_spent", 0) or 0),
                 
-                # Memo with 1688 order info and Shopify order
-                "cMemo": f"1688: {request.alibaba_order_id}. Shopify: #{request.shopify_order_number}. Color: {color_code}, Size: {size_code}",
+                # Memo with order info for your reference
+                "cMemo": f"1688 Order: {request.alibaba_order_id}. Shopify: #{request.shopify_order_number}",
                 
                 # Tag/Mark for easy filtering
                 "cMark": f"Shopify-{request.shopify_order_number}",
