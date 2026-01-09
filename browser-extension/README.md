@@ -2,133 +2,164 @@
 
 A powerful browser extension for importing products from 1688.com to WaMerce with one click.
 
-## Features
+## E2E Testing Guide
 
-- **One-Click Import**: Import products directly from your browser while browsing 1688.com
-- **Full Product Scraping**: Extracts title, images, SKUs, prices, variants, and seller info
-- **Works on Multiple Page Types**:
-  - Product detail pages
-  - Store listing pages
-  - Search results pages
-- **Chinese → English Translation**: Optional automatic translation
-- **No API Limits**: Uses your browser session, not server-side scraping
+### Prerequisites
+1. **Chrome/Chromium Browser** (or Brave, Edge with Chromium)
+2. **WaMerce Backend Running** - The extension connects to `https://taoshop-hub.preview.emergentagent.com`
+3. **1688.com Account** (optional, but recommended for full product details)
 
-## Installation
+### Installation Steps
 
-### Developer Mode (Recommended for Testing)
+1. **Download the Extension**
+   - The extension files are located at `/app/browser-extension`
+   - Or download the folder from your deployment
 
-1. Open Chrome and go to `chrome://extensions/`
-2. Enable **Developer mode** (toggle in top-right)
-3. Click **Load unpacked**
-4. Select the `/app/browser-extension` folder
-5. The extension icon should appear in your toolbar
+2. **Load in Chrome Developer Mode**
+   ```
+   1. Open Chrome and go to chrome://extensions/
+   2. Enable "Developer mode" (toggle in top-right corner)
+   3. Click "Load unpacked"
+   4. Select the /app/browser-extension folder
+   5. The WaMerce icon 🛒 should appear in your toolbar
+   ```
 
-### Testing on Live 1688 Pages
+3. **Pin the Extension** (recommended)
+   - Click the puzzle piece icon in Chrome toolbar
+   - Click the pin icon next to "WaMerce 1688 Importer"
 
-1. Navigate to [1688.com](https://www.1688.com)
-2. Search for any product or go to a supplier's store
+### E2E Test Scenarios
+
+#### Test 1: Product Detail Page Import
+**URL:** `https://detail.1688.com/offer/[any-product-id].html`
+
+**Steps:**
+1. Navigate to any 1688 product detail page
+2. Wait for page to fully load (2-3 seconds)
 3. Click the WaMerce extension icon
-4. The extension will automatically detect and list products on the page
-5. Click **Import Products to WaMerce** to start importing
+4. **Expected Results:**
+   - Status dot should be GREEN (connected)
+   - Page type should show "PRODUCT PAGE"
+   - Product count should show "1"
+   - Product preview should show image, title, and price
+5. Click "Import 1 Products to WaMerce"
+6. **Expected Results:**
+   - Progress bar appears
+   - Status updates: "Starting import..." → "Job started" → "Imported 1 products!"
+   - Toast shows "Successfully imported 1 products!"
 
-## Supported Page Types
+#### Test 2: Store Listing Page Import
+**URL:** `https://[seller-name].1688.com/page/offerlist.htm`
 
-| Page Type | URL Pattern | What Gets Scraped |
-|-----------|-------------|-------------------|
-| Product Detail | `detail.1688.com/offer/...` | Full product data (title, images, SKUs, price, seller) |
-| Store Page | `*.1688.com/page/offerlist...` | All visible products |
-| Search Results | `s.1688.com/...` | All search result products |
+**Steps:**
+1. Navigate to any 1688 seller's product listing page
+2. Wait for products to load
+3. Click the WaMerce extension icon
+4. **Expected Results:**
+   - Status dot should be GREEN
+   - Page type should show "STORE PAGE"
+   - Product count should show multiple products (e.g., "24")
+   - Product list shows first 10 products with previews
+5. Click "Import X Products to WaMerce"
+6. **Expected Results:**
+   - Progress bar shows import progress
+   - All products imported successfully
 
-## How It Works
+#### Test 3: Search Results Import
+**URL:** `https://s.1688.com/selloffer/offer_search.htm?keywords=[search-term]`
 
-### Content Script (`content.js`)
-- Runs automatically on all 1688.com pages
-- Scrapes product data from:
-  - DOM elements (images, prices, titles)
-  - JavaScript window objects (`iDetailData`, `__INIT_DATA__`)
-  - Script tags containing JSON data
-- Creates a floating "WaMerce Import" button on pages
+**Steps:**
+1. Go to 1688.com
+2. Search for any product (e.g., "女装" for women's clothing)
+3. Click the WaMerce extension icon
+4. **Expected Results:**
+   - Page type shows "SEARCH PAGE"
+   - Multiple products detected
+5. Click import and verify all products are imported
 
-### Popup (`popup.js`)
-- Shows when you click the extension icon
-- Displays found products with previews
-- Handles import to WaMerce server
-- Polls job status for progress updates
+#### Test 4: Copy Product IDs
+1. On any 1688 page with products
+2. Click extension icon
+3. Click "📋 Copy Product IDs"
+4. **Expected:** Toast shows "Copied X product IDs!"
+5. Paste in notepad to verify IDs are copied
 
-## Backend API Endpoints Used
+#### Test 5: Rescan Page
+1. On a 1688 page, scroll down to load more products
+2. Click extension icon
+3. Click "🔄 Rescan Page"
+4. **Expected:** Product count updates to include newly loaded products
 
-The extension communicates with these WaMerce API endpoints:
+#### Test 6: Translation Option
+1. Ensure "🌐 Translate Chinese → English" is checked
+2. Import products
+3. In WaMerce Product Collector, verify:
+   - Product titles are in English (or have English translations)
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/1688-scraper/products` | GET | Check server connection |
-| `/api/1688-scraper/extension-import` | POST | Submit products for import |
-| `/api/1688-scraper/job/{job_id}` | GET | Poll import job status |
+#### Test 7: Floating Button (Content Script)
+1. Navigate to any 1688 product or listing page
+2. Look for orange "🛒 WaMerce Import" button at bottom-right
+3. Hover over it - should show product count
+4. Click it - should show alert with product count
 
-## Troubleshooting
+#### Test 8: Connection Error Handling
+1. Disconnect from internet or block the API URL
+2. Click extension icon
+3. **Expected:**
+   - Status dot should be RED
+   - Status text shows "Server unavailable"
+   - Import button should still be clickable but will fail gracefully
 
-### Extension Not Working on 1688
+#### Test 9: Non-1688 Page
+1. Navigate to any non-1688 website (e.g., google.com)
+2. Click extension icon
+3. **Expected:**
+   - Shows "Not on 1688.com" message
+   - Provides link to "Go to 1688.com →"
 
-1. **Check permissions**: Make sure the extension has access to 1688.com
-2. **Refresh the page**: The content script needs a page reload to inject
-3. **Check console**: Open DevTools (F12) and look for `[WaMerce v4]` logs
+### Verification in WaMerce Dashboard
 
-### No Products Found
+After importing, verify products in WaMerce:
 
-1. **Wait for page load**: 1688 pages load slowly, wait a few seconds
-2. **Try rescanning**: Click the "Rescan Page" button in the popup
-3. **Check page type**: The extension works best on product detail pages
+1. Click "Open WaMerce Dashboard →" in extension
+2. Or navigate to: `https://taoshop-hub.preview.emergentagent.com/product-collector`
+3. Verify:
+   - Imported products appear in the list
+   - Product images are displayed
+   - Titles are correct (translated if option was enabled)
+   - Prices are captured
+   - SKUs/variants are imported (for detail page imports)
 
-### Import Failed
+### Troubleshooting
 
-1. **Check server connection**: The status dot should be green
-2. **Check server URL**: Verify `SERVER_URL` in `popup.js` points to the correct deployment
-3. **Check network**: Open DevTools Network tab to see API errors
+| Issue | Solution |
+|-------|----------|
+| Extension not working | Refresh the 1688 page, then try again |
+| No products found | Wait for page to fully load, click "Rescan Page" |
+| Status dot RED | Check internet connection, verify server is running |
+| Import stuck | Check browser console (F12) for errors |
+| Products not in WaMerce | Verify import completed, check Product Collector page |
 
-## Development
+### Console Debugging
 
-### File Structure
+1. Open Chrome DevTools (F12)
+2. Go to Console tab
+3. Look for `[WaMerce v4]` log messages:
+   - `Content script loaded` - Extension injected successfully
+   - `Scraped: {id, title, images, skus}` - Product data extracted
+   - `Found X products` - Listing page scan results
 
-```
-browser-extension/
-├── manifest.json      # Extension configuration (Manifest V3)
-├── popup.html         # Popup UI HTML
-├── popup.js           # Popup logic and API calls
-├── content.js         # Page scraping logic
-├── content.css        # Floating button styles
-└── icons/             # Extension icons (16, 48, 128px)
-```
+### API Endpoints Used
 
-### Updating Server URL
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/1688-scraper/products` | Health check / connection test |
+| `POST /api/1688-scraper/extension-import` | Submit products for import |
+| `GET /api/1688-scraper/job/{job_id}` | Poll import job status |
 
-To point to a different WaMerce deployment:
+### Known Limitations
 
-1. Open `popup.js`
-2. Change `const SERVER_URL = '...'` to your server URL
-3. Reload the extension in `chrome://extensions`
-
-### Testing Changes
-
-1. Make changes to the extension files
-2. Go to `chrome://extensions`
-3. Click the refresh icon on the WaMerce extension card
-4. Open a new 1688 page to test
-
-## Version History
-
-- **v5.0.0**: Current version - Full scraping without API calls
-- **v4.0.0**: Added comprehensive image extraction
-- **v3.0.0**: Added SKU/variant scraping
-- **v2.0.0**: Added store/listing page support
-- **v1.0.0**: Initial release - Product detail pages only
-
-## Known Limitations
-
-1. **Chinese text**: Titles are in Chinese - enable translation for English
-2. **Some pages may not work**: 1688 frequently updates their HTML structure
-3. **Rate limiting**: Importing too many products quickly may trigger 1688's protection
-4. **Login required**: Some product data may require being logged into 1688
-
-## Support
-
-For issues or feature requests, contact the WaMerce team or open an issue in the repository.
+1. **Chinese Text**: Some titles remain in Chinese - enable translation for English
+2. **Rate Limiting**: Don't import too many products too quickly (wait between imports)
+3. **Login Required**: Some product variants may require being logged into 1688
+4. **HTML Changes**: 1688 frequently updates their page structure - extension may need updates
