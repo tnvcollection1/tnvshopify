@@ -269,6 +269,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/product-approval" 
+        element={
+          <ProtectedRoute>
+            <ProductApproval />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/marketing" 
         element={
           <ProtectedRoute>
