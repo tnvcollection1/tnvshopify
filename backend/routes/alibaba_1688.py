@@ -2609,6 +2609,7 @@ async def bulk_link_1688_orders(request: BulkLink1688OrdersRequest):
 class Mark1688ShippedRequest(BaseModel):
     shopify_order_number: str = Field(..., description="Shopify order number")
     alibaba_order_id: str = Field(..., description="1688 order ID")
+    fulfillment_number_1688: Optional[str] = Field(default=None, description="1688 fulfillment/tracking number from supplier")
     store_name: str = Field(default="tnvcollection")
     courier_type: Optional[str] = Field(default=None, description="DWZ56 courier type. Auto-detected based on store if not provided")
     estimated_weight: Optional[float] = Field(default=0.5, description="Estimated weight in kg")
