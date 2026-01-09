@@ -2827,6 +2827,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         "shopify_order": request.shopify_order_number,
         "alibaba_order": request.alibaba_order_id,
         "current_stage": new_stage,
+        "courier_type": courier_type,
         "dwz_shipment": dwz_result,
         "shipping_details": {
             "receiver": receiver_name,
@@ -2840,7 +2841,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
 class BulkMark1688ShippedRequest(BaseModel):
     orders: List[dict] = Field(..., description="List of {shopify_order_number, alibaba_order_id}")
     store_name: str = Field(default="tnvcollection")
-    courier_type: str = Field(default="印专线")
+    courier_type: Optional[str] = Field(default=None, description="DWZ56 courier type. Auto-detected if not provided")
     estimated_weight: float = Field(default=0.5)
     auto_create_dwz: bool = Field(default=True)
 
