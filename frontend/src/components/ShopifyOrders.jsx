@@ -100,6 +100,7 @@ const StatCard = ({ title, value, icon: Icon, color, active, onClick }) => {
 const OrderDetailModal = ({ order, open, onClose }) => {
   const [linkedProduct, setLinkedProduct] = useState(null);
   const [pipelineData, setPipelineData] = useState(null);
+  const [purchaseOrder, setPurchaseOrder] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Fetch linked product and pipeline data when modal opens
@@ -151,6 +152,22 @@ const OrderDetailModal = ({ order, open, onClose }) => {
       } catch (e) {
         // No pipeline data - that's ok
       }
+
+      // Get 1688 purchase order data
+      try {
+        const purchaseRes = await axios.get(`${API}/api/1688/purchase-orders`, {
+          params: { 
+            store_name: order.store_name,
+            search: order.order_number,
+            page_size: 1
+          }
+        });
+        if (purchaseRes.data?.orders?.length > 0) {
+          setPurchaseOrder(purchaseRes.data.orders[0]);
+        }
+      } catch (e) {
+        // No purchase order - that's ok
+      }
     } catch (error) {
       console.error('Error fetching linked data:', error);
     } finally {
@@ -164,27 +181,28 @@ const OrderDetailModal = ({ order, open, onClose }) => {
   const address = order.default_address || order.shipping_address || {};
   
   // Get 1688 order ID from various sources
-  const alibaba1688OrderId = order.alibaba_order_id || 
+  const alibaba1688OrderId = purchaseOrder?.alibaba_order_id ||
+    order.alibaba_order_id || 
     order.order_1688_id || 
     pipelineData?.alibaba_order_id ||
     order.line_item_orders?.[0]?.alibaba_order_id;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-white">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
+          <DialogTitle className="flex items-center gap-3 text-gray-900">
             <span>Order #{order.order_number || order.name}</span>
             <StatusBadge status={order.fulfillment_status} type="fulfillment" />
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-2 gap-6 py-4">
+        <div className="grid md:grid-cols-2 gap-4 py-4">
           {/* Customer Info */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">Customer</h4>
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <p className="font-medium">{order.first_name} {order.last_name}</p>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Customer</h4>
+            <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+              <p className="font-medium text-gray-900">{order.first_name} {order.last_name}</p>
               {order.email && <p className="text-sm text-gray-600">{order.email}</p>}
               {order.phone && <p className="text-sm text-gray-600">{order.phone}</p>}
             </div>
@@ -192,8 +210,8 @@ const OrderDetailModal = ({ order, open, onClose }) => {
 
           {/* Shipping Address */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">Shipping Address</h4>
-            <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Shipping Address</h4>
+            <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
               {address.address1 || address.address ? (
                 <>
                   {(address.address1 || address.address) && <p>{address.address1 || address.address}</p>}
@@ -209,13 +227,13 @@ const OrderDetailModal = ({ order, open, onClose }) => {
             </div>
           </div>
 
-          {/* 1688 Order Info - NEW SECTION */}
+          {/* 1688 Order Info */}
           <div className="md:col-span-2">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <Package className="w-4 h-4 text-orange-500" />
               1688 Sourcing Info
             </h4>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
               {loading ? (
                 <p className="text-sm text-orange-600">Loading...</p>
               ) : alibaba1688OrderId ? (
