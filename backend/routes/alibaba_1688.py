@@ -2664,36 +2664,63 @@ def extract_color_size_from_order(order: dict) -> tuple:
     
     line_items = order.get("line_items", [])
     if not line_items:
+        # Try order-level fields
+        order_skus = order.get("order_skus", [])
+        shoe_sizes = order.get("shoe_sizes", [])
+        if order_skus:
+            # Parse SKU like "866 GREEN-41"
+            sku = order_skus[0].lower()
+            for color_name, code in COLOR_CODE_MAP.items():
+                if color_name in sku:
+                    color_code = code
+                    break
+        if shoe_sizes and shoe_sizes[0]:
+            size_code = str(shoe_sizes[0]).zfill(2)[-2:]
         return color_code, size_code
     
     first_item = line_items[0] if isinstance(line_items, list) else line_items
     
-    # Try variant_title first (e.g., "Red / 42" or "Black-L")
-    variant_title = first_item.get("variant_title", "") or first_item.get("title", "")
+    # Try multiple fields: name, variant_title, title
+    variant_info = first_item.get("name", "") or first_item.get("variant_title", "") or first_item.get("title", "")
     sku = first_item.get("sku", "")
     
-    if variant_title:
-        parts = variant_title.replace("-", "/").replace(",", "/").split("/")
+    # Parse variant info (e.g., "866 green / 41" or "product - Red / 42")
+    if variant_info:
+        # Split by common delimiters
+        parts = variant_info.replace("-", "/").replace(",", "/").split("/")
         for part in parts:
             part_lower = part.strip().lower()
             
             # Check for color
-            for color_name, code in COLOR_CODE_MAP.items():
-                if color_name in part_lower:
-                    color_code = code
-                    break
+            if color_code == "X":
+                for color_name, code in COLOR_CODE_MAP.items():
+                    if color_name in part_lower:
+                        color_code = code
+                        break
             
-            # Check for size
+            # Check for size (number at end or standalone)
             part_stripped = part.strip()
-            if part_stripped.isdigit():
-                size_code = part_stripped.zfill(2)[-2:]
-            elif part_stripped.upper() in ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]:
+            # Extract numbers from the part
+            import re
+            numbers = re.findall(r'\d+', part_stripped)
+            if numbers:
+                for num in numbers:
+                    if 30 <= int(num) <= 50:  # Shoe sizes typically 30-50
+                        size_code = num.zfill(2)[-2:]
+                        break
+                    elif 1 <= int(num) <= 10:  # Could be size 1-10
+                        size_code = num.zfill(2)
+                        break
+            
+            # Check letter sizes
+            if part_stripped.upper() in ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]:
                 size_map = {"XS": "XS", "S": "SM", "M": "MD", "L": "LG", "XL": "XL", "XXL": "2X", "XXXL": "3X"}
                 size_code = size_map.get(part_stripped.upper(), part_stripped.upper()[:2])
     
-    # Also try SKU (e.g., "739758517850-black-40")
+    # Also try SKU (e.g., "866 green-41" or "739758517850-black-40")
     if sku and (color_code == "X" or size_code == "00"):
-        sku_parts = sku.lower().replace("_", "-").split("-")
+        sku_lower = sku.lower().replace("_", "-").replace(" ", "-")
+        sku_parts = sku_lower.split("-")
         for part in sku_parts:
             if color_code == "X":
                 for color_name, code in COLOR_CODE_MAP.items():
