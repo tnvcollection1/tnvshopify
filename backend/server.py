@@ -2436,6 +2436,185 @@ async def unlink_product_from_1688(product_id: str, data: dict = Body(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/shopify/products/{product_id}/status")
+async def update_product_status(product_id: str, data: dict = Body(...)):
+    """
+    Update product status in both local DB and Shopify.
+    Used to approve draft products (set status to 'active') so they appear on storefront.
+    
+    Status values: 'active', 'draft', 'archived'
+    """
+    try:
+        store_name = data.get("store_name")
+        new_status = data.get("status")
+        
+        if new_status not in ['active', 'draft', 'archived']:
+            raise HTTPException(status_code=400, detail="Invalid status. Must be 'active', 'draft', or 'archived'")
+        
+        # Find the product in local DB
+        query = {"shopify_product_id": product_id}
+        if store_name:
+            query["store_name"] = store_name
+        
+        product = await db.shopify_products.find_one(query, {"_id": 0})
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        # Get store credentials to update in Shopify
+        store = await db.stores.find_one({"store_name": store_name or product.get("store_name")}, {"_id": 0})
+        if not store or not store.get("shopify_domain") or not store.get("shopify_token"):
+            # Update locally only if Shopify not configured
+            await db.shopify_products.update_one(
+                query,
+                {"$set": {"status": new_status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            return {
+                "success": True,
+                "message": f"Product status updated to '{new_status}' (local only - Shopify not configured)"
+            }
+        
+        # Update in Shopify
+        try:
+            import shopify
+            session = shopify.Session(store['shopify_domain'], '2024-01', store['shopify_token'])
+            shopify.ShopifyResource.activate_session(session)
+            
+            shopify_product = shopify.Product.find(int(product_id))
+            if shopify_product:
+                shopify_product.status = new_status
+                success = shopify_product.save()
+                
+                if success:
+                    # Update local DB
+                    await db.shopify_products.update_one(
+                        query,
+                        {"$set": {
+                            "status": new_status,
+                            "updated_at": datetime.now(timezone.utc).isoformat(),
+                            "status_updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    shopify.ShopifyResource.clear_session()
+                    return {
+                        "success": True,
+                        "message": f"Product status updated to '{new_status}' in Shopify and locally"
+                    }
+                else:
+                    error_msg = str(shopify_product.errors.full_messages()) if hasattr(shopify_product, 'errors') else "Unknown error"
+                    shopify.ShopifyResource.clear_session()
+                    raise HTTPException(status_code=500, detail=f"Shopify update failed: {error_msg}")
+            else:
+                shopify.ShopifyResource.clear_session()
+                raise HTTPException(status_code=404, detail="Product not found in Shopify")
+                
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Shopify API error: {str(e)}")
+            # Fall back to local-only update
+            await db.shopify_products.update_one(
+                query,
+                {"$set": {"status": new_status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            return {
+                "success": True,
+                "message": f"Product status updated to '{new_status}' (local only - Shopify API error: {str(e)})"
+            }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating product status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/shopify/products/bulk-status")
+async def bulk_update_product_status(data: dict = Body(...)):
+    """
+    Bulk update product status for multiple products.
+    Used to approve multiple draft products at once.
+    """
+    try:
+        product_ids = data.get("product_ids", [])
+        store_name = data.get("store_name")
+        new_status = data.get("status")
+        
+        if not product_ids:
+            raise HTTPException(status_code=400, detail="No product IDs provided")
+        
+        if new_status not in ['active', 'draft', 'archived']:
+            raise HTTPException(status_code=400, detail="Invalid status")
+        
+        results = {
+            "success": True,
+            "updated": [],
+            "failed": [],
+            "total": len(product_ids)
+        }
+        
+        # Get store credentials
+        store = await db.stores.find_one({"store_name": store_name}, {"_id": 0}) if store_name else None
+        shopify_session = None
+        
+        if store and store.get("shopify_domain") and store.get("shopify_token"):
+            try:
+                import shopify
+                shopify_session = shopify.Session(store['shopify_domain'], '2024-01', store['shopify_token'])
+                shopify.ShopifyResource.activate_session(shopify_session)
+            except Exception as e:
+                logger.warning(f"Could not connect to Shopify: {e}")
+        
+        for product_id in product_ids:
+            try:
+                query = {"shopify_product_id": str(product_id)}
+                if store_name:
+                    query["store_name"] = store_name
+                
+                # Update in Shopify if connected
+                if shopify_session:
+                    try:
+                        import shopify
+                        shopify_product = shopify.Product.find(int(product_id))
+                        if shopify_product:
+                            shopify_product.status = new_status
+                            shopify_product.save()
+                    except Exception as e:
+                        logger.warning(f"Shopify update failed for {product_id}: {e}")
+                
+                # Update local DB
+                result = await db.shopify_products.update_one(
+                    query,
+                    {"$set": {
+                        "status": new_status,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                
+                if result.matched_count > 0:
+                    results["updated"].append(product_id)
+                else:
+                    results["failed"].append({"product_id": product_id, "error": "Not found"})
+                    
+            except Exception as e:
+                results["failed"].append({"product_id": product_id, "error": str(e)})
+        
+        if shopify_session:
+            try:
+                import shopify
+                shopify.ShopifyResource.clear_session()
+            except:
+                pass
+        
+        results["message"] = f"Updated {len(results['updated'])} products, {len(results['failed'])} failed"
+        return results
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error bulk updating product status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ========================================
 # BULK AUTO-LINK BY IMAGE SEARCH
 # ========================================
