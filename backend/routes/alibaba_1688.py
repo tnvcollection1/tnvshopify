@@ -2609,15 +2609,13 @@ async def bulk_link_1688_orders(request: BulkLink1688OrdersRequest):
 class Mark1688ShippedRequest(BaseModel):
     shopify_order_number: str = Field(..., description="Shopify order number")
     alibaba_order_id: str = Field(..., description="1688 order ID")
+    tracking_number_1688: str = Field(..., description="1688 package tracking number (REQUIRED - must match the package label for DWZ56 to receive)")
     store_name: str = Field(default="tnvcollection")
     courier_type: Optional[str] = Field(default=None, description="DWZ56 courier type. Auto-detected based on store if not provided. Valid: 印度专线, 巴基斯坦专线")
     estimated_weight: Optional[float] = Field(default=0.5, description="Estimated weight in kg")
     goods_description: Optional[str] = Field(default="Fashion items", description="Goods description for customs")
     notes: Optional[str] = None
     auto_create_dwz: bool = Field(default=True, description="Automatically create DWZ56 shipment")
-    # Optional manual overrides for reference number components
-    color_code: Optional[str] = Field(default=None, description="Color code override (e.g., R for Red, B for Black)")
-    size_code: Optional[str] = Field(default=None, description="Size code override (e.g., 42, S, M, L)")
 
 
 # Store to courier type mapping for auto-selection
