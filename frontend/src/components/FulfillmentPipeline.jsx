@@ -764,6 +764,18 @@ const OrderDetailModal = ({ order, carrierInfo, onClose, onUpdateStage, onRefres
               Send WhatsApp Update
             </Button>
             
+            {/* Ship to DWZ56 Button - Show when order has 1688 ID and not yet shipped via DWZ */}
+            {order.alibaba_order_id && !order.dwz_tracking && (
+              <Button 
+                onClick={handleShipToDWZ56}
+                disabled={shippingToDWZ}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {shippingToDWZ ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Truck className="w-4 h-4 mr-2" />}
+                Ship to DWZ56
+              </Button>
+            )}
+            
             {FULFILLMENT_STAGES.map((stage, index) => {
               const currentIndex = getStageIndex(order.current_stage);
               if (index <= currentIndex) return null;
