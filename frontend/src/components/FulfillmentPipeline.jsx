@@ -566,8 +566,6 @@ const OrderDetailModal = ({ order, carrierInfo, onClose, onUpdateStage, onRefres
   const [showImageSearch, setShowImageSearch] = useState(false);
   const [sendingNotification, setSendingNotification] = useState(false);
   const [shippingToDWZ, setShippingToDWZ] = useState(false);
-  const [showDWZDialog, setShowDWZDialog] = useState(false);
-  const [tracking1688Input, setTracking1688Input] = useState('');
   
   const getStageIndex = (stage) => FULFILLMENT_STAGES.findIndex(s => s.key === stage);
   
