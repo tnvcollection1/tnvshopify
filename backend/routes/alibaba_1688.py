@@ -2863,8 +2863,11 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "cRPhone": shipping_addr.get("phone", "") or shopify_order.get("phone", ""),
                 "cREMail": shopify_order.get("email", ""),
                 
-                # 1688 Order ID as reference (for package matching)
+                # Reference numbers:
+                # cRNo = 1688 Order ID (for warehouse package matching)
+                # cCNo = Shopify Order ID (customer reference)
                 "cRNo": request.alibaba_order_id,
+                "cCNo": f"#{request.shopify_order_number}",
                 
                 # Package details
                 "fWeight": request.estimated_weight,
@@ -2876,11 +2879,11 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "iQuantity": 1,
                 "fPrice": float(shopify_order.get("total_price", 0) or shopify_order.get("total_spent", 0) or 0),
                 
-                # Memo with Shopify order
-                "cMemo": f"Shopify: #{request.shopify_order_number}. Color: {color_code}, Size: {size_code}",
+                # Memo with all references for easy search
+                "cMemo": f"Shopify: #{request.shopify_order_number} | 1688: {request.alibaba_order_id} | {color_code}/{size_code}",
                 
                 # Mark for filtering
-                "cMark": f"Shopify-{request.shopify_order_number}",
+                "cMark": f"#{request.shopify_order_number}",
             }
             
             # Create shipment via DWZ56 API
