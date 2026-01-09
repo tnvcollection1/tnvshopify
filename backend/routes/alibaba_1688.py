@@ -2608,16 +2608,17 @@ async def bulk_link_1688_orders(request: BulkLink1688OrdersRequest):
 
 class Mark1688ShippedRequest(BaseModel):
     shopify_order_number: str = Field(..., description="Shopify order number")
-    alibaba_order_id: str = Field(..., description="1688 order ID - used as reference in DWZ56")
+    alibaba_order_id: str = Field(..., description="1688 order ID")
     store_name: str = Field(default="tnvcollection")
-    courier_type: Optional[str] = Field(default=None, description="DWZ56 courier type. Auto-detected based on store if not provided. Valid: 印度专线, 巴基斯坦专线")
+    courier_type: Optional[str] = Field(default=None, description="DWZ56 courier type. Auto-detected based on store if not provided")
     estimated_weight: Optional[float] = Field(default=0.5, description="Estimated weight in kg")
     goods_description: Optional[str] = Field(default="Fashion items", description="Goods description for customs")
-    notes: Optional[str] = None
+    color_override: Optional[str] = Field(default=None, description="Override color code (e.g., R, B, K)")
+    size_override: Optional[str] = Field(default=None, description="Override size code (e.g., 42, SM, LG)")
     auto_create_dwz: bool = Field(default=True, description="Automatically create DWZ56 shipment")
 
 
-# Store to courier type mapping for auto-selection
+# Store to courier type mapping
 STORE_COURIER_MAP = {
     "tnvcollection": "印度专线",      # India
     "ashmiaa": "印度专线",            # India  
@@ -2625,13 +2626,130 @@ STORE_COURIER_MAP = {
     "tnvcollectionpk": "巴基斯坦专线", # Pakistan
 }
 
-# Country code mapping for reference number
+# Store to country code mapping
 STORE_COUNTRY_CODE = {
     "tnvcollection": "IN",
     "ashmiaa": "IN",
     "asmia": "IN",
     "tnvcollectionpk": "PK",
 }
+
+# Color code mapping (color name -> single letter code)
+COLOR_CODE_MAP = {
+    "red": "R", "maroon": "R", "burgundy": "R", "wine": "R", "crimson": "R",
+    "blue": "B", "navy": "B", "royal": "B", "cobalt": "B", "azure": "B",
+    "black": "K", "charcoal": "K", "ebony": "K",
+    "white": "W", "ivory": "W", "cream": "W", "off-white": "W",
+    "green": "G", "olive": "G", "mint": "G", "sage": "G", "emerald": "G",
+    "yellow": "Y", "gold": "Y", "mustard": "Y", "lemon": "Y",
+    "pink": "P", "rose": "P", "blush": "P", "coral": "P", "salmon": "P",
+    "purple": "V", "violet": "V", "lavender": "V", "plum": "V", "magenta": "V",
+    "orange": "O", "tangerine": "O", "peach": "O", "rust": "O",
+    "brown": "N", "tan": "N", "beige": "N", "camel": "N", "chocolate": "N", "coffee": "N",
+    "grey": "E", "gray": "E", "silver": "E", "ash": "E",
+    "multi": "M", "multicolor": "M", "print": "M", "pattern": "M",
+}
+
+
+def extract_color_size_from_order(order: dict) -> tuple:
+    """
+    Extract color and size from Shopify order line items.
+    Returns (color_code, size_code) tuple.
+    
+    Example SKU: 739758517850-black-40 → (K, 40)
+    Example variant: Red / 42 → (R, 42)
+    """
+    color_code = "X"  # Default unknown
+    size_code = "00"  # Default unknown
+    
+    line_items = order.get("line_items", [])
+    if not line_items:
+        return color_code, size_code
+    
+    first_item = line_items[0] if isinstance(line_items, list) else line_items
+    
+    # Try variant_title first (e.g., "Red / 42" or "Black-L")
+    variant_title = first_item.get("variant_title", "") or first_item.get("title", "")
+    sku = first_item.get("sku", "")
+    
+    if variant_title:
+        parts = variant_title.replace("-", "/").replace(",", "/").split("/")
+        for part in parts:
+            part_lower = part.strip().lower()
+            
+            # Check for color
+            for color_name, code in COLOR_CODE_MAP.items():
+                if color_name in part_lower:
+                    color_code = code
+                    break
+            
+            # Check for size
+            part_stripped = part.strip()
+            if part_stripped.isdigit():
+                size_code = part_stripped.zfill(2)[-2:]
+            elif part_stripped.upper() in ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]:
+                size_map = {"XS": "XS", "S": "SM", "M": "MD", "L": "LG", "XL": "XL", "XXL": "2X", "XXXL": "3X"}
+                size_code = size_map.get(part_stripped.upper(), part_stripped.upper()[:2])
+    
+    # Also try SKU (e.g., "739758517850-black-40")
+    if sku and (color_code == "X" or size_code == "00"):
+        sku_parts = sku.lower().replace("_", "-").split("-")
+        for part in sku_parts:
+            if color_code == "X":
+                for color_name, code in COLOR_CODE_MAP.items():
+                    if color_name in part:
+                        color_code = code
+                        break
+            if size_code == "00" and part.isdigit():
+                size_code = part.zfill(2)[-2:]
+    
+    return color_code, size_code
+
+
+async def generate_tnv_waybill_number(db, country_code: str, color_code: str, size_code: str) -> str:
+    """
+    Generate custom waybill number: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
+    
+    Example: TNVIN0109R42001
+    - TNV = Company prefix
+    - IN = India
+    - 0109 = January 9th (DDMM)
+    - R = Red
+    - 42 = Size 42
+    - 001 = First order of the day
+    """
+    now = datetime.now(timezone.utc)
+    date_str = now.strftime("%d%m")  # DDMM format
+    
+    # Build prefix for serial lookup
+    prefix = f"TNV{country_code}{date_str}"
+    
+    # Find highest serial for today
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    
+    latest = await db.dwz_waybill_serials.find_one(
+        {"prefix": prefix, "created_at": {"$gte": today_start}},
+        sort=[("serial", -1)]
+    )
+    
+    next_serial = (latest.get("serial", 0) + 1) if latest else 1
+    serial_str = str(next_serial).zfill(3)
+    
+    # Build waybill: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
+    waybill = f"TNV{country_code}{date_str}{color_code}{size_code}{serial_str}"
+    
+    # Save for serial tracking
+    await db.dwz_waybill_serials.insert_one({
+        "waybill": waybill,
+        "prefix": prefix,
+        "serial": next_serial,
+        "country_code": country_code,
+        "color_code": color_code,
+        "size_code": size_code,
+        "created_at": now.isoformat(),
+    })
+    
+    return waybill
 
 
 @router.post("/mark-shipped")
