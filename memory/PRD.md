@@ -63,6 +63,19 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - Full data scraping: title, images, SKUs, variants, prices
   - README documentation added
 
+### DWZ56 Auto-Shipment Integration (Jan 9, 2025)
+- ✅ **Auto-create DWZ56 shipments** when 1688 order is fulfilled
+- ✅ **Custom reference number format**: `TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}`
+  - Example: `TNVIN0901R42001` = TNV + India + Jan 9 + Red + Size 42 + Serial 001
+- ✅ **Auto-extract color/size** from Shopify order line items and SKU
+- ✅ **Auto-detect courier type** based on store (India → 印度专线, Pakistan → 巴基斯坦专线)
+- ✅ **Serial number auto-increment** per day
+- ✅ **"Ship to DWZ56" button** in Fulfillment Pipeline modal
+- ✅ **Bulk mark-shipped endpoint** for processing multiple orders
+- API Endpoints:
+  - `POST /api/1688/mark-shipped` - Mark single order as shipped + create DWZ56 shipment
+  - `POST /api/1688/mark-shipped-bulk` - Bulk process multiple orders
+
 ### Chrome Extension (Verified Jan 7, 2025)
 - Version: 5.0.0 (Manifest V3)
 - Backend tests: 10/10 passed
