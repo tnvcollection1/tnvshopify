@@ -2747,18 +2747,27 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             
             if response.get("ReturnValue", 0) > 0:
                 created_ids = response.get("RecIDs", [])
-                if created_ids:
+                # DWZ56 returns tracking number in ErrList even on success
+                err_list = response.get("ErrList", [])
+                if err_list and err_list[0].get("cNum"):
+                    dwz_tracking = err_list[0].get("cNum")
+                elif created_ids:
                     dwz_tracking = f"DWZ-{created_ids[0]}"
+                
                 dwz_result = {
                     "success": True,
                     "message": f"DWZ56 shipment created",
                     "record_ids": created_ids,
                     "dwz_tracking": dwz_tracking,
+                    "raw_response": response,
                 }
             else:
+                # Check if there's an error message
+                err_list = response.get("ErrList", [])
+                error_msg = err_list[0].get("cMess") if err_list else f"DWZ56 API error: {response.get('ReturnValue')}"
                 dwz_result = {
                     "success": False,
-                    "message": f"DWZ56 API error: {response.get('ReturnValue')}",
+                    "message": error_msg,
                     "raw_response": response,
                 }
                 
