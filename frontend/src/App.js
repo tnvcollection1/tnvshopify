@@ -50,6 +50,7 @@ import ProductCollector from "@/components/ProductCollector";
 import WhatsAppEmbeddedSignup from "@/components/WhatsAppEmbeddedSignup";
 import Alibaba1688Accounts from "@/components/Alibaba1688Accounts";
 import InventoryClearance from "@/components/InventoryClearance";
+import ProductApproval from "@/components/ProductApproval";
 import UserManagement from "@/components/UserManagement";
 import TmapiMonitor from "@/components/TmapiMonitor";
 import ShopifyHistoricalSync from "@/components/ShopifyHistoricalSync";
