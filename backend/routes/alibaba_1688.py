@@ -2457,7 +2457,151 @@ async def list_purchase_orders(
     }
 
 
-@router.get("/order/{order_id}")
+class Link1688OrderRequest(BaseModel):
+    shopify_order_number: str = Field(..., description="Shopify order number (e.g., 29160)")
+    alibaba_order_id: str = Field(..., description="1688 order ID")
+    store_name: str = Field(default="tnvcollection")
+    alibaba_status: Optional[str] = Field(default="ordered", description="Status: ordered, paid, shipped, received")
+    notes: Optional[str] = None
+
+
+@router.post("/link-order")
+async def link_1688_order_to_shopify(request: Link1688OrderRequest):
+    """
+    Manually link an existing 1688 order to a Shopify order.
+    Use this when you've already placed orders on 1688 and want to track them.
+    """
+    db = get_db()
+    
+    # Find the Shopify order in customers collection
+    shopify_order = await db.customers.find_one({
+        "store_name": request.store_name,
+        "order_number": request.shopify_order_number,
+    }, {"_id": 0})
+    
+    if not shopify_order:
+        # Try as string comparison
+        shopify_order = await db.customers.find_one({
+            "store_name": request.store_name,
+            "order_number": str(request.shopify_order_number),
+        }, {"_id": 0})
+    
+    if not shopify_order:
+        raise HTTPException(status_code=404, detail=f"Shopify order #{request.shopify_order_number} not found")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Update or create fulfillment pipeline entry
+    pipeline_update = {
+        "$set": {
+            "alibaba_order_id": request.alibaba_order_id,
+            "alibaba_status": request.alibaba_status,
+            "current_stage": "alibaba_ordered" if request.alibaba_status in ["ordered", "paid"] else "alibaba_shipped",
+            "updated_at": now,
+            "linked_manually": True,
+            "link_notes": request.notes,
+        },
+        "$setOnInsert": {
+            "shopify_order_id": shopify_order.get("shopify_order_id"),
+            "order_number": request.shopify_order_number,
+            "customer_name": f"{shopify_order.get('first_name', '')} {shopify_order.get('last_name', '')}".strip(),
+            "customer_phone": shopify_order.get("phone"),
+            "store_name": request.store_name,
+            "created_at": now,
+            "line_items": shopify_order.get("line_items", []),
+            "total_price": shopify_order.get("total_price") or shopify_order.get("total_spent"),
+        }
+    }
+    
+    # Set stage date
+    stage_key = f"stage_dates.alibaba_ordered"
+    if request.alibaba_status == "shipped":
+        stage_key = f"stage_dates.alibaba_shipped"
+    pipeline_update["$set"][stage_key] = now
+    
+    await db.fulfillment_pipeline.update_one(
+        {"order_number": request.shopify_order_number, "store_name": request.store_name},
+        pipeline_update,
+        upsert=True
+    )
+    
+    # Also create entry in purchase_orders_1688 collection
+    purchase_order = {
+        "alibaba_order_id": request.alibaba_order_id,
+        "shopify_order_id": shopify_order.get("shopify_order_id"),
+        "shopify_order_number": request.shopify_order_number,
+        "store_name": request.store_name,
+        "status": request.alibaba_status,
+        "customer_name": f"{shopify_order.get('first_name', '')} {shopify_order.get('last_name', '')}".strip(),
+        "line_items": shopify_order.get("line_items", []),
+        "total_price": shopify_order.get("total_price") or shopify_order.get("total_spent"),
+        "created_at": now,
+        "updated_at": now,
+        "linked_manually": True,
+        "notes": request.notes,
+    }
+    
+    await db.purchase_orders_1688.update_one(
+        {"alibaba_order_id": request.alibaba_order_id},
+        {"$set": purchase_order},
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "message": f"Linked 1688 order {request.alibaba_order_id} to Shopify order #{request.shopify_order_number}",
+        "shopify_order": request.shopify_order_number,
+        "alibaba_order": request.alibaba_order_id,
+        "status": request.alibaba_status,
+    }
+
+
+class BulkLink1688OrdersRequest(BaseModel):
+    orders: List[dict] = Field(..., description="List of {shopify_order_number, alibaba_order_id, status}")
+    store_name: str = Field(default="tnvcollection")
+
+
+@router.post("/link-orders-bulk")
+async def bulk_link_1688_orders(request: BulkLink1688OrdersRequest):
+    """
+    Bulk link multiple 1688 orders to Shopify orders.
+    
+    Example body:
+    {
+        "store_name": "tnvcollection",
+        "orders": [
+            {"shopify_order_number": "29160", "alibaba_order_id": "1234567890", "status": "shipped"},
+            {"shopify_order_number": "29161", "alibaba_order_id": "1234567891", "status": "paid"}
+        ]
+    }
+    """
+    results = []
+    success_count = 0
+    error_count = 0
+    
+    for order_link in request.orders:
+        try:
+            link_request = Link1688OrderRequest(
+                shopify_order_number=str(order_link.get("shopify_order_number")),
+                alibaba_order_id=str(order_link.get("alibaba_order_id")),
+                store_name=request.store_name,
+                alibaba_status=order_link.get("status", "ordered"),
+                notes=order_link.get("notes"),
+            )
+            result = await link_1688_order_to_shopify(link_request)
+            results.append({"success": True, **order_link})
+            success_count += 1
+        except Exception as e:
+            results.append({"success": False, "error": str(e), **order_link})
+            error_count += 1
+    
+    return {
+        "success": True,
+        "message": f"Linked {success_count} orders, {error_count} errors",
+        "success_count": success_count,
+        "error_count": error_count,
+        "results": results,
+    }
 async def get_order_details(order_id: str):
     """
     Get details of a specific 1688 purchase order using alibaba.trade.get.buyerView
