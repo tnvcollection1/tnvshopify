@@ -2886,7 +2886,18 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
     """
     Bulk mark multiple 1688 orders as shipped and create DWZ56 shipments.
     
-    Use this when you have multiple 1688 orders ready to ship to India/Pakistan.
+    Each order in the list MUST include:
+    - shopify_order_number
+    - alibaba_order_id  
+    - tracking_number_1688 (REQUIRED - the package tracking from 1688 supplier)
+    
+    Example:
+    {
+        "orders": [
+            {"shopify_order_number": "29160", "alibaba_order_id": "123456", "tracking_number_1688": "YT7358912345678"},
+            {"shopify_order_number": "29161", "alibaba_order_id": "123457", "tracking_number_1688": "YT7358912345679"}
+        ]
+    }
     """
     results = []
     success_count = 0
@@ -2895,9 +2906,15 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
     
     for order in request.orders:
         try:
+            # Validate that tracking_number_1688 is provided
+            tracking_1688 = order.get("tracking_number_1688")
+            if not tracking_1688:
+                raise ValueError("tracking_number_1688 is required for each order")
+            
             mark_request = Mark1688ShippedRequest(
                 shopify_order_number=str(order.get("shopify_order_number")),
                 alibaba_order_id=str(order.get("alibaba_order_id")),
+                tracking_number_1688=tracking_1688,
                 store_name=request.store_name,
                 courier_type=request.courier_type,
                 estimated_weight=request.estimated_weight,
@@ -2910,6 +2927,8 @@ async def bulk_mark_1688_orders_shipped(request: BulkMark1688ShippedRequest):
                 "success": True,
                 "shopify_order": order.get("shopify_order_number"),
                 "alibaba_order": order.get("alibaba_order_id"),
+                "tracking_number_1688": tracking_1688,
+                "dwz_reference": result.get("dwz_reference"),
                 "dwz_created": result.get("dwz_shipment", {}).get("success", False),
             })
             success_count += 1
