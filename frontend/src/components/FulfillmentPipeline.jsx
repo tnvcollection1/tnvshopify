@@ -798,58 +798,6 @@ const OrderDetailModal = ({ order, carrierInfo, onClose, onUpdateStage, onRefres
         </div>
       </div>
       
-      {/* DWZ56 Tracking Input Dialog */}
-      {showDWZDialog && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60]" onClick={() => setShowDWZDialog(false)}>
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold mb-4">Ship to DWZ56</h3>
-            
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-              <p className="text-sm text-amber-800">
-                <strong>Important:</strong> Enter the tracking number from the 1688 package label. 
-                DWZ56 warehouse will use this to match your package.
-              </p>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">1688 Order ID</label>
-                <Input value={order.alibaba_order_id} disabled className="bg-gray-50" />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  1688 Package Tracking Number <span className="text-red-500">*</span>
-                </label>
-                <Input 
-                  placeholder="e.g., YT7358912345678"
-                  value={tracking1688Input}
-                  onChange={e => setTracking1688Input(e.target.value)}
-                  className="font-mono"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Find this on the shipping label or in your 1688 order details
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex gap-2 mt-6">
-              <Button variant="outline" onClick={() => setShowDWZDialog(false)} className="flex-1">
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleShipToDWZ56}
-                disabled={shippingToDWZ || !tracking1688Input.trim()}
-                className="flex-1 bg-purple-600 hover:bg-purple-700"
-              >
-                {shippingToDWZ ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Truck className="w-4 h-4 mr-2" />}
-                Create Shipment
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {showImageSearch && (
         <ImageSearchModal 
           order={order} 
