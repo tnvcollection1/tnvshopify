@@ -248,9 +248,9 @@ const ShopifySidebar = () => {
   };
 
   return (
-    <div className="w-60 bg-[#1a1a1a] min-h-screen flex flex-col fixed left-0 top-0 z-50">
+    <div className="w-60 bg-[#1a1a1a] h-screen flex flex-col fixed left-0 top-0 z-50">
       {/* Store Selector Header */}
-      <div className="p-4 border-b border-gray-800">
+      <div className="p-4 border-b border-gray-800 flex-shrink-0">
         <div className="relative">
           <button
             onClick={() => setShowStoreDropdown(!showStoreDropdown)}
