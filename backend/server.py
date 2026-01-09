@@ -395,6 +395,14 @@ async def shutdown_event():
     scheduler = get_scheduler()
     scheduler.stop()
     logger.info("✅ Background scheduler stopped")
+    
+    # Stop DWZ56 scheduler
+    try:
+        from services.dwz56_scheduler import stop_scheduler as stop_dwz56_scheduler
+        stop_dwz56_scheduler()
+        logger.info("✅ DWZ56 scheduler stopped")
+    except Exception as e:
+        logger.warning(f"⚠️ DWZ56 scheduler stop warning: {e}")
 
 
 # Define Models
