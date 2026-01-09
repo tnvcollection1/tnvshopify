@@ -2700,9 +2700,9 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     # Use provided courier type or auto-detect from store or country
     courier_type = request.courier_type or STORE_COURIER_MAP.get(request.store_name) or default_courier
     
-    # Use 1688 tracking number as the DWZ56 reference number
-    # This is CRITICAL - DWZ56 warehouse matches packages by this number
-    dwz_reference = request.tracking_number_1688
+    # Use 1688 ORDER ID as the DWZ56 reference number
+    # DWZ56 warehouse will match packages by this 1688 order number
+    dwz_reference = request.alibaba_order_id
     
     # Build full address
     address_parts = [
@@ -2718,8 +2718,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             from routes.dwz56 import build_request_payload, make_api_request
             
             # Build shipment record for DWZ56
-            # IMPORTANT: cRNo must match the 1688 package tracking number
-            # so DWZ56 warehouse can scan and match the incoming package
+            # cRNo = 1688 Order ID (reference number for package matching)
             shipment_record = {
                 "iID": 0,  # 0 = new record
                 "nItemType": 1,  # Package
@@ -2737,8 +2736,8 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "cRPhone": shipping_addr.get("phone", "") or shopify_order.get("phone", ""),
                 "cREMail": shopify_order.get("email", ""),
                 
-                # CRITICAL: Use 1688 tracking number as reference
-                # This must match the package label from 1688 supplier
+                # Use 1688 Order ID as reference number
+                # DWZ56 warehouse matches packages by this number
                 "cRNo": dwz_reference,
                 
                 # Package details
@@ -2751,8 +2750,8 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "iQuantity": 1,
                 "fPrice": float(shopify_order.get("total_price", 0) or shopify_order.get("total_spent", 0) or 0),
                 
-                # Memo with order info for your reference
-                "cMemo": f"1688 Order: {request.alibaba_order_id}. Shopify: #{request.shopify_order_number}",
+                # Memo with Shopify order for your reference
+                "cMemo": f"Shopify: #{request.shopify_order_number}",
                 
                 # Tag/Mark for easy filtering
                 "cMark": f"Shopify-{request.shopify_order_number}",
