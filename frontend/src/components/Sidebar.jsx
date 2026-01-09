@@ -298,7 +298,7 @@ const Sidebar = () => {
   const isSectionActive = (children) => children?.some(child => location.pathname === child.path);
 
   return (
-    <div className="w-[240px] bg-[#075e54] h-screen flex flex-col">
+    <div className="w-[240px] bg-[#075e54] h-screen flex flex-col overflow-hidden">
       {/* Brand Header - WhatsApp Style */}
       <div className="p-3 border-b border-[#128c7e]">
         <div className="relative">
