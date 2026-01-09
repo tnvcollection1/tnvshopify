@@ -3242,6 +3242,194 @@ async def get_pending_dwz_sync(store_name: str = "tnvcollection"):
     }
 
 
+@router.post("/sync-shipping-address/{store_name}/{order_number}")
+async def sync_shipping_address_from_shopify(store_name: str, order_number: str):
+    """
+    Fetch shipping address from Shopify for a specific order and update the database.
+    
+    Use this to update shipping address for orders that were synced before the address fields were added.
+    """
+    import httpx
+    
+    db = get_db()
+    
+    # Get store credentials
+    store = await db.shopify_stores.find_one({"name": store_name}, {"_id": 0})
+    if not store:
+        raise HTTPException(status_code=404, detail=f"Store {store_name} not found")
+    
+    shopify_domain = store.get("shopify_domain")
+    shopify_token = store.get("shopify_token")
+    
+    if not shopify_domain or not shopify_token:
+        raise HTTPException(status_code=400, detail="Store not configured with Shopify credentials")
+    
+    # Find the order to get shopify_order_id
+    order = await db.customers.find_one(
+        {"store_name": store_name, "order_number": order_number},
+        {"_id": 0, "shopify_order_id": 1}
+    )
+    
+    if not order or not order.get("shopify_order_id"):
+        raise HTTPException(status_code=404, detail=f"Order {order_number} not found")
+    
+    shopify_order_id = order.get("shopify_order_id")
+    
+    # Fetch order from Shopify
+    async with httpx.AsyncClient() as client:
+        url = f"https://{shopify_domain}/admin/api/2024-01/orders/{shopify_order_id}.json"
+        headers = {"X-Shopify-Access-Token": shopify_token}
+        
+        response = await client.get(url, headers=headers)
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=f"Shopify API error: {response.text}")
+        
+        data = response.json()
+        shopify_order = data.get("order", {})
+    
+    # Extract shipping address
+    shipping_addr = shopify_order.get("shipping_address", {})
+    
+    if not shipping_addr:
+        return {"success": False, "message": "No shipping address in Shopify order"}
+    
+    # Build shipping address object
+    shipping_address = {
+        "first_name": shipping_addr.get("first_name", ""),
+        "last_name": shipping_addr.get("last_name", ""),
+        "company": shipping_addr.get("company", ""),
+        "address1": shipping_addr.get("address1", ""),
+        "address2": shipping_addr.get("address2", ""),
+        "city": shipping_addr.get("city", ""),
+        "province": shipping_addr.get("province", ""),
+        "province_code": shipping_addr.get("province_code", ""),
+        "country": shipping_addr.get("country", ""),
+        "country_code": shipping_addr.get("country_code", ""),
+        "zip": shipping_addr.get("zip", ""),
+        "phone": shipping_addr.get("phone", ""),
+    }
+    
+    # Update the order in database
+    result = await db.customers.update_one(
+        {"store_name": store_name, "order_number": order_number},
+        {
+            "$set": {
+                "shipping_address": shipping_address,
+                "country_code": shipping_address.get("country_code", ""),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+        }
+    )
+    
+    return {
+        "success": True,
+        "message": f"Shipping address updated for order {order_number}",
+        "shipping_address": shipping_address,
+        "modified_count": result.modified_count,
+    }
+
+
+@router.post("/sync-shipping-addresses-bulk/{store_name}")
+async def sync_shipping_addresses_bulk(store_name: str, limit: int = 50):
+    """
+    Bulk sync shipping addresses from Shopify for orders that don't have shipping_address.
+    """
+    import httpx
+    
+    db = get_db()
+    
+    # Get store credentials
+    store = await db.shopify_stores.find_one({"name": store_name}, {"_id": 0})
+    if not store:
+        raise HTTPException(status_code=404, detail=f"Store {store_name} not found")
+    
+    shopify_domain = store.get("shopify_domain")
+    shopify_token = store.get("shopify_token")
+    
+    if not shopify_domain or not shopify_token:
+        raise HTTPException(status_code=400, detail="Store not configured")
+    
+    # Find orders without shipping_address
+    orders = await db.customers.find({
+        "store_name": store_name,
+        "shopify_order_id": {"$exists": True, "$ne": None},
+        "$or": [
+            {"shipping_address": {"$exists": False}},
+            {"shipping_address": None},
+        ]
+    }, {"_id": 0, "order_number": 1, "shopify_order_id": 1}).to_list(limit)
+    
+    results = []
+    success_count = 0
+    error_count = 0
+    
+    async with httpx.AsyncClient() as client:
+        for order in orders:
+            try:
+                shopify_order_id = order.get("shopify_order_id")
+                order_number = order.get("order_number")
+                
+                # Fetch from Shopify
+                url = f"https://{shopify_domain}/admin/api/2024-01/orders/{shopify_order_id}.json"
+                headers = {"X-Shopify-Access-Token": shopify_token}
+                
+                response = await client.get(url, headers=headers)
+                
+                if response.status_code != 200:
+                    results.append({"order": order_number, "success": False, "error": f"HTTP {response.status_code}"})
+                    error_count += 1
+                    continue
+                
+                data = response.json()
+                shipping_addr = data.get("order", {}).get("shipping_address", {})
+                
+                if not shipping_addr:
+                    results.append({"order": order_number, "success": False, "error": "No shipping address"})
+                    error_count += 1
+                    continue
+                
+                # Update database
+                shipping_address = {
+                    "first_name": shipping_addr.get("first_name", ""),
+                    "last_name": shipping_addr.get("last_name", ""),
+                    "address1": shipping_addr.get("address1", ""),
+                    "address2": shipping_addr.get("address2", ""),
+                    "city": shipping_addr.get("city", ""),
+                    "province": shipping_addr.get("province", ""),
+                    "country": shipping_addr.get("country", ""),
+                    "country_code": shipping_addr.get("country_code", ""),
+                    "zip": shipping_addr.get("zip", ""),
+                    "phone": shipping_addr.get("phone", ""),
+                }
+                
+                await db.customers.update_one(
+                    {"store_name": store_name, "order_number": order_number},
+                    {"$set": {"shipping_address": shipping_address, "country_code": shipping_addr.get("country_code", "")}}
+                )
+                
+                results.append({
+                    "order": order_number,
+                    "success": True,
+                    "city": shipping_address.get("city"),
+                    "country": shipping_address.get("country"),
+                })
+                success_count += 1
+                
+            except Exception as e:
+                results.append({"order": order.get("order_number"), "success": False, "error": str(e)})
+                error_count += 1
+    
+    return {
+        "success": True,
+        "message": f"Synced {success_count} orders, {error_count} errors",
+        "total_found": len(orders),
+        "success_count": success_count,
+        "error_count": error_count,
+        "results": results,
+    }
+
+
 async def get_order_details(order_id: str):
     """
     Get details of a specific 1688 purchase order using alibaba.trade.get.buyerView
