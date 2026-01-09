@@ -2191,10 +2191,15 @@ async def get_shopify_products(
     store_name: str = None,
     search: str = None,
     link_status: str = None,
+    status: str = None,
     page: int = 1,
     page_size: int = 50
 ):
-    """Get synced Shopify products from database"""
+    """Get synced Shopify products from database
+    
+    Args:
+        status: Filter by product status - 'active', 'draft', 'archived', or 'all'
+    """
     try:
         query = {}
         if store_name and store_name != 'all':
@@ -2213,6 +2218,10 @@ async def get_shopify_products(
                 {"linked_1688_product_id": None}
             ]
         
+        # Filter by product status (active, draft, archived)
+        if status and status != 'all':
+            query["status"] = status
+        
         skip = (page - 1) * page_size
         
         products = await db.shopify_products.find(
@@ -2222,17 +2231,28 @@ async def get_shopify_products(
         
         total = await db.shopify_products.count_documents(query)
         
+        # Get status counts for the current store filter
+        status_counts = {}
+        base_query = {}
+        if store_name and store_name != 'all':
+            base_query["store_name"] = store_name
+        
+        for s in ['active', 'draft', 'archived']:
+            count_query = {**base_query, "status": s}
+            status_counts[s] = await db.shopify_products.count_documents(count_query)
+        
         return {
             "success": True,
             "products": products,
             "total": total,
             "page": page,
-            "page_size": page_size
+            "page_size": page_size,
+            "status_counts": status_counts
         }
         
     except Exception as e:
         logger.error(f"Error fetching products: {str(e)}")
-        return {"success": True, "products": [], "total": 0, "page": page, "page_size": page_size}
+        return {"success": True, "products": [], "total": 0, "page": page, "page_size": page_size, "status_counts": {}}
 
 
 @api_router.get("/shopify/products/sync-status")
