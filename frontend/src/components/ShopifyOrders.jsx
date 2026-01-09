@@ -331,20 +331,21 @@ const OrderDetailModal = ({ order, open, onClose }) => {
 
           {/* Order Summary */}
           <div className="md:col-span-2">
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Order Summary</h4>
+            <div className="bg-gray-50 rounded-lg p-3 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Subtotal</span>
-                <span>₹{parseFloat(order.subtotal_price || order.total_price || order.total_spent || 0).toLocaleString()}</span>
+                <span className="text-gray-600">Subtotal</span>
+                <span className="text-gray-900">₹{parseFloat(order.subtotal_price || order.total_price || order.total_spent || 0).toLocaleString()}</span>
               </div>
               {order.total_shipping_price_set && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Shipping</span>
-                  <span>₹{parseFloat(order.total_shipping_price_set?.shop_money?.amount || 0).toLocaleString()}</span>
+                  <span className="text-gray-600">Shipping</span>
+                  <span className="text-gray-900">₹{parseFloat(order.total_shipping_price_set?.shop_money?.amount || 0).toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex justify-between font-semibold text-base pt-2 border-t">
-                <span>Total</span>
-                <span>₹{parseFloat(order.total_price || order.total_spent || 0).toLocaleString()}</span>
+              <div className="flex justify-between font-semibold text-base pt-2 border-t border-gray-200">
+                <span className="text-gray-900">Total</span>
+                <span className="text-gray-900">₹{parseFloat(order.total_price || order.total_spent || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -352,11 +353,11 @@ const OrderDetailModal = ({ order, open, onClose }) => {
           {/* Tracking */}
           {order.tracking_number && (
             <div className="md:col-span-2">
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">Tracking</h4>
-              <div className="bg-blue-50 rounded-lg p-4">
-                <p className="font-mono text-sm">{order.tracking_number}</p>
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">Tracking</h4>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="font-mono text-sm text-blue-900">{order.tracking_number}</p>
                 {order.tracking_company && (
-                  <p className="text-xs text-blue-600 mt-1">Carrier: {order.tracking_company}</p>
+                  <p className="text-xs text-blue-700 mt-1">Carrier: {order.tracking_company}</p>
                 )}
                 {order.tracking_url && (
                   <a 
@@ -368,7 +369,7 @@ const OrderDetailModal = ({ order, open, onClose }) => {
                     Track Package →
                   </a>
                 )}
-                <p className="text-xs text-blue-600 mt-1">
+                <p className="text-xs text-blue-700 mt-1">
                   Status: {order.delivery_status || 'Unknown'}
                 </p>
               </div>
