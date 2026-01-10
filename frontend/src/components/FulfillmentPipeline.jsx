@@ -1511,6 +1511,34 @@ const FulfillmentPipeline = () => {
     }
   };
 
+  // Cancel 1688 Purchase
+  const cancelPurchase = async (order) => {
+    const orderId = order.order_number || order.shopify_order_id;
+    if (!window.confirm(`Are you sure you want to cancel the 1688 purchase for Order #${orderId}?\n\nThis will unlink the 1688 order ID: ${order.alibaba_order_id}`)) {
+      return;
+    }
+    
+    setCancellingPurchase(order._id || order.shopify_order_id);
+    try {
+      const res = await fetch(`${API}/api/fulfillment/pipeline/orders/${orderId}/cancel-purchase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`1688 purchase cancelled for Order #${orderId}`);
+        fetchOrders();
+      } else {
+        toast.error(data.detail || 'Failed to cancel purchase');
+      }
+    } catch (e) {
+      toast.error('Failed to cancel 1688 purchase');
+      console.error('Cancel purchase error:', e);
+    } finally {
+      setCancellingPurchase(null);
+    }
+  };
+
   const filterOrders = useCallback(() => {
     let filtered = [...orders];
     
