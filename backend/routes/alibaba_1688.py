@@ -2818,6 +2818,35 @@ def extract_color_size_from_order(order: dict, purchase_order_1688: dict = None)
     return color_code, size_code, color_name
 
 
+def _build_dwz_memo(order_number: str, alibaba_info: str, shopify_info: str, 
+                     colors_match, sizes_match, has_1688_data: bool) -> str:
+    """
+    Build DWZ56 memo/remarks with detailed mismatch info.
+    
+    Format examples:
+    - Match: "#29401 | 1688: Black/42 | Shopify: Black/42 ✓"
+    - Mismatch: "#29401 | 1688: Black/42 | Shopify: Gold/41 | MISMATCH: Color+Size"
+    - No 1688: "#29401 | 1688: N/A | Shopify: Gold/41 | NO 1688 DATA"
+    """
+    memo = f"#{order_number} | 1688: {alibaba_info} | Shopify: {shopify_info}"
+    
+    if not has_1688_data:
+        memo += " | NO 1688 DATA"
+    elif colors_match is not None and sizes_match is not None:
+        if colors_match and sizes_match:
+            memo += " ✓"
+        else:
+            # Build specific mismatch details
+            mismatches = []
+            if not colors_match:
+                mismatches.append("Color")
+            if not sizes_match:
+                mismatches.append("Size")
+            memo += f" | MISMATCH: {'+'.join(mismatches)}"
+    
+    return memo
+
+
 async def generate_tnv_waybill_number(db, country_code: str, color_code: str, size_code: str) -> str:
     """
     Generate custom waybill number: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
