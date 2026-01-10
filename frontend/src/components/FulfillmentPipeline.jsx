@@ -26,6 +26,7 @@ import {
   Upload,
   Clock,
   History,
+  XCircle,
 } from 'lucide-react';
 import {
   Select,
