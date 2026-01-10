@@ -3013,6 +3013,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             f"stage_dates.{new_stage}": now,
             "dwz_waybill": custom_waybill,
             "color_code": color_code,
+            "color_name": color_display,
             "size_code": size_code,
         }
     }
@@ -3051,6 +3052,7 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         "fulfillment_number_1688": request.fulfillment_number_1688,
         "dwz_tracking": dwz_tracking,
         "color_code": color_code,
+        "color_name": color_display,
         "size_code": size_code,
         "current_stage": new_stage,
         "courier_type": courier_type,
