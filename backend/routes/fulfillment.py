@@ -1566,6 +1566,68 @@ async def bulk_sync_fulfillments_to_shopify(
     return results
 
 
+@router.post("/pipeline/orders/{order_id}/cancel-purchase")
+async def cancel_1688_purchase(order_id: str):
+    """
+    Cancel/unlink a 1688 purchase from a Shopify order.
+    This removes the alibaba_order_id and resets the purchase status.
+    """
+    db = get_db()
+    
+    # Find the order in fulfillment pipeline
+    order = await db.fulfillment_pipeline.find_one(
+        {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": int(order_id) if order_id.isdigit() else order_id},
+            {"order_number": str(order_id)},
+        ]}
+    )
+    
+    if not order:
+        raise HTTPException(status_code=404, detail=f"Order {order_id} not found in fulfillment pipeline")
+    
+    # Store the cancelled purchase info for audit trail
+    cancelled_info = {
+        "alibaba_order_id": order.get("alibaba_order_id"),
+        "alibaba_tracking": order.get("alibaba_tracking"),
+        "cancelled_at": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    # Update the order to remove 1688 purchase data
+    result = await db.fulfillment_pipeline.update_one(
+        {"_id": order["_id"]},
+        {
+            "$set": {
+                "alibaba_order_id": None,
+                "alibaba_tracking": None,
+                "alibaba_logistics_company": None,
+                "alibaba_logistics_details": None,
+                "alibaba_order_response": None,
+                "purchase_status_1688": "not_purchased",
+                "status": "pending",
+                "stages.alibaba_purchased": False,
+                "stages.alibaba_shipped": False,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            },
+            "$push": {
+                "cancelled_purchases": cancelled_info
+            }
+        }
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=500, detail="Failed to cancel 1688 purchase")
+    
+    logger.info(f"✅ Cancelled 1688 purchase for order {order_id}. Previous 1688 Order ID: {cancelled_info.get('alibaba_order_id')}")
+    
+    return {
+        "success": True,
+        "message": f"1688 purchase cancelled for order {order_id}",
+        "cancelled_alibaba_order_id": cancelled_info.get("alibaba_order_id"),
+        "order_status": "pending",
+    }
+
+
 @router.get("/sync-status-summary")
 async def get_fulfillment_sync_status_summary(
     store_name: Optional[str] = Query(None),
