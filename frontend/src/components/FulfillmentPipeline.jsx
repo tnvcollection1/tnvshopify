@@ -1572,6 +1572,45 @@ const FulfillmentPipeline = () => {
     }
   };
 
+  // Restore 1688 Purchase
+  const restorePurchase = async (order) => {
+    const orderId = order.order_number || order.shopify_order_id;
+    const cancelledPurchases = order.cancelled_purchases || [];
+    
+    if (cancelledPurchases.length === 0) {
+      toast.error('No cancelled purchases to restore');
+      return;
+    }
+    
+    // Get the most recent cancelled purchase (last item in array)
+    const mostRecent = cancelledPurchases[cancelledPurchases.length - 1];
+    
+    if (!window.confirm(`Restore the 1688 purchase for Order #${orderId}?\n\nThis will re-link the 1688 order ID: ${mostRecent.alibaba_order_id}`)) {
+      return;
+    }
+    
+    setRestoringPurchase(order._id || order.shopify_order_id);
+    try {
+      const res = await fetch(`${API}/api/fulfillment/pipeline/orders/${orderId}/restore-purchase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index: 0 }), // 0 = most recent (reversed in backend)
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`1688 purchase restored for Order #${orderId}`);
+        fetchOrders();
+      } else {
+        toast.error(data.detail || 'Failed to restore purchase');
+      }
+    } catch (e) {
+      toast.error('Failed to restore 1688 purchase');
+      console.error('Restore purchase error:', e);
+    } finally {
+      setRestoringPurchase(null);
+    }
+  };
+
   const filterOrders = useCallback(() => {
     let filtered = [...orders];
     
