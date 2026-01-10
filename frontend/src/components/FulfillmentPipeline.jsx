@@ -1424,7 +1424,11 @@ const FulfillmentPipeline = () => {
   const [syncing, setSyncing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
+  const [purchaseFilter, setPurchaseFilter] = useState('all'); // 'all', 'purchased', 'not_purchased'
+  const [dwzFilter, setDwzFilter] = useState('all'); // 'all', 'created', 'not_created'
   const [stats, setStats] = useState({});
+  const [purchaseStats, setPurchaseStats] = useState({ purchased: 0, not_purchased: 0 });
+  const [dwzStats, setDwzStats] = useState({ created: 0, not_created: 0 });
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updating, setUpdating] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
@@ -1433,6 +1437,8 @@ const FulfillmentPipeline = () => {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showBatchNotify, setShowBatchNotify] = useState(false);
   const [showOrderHistory, setShowOrderHistory] = useState(null);
+  const [showLink1688Modal, setShowLink1688Modal] = useState(null);
+  const [syncingPurchases, setSyncingPurchases] = useState(false);
 
   const getCarrierInfo = useCallback(() => {
     return STORE_CARRIERS[globalStore] || { carrier: 'Local Carrier', country: 'Unknown' };
@@ -1442,11 +1448,19 @@ const FulfillmentPipeline = () => {
     if (!globalStore) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/fulfillment/pipeline?store_name=${globalStore}`);
+      const params = new URLSearchParams({ store_name: globalStore });
+      if (stageFilter && stageFilter !== 'all') params.append('stage', stageFilter);
+      if (purchaseFilter && purchaseFilter !== 'all') params.append('purchase_status', purchaseFilter);
+      if (dwzFilter && dwzFilter !== 'all') params.append('dwz_status', dwzFilter);
+      if (searchQuery) params.append('search', searchQuery);
+      
+      const res = await fetch(`${API}/api/fulfillment/pipeline?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
         setOrders(data.orders || []);
         setStats(data.stats || {});
+        setPurchaseStats(data.purchase_stats || { purchased: 0, not_purchased: 0 });
+        setDwzStats(data.dwz_stats || { created: 0, not_created: 0 });
       }
     } catch (e) {
       console.error('Error fetching orders:', e);
@@ -1454,7 +1468,28 @@ const FulfillmentPipeline = () => {
     } finally {
       setLoading(false);
     }
-  }, [globalStore]);
+  }, [globalStore, stageFilter, purchaseFilter, dwzFilter, searchQuery]);
+
+  // Sync 1688 purchases
+  const syncPurchases = async () => {
+    setSyncingPurchases(true);
+    try {
+      const res = await fetch(`${API}/api/fulfillment/pipeline/sync-1688-purchases?store_name=${globalStore}`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`Synced ${data.synced_count} orders with 1688 purchase data`);
+        fetchOrders();
+      } else {
+        toast.error(data.detail || 'Sync failed');
+      }
+    } catch (e) {
+      toast.error('Failed to sync purchases');
+    } finally {
+      setSyncingPurchases(false);
+    }
+  };
 
   const filterOrders = useCallback(() => {
     let filtered = [...orders];
@@ -1466,17 +1501,14 @@ const FulfillmentPipeline = () => {
         o.shopify_order_id?.toString().includes(query) ||
         o.alibaba_order_id?.includes(query) ||
         o.dwz_tracking?.toLowerCase().includes(query) ||
+        o.dwz_waybill?.toLowerCase().includes(query) ||
         o.local_tracking?.toLowerCase().includes(query) ||
         o.customer_name?.toLowerCase().includes(query)
       );
     }
     
-    if (stageFilter && stageFilter !== 'all') {
-      filtered = filtered.filter(o => o.current_stage === stageFilter);
-    }
-    
     setFilteredOrders(filtered);
-  }, [orders, searchQuery, stageFilter]);
+  }, [orders, searchQuery]);
 
   useEffect(() => {
     if (globalStore) {
