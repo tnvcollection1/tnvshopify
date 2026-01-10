@@ -1,0 +1,123 @@
+{
+  "summary": "Completed testing for Iteration 28 - Restore 1688 Purchase Feature. All 10 backend tests passed (100%), 2 skipped. Frontend restore button working correctly with yellow indicator showing cancelled purchases count.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "test_report_links": [
+    "/app/tests/test_iteration28_restore_purchase.py",
+    "/app/test_reports/pytest/pytest_iteration28.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [
+    "POST /api/fulfillment/pipeline/orders/{order_id}/restore-purchase endpoint correctly restores cancelled 1688 purchases",
+    "Endpoint sets alibaba_order_id from cancelled_purchases array (most recent first)",
+    "Endpoint sets purchase_status_1688 to 'purchased' and status to 'purchased'",
+    "Endpoint returns 404 for non-existent orders",
+    "Endpoint returns 400 if order already has active alibaba_order_id",
+    "Endpoint returns 400 if no cancelled purchases exist",
+    "Endpoint returns 400 for invalid index parameter",
+    "GET /api/fulfillment/pipeline/orders/{order_id}/cancelled-purchases returns correct structure with can_restore flag",
+    "Frontend Restore 1688 Purchase button (green RotateCcw icon) appears only when order has cancelled_purchases and no alibaba_order_id",
+    "Yellow indicator (bg-yellow-50) shows cancelled purchases count",
+    "Clicking restore button shows browser confirmation dialog",
+    "After restore, order refreshes and shows 1688 order ID again",
+    "data-testid='restore-1688-purchase-btn' attribute present for testing"
+  ],
+  
+  "updated_files": [
+    "/app/tests/test_iteration28_restore_purchase.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (10/10 tests passed, 2 skipped)",
+    "frontend": "100% (all UI components working)"
+  },
+  
+  "test_credentials": {
+    "username": "admin",
+    "password": "admin"
+  },
+  
+  "seed_data_creation": "Used existing orders - Order 29477 had 1 cancelled purchase (restored during testing), Order 29483 had 4 cancelled purchases (cancelled and restored during testing)",
+  
+  "retest_needed": false,
+  
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "Iteration 28 tested Restore 1688 Purchase feature. Key endpoints: POST /api/fulfillment/pipeline/orders/{order_id}/restore-purchase and GET /api/fulfillment/pipeline/orders/{order_id}/cancelled-purchases. Frontend button has data-testid='restore-1688-purchase-btn' and only appears on orders with cancelled_purchases and no active alibaba_order_id. Orders 29477 and 29483 were used for testing - both now have active alibaba_order_ids restored.",
+  
+  "features_tested": {
+    "restore_purchase_endpoint": {
+      "POST /api/fulfillment/pipeline/orders/{order_id}/restore-purchase - success": "PASS",
+      "POST /api/fulfillment/pipeline/orders/{order_id}/restore-purchase - 404 for non-existent": "PASS",
+      "POST /api/fulfillment/pipeline/orders/{order_id}/restore-purchase - 400 if already has active purchase": "PASS",
+      "POST /api/fulfillment/pipeline/orders/{order_id}/restore-purchase - 400 if no cancelled purchases": "PASS",
+      "Sets alibaba_order_id from cancelled_purchases": "PASS",
+      "Sets purchase_status_1688 to 'purchased'": "PASS",
+      "Sets status to 'purchased'": "PASS",
+      "Stores restore_history audit trail": "PASS",
+      "Returns restored_alibaba_order_id in response": "PASS"
+    },
+    "get_cancelled_purchases_endpoint": {
+      "GET /api/fulfillment/pipeline/orders/{order_id}/cancelled-purchases - success": "PASS",
+      "GET /api/fulfillment/pipeline/orders/{order_id}/cancelled-purchases - 404 for non-existent": "PASS",
+      "Returns correct structure with can_restore flag": "PASS",
+      "Returns cancelled_purchases in reverse order (most recent first)": "PASS"
+    },
+    "frontend_restore_button": {
+      "Restore button visible on orders with cancelled_purchases and no alibaba_order_id": "PASS",
+      "Restore button hidden on orders with active alibaba_order_id": "PASS",
+      "data-testid='restore-1688-purchase-btn' present": "PASS",
+      "Yellow indicator shows cancelled purchases count": "PASS",
+      "Confirmation dialog shows on click": "PASS",
+      "Order refreshes after restore": "PASS",
+      "1688 Order field shows restored ID after restore": "PASS",
+      "Restore button removed after restore": "PASS"
+    }
+  },
+  
+  "api_test_results": {
+    "total_tests": 12,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 2
+  },
+  
+  "ui_verification": {
+    "restore_button": {
+      "icon": "RotateCcw (green circular arrow)",
+      "location": "Order card action buttons row",
+      "visibility": "Only when cancelled_purchases exists AND alibaba_order_id is null",
+      "hover_state": "text-green-800 hover:bg-green-50"
+    },
+    "yellow_indicator": {
+      "class": "bg-yellow-50",
+      "text_format": "Has {count} cancelled purchase(s)",
+      "visibility": "Only when canRestore is true"
+    },
+    "confirmation_dialog": {
+      "type": "Browser native confirm dialog",
+      "message_format": "Restore the 1688 purchase for Order #{order_number}?\n\nThis will re-link the 1688 order ID: {alibaba_order_id}"
+    },
+    "toast_notification": {
+      "message": "1688 purchase restored for Order #{order_number}",
+      "type": "success"
+    }
+  },
+  
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  }
+}
