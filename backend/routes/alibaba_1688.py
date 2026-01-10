@@ -2945,8 +2945,20 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     
     courier_type = request.courier_type or STORE_COURIER_MAP.get(request.store_name) or default_courier
     
-    # Extract color and size from order (now returns color_name too)
-    extracted_color, extracted_size, extracted_color_name = extract_color_size_from_order(shopify_order)
+    # PRIORITY: Fetch 1688 purchase order for color/size (more accurate than Shopify)
+    purchase_order_1688 = await db.purchase_orders_1688.find_one({
+        "alibaba_order_id": request.alibaba_order_id
+    }, {"_id": 0})
+    
+    # If not found by alibaba_order_id, try by shopify_order_number
+    if not purchase_order_1688:
+        purchase_order_1688 = await db.purchase_orders_1688.find_one({
+            "shopify_order_number": request.shopify_order_number,
+            "store_name": request.store_name
+        }, {"_id": 0})
+    
+    # Extract color and size - prioritize 1688 data over Shopify
+    extracted_color, extracted_size, extracted_color_name = extract_color_size_from_order(shopify_order, purchase_order_1688)
     color_code = request.color_override or extracted_color
     size_code = request.size_override or extracted_size
     # Get display color name (full name for remarks)
