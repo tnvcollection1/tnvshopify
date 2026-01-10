@@ -3061,8 +3061,8 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "fPrice": float(shopify_order.get("total_price", 0) or shopify_order.get("total_spent", 0) or 0),
                 
                 # Memo with all references for easy search and verification
-                # Format: Order# | 1688: Color/Size | Shopify: Color/Size | MISMATCH details
-                "cMemo": self._build_memo(request.shopify_order_number, alibaba_info, shopify_info, colors_match, sizes_match, has_1688_data),
+                # Build detailed mismatch info
+                "cMemo": _build_dwz_memo(request.shopify_order_number, alibaba_info, shopify_info, colors_match, sizes_match, has_1688_data),
                 
                 # Mark for filtering
                 "cMark": f"#{request.shopify_order_number}",
