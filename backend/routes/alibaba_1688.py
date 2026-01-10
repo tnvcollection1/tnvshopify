@@ -2638,8 +2638,8 @@ STORE_COUNTRY_CODE = {
 # Color code mapping (color name -> single letter code)
 COLOR_CODE_MAP = {
     "red": "R", "maroon": "R", "burgundy": "R", "wine": "R", "crimson": "R",
-    "blue": "B", "navy": "B", "royal": "B", "cobalt": "B", "azure": "B",
-    "black": "K", "charcoal": "K", "ebony": "K",
+    "blue": "U", "navy": "U", "royal": "U", "cobalt": "U", "azure": "U",
+    "black": "B", "charcoal": "B", "ebony": "B",
     "white": "W", "ivory": "W", "cream": "W", "off-white": "W",
     "green": "G", "olive": "G", "mint": "G", "sage": "G", "emerald": "G",
     "yellow": "Y", "gold": "Y", "mustard": "Y", "lemon": "Y",
@@ -2654,8 +2654,8 @@ COLOR_CODE_MAP = {
 # Chinese color mapping (1688 uses Chinese color names)
 CHINESE_COLOR_MAP = {
     "红": ("R", "Red"), "红色": ("R", "Red"), "酒红": ("R", "Wine Red"), "暗红": ("R", "Dark Red"),
-    "蓝": ("B", "Blue"), "蓝色": ("B", "Blue"), "深蓝": ("B", "Navy Blue"), "浅蓝": ("B", "Light Blue"),
-    "黑": ("K", "Black"), "黑色": ("K", "Black"),
+    "蓝": ("U", "Blue"), "蓝色": ("U", "Blue"), "深蓝": ("U", "Navy Blue"), "浅蓝": ("U", "Light Blue"),
+    "黑": ("B", "Black"), "黑色": ("B", "Black"),
     "白": ("W", "White"), "白色": ("W", "White"), "米白": ("W", "Off-White"), "乳白": ("W", "Ivory"),
     "绿": ("G", "Green"), "绿色": ("G", "Green"), "墨绿": ("G", "Dark Green"), "浅绿": ("G", "Light Green"),
     "黄": ("Y", "Yellow"), "黄色": ("Y", "Yellow"), "金色": ("Y", "Gold"), "米黄": ("Y", "Beige Yellow"),
@@ -2669,7 +2669,7 @@ CHINESE_COLOR_MAP = {
 
 # Reverse mapping: code -> display name (for remarks)
 COLOR_CODE_TO_NAME = {
-    "R": "Red", "B": "Blue", "K": "Black", "W": "White", "G": "Green",
+    "R": "Red", "U": "Blue", "B": "Black", "W": "White", "G": "Green",
     "Y": "Yellow", "P": "Pink", "V": "Purple", "O": "Orange", "N": "Brown",
     "E": "Grey", "M": "Multi", "X": "Unknown"
 }
