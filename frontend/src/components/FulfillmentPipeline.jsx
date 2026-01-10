@@ -126,14 +126,22 @@ const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating,
           <StageProgressBar currentStage={order.current_stage} />
         </div>
         
+        {/* 1688 Purchase Info */}
+        {order.purchase_1688 && (
+          <div className="bg-orange-50 rounded p-2 text-xs mb-3">
+            <p className="font-medium text-orange-700">1688 Info:</p>
+            <p>Color: {order.purchase_1688.color} | Size: {order.purchase_1688.size}</p>
+          </div>
+        )}
+        
         <div className="grid grid-cols-3 gap-2 text-xs mb-3">
           <div>
             <p className="text-gray-500">1688 Order</p>
             <p className="font-mono truncate">{order.alibaba_order_id ? order.alibaba_order_id.slice(-8) : '-'}</p>
           </div>
           <div>
-            <p className="text-gray-500">DWZ56 #</p>
-            <p className="font-mono">{order.dwz_tracking || '-'}</p>
+            <p className="text-gray-500">DWZ Waybill</p>
+            <p className="font-mono">{order.dwz_waybill || order.dwz_tracking || '-'}</p>
           </div>
           <div>
             <p className="text-gray-500">{carrierInfo?.carrier || 'Local'} #</p>
