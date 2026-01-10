@@ -1458,6 +1458,7 @@ const FulfillmentPipeline = () => {
   const [showOrderHistory, setShowOrderHistory] = useState(null);
   const [showLink1688Modal, setShowLink1688Modal] = useState(null);
   const [syncingPurchases, setSyncingPurchases] = useState(false);
+  const [cancellingPurchase, setCancellingPurchase] = useState(null);
 
   const getCarrierInfo = useCallback(() => {
     return STORE_CARRIERS[globalStore] || { carrier: 'Local Carrier', country: 'Unknown' };
