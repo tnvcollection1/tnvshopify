@@ -2957,12 +2957,42 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
             "store_name": request.store_name
         }, {"_id": 0})
     
-    # Extract color and size - prioritize 1688 data over Shopify
-    extracted_color, extracted_size, extracted_color_name = extract_color_size_from_order(shopify_order, purchase_order_1688)
+    # Extract color and size from BOTH sources for verification
+    # 1. Get Shopify color/size (for verification)
+    shopify_color_code, shopify_size_code, shopify_color_name = extract_color_size_from_order(shopify_order, None)
+    
+    # 2. Get 1688 color/size (priority for waybill)
+    if purchase_order_1688:
+        color_1688 = purchase_order_1688.get("color", "")
+        size_1688 = purchase_order_1688.get("size", "")
+        if color_1688:
+            extracted_color, extracted_color_name = extract_color_from_1688(color_1688)
+        else:
+            extracted_color, extracted_color_name = shopify_color_code, shopify_color_name
+        
+        if size_1688:
+            import re
+            numbers = re.findall(r'\d+', str(size_1688))
+            extracted_size = numbers[0].zfill(2)[-2:] if numbers else shopify_size_code
+        else:
+            extracted_size = shopify_size_code
+    else:
+        extracted_color, extracted_size, extracted_color_name = shopify_color_code, shopify_size_code, shopify_color_name
+    
     color_code = request.color_override or extracted_color
     size_code = request.size_override or extracted_size
     # Get display color name (full name for remarks)
     color_display = extracted_color_name if not request.color_override else COLOR_CODE_TO_NAME.get(request.color_override, request.color_override)
+    
+    # Build comparison string for remarks
+    # Format: "1688: Black/40 | Shopify: Black/40" or "1688: Black/40 | Shopify: Gold/41 ⚠️"
+    shopify_info = f"{shopify_color_name}/{shopify_size_code}"
+    alibaba_info = f"{color_display}/{size_code}"
+    
+    # Check if they match
+    colors_match = (shopify_color_code == color_code) or (shopify_color_name.lower() == color_display.lower())
+    sizes_match = (shopify_size_code == size_code)
+    mismatch_warning = "" if (colors_match and sizes_match) else " ⚠️MISMATCH"
     
     # Generate custom waybill: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
     custom_waybill = await generate_tnv_waybill_number(db, country_code, color_code, size_code)
