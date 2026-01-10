@@ -2734,14 +2734,19 @@ def extract_color_size_from_order(order: dict) -> tuple:
         sku_parts = sku_lower.split("-")
         for part in sku_parts:
             if color_code == "X":
-                for color_name, code in COLOR_CODE_MAP.items():
-                    if color_name in part:
+                for cname, code in COLOR_CODE_MAP.items():
+                    if cname in part:
                         color_code = code
+                        color_name = cname.capitalize()
                         break
             if size_code == "00" and part.isdigit():
                 size_code = part.zfill(2)[-2:]
     
-    return color_code, size_code
+    # If color_name not found but code exists, use mapping
+    if color_name == "Unknown" and color_code != "X":
+        color_name = COLOR_CODE_TO_NAME.get(color_code, "Unknown")
+    
+    return color_code, size_code, color_name
 
 
 async def generate_tnv_waybill_number(db, country_code: str, color_code: str, size_code: str) -> str:
