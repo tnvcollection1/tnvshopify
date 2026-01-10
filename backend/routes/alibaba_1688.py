@@ -2962,21 +2962,25 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     shopify_color_code, shopify_size_code, shopify_color_name = extract_color_size_from_order(shopify_order, None)
     
     # 2. Get 1688 color/size (priority for waybill)
+    has_1688_data = False
     if purchase_order_1688:
         color_1688 = purchase_order_1688.get("color", "")
         size_1688 = purchase_order_1688.get("size", "")
         if color_1688:
+            has_1688_data = True
             extracted_color, extracted_color_name = extract_color_from_1688(color_1688)
         else:
             extracted_color, extracted_color_name = shopify_color_code, shopify_color_name
         
         if size_1688:
+            has_1688_data = True
             import re
             numbers = re.findall(r'\d+', str(size_1688))
             extracted_size = numbers[0].zfill(2)[-2:] if numbers else shopify_size_code
         else:
             extracted_size = shopify_size_code
     else:
+        # No 1688 data - use Shopify but mark as "no 1688 data"
         extracted_color, extracted_size, extracted_color_name = shopify_color_code, shopify_size_code, shopify_color_name
     
     color_code = request.color_override or extracted_color
@@ -2985,14 +2989,22 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     color_display = extracted_color_name if not request.color_override else COLOR_CODE_TO_NAME.get(request.color_override, request.color_override)
     
     # Build comparison string for remarks
-    # Format: "1688: Black/40 | Shopify: Black/40" or "1688: Black/40 | Shopify: Gold/41 ⚠️"
+    # If no 1688 data, show "N/A" to make it clear
     shopify_info = f"{shopify_color_name}/{shopify_size_code}"
-    alibaba_info = f"{color_display}/{size_code}"
+    if has_1688_data:
+        alibaba_info = f"{color_display}/{size_code}"
+    else:
+        alibaba_info = "N/A (no 1688 data)"
     
-    # Check if they match
-    colors_match = (shopify_color_code == color_code) or (shopify_color_name.lower() == color_display.lower())
-    sizes_match = (shopify_size_code == size_code)
-    mismatch_warning = "" if (colors_match and sizes_match) else " ⚠️MISMATCH"
+    # Check if they match (only if 1688 data exists)
+    if has_1688_data:
+        colors_match = (shopify_color_code == color_code) or (shopify_color_name.lower() == color_display.lower())
+        sizes_match = (shopify_size_code == size_code)
+        mismatch_warning = "" if (colors_match and sizes_match) else " ⚠️MISMATCH"
+    else:
+        colors_match = None
+        sizes_match = None
+        mismatch_warning = " ⚠️NO 1688 DATA"
     
     # Generate custom waybill: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
     custom_waybill = await generate_tnv_waybill_number(db, country_code, color_code, size_code)
