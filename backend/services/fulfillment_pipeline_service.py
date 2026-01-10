@@ -363,6 +363,187 @@ async def get_pipeline_stats(store_name: str = Query(...)):
     }
 
 
+@router.post("/pipeline/sync-1688-purchases")
+async def sync_1688_purchases(
+    store_name: str = Query(...),
+):
+    """
+    Sync orders with 1688 purchase data.
+    Updates fulfillment_pipeline with alibaba_order_id from purchase_orders_1688.
+    """
+    db = get_db()
+    
+    # Get all 1688 purchase orders for this store
+    purchase_orders = await db.purchase_orders_1688.find(
+        {"store_name": store_name},
+        {"_id": 0}
+    ).to_list(None)
+    
+    synced = 0
+    errors = []
+    
+    for po in purchase_orders:
+        shopify_order = po.get("shopify_order_number")
+        alibaba_id = po.get("alibaba_order_id")
+        
+        if not shopify_order or not alibaba_id:
+            continue
+        
+        try:
+            # Update fulfillment_pipeline
+            result = await db.fulfillment_pipeline.update_one(
+                {
+                    "store_name": store_name,
+                    "$or": [
+                        {"order_number": shopify_order},
+                        {"order_number": str(shopify_order)},
+                    ]
+                },
+                {
+                    "$set": {
+                        "alibaba_order_id": alibaba_id,
+                        "current_stage": "1688_ordered",
+                        "purchase_1688": {
+                            "color": po.get("color"),
+                            "size": po.get("size"),
+                            "product_name": po.get("product_name"),
+                        },
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    }
+                }
+            )
+            
+            if result.modified_count > 0:
+                synced += 1
+            
+            # Also update customers collection
+            await db.customers.update_one(
+                {
+                    "store_name": store_name,
+                    "$or": [
+                        {"order_number": shopify_order},
+                        {"order_number": str(shopify_order)},
+                    ]
+                },
+                {
+                    "$set": {
+                        "alibaba_order_id": alibaba_id,
+                        "fulfillment_stage": "1688_ordered",
+                    }
+                }
+            )
+            
+        except Exception as e:
+            errors.append({"order": shopify_order, "error": str(e)})
+    
+    return {
+        "success": True,
+        "message": f"Synced {synced} orders with 1688 purchase data",
+        "synced_count": synced,
+        "total_purchase_orders": len(purchase_orders),
+        "errors": errors if errors else None,
+    }
+
+
+@router.post("/pipeline/{order_number}/link-1688")
+async def link_order_to_1688(
+    order_number: str,
+    data: dict = Body(...),
+):
+    """
+    Link a Shopify order to a 1688 purchase order.
+    
+    Body params:
+    - alibaba_order_id: 1688 order ID
+    - color: Product color from 1688
+    - size: Product size from 1688
+    - store_name: Store name
+    """
+    db = get_db()
+    
+    alibaba_id = data.get("alibaba_order_id")
+    color = data.get("color")
+    size = data.get("size")
+    store_name = data.get("store_name")
+    
+    if not alibaba_id:
+        raise HTTPException(status_code=400, detail="alibaba_order_id is required")
+    if not store_name:
+        raise HTTPException(status_code=400, detail="store_name is required")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Save to purchase_orders_1688
+    await db.purchase_orders_1688.update_one(
+        {
+            "shopify_order_number": order_number,
+            "store_name": store_name,
+        },
+        {
+            "$set": {
+                "alibaba_order_id": alibaba_id,
+                "color": color,
+                "size": size,
+                "store_name": store_name,
+                "updated_at": now,
+            },
+            "$setOnInsert": {
+                "created_at": now,
+            }
+        },
+        upsert=True
+    )
+    
+    # Update fulfillment_pipeline
+    result = await db.fulfillment_pipeline.update_one(
+        {
+            "store_name": store_name,
+            "$or": [
+                {"order_number": order_number},
+                {"order_number": str(order_number)},
+            ]
+        },
+        {
+            "$set": {
+                "alibaba_order_id": alibaba_id,
+                "current_stage": "1688_ordered",
+                "purchase_1688": {
+                    "color": color,
+                    "size": size,
+                },
+                "updated_at": now,
+                "stage_dates.1688_ordered": now,
+            }
+        }
+    )
+    
+    # Update customers collection
+    await db.customers.update_one(
+        {
+            "store_name": store_name,
+            "$or": [
+                {"order_number": order_number},
+                {"order_number": str(order_number)},
+            ]
+        },
+        {
+            "$set": {
+                "alibaba_order_id": alibaba_id,
+                "fulfillment_stage": "1688_ordered",
+            }
+        }
+    )
+    
+    return {
+        "success": True,
+        "message": f"Order #{order_number} linked to 1688 order {alibaba_id}",
+        "order_number": order_number,
+        "alibaba_order_id": alibaba_id,
+        "color": color,
+        "size": size,
+    }
+
+
 @router.post("/pipeline/{order_id}/update-stage")
 async def update_order_stage(
     order_id: str,
