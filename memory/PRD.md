@@ -43,7 +43,23 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ## What's Been Implemented
 
-### Completed Features (as of Jan 7, 2025)
+### Completed Features (as of Jan 10, 2025)
+
+### Cancel 1688 Purchase Feature (Jan 10, 2025) ✅ NEW
+- **Backend endpoint**: `POST /api/fulfillment/pipeline/orders/{order_id}/cancel-purchase`
+- **Functionality**: Unlinks 1688 purchase from Shopify order by:
+  - Setting `alibaba_order_id` to null
+  - Setting `purchase_status_1688` to 'not_purchased'
+  - Resetting order status to 'pending'
+  - Storing cancelled purchase info in `cancelled_purchases` array for audit trail
+- **Frontend**: Red X icon button (XCircle) in order card action row
+  - Only visible on orders with `alibaba_order_id`
+  - Shows confirmation dialog with order number and 1688 order ID
+  - Toast notification on successful cancellation
+  - Auto-refreshes order list after cancellation
+- **Tests**: 12/12 passed (100%)
+
+### Previous Features (as of Jan 9, 2025)
 - ✅ Complete e-commerce storefront with Razorpay checkout
 - ✅ Order tracking system
 - ✅ Storefront CMS with image upload
