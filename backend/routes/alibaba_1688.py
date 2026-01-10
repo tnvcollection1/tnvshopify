@@ -2651,17 +2651,25 @@ COLOR_CODE_MAP = {
     "multi": "M", "multicolor": "M", "print": "M", "pattern": "M",
 }
 
+# Reverse mapping: code -> display name (for remarks)
+COLOR_CODE_TO_NAME = {
+    "R": "Red", "B": "Blue", "K": "Black", "W": "White", "G": "Green",
+    "Y": "Yellow", "P": "Pink", "V": "Purple", "O": "Orange", "N": "Brown",
+    "E": "Grey", "M": "Multi", "X": "Unknown"
+}
+
 
 def extract_color_size_from_order(order: dict) -> tuple:
     """
     Extract color and size from Shopify order line items.
-    Returns (color_code, size_code) tuple.
+    Returns (color_code, size_code, color_name) tuple.
     
-    Example SKU: 739758517850-black-40 → (K, 40)
-    Example variant: Red / 42 → (R, 42)
+    Example SKU: 739758517850-black-40 → (K, 40, "Black")
+    Example variant: Red / 42 → (R, 42, "Red")
     """
     color_code = "X"  # Default unknown
     size_code = "00"  # Default unknown
+    color_name = "Unknown"  # Full color name for remarks
     
     line_items = order.get("line_items", [])
     if not line_items:
@@ -2671,13 +2679,14 @@ def extract_color_size_from_order(order: dict) -> tuple:
         if order_skus:
             # Parse SKU like "866 GREEN-41"
             sku = order_skus[0].lower()
-            for color_name, code in COLOR_CODE_MAP.items():
-                if color_name in sku:
+            for cname, code in COLOR_CODE_MAP.items():
+                if cname in sku:
                     color_code = code
+                    color_name = cname.capitalize()
                     break
         if shoe_sizes and shoe_sizes[0]:
             size_code = str(shoe_sizes[0]).zfill(2)[-2:]
-        return color_code, size_code
+        return color_code, size_code, color_name
     
     first_item = line_items[0] if isinstance(line_items, list) else line_items
     
@@ -2694,9 +2703,10 @@ def extract_color_size_from_order(order: dict) -> tuple:
             
             # Check for color
             if color_code == "X":
-                for color_name, code in COLOR_CODE_MAP.items():
-                    if color_name in part_lower:
+                for cname, code in COLOR_CODE_MAP.items():
+                    if cname in part_lower:
                         color_code = code
+                        color_name = cname.capitalize()
                         break
             
             # Check for size (number at end or standalone)
