@@ -1747,6 +1747,66 @@ const FulfillmentPipeline = () => {
         ))}
       </div>
       
+      {/* 1688 Purchase & DWZ Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card 
+          className={`cursor-pointer hover:shadow-md ${purchaseFilter === 'purchased' ? 'ring-2 ring-orange-500' : ''}`}
+          onClick={() => setPurchaseFilter(purchaseFilter === 'purchased' ? 'all' : 'purchased')}
+        >
+          <CardContent className="p-3 flex items-center gap-3">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <Package className="h-5 w-5 text-orange-600" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-orange-600">{purchaseStats.purchased}</p>
+              <p className="text-xs text-gray-600">1688 Purchased</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card 
+          className={`cursor-pointer hover:shadow-md ${purchaseFilter === 'not_purchased' ? 'ring-2 ring-gray-500' : ''}`}
+          onClick={() => setPurchaseFilter(purchaseFilter === 'not_purchased' ? 'all' : 'not_purchased')}
+        >
+          <CardContent className="p-3 flex items-center gap-3">
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <Package className="h-5 w-5 text-gray-600" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-gray-600">{purchaseStats.not_purchased}</p>
+              <p className="text-xs text-gray-600">Not Purchased</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card 
+          className={`cursor-pointer hover:shadow-md ${dwzFilter === 'created' ? 'ring-2 ring-cyan-500' : ''}`}
+          onClick={() => setDwzFilter(dwzFilter === 'created' ? 'all' : 'created')}
+        >
+          <CardContent className="p-3 flex items-center gap-3">
+            <div className="p-2 bg-cyan-100 rounded-lg">
+              <Truck className="h-5 w-5 text-cyan-600" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-cyan-600">{dwzStats.created}</p>
+              <p className="text-xs text-gray-600">DWZ Created</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card 
+          className={`cursor-pointer hover:shadow-md ${dwzFilter === 'not_created' ? 'ring-2 ring-red-500' : ''}`}
+          onClick={() => setDwzFilter(dwzFilter === 'not_created' ? 'all' : 'not_created')}
+        >
+          <CardContent className="p-3 flex items-center gap-3">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <Truck className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-red-600">{dwzStats.not_created}</p>
+              <p className="text-xs text-gray-600">No DWZ</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
@@ -1772,6 +1832,28 @@ const FulfillmentPipeline = () => {
                     {stage.label}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+            <Select value={purchaseFilter} onValueChange={setPurchaseFilter}>
+              <SelectTrigger className="w-48">
+                <Package className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="1688 Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Orders</SelectItem>
+                <SelectItem value="purchased">1688 Purchased</SelectItem>
+                <SelectItem value="not_purchased">Not Purchased</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={dwzFilter} onValueChange={setDwzFilter}>
+              <SelectTrigger className="w-48">
+                <Truck className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="DWZ Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Orders</SelectItem>
+                <SelectItem value="created">DWZ Created</SelectItem>
+                <SelectItem value="not_created">No DWZ</SelectItem>
               </SelectContent>
             </Select>
           </div>
