@@ -1938,6 +1938,8 @@ const FulfillmentPipeline = () => {
               onNotify={sendNotification}
               onPromptTracking={(order, stage, config) => setTrackingPrompt({ order, stage, config })}
               onViewHistory={(orderId) => setShowOrderHistory(orderId)}
+              onCancelPurchase={cancelPurchase}
+              cancellingPurchase={cancellingPurchase}
             />
           ))}
         </div>
