@@ -2651,6 +2651,22 @@ COLOR_CODE_MAP = {
     "multi": "M", "multicolor": "M", "print": "M", "pattern": "M",
 }
 
+# Chinese color mapping (1688 uses Chinese color names)
+CHINESE_COLOR_MAP = {
+    "红": ("R", "Red"), "红色": ("R", "Red"), "酒红": ("R", "Wine Red"), "暗红": ("R", "Dark Red"),
+    "蓝": ("B", "Blue"), "蓝色": ("B", "Blue"), "深蓝": ("B", "Navy Blue"), "浅蓝": ("B", "Light Blue"),
+    "黑": ("K", "Black"), "黑色": ("K", "Black"),
+    "白": ("W", "White"), "白色": ("W", "White"), "米白": ("W", "Off-White"), "乳白": ("W", "Ivory"),
+    "绿": ("G", "Green"), "绿色": ("G", "Green"), "墨绿": ("G", "Dark Green"), "浅绿": ("G", "Light Green"),
+    "黄": ("Y", "Yellow"), "黄色": ("Y", "Yellow"), "金色": ("Y", "Gold"), "米黄": ("Y", "Beige Yellow"),
+    "粉": ("P", "Pink"), "粉色": ("P", "Pink"), "粉红": ("P", "Pink"),
+    "紫": ("V", "Purple"), "紫色": ("V", "Purple"),
+    "橙": ("O", "Orange"), "橙色": ("O", "Orange"), "橘色": ("O", "Orange"),
+    "棕": ("N", "Brown"), "棕色": ("N", "Brown"), "咖啡": ("N", "Coffee"), "卡其": ("N", "Khaki"), "驼色": ("N", "Camel"),
+    "灰": ("E", "Grey"), "灰色": ("E", "Grey"), "银色": ("E", "Silver"),
+    "彩": ("M", "Multi"), "花色": ("M", "Pattern"), "印花": ("M", "Print"),
+}
+
 # Reverse mapping: code -> display name (for remarks)
 COLOR_CODE_TO_NAME = {
     "R": "Red", "B": "Blue", "K": "Black", "W": "White", "G": "Green",
@@ -2659,18 +2675,71 @@ COLOR_CODE_TO_NAME = {
 }
 
 
-def extract_color_size_from_order(order: dict) -> tuple:
+def extract_color_from_1688(color_1688: str) -> tuple:
     """
-    Extract color and size from Shopify order line items.
-    Returns (color_code, size_code, color_name) tuple.
+    Extract color code and display name from 1688 Chinese color.
+    Returns (color_code, color_display_name) tuple.
+    """
+    if not color_1688:
+        return "X", "Unknown"
     
-    Example SKU: 739758517850-black-40 → (K, 40, "Black")
-    Example variant: Red / 42 → (R, 42, "Red")
+    color_1688 = color_1688.strip()
+    
+    # Direct match in Chinese color map
+    if color_1688 in CHINESE_COLOR_MAP:
+        return CHINESE_COLOR_MAP[color_1688]
+    
+    # Partial match for compound colors like "黑色加绒"
+    for chinese, (code, name) in CHINESE_COLOR_MAP.items():
+        if chinese in color_1688:
+            return code, name
+    
+    # If it's already in English, try English mapping
+    color_lower = color_1688.lower()
+    for eng_color, code in COLOR_CODE_MAP.items():
+        if eng_color in color_lower:
+            return code, eng_color.capitalize()
+    
+    # Return the original 1688 color as display name with unknown code
+    return "X", color_1688
+
+
+def extract_color_size_from_order(order: dict, purchase_order_1688: dict = None) -> tuple:
+    """
+    Extract color and size from order data.
+    PRIORITY: 1688 purchase order data > Shopify order data
+    
+    Returns (color_code, size_code, color_name) tuple.
     """
     color_code = "X"  # Default unknown
     size_code = "00"  # Default unknown
     color_name = "Unknown"  # Full color name for remarks
     
+    # PRIORITY 1: Get from 1688 purchase order (most accurate)
+    if purchase_order_1688:
+        color_1688 = purchase_order_1688.get("color", "")
+        size_1688 = purchase_order_1688.get("size", "")
+        
+        if color_1688:
+            color_code, color_name = extract_color_from_1688(color_1688)
+        
+        if size_1688:
+            # Clean size value
+            size_str = str(size_1688).strip()
+            # Extract numeric part
+            import re
+            numbers = re.findall(r'\d+', size_str)
+            if numbers:
+                size_code = numbers[0].zfill(2)[-2:]
+            elif size_str.upper() in ["XS", "S", "M", "L", "XL", "XXL", "XXXL"]:
+                size_map = {"XS": "XS", "S": "SM", "M": "MD", "L": "LG", "XL": "XL", "XXL": "2X", "XXXL": "3X"}
+                size_code = size_map.get(size_str.upper(), size_str.upper()[:2])
+        
+        # If we got valid data from 1688, return it
+        if color_code != "X" or size_code != "00":
+            return color_code, size_code, color_name
+    
+    # PRIORITY 2: Fall back to Shopify order data
     line_items = order.get("line_items", [])
     if not line_items:
         # Try order-level fields
