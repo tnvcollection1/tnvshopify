@@ -2876,10 +2876,12 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
     
     courier_type = request.courier_type or STORE_COURIER_MAP.get(request.store_name) or default_courier
     
-    # Extract color and size from order
-    extracted_color, extracted_size = extract_color_size_from_order(shopify_order)
+    # Extract color and size from order (now returns color_name too)
+    extracted_color, extracted_size, extracted_color_name = extract_color_size_from_order(shopify_order)
     color_code = request.color_override or extracted_color
     size_code = request.size_override or extracted_size
+    # Get display color name (full name for remarks)
+    color_display = extracted_color_name if not request.color_override else COLOR_CODE_TO_NAME.get(request.color_override, request.color_override)
     
     # Generate custom waybill: TNV{COUNTRY}{DATE}{COLOR}{SIZE}{SERIAL}
     custom_waybill = await generate_tnv_waybill_number(db, country_code, color_code, size_code)
@@ -2936,8 +2938,8 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "fPrice": float(shopify_order.get("total_price", 0) or shopify_order.get("total_spent", 0) or 0),
                 
                 # Memo with all references for easy search
-                # Format: Shopify | 1688 Order | 1688 Fulfillment | Color/Size
-                "cMemo": f"Shopify: #{request.shopify_order_number} | 1688订单: {request.alibaba_order_id}" + (f" | 1688物流: {request.fulfillment_number_1688}" if request.fulfillment_number_1688 else "") + f" | {color_code}/{size_code}",
+                # Format: Shopify | 1688 Order | 1688 Fulfillment | ColorName/Size
+                "cMemo": f"Shopify: #{request.shopify_order_number} | 1688订单: {request.alibaba_order_id}" + (f" | 1688物流: {request.fulfillment_number_1688}" if request.fulfillment_number_1688 else "") + f" | {color_display}/{size_code}",
                 
                 # Mark for filtering
                 "cMark": f"#{request.shopify_order_number}",
