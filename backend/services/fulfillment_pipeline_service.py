@@ -185,10 +185,19 @@ def get_stage_index(stage: str) -> int:
 async def get_fulfillment_pipeline(
     store_name: str = Query(...),
     stage: Optional[str] = Query(None),
+    purchase_status: Optional[str] = Query(None, description="Filter by 1688 purchase status: 'purchased', 'not_purchased', 'all'"),
+    dwz_status: Optional[str] = Query(None, description="Filter by DWZ status: 'created', 'not_created', 'all'"),
+    search: Optional[str] = Query(None, description="Search by order number"),
     limit: int = Query(100, ge=1, le=500),
 ):
     """
     Get all orders in the fulfillment pipeline with their current stage.
+    
+    Filters:
+    - stage: Filter by fulfillment stage
+    - purchase_status: 'purchased' (has 1688 order), 'not_purchased' (no 1688 order), 'all'
+    - dwz_status: 'created' (has DWZ waybill), 'not_created' (no DWZ waybill), 'all'
+    - search: Search by order number
     """
     db = get_db()
     
@@ -197,11 +206,65 @@ async def get_fulfillment_pipeline(
     if stage:
         query["current_stage"] = stage
     
+    # Filter by 1688 purchase status
+    if purchase_status == "purchased":
+        query["alibaba_order_id"] = {"$exists": True, "$ne": None, "$ne": ""}
+    elif purchase_status == "not_purchased":
+        query["$or"] = [
+            {"alibaba_order_id": {"$exists": False}},
+            {"alibaba_order_id": None},
+            {"alibaba_order_id": ""}
+        ]
+    
+    # Filter by DWZ status
+    if dwz_status == "created":
+        query["dwz_waybill"] = {"$exists": True, "$ne": None, "$ne": ""}
+    elif dwz_status == "not_created":
+        if "$or" in query:
+            # Combine with existing $or using $and
+            existing_or = query.pop("$or")
+            query["$and"] = [
+                {"$or": existing_or},
+                {"$or": [
+                    {"dwz_waybill": {"$exists": False}},
+                    {"dwz_waybill": None},
+                    {"dwz_waybill": ""}
+                ]}
+            ]
+        else:
+            query["$or"] = [
+                {"dwz_waybill": {"$exists": False}},
+                {"dwz_waybill": None},
+                {"dwz_waybill": ""}
+            ]
+    
+    # Search by order number
+    if search:
+        query["$or"] = [
+            {"order_number": {"$regex": search, "$options": "i"}},
+            {"shopify_order_id": {"$regex": search, "$options": "i"}},
+        ]
+    
     # Get orders from fulfillment_pipeline collection
     orders = await db.fulfillment_pipeline.find(
         query,
         {"_id": 0}
     ).sort("updated_at", -1).limit(limit).to_list(limit)
+    
+    # Enrich with 1688 purchase order data
+    for order in orders:
+        alibaba_id = order.get("alibaba_order_id")
+        if alibaba_id:
+            po = await db.purchase_orders_1688.find_one(
+                {"alibaba_order_id": alibaba_id},
+                {"_id": 0, "color": 1, "size": 1, "product_name": 1}
+            )
+            if po:
+                order["purchase_1688"] = {
+                    "color": po.get("color"),
+                    "size": po.get("size"),
+                    "product_name": po.get("product_name"),
+                }
     
     # If no pipeline data, try to get from customers/orders
     if not orders:
@@ -225,6 +288,7 @@ async def get_fulfillment_pipeline(
                 "current_stage": c.get("fulfillment_stage", "shopify_order"),
                 "alibaba_order_id": c.get("alibaba_order_id"),
                 "dwz_tracking": c.get("dwz_tracking"),
+                "dwz_waybill": c.get("dwz_waybill"),
                 "local_tracking": c.get("tracking_number"),
                 "local_carrier": c.get("tracking_company"),
                 "store_name": store_name,
@@ -239,10 +303,24 @@ async def get_fulfillment_pipeline(
         count = len([o for o in orders if o.get("current_stage") == stage_name])
         stats[stage_name] = count
     
+    # Calculate purchase and DWZ stats
+    purchased_count = len([o for o in orders if o.get("alibaba_order_id")])
+    not_purchased_count = len(orders) - purchased_count
+    dwz_created_count = len([o for o in orders if o.get("dwz_waybill")])
+    dwz_not_created_count = len(orders) - dwz_created_count
+    
     return {
         "success": True,
         "orders": orders,
         "stats": stats,
+        "purchase_stats": {
+            "purchased": purchased_count,
+            "not_purchased": not_purchased_count,
+        },
+        "dwz_stats": {
+            "created": dwz_created_count,
+            "not_created": dwz_not_created_count,
+        },
         "total": len(orders),
         "carrier": get_carrier_for_store(store_name),
     }
