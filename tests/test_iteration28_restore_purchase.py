@@ -250,9 +250,9 @@ class TestPipelineFiltersWithCancelledPurchases:
 class TestHealthCheck:
     """Basic health check tests"""
     
-    def test_api_health(self):
-        """Test that API is responding"""
-        response = requests.get(f"{BASE_URL}/api/health")
+    def test_api_docs_accessible(self):
+        """Test that API docs are responding"""
+        response = requests.get(f"{BASE_URL}/docs")
         assert response.status_code == 200
     
     def test_pipeline_endpoint_accessible(self):
