@@ -90,7 +90,7 @@ const StageProgressBar = ({ currentStage }) => {
 };
 
 // Order Card Component
-const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating, onNotify, onPromptTracking, onViewHistory }) => {
+const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating, onNotify, onPromptTracking, onViewHistory, onCancelPurchase, cancellingPurchase }) => {
   const getStageIndex = (stage) => FULFILLMENT_STAGES.findIndex(s => s.key === stage);
   const currentIndex = getStageIndex(order.current_stage);
   const nextStage = FULFILLMENT_STAGES[currentIndex + 1];
@@ -161,6 +161,24 @@ const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating,
             <Button variant="ghost" size="sm" onClick={() => onViewHistory(order.order_number || order.shopify_order_id)} title="View History">
               <History className="w-4 h-4 text-blue-500" />
             </Button>
+            {/* Cancel 1688 Purchase Button - only show if order has alibaba_order_id */}
+            {order.alibaba_order_id && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onCancelPurchase(order)}
+                disabled={cancellingPurchase === (order._id || order.shopify_order_id)}
+                title="Cancel 1688 Purchase"
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                data-testid="cancel-1688-purchase-btn"
+              >
+                {cancellingPurchase === (order._id || order.shopify_order_id) ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <XCircle className="w-4 h-4" />
+                )}
+              </Button>
+            )}
           </div>
           
           {nextStage && (
