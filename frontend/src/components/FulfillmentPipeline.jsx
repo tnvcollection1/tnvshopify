@@ -91,7 +91,7 @@ const StageProgressBar = ({ currentStage }) => {
 };
 
 // Order Card Component
-const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating, onNotify, onPromptTracking, onViewHistory, onCancelPurchase, cancellingPurchase }) => {
+const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating, onNotify, onPromptTracking, onViewHistory, onCancelPurchase, cancellingPurchase, onRestorePurchase, restoringPurchase }) => {
   const getStageIndex = (stage) => FULFILLMENT_STAGES.findIndex(s => s.key === stage);
   const currentIndex = getStageIndex(order.current_stage);
   const nextStage = FULFILLMENT_STAGES[currentIndex + 1];
@@ -110,6 +110,9 @@ const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating,
       onUpdateStage(order._id || order.shopify_order_id, nextStage.key);
     }
   };
+  
+  // Check if order can be restored (has cancelled purchases and no active alibaba_order_id)
+  const canRestore = !order.alibaba_order_id && order.cancelled_purchases && order.cancelled_purchases.length > 0;
   
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -133,6 +136,16 @@ const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating,
           <div className="bg-orange-50 rounded p-2 text-xs mb-3">
             <p className="font-medium text-orange-700">1688 Info:</p>
             <p>Color: {order.purchase_1688.color} | Size: {order.purchase_1688.size}</p>
+          </div>
+        )}
+        
+        {/* Cancelled Purchase Indicator */}
+        {canRestore && (
+          <div className="bg-yellow-50 rounded p-2 text-xs mb-3 flex items-center justify-between">
+            <span className="text-yellow-700">
+              <RotateCcw className="w-3 h-3 inline mr-1" />
+              Has {order.cancelled_purchases.length} cancelled purchase(s)
+            </span>
           </div>
         )}
         
@@ -177,6 +190,24 @@ const OrderCard = ({ order, carrierInfo, onViewDetails, onUpdateStage, updating,
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <XCircle className="w-4 h-4" />
+                )}
+              </Button>
+            )}
+            {/* Restore 1688 Purchase Button - only show if order has cancelled purchases and no active purchase */}
+            {canRestore && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onRestorePurchase(order)}
+                disabled={restoringPurchase === (order._id || order.shopify_order_id)}
+                title="Restore 1688 Purchase"
+                className="text-green-600 hover:text-green-800 hover:bg-green-50"
+                data-testid="restore-1688-purchase-btn"
+              >
+                {restoringPurchase === (order._id || order.shopify_order_id) ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RotateCcw className="w-4 h-4" />
                 )}
               </Button>
             )}
