@@ -1732,6 +1732,17 @@ const FulfillmentPipeline = () => {
           <Bell className="h-4 w-4 mr-2" />
           Batch Notify
         </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={syncPurchases}
+          disabled={syncingPurchases || !globalStore}
+          className="border-orange-300 text-orange-600 hover:bg-orange-50"
+          title="Sync orders with 1688 purchase data"
+        >
+          {syncingPurchases ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Package className="h-4 w-4 mr-2" />}
+          Sync 1688 Purchases
+        </Button>
       </div>
       
       {/* Stats Cards */}
