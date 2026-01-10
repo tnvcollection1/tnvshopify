@@ -3195,6 +3195,9 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         }
     )
     
+    # Build detailed remarks for response
+    detailed_remarks = _build_dwz_memo(request.shopify_order_number, alibaba_info, shopify_info, colors_match, sizes_match, has_1688_data)
+    
     return {
         "success": True,
         "message": f"DWZ56 shipment created",
@@ -3210,7 +3213,8 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
         "shopify_size": shopify_size_code,
         "colors_match": colors_match,
         "sizes_match": sizes_match,
-        "remarks": f"1688: {alibaba_info} | Shopify: {shopify_info}{mismatch_warning}",
+        "has_1688_data": has_1688_data,
+        "remarks": detailed_remarks,
         "current_stage": new_stage,
         "courier_type": courier_type,
         "dwz_shipment": dwz_result,
