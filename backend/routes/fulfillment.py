@@ -725,11 +725,14 @@ async def mark_order_fulfilled(
 async def list_fulfillment_pipeline(
     status: Optional[str] = Query(None, description="Filter by status"),
     store_name: Optional[str] = Query(None, description="Filter by store"),
+    purchase_status: Optional[str] = Query(None, description="Filter by 1688 purchase status: 'purchased', 'not_purchased', 'all'"),
+    dwz_status: Optional[str] = Query(None, description="Filter by DWZ status: 'created', 'not_created', 'all'"),
+    search: Optional[str] = Query(None, description="Search by order number"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
 ):
     """
-    List all orders in the fulfillment pipeline
+    List all orders in the fulfillment pipeline with filters for 1688 purchase and DWZ status
     """
     db = get_db()
     
@@ -738,6 +741,60 @@ async def list_fulfillment_pipeline(
         query["status"] = status
     if store_name:
         query["store_name"] = store_name
+    
+    # Filter by 1688 purchase status
+    if purchase_status == "purchased":
+        query["alibaba_order_id"] = {"$exists": True, "$ne": None, "$ne": ""}
+    elif purchase_status == "not_purchased":
+        query["$or"] = [
+            {"alibaba_order_id": {"$exists": False}},
+            {"alibaba_order_id": None},
+            {"alibaba_order_id": ""}
+        ]
+    
+    # Filter by DWZ status
+    if dwz_status == "created":
+        if "$or" in query:
+            existing_or = query.pop("$or")
+            query["$and"] = [
+                {"$or": existing_or},
+                {"dwz_waybill": {"$exists": True, "$ne": None, "$ne": ""}}
+            ]
+        else:
+            query["dwz_waybill"] = {"$exists": True, "$ne": None, "$ne": ""}
+    elif dwz_status == "not_created":
+        dwz_or = [
+            {"dwz_waybill": {"$exists": False}},
+            {"dwz_waybill": None},
+            {"dwz_waybill": ""}
+        ]
+        if "$or" in query:
+            existing_or = query.pop("$or")
+            query["$and"] = [
+                {"$or": existing_or},
+                {"$or": dwz_or}
+            ]
+        elif "$and" in query:
+            query["$and"].append({"$or": dwz_or})
+        else:
+            query["$or"] = dwz_or
+    
+    # Search by order number
+    if search:
+        search_or = [
+            {"order_number": {"$regex": search, "$options": "i"}},
+            {"shopify_order_id": {"$regex": search, "$options": "i"}},
+        ]
+        if "$and" in query:
+            query["$and"].append({"$or": search_or})
+        elif "$or" in query:
+            existing_or = query.pop("$or")
+            query["$and"] = [
+                {"$or": existing_or},
+                {"$or": search_or}
+            ]
+        else:
+            query["$or"] = search_or
     
     skip = (page - 1) * page_size
     
@@ -751,9 +808,47 @@ async def list_fulfillment_pipeline(
     # Get status counts
     status_counts = {}
     for s in ["pending", "purchased", "shipped_from_supplier", "sent_to_dwz56", "fulfilled", "error"]:
-        count_query = dict(query)
+        count_query = {"store_name": store_name} if store_name else {}
         count_query["status"] = s
         status_counts[s] = await db.fulfillment_pipeline.count_documents(count_query)
+    
+    # Calculate purchase and DWZ stats
+    base_query = {"store_name": store_name} if store_name else {}
+    
+    purchased_query = {**base_query, "alibaba_order_id": {"$exists": True, "$ne": None, "$ne": ""}}
+    purchased_count = await db.fulfillment_pipeline.count_documents(purchased_query)
+    
+    not_purchased_query = {**base_query, "$or": [
+        {"alibaba_order_id": {"$exists": False}},
+        {"alibaba_order_id": None},
+        {"alibaba_order_id": ""}
+    ]}
+    not_purchased_count = await db.fulfillment_pipeline.count_documents(not_purchased_query)
+    
+    dwz_created_query = {**base_query, "dwz_waybill": {"$exists": True, "$ne": None, "$ne": ""}}
+    dwz_created_count = await db.fulfillment_pipeline.count_documents(dwz_created_query)
+    
+    dwz_not_created_query = {**base_query, "$or": [
+        {"dwz_waybill": {"$exists": False}},
+        {"dwz_waybill": None},
+        {"dwz_waybill": ""}
+    ]}
+    dwz_not_created_count = await db.fulfillment_pipeline.count_documents(dwz_not_created_query)
+    
+    # Enrich orders with 1688 purchase data
+    for order in orders:
+        alibaba_id = order.get("alibaba_order_id")
+        if alibaba_id:
+            po = await db.purchase_orders_1688.find_one(
+                {"alibaba_order_id": alibaba_id},
+                {"_id": 0, "color": 1, "size": 1, "product_name": 1}
+            )
+            if po:
+                order["purchase_1688"] = {
+                    "color": po.get("color"),
+                    "size": po.get("size"),
+                    "product_name": po.get("product_name"),
+                }
     
     return {
         "success": True,
@@ -761,6 +856,14 @@ async def list_fulfillment_pipeline(
         "page_size": page_size,
         "total": total,
         "status_counts": status_counts,
+        "purchase_stats": {
+            "purchased": purchased_count,
+            "not_purchased": not_purchased_count,
+        },
+        "dwz_stats": {
+            "created": dwz_created_count,
+            "not_created": dwz_not_created_count,
+        },
         "orders": orders,
     }
 
