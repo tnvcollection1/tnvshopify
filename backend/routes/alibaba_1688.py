@@ -3048,9 +3048,9 @@ async def mark_1688_order_shipped(request: Mark1688ShippedRequest):
                 "iQuantity": 1,
                 "fPrice": float(shopify_order.get("total_price", 0) or shopify_order.get("total_spent", 0) or 0),
                 
-                # Memo with all references for easy search
-                # Format: Shopify | 1688 Order | 1688 Fulfillment | ColorName/Size
-                "cMemo": f"Shopify: #{request.shopify_order_number} | 1688订单: {request.alibaba_order_id}" + (f" | 1688物流: {request.fulfillment_number_1688}" if request.fulfillment_number_1688 else "") + f" | {color_display}/{size_code}",
+                # Memo with all references for easy search and verification
+                # Format: Shopify Order | 1688: Color/Size | Shopify: Color/Size | Mismatch Warning
+                "cMemo": f"#{request.shopify_order_number} | 1688: {alibaba_info} | Shopify: {shopify_info}{mismatch_warning}",
                 
                 # Mark for filtering
                 "cMark": f"#{request.shopify_order_number}",
