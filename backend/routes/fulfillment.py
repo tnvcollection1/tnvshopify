@@ -1628,6 +1628,135 @@ async def cancel_1688_purchase(order_id: str):
     }
 
 
+@router.post("/pipeline/orders/{order_id}/restore-purchase")
+async def restore_1688_purchase(order_id: str, index: int = Body(0, embed=True)):
+    """
+    Restore a previously cancelled 1688 purchase.
+    Re-links the order to its original 1688 order ID from the cancelled_purchases history.
+    
+    Args:
+        order_id: The Shopify order ID or order number
+        index: Index of the cancelled purchase to restore (0 = most recent, default)
+    """
+    db = get_db()
+    
+    # Find the order in fulfillment pipeline
+    order = await db.fulfillment_pipeline.find_one(
+        {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": int(order_id) if order_id.isdigit() else order_id},
+            {"order_number": str(order_id)},
+        ]}
+    )
+    
+    if not order:
+        raise HTTPException(status_code=404, detail=f"Order {order_id} not found in fulfillment pipeline")
+    
+    # Check if order already has an active 1688 purchase
+    if order.get("alibaba_order_id"):
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Order {order_id} already has an active 1688 purchase: {order.get('alibaba_order_id')}"
+        )
+    
+    # Get cancelled purchases history
+    cancelled_purchases = order.get("cancelled_purchases", [])
+    if not cancelled_purchases:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Order {order_id} has no cancelled purchases to restore"
+        )
+    
+    # Validate index
+    if index < 0 or index >= len(cancelled_purchases):
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid index {index}. Order has {len(cancelled_purchases)} cancelled purchase(s) (0-{len(cancelled_purchases)-1})"
+        )
+    
+    # Get the cancelled purchase to restore (reverse order - most recent first)
+    cancelled_purchases_reversed = list(reversed(cancelled_purchases))
+    purchase_to_restore = cancelled_purchases_reversed[index]
+    
+    alibaba_order_id = purchase_to_restore.get("alibaba_order_id")
+    alibaba_tracking = purchase_to_restore.get("alibaba_tracking")
+    
+    if not alibaba_order_id:
+        raise HTTPException(
+            status_code=400, 
+            detail="Cancelled purchase has no alibaba_order_id to restore"
+        )
+    
+    # Restore the purchase
+    result = await db.fulfillment_pipeline.update_one(
+        {"_id": order["_id"]},
+        {
+            "$set": {
+                "alibaba_order_id": alibaba_order_id,
+                "alibaba_tracking": alibaba_tracking,
+                "purchase_status_1688": "purchased",
+                "status": "purchased",
+                "stages.alibaba_purchased": True,
+                "stages.alibaba_shipped": bool(alibaba_tracking),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            },
+            "$push": {
+                "restore_history": {
+                    "restored_alibaba_order_id": alibaba_order_id,
+                    "restored_from_index": index,
+                    "restored_at": datetime.now(timezone.utc).isoformat(),
+                }
+            }
+        }
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=500, detail="Failed to restore 1688 purchase")
+    
+    logger.info(f"✅ Restored 1688 purchase for order {order_id}. Restored 1688 Order ID: {alibaba_order_id}")
+    
+    return {
+        "success": True,
+        "message": f"1688 purchase restored for order {order_id}",
+        "restored_alibaba_order_id": alibaba_order_id,
+        "restored_alibaba_tracking": alibaba_tracking,
+        "order_status": "purchased",
+    }
+
+
+@router.get("/pipeline/orders/{order_id}/cancelled-purchases")
+async def get_cancelled_purchases(order_id: str):
+    """
+    Get the list of cancelled purchases for an order.
+    Useful for showing restore options in the UI.
+    """
+    db = get_db()
+    
+    order = await db.fulfillment_pipeline.find_one(
+        {"$or": [
+            {"shopify_order_id": order_id},
+            {"order_number": int(order_id) if order_id.isdigit() else order_id},
+            {"order_number": str(order_id)},
+        ]},
+        {"_id": 0, "cancelled_purchases": 1, "alibaba_order_id": 1, "order_number": 1}
+    )
+    
+    if not order:
+        raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
+    
+    cancelled_purchases = order.get("cancelled_purchases", [])
+    
+    return {
+        "success": True,
+        "order_number": order.get("order_number"),
+        "has_active_purchase": bool(order.get("alibaba_order_id")),
+        "active_alibaba_order_id": order.get("alibaba_order_id"),
+        "cancelled_purchases": list(reversed(cancelled_purchases)),  # Most recent first
+        "total_cancelled": len(cancelled_purchases),
+        "can_restore": len(cancelled_purchases) > 0 and not order.get("alibaba_order_id"),
+    }
+
+
 @router.get("/sync-status-summary")
 async def get_fulfillment_sync_status_summary(
     store_name: Optional[str] = Query(None),
