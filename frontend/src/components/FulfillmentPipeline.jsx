@@ -2012,6 +2012,8 @@ const FulfillmentPipeline = () => {
               onViewHistory={(orderId) => setShowOrderHistory(orderId)}
               onCancelPurchase={cancelPurchase}
               cancellingPurchase={cancellingPurchase}
+              onRestorePurchase={restorePurchase}
+              restoringPurchase={restoringPurchase}
             />
           ))}
         </div>
