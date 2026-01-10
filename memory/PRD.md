@@ -59,6 +59,22 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - Auto-refreshes order list after cancellation
 - **Tests**: 12/12 passed (100%)
 
+### Restore 1688 Purchase Feature (Jan 10, 2025) ✅ NEW
+- **Backend endpoints**:
+  - `POST /api/fulfillment/pipeline/orders/{order_id}/restore-purchase` - Restores cancelled purchase
+  - `GET /api/fulfillment/pipeline/orders/{order_id}/cancelled-purchases` - Gets cancellation history
+- **Functionality**: Re-links cancelled 1688 order to Shopify order by:
+  - Setting `alibaba_order_id` from cancelled_purchases history
+  - Setting `purchase_status_1688` to 'purchased'
+  - Setting order status to 'purchased'
+  - Storing restore info in `restore_history` array for audit trail
+- **Frontend**: Green circular arrow button (RotateCcw) in order card action row
+  - Only visible when order has cancelled_purchases AND no active alibaba_order_id
+  - Yellow indicator shows "Has X cancelled purchase(s)"
+  - Shows confirmation dialog with order number and 1688 order ID to restore
+  - Toast notification on successful restoration
+- **Tests**: 10/10 passed (100%), 2 skipped
+
 ### Previous Features (as of Jan 9, 2025)
 - ✅ Complete e-commerce storefront with Razorpay checkout
 - ✅ Order tracking system
