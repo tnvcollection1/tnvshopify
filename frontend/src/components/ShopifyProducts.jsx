@@ -99,13 +99,24 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants }) => {
 
   if (viewMode === 'list') {
     return (
-      <div className="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-sm transition-all">
-        <div className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+      <div 
+        className={`flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200 transition-all ${
+          linked ? 'hover:shadow-md hover:border-orange-300 cursor-pointer' : 'hover:shadow-sm'
+        }`}
+        onClick={linked ? () => onCompareVariants?.(product) : undefined}
+        data-testid={`product-card-list-${product.shopify_product_id}`}
+      >
+        <div className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
           {product.image_url ? (
             <img src={product.image_url} alt={product.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <ImageIcon className="w-6 h-6 text-gray-300" />
+            </div>
+          )}
+          {linked && (
+            <div className="absolute inset-0 bg-orange-500/0 hover:bg-orange-500/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
+              <Layers className="w-5 h-5 text-orange-600" />
             </div>
           )}
         </div>
@@ -119,32 +130,30 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants }) => {
             </span>
             <span className="font-medium text-gray-700">₹{product.price?.toFixed(2) || '0.00'}</span>
             {product.variants?.length > 1 && (
-              <span>{product.variants.length} variants</span>
+              <span className="flex items-center gap-1">
+                <Layers className="w-3 h-3" />
+                {product.variants.length} variants
+              </span>
             )}
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
           {linked ? (
             <>
               <Badge 
-                className="bg-orange-100 text-orange-700 border-0 cursor-pointer hover:bg-orange-200"
-                onClick={() => onCompareVariants?.(product)}
+                className="bg-orange-100 text-orange-700 border-0"
               >
                 <Link2 className="w-3 h-3 mr-1" />
                 Linked
               </Badge>
               <Button 
                 size="sm" 
-                variant="outline" 
-                onClick={() => onCompareVariants?.(product)}
-                className="text-xs"
+                variant="ghost" 
+                onClick={handleUnlink}
+                className="text-gray-400 hover:text-red-500"
               >
-                <Eye className="w-3 h-3 mr-1" />
-                Variants
-              </Button>
-              <Button size="sm" variant="ghost" onClick={handleUnlink}>
-                <Unlink className="w-4 h-4 text-gray-400" />
+                <Unlink className="w-4 h-4" />
               </Button>
             </>
           ) : (
@@ -157,7 +166,7 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants }) => {
 
         {/* Link Modal */}
         <Dialog open={linkModalOpen} onOpenChange={setLinkModalOpen}>
-          <DialogContent>
+          <DialogContent onClick={(e) => e.stopPropagation()}>
             <DialogHeader>
               <DialogTitle>Link to 1688 Product</DialogTitle>
             </DialogHeader>
