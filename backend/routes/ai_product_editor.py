@@ -760,7 +760,7 @@ async def translate_text_simple(text: str, target_lang: str = "English") -> str:
             UserMessage(text=f"Translate this Chinese text to {target_lang}. Return ONLY the translation, nothing else:\n\n{text}")
         )
         return response.strip()
-    except:
+    except Exception:
         return text
 
 
