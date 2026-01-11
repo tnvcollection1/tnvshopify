@@ -596,14 +596,14 @@ const AIProductEditor = () => {
     }
   };
 
-  // Bulk enhance selected products
+  // Step 1: Generate preview (dry-run) - fetches AI suggestions without saving
   const handleBulkEnhance = async () => {
     if (selectedProducts.size === 0) {
       toast.error('No products selected');
       return;
     }
 
-    setBulkProcessing(true);
+    setIsGeneratingPreview(true);
     setBulkProgress({ current: 0, total: selectedProducts.size, results: [] });
 
     const selectedList = products.filter(p => selectedProducts.has(p.shopify_product_id));
@@ -614,7 +614,7 @@ const AIProductEditor = () => {
       setBulkProgress(prev => ({ ...prev, current: i + 1 }));
 
       try {
-        // Get AI enhancement
+        // Get AI enhancement (preview only, no save)
         const enhanceRes = await fetch(`${API}/api/ai-product/enhance-from-catalog`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -626,32 +626,24 @@ const AIProductEditor = () => {
         const enhanceData = await enhanceRes.json();
 
         if (enhanceData.success && enhanceData.suggested_titles?.[0]) {
-          // Auto-save the best title
-          const saveRes = await fetch(`${API}/api/ai-product/save-enhancement`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              shopify_product_id: product.shopify_product_id,
-              store_name: product.store_name,
-              title: enhanceData.suggested_titles[0],
-              description: enhanceData.description || '',
-              tags: enhanceData.tags || [],
-              selling_points: enhanceData.selling_points || [],
-            }),
-          });
-          const saveData = await saveRes.json();
-
           results.push({
             product_id: product.shopify_product_id,
-            title: product.title,
-            new_title: enhanceData.suggested_titles[0],
-            success: saveData.success,
-            error: saveData.success ? null : saveData.detail,
+            store_name: product.store_name,
+            original_title: product.title,
+            suggested_title: enhanceData.suggested_titles[0],
+            all_suggestions: enhanceData.suggested_titles,
+            description: enhanceData.description || '',
+            tags: enhanceData.tags || [],
+            selling_points: enhanceData.selling_points || [],
+            image_url: product.image_url,
+            success: true,
           });
         } else {
           results.push({
             product_id: product.shopify_product_id,
-            title: product.title,
+            store_name: product.store_name,
+            original_title: product.title,
+            image_url: product.image_url,
             success: false,
             error: enhanceData.detail || 'No suggestions generated',
           });
@@ -659,26 +651,74 @@ const AIProductEditor = () => {
       } catch (e) {
         results.push({
           product_id: product.shopify_product_id,
-          title: product.title,
+          store_name: product.store_name,
+          original_title: product.title,
+          image_url: product.image_url,
           success: false,
           error: e.message,
         });
       }
 
       // Small delay to avoid rate limiting
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 300));
     }
 
-    setBulkProgress(prev => ({ ...prev, results }));
-    setBulkProcessing(false);
+    setPreviewResults(results);
+    setIsGeneratingPreview(false);
+    setShowPreviewModal(true);
+  };
 
-    const successCount = results.filter(r => r.success).length;
-    toast.success(`Enhanced ${successCount} of ${results.length} products`);
+  // Step 2: Apply selected changes from preview
+  const handleApplySelectedChanges = async (selectedResults) => {
+    setIsApplyingChanges(true);
+    setApplyProgress({ current: 0, total: selectedResults.length });
+
+    let successCount = 0;
+
+    for (let i = 0; i < selectedResults.length; i++) {
+      const item = selectedResults[i];
+      setApplyProgress({ current: i + 1, total: selectedResults.length });
+
+      try {
+        const saveRes = await fetch(`${API}/api/ai-product/save-enhancement`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shopify_product_id: item.product_id,
+            store_name: item.store_name,
+            title: item.suggested_title,
+            description: item.description || '',
+            tags: item.tags || [],
+            selling_points: item.selling_points || [],
+          }),
+        });
+        const saveData = await saveRes.json();
+        if (saveData.success) successCount++;
+      } catch (e) {
+        console.error('Failed to save enhancement:', e);
+      }
+
+      // Small delay
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    setIsApplyingChanges(false);
+    setShowPreviewModal(false);
+    toast.success(`Applied ${successCount} of ${selectedResults.length} title changes`);
     
-    // Refresh products list
+    // Refresh products list and exit bulk mode
     fetchProducts();
     setSelectedProducts(new Set());
     setBulkMode(false);
+    setPreviewResults([]);
+  };
+
+  // Close preview modal
+  const handleClosePreview = () => {
+    if (!isApplyingChanges) {
+      setShowPreviewModal(false);
+      setPreviewResults([]);
+    }
   };
   
   // Filter products
