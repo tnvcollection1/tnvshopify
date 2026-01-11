@@ -66,6 +66,22 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - **Route**: `/ai-product-editor`
 - **Sidebar**: Added "AI Product Editor" under "1688 Sourcing" menu
 
+### Product Link Manager (Jan 11, 2025) ✅ NEW
+- **New Component**: `/app/frontend/src/components/ProductLinkManager.jsx`
+- **Route**: `/product-link-manager`
+- **Features**:
+  - Shows all 880+ Shopify products with link status
+  - Stats dashboard: Total Products, Linked, Not Linked, Selected
+  - Select All / individual product selection
+  - "Show Variants" - Expands to show all color/size variants
+  - Linked products show 1688 URL and price with "View on 1688" link
+  - Missing variants highlighted in red with "Add Missing" button
+  - **Auto-Link Selected** - Uses image search to automatically find and link matching 1688 products
+  - Manual "Link to 1688" button with URL input modal
+  - "Add Missing" variants - Scrapes missing colors/sizes from 1688
+  - Pagination (100 products per page)
+- **Sidebar**: Added "Product Links" under "1688 Sourcing" menu
+
 ### 1688 Trade API Enabled (Jan 11, 2025) ✅ NEW
 - Activated **WaMerce CRM** app (Buyer Connect type)
 - **AppKey**: 8585237, **Token**: 70a07ab8-76fa-4f82-b568-6fcf2834b157
