@@ -894,8 +894,9 @@ Return ONLY the JSON."""
         except Exception as e:
             print(f"AI title generation failed: {e}")
             # Fallback to image recognition titles
-            if result.get("image_recognition", {}).get("suggested_titles"):
-                result["suggested_titles"] = result["image_recognition"]["suggested_titles"]
+            image_rec = result.get("image_recognition") or {}
+            if image_rec.get("suggested_titles"):
+                result["suggested_titles"] = image_rec["suggested_titles"]
             else:
                 result["suggested_titles"] = [product.get("title")]
     
