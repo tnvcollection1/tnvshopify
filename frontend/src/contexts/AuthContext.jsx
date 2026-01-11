@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext(null);
+const API = process.env.REACT_APP_BACKEND_URL;
 
 // Default permissions for viewer role
 const DEFAULT_PERMISSIONS = {
@@ -59,7 +60,60 @@ export const AuthProvider = ({ children }) => {
     }
     return null;
   });
-  const [loading, setLoading] = useState(false); // Start as false since we init synchronously
+  const [loading, setLoading] = useState(true); // Start as true to show loading while validating
+  const [sessionValidated, setSessionValidated] = useState(false);
+
+  // Validate session against backend on app load
+  const validateSession = useCallback(async () => {
+    const storedAgent = localStorage.getItem('agent');
+    if (!storedAgent) {
+      setLoading(false);
+      setSessionValidated(true);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(storedAgent);
+      if (!parsed.id) {
+        // Invalid stored data - clear and redirect
+        localStorage.removeItem('agent');
+        setAgent(null);
+        setLoading(false);
+        setSessionValidated(true);
+        return;
+      }
+
+      // Validate session with backend
+      const response = await fetch(`${API}/api/users/me?user_id=${encodeURIComponent(parsed.id)}`);
+      
+      if (!response.ok) {
+        // Session invalid - clear localStorage and set agent to null
+        console.warn('Session validation failed - logging out');
+        localStorage.removeItem('agent');
+        setAgent(null);
+      } else {
+        const data = await response.json();
+        if (data.success && data.user) {
+          // Update local storage with fresh data from server
+          const updatedAgent = data.user;
+          localStorage.setItem('agent', JSON.stringify(updatedAgent));
+          setAgent(updatedAgent);
+        }
+      }
+    } catch (error) {
+      console.error('Session validation error:', error);
+      // On network error, don't log out - keep existing session
+      // This prevents logout due to temporary network issues
+    } finally {
+      setLoading(false);
+      setSessionValidated(true);
+    }
+  }, []);
+
+  // Validate session on mount
+  useEffect(() => {
+    validateSession();
+  }, [validateSession]);
 
   // Listen for storage changes (for cross-tab sync)
   useEffect(() => {
