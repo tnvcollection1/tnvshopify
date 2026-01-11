@@ -201,24 +201,42 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants }) => {
 
   // Grid View
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all">
-      <div className="aspect-square bg-gray-100 relative">
+    <div 
+      className={`bg-white rounded-lg border overflow-hidden transition-all group ${
+        linked 
+          ? 'border-orange-200 hover:shadow-lg hover:border-orange-400 cursor-pointer' 
+          : 'border-gray-200 hover:shadow-md'
+      }`}
+      onClick={linked ? () => onCompareVariants?.(product) : undefined}
+      data-testid={`product-card-grid-${product.shopify_product_id}`}
+    >
+      <div className="aspect-square bg-gray-100 relative overflow-hidden">
         {product.image_url ? (
-          <img src={product.image_url} alt={product.title} className="w-full h-full object-cover" />
+          <img src={product.image_url} alt={product.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImageIcon className="w-12 h-12 text-gray-300" />
           </div>
         )}
         
+        {/* Clickable overlay for linked products */}
+        {linked && (
+          <div className="absolute inset-0 bg-gradient-to-t from-orange-600/80 via-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
+            <div className="flex items-center gap-2 text-white font-medium text-sm">
+              <Layers className="w-4 h-4" />
+              <span>View Variants</span>
+            </div>
+          </div>
+        )}
+        
         <div className="absolute top-2 right-2">
           {linked ? (
-            <Badge className="bg-orange-500 text-white border-0">
+            <Badge className="bg-orange-500 text-white border-0 shadow-md">
               <Link2 className="w-3 h-3 mr-1" />
               Linked
             </Badge>
           ) : (
-            <Badge variant="outline" className="bg-white/90">Not linked</Badge>
+            <Badge variant="outline" className="bg-white/90 shadow-sm">Not linked</Badge>
           )}
         </div>
         
@@ -233,21 +251,15 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants }) => {
         <div className="flex items-center justify-between mb-3">
           <span className="text-lg font-bold text-[#008060]">₹{product.price?.toFixed(2) || '0.00'}</span>
           {product.variants?.length > 1 && (
-            <Badge variant="outline" className="text-xs">{product.variants.length} variants</Badge>
+            <Badge variant="outline" className="text-xs flex items-center gap-1">
+              <Layers className="w-3 h-3" />
+              {product.variants.length}
+            </Badge>
           )}
         </div>
         
-        {linked ? (
-          <div className="space-y-2">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="w-full text-orange-600 border-orange-300"
-              onClick={() => onCompareVariants?.(product)}
-            >
-              <Eye className="w-3 h-3 mr-1" />
-              Compare Variants
-            </Button>
+        <div onClick={(e) => e.stopPropagation()}>
+          {linked ? (
             <div className="flex gap-2">
               <a
                 href={`https://detail.1688.com/offer/${linked}.html`}
@@ -260,22 +272,22 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants }) => {
                   1688
                 </Button>
               </a>
-              <Button size="sm" variant="ghost" onClick={handleUnlink}>
-                <Unlink className="w-4 h-4 text-gray-400" />
+              <Button size="sm" variant="ghost" onClick={handleUnlink} className="text-gray-400 hover:text-red-500">
+                <Unlink className="w-4 h-4" />
               </Button>
             </div>
-          </div>
-        ) : (
-          <Button size="sm" className="w-full bg-orange-500 hover:bg-orange-600" onClick={() => setLinkModalOpen(true)}>
-            <Link2 className="w-4 h-4 mr-1" />
-            Link to 1688
-          </Button>
-        )}
+          ) : (
+            <Button size="sm" className="w-full bg-orange-500 hover:bg-orange-600" onClick={() => setLinkModalOpen(true)}>
+              <Link2 className="w-4 h-4 mr-1" />
+              Link to 1688
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Link Modal */}
       <Dialog open={linkModalOpen} onOpenChange={setLinkModalOpen}>
-        <DialogContent>
+        <DialogContent onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>Link to 1688 Product</DialogTitle>
           </DialogHeader>
@@ -307,6 +319,7 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants }) => {
     </div>
   );
 };
+
 
 // Stat Card
 const StatCard = ({ title, value, subtitle, icon: Icon, status }) => (
