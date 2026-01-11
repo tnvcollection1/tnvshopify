@@ -944,6 +944,18 @@ const AIProductEditor = () => {
           saving={saving}
         />
       )}
+
+      {/* Bulk Title Preview Modal */}
+      {showPreviewModal && (
+        <BulkTitlePreviewModal
+          isOpen={showPreviewModal}
+          onClose={handleClosePreview}
+          previewResults={previewResults}
+          isApplying={isApplyingChanges}
+          onApplySelected={handleApplySelectedChanges}
+          applyProgress={applyProgress}
+        />
+      )}
     </div>
   );
 };
