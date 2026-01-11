@@ -8,7 +8,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/shopify/products", tags=["Shopify Products"])
+router = APIRouter(prefix="/api/shopify/products", tags=["Shopify Products"])
 
 
 async def get_db():
