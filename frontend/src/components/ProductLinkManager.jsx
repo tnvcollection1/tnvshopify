@@ -477,7 +477,6 @@ const VariantsModal = ({ product, link1688, onClose }) => {
     </div>
   );
 };
-};
 
 // Main Component
 const ProductLinkManager = () => {
