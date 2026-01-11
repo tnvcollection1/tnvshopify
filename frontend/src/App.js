@@ -488,6 +488,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/ai-product-editor" 
+        element={
+          <ProtectedRoute>
+            <AIProductEditor />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/fulfillment" 
         element={
           <ProtectedRoute>
