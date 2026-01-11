@@ -448,8 +448,8 @@ const AIProductEditor = () => {
   };
 
   // Use recognized title suggestion
-  const useSuggestedTitle = (title) => {
-    setTitle(title);
+  const applySuggestedTitle = (suggestedTitle) => {
+    setTitle(suggestedTitle);
     setActiveTab('text');
     toast.success('Title applied! You can now generate content.');
   };
