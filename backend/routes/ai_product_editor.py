@@ -378,3 +378,310 @@ async def generate_from_1688_product(
         "original_title": product.get("title"),
         "content": content.dict(),
     }
+
+
+# ==================== Image Recognition & 1688 AI Endpoints ====================
+
+async def recognize_product_from_image(image_url: str) -> dict:
+    """
+    Use 1688 image search to recognize product from image.
+    Returns similar products found on 1688 with their details.
+    """
+    db = get_db()
+    
+    # Get 1688 API credentials
+    config = await db.system_config.find_one({"key": "alibaba_api"}, {"_id": 0})
+    if not config:
+        raise HTTPException(status_code=400, detail="1688 API not configured")
+    
+    app_key = config.get("app_key") or os.environ.get("ALIBABA_MERCHANT_APP_KEY")
+    app_secret = config.get("app_secret") or os.environ.get("ALIBABA_MERCHANT_APP_SECRET")
+    access_token = config.get("access_token") or os.environ.get("ALIBABA_MERCHANT_ACCESS_TOKEN")
+    
+    if not all([app_key, app_secret, access_token]):
+        # Fallback: Use GPT-4 Vision for image analysis
+        return await analyze_image_with_gpt(image_url)
+    
+    # Try 1688 image search API
+    try:
+        import time
+        import hashlib
+        import hmac
+        
+        timestamp = str(int(time.time() * 1000))
+        api_method = "com.alibaba.fenxiao/alibaba.pifatuan.product.imgSearch"
+        
+        params = {
+            "imageUrl": image_url,
+            "pageSize": 10,
+            "pageNo": 1,
+        }
+        
+        # Build signature
+        sorted_params = sorted(params.items())
+        sign_str = api_method + ''.join([f"{k}{v}" for k, v in sorted_params])
+        signature = hmac.new(app_secret.encode(), sign_str.encode(), hashlib.sha256).hexdigest().upper()
+        
+        url = f"https://gw.open.1688.com/openapi/param2/2/{api_method}/{app_key}"
+        
+        all_params = {
+            **params,
+            "access_token": access_token,
+            "_aop_timestamp": timestamp,
+            "_aop_signature": signature,
+        }
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(url, data=all_params)
+            result = response.json()
+            
+            if result.get("success") and result.get("result"):
+                products = result["result"].get("data", [])
+                return {
+                    "source": "1688_api",
+                    "products": products[:5],
+                    "total": len(products)
+                }
+            
+    except Exception as e:
+        print(f"1688 image search failed: {e}")
+    
+    # Fallback to GPT-4 Vision
+    return await analyze_image_with_gpt(image_url)
+
+
+async def analyze_image_with_gpt(image_url: str) -> dict:
+    """
+    Use GPT-4 Vision to analyze product image and suggest titles/attributes.
+    """
+    api_key = get_llm_key()
+    if not api_key:
+        raise HTTPException(status_code=500, detail="LLM API key not configured")
+    
+    system_message = """You are an expert e-commerce product analyst.
+Analyze product images and provide:
+1. Suggested product titles (3 variations)
+2. Detected product category
+3. Key attributes/features visible in the image
+4. Suggested tags for SEO
+
+Be specific and accurate based on what you can see in the image."""
+
+    prompt = f"""Analyze this product image and provide detailed information.
+Image URL: {image_url}
+
+Return a JSON object with:
+{{
+    "suggested_titles": ["3 different title suggestions"],
+    "category": "detected product category",
+    "attributes": [
+        {{"name": "attribute name", "value": "attribute value"}}
+    ],
+    "tags": ["relevant SEO tags"],
+    "description_points": ["key features visible in image"]
+}}
+
+IMPORTANT: Return ONLY the JSON object."""
+
+    try:
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"image-analyze-{datetime.now().timestamp()}",
+            system_message=system_message
+        ).with_model("openai", "gpt-4o")
+        
+        # Create message with image
+        user_message = UserMessage(text=prompt, image_url=image_url)
+        response = await chat.send_message(user_message)
+        
+        # Parse JSON response
+        response_text = response.strip()
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+        
+        result = json.loads(response_text.strip())
+        
+        return {
+            "source": "gpt4_vision",
+            "suggested_titles": result.get("suggested_titles", []),
+            "category": result.get("category"),
+            "attributes": result.get("attributes", []),
+            "tags": result.get("tags", []),
+            "description_points": result.get("description_points", []),
+        }
+        
+    except Exception as e:
+        print(f"GPT Vision analysis error: {e}")
+        raise HTTPException(status_code=500, detail=f"Image analysis failed: {str(e)}")
+
+
+@router.post("/recognize-image")
+async def recognize_image(
+    image_url: str = Body(..., embed=True, description="URL of the product image to analyze"),
+):
+    """
+    Recognize product from image and suggest titles/attributes.
+    Uses 1688 image search API or GPT-4 Vision as fallback.
+    """
+    result = await recognize_product_from_image(image_url)
+    
+    # Save to history
+    db = get_db()
+    await db.ai_image_recognition_history.insert_one({
+        "image_url": image_url,
+        "result": result,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+    
+    return {
+        "success": True,
+        "image_url": image_url,
+        **result,
+    }
+
+
+@router.post("/recognize-and-generate")
+async def recognize_and_generate_content(
+    image_url: str = Body(..., description="URL of the product image"),
+    target_language: str = Body("English", description="Target language for content"),
+    target_market: str = Body("International", description="Target market"),
+):
+    """
+    Analyze product image and generate optimized content in one step.
+    1. Recognize product from image
+    2. Generate optimized titles, descriptions, and selling points
+    """
+    # Step 1: Recognize image
+    recognition = await recognize_product_from_image(image_url)
+    
+    # Step 2: Build product input from recognition
+    suggested_title = recognition.get("suggested_titles", ["Product"])[0] if recognition.get("suggested_titles") else "Product"
+    
+    attributes = recognition.get("attributes", [])
+    if not attributes and recognition.get("description_points"):
+        attributes = [{"name": "Feature", "value": point} for point in recognition["description_points"][:5]]
+    
+    product_input = ProductInput(
+        title=suggested_title,
+        description="; ".join(recognition.get("description_points", [])),
+        attributes=attributes,
+        images=[image_url],
+        category=recognition.get("category"),
+        target_language=target_language,
+        target_market=target_market,
+    )
+    
+    # Step 3: Generate content
+    content = await generate_product_content(product_input)
+    
+    # Save combined result
+    db = get_db()
+    await db.ai_product_history.insert_one({
+        "source": "image_recognition",
+        "image_url": image_url,
+        "recognition": recognition,
+        "input": product_input.dict(),
+        "output": content.dict(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+    
+    return {
+        "success": True,
+        "image_url": image_url,
+        "recognition": recognition,
+        "content": content.dict(),
+    }
+
+
+@router.post("/upload-and-recognize")
+async def upload_and_recognize(
+    file: UploadFile = File(..., description="Product image file to upload and analyze"),
+    target_language: str = Form("English"),
+    target_market: str = Form("International"),
+):
+    """
+    Upload an image file, analyze it, and generate product content.
+    Accepts: JPG, PNG, WebP images (max 5MB)
+    """
+    # Validate file
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:  # 5MB limit
+        raise HTTPException(status_code=400, detail="Image too large (max 5MB)")
+    
+    # Convert to base64 data URL for GPT Vision
+    base64_image = base64.b64encode(content).decode("utf-8")
+    content_type = file.content_type or "image/jpeg"
+    data_url = f"data:{content_type};base64,{base64_image}"
+    
+    # Use GPT-4 Vision to analyze (1688 API needs a URL, not base64)
+    recognition = await analyze_image_with_gpt(data_url)
+    
+    # Build product input
+    suggested_title = recognition.get("suggested_titles", ["Product"])[0] if recognition.get("suggested_titles") else "Product"
+    
+    attributes = recognition.get("attributes", [])
+    if not attributes and recognition.get("description_points"):
+        attributes = [{"name": "Feature", "value": point} for point in recognition["description_points"][:5]]
+    
+    product_input = ProductInput(
+        title=suggested_title,
+        description="; ".join(recognition.get("description_points", [])),
+        attributes=attributes,
+        category=recognition.get("category"),
+        target_language=target_language,
+        target_market=target_market,
+    )
+    
+    # Generate content
+    generated_content = await generate_product_content(product_input)
+    
+    # Save to history
+    db = get_db()
+    await db.ai_product_history.insert_one({
+        "source": "uploaded_image",
+        "filename": file.filename,
+        "recognition": recognition,
+        "input": product_input.dict(),
+        "output": generated_content.dict(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+    
+    return {
+        "success": True,
+        "filename": file.filename,
+        "recognition": recognition,
+        "content": generated_content.dict(),
+    }
+
+
+@router.get("/recognition-history")
+async def get_recognition_history(
+    page: int = 1,
+    limit: int = 20,
+):
+    """Get history of image recognition requests"""
+    db = get_db()
+    
+    skip = (page - 1) * limit
+    
+    history = await db.ai_image_recognition_history.find(
+        {},
+        {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.ai_image_recognition_history.count_documents({})
+    
+    return {
+        "success": True,
+        "history": history,
+        "total": total,
+        "page": page,
+        "limit": limit,
+    }
