@@ -1019,6 +1019,15 @@ const ShopifyProducts = () => {
           </>
         )}
       </div>
+      
+      {/* Variant Comparison Modal */}
+      {comparisonProduct && (
+        <VariantComparisonModal
+          product={comparisonProduct}
+          onClose={() => setComparisonProduct(null)}
+          onVariantsCreated={fetchProducts}
+        />
+      )}
     </div>
   );
 };
