@@ -77,6 +77,7 @@ import ScheduledPriceChecks from "@/components/ScheduledPriceChecks";
 import AITools1688 from "@/components/AITools1688";
 import DWZ56Tracking from "@/components/DWZ56Tracking";
 import Merchants1688 from "@/components/Merchants1688";
+import AIProductEditor from "@/components/AIProductEditor";
 // Storefront Components
 import { StorefrontLayout, CartProvider } from "@/components/storefront/StorefrontLayout";
 import StorefrontHome from "@/components/storefront/StorefrontHome";
