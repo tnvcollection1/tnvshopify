@@ -58,17 +58,21 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - `/app/frontend/src/contexts/AuthContext.jsx` - Added session validation logic
 - **Test Results**: 11/11 tests passed (100%)
 
-### Bulk Title Enhancement Feature ✅ VERIFIED
+### Bulk Title Enhancement Feature ✅ VERIFIED + PREVIEW MODE ADDED
 - **Component**: `/app/frontend/src/components/AIProductEditor.jsx`
+- **New Component**: `/app/frontend/src/components/BulkTitlePreviewModal.jsx`
 - **Features**:
   - **Bulk Mode**: Click "Bulk Enhance Titles" button to enter selection mode
   - **Multi-select**: Click product cards to select/deselect (visual checkmark feedback)
   - **Select All/Deselect All**: Toggle button to select all visible products
-  - **Progress Tracking**: Shows X/Y progress during bulk processing
-  - **Auto-save**: Each enhancement is automatically saved to Shopify
-  - **Results Toast**: Shows "Enhanced X of Y products" after completion
+  - **Preview Step (NEW)**: Click "Preview X Titles" to generate AI suggestions without saving
+  - **Preview Modal (NEW)**: Shows original title → suggested title with checkboxes
+  - **Selective Apply (NEW)**: Uncheck items you don't want, then "Apply X Changes"
+  - **Progress Tracking**: Shows X/Y progress during both preview generation and applying
+  - **Results Toast**: Shows "Applied X of Y title changes" after completion
 - **Backend**: Uses existing `/api/ai-product/enhance-from-catalog` and `/api/ai-product/save-enhancement` endpoints
-- **Test Results**: Frontend UI verified working (Select All, Cancel, product selection all functional)
+- **Workflow**: Select products → Preview suggestions → Review & uncheck unwanted → Apply selected
+- **Test Results**: Frontend UI verified working
 
 ---
 
