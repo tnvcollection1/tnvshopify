@@ -682,44 +682,15 @@ const ProductLinkManager = () => {
     setSelectedProducts(new Set());
   };
 
-  // Handle scrape missing variants
+  // Handle scrape missing variants - opens modal
   const handleScrapeVariants = async (product, link1688) => {
     if (!link1688?.product_1688_id) {
       toast.error('No 1688 link found for this product');
       return;
     }
     
-    setScraping(product.id);
-    
-    try {
-      // Scrape variants from 1688
-      const res = await fetch(`${API}/api/1688-scraper/products/${link1688.product_1688_id}/scrape-variants`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shopify_product_id: product.id?.toString() }),
-      });
-      
-      const data = await res.json();
-      
-      if (data.success) {
-        const msg = `Found ${data.total_variants} variants from 1688 (${data.colors?.length || 0} colors, ${data.sizes?.length || 0} sizes)`;
-        if (data.missing_in_shopify > 0) {
-          toast.success(`${msg}. ${data.missing_in_shopify} missing in Shopify!`);
-        } else {
-          toast.info(msg);
-        }
-        // Refresh to show updated data
-        fetchProducts();
-        fetchProductLinks();
-      } else {
-        toast.error(data.error || 'Failed to fetch variants');
-      }
-    } catch (e) {
-      toast.error('Failed to scrape variants');
-      console.error('Scrape variants error:', e);
-    } finally {
-      setScraping(null);
-    }
+    // Open the variants modal
+    setVariantsModalProduct({ product, link1688 });
   };
 
   // Toggle select all
