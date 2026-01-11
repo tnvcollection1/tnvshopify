@@ -256,7 +256,7 @@ const BulkTitlePreviewModal = ({
         {/* Footer */}
         <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-between">
           <p className="text-xs text-gray-500">
-            Review the AI suggestions above. Uncheck any you don't want to apply.
+            Review the AI suggestions above. Uncheck any you do not want to apply.
           </p>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose} disabled={isApplying}>
