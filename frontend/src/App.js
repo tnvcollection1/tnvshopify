@@ -490,6 +490,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/1688-trade" 
+        element={
+          <ProtectedRoute>
+            <Trade1688Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/ai-product-editor" 
         element={
           <ProtectedRoute>
