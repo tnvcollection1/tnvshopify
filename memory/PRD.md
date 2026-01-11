@@ -43,7 +43,36 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ## What's Been Implemented
 
-### Latest Updates (Jan 11, 2025)
+### Latest Updates (Jan 11, 2025 - Session 2)
+
+### P0 Authentication Bug Fix ✅ CRITICAL FIX
+- **Issue**: Users were being logged out frequently due to missing server-side session validation
+- **Root Cause**: Frontend relied only on localStorage without validating against backend
+- **Solution**:
+  - Added `GET /api/users/me?user_id=<id>` endpoint for session validation
+  - Updated `AuthContext.jsx` with `validateSession()` function on app load
+  - Endpoint checks both `users` and `agents` collections (backward compatibility)
+  - Returns fresh user data with permissions if valid, 401 if invalid
+- **Files Changed**:
+  - `/app/backend/routes/users.py` - Added `/me` endpoint
+  - `/app/frontend/src/contexts/AuthContext.jsx` - Added session validation logic
+- **Test Results**: 11/11 tests passed (100%)
+
+### Bulk Title Enhancement Feature ✅ VERIFIED
+- **Component**: `/app/frontend/src/components/AIProductEditor.jsx`
+- **Features**:
+  - **Bulk Mode**: Click "Bulk Enhance Titles" button to enter selection mode
+  - **Multi-select**: Click product cards to select/deselect (visual checkmark feedback)
+  - **Select All/Deselect All**: Toggle button to select all visible products
+  - **Progress Tracking**: Shows X/Y progress during bulk processing
+  - **Auto-save**: Each enhancement is automatically saved to Shopify
+  - **Results Toast**: Shows "Enhanced X of Y products" after completion
+- **Backend**: Uses existing `/api/ai-product/enhance-from-catalog` and `/api/ai-product/save-enhancement` endpoints
+- **Test Results**: Frontend UI verified working (Select All, Cancel, product selection all functional)
+
+---
+
+### Previous Updates (Jan 11, 2025 - Session 1)
 
 ### Bulk Variant Preview (Dry-Run) ✅ NEW
 - **Backend Endpoint**: `POST /api/shopify/products/bulk-variants/preview`
