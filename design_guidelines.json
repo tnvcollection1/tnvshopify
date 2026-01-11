@@ -1,0 +1,144 @@
+{
+  "identity": {
+    "persona": "E1",
+    "philosophy": "Fusion over Imitation. Data density without clutter. Technical beauty.",
+    "tone": "Professional, Efficient, Precision-oriented"
+  },
+  "theme_strategy": {
+    "mode": "light",
+    "vibe": "The Control Room - High visibility, low noise",
+    "background": "bg-zinc-50/50",
+    "surface": "bg-white"
+  },
+  "typography": {
+    "headings": {
+      "family": "Manrope, sans-serif",
+      "weights": ["600", "700"],
+      "usage": "Modal titles, Section headers"
+    },
+    "body": {
+      "family": "Inter, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "General text, descriptions"
+    },
+    "data": {
+      "family": "JetBrains Mono, monospace",
+      "weights": ["400"],
+      "usage": "SKUs, Variant IDs, Prices, Stats"
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "name": "Deep Slate",
+        "value": "slate-900",
+        "usage": "Primary Actions, Main Text"
+      },
+      "shopify_accent": {
+        "name": "Commerce Green",
+        "value": "emerald-600",
+        "bg_subtle": "emerald-50",
+        "border_subtle": "emerald-200",
+        "usage": "Shopify connected items, 'In Sync' status"
+      },
+      "source_accent": {
+        "name": "Sourcing Orange",
+        "value": "orange-600",
+        "bg_subtle": "orange-50",
+        "border_subtle": "orange-200",
+        "usage": "1688 source items, 'Missing' highlights"
+      },
+      "neutral": {
+        "border": "zinc-200",
+        "subtext": "zinc-500",
+        "surface_hover": "zinc-50"
+      }
+    },
+    "semantic_rules": [
+      "Never use solid backgrounds for badges unless selected.",
+      "Use 'subtle' backgrounds (bg-opacity-10) with strong borders for status indicators.",
+      "Missing variants should look like 'empty slots' waiting to be filled (dashed borders)."
+    ]
+  },
+  "layout_system": {
+    "grid_strategy": "The Bento Grid - Mode B (Control Room)",
+    "spacing": {
+      "modal_padding": "p-6 md:p-8",
+      "gap_tight": "gap-3",
+      "gap_loose": "gap-6"
+    },
+    "modal_structure": {
+      "container": "max-w-4xl w-full max-h-[85vh] flex flex-col",
+      "header": "flex-none border-b border-zinc-100 pb-4 mb-4",
+      "body": "flex-1 overflow-y-auto min-h-0 pr-2",
+      "footer": "flex-none border-t border-zinc-100 pt-4 mt-4 flex justify-end gap-3"
+    }
+  },
+  "component_specs": {
+    "modal": {
+      "component": "Dialog",
+      "style": "rounded-xl shadow-2xl border border-zinc-200 backdrop-blur-xl bg-white/95",
+      "overlay": "bg-zinc-900/20 backdrop-blur-sm"
+    },
+    "variant_card": {
+      "style": "group relative flex items-center justify-between p-3 rounded-lg border transition-all duration-200",
+      "state_existing": "border-zinc-200 bg-white hover:border-zinc-300",
+      "state_missing": "border-dashed border-orange-300 bg-orange-50/30 hover:bg-orange-50 hover:border-orange-400 cursor-pointer"
+    },
+    "badges": {
+      "style": "rounded-md px-2 py-0.5 text-xs font-medium border",
+      "shopify": "bg-emerald-50 text-emerald-700 border-emerald-200",
+      "source": "bg-orange-50 text-orange-700 border-orange-200",
+      "missing": "bg-white text-zinc-500 border-zinc-200 border-dashed"
+    },
+    "buttons": {
+      "primary": "bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 rounded-lg px-6",
+      "secondary": "bg-white text-slate-700 border border-zinc-200 hover:bg-zinc-50 rounded-lg",
+      "ghost": "text-slate-500 hover:text-slate-900 hover:bg-zinc-100 rounded-lg"
+    }
+  },
+  "visual_enhancers": {
+    "micro_interactions": [
+      "Hovering a missing variant should 'fill' the dashed border to solid to imply creation.",
+      "Use a subtle 'pulse' animation on the 'Scrape Missing' button if data is incomplete.",
+      "Progress bars for 'Sync Status' should be slim (h-1.5) and rounded-full."
+    ],
+    "textures": [
+      "Use a very subtle 'noise' texture on the modal background to reduce digital flatness.",
+      "Use 1px grid lines between comparison rows instead of heavy borders."
+    ]
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "stroke-[1.5px] w-4 h-4 or w-5 h-5",
+    "mapping": {
+      "shopify": "ShoppingBag",
+      "source": "Globe",
+      "missing": "AlertCircle",
+      "create": "Plus",
+      "sync": "RefreshCw",
+      "arrow_right": "ArrowRight"
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. REFACTOR: Break down the monolithic modal into smaller sub-components: `VariantRow`, `StatusBadge`, `ComparisonHeader`.",
+    "2. VISUAL HIERARCHY: The 'Missing' variants are the HERO of this story. They represent lost revenue. Highlight them with the dashed-orange pattern defined in component_specs.",
+    "3. DATA DENSITY: Do not use cards for the main list. Use a 'List-Grid' hybrid. Rows are better for comparison than cards.",
+    "4. ACTIONS: The 'Create Variants' button should be disabled until selection is made. Show a counter badge inside the button (e.g., 'Create 3 Variants').",
+    "5. EMPTY STATES: If all variants are synced, show a 'Success' state with a clean illustration or icon, don't just show an empty list.",
+    "6. ACCESSIBILITY: Ensure keyboard navigation works within the modal. Focus states must be 'ring-2 ring-slate-900 ring-offset-2'.",
+    "7. TESTING: Add data-testid to the 'Create' button, the 'Select All' checkbox, and individual variant rows."
+  ],
+  "universal_guidelines": {
+    "do_not": [
+      "Do not use gradients for text.",
+      "Do not use default scrollbars in the modal body (use 'scrollbar-thin').",
+      "Do not center align the comparison text (keep it left-aligned for scanning)."
+    ],
+    "must_do": [
+      "Use 'Manrope' for the Modal Title.",
+      "Use 'JetBrains Mono' for any SKU or ID displayed.",
+      "Ensure the modal has a fixed height on desktop but is responsive on mobile."
+    ]
+  }
+}
