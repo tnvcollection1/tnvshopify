@@ -71,24 +71,24 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - Shows completed and failed products after job finishes
 - **UI Access**: "Create All Missing Variants" button appears in preview modal after scan
 
-### AI Product Editor - Image Recognition ✅ NEW
-- **Backend Endpoints**:
-  - `POST /api/ai-product/recognize-image` - Analyze image and return suggested titles/attributes
-  - `POST /api/ai-product/recognize-and-generate` - Analyze image + generate full content
-  - `POST /api/ai-product/upload-and-recognize` - Upload file and analyze
-  - `GET /api/ai-product/recognition-history` - View recognition history
+### AI Product Editor - Catalog-Based Enhancement ✅ REDESIGNED
+- **New Workflow**: No manual URL input or drag-drop - works directly with product catalog
 - **Features**:
-  - **Two-tab interface**: Text Input (original) + Image Recognition (new)
-  - **File upload**: Drag & drop or click to upload images (PNG, JPG, WebP, max 5MB)
-  - **URL input**: Paste image URL with quick scan button
-  - **GPT-4 Vision integration**: Analyzes product images to detect:
-    - Suggested product titles (3 variations)
-    - Product category
-    - Key attributes/features visible
-    - SEO tags
-  - **1688 API fallback**: Uses 1688 image search when available
-  - **Auto-fill**: Recognized data auto-fills the form for quick editing
-  - **One-click generation**: "Recognize & Generate Content" combines recognition + content generation
+  - **Catalog View**: Shows all products in a grid with search/filter
+  - **1688 & AI badges**: Visual indicators for linked products and AI-enhanced items
+  - **One-click enhancement**: Click any product to auto-analyze
+  - **Auto-scrape from 1688**: When product is linked, scrapes title and description from 1688
+  - **Image recognition**: GPT-4 Vision analyzes product image for category, attributes, tags
+  - **AI title improvement**: Generates 3 improved title suggestions based on:
+    - Original title
+    - 1688 scraped data (translated)
+    - Image recognition results
+    - Product attributes
+  - **Apply Changes**: Saves improved title/description directly to Shopify
+- **Backend Endpoints**:
+  - `POST /api/ai-product/enhance-from-catalog` - Auto-analyze product from catalog
+  - `POST /api/ai-product/save-enhancement` - Save changes to Shopify
+- **Auto-linking enhancement**: When products are linked to 1688, description is now automatically scraped and stored
 
 ### Variant Comparison Modal Redesign ✅ NEW
 - **Component**: `/app/frontend/src/components/VariantComparisonModal.jsx` (Extracted from ShopifyProducts.jsx)
