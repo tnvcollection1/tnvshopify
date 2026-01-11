@@ -2210,7 +2210,7 @@ async def get_shopify_products(
     link_status: str = None,
     status: str = None,
     page: int = 1,
-    page_size: int = 50
+    page_size: int = 100
 ):
     """Get synced Shopify products from database
     
