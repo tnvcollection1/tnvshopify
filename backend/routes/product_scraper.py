@@ -301,6 +301,170 @@ async def get_job_status(job_id: str):
     }
 
 
+# ==================== Merchants Endpoints ====================
+
+@router.get("/merchants")
+async def get_merchants(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    search: Optional[str] = None,
+):
+    """
+    Get list of unique merchants from scraped products.
+    Groups products by seller_id and returns merchant info with product counts.
+    """
+    db = get_db()
+    
+    # Aggregation pipeline to group by seller
+    pipeline = [
+        # Match search if provided
+        {"$match": {"$or": [
+            {"seller_name": {"$regex": search or "", "$options": "i"}},
+            {"seller_id": {"$regex": str(search) if search else "", "$options": "i"}},
+        ]} if search else {}},
+        # Group by seller
+        {"$group": {
+            "_id": {"seller_id": "$seller_id", "seller_name": "$seller_name"},
+            "product_count": {"$sum": 1},
+            "total_value": {"$sum": "$price"},
+            "avg_price": {"$avg": "$price"},
+            "platforms": {"$addToSet": "$platform"},
+            "first_scraped": {"$min": "$scraped_at"},
+            "last_scraped": {"$max": "$scraped_at"},
+            "sample_products": {"$push": {
+                "product_id": "$product_id",
+                "title": "$title",
+                "price": "$price",
+                "images": {"$slice": ["$images", 1]},
+            }},
+        }},
+        # Sort by product count
+        {"$sort": {"product_count": -1}},
+        # Paginate
+        {"$skip": (page - 1) * limit},
+        {"$limit": limit},
+        # Reshape output
+        {"$project": {
+            "_id": 0,
+            "seller_id": "$_id.seller_id",
+            "seller_name": "$_id.seller_name",
+            "product_count": 1,
+            "total_value": {"$round": ["$total_value", 2]},
+            "avg_price": {"$round": ["$avg_price", 2]},
+            "platforms": 1,
+            "first_scraped": 1,
+            "last_scraped": 1,
+            "sample_products": {"$slice": ["$sample_products", 3]},
+        }},
+    ]
+    
+    merchants = await db.scraped_products.aggregate(pipeline).to_list(limit)
+    
+    # Get total count of unique merchants
+    count_pipeline = [
+        {"$match": {"$or": [
+            {"seller_name": {"$regex": search or "", "$options": "i"}},
+            {"seller_id": {"$regex": str(search) if search else "", "$options": "i"}},
+        ]} if search else {}},
+        {"$group": {"_id": {"seller_id": "$seller_id", "seller_name": "$seller_name"}}},
+        {"$count": "total"},
+    ]
+    count_result = await db.scraped_products.aggregate(count_pipeline).to_list(1)
+    total = count_result[0]["total"] if count_result else 0
+    
+    return {
+        "success": True,
+        "merchants": merchants,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total + limit - 1) // limit,
+    }
+
+
+@router.get("/merchants/{seller_id}/products")
+async def get_merchant_products(
+    seller_id: str,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """Get all products from a specific merchant"""
+    db = get_db()
+    
+    # Handle "unknown" seller_id (products without seller_id)
+    if seller_id == "unknown" or seller_id == "null":
+        query = {"$or": [{"seller_id": None}, {"seller_id": {"$exists": False}}]}
+    else:
+        # Try both string and numeric seller_id
+        query = {"$or": [
+            {"seller_id": seller_id},
+            {"seller_id": int(seller_id) if seller_id.isdigit() else seller_id},
+        ]}
+    
+    skip = (page - 1) * limit
+    
+    products = await db.scraped_products.find(
+        query,
+        {"_id": 0}
+    ).sort("scraped_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.scraped_products.count_documents(query)
+    
+    # Get merchant info
+    merchant_info = None
+    if products:
+        merchant_info = {
+            "seller_id": products[0].get("seller_id"),
+            "seller_name": products[0].get("seller_name"),
+        }
+    
+    return {
+        "success": True,
+        "merchant": merchant_info,
+        "products": products,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total + limit - 1) // limit,
+    }
+
+
+@router.get("/merchants/stats")
+async def get_merchants_stats():
+    """Get overall merchant statistics"""
+    db = get_db()
+    
+    pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_products": {"$sum": 1},
+            "total_value": {"$sum": "$price"},
+            "unique_merchants": {"$addToSet": "$seller_id"},
+            "platforms": {"$addToSet": "$platform"},
+        }},
+        {"$project": {
+            "_id": 0,
+            "total_products": 1,
+            "total_value": {"$round": ["$total_value", 2]},
+            "unique_merchants": {"$size": "$unique_merchants"},
+            "platforms": 1,
+        }},
+    ]
+    
+    result = await db.scraped_products.aggregate(pipeline).to_list(1)
+    stats = result[0] if result else {
+        "total_products": 0,
+        "total_value": 0,
+        "unique_merchants": 0,
+        "platforms": [],
+    }
+    
+    return {
+        "success": True,
+        "stats": stats,
+    }
+
+
 @router.get("/products")
 async def get_scraped_products(
     page: int = Query(1, ge=1),
