@@ -729,7 +729,7 @@ const AIProductEditor = () => {
                             {recognitionResult.suggested_titles.map((t, i) => (
                               <div 
                                 key={i}
-                                onClick={() => useSuggestedTitle(t)}
+                                onClick={() => applySuggestedTitle(t)}
                                 className="text-xs bg-white p-2 rounded cursor-pointer hover:bg-green-100 flex items-center justify-between"
                               >
                                 <span className="truncate">{t}</span>
