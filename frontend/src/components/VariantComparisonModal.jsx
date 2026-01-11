@@ -154,8 +154,8 @@ const VariantComparisonModal = ({ product, onClose, onVariantsCreated }) => {
   const [selectedVariants, setSelectedVariants] = useState(new Set());
   const [creating, setCreating] = useState(false);
   
-  // Shopify variants from product
-  const shopifyVariants = product.variants || [];
+  // Shopify variants from product - memoized to prevent dependency changes
+  const shopifyVariants = React.useMemo(() => product.variants || [], [product.variants]);
   
   useEffect(() => {
     const fetchVariants = async () => {
