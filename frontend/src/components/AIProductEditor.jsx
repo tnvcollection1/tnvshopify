@@ -145,6 +145,7 @@ const AIProductEditor = () => {
   const [generatedContent, setGeneratedContent] = useState(null);
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [activeTab, setActiveTab] = useState('text'); // 'text' or 'image'
   
   // Translation state
   const [translateText, setTranslateText] = useState('');
@@ -155,6 +156,14 @@ const AIProductEditor = () => {
   const [quickTitle, setQuickTitle] = useState('');
   const [improvedTitle, setImprovedTitle] = useState('');
   const [improvingTitle, setImprovingTitle] = useState(false);
+  
+  // Image recognition state
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [recognizing, setRecognizing] = useState(false);
+  const [recognitionResult, setRecognitionResult] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Fetch history
   const fetchHistory = async () => {
