@@ -666,10 +666,59 @@ const AIProductEditor = () => {
                 }
               </p>
             </div>
-            <Button onClick={fetchProducts} variant="outline">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              {bulkMode ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={selectAllVisible}
+                  >
+                    {selectedProducts.size === products.length ? 'Deselect All' : 'Select All'}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setBulkMode(false);
+                      setSelectedProducts(new Set());
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleBulkEnhance}
+                    disabled={selectedProducts.size === 0 || bulkProcessing}
+                    className="bg-purple-500 hover:bg-purple-600"
+                  >
+                    {bulkProcessing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {bulkProgress.current}/{bulkProgress.total}
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4 mr-2" />
+                        Enhance {selectedProducts.size} Titles
+                      </>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setBulkMode(true)}
+                    className="border-purple-300 text-purple-600 hover:bg-purple-50"
+                  >
+                    <Layers className="w-4 h-4 mr-2" />
+                    Bulk Enhance Titles
+                  </Button>
+                  <Button onClick={fetchProducts} variant="outline">
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Refresh
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
