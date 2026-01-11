@@ -16,6 +16,7 @@ import {
   Loader2,
   Eye,
   Layers,
+  FileSearch,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import VariantComparisonModal from './VariantComparisonModal';
+import BulkVariantPreviewModal from './BulkVariantPreviewModal';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
