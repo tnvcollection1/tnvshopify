@@ -1655,10 +1655,149 @@ async def auto_link_from_image_endpoint(
 @router.get("/product-links/all")
 async def get_all_product_links_endpoint(
     page: int = Query(1, ge=1),
-    limit: int = Query(50, ge=1, le=100)
+    limit: int = Query(50, ge=1, le=500)
 ):
     """Get all product links (Shopify -> 1688 mappings)"""
     return await _get_all_links_service(page=page, limit=limit)
+
+
+@router.post("/products/{product_1688_id}/scrape-variants")
+async def scrape_1688_variants(
+    product_1688_id: str,
+    shopify_product_id: Optional[str] = Body(None, embed=True),
+):
+    """
+    Scrape all variants (colors/sizes) from a 1688 product.
+    Returns the variants that can be used to create new Shopify variants.
+    """
+    db = get_db()
+    TMAPI_TOKEN = os.environ.get("TMAPI_TOKEN", "")
+    
+    if not TMAPI_TOKEN:
+        return {"success": False, "error": "TMAPI token not configured"}
+    
+    try:
+        # Fetch from TMAPI
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(
+                "http://api.tmapi.top/1688/item_detail",
+                params={
+                    "apiToken": TMAPI_TOKEN,
+                    "item_id": product_1688_id,
+                }
+            )
+            data = response.json()
+        
+        if data.get("code") != 200:
+            return {
+                "success": False,
+                "error": data.get("msg", data.get("message", "TMAPI request failed")),
+            }
+        
+        item = data.get("data", {})
+        
+        # Extract all variants with color and size
+        variants = []
+        colors = set()
+        sizes = set()
+        
+        sku_list = item.get("skus", [])
+        for sku in sku_list:
+            props_names = sku.get("props_names", "")
+            color = ""
+            size = ""
+            
+            if props_names:
+                for part in props_names.split(";"):
+                    if ":" in part:
+                        key, value = part.split(":", 1)
+                        key_lower = key.strip().lower()
+                        if '颜色' in key_lower or 'color' in key_lower or '款式' in key_lower:
+                            color = value.strip()
+                            colors.add(color)
+                        if '尺码' in key_lower or '尺寸' in key_lower or 'size' in key_lower or '规格' in key_lower:
+                            size = value.strip()
+                            sizes.add(size)
+            
+            price_val = sku.get("sale_price") or sku.get("price") or 0
+            try:
+                price = float(price_val)
+            except:
+                price = 0
+            
+            sku_id = sku.get("sku_id", "")
+            stock = sku.get("quantity", 0) or sku.get("stock", 0)
+            
+            # Get image for this variant
+            sku_img = sku.get("sku_img", "")
+            if sku_img and sku_img.startswith("//"):
+                sku_img = "https:" + sku_img
+            
+            variants.append({
+                "sku_id": sku_id,
+                "color": color,
+                "size": size,
+                "price": price,
+                "stock": stock,
+                "image": sku_img,
+                "props_names": props_names,
+            })
+        
+        # Get product title and main image
+        title = item.get("title", "")
+        main_image = ""
+        main_imgs = item.get("main_imgs", []) or item.get("images", [])
+        if main_imgs:
+            main_image = main_imgs[0]
+            if main_image.startswith("//"):
+                main_image = "https:" + main_image
+        
+        # If shopify_product_id provided, compare with existing variants
+        existing_variants = []
+        missing_variants = []
+        
+        if shopify_product_id:
+            shopify_product = await db.shopify_products.find_one(
+                {"id": int(shopify_product_id) if shopify_product_id.isdigit() else shopify_product_id},
+                {"_id": 0, "variants": 1}
+            )
+            
+            if shopify_product and shopify_product.get("variants"):
+                for sv in shopify_product["variants"]:
+                    existing_variants.append({
+                        "color": sv.get("option1", ""),
+                        "size": sv.get("option2", ""),
+                        "sku": sv.get("sku", ""),
+                    })
+                
+                # Find variants in 1688 that don't exist in Shopify
+                existing_combos = set()
+                for ev in existing_variants:
+                    combo = (ev.get("color", "").lower(), ev.get("size", "").lower())
+                    existing_combos.add(combo)
+                
+                for v in variants:
+                    combo = (v.get("color", "").lower(), v.get("size", "").lower())
+                    if combo not in existing_combos and (v.get("color") or v.get("size")):
+                        missing_variants.append(v)
+        
+        return {
+            "success": True,
+            "product_1688_id": product_1688_id,
+            "title": title,
+            "main_image": main_image,
+            "total_variants": len(variants),
+            "variants": variants,
+            "colors": list(colors),
+            "sizes": list(sizes),
+            "existing_in_shopify": len(existing_variants),
+            "missing_in_shopify": len(missing_variants),
+            "missing_variants": missing_variants,
+        }
+        
+    except Exception as e:
+        logger.error(f"Error scraping variants: {e}")
+        return {"success": False, "error": str(e)}
 
 
 # ============= TMAPI USAGE MONITORING =============
