@@ -45,6 +45,19 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ### Latest Updates (Jan 11, 2025)
 
+### Bulk Variant Preview (Dry-Run) ✅ NEW
+- **Backend Endpoint**: `POST /api/shopify/products/bulk-variants/preview`
+- **Component**: `/app/frontend/src/components/BulkVariantPreviewModal.jsx`
+- **Features**:
+  - **Dry-Run mode**: Scans all linked products WITHOUT making any changes to Shopify
+  - Shows summary stats: Products Scanned, Products with Missing Variants, Total Missing Variants, Errors
+  - Store filter to scan only specific stores
+  - Expandable product cards showing which variants are missing
+  - Green confirmation message: "This is a DRY-RUN preview. No changes have been made to Shopify."
+  - "Run Again" button to re-scan after changes
+- **Access**: "Preview Missing Variants" button on Products Catalog page (`/products`)
+- **Purpose**: Safe way to see what variants would be created before executing bulk creation
+
 ### Variant Comparison Modal Redesign ✅ NEW
 - **Component**: `/app/frontend/src/components/VariantComparisonModal.jsx` (Extracted from ShopifyProducts.jsx)
 - **Features**:
