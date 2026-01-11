@@ -292,6 +292,193 @@ const LinkModal = ({ product, onClose, onSubmit, loading }) => {
   );
 };
 
+// Variants Scrape Modal
+const VariantsModal = ({ product, link1688, onClose }) => {
+  const [loading, setLoading] = useState(true);
+  const [variantsData, setVariantsData] = useState(null);
+  const [selectedVariants, setSelectedVariants] = useState(new Set());
+  
+  useEffect(() => {
+    const fetchVariants = async () => {
+      if (!link1688?.product_1688_id) return;
+      
+      try {
+        const res = await fetch(`${API}/api/1688-scraper/products/${link1688.product_1688_id}/scrape-variants`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shopify_product_id: product.id?.toString() }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setVariantsData(data);
+          // Select all missing variants by default
+          if (data.missing_variants) {
+            setSelectedVariants(new Set(data.missing_variants.map((_, i) => i)));
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch variants:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchVariants();
+  }, [link1688, product.id]);
+  
+  const toggleVariant = (index) => {
+    const newSelected = new Set(selectedVariants);
+    if (newSelected.has(index)) {
+      newSelected.delete(index);
+    } else {
+      newSelected.add(index);
+    }
+    setSelectedVariants(newSelected);
+  };
+  
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Package className="w-5 h-5 text-orange-500" />
+            1688 Product Variants
+          </CardTitle>
+          <CardDescription>
+            {variantsData?.title || product.title}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+            </div>
+          ) : variantsData ? (
+            <div className="space-y-4">
+              {/* Stats */}
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-blue-50 p-3 rounded text-center">
+                  <p className="text-2xl font-bold text-blue-600">{variantsData.total_variants}</p>
+                  <p className="text-xs text-blue-600">Total in 1688</p>
+                </div>
+                <div className="bg-green-50 p-3 rounded text-center">
+                  <p className="text-2xl font-bold text-green-600">{variantsData.colors?.length || 0}</p>
+                  <p className="text-xs text-green-600">Colors</p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded text-center">
+                  <p className="text-2xl font-bold text-purple-600">{variantsData.sizes?.length || 0}</p>
+                  <p className="text-xs text-purple-600">Sizes</p>
+                </div>
+                <div className="bg-red-50 p-3 rounded text-center">
+                  <p className="text-2xl font-bold text-red-600">{variantsData.missing_in_shopify || 0}</p>
+                  <p className="text-xs text-red-600">Missing</p>
+                </div>
+              </div>
+              
+              {/* Colors List */}
+              {variantsData.colors?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <Palette className="w-4 h-4" />
+                    Available Colors ({variantsData.colors.length})
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {variantsData.colors.map((color, i) => (
+                      <Badge key={i} variant="outline">{color}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Sizes List */}
+              {variantsData.sizes?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <Ruler className="w-4 h-4" />
+                    Available Sizes ({variantsData.sizes.length})
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {variantsData.sizes.map((size, i) => (
+                      <Badge key={i} variant="outline">{size}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Missing Variants */}
+              {variantsData.missing_variants?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-2 flex items-center gap-2 text-red-600">
+                    <AlertTriangle className="w-4 h-4" />
+                    Missing in Shopify ({variantsData.missing_variants.length})
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-auto">
+                    {variantsData.missing_variants.map((v, i) => (
+                      <div 
+                        key={i}
+                        onClick={() => toggleVariant(i)}
+                        className={`p-2 rounded border cursor-pointer transition-colors ${
+                          selectedVariants.has(i) 
+                            ? 'bg-orange-100 border-orange-300' 
+                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Checkbox checked={selectedVariants.has(i)} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {v.color || 'Default'} / {v.size || 'One Size'}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              ¥{v.price?.toFixed(2)} • Stock: {v.stock || 0}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* All Variants */}
+              <div>
+                <h4 className="text-sm font-medium mb-2">All 1688 Variants ({variantsData.variants?.length})</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-60 overflow-auto">
+                  {variantsData.variants?.slice(0, 50).map((v, i) => (
+                    <div key={i} className="p-2 bg-gray-50 rounded text-xs">
+                      <p className="font-medium truncate">{v.color || '-'} / {v.size || '-'}</p>
+                      <p className="text-gray-500">¥{v.price?.toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Actions */}
+              <div className="flex gap-2 justify-end pt-4 border-t">
+                <Button variant="outline" onClick={onClose}>
+                  Close
+                </Button>
+                {variantsData.missing_variants?.length > 0 && (
+                  <Button 
+                    className="bg-orange-500 hover:bg-orange-600"
+                    disabled={selectedVariants.size === 0}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create {selectedVariants.size} Variants in Shopify
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 py-8">Failed to load variants</p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+};
+
 // Main Component
 const ProductLinkManager = () => {
   const { selectedStore } = useStore();
