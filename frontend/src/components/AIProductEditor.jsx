@@ -666,6 +666,7 @@ const AIProductEditor = () => {
       {/* Enhancement Modal */}
       {selectedProduct && (
         <AIEnhancementModal
+          key={`${selectedProduct.shopify_product_id}-${enhancementData ? 'loaded' : 'loading'}`}
           product={selectedProduct}
           onClose={() => {
             setSelectedProduct(null);
