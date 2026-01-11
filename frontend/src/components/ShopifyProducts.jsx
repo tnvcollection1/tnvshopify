@@ -615,9 +615,26 @@ const ShopifyProducts = () => {
                 <List className="w-4 h-4" />
               </button>
             </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setBulkPreviewOpen(true)}
+              className="border-orange-300 text-orange-600 hover:bg-orange-50"
+              data-testid="bulk-preview-btn"
+            >
+              <FileSearch className="w-4 h-4 mr-2" />
+              Preview Missing Variants
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Bulk Variant Preview Modal */}
+      <BulkVariantPreviewModal 
+        open={bulkPreviewOpen} 
+        onClose={() => setBulkPreviewOpen(false)}
+        stores={syncStatus?.statuses || []}
+      />
 
       {/* Products */}
       <div className="px-6 py-4">
