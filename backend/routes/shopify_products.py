@@ -21,24 +21,75 @@ async def get_db():
 
 async def scrape_1688_variants(product_id: str) -> dict:
     """
-    Scrape variants from 1688 product using the existing scraper endpoint.
+    Scrape variants from 1688 product using TMAPI.
     """
+    import os
+    
+    TMAPI_TOKEN = os.environ.get("TMAPI_TOKEN", "")
+    
+    if not TMAPI_TOKEN:
+        return {"success": False, "error": "TMAPI token not configured"}
+    
     try:
-        # Use the internal endpoint that works
-        from routes.product_scraper import scrape_product_variants
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(
+                "http://api.tmapi.top/1688/item_detail",
+                params={
+                    "apiToken": TMAPI_TOKEN,
+                    "item_id": product_id,
+                }
+            )
+            data = response.json()
         
-        result = await scrape_product_variants(product_id, None)
-        
-        if result.get("success"):
+        if data.get("code") != 200:
             return {
-                "success": True,
-                "colors": result.get("colors", []),
-                "sizes": result.get("sizes", []),
-                "variants": result.get("variants", []),
-                "total_variants": result.get("total_variants", 0)
+                "success": False,
+                "error": data.get("msg", data.get("message", "TMAPI request failed")),
             }
-        else:
-            return {"success": False, "error": result.get("detail", "Scrape failed")}
+        
+        item = data.get("data", {})
+        
+        # Extract all variants with color and size
+        variants = []
+        colors = set()
+        sizes = set()
+        
+        sku_list = item.get("skus", [])
+        for sku in sku_list:
+            props_names = sku.get("props_names", "")
+            color = ""
+            size = ""
+            
+            if props_names:
+                for part in props_names.split(";"):
+                    if ":" in part:
+                        key, value = part.split(":", 1)
+                        key_lower = key.strip().lower()
+                        if '颜色' in key_lower or 'color' in key_lower or '款式' in key_lower:
+                            color = value.strip()
+                            colors.add(color)
+                        if '尺码' in key_lower or '尺寸' in key_lower or 'size' in key_lower or '规格' in key_lower:
+                            size = value.strip()
+                            sizes.add(size)
+            
+            variants.append({
+                "sku_id": sku.get("sku_id", ""),
+                "color": color or "Default",
+                "size": size or "One Size",
+                "price": float(sku.get("price", 0)),
+                "stock": int(sku.get("quantity", 0)),
+                "image": sku.get("pic", ""),
+                "props_names": props_names,
+            })
+        
+        return {
+            "success": True,
+            "colors": list(colors),
+            "sizes": list(sizes),
+            "variants": variants,
+            "total_variants": len(variants),
+            "title": item.get("title", ""),
+        }
             
     except Exception as e:
         logger.error(f"Error scraping 1688 variants for {product_id}: {e}")
