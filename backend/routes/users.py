@@ -120,8 +120,8 @@ async def get_current_user(user_id: str):
         # Try users collection first
         user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
         
-        # Fall back to agents collection for backward compatibility
-        if not user:
+        # Fall back to agents collection if user not found OR user record is incomplete
+        if not user or not user.get("username"):
             user = await db.agents.find_one({"id": user_id}, {"_id": 0, "password": 0})
         
         if not user:
