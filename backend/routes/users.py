@@ -394,8 +394,8 @@ async def get_current_user(user_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error logging in: {str(e)}")
-        raise HTTPException(status_code=500, detail="Login failed")
+        logger.error(f"Error validating session: {str(e)}")
+        raise HTTPException(status_code=500, detail="Session validation failed")
 
 
 @users_router.get("/activity/recent")
