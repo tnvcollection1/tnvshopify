@@ -748,6 +748,7 @@ const AIProductEditor = () => {
                   <Button 
                     variant="outline" 
                     onClick={selectAllVisible}
+                    disabled={isGeneratingPreview}
                   >
                     {selectedProducts.size === products.length ? 'Deselect All' : 'Select All'}
                   </Button>
@@ -757,23 +758,24 @@ const AIProductEditor = () => {
                       setBulkMode(false);
                       setSelectedProducts(new Set());
                     }}
+                    disabled={isGeneratingPreview}
                   >
                     Cancel
                   </Button>
                   <Button 
                     onClick={handleBulkEnhance}
-                    disabled={selectedProducts.size === 0 || bulkProcessing}
+                    disabled={selectedProducts.size === 0 || isGeneratingPreview}
                     className="bg-purple-500 hover:bg-purple-600"
                   >
-                    {bulkProcessing ? (
+                    {isGeneratingPreview ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {bulkProgress.current}/{bulkProgress.total}
+                        Generating {bulkProgress.current}/{bulkProgress.total}...
                       </>
                     ) : (
                       <>
-                        <Zap className="w-4 h-4 mr-2" />
-                        Enhance {selectedProducts.size} Titles
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview {selectedProducts.size} Titles
                       </>
                     )}
                   </Button>
