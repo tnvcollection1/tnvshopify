@@ -148,7 +148,7 @@ async def translate_text(text: str, source_lang: str, target_lang: str) -> str:
     if not api_key:
         raise HTTPException(status_code=500, detail="LLM API key not configured")
     
-    system_message = f"""You are an expert translator specializing in e-commerce product content.
+    system_message = """You are an expert translator specializing in e-commerce product content.
 Translate accurately while maintaining the original meaning and tone.
 Adapt cultural references for the target market when appropriate."""
 
