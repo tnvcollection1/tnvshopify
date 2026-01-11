@@ -497,6 +497,7 @@ const ProductLinkManager = () => {
   const [linkModalProduct, setLinkModalProduct] = useState(null);
   const [linking, setLinking] = useState(null);
   const [scraping, setScraping] = useState(null);
+  const [variantsModalProduct, setVariantsModalProduct] = useState(null);
   
   // Auto-link state
   const [autoLinking, setAutoLinking] = useState(false);
