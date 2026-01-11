@@ -37,6 +37,7 @@ async def link_product_to_1688(
 ) -> Dict:
     """
     Create a link between a Shopify product and a 1688 product.
+    Also scrapes and stores the 1688 product description.
     
     Args:
         shopify_product_id: Shopify product ID
@@ -49,7 +50,7 @@ async def link_product_to_1688(
     db = get_db()
     
     try:
-        # Get the 1688 product details
+        # Get the 1688 product details from scraped_products
         product_1688 = await db.scraped_products.find_one(
             {"product_id": product_1688_id},
             {"_id": 0}
@@ -61,6 +62,38 @@ async def link_product_to_1688(
                 "error": f"1688 product {product_1688_id} not found. Please import it first."
             }
         
+        # Scrape additional details (description) from 1688 page
+        scraped_description = None
+        scraped_attributes = []
+        
+        try:
+            import httpx
+            import re
+            
+            url = f"https://detail.1688.com/offer/{product_1688_id}.html"
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+                }
+                response = await client.get(url, headers=headers, follow_redirects=True)
+                
+                if response.status_code == 200:
+                    html = response.text
+                    
+                    # Extract description from meta tag
+                    desc_match = re.search(r'<meta name="description" content="([^"]+)"', html)
+                    if desc_match:
+                        scraped_description = desc_match.group(1)
+                    
+                    # Extract attributes
+                    attr_matches = re.findall(r'"attrName":"([^"]+)","attrValue":"([^"]+)"', html)
+                    for name, value in attr_matches[:15]:
+                        scraped_attributes.append({"name": name, "value": value})
+                        
+        except Exception as e:
+            logger.warning(f"Failed to scrape additional 1688 details: {e}")
+        
         # Create/update the link
         link_data = {
             "shopify_product_id": shopify_product_id,
@@ -70,6 +103,8 @@ async def link_product_to_1688(
             "product_1688_title": product_1688.get("title") or product_1688.get("title_cn"),
             "product_1688_price": product_1688.get("price"),
             "product_1688_image": (product_1688.get("images") or [None])[0],
+            "product_1688_description": scraped_description,
+            "product_1688_attributes": scraped_attributes,
             "variants_count": len(product_1688.get("variants") or []),
             "linked_at": datetime.now(timezone.utc).isoformat(),
         }
@@ -83,10 +118,28 @@ async def link_product_to_1688(
             upsert=True
         )
         
+        # Also update shopify_products collection with 1688 link info
+        await db.shopify_products.update_one(
+            {"shopify_product_id": str(shopify_product_id)},
+            {
+                "$set": {
+                    "linked_1688_product_id": product_1688_id,
+                    "linked_1688_url": link_data["product_1688_url"],
+                    "linked_1688_title": link_data["product_1688_title"],
+                    "linked_1688_price": link_data["product_1688_price"],
+                    "linked_1688_description": scraped_description,
+                    "linked_1688_attributes": scraped_attributes,
+                    "linked_at": link_data["linked_at"],
+                }
+            }
+        )
+        
         return {
             "success": True,
             "message": f"Linked to 1688 product {product_1688_id}",
             "link": link_data,
+            "description_scraped": bool(scraped_description),
+            "attributes_count": len(scraped_attributes),
         }
         
     except Exception as e:
