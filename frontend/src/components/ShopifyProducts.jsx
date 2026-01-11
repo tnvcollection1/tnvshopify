@@ -8,26 +8,18 @@ import {
   Grid,
   List,
   ExternalLink,
-  Filter,
   Image as ImageIcon,
   Store,
-  X,
   Zap,
-  Play,
   Check,
   AlertCircle,
   Loader2,
-  Palette,
-  Ruler,
-  Plus,
-  AlertTriangle,
-  ChevronRight,
   Eye,
+  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -41,8 +33,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import VariantComparisonModal from './VariantComparisonModal';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
