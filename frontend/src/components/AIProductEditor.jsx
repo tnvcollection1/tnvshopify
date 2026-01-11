@@ -852,21 +852,21 @@ const AIProductEditor = () => {
       </div>
       
       {/* Bulk Progress Bar */}
-      {bulkProcessing && (
+      {isGeneratingPreview && (
         <div className="px-6 pb-4">
           <div className="bg-white rounded-lg border p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-purple-700">
-                Enhancing titles... ({bulkProgress.current}/{bulkProgress.total})
+                Generating AI suggestions... ({bulkProgress.current}/{bulkProgress.total})
               </span>
               <span className="text-xs text-gray-500">
-                {Math.round((bulkProgress.current / bulkProgress.total) * 100)}%
+                {bulkProgress.total > 0 ? Math.round((bulkProgress.current / bulkProgress.total) * 100) : 0}%
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className="bg-purple-500 h-2 rounded-full transition-all"
-                style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+                style={{ width: `${bulkProgress.total > 0 ? (bulkProgress.current / bulkProgress.total) * 100 : 0}%` }}
               />
             </div>
           </div>
