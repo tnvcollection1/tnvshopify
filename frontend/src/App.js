@@ -497,6 +497,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/product-link-manager" 
+        element={
+          <ProtectedRoute>
+            <ProductLinkManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/fulfillment" 
         element={
           <ProtectedRoute>
