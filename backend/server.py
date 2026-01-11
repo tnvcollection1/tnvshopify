@@ -52,6 +52,7 @@ from routes.fulfillment import router as fulfillment_router
 from routes.product_scraper import router as product_scraper_router
 from routes.ai_product_editor import router as ai_product_editor_router
 from routes.tmapi_buyer import router as tmapi_buyer_router
+from routes.shopify_products import router as shopify_products_router
 from routes.storefront import router as storefront_router, set_database as set_storefront_db
 from routes.storefront_cms import router as storefront_cms_router, set_database as set_storefront_cms_db
 from routes.warehouse import router as warehouse_router, set_database as set_warehouse_db
