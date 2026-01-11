@@ -480,10 +480,22 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants }) => {
         <div className="flex items-center gap-2">
           {linked ? (
             <>
-              <Badge className="bg-orange-100 text-orange-700 border-0">
+              <Badge 
+                className="bg-orange-100 text-orange-700 border-0 cursor-pointer hover:bg-orange-200"
+                onClick={() => onCompareVariants?.(product)}
+              >
                 <Link2 className="w-3 h-3 mr-1" />
-                {linked}
+                Linked
               </Badge>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => onCompareVariants?.(product)}
+                className="text-xs"
+              >
+                <Eye className="w-3 h-3 mr-1" />
+                Variants
+              </Button>
               <Button size="sm" variant="ghost" onClick={handleUnlink}>
                 <Unlink className="w-4 h-4 text-gray-400" />
               </Button>
