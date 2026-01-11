@@ -46,12 +46,69 @@ import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Variant Comparison Modal Component
+// Status Badge Component
+const StatusBadge = ({ type, children }) => {
+  const styles = {
+    shopify: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    source: "bg-orange-50 text-orange-700 border-orange-200",
+    missing: "bg-white text-zinc-500 border-zinc-300 border-dashed",
+    synced: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  };
+  
+  return (
+    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border ${styles[type] || styles.source}`}>
+      {children}
+    </span>
+  );
+};
+
+// Variant Row Component for cleaner list display
+const VariantRow = ({ variant, isSelected, onToggle, isMissing }) => {
+  return (
+    <div 
+      onClick={() => isMissing && onToggle?.()}
+      className={`group flex items-center justify-between p-3 rounded-lg border transition-all duration-200 ${
+        isMissing 
+          ? isSelected
+            ? 'border-orange-400 bg-orange-50 cursor-pointer'
+            : 'border-dashed border-orange-300 bg-orange-50/30 hover:bg-orange-50 hover:border-orange-400 cursor-pointer'
+          : 'border-zinc-200 bg-white'
+      }`}
+      data-testid={`variant-row-${variant.color}-${variant.size}`}
+    >
+      <div className="flex items-center gap-3">
+        {isMissing && (
+          <Checkbox 
+            checked={isSelected} 
+            onCheckedChange={onToggle}
+            className="border-orange-400 data-[state=checked]:bg-orange-500"
+          />
+        )}
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-md bg-gradient-to-br from-zinc-100 to-zinc-200 flex items-center justify-center">
+            <Palette className="w-4 h-4 text-zinc-500" />
+          </div>
+          <div>
+            <p className="font-medium text-sm text-zinc-900">{variant.color || 'Default'}</p>
+            <p className="text-xs text-zinc-500">Size: {variant.size || 'One Size'}</p>
+          </div>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className="font-mono text-sm font-medium text-orange-600">¥{variant.price?.toFixed(2) || '0.00'}</p>
+        <p className="text-xs text-zinc-400">Stock: {variant.stock || 0}</p>
+      </div>
+    </div>
+  );
+};
+
+// Variant Comparison Modal Component - Redesigned
 const VariantComparisonModal = ({ product, onClose, onVariantsCreated }) => {
   const [loading, setLoading] = useState(true);
   const [variantsData, setVariantsData] = useState(null);
   const [selectedVariants, setSelectedVariants] = useState(new Set());
   const [creating, setCreating] = useState(false);
+  const [scraping, setScraping] = useState(false);
   
   // Shopify variants from product
   const shopifyVariants = product.variants || [];
