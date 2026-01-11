@@ -243,7 +243,7 @@ const BulkVariantPreviewModal = ({ open, onClose, stores = [] }) => {
                     <p className="font-medium text-blue-800">How it works</p>
                     <p className="text-sm text-blue-600 mt-1">
                       This preview will scan all linked products and compare their Shopify variants against 1688.
-                      You'll see exactly which variants are missing without making any changes.
+                      You will see exactly which variants are missing without making any changes.
                     </p>
                   </div>
                 </div>
