@@ -982,6 +982,7 @@ const ShopifyProducts = () => {
                   product={product}
                   onRefresh={fetchProducts}
                   viewMode={viewMode}
+                  onCompareVariants={setComparisonProduct}
                 />
               ))}
             </div>
