@@ -45,7 +45,36 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ### Completed Features (as of Jan 11, 2025)
 
-### 1688 Merchants Page (Jan 11, 2025) ✅ NEW
+### AI Product Editor (Jan 11, 2025) ✅ NEW
+- **New Component**: `/app/frontend/src/components/AIProductEditor.jsx`
+- **Backend**: `/app/backend/routes/ai_product_editor.py`
+- **Endpoints**:
+  - `POST /api/ai-product/generate` - Generate optimized product content
+  - `POST /api/ai-product/translate` - Translate text between languages
+  - `POST /api/ai-product/improve-title` - Quick title improvement
+  - `POST /api/ai-product/bulk-generate` - Bulk content generation
+  - `POST /api/ai-product/generate-from-1688/{product_id}` - Generate from scraped product
+  - `GET /api/ai-product/history` - View generation history
+- **Features**:
+  - Takes Chinese product titles and generates English optimized content
+  - Generates: Optimized title, SEO title, 5 selling points, description, tags
+  - Quick Title Improvement tool
+  - Quick Translation tool (Chinese → English)
+  - Generation history with reload capability
+  - Copy buttons for all generated content
+- **Powered by**: OpenAI GPT-4o via Emergent LLM Key
+- **Route**: `/ai-product-editor`
+- **Sidebar**: Added "AI Product Editor" under "1688 Sourcing" menu
+
+### 1688 Trade API Enabled (Jan 11, 2025) ✅ NEW
+- Activated **WaMerce CRM** app (Buyer Connect type)
+- **AppKey**: 8585237, **Token**: 70a07ab8-76fa-4f82-b568-6fcf2834b157
+- **Working APIs**:
+  - `alibaba.trade.getBuyerOrderList` ✅ - List 1688 purchase orders (20 orders fetched)
+  - `alibaba.trade.receiveAddress.get` ✅ - Get shipping addresses (1 address found)
+  - Order creation and tracking APIs now available
+
+### 1688 Merchants Page (Jan 11, 2025) ✅
 - **New Component**: `/app/frontend/src/components/Merchants1688.jsx`
 - **Backend Endpoints**:
   - `GET /api/1688-scraper/merchants` - List all merchants with product counts
@@ -61,9 +90,8 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - **Sidebar**: Added "1688 Merchants" under "1688 Sourcing" menu
 - **Route**: `/1688-merchants`
 
-### 1688 API Token Refresh (Jan 11, 2025) ✅ NEW
-- Refreshed 1688 Merchant Integration API access token
-- Token saved to database and environment
+### 1688 Merchant Integration API (Jan 11, 2025) ✅
+- Refreshed access token for AppKey 8641239
 - **Available API Capabilities**:
   - Image search for cross-border products
   - Get Purchased Merchant Information
