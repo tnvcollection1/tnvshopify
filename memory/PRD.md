@@ -58,6 +58,29 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - `/app/frontend/src/contexts/AuthContext.jsx` - Added session validation logic
 - **Test Results**: 11/11 tests passed (100%)
 
+### Translation Fix ✅ FIXED
+- **Issue**: Chinese text from 1688 wasn't being translated in AI Product Enhancement modal
+- **Root Cause**: 
+  1. `translate_text_simple()` function was missing required `system_message` parameter
+  2. Endpoint was trying to scrape live 1688 data instead of using stored DB data
+- **Solution**:
+  - Fixed `translate_text_simple()` to include `system_message` in LlmChat initialization
+  - Updated `enhance-from-catalog` endpoint to use stored `linked_1688_title` from DB first
+- **Files Changed**:
+  - `/app/backend/routes/ai_product_editor.py` - Fixed translation and data retrieval
+- **Test Results**: Chinese → English translation now working correctly
+
+### Auto-Link All Feature ✅ ALREADY EXISTS
+- **Feature**: "Auto-Link to 1688" button already exists on Products Catalog page
+- **Location**: Top-right corner of `/products` page (orange button with lightning icon)
+- **How it works**: 
+  - Requires selecting a specific store first (disabled for "All Stores")
+  - Uses image search to find matching 1688 products
+  - Runs as background job with progress tracking
+- **Endpoints**: 
+  - `POST /api/shopify/products/bulk-auto-link` - Start bulk auto-linking
+  - `GET /api/shopify/products/bulk-auto-link/status/{job_id}` - Check progress
+
 ### Bulk Title Enhancement Feature ✅ VERIFIED + PREVIEW MODE ADDED
 - **Component**: `/app/frontend/src/components/AIProductEditor.jsx`
 - **New Component**: `/app/frontend/src/components/BulkTitlePreviewModal.jsx`
