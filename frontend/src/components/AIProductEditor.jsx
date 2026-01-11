@@ -303,6 +303,157 @@ const AIProductEditor = () => {
     setShowHistory(false);
   };
 
+  // Handle image file selection
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image too large (max 5MB)');
+        return;
+      }
+      setImageFile(file);
+      setImageUrl('');
+      setRecognitionResult(null);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => setImagePreview(e.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle image URL input
+  const handleImageUrlChange = (url) => {
+    setImageUrl(url);
+    setImageFile(null);
+    setImagePreview(url);
+    setRecognitionResult(null);
+  };
+
+  // Recognize image and generate content
+  const handleRecognizeAndGenerate = async () => {
+    if (!imageUrl && !imageFile) {
+      toast.error('Please provide an image URL or upload a file');
+      return;
+    }
+
+    setRecognizing(true);
+    setRecognitionResult(null);
+    setGeneratedContent(null);
+
+    try {
+      let response;
+      
+      if (imageFile) {
+        // Upload file
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        formData.append('target_language', targetLanguage);
+        formData.append('target_market', targetMarket);
+        
+        response = await fetch(`${API}/api/ai-product/upload-and-recognize`, {
+          method: 'POST',
+          body: formData,
+        });
+      } else {
+        // Use URL
+        response = await fetch(`${API}/api/ai-product/recognize-and-generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_url: imageUrl,
+            target_language: targetLanguage,
+            target_market: targetMarket,
+          }),
+        });
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setRecognitionResult(data.recognition);
+        setGeneratedContent(data.content);
+        
+        // Auto-fill form with recognized data
+        if (data.recognition?.suggested_titles?.[0]) {
+          setTitle(data.recognition.suggested_titles[0]);
+        }
+        if (data.recognition?.category) {
+          setCategory(data.recognition.category);
+        }
+        if (data.recognition?.description_points?.length) {
+          setDescription(data.recognition.description_points.join('; '));
+        }
+        
+        toast.success('Image recognized and content generated!');
+        fetchHistory();
+      } else {
+        toast.error(data.detail || 'Recognition failed');
+      }
+    } catch (e) {
+      console.error('Recognition error:', e);
+      toast.error('Failed to recognize image');
+    } finally {
+      setRecognizing(false);
+    }
+  };
+
+  // Just recognize image (without generating full content)
+  const handleRecognizeOnly = async () => {
+    if (!imageUrl) {
+      toast.error('Please enter an image URL');
+      return;
+    }
+
+    setRecognizing(true);
+    setRecognitionResult(null);
+
+    try {
+      const response = await fetch(`${API}/api/ai-product/recognize-image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_url: imageUrl }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setRecognitionResult(data);
+        
+        // Auto-fill form with recognized data
+        if (data.suggested_titles?.[0]) {
+          setTitle(data.suggested_titles[0]);
+        }
+        if (data.category) {
+          setCategory(data.category);
+        }
+        if (data.description_points?.length) {
+          setDescription(data.description_points.join('; '));
+        }
+        
+        toast.success('Image analyzed successfully!');
+      } else {
+        toast.error(data.detail || 'Recognition failed');
+      }
+    } catch (e) {
+      console.error('Recognition error:', e);
+      toast.error('Failed to recognize image');
+    } finally {
+      setRecognizing(false);
+    }
+  };
+
+  // Use recognized title suggestion
+  const useSuggestedTitle = (title) => {
+    setTitle(title);
+    setActiveTab('text');
+    toast.success('Title applied! You can now generate content.');
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
