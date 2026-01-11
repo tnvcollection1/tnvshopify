@@ -539,6 +539,111 @@ const AIProductEditor = () => {
       setSaving(false);
     }
   };
+
+  // Toggle product selection for bulk mode
+  const toggleProductSelection = (productId) => {
+    const newSelected = new Set(selectedProducts);
+    if (newSelected.has(productId)) {
+      newSelected.delete(productId);
+    } else {
+      newSelected.add(productId);
+    }
+    setSelectedProducts(newSelected);
+  };
+
+  // Select all visible products
+  const selectAllVisible = () => {
+    if (selectedProducts.size === products.length) {
+      setSelectedProducts(new Set());
+    } else {
+      setSelectedProducts(new Set(products.map(p => p.shopify_product_id)));
+    }
+  };
+
+  // Bulk enhance selected products
+  const handleBulkEnhance = async () => {
+    if (selectedProducts.size === 0) {
+      toast.error('No products selected');
+      return;
+    }
+
+    setBulkProcessing(true);
+    setBulkProgress({ current: 0, total: selectedProducts.size, results: [] });
+
+    const selectedList = products.filter(p => selectedProducts.has(p.shopify_product_id));
+    const results = [];
+
+    for (let i = 0; i < selectedList.length; i++) {
+      const product = selectedList[i];
+      setBulkProgress(prev => ({ ...prev, current: i + 1 }));
+
+      try {
+        // Get AI enhancement
+        const enhanceRes = await fetch(`${API}/api/ai-product/enhance-from-catalog`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shopify_product_id: product.shopify_product_id,
+            store_name: product.store_name,
+          }),
+        });
+        const enhanceData = await enhanceRes.json();
+
+        if (enhanceData.success && enhanceData.suggested_titles?.[0]) {
+          // Auto-save the best title
+          const saveRes = await fetch(`${API}/api/ai-product/save-enhancement`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              shopify_product_id: product.shopify_product_id,
+              store_name: product.store_name,
+              title: enhanceData.suggested_titles[0],
+              description: enhanceData.description || '',
+              tags: enhanceData.tags || [],
+              selling_points: enhanceData.selling_points || [],
+            }),
+          });
+          const saveData = await saveRes.json();
+
+          results.push({
+            product_id: product.shopify_product_id,
+            title: product.title,
+            new_title: enhanceData.suggested_titles[0],
+            success: saveData.success,
+            error: saveData.success ? null : saveData.detail,
+          });
+        } else {
+          results.push({
+            product_id: product.shopify_product_id,
+            title: product.title,
+            success: false,
+            error: enhanceData.detail || 'No suggestions generated',
+          });
+        }
+      } catch (e) {
+        results.push({
+          product_id: product.shopify_product_id,
+          title: product.title,
+          success: false,
+          error: e.message,
+        });
+      }
+
+      // Small delay to avoid rate limiting
+      await new Promise(r => setTimeout(r, 500));
+    }
+
+    setBulkProgress(prev => ({ ...prev, results }));
+    setBulkProcessing(false);
+
+    const successCount = results.filter(r => r.success).length;
+    toast.success(`Enhanced ${successCount} of ${results.length} products`);
+    
+    // Refresh products list
+    fetchProducts();
+    setSelectedProducts(new Set());
+    setBulkMode(false);
+  };
   
   // Filter products
   const filteredProducts = products;
@@ -555,7 +660,10 @@ const AIProductEditor = () => {
                 AI Product Editor
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                Click on any product to enhance titles and descriptions with AI
+                {bulkMode 
+                  ? `Select products for bulk title enhancement (${selectedProducts.size} selected)`
+                  : 'Click on any product to enhance titles and descriptions with AI'
+                }
               </p>
             </div>
             <Button onClick={fetchProducts} variant="outline">
