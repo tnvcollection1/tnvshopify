@@ -1,14 +1,17 @@
 """
 AI Product Editor API Routes
 Uses OpenAI GPT for intelligent product title and selling point generation
+Also integrates with 1688 AI for image recognition and title suggestions
 """
 
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, UploadFile, File, Form
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
 import os
 import json
+import base64
+import httpx
 from motor.motor_asyncio import AsyncIOMotorClient
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
@@ -55,6 +58,13 @@ class TranslationInput(BaseModel):
     text: str = Field(..., description="Text to translate")
     source_language: str = Field("Chinese", description="Source language")
     target_language: str = Field("English", description="Target language")
+
+
+class ImageRecognitionResult(BaseModel):
+    recognized_products: List[Dict[str, Any]]
+    suggested_titles: List[str]
+    suggested_category: Optional[str]
+    attributes_detected: List[Dict[str, str]]
 
 
 # ==================== AI Generation Functions ====================
