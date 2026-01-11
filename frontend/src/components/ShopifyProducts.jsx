@@ -358,6 +358,7 @@ const ShopifyProducts = () => {
   const [bulkLinkJob, setBulkLinkJob] = useState(null);
   const [bulkLinking, setBulkLinking] = useState(false);
   const [comparisonProduct, setComparisonProduct] = useState(null); // For variant comparison modal
+  const [bulkPreviewOpen, setBulkPreviewOpen] = useState(false); // For bulk variant preview modal
   const pageSize = 24;
 
   const fetchProducts = useCallback(async () => {
