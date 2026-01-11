@@ -349,6 +349,11 @@ async def login_user(username: str, password: str):
                 "permissions": permissions
             }
         }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error logging in: {str(e)}")
+        raise HTTPException(status_code=500, detail="Login failed")
 
 
 @users_router.get("/me")
