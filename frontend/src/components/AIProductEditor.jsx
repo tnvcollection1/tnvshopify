@@ -460,6 +460,13 @@ const AIProductEditor = () => {
   const [bulkProcessing, setBulkProcessing] = useState(false);
   const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0, results: [] });
   
+  // Bulk preview state
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewResults, setPreviewResults] = useState([]);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [isApplyingChanges, setIsApplyingChanges] = useState(false);
+  const [applyProgress, setApplyProgress] = useState({ current: 0, total: 0 });
+  
   // Fetch products
   const fetchProducts = useCallback(async () => {
     setLoading(true);
