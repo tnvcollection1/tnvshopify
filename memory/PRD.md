@@ -58,6 +58,38 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - **Access**: "Preview Missing Variants" button on Products Catalog page (`/products`)
 - **Purpose**: Safe way to see what variants would be created before executing bulk creation
 
+### Bulk Variant Creation with Logs ✅ NEW
+- **Backend Endpoints**:
+  - `POST /api/shopify/products/bulk-variants/create` - Start bulk creation job
+  - `GET /api/shopify/products/bulk-variants/status/{job_id}` - Get job status and logs
+  - `GET /api/shopify/products/bulk-variants/jobs` - List all jobs
+- **Features**:
+  - Background job processing for bulk variant creation
+  - Real-time progress tracking (products processed, variants created/failed)
+  - Execution logs with timestamps and status levels (info, success, warning, error)
+  - Terminal-style log display in modal
+  - Shows completed and failed products after job finishes
+- **UI Access**: "Create All Missing Variants" button appears in preview modal after scan
+
+### AI Product Editor - Image Recognition ✅ NEW
+- **Backend Endpoints**:
+  - `POST /api/ai-product/recognize-image` - Analyze image and return suggested titles/attributes
+  - `POST /api/ai-product/recognize-and-generate` - Analyze image + generate full content
+  - `POST /api/ai-product/upload-and-recognize` - Upload file and analyze
+  - `GET /api/ai-product/recognition-history` - View recognition history
+- **Features**:
+  - **Two-tab interface**: Text Input (original) + Image Recognition (new)
+  - **File upload**: Drag & drop or click to upload images (PNG, JPG, WebP, max 5MB)
+  - **URL input**: Paste image URL with quick scan button
+  - **GPT-4 Vision integration**: Analyzes product images to detect:
+    - Suggested product titles (3 variations)
+    - Product category
+    - Key attributes/features visible
+    - SEO tags
+  - **1688 API fallback**: Uses 1688 image search when available
+  - **Auto-fill**: Recognized data auto-fills the form for quick editing
+  - **One-click generation**: "Recognize & Generate Content" combines recognition + content generation
+
 ### Variant Comparison Modal Redesign ✅ NEW
 - **Component**: `/app/frontend/src/components/VariantComparisonModal.jsx` (Extracted from ShopifyProducts.jsx)
 - **Features**:
