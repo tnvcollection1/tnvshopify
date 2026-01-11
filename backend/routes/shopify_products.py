@@ -94,14 +94,6 @@ async def scrape_1688_variants(product_id: str) -> dict:
     except Exception as e:
         logger.error(f"Error scraping 1688 variants for {product_id}: {e}")
         return {"success": False, "error": str(e)}
-                "sizes": sizes,
-                "variants": variants,
-                "total_variants": len(variants)
-            }
-            
-    except Exception as e:
-        logger.error(f"Error scraping 1688 variants for {product_id}: {e}")
-        return {"success": False, "error": str(e)}
 
 
 @router.post("/bulk-variants/preview")
