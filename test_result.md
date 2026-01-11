@@ -83,7 +83,7 @@ The following backend endpoints are expected to be available:
 
 ## Test Environment
 
-- **Frontend URL**: https://shopify1688bridge-1.preview.emergentagent.com
+- **Frontend URL**: https://variant-master-3.preview.emergentagent.com
 - **Login Credentials**: admin / admin
 - **Browser**: Playwright (Desktop viewport 1920x1080)
 - **Test Date**: January 8, 2025
