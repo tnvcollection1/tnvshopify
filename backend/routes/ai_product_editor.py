@@ -685,3 +685,313 @@ async def get_recognition_history(
         "page": page,
         "limit": limit,
     }
+
+
+# ==================== Catalog-Based Enhancement ====================
+
+async def scrape_1688_product_details(product_id: str) -> dict:
+    """
+    Scrape product title and description from 1688.
+    """
+    try:
+        url = f"https://detail.1688.com/offer/{product_id}.html"
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'text/html,application/xhtml+xml',
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            }
+            response = await client.get(url, headers=headers, follow_redirects=True)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            html = response.text
+            
+            import re
+            
+            # Extract title
+            title_match = re.search(r'<title>([^<]+)</title>', html)
+            original_title = title_match.group(1).replace(' - 阿里巴巴', '').strip() if title_match else None
+            
+            # Extract description from meta or content
+            desc_match = re.search(r'<meta name="description" content="([^"]+)"', html)
+            description = desc_match.group(1) if desc_match else None
+            
+            # Try to extract product attributes
+            attributes = []
+            attr_matches = re.findall(r'"attrName":"([^"]+)","attrValue":"([^"]+)"', html)
+            for name, value in attr_matches[:10]:
+                attributes.append({"name": name, "value": value})
+            
+            # Extract price
+            price_match = re.search(r'"price":"?([\d.]+)"?', html)
+            price = float(price_match.group(1)) if price_match else None
+            
+            return {
+                "success": True,
+                "original_title": original_title,
+                "description": description,
+                "attributes": attributes,
+                "price": price,
+            }
+            
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+async def translate_text_simple(text: str, target_lang: str = "English") -> str:
+    """Quick translation using LLM"""
+    if not text:
+        return ""
+    
+    api_key = get_llm_key()
+    if not api_key:
+        return text
+    
+    try:
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"translate-{datetime.now().timestamp()}"
+        ).with_model("openai", "gpt-4o-mini")
+        
+        response = await chat.send_message(
+            UserMessage(text=f"Translate this Chinese text to {target_lang}. Return ONLY the translation, nothing else:\n\n{text}")
+        )
+        return response.strip()
+    except:
+        return text
+
+
+@router.post("/enhance-from-catalog")
+async def enhance_product_from_catalog(
+    shopify_product_id: str = Body(...),
+    store_name: str = Body(...),
+    target_language: str = Body("English"),
+):
+    """
+    Enhance a product from the catalog:
+    1. Get product from DB
+    2. If linked to 1688, scrape details
+    3. Analyze product image with AI
+    4. Generate improved titles and description
+    """
+    db = get_db()
+    
+    # Get product from DB
+    product = await db.shopify_products.find_one(
+        {"shopify_product_id": str(shopify_product_id), "store_name": store_name},
+        {"_id": 0}
+    )
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    result = {
+        "success": True,
+        "product_id": shopify_product_id,
+        "original_title": product.get("title"),
+        "suggested_titles": [],
+        "description": "",
+        "selling_points": [],
+        "tags": [],
+        "seo_title": "",
+        "scraped_from_1688": False,
+        "image_recognition": None,
+    }
+    
+    # Step 1: If linked to 1688, scrape details
+    linked_1688_id = product.get("linked_1688_product_id")
+    scraped_data = None
+    
+    if linked_1688_id:
+        scraped_data = await scrape_1688_product_details(linked_1688_id)
+        if scraped_data.get("success"):
+            result["scraped_from_1688"] = True
+            result["original_1688_title"] = scraped_data.get("original_title")
+            
+            # Translate title
+            if scraped_data.get("original_title"):
+                translated = await translate_text_simple(scraped_data["original_title"], target_language)
+                result["translated_title"] = translated
+            
+            # Translate description
+            if scraped_data.get("description"):
+                translated_desc = await translate_text_simple(scraped_data["description"], target_language)
+                result["description"] = translated_desc
+    
+    # Step 2: Analyze product image with AI
+    image_url = product.get("image_url")
+    if image_url:
+        try:
+            recognition = await analyze_image_with_gpt(image_url)
+            result["image_recognition"] = recognition
+            
+            # Get tags from recognition
+            if recognition.get("tags"):
+                result["tags"] = recognition["tags"]
+                
+        except Exception as e:
+            print(f"Image recognition failed: {e}")
+    
+    # Step 3: Generate improved titles using AI
+    api_key = get_llm_key()
+    if api_key:
+        try:
+            # Build context for title generation
+            context_parts = [f"Original title: {product.get('title')}"]
+            
+            if result.get("translated_title"):
+                context_parts.append(f"1688 title (translated): {result['translated_title']}")
+            
+            if result.get("image_recognition", {}).get("category"):
+                context_parts.append(f"Product category: {result['image_recognition']['category']}")
+            
+            if result.get("image_recognition", {}).get("suggested_titles"):
+                context_parts.append(f"Image-based suggestions: {', '.join(result['image_recognition']['suggested_titles'][:2])}")
+            
+            if scraped_data and scraped_data.get("attributes"):
+                attrs = [f"{a['name']}: {a['value']}" for a in scraped_data["attributes"][:5]]
+                context_parts.append(f"Product attributes: {', '.join(attrs)}")
+            
+            prompt = f"""Improve this e-commerce product title for international buyers.
+
+{chr(10).join(context_parts)}
+
+Requirements:
+- Keep the title concise (under 80 characters)
+- Include key product features
+- Make it SEO-friendly
+- Target language: {target_language}
+- Keep brand names if present
+
+Provide 3 different title variations as a JSON array:
+{{"titles": ["title1", "title2", "title3"], "selling_points": ["point1", "point2", "point3"], "seo_title": "SEO optimized title under 60 chars"}}
+
+Return ONLY the JSON."""
+
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=f"enhance-{datetime.now().timestamp()}"
+            ).with_model("openai", "gpt-4o-mini")
+            
+            response = await chat.send_message(UserMessage(text=prompt))
+            
+            # Parse response
+            response_text = response.strip()
+            if response_text.startswith("```"):
+                response_text = response_text.split("```")[1]
+                if response_text.startswith("json"):
+                    response_text = response_text[4:]
+            
+            ai_result = json.loads(response_text.strip())
+            
+            result["suggested_titles"] = ai_result.get("titles", [product.get("title")])
+            result["selling_points"] = ai_result.get("selling_points", [])
+            result["seo_title"] = ai_result.get("seo_title", "")
+            
+        except Exception as e:
+            print(f"AI title generation failed: {e}")
+            # Fallback to image recognition titles
+            if result.get("image_recognition", {}).get("suggested_titles"):
+                result["suggested_titles"] = result["image_recognition"]["suggested_titles"]
+            else:
+                result["suggested_titles"] = [product.get("title")]
+    
+    # Ensure we have at least the original title
+    if not result["suggested_titles"]:
+        result["suggested_titles"] = [product.get("title")]
+    
+    # Save to history
+    await db.ai_product_history.insert_one({
+        "source": "catalog_enhancement",
+        "shopify_product_id": shopify_product_id,
+        "store_name": store_name,
+        "result": result,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+    
+    return result
+
+
+@router.post("/save-enhancement")
+async def save_product_enhancement(
+    shopify_product_id: str = Body(...),
+    store_name: str = Body(...),
+    title: str = Body(...),
+    description: str = Body(None),
+    tags: List[str] = Body([]),
+    selling_points: List[str] = Body([]),
+):
+    """
+    Save AI-enhanced content back to Shopify product.
+    """
+    db = get_db()
+    
+    # Get store credentials
+    store = await db.stores.find_one({"store_name": store_name}, {"_id": 0})
+    if not store or not store.get("shopify_domain") or not store.get("shopify_token"):
+        raise HTTPException(status_code=400, detail="Store not configured")
+    
+    try:
+        import shopify
+        session = shopify.Session(store['shopify_domain'], '2024-01', store['shopify_token'])
+        shopify.ShopifyResource.activate_session(session)
+        
+        try:
+            # Get product
+            product = shopify.Product.find(int(shopify_product_id))
+            if not product:
+                raise HTTPException(status_code=404, detail="Product not found in Shopify")
+            
+            # Update title
+            product.title = title
+            
+            # Update description (body_html)
+            if description:
+                # Format selling points as HTML list
+                if selling_points:
+                    points_html = "<ul>" + "".join([f"<li>{p}</li>" for p in selling_points]) + "</ul>"
+                    product.body_html = f"{description}\n\n<h3>Key Features</h3>\n{points_html}"
+                else:
+                    product.body_html = description
+            
+            # Update tags
+            if tags:
+                existing_tags = product.tags.split(", ") if product.tags else []
+                all_tags = list(set(existing_tags + tags))
+                product.tags = ", ".join(all_tags[:20])  # Shopify tag limit
+            
+            # Save to Shopify
+            if product.save():
+                # Update local DB
+                await db.shopify_products.update_one(
+                    {"shopify_product_id": str(shopify_product_id), "store_name": store_name},
+                    {
+                        "$set": {
+                            "title": title,
+                            "description": description,
+                            "tags": tags,
+                            "ai_enhanced": True,
+                            "ai_enhanced_at": datetime.now(timezone.utc).isoformat(),
+                        }
+                    }
+                )
+                
+                return {
+                    "success": True,
+                    "message": "Product updated successfully",
+                    "product_id": shopify_product_id,
+                }
+            else:
+                errors = product.errors.full_messages() if product.errors else ["Unknown error"]
+                raise HTTPException(status_code=400, detail=f"Shopify error: {errors}")
+                
+        finally:
+            shopify.ShopifyResource.clear_session()
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
