@@ -108,6 +108,7 @@ const ShopifySidebar = () => {
       label: '1688 Sourcing',
       icon: Link2,
       children: [
+        { label: '1688 Trade Center', path: '/1688-trade', icon: ShoppingBag },
         { label: '1688 Merchants', path: '/1688-merchants', icon: Store },
         { label: 'Product Links', path: '/product-link-manager', icon: Link2 },
         { label: 'AI Product Editor', path: '/ai-product-editor', icon: Sparkles },
