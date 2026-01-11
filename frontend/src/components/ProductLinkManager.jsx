@@ -199,16 +199,16 @@ const ProductCard = ({
                 </Button>
               )}
               
-              {missingVariants.length > 0 && (
+              {/* View 1688 Variants button - shows for linked products */}
+              {link1688 && (
                 <Button 
                   variant="outline"
                   size="sm"
                   onClick={() => onScrapeVariants(product, link1688)}
-                  disabled={scraping}
-                  className="text-xs text-red-600 border-red-300 hover:bg-red-50"
+                  className="text-xs text-orange-600 border-orange-300 hover:bg-orange-50"
                 >
-                  {scraping ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Plus className="w-3 h-3 mr-1" />}
-                  Add Missing ({missingVariants.length})
+                  <Download className="w-3 h-3 mr-1" />
+                  View 1688 Variants
                 </Button>
               )}
             </div>
