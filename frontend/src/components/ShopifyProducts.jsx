@@ -582,21 +582,32 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants }) => {
         </div>
         
         {linked ? (
-          <div className="flex gap-2">
-            <a
-              href={`https://detail.1688.com/offer/${linked}.html`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1"
+          <div className="space-y-2">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="w-full text-orange-600 border-orange-300"
+              onClick={() => onCompareVariants?.(product)}
             >
-              <Button size="sm" variant="outline" className="w-full text-orange-600 border-orange-300">
-                <ExternalLink className="w-3 h-3 mr-1" />
-                View on 1688
-              </Button>
-            </a>
-            <Button size="sm" variant="ghost" onClick={handleUnlink}>
-              <Unlink className="w-4 h-4 text-gray-400" />
+              <Eye className="w-3 h-3 mr-1" />
+              Compare Variants
             </Button>
+            <div className="flex gap-2">
+              <a
+                href={`https://detail.1688.com/offer/${linked}.html`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1"
+              >
+                <Button size="sm" variant="outline" className="w-full text-xs">
+                  <ExternalLink className="w-3 h-3 mr-1" />
+                  1688
+                </Button>
+              </a>
+              <Button size="sm" variant="ghost" onClick={handleUnlink}>
+                <Unlink className="w-4 h-4 text-gray-400" />
+              </Button>
+            </div>
           </div>
         ) : (
           <Button size="sm" className="w-full bg-orange-500 hover:bg-orange-600" onClick={() => setLinkModalOpen(true)}>
