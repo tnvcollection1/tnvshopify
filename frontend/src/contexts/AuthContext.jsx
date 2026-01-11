@@ -143,11 +143,20 @@ export const AuthProvider = ({ children }) => {
     }
     setAgent(agentData);
     localStorage.setItem('agent', JSON.stringify(agentData));
+    setSessionValidated(true);
   };
 
   const logout = () => {
     setAgent(null);
     localStorage.removeItem('agent');
+    setSessionValidated(true);
+  };
+
+  // Force re-validate session (useful for components that detect auth issues)
+  const refreshSession = () => {
+    setSessionValidated(false);
+    setLoading(true);
+    validateSession();
   };
 
   // Helper function to check permissions
