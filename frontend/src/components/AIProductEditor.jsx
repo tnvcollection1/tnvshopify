@@ -480,117 +480,300 @@ const AIProductEditor = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column - Input Form */}
         <div className="space-y-6">
-          {/* Main Generation Card */}
+          {/* Main Generation Card with Tabs */}
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-500" />
                 Generate Product Content
               </CardTitle>
               <CardDescription>
-                Enter your product details to generate optimized content
+                Enter text details or use image recognition
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Title */}
-              <div>
-                <label className="text-sm font-medium mb-1 block">
-                  Product Title <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter product title (Chinese or English)"
-                  className="font-mono"
-                />
-              </div>
-              
-              {/* Description */}
-              <div>
-                <label className="text-sm font-medium mb-1 block">Description</label>
-                <Textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Product description or key features..."
-                  rows={3}
-                />
-              </div>
-              
-              {/* Category & Price */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Category</label>
-                  <Input
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder="e.g., Shoes, Electronics"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Price (¥)</label>
-                  <Input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-              
-              {/* Target Language & Market */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Target Language</label>
-                  <Select value={targetLanguage} onValueChange={setTargetLanguage}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="English">English</SelectItem>
-                      <SelectItem value="Chinese">Chinese (中文)</SelectItem>
-                      <SelectItem value="Spanish">Spanish</SelectItem>
-                      <SelectItem value="French">French</SelectItem>
-                      <SelectItem value="German">German</SelectItem>
-                      <SelectItem value="Arabic">Arabic</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Target Market</label>
-                  <Select value={targetMarket} onValueChange={setTargetMarket}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="International">International</SelectItem>
-                      <SelectItem value="US">United States</SelectItem>
-                      <SelectItem value="UK">United Kingdom</SelectItem>
-                      <SelectItem value="EU">European Union</SelectItem>
-                      <SelectItem value="Middle East">Middle East</SelectItem>
-                      <SelectItem value="Asia">Asia Pacific</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              {/* Generate Button */}
-              <Button 
-                onClick={handleGenerate} 
-                disabled={loading || !title.trim()}
-                className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Generate Content
-                  </>
-                )}
-              </Button>
+              {/* Tabs for Text vs Image */}
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="text" className="gap-2">
+                    <FileText className="w-4 h-4" />
+                    Text Input
+                  </TabsTrigger>
+                  <TabsTrigger value="image" className="gap-2">
+                    <Camera className="w-4 h-4" />
+                    Image Recognition
+                  </TabsTrigger>
+                </TabsList>
+                
+                {/* Text Input Tab */}
+                <TabsContent value="text" className="space-y-4 mt-4">
+                  {/* Title */}
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">
+                      Product Title <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Enter product title (Chinese or English)"
+                      className="font-mono"
+                    />
+                  </div>
+                  
+                  {/* Description */}
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Description</label>
+                    <Textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Product description or key features..."
+                      rows={3}
+                    />
+                  </div>
+                  
+                  {/* Category & Price */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Category</label>
+                      <Input
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        placeholder="e.g., Shoes, Electronics"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Price (¥)</label>
+                      <Input
+                        type="number"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Target Language & Market */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Target Language</label>
+                      <Select value={targetLanguage} onValueChange={setTargetLanguage}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="English">English</SelectItem>
+                          <SelectItem value="Chinese">Chinese (中文)</SelectItem>
+                          <SelectItem value="Spanish">Spanish</SelectItem>
+                          <SelectItem value="French">French</SelectItem>
+                          <SelectItem value="German">German</SelectItem>
+                          <SelectItem value="Arabic">Arabic</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Target Market</label>
+                      <Select value={targetMarket} onValueChange={setTargetMarket}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="International">International</SelectItem>
+                          <SelectItem value="US">United States</SelectItem>
+                          <SelectItem value="UK">United Kingdom</SelectItem>
+                          <SelectItem value="EU">European Union</SelectItem>
+                          <SelectItem value="Middle East">Middle East</SelectItem>
+                          <SelectItem value="Asia">Asia Pacific</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  {/* Generate Button */}
+                  <Button 
+                    onClick={handleGenerate} 
+                    disabled={loading || !title.trim()}
+                    className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generate Content
+                      </>
+                    )}
+                  </Button>
+                </TabsContent>
+                
+                {/* Image Recognition Tab */}
+                <TabsContent value="image" className="space-y-4 mt-4">
+                  {/* Image Upload Area */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-400 transition-colors">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                    />
+                    
+                    {imagePreview ? (
+                      <div className="space-y-3">
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="max-h-48 mx-auto rounded-lg shadow-md"
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setImageFile(null);
+                            setImageUrl('');
+                            setImagePreview(null);
+                            setRecognitionResult(null);
+                          }}
+                        >
+                          Clear Image
+                        </Button>
+                      </div>
+                    ) : (
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="cursor-pointer py-6"
+                      >
+                        <Upload className="w-10 h-10 mx-auto text-gray-400 mb-2" />
+                        <p className="text-sm font-medium text-gray-600">
+                          Click to upload or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          PNG, JPG, WebP up to 5MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Or divider */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 border-t border-gray-200" />
+                    <span className="text-xs text-gray-400">OR</span>
+                    <div className="flex-1 border-t border-gray-200" />
+                  </div>
+                  
+                  {/* Image URL Input */}
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">Image URL</label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={imageUrl}
+                        onChange={(e) => handleImageUrlChange(e.target.value)}
+                        placeholder="https://example.com/product-image.jpg"
+                        className="flex-1"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={handleRecognizeOnly}
+                        disabled={!imageUrl || recognizing}
+                        title="Quick scan"
+                      >
+                        <Scan className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Target Settings */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Target Language</label>
+                      <Select value={targetLanguage} onValueChange={setTargetLanguage}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="English">English</SelectItem>
+                          <SelectItem value="Chinese">Chinese (中文)</SelectItem>
+                          <SelectItem value="Spanish">Spanish</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Target Market</label>
+                      <Select value={targetMarket} onValueChange={setTargetMarket}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="International">International</SelectItem>
+                          <SelectItem value="US">United States</SelectItem>
+                          <SelectItem value="UK">United Kingdom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  {/* Recognition Results */}
+                  {recognitionResult && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg space-y-2">
+                      <p className="text-sm font-medium text-green-800 flex items-center gap-2">
+                        <Eye className="w-4 h-4" />
+                        Recognition Results
+                      </p>
+                      {recognitionResult.suggested_titles?.length > 0 && (
+                        <div>
+                          <p className="text-xs text-green-700 mb-1">Suggested Titles:</p>
+                          <div className="space-y-1">
+                            {recognitionResult.suggested_titles.map((t, i) => (
+                              <div 
+                                key={i}
+                                onClick={() => useSuggestedTitle(t)}
+                                className="text-xs bg-white p-2 rounded cursor-pointer hover:bg-green-100 flex items-center justify-between"
+                              >
+                                <span className="truncate">{t}</span>
+                                <Badge variant="outline" className="text-xs ml-2 flex-shrink-0">Use</Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {recognitionResult.category && (
+                        <p className="text-xs text-green-700">
+                          Category: <strong>{recognitionResult.category}</strong>
+                        </p>
+                      )}
+                      {recognitionResult.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {recognitionResult.tags.slice(0, 6).map((tag, i) => (
+                            <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Recognize and Generate Button */}
+                  <Button 
+                    onClick={handleRecognizeAndGenerate} 
+                    disabled={recognizing || (!imageUrl && !imageFile)}
+                    className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+                  >
+                    {recognizing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Analyzing Image...
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="w-4 h-4 mr-2" />
+                        Recognize & Generate Content
+                      </>
+                    )}
+                  </Button>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
