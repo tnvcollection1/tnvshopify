@@ -845,11 +845,12 @@ async def enhance_product_from_catalog(
             if result.get("translated_title"):
                 context_parts.append(f"1688 title (translated): {result['translated_title']}")
             
-            if result.get("image_recognition", {}).get("category"):
-                context_parts.append(f"Product category: {result['image_recognition']['category']}")
+            image_rec = result.get("image_recognition") or {}
+            if image_rec.get("category"):
+                context_parts.append(f"Product category: {image_rec['category']}")
             
-            if result.get("image_recognition", {}).get("suggested_titles"):
-                context_parts.append(f"Image-based suggestions: {', '.join(result['image_recognition']['suggested_titles'][:2])}")
+            if image_rec.get("suggested_titles"):
+                context_parts.append(f"Image-based suggestions: {', '.join(image_rec['suggested_titles'][:2])}")
             
             if scraped_data and scraped_data.get("attributes"):
                 attrs = [f"{a['name']}: {a['value']}" for a in scraped_data["attributes"][:5]]
