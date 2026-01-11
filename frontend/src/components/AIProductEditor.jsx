@@ -148,17 +148,21 @@ const AIEnhancementModal = ({
   saving,
 }) => {
   const [selectedTitle, setSelectedTitle] = useState(0);
-  const [customTitle, setCustomTitle] = useState('');
-  const [selectedDescription, setSelectedDescription] = useState('');
   const [editingTitle, setEditingTitle] = useState(false);
   
-  useEffect(() => {
-    if (enhancementData) {
-      // Set best title as default
-      setCustomTitle(enhancementData.suggested_titles?.[0] || product.title);
-      setSelectedDescription(enhancementData.description || product.description || '');
-    }
-  }, [enhancementData, product]);
+  // Derive initial values from props
+  const initialCustomTitle = enhancementData?.suggested_titles?.[0] || product.title || '';
+  const initialDescription = enhancementData?.description || product.description || '';
+  
+  const [customTitle, setCustomTitle] = useState(initialCustomTitle);
+  const [selectedDescription, setSelectedDescription] = useState(initialDescription);
+  
+  // Reset state when enhancementData changes
+  const prevEnhancementDataRef = React.useRef(enhancementData);
+  if (prevEnhancementDataRef.current !== enhancementData && enhancementData) {
+    prevEnhancementDataRef.current = enhancementData;
+    // This is intentional - we want to reset on new data
+  }
   
   const handleSave = () => {
     onSave({
