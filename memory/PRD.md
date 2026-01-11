@@ -43,9 +43,41 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ## What's Been Implemented
 
-### Completed Features (as of Jan 11, 2025)
+### Latest Updates (Jan 11, 2025)
 
-### AI Product Editor (Jan 11, 2025) ✅ NEW
+### Variant Comparison Modal Redesign ✅ NEW
+- **Component**: `/app/frontend/src/components/VariantComparisonModal.jsx` (Extracted from ShopifyProducts.jsx)
+- **Features**:
+  - **Side-by-side layout**: Shopify variants on left, 1688 variants on right
+  - **Summary stats row**: 4 cards showing Shopify count, 1688 count, Missing count, Synced count
+  - **Missing variants section**: Red highlighted with checkboxes for selection
+  - **Already Synced section**: Green indicators for matched variants
+  - **Select All / Deselect All** functionality
+  - **Create Variants in Shopify** button with selected count
+  - **Clickable product cards**: Click any linked product card to open the modal
+  - **Hover effects**: Orange gradient overlay with "View Variants" text on hover
+- **Test Results**: 100% pass rate (all features verified)
+
+### 1688 Trade Center UI ✅ NEW
+- **Component**: `/app/frontend/src/components/Trade1688Dashboard.jsx`
+- **Route**: `/1688-trade`
+- **Features**:
+  - **Orders tab**: View 1688 purchase orders with status filters
+  - **Shipping Addresses tab**: View saved 1688 shipping addresses
+  - Order cards with product thumbnails, status badges, pricing
+  - Search by order ID or seller
+  - Status filter (Pending, Processing, Shipped, Completed, Cancelled)
+  - Copy order ID and "View on 1688" external link
+  - Expandable order details showing all line items
+  - Address cards with copy functionality
+- **Sidebar**: Added "1688 Trade Center" under "1688 Sourcing" menu
+
+### Code Refactoring ✅ NEW
+- **Extracted**: `VariantComparisonModal` from `ShopifyProducts.jsx` into separate component
+- **Moved**: Variant creation endpoint from `server.py` to `/app/backend/routes/shopify_products.py`
+- **Improved**: Code maintainability and separation of concerns
+
+### AI Product Editor (Jan 11, 2025) ✅
 - **New Component**: `/app/frontend/src/components/AIProductEditor.jsx`
 - **Backend**: `/app/backend/routes/ai_product_editor.py`
 - **Endpoints**:
