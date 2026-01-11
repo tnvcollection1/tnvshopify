@@ -801,6 +801,28 @@ const AIProductEditor = () => {
         </div>
       </div>
       
+      {/* Bulk Progress Bar */}
+      {bulkProcessing && (
+        <div className="px-6 pb-4">
+          <div className="bg-white rounded-lg border p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-purple-700">
+                Enhancing titles... ({bulkProgress.current}/{bulkProgress.total})
+              </span>
+              <span className="text-xs text-gray-500">
+                {Math.round((bulkProgress.current / bulkProgress.total) * 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-purple-500 h-2 rounded-full transition-all"
+                style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Products Grid */}
       <div className="px-6 pb-6">
         {loading ? (
@@ -824,6 +846,9 @@ const AIProductEditor = () => {
                   onSelect={handleProductSelect}
                   isSelected={selectedProduct?.shopify_product_id === product.shopify_product_id}
                   isProcessing={processingProductId === product.shopify_product_id}
+                  bulkMode={bulkMode}
+                  isBulkSelected={selectedProducts.has(product.shopify_product_id)}
+                  onBulkToggle={toggleProductSelection}
                 />
               ))}
             </div>
