@@ -904,6 +904,15 @@ const ProductLinkManager = () => {
           loading={linking}
         />
       )}
+      
+      {/* Variants Modal */}
+      {variantsModalProduct && (
+        <VariantsModal
+          product={variantsModalProduct.product}
+          link1688={variantsModalProduct.link1688}
+          onClose={() => setVariantsModalProduct(null)}
+        />
+      )}
     </div>
   );
 };
