@@ -43,9 +43,36 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ## What's Been Implemented
 
-### Completed Features (as of Jan 10, 2025)
+### Completed Features (as of Jan 11, 2025)
 
-### Cancel 1688 Purchase Feature (Jan 10, 2025) ✅ NEW
+### 1688 Merchants Page (Jan 11, 2025) ✅ NEW
+- **New Component**: `/app/frontend/src/components/Merchants1688.jsx`
+- **Backend Endpoints**:
+  - `GET /api/1688-scraper/merchants` - List all merchants with product counts
+  - `GET /api/1688-scraper/merchants/{seller_id}/products` - Get products by merchant
+  - `GET /api/1688-scraper/merchants/stats` - Get overall statistics
+- **Features**:
+  - Stats dashboard: Merchants count, Products count, Total Value, Platforms
+  - Merchant cards with sample images, product counts, avg/total prices
+  - Click merchant → View all products from that merchant
+  - Product detail modal with variants, images, pricing
+  - Search merchants by name or ID
+  - Pagination support
+- **Sidebar**: Added "1688 Merchants" under "1688 Sourcing" menu
+- **Route**: `/1688-merchants`
+
+### 1688 API Token Refresh (Jan 11, 2025) ✅ NEW
+- Refreshed 1688 Merchant Integration API access token
+- Token saved to database and environment
+- **Available API Capabilities**:
+  - Image search for cross-border products
+  - Get Purchased Merchant Information
+  - Get information on purchased merchant products
+  - Image font detection
+  - Product Translation
+  - Intelligent product title recommendations
+
+### Cancel 1688 Purchase Feature (Jan 10, 2025) ✅
 - **Backend endpoint**: `POST /api/fulfillment/pipeline/orders/{order_id}/cancel-purchase`
 - **Functionality**: Unlinks 1688 purchase from Shopify order by:
   - Setting `alibaba_order_id` to null
