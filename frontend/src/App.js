@@ -479,6 +479,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/1688-merchants" 
+        element={
+          <ProtectedRoute>
+            <Merchants1688 />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/fulfillment" 
         element={
           <ProtectedRoute>
