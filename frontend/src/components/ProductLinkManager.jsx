@@ -324,7 +324,7 @@ const ProductLinkManager = () => {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '100',
+        page_size: '100',  // Backend uses page_size not limit
         store_name: selectedStore,
       });
       if (searchQuery) params.append('search', searchQuery);
