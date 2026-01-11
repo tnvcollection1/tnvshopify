@@ -21,93 +21,28 @@ async def get_db():
 
 async def scrape_1688_variants(product_id: str) -> dict:
     """
-    Scrape variants from 1688 product page.
-    Returns dict with colors, sizes, and variants.
+    Scrape variants from 1688 product using the existing scraper endpoint.
     """
     try:
-        url = f"https://detail.1688.com/offer/{product_id}.html"
+        # Use the internal endpoint that works
+        from routes.product_scraper import scrape_product_variants
         
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'text/html,application/xhtml+xml',
-                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-            }
-            response = await client.get(url, headers=headers, follow_redirects=True)
-            
-            if response.status_code != 200:
-                return {"success": False, "error": f"HTTP {response.status_code}"}
-            
-            html = response.text
-            
-            # Extract SKU data from the page
-            import re
-            import json
-            
-            # Try to find iDetailData or skuProps in the HTML
-            sku_match = re.search(r'iDetailData\s*=\s*(\{.+?\});', html, re.DOTALL)
-            if not sku_match:
-                sku_match = re.search(r'"skuProps"\s*:\s*(\[.+?\])', html)
-            
-            colors = []
-            sizes = []
-            variants = []
-            
-            if sku_match:
-                try:
-                    data = json.loads(sku_match.group(1))
-                    sku_props = data.get('skuProps', []) if isinstance(data, dict) else data
-                    
-                    for prop in sku_props:
-                        prop_name = prop.get('prop', '').lower()
-                        values = prop.get('value', [])
-                        
-                        if '颜色' in prop_name or 'color' in prop_name:
-                            colors = [v.get('name', '') for v in values if v.get('name')]
-                        elif '尺' in prop_name or 'size' in prop_name or '码' in prop_name:
-                            sizes = [v.get('name', '') for v in values if v.get('name')]
-                    
-                    # Generate variant combinations
-                    if colors and sizes:
-                        for color in colors:
-                            for size in sizes:
-                                variants.append({
-                                    "color": color,
-                                    "size": size,
-                                    "price": 0,
-                                    "stock": 0
-                                })
-                    elif colors:
-                        for color in colors:
-                            variants.append({"color": color, "size": "One Size", "price": 0, "stock": 0})
-                    elif sizes:
-                        for size in sizes:
-                            variants.append({"color": "Default", "size": size, "price": 0, "stock": 0})
-                            
-                except json.JSONDecodeError:
-                    pass
-            
-            # Fallback: try to extract from other patterns
-            if not variants:
-                # Look for color/size in different format
-                color_match = re.findall(r'"颜色[^"]*":\s*"([^"]+)"', html)
-                size_match = re.findall(r'"尺[^"]*":\s*"([^"]+)"', html)
-                
-                if color_match:
-                    colors = list(set(color_match))
-                if size_match:
-                    sizes = list(set(size_match))
-                    
-                if colors or sizes:
-                    colors = colors or ["Default"]
-                    sizes = sizes or ["One Size"]
-                    for color in colors:
-                        for size in sizes:
-                            variants.append({"color": color, "size": size, "price": 0, "stock": 0})
-            
+        result = await scrape_product_variants(product_id, None)
+        
+        if result.get("success"):
             return {
                 "success": True,
-                "colors": colors,
+                "colors": result.get("colors", []),
+                "sizes": result.get("sizes", []),
+                "variants": result.get("variants", []),
+                "total_variants": result.get("total_variants", 0)
+            }
+        else:
+            return {"success": False, "error": result.get("detail", "Scrape failed")}
+            
+    except Exception as e:
+        logger.error(f"Error scraping 1688 variants for {product_id}: {e}")
+        return {"success": False, "error": str(e)}
                 "sizes": sizes,
                 "variants": variants,
                 "total_variants": len(variants)
