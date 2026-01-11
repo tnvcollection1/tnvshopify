@@ -108,6 +108,7 @@ const ShopifySidebar = () => {
       icon: Link2,
       children: [
         { label: '1688 Merchants', path: '/1688-merchants', icon: Store },
+        { label: 'AI Product Editor', path: '/ai-product-editor', icon: Sparkles },
         { label: 'Purchase Orders', path: '/purchase-1688', icon: CreditCard },
         { label: 'Bulk Order', path: '/bulk-order-1688', icon: Box },
         { label: 'Image Search', path: '/image-search', icon: Search },
