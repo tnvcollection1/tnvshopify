@@ -801,25 +801,43 @@ async def enhance_product_from_catalog(
         "image_recognition": None,
     }
     
-    # Step 1: If linked to 1688, scrape details
+    # Step 1: If linked to 1688, get data from DB first, then scrape if needed
     linked_1688_id = product.get("linked_1688_product_id")
     scraped_data = None
     
     if linked_1688_id:
-        scraped_data = await scrape_1688_product_details(linked_1688_id)
-        if scraped_data.get("success"):
+        # First try to use stored 1688 data from DB
+        stored_1688_title = product.get("linked_1688_title")
+        stored_1688_description = product.get("linked_1688_description")
+        
+        if stored_1688_title:
             result["scraped_from_1688"] = True
-            result["original_1688_title"] = scraped_data.get("original_title")
+            result["original_1688_title"] = stored_1688_title
             
             # Translate title
-            if scraped_data.get("original_title"):
-                translated = await translate_text_simple(scraped_data["original_title"], target_language)
-                result["translated_title"] = translated
+            translated = await translate_text_simple(stored_1688_title, target_language)
+            result["translated_title"] = translated
             
-            # Translate description
-            if scraped_data.get("description"):
-                translated_desc = await translate_text_simple(scraped_data["description"], target_language)
+            # Translate description if stored
+            if stored_1688_description:
+                translated_desc = await translate_text_simple(stored_1688_description, target_language)
                 result["description"] = translated_desc
+        else:
+            # Fallback to live scraping if no stored data
+            scraped_data = await scrape_1688_product_details(linked_1688_id)
+            if scraped_data.get("success"):
+                result["scraped_from_1688"] = True
+                result["original_1688_title"] = scraped_data.get("original_title")
+                
+                # Translate title
+                if scraped_data.get("original_title"):
+                    translated = await translate_text_simple(scraped_data["original_title"], target_language)
+                    result["translated_title"] = translated
+                
+                # Translate description
+                if scraped_data.get("description"):
+                    translated_desc = await translate_text_simple(scraped_data["description"], target_language)
+                    result["description"] = translated_desc
     
     # Step 2: Analyze product image with AI
     image_url = product.get("image_url")
