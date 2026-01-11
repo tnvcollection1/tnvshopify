@@ -180,6 +180,8 @@ export const AuthProvider = ({ children }) => {
       login, 
       logout, 
       loading,
+      sessionValidated,
+      refreshSession,
       hasPermission,
       isAdmin,
       canEdit,
