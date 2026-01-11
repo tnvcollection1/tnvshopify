@@ -60,20 +60,46 @@ const CopyButton = ({ text }) => {
 };
 
 // Product Card for Catalog
-const ProductCard = ({ product, onSelect, isSelected, isProcessing }) => {
+const ProductCard = ({ product, onSelect, isSelected, isProcessing, bulkMode, isBulkSelected, onBulkToggle }) => {
   const linked = product.linked_1688_product_id;
   const hasAIContent = product.ai_enhanced;
   
+  const handleClick = () => {
+    if (isProcessing) return;
+    if (bulkMode) {
+      onBulkToggle?.(product.shopify_product_id);
+    } else {
+      onSelect(product);
+    }
+  };
+  
   return (
     <div 
-      onClick={() => !isProcessing && onSelect(product)}
+      onClick={handleClick}
       className={`
         group relative bg-white rounded-lg border overflow-hidden cursor-pointer transition-all
-        ${isSelected ? 'ring-2 ring-purple-500 border-purple-300' : 'border-gray-200 hover:border-purple-300 hover:shadow-md'}
+        ${bulkMode && isBulkSelected ? 'ring-2 ring-purple-500 border-purple-300 bg-purple-50' : ''}
+        ${!bulkMode && isSelected ? 'ring-2 ring-purple-500 border-purple-300' : ''}
+        ${!bulkMode && !isSelected ? 'border-gray-200 hover:border-purple-300 hover:shadow-md' : ''}
         ${isProcessing ? 'opacity-50 pointer-events-none' : ''}
       `}
       data-testid={`product-card-${product.shopify_product_id}`}
     >
+      {/* Bulk selection checkbox */}
+      {bulkMode && (
+        <div className="absolute top-2 right-2 z-10">
+          <div className={`
+            w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
+            ${isBulkSelected 
+              ? 'bg-purple-500 border-purple-500' 
+              : 'bg-white border-gray-300 group-hover:border-purple-400'
+            }
+          `}>
+            {isBulkSelected && <Check className="w-4 h-4 text-white" />}
+          </div>
+        </div>
+      )}
+      
       {/* Image */}
       <div className="aspect-square bg-gray-100 relative overflow-hidden">
         {product.image_url ? (
@@ -104,12 +130,14 @@ const ProductCard = ({ product, onSelect, isSelected, isProcessing }) => {
           )}
         </div>
         
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <div className="bg-white rounded-full p-2 shadow-lg">
-            <Wand2 className="w-5 h-5 text-purple-600" />
+        {/* Hover overlay - only in non-bulk mode */}
+        {!bulkMode && (
+          <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <div className="bg-white rounded-full p-2 shadow-lg">
+              <Wand2 className="w-5 h-5 text-purple-600" />
+            </div>
           </div>
-        </div>
+        )}
       </div>
       
       {/* Info */}
