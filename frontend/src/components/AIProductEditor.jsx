@@ -425,6 +425,12 @@ const AIProductEditor = () => {
   const [saving, setSaving] = useState(false);
   const [processingProductId, setProcessingProductId] = useState(null);
   
+  // Bulk selection state
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState(new Set());
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0, results: [] });
+  
   // Fetch products
   const fetchProducts = useCallback(async () => {
     setLoading(true);
