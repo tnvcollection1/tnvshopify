@@ -110,6 +110,48 @@ async def get_roles():
     }
 
 
+@users_router.get("/me")
+async def get_current_user(user_id: str):
+    """Validate session and get current user data - used for frontend session verification"""
+    try:
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID required")
+        
+        # Try users collection first
+        user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+        
+        # Fall back to agents collection for backward compatibility
+        if not user:
+            user = await db.agents.find_one({"id": user_id}, {"_id": 0, "password": 0})
+        
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found - session invalid")
+        
+        if user.get("status") == "inactive":
+            raise HTTPException(status_code=401, detail="Account is deactivated")
+        
+        # Add permissions
+        permissions = get_permissions(user.get("role", "viewer"))
+        
+        return {
+            "success": True,
+            "user": {
+                "id": user["id"],
+                "username": user["username"],
+                "full_name": user.get("full_name", user["username"]),
+                "email": user.get("email"),
+                "role": user.get("role", "viewer"),
+                "stores": user.get("stores", []),
+                "permissions": permissions
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error validating session: {str(e)}")
+        raise HTTPException(status_code=500, detail="Session validation failed")
+
+
 @users_router.get("/{user_id}")
 async def get_user(user_id: str):
     """Get a specific user by ID"""
