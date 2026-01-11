@@ -753,14 +753,15 @@ async def translate_text_simple(text: str, target_lang: str = "English") -> str:
     try:
         chat = LlmChat(
             api_key=api_key,
-            session_id=f"translate-{datetime.now().timestamp()}"
+            session_id=f"translate-{datetime.now().timestamp()}",
+            system_message="You are a professional translator. Translate text accurately while maintaining the original meaning."
         ).with_model("openai", "gpt-4o-mini")
         
-        response = await chat.send_message(
-            UserMessage(text=f"Translate this Chinese text to {target_lang}. Return ONLY the translation, nothing else:\n\n{text}")
-        )
+        user_message = UserMessage(text=f"Translate this Chinese text to {target_lang}. Return ONLY the translation, nothing else:\n\n{text}")
+        response = await chat.send_message(user_message)
         return response.strip()
-    except Exception:
+    except Exception as e:
+        print(f"Translation error: {e}")
         return text
 
 
