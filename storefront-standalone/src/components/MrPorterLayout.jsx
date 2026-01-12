@@ -130,45 +130,53 @@ const MrPorterHeader = ({ storeConfig }) => {
             const navItems = mainMenu.items.map(item => {
               // Convert Shopify URL to local path
               let path = item.url || '/products';
+              
+              // Handle various URL formats
               if (path.includes('/collections/')) {
-                const handle = path.split('/collections/')[1]?.split('?')[0];
+                const handle = path.split('/collections/')[1]?.split('?')[0]?.split('/')[0];
                 path = `/products?collection=${handle}`;
-              } else if (path === '/' || path === '#') {
+              } else if (path.includes('/pages/')) {
+                // Keep pages URLs as external or redirect
+                const pageHandle = path.split('/pages/')[1]?.split('?')[0];
+                path = `/page/${pageHandle}`;
+              } else if (path === '/' || path === '#' || path === '') {
+                // For menu items that are just category headers
                 path = '/products';
               }
               
+              // Clean up title (remove MageNative tags if present)
+              const cleanTitle = item.title?.replace(/\{MageNative\}/g, '').trim();
+              
               return {
-                name: item.title,
+                name: cleanTitle,
                 path: path,
-                submenu: item.items?.map(sub => sub.title) || [],
+                submenu: item.items?.map(sub => sub.title?.replace(/\{MageNative\}/g, '').trim()) || [],
                 subItems: item.items?.map(sub => {
                   let subPath = sub.url || '/products';
                   if (subPath.includes('/collections/')) {
-                    const handle = subPath.split('/collections/')[1]?.split('?')[0];
+                    const handle = subPath.split('/collections/')[1]?.split('?')[0]?.split('/')[0];
                     subPath = `/products?collection=${handle}`;
+                  } else if (subPath.includes('/pages/')) {
+                    const pageHandle = subPath.split('/pages/')[1]?.split('?')[0];
+                    subPath = `/page/${pageHandle}`;
                   }
-                  return { name: sub.title, path: subPath };
+                  return { 
+                    name: sub.title?.replace(/\{MageNative\}/g, '').trim(), 
+                    path: subPath 
+                  };
                 }) || []
               };
             });
             
-            // Add collections and sale if not present
-            if (!navItems.some(n => n.name.toLowerCase() === 'collections')) {
-              navItems.splice(1, 0, { 
-                name: 'Collections', 
-                path: '/collections',
-                submenu: ['All Collections', 'Featured', 'Seasonal']
-              });
-            }
-            if (!navItems.some(n => n.name.toLowerCase() === 'sale')) {
-              navItems.push({ 
-                name: 'Sale', 
-                path: '/products?collection=sale',
-                highlight: true 
-              });
-            }
+            // Filter out tracking/account items and keep shopping items
+            const filteredNavItems = navItems.filter(item => {
+              const lowerName = item.name?.toLowerCase() || '';
+              return !lowerName.includes('track') && 
+                     !lowerName.includes('account') &&
+                     !lowerName.includes('return');
+            });
             
-            setNavigation(navItems);
+            setNavigation(filteredNavItems);
           }
         }
       } catch (e) {
