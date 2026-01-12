@@ -23,8 +23,8 @@ export const STORE_CONFIG = {
     promoCode: 'WELCOME10',
     contact: {
       email: 'support@tnvcollection.com',
-      phone: '+91-XXXXXXXXXX',
-      whatsapp: '+91XXXXXXXXXX', // Replace with actual number
+      phone: '+92-3111222868',
+      whatsapp: '+923111222868',
       support_hours: '10 AM - 7 PM IST'
     },
     social: {
