@@ -137,21 +137,71 @@ const HeroBanner = ({ storeConfig, banners }) => {
 
 // ===================== MR PORTER CATEGORY STRIP =====================
 const CategoryStrip = ({ storeConfig }) => {
-  const categories = [
-    { name: 'What\'s New', link: '/products?collection=new' },
-    { name: 'Clothing', link: '/products?category=clothing' },
-    { name: 'Shoes', link: '/products?category=shoes' },
-    { name: 'Bags', link: '/products?category=bags' },
-    { name: 'Accessories', link: '/products?category=accessories' },
-    { name: 'Designers', link: '/products?designers=all' },
+  const storeSlug = storeConfig?.id || 'tnvcollectionpk';
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // Fetch main menu to get categories
+        const res = await fetch(`${API}/api/shopify/menus?store_name=${storeSlug}`);
+        if (res.ok) {
+          const data = await res.json();
+          const mainMenu = data.menus?.find(m => 
+            m.handle === 'main-menu' || m.title?.toLowerCase().includes('main')
+          );
+          
+          if (mainMenu && mainMenu.items?.length > 0) {
+            const cats = mainMenu.items.slice(0, 7).map(item => {
+              let link = item.url || '/products';
+              if (link.includes('/collections/')) {
+                const handle = link.split('/collections/')[1]?.split('?')[0]?.split('/')[0];
+                link = `/products?collection=${handle}`;
+              } else if (link === '/' || link === '#' || link === '') {
+                link = '/products';
+              }
+              
+              const cleanName = item.title?.replace(/\{MageNative\}/g, '').trim();
+              const isSale = cleanName?.toLowerCase().includes('sale');
+              const isTracking = cleanName?.toLowerCase().includes('track');
+              
+              return {
+                name: cleanName,
+                link: link,
+                highlight: isSale,
+                skip: isTracking
+              };
+            }).filter(c => !c.skip);
+            
+            setCategories(cats);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch categories:', e);
+      }
+    };
+    
+    fetchCategories();
+  }, [storeSlug]);
+
+  // Default categories if none loaded
+  const defaultCategories = [
+    { name: 'New Arrivals', link: '/products?collection=new-arrival' },
+    { name: 'Men', link: '/products?collection=men' },
+    { name: 'Women', link: '/products?collection=women' },
+    { name: 'Shoes', link: '/products?collection=formalshoes' },
+    { name: 'Bags', link: '/products?collection=shop-bags' },
+    { name: 'Accessories', link: '/products?collection=accessories' },
     { name: 'Sale', link: '/products?collection=sale', highlight: true }
   ];
+
+  const displayCategories = categories.length > 0 ? categories : defaultCategories;
 
   return (
     <section className="bg-white border-b border-gray-200" data-testid="category-strip">
       <div className="max-w-[1440px] mx-auto">
         <div className="flex items-center justify-center overflow-x-auto scrollbar-hide">
-          {categories.map((cat, index) => (
+          {displayCategories.map((cat, index) => (
             <Link
               key={index}
               to={cat.link}
