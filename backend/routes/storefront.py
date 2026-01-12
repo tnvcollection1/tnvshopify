@@ -4,7 +4,8 @@ Public endpoints for the customer-facing storefront
 Handles checkout, order creation, and payment processing
 """
 
-from fastapi import APIRouter, HTTPException, Body, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Body, BackgroundTasks, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
@@ -14,6 +15,24 @@ import hashlib
 import hmac
 import razorpay
 import logging
+import uuid
+import shutil
+from pathlib import Path
+
+# Configure uploads directory
+UPLOADS_DIR = Path("/app/backend/uploads")
+BANNERS_DIR = UPLOADS_DIR / "banners"
+BANNERS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Banner size specifications
+BANNER_SIZES = {
+    "hero": {"width": 1920, "height": 800, "label": "Hero Banner (1920x800)"},
+    "wide": {"width": 1920, "height": 600, "label": "Wide Banner (1920x600)"},
+    "standard": {"width": 1200, "height": 600, "label": "Standard Banner (1200x600)"},
+    "mobile": {"width": 768, "height": 400, "label": "Mobile Banner (768x400)"},
+    "square": {"width": 800, "height": 800, "label": "Square Banner (800x800)"},
+    "custom": {"width": None, "height": None, "label": "Custom Size"}
+}
 
 logger = logging.getLogger(__name__)
 
