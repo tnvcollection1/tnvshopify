@@ -1,15 +1,17 @@
 /**
  * Multi-tenant Store Configuration
- * Maps domains to store-specific settings
+ * Supports: subdomain.wamerce.com pattern (like Shopify)
+ * Also supports custom domains for merchants
  */
 
 export const STORE_CONFIG = {
-  // India Store - tnvcollection.com
+  // India Store - tnvcollection.wamerce.com or tnvcollection.com
   'tnvcollection': {
     id: 'tnvcollection',
     name: 'TNC Collection',
     tagline: 'Premium Fashion',
-    domain: 'tnvcollection.com',
+    subdomain: 'tnvcollection', // tnvcollection.wamerce.com
+    customDomain: 'tnvcollection.com', // optional custom domain
     currency: {
       code: 'INR',
       symbol: '₹',
@@ -38,12 +40,13 @@ export const STORE_CONFIG = {
     }
   },
   
-  // Pakistan Store - tnvcollection.pk
+  // Pakistan Store - tnvcollectionpk.wamerce.com or tnvcollection.pk
   'tnvcollectionpk': {
     id: 'tnvcollectionpk',
     name: 'TNC Collection',
     tagline: 'Premium Fashion',
-    domain: 'tnvcollection.pk',
+    subdomain: 'tnvcollectionpk', // tnvcollectionpk.wamerce.com
+    customDomain: 'tnvcollection.pk', // optional custom domain
     currency: {
       code: 'PKR',
       symbol: 'Rs',
@@ -73,60 +76,120 @@ export const STORE_CONFIG = {
   }
 };
 
-// Domain to store mapping for production
-export const DOMAIN_TO_STORE = {
+// Platform domain
+export const PLATFORM_DOMAIN = 'wamerce.com';
+
+// Custom domain to store mapping (for merchants with their own domains)
+export const CUSTOM_DOMAIN_TO_STORE = {
   'tnvcollection.com': 'tnvcollection',
   'www.tnvcollection.com': 'tnvcollection',
   'tnvcollection.pk': 'tnvcollectionpk',
   'www.tnvcollection.pk': 'tnvcollectionpk',
-  // Development domains
-  'localhost': import.meta.env.VITE_DEFAULT_STORE || 'tnvcollection',
-  '127.0.0.1': import.meta.env.VITE_DEFAULT_STORE || 'tnvcollection'
+  'tnvcollection.in': 'tnvcollection',
+  'www.tnvcollection.in': 'tnvcollection',
 };
 
 /**
- * Get store config based on current domain
+ * Extract subdomain from hostname
+ * e.g., "tnvcollection.wamerce.com" → "tnvcollection"
  */
-export const getStoreConfig = (storeSlugOrDomain) => {
-  // First check if it's a direct slug match
-  if (STORE_CONFIG[storeSlugOrDomain]) {
-    return STORE_CONFIG[storeSlugOrDomain];
+export const extractSubdomain = (hostname) => {
+  // Check if it's a wamerce.com subdomain
+  if (hostname.endsWith(`.${PLATFORM_DOMAIN}`)) {
+    const subdomain = hostname.replace(`.${PLATFORM_DOMAIN}`, '');
+    // Ignore www
+    if (subdomain === 'www') return null;
+    return subdomain;
+  }
+  return null;
+};
+
+/**
+ * Get store config based on subdomain, custom domain, or store slug
+ */
+export const getStoreConfig = (identifier) => {
+  // Direct slug match
+  if (STORE_CONFIG[identifier]) {
+    return STORE_CONFIG[identifier];
   }
   
-  // Check domain mapping
-  const storeSlug = DOMAIN_TO_STORE[storeSlugOrDomain];
-  if (storeSlug && STORE_CONFIG[storeSlug]) {
+  // Check custom domain mapping
+  if (CUSTOM_DOMAIN_TO_STORE[identifier]) {
+    const storeSlug = CUSTOM_DOMAIN_TO_STORE[identifier];
     return STORE_CONFIG[storeSlug];
   }
   
-  // Default to configured store
+  // Check if identifier is a subdomain match
+  for (const [slug, config] of Object.entries(STORE_CONFIG)) {
+    if (config.subdomain === identifier) {
+      return config;
+    }
+  }
+  
+  // Default store
   return STORE_CONFIG[import.meta.env.VITE_DEFAULT_STORE || 'tnvcollection'];
 };
 
 /**
  * Detect store from current window location
- * Supports preview mode via ?store=tnvcollection or ?store=tnvcollectionpk
+ * Priority:
+ * 1. URL parameter: ?store=storename (for preview/testing)
+ * 2. Subdomain: storename.wamerce.com
+ * 3. Custom domain: tnvcollection.com
+ * 4. Default store
  */
 export const detectStore = () => {
   if (typeof window === 'undefined') {
-    return STORE_CONFIG[import.meta.env.VITE_DEFAULT_STORE || 'tnvcollectionpk'];
+    return STORE_CONFIG[import.meta.env.VITE_DEFAULT_STORE || 'tnvcollection'];
   }
   
-  // Check for store preview parameter in URL
+  const hostname = window.location.hostname;
   const urlParams = new URLSearchParams(window.location.search);
+  
+  // 1. Check for store preview parameter in URL
   const previewStore = urlParams.get('store');
   if (previewStore && STORE_CONFIG[previewStore]) {
+    // Save to localStorage for session persistence
+    localStorage.setItem('preview_store', previewStore);
     return STORE_CONFIG[previewStore];
   }
   
-  // Check localStorage for persisted store preference (for preview)
+  // 2. Check localStorage for persisted store preference (for preview)
   const savedStore = localStorage.getItem('preview_store');
   if (savedStore && STORE_CONFIG[savedStore]) {
     return STORE_CONFIG[savedStore];
   }
   
-  const hostname = window.location.hostname;
-  return getStoreConfig(hostname);
+  // 3. Check for subdomain pattern: storename.wamerce.com
+  const subdomain = extractSubdomain(hostname);
+  if (subdomain && STORE_CONFIG[subdomain]) {
+    return STORE_CONFIG[subdomain];
+  }
+  
+  // 4. Check custom domain mapping
+  if (CUSTOM_DOMAIN_TO_STORE[hostname]) {
+    return STORE_CONFIG[CUSTOM_DOMAIN_TO_STORE[hostname]];
+  }
+  
+  // 5. Check if hostname contains store identifier
+  for (const [slug, config] of Object.entries(STORE_CONFIG)) {
+    if (hostname.includes(slug)) {
+      return config;
+    }
+  }
+  
+  // 6. Default to configured store
+  return STORE_CONFIG[import.meta.env.VITE_DEFAULT_STORE || 'tnvcollection'];
+};
+
+/**
+ * Get the store URL (subdomain or custom domain)
+ */
+export const getStoreUrl = (storeConfig, useCustomDomain = false) => {
+  if (useCustomDomain && storeConfig.customDomain) {
+    return `https://${storeConfig.customDomain}`;
+  }
+  return `https://${storeConfig.subdomain}.${PLATFORM_DOMAIN}`;
 };
 
 /**
@@ -144,7 +207,7 @@ export const formatPrice = (amount, storeConfig) => {
  * Get API URL
  */
 export const getApiUrl = () => {
-  return import.meta.env.VITE_API_URL || 'https://wamerce.com';
+  return import.meta.env.VITE_API_URL || `https://api.${PLATFORM_DOMAIN}`;
 };
 
 export default STORE_CONFIG;
