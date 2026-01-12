@@ -58,6 +58,7 @@ from routes.storefront_cms import router as storefront_cms_router, set_database 
 from routes.warehouse import router as warehouse_router, set_database as set_warehouse_db
 from routes.shopify_sync import router as shopify_sync_router, set_dependencies as set_shopify_sync_deps
 from routes.whatsapp_api import router as whatsapp_api_router, set_dependencies as set_whatsapp_api_deps
+from routes.store_management import router as store_management_router
 from routes.marketing import router as marketing_router, set_database as set_marketing_db
 from routes.settings import router as settings_router, set_database as set_settings_db
 from routes.competitor_analysis import router as competitor_router, set_database as set_competitor_db
