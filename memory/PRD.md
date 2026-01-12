@@ -43,7 +43,24 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ## What's Been Implemented
 
-### Latest Updates (Jan 11, 2025 - Session 2)
+### Latest Updates (Jan 12, 2025)
+
+### Create DWZ Order from 1688 Modal ✅ NEW
+- **Component**: `/app/frontend/src/components/Trade1688Dashboard.jsx` (lines 760-897)
+- **Backend Endpoint**: `POST /api/1688/create-dwz-from-1688`
+- **Features**:
+  - Modal dialog opens when clicking "Create DWZ" button on any 1688 order card
+  - Form fields: Company Prefix, Destination (India/Pakistan/Bangladesh/Sri Lanka), Shopify Order Number, Shopify Color, Shopify Size, Configured Remark
+  - Auto-generates custom reference number format: `{PREFIX}{COUNTRY}{DDMM}{COLOR}{SIZE}{SEQ}`
+  - Creates detailed remarks comparing 1688 and Shopify data (color/size match/mismatch)
+  - Uses 1688 seller's tracking number as DWZ internal tracking
+  - Success toast shows Reference Number, AWB Number, 1688 Tracking, and match status
+- **Data-testids**: dwz-create-dialog, dwz-company-prefix, dwz-destination, dwz-shopify-order, dwz-shopify-color, dwz-shopify-size, dwz-configured-remark, dwz-cancel-btn, dwz-create-btn
+- **Test Results**: 8/8 backend tests passed (100%)
+
+---
+
+### Previous Updates (Jan 11, 2025 - Session 2)
 
 ### P0 Authentication Bug Fix ✅ CRITICAL FIX
 - **Issue**: Users were being logged out frequently due to missing server-side session validation
