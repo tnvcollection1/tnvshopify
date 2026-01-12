@@ -76,8 +76,32 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - ✅ **Cash on Delivery (COD)** - For both India and Pakistan stores
   - ✅ **Multi-step Checkout** - Shipping → Payment → Confirmation
   - ✅ **Localized Forms** - Country-specific placeholders and labels
-- **Routes**: `/store/:storeSlug`, `/store/:storeSlug/products`, `/store/:storeSlug/product/:productId`, `/store/:storeSlug/cart`, `/store/:storeSlug/checkout`
+  - ✅ **Order Tracking Page** - Visual timeline with status history
+  - ✅ **WhatsApp Status Notifications** - Auto-generated messages for each status change
+- **Routes**: `/store/:storeSlug`, `/store/:storeSlug/products`, `/store/:storeSlug/product/:productId`, `/store/:storeSlug/cart`, `/store/:storeSlug/checkout`, `/store/:storeSlug/track`
 - **Deployment**: Can be deployed to Vercel/Netlify with custom domains
+
+### WhatsApp Order Notifications ✅ NEW
+- **Backend Endpoint**: `PUT /api/storefront/orders/{order_id}/status`
+- **Features**:
+  - Auto-generates WhatsApp message when order status changes
+  - Returns click-to-send WhatsApp link with pre-filled message
+  - Status-specific messages: Confirmed, Processing, Shipped, Out for Delivery, Delivered
+  - Includes tracking number and courier info for shipped orders
+  - COD amount reminder for delivery notifications
+- **Message Format Example** (Shipped):
+  ```
+  🚚 *Order Shipped!*
+  Hi John!
+  Your order #SF26011209149286 is on its way!
+  
+  📦 *Tracking Details:*
+  Courier: DTDC Express
+  Tracking #: DTDC123456789
+  
+  💵 Amount to pay on delivery: ₹3198
+  Expected delivery: 3-5 business days 📅
+  ```
 
 ### Store Cleanup ✅ 
 - Removed ashmiaa/asmiaa stores from database
