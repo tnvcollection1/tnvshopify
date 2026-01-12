@@ -869,30 +869,34 @@ function AppRoutes() {
         } 
       />
       
-      {/* Store-Specific Storefront Routes */}
+      {/* Store-Specific Storefront Routes - Using Luxury Layout */}
       <Route 
-        path="/store/:storeName" 
-        element={<StorefrontWrapper />} 
+        path="/store/:storeSlug" 
+        element={<LuxuryStorefrontWrapper />} 
       />
       <Route 
-        path="/store/:storeName/products" 
-        element={<StorefrontWrapper page="listing" />} 
+        path="/store/:storeSlug/products" 
+        element={<LuxuryStorefrontWrapper page="listing" />} 
       />
       <Route 
-        path="/store/:storeName/product/:productId" 
-        element={<StorefrontWrapper page="detail" />} 
+        path="/store/:storeSlug/product/:productId" 
+        element={<LuxuryStorefrontWrapper page="detail" />} 
       />
       <Route 
-        path="/store/:storeName/cart" 
-        element={<StorefrontWrapper page="cart" />} 
+        path="/store/:storeSlug/cart" 
+        element={<LuxuryStorefrontWrapper page="cart" />} 
       />
       <Route 
-        path="/store/:storeName/checkout" 
-        element={<StorefrontWrapper page="checkout" />} 
+        path="/store/:storeSlug/checkout" 
+        element={<LuxuryStorefrontWrapper page="checkout" />} 
       />
       <Route 
-        path="/store/:storeName/order-confirmation/:orderId" 
-        element={<StorefrontWrapper page="confirmation" />} 
+        path="/store/:storeSlug/order-confirmation/:orderId" 
+        element={<LuxuryStorefrontWrapper page="confirmation" />} 
+      />
+      <Route 
+        path="/store/:storeSlug/track" 
+        element={<LuxuryStorefrontWrapper page="tracking" />} 
       />
 
       {/* Luxury Storefront Routes (Stella McCartney Style) */}
