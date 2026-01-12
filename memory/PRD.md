@@ -46,6 +46,30 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ### Latest Updates (Jan 12, 2025)
 
+### Menu & Tags Management System ✅ COMPLETED
+- **New Admin UI**: Menu & Tags Manager at `/menu-tags`
+- **Backend APIs**:
+  - `GET/POST /api/storefront/menus` - List/create menu items
+  - `PUT/DELETE /api/storefront/menus/{id}` - Update/delete menu item
+  - `POST /api/storefront/menus/bulk` - Bulk create menus
+  - `DELETE /api/storefront/menus/clear` - Clear all menus
+  - `GET/POST /api/storefront/tags` - List/create tags
+  - `PUT/DELETE /api/storefront/tags/{id}` - Update/delete tag
+  - `POST /api/storefront/tags/bulk` - Bulk create tags
+  - `GET /api/storefront/navigation` - Get complete navigation (header + footer + tags)
+- **Features**:
+  - Header Menu management (with nested submenus)
+  - Footer Menu management
+  - Product Tags with color picker
+  - Store-specific menus (India/Pakistan)
+  - Initialize default menus/tags with one click
+- **Default Menus Created**:
+  - Header: Men, Women, Accessories, Sale, New Arrivals
+  - Footer: Customer Service, About Us, Privacy Policy, Terms & Conditions
+- **Default Tags Created** (8 tags with colors):
+  - New Arrival (green), Best Seller (amber), Sale (red), Limited Edition (purple)
+  - Express Shipping (blue), Trending (pink), Premium (black), Eco-Friendly (teal)
+
 ### Full Shopify Data Sync & Banners ✅ COMPLETED
 - **Full Sync Completed**: All products, collections, pages, and menus synced from both Shopify stores to local MongoDB database
 - **Data Summary**:
