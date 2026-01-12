@@ -139,7 +139,7 @@ function LuxuryStorefrontWrapper({ page = 'home' }) {
       {page === 'cart' && <LuxuryShoppingCart />}
       {page === 'checkout' && <LuxuryCheckout />}
       {page === 'confirmation' && <LuxuryOrderConfirmation />}
-      {page === 'tracking' && <OrderTracking />}
+      {page === 'tracking' && <LuxuryOrderTracking />}
     </LuxuryStorefrontLayout>
   );
 }
