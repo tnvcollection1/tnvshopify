@@ -918,32 +918,6 @@ class ShopifyOrderSync:
             logger.error(f"Error parsing GraphQL menu item: {str(e)}")
             return None
     
-    def _parse_menu(self, menu: dict) -> Optional[Dict]:
-        """Parse Shopify menu into database format"""
-        try:
-            return {
-                'shopify_menu_id': str(menu.get('id', '')),
-                'title': menu.get('title', ''),
-                'handle': menu.get('handle', ''),
-                'items': self._parse_menu_items(menu.get('items', [])),
-            }
-        except Exception as e:
-            logger.error(f"Error parsing menu: {str(e)}")
-            return None
-    
-    def _parse_menu_items(self, items: list) -> List[Dict]:
-        """Recursively parse menu items"""
-        parsed_items = []
-        for item in items:
-            parsed_item = {
-                'id': str(item.get('id', '')),
-                'title': item.get('title', ''),
-                'url': item.get('url', ''),
-                'type': item.get('type', ''),
-                'resource_id': item.get('resource_id'),
-                'items': self._parse_menu_items(item.get('items', [])) if item.get('items') else []
-            }
-            parsed_items.append(parsed_item)
-        return parsed_items
+    # Note: Old REST API menu parsing methods removed - using GraphQL now
 
 
