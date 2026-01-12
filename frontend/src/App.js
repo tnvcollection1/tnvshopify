@@ -95,6 +95,8 @@ import LuxuryStorefrontHome from "@/components/storefront/LuxuryStorefrontHome";
 import LuxuryProductListing from "@/components/storefront/LuxuryProductListing";
 import LuxuryProductDetail from "@/components/storefront/LuxuryProductDetail";
 import LuxuryShoppingCart from "@/components/storefront/LuxuryShoppingCart";
+import LuxuryCheckout from "@/components/storefront/LuxuryCheckout";
+import LuxuryOrderConfirmation from "@/components/storefront/LuxuryOrderConfirmation";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
