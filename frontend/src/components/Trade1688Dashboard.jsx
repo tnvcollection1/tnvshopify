@@ -351,6 +351,69 @@ const Trade1688Dashboard = () => {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [creatingDwzOrder, setCreatingDwzOrder] = useState(null);
+  
+  // Create DWZ order from 1688 order
+  const handleCreateDwzOrder = async (order) => {
+    const baseInfo = order.baseInfo || order;
+    const orderId = baseInfo.idOfStr || baseInfo.id || order.id;
+    
+    setCreatingDwzOrder(orderId);
+    
+    try {
+      // Get the shipping address from nativeLogistics
+      const logistics = order.nativeLogistics || {};
+      const receiverInfo = baseInfo.receiverInfo || {};
+      
+      // Build address string
+      const address = [
+        logistics.province,
+        logistics.city,
+        logistics.area,
+        logistics.town,
+        logistics.address,
+      ].filter(Boolean).join(' ') || receiverInfo.toArea || '';
+      
+      // Use order ID as internal order number (courier tracking from seller would require logistics API)
+      const internalOrderNumber = orderId;
+      
+      // Get first product info for the order
+      const firstProduct = order.productItems?.[0] || {};
+      
+      const dwzOrderData = {
+        internal_order_number: internalOrderNumber,
+        recipient_name: logistics.contactPerson || receiverInfo.toFullName || baseInfo.buyerContact?.name || 'Unknown',
+        recipient_phone: baseInfo.buyerContact?.mobile || baseInfo.buyerContact?.phone || '',
+        recipient_address: address,
+        postal_code: logistics.zip || receiverInfo.toPost || '',
+        product_name: firstProduct.name || '1688 Order',
+        quantity: order.productItems?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 1,
+        remark: `1688 Order: ${orderId}`, // Will use configured remark
+        declared_value: baseInfo.totalAmount || 0,
+        source: '1688',
+        source_order_id: orderId,
+      };
+      
+      const res = await fetch(`${API}/api/dwz56/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dwzOrderData),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success || data.order_id) {
+        toast.success(`DWZ order created: ${data.order_id || data.waybill_number || 'Success'}`);
+      } else {
+        throw new Error(data.detail || data.error || 'Failed to create DWZ order');
+      }
+    } catch (e) {
+      console.error('DWZ order creation error:', e);
+      toast.error(`Failed: ${e.message}`);
+    } finally {
+      setCreatingDwzOrder(null);
+    }
+  };
   
   const fetchOrders = useCallback(async () => {
     setLoading(true);
