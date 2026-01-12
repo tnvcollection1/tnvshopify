@@ -39,7 +39,7 @@ const StoreManagement = () => {
   const fetchStores = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/stores?limit=100`);
+      const res = await fetch(`${STORES_API}?limit=100`);
       const data = await res.json();
       setStores(data.stores || []);
     } catch (e) {
@@ -53,7 +53,7 @@ const StoreManagement = () => {
     if (!window.confirm('Are you sure you want to deactivate this store?')) return;
     
     try {
-      await fetch(`${API}/api/stores/${storeId}`, { method: 'DELETE' });
+      await fetch(`${STORES_API}/${storeId}`, { method: 'DELETE' });
       fetchStores();
     } catch (e) {
       console.error('Failed to delete store:', e);
@@ -62,7 +62,7 @@ const StoreManagement = () => {
 
   const handleActivate = async (storeId) => {
     try {
-      await fetch(`${API}/api/stores/${storeId}/activate`, { method: 'POST' });
+      await fetch(`${STORES_API}/${storeId}/activate`, { method: 'POST' });
       fetchStores();
     } catch (e) {
       console.error('Failed to activate store:', e);
@@ -381,7 +381,7 @@ const StoreModal = ({ store, onSave, onClose }) => {
     
     setSubdomainChecking(true);
     try {
-      const res = await fetch(`${API}/api/stores/check-subdomain/${subdomain}`);
+      const res = await fetch(`${STORES_API}/check-subdomain/${subdomain}`);
       const data = await res.json();
       setSubdomainAvailable(data.available);
     } catch (e) {
@@ -414,8 +414,8 @@ const StoreModal = ({ store, onSave, onClose }) => {
     try {
       const method = isEdit ? 'PUT' : 'POST';
       const url = isEdit 
-        ? `${API}/api/stores/${store.id}`
-        : `${API}/api/stores`;
+        ? `${STORES_API}/${store.id}`
+        : `${STORES_API}`;
 
       const res = await fetch(url, {
         method,
