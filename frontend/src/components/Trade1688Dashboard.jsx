@@ -416,10 +416,39 @@ const Trade1688Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [creatingDwzOrder, setCreatingDwzOrder] = useState(null);
   
-  // Create DWZ order from 1688 order - uses the backend endpoint that handles everything
-  const handleCreateDwzOrder = async (order) => {
+  // DWZ Creation Dialog State
+  const [showDwzDialog, setShowDwzDialog] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [dwzFormData, setDwzFormData] = useState({
+    shopify_order_number: '',
+    shopify_color: '',
+    shopify_size: '',
+    configured_remark: '',
+    company_prefix: 'TNV',
+    destination: 'IN',
+  });
+  
+  // Open DWZ Dialog
+  const openDwzDialog = (order) => {
     const baseInfo = order.baseInfo || order;
-    const orderId = baseInfo.idOfStr || baseInfo.id || order.id;
+    setSelectedOrder(order);
+    setDwzFormData({
+      shopify_order_number: '',
+      shopify_color: '',
+      shopify_size: '',
+      configured_remark: '',
+      company_prefix: 'TNV',
+      destination: 'IN',
+    });
+    setShowDwzDialog(true);
+  };
+  
+  // Create DWZ order from 1688 order
+  const handleCreateDwzOrder = async () => {
+    if (!selectedOrder) return;
+    
+    const baseInfo = selectedOrder.baseInfo || selectedOrder;
+    const orderId = baseInfo.idOfStr || baseInfo.id || selectedOrder.id;
     
     setCreatingDwzOrder(orderId);
     
@@ -429,22 +458,39 @@ const Trade1688Dashboard = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           order_id: orderId,
-          company_prefix: 'TNV',  // Could be configurable
-          // destination and courier_type auto-detected
+          company_prefix: dwzFormData.company_prefix || 'TNV',
+          destination: dwzFormData.destination || 'IN',
+          shopify_order_number: dwzFormData.shopify_order_number || null,
+          shopify_color: dwzFormData.shopify_color || null,
+          shopify_size: dwzFormData.shopify_size || null,
+          configured_remark: dwzFormData.configured_remark || null,
         }),
       });
       
       const data = await res.json();
       
       if (data.success) {
+        const matchInfo = [];
+        if (dwzFormData.shopify_color && data.color_1688) {
+          matchInfo.push(`Color: ${data.color_1688} vs ${dwzFormData.shopify_color}`);
+        }
+        if (dwzFormData.shopify_size && data.size_1688) {
+          matchInfo.push(`Size: ${data.size_1688} vs ${dwzFormData.shopify_size}`);
+        }
+        
         toast.success(
           <div>
             <p className="font-medium">DWZ Order Created!</p>
             <p className="text-sm">Ref: {data.reference_number}</p>
-            <p className="text-sm">Tracking: {data.tracking_number_1688}</p>
-            <p className="text-xs text-gray-500">{data.color_display}/{data.size}</p>
+            <p className="text-sm">AWB: {data.awb_number || 'Pending'}</p>
+            <p className="text-sm">1688 Tracking: {data.tracking_number_1688}</p>
+            {matchInfo.length > 0 && (
+              <p className="text-xs mt-1">{matchInfo.join(' | ')}</p>
+            )}
           </div>
         );
+        setShowDwzDialog(false);
+        setSelectedOrder(null);
       } else {
         throw new Error(data.detail || 'Failed to create DWZ order');
       }
