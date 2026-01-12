@@ -863,11 +863,10 @@ class ShopifyOrderSync:
             menu_id = gid.split('/')[-1] if gid else ''
             
             items = []
-            for item_edge in menu_node.get('items', {}).get('edges', []):
-                item_node = item_edge.get('node', {})
-                item = self._parse_graphql_menu_item(item_node)
-                if item:
-                    items.append(item)
+            for item in menu_node.get('items', []):
+                parsed_item = self._parse_graphql_menu_item(item)
+                if parsed_item:
+                    items.append(parsed_item)
             
             return {
                 'shopify_menu_id': menu_id,
@@ -887,15 +886,14 @@ class ShopifyOrderSync:
             
             # Parse nested items
             nested_items = []
-            for nested_edge in item_node.get('items', {}).get('edges', []):
-                nested_node = nested_edge.get('node', {})
-                nested_gid = nested_node.get('id', '')
+            for nested_item in item_node.get('items', []):
+                nested_gid = nested_item.get('id', '')
                 nested_id = nested_gid.split('/')[-1] if nested_gid else ''
                 nested_items.append({
                     'id': nested_id,
-                    'title': nested_node.get('title', ''),
-                    'url': nested_node.get('url', ''),
-                    'type': nested_node.get('type', ''),
+                    'title': nested_item.get('title', ''),
+                    'url': nested_item.get('url', ''),
+                    'type': nested_item.get('type', ''),
                     'items': []
                 })
             
