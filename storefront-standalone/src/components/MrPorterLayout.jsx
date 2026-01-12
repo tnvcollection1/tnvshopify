@@ -625,7 +625,7 @@ export const MrPorterLayout = ({ children }) => {
         
         // If we have a subdomain, try to load from API
         if (subdomain) {
-          const res = await fetch(`${API}/api/stores/by-subdomain/${subdomain}`);
+          const res = await fetch(`${API}/api/wamerce/stores/by-subdomain/${subdomain}`);
           if (res.ok) {
             const data = await res.json();
             if (data.success && data.store) {
@@ -641,7 +641,7 @@ export const MrPorterLayout = ({ children }) => {
         
         // Try custom domain lookup
         if (!subdomain && !previewStore) {
-          const res = await fetch(`${API}/api/stores/by-domain/${hostname}`);
+          const res = await fetch(`${API}/api/wamerce/stores/by-domain/${hostname}`);
           if (res.ok) {
             const data = await res.json();
             if (data.success && data.store) {
