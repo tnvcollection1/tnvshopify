@@ -674,7 +674,7 @@ const Trade1688Dashboard = () => {
                   <OrderCard 
                     key={order.id || order.orderId || i} 
                     order={order}
-                    onCreateDwzOrder={handleCreateDwzOrder}
+                    onCreateDwzOrder={openDwzDialog}
                     creatingDwz={creatingDwzOrder}
                   />
                 ))}
