@@ -432,10 +432,34 @@ const InstagramFeed = ({ storeConfig }) => {
 
 const LuxuryStorefrontHome = () => {
   const storeConfig = useStore();
+  const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch homepage banners from API
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const storeSlug = storeConfig?.id || 'tnvcollection';
+        const res = await fetch(`${API}/api/storefront/home-config?store=${storeSlug}`);
+        if (res.ok) {
+          const data = await res.json();
+          setBanners(data.banners || []);
+        }
+      } catch (e) {
+        console.error('Failed to fetch banners:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (storeConfig?.id) {
+      fetchBanners();
+    }
+  }, [storeConfig?.id]);
   
   return (
     <div data-testid="luxury-storefront-home">
-      <HeroSection storeConfig={storeConfig} />
+      <HeroSection storeConfig={storeConfig} banners={banners} />
       <CategoryGrid storeConfig={storeConfig} />
       <FeaturedProducts storeConfig={storeConfig} />
       <EditorialSection storeConfig={storeConfig} />
