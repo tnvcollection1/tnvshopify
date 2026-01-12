@@ -219,6 +219,71 @@ async def get_storefront_product(
 # ==================== Order Endpoints ====================
 
 
+# COD Order Model
+class CODOrderRequest(BaseModel):
+    store_name: str
+    customer: Dict[str, Any]
+    shipping_address: Dict[str, Any]
+    line_items: List[Dict[str, Any]]
+    subtotal: float
+    shipping_cost: float
+    discount: float = 0
+    total: float
+    payment_method: str = "cod"
+    payment_status: str = "pending"
+    currency: str = "INR"
+
+
+@router.post("/orders/cod")
+async def create_cod_order(order: CODOrderRequest):
+    """Create a Cash on Delivery order"""
+    db = get_db()
+    
+    try:
+        order_number = generate_order_number()
+        now = datetime.now(timezone.utc).isoformat()
+        
+        # Calculate estimated delivery (5-7 business days)
+        from datetime import timedelta
+        estimated_delivery = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+        
+        # Save order to database
+        order_doc = {
+            "order_id": order_number,
+            "store_name": order.store_name,
+            "customer": order.customer,
+            "shipping_address": order.shipping_address,
+            "line_items": order.line_items,
+            "payment_method": order.payment_method,
+            "payment_status": order.payment_status,
+            "subtotal": order.subtotal,
+            "shipping_cost": order.shipping_cost,
+            "discount": order.discount,
+            "total": order.total,
+            "currency": order.currency,
+            "status": "pending",
+            "status_history": [
+                {"status": "pending", "timestamp": now, "note": "Order placed - COD"}
+            ],
+            "estimated_delivery": estimated_delivery,
+            "created_at": now,
+            "updated_at": now,
+            "source": "storefront_cod"
+        }
+        
+        await db.storefront_orders.insert_one(order_doc)
+        
+        return {
+            "success": True,
+            "order_id": order_number,
+            "message": "Order placed successfully! Pay on delivery."
+        }
+        
+    except Exception as e:
+        logger.error(f"COD order creation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 async def create_shopify_order(store_name: str, order_data: dict) -> dict:
     """Create order in Shopify"""
     store = await get_store_config(store_name)
