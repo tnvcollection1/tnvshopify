@@ -3,10 +3,12 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   ShoppingBag, Search, Menu, X, Heart, User, 
   MapPin, Phone, Mail, Instagram, Facebook, ArrowRight,
-  ChevronDown
+  ChevronDown, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { detectStore, formatPrice, getApiUrl } from '../config/storeConfig';
+
+const API = import.meta.env.VITE_API_URL || getApiUrl();
 
 // ===================== CONTEXTS =====================
 const StoreContext = createContext();
