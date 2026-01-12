@@ -163,39 +163,45 @@ const OrderCard = ({ order, onViewDetails }) => {
         {/* Expandable Details */}
         {expanded && (
           <div className="pt-3 border-t mt-3 space-y-3">
-            {productItems.map((item, i) => (
-              <div key={i} className="flex gap-3 p-2 bg-zinc-50 rounded-lg">
-                <div className="w-12 h-12 rounded bg-white border overflow-hidden flex-shrink-0">
-                  {item.productImg || item.picUrl ? (
-                    <img 
-                      src={item.productImg || item.picUrl} 
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Package className="w-4 h-4 text-zinc-300" />
+            {productItems.map((item, i) => {
+              const imgUrl = Array.isArray(item.productImgUrl) 
+                ? item.productImgUrl[0] 
+                : (item.productImgUrl || item.productImg || item.picUrl);
+              
+              return (
+                <div key={i} className="flex gap-3 p-2 bg-zinc-50 rounded-lg">
+                  <div className="w-12 h-12 rounded bg-white border overflow-hidden flex-shrink-0">
+                    {imgUrl ? (
+                      <img 
+                        src={imgUrl} 
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-4 h-4 text-zinc-300" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-zinc-900 truncate">
+                      {item.name || item.productName || 'Product'}
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      {item.skuInfos?.map(s => `${s.name}: ${s.value}`).join(' | ') || `SKU: ${item.specId || item.skuId || 'N/A'}`}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm font-semibold text-orange-600">
+                        ¥{parseFloat(item.itemAmount || item.price || 0).toFixed(2)}
+                      </span>
+                      <span className="text-xs text-zinc-400">
+                        × {item.quantity || 1} {item.unit || ''}
+                      </span>
                     </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-zinc-900 truncate">
-                    {item.productName || item.name || 'Product'}
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    SKU: {item.specId || item.skuId || 'N/A'}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm font-semibold text-orange-600">
-                      ¥{parseFloat(item.itemAmount || item.price || 0).toFixed(2)}
-                    </span>
-                    <span className="text-xs text-zinc-400">
-                      × {item.quantity || 1}
-                    </span>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         
