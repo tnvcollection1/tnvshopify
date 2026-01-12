@@ -46,7 +46,35 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ### Latest Updates (Jan 12, 2025)
 
-### Luxury Storefront (Stella McCartney Style) ✅ NEW
+### MR PORTER Style Storefront Redesign ✅ NEW
+- **Design Inspiration**: mrporter.com - clean black/white minimal luxury aesthetic
+- **Standalone Package**: `/app/storefront-standalone/` - ready for Vercel deployment
+- **New Components**:
+  - `MrPorterLayout.jsx` - Clean header with mega-menu navigation, minimal footer
+  - `MrPorterHome.jsx` - Hero banner, editorial grid, product carousels, brand bar, journal section
+- **Admin Backend - Banner & Collection Manager** ✅ NEW
+  - **Route**: `/storefront-config`
+  - **Features**:
+    - Hero banner management (CRUD) with image preview
+    - Collection management (CRUD) for homepage sections
+    - Store-specific configuration (India/Pakistan)
+    - Toggle active/inactive status
+    - Display order management
+  - **API Endpoints**:
+    - `GET/POST /api/storefront/banners` - List/create banners
+    - `PUT/DELETE /api/storefront/banners/{id}` - Update/delete banner
+    - `GET/POST /api/storefront/collections` - List/create collections
+    - `PUT/DELETE /api/storefront/collections/{id}` - Update/delete collection
+    - `GET /api/storefront/home-config` - Get all active banners & collections
+- **Styling**:
+  - Pure black/white color scheme
+  - Inter font with uppercase tracking for labels
+  - Minimal product cards with brand name display
+  - Scrolling brand marquee
+  - Service bar (shipping, returns, payment, support)
+  - Newsletter subscription section
+
+### Luxury Storefront (Stella McCartney Style) ✅
 - **Architecture**: Multi-tenant storefront supporting multiple stores with custom domains
 - **Stores**:
   - `tnvcollection` → tnvcollection.com (India - ₹ INR)
