@@ -655,3 +655,194 @@ class ShopifyOrderSync:
             }
 
 
+    def fetch_collections(self, fetch_all: bool = True) -> List[Dict]:
+        """
+        Fetch all collections (both Smart and Custom) from Shopify store
+        
+        Returns:
+            List of parsed collection dictionaries
+        """
+        if not self.connect():
+            return []
+        
+        try:
+            all_collections = []
+            
+            # Fetch Smart Collections
+            logger.info("Fetching Smart Collections...")
+            try:
+                smart_collections = shopify.SmartCollection.find(limit=250)
+                for collection in smart_collections:
+                    parsed = self._parse_collection(collection, 'smart')
+                    if parsed:
+                        all_collections.append(parsed)
+                logger.info(f"Fetched {len(smart_collections)} smart collections")
+            except Exception as e:
+                logger.warning(f"Could not fetch smart collections: {e}")
+            
+            # Fetch Custom Collections
+            logger.info("Fetching Custom Collections...")
+            try:
+                custom_collections = shopify.CustomCollection.find(limit=250)
+                for collection in custom_collections:
+                    parsed = self._parse_collection(collection, 'custom')
+                    if parsed:
+                        all_collections.append(parsed)
+                logger.info(f"Fetched {len(custom_collections)} custom collections")
+            except Exception as e:
+                logger.warning(f"Could not fetch custom collections: {e}")
+            
+            logger.info(f"✅ Collection sync completed: {len(all_collections)} collections")
+            return all_collections
+            
+        except Exception as e:
+            logger.error(f"❌ Error fetching collections: {str(e)}")
+            return []
+        finally:
+            self.disconnect()
+    
+    def _parse_collection(self, collection, collection_type: str) -> Optional[Dict]:
+        """Parse Shopify collection into database format"""
+        try:
+            image_url = None
+            if hasattr(collection, 'image') and collection.image:
+                image_url = getattr(collection.image, 'src', None)
+            
+            return {
+                'shopify_collection_id': str(collection.id),
+                'title': getattr(collection, 'title', ''),
+                'handle': getattr(collection, 'handle', ''),
+                'body_html': getattr(collection, 'body_html', ''),
+                'sort_order': getattr(collection, 'sort_order', ''),
+                'published_at': getattr(collection, 'published_at', None),
+                'updated_at': getattr(collection, 'updated_at', None),
+                'image_url': image_url,
+                'collection_type': collection_type,
+            }
+        except Exception as e:
+            logger.error(f"Error parsing collection: {str(e)}")
+            return None
+
+    def fetch_pages(self) -> List[Dict]:
+        """
+        Fetch all pages from Shopify store
+        
+        Returns:
+            List of parsed page dictionaries
+        """
+        if not self.connect():
+            return []
+        
+        try:
+            all_pages = []
+            logger.info("Fetching Shopify Pages...")
+            
+            pages = shopify.Page.find(limit=250)
+            for page in pages:
+                parsed = self._parse_page(page)
+                if parsed:
+                    all_pages.append(parsed)
+            
+            logger.info(f"✅ Pages sync completed: {len(all_pages)} pages")
+            return all_pages
+            
+        except Exception as e:
+            logger.error(f"❌ Error fetching pages: {str(e)}")
+            return []
+        finally:
+            self.disconnect()
+    
+    def _parse_page(self, page) -> Optional[Dict]:
+        """Parse Shopify page into database format"""
+        try:
+            return {
+                'shopify_page_id': str(page.id),
+                'title': getattr(page, 'title', ''),
+                'handle': getattr(page, 'handle', ''),
+                'body_html': getattr(page, 'body_html', ''),
+                'author': getattr(page, 'author', ''),
+                'published_at': getattr(page, 'published_at', None),
+                'created_at': getattr(page, 'created_at', None),
+                'updated_at': getattr(page, 'updated_at', None),
+                'template_suffix': getattr(page, 'template_suffix', ''),
+            }
+        except Exception as e:
+            logger.error(f"Error parsing page: {str(e)}")
+            return None
+
+    def fetch_menus(self) -> List[Dict]:
+        """
+        Fetch navigation menus from Shopify store using REST API
+        Note: Shopify's navigation is accessed via the Online Store API
+        
+        Returns:
+            List of menu dictionaries
+        """
+        if not self.connect():
+            return []
+        
+        try:
+            import requests
+            
+            all_menus = []
+            logger.info("Fetching Shopify Navigation Menus...")
+            
+            # Use the REST API directly for menus
+            url = f"https://{self.shop_url}/admin/api/{self.api_version}/menus.json"
+            headers = {
+                "X-Shopify-Access-Token": self.access_token,
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.get(url, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                data = response.json()
+                menus = data.get('menus', [])
+                
+                for menu in menus:
+                    parsed = self._parse_menu(menu)
+                    if parsed:
+                        all_menus.append(parsed)
+                
+                logger.info(f"✅ Menus sync completed: {len(all_menus)} menus")
+            else:
+                logger.warning(f"Could not fetch menus: {response.status_code} - {response.text}")
+            
+            return all_menus
+            
+        except Exception as e:
+            logger.error(f"❌ Error fetching menus: {str(e)}")
+            return []
+        finally:
+            self.disconnect()
+    
+    def _parse_menu(self, menu: dict) -> Optional[Dict]:
+        """Parse Shopify menu into database format"""
+        try:
+            return {
+                'shopify_menu_id': str(menu.get('id', '')),
+                'title': menu.get('title', ''),
+                'handle': menu.get('handle', ''),
+                'items': self._parse_menu_items(menu.get('items', [])),
+            }
+        except Exception as e:
+            logger.error(f"Error parsing menu: {str(e)}")
+            return None
+    
+    def _parse_menu_items(self, items: list) -> List[Dict]:
+        """Recursively parse menu items"""
+        parsed_items = []
+        for item in items:
+            parsed_item = {
+                'id': str(item.get('id', '')),
+                'title': item.get('title', ''),
+                'url': item.get('url', ''),
+                'type': item.get('type', ''),
+                'resource_id': item.get('resource_id'),
+                'items': self._parse_menu_items(item.get('items', [])) if item.get('items') else []
+            }
+            parsed_items.append(parsed_item)
+        return parsed_items
+
+
