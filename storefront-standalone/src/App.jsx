@@ -2,9 +2,11 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
-// Layout & Pages
-import { LuxuryStorefrontLayout } from './components/LuxuryStorefrontLayout';
-import LuxuryStorefrontHome from './components/LuxuryStorefrontHome';
+// MR PORTER Style Layout & Home
+import { MrPorterLayout } from './components/MrPorterLayout';
+import MrPorterHome from './components/MrPorterHome';
+
+// Existing Pages (will work with new layout)
 import LuxuryProductListing from './components/LuxuryProductListing';
 import LuxuryProductDetail from './components/LuxuryProductDetail';
 import LuxuryShoppingCart from './components/LuxuryShoppingCart';
@@ -16,54 +18,58 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Main storefront routes */}
+        {/* Main storefront routes - MR PORTER Style */}
         <Route path="/" element={
-          <LuxuryStorefrontLayout>
-            <LuxuryStorefrontHome />
-          </LuxuryStorefrontLayout>
+          <MrPorterLayout>
+            <MrPorterHome />
+          </MrPorterLayout>
         } />
         
         <Route path="/products" element={
-          <LuxuryStorefrontLayout>
+          <MrPorterLayout>
             <LuxuryProductListing />
-          </LuxuryStorefrontLayout>
+          </MrPorterLayout>
         } />
         
         <Route path="/product/:productId" element={
-          <LuxuryStorefrontLayout>
+          <MrPorterLayout>
             <LuxuryProductDetail />
-          </LuxuryStorefrontLayout>
+          </MrPorterLayout>
         } />
         
         <Route path="/cart" element={
-          <LuxuryStorefrontLayout>
+          <MrPorterLayout>
             <LuxuryShoppingCart />
-          </LuxuryStorefrontLayout>
+          </MrPorterLayout>
         } />
         
         <Route path="/checkout" element={
-          <LuxuryStorefrontLayout>
+          <MrPorterLayout>
             <LuxuryCheckout />
-          </LuxuryStorefrontLayout>
+          </MrPorterLayout>
         } />
         
         <Route path="/order-confirmation/:orderId" element={
-          <LuxuryStorefrontLayout>
+          <MrPorterLayout>
             <LuxuryOrderConfirmation />
-          </LuxuryStorefrontLayout>
+          </MrPorterLayout>
         } />
         
         <Route path="/track" element={
-          <LuxuryStorefrontLayout>
+          <MrPorterLayout>
             <LuxuryOrderTracking />
-          </LuxuryStorefrontLayout>
+          </MrPorterLayout>
         } />
+
+        {/* Legacy routes - redirect to new paths */}
+        <Route path="/store/:storeSlug" element={<Navigate to="/" replace />} />
+        <Route path="/store/:storeSlug/*" element={<Navigate to="/" replace />} />
 
         {/* Catch-all redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-center" richColors />
     </BrowserRouter>
   );
 }
