@@ -3707,18 +3707,35 @@ async def get_logistics_info(order_id: str):
     try:
         params = {
             "orderId": order_id,
+            "webSite": "1688",  # Required parameter
         }
         
         result = await make_api_request(
-            "com.alibaba.trade/alibaba.trade.getLogisticsInfos.buyerView",
+            "com.alibaba.logistics/alibaba.trade.getLogisticsInfos.buyerView",
             params,
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
+        logistics_list = result.get("result") or []
+        
+        # Extract tracking numbers
+        tracking_info = []
+        for item in logistics_list:
+            tracking_info.append({
+                "logistics_id": item.get("logisticsId"),
+                "tracking_number": item.get("logisticsBillNo"),
+                "courier_name": item.get("logisticsCompanyName"),
+                "courier_code": item.get("logisticsCompanyNo"),
+                "status": item.get("status"),
+                "sender": item.get("sender"),
+                "receiver": item.get("receiver"),
+                "goods": item.get("sendGoods") or item.get("logisticsOrderGoods"),
+            })
+        
         return {
             "success": True,
             "order_id": order_id,
-            "logistics": result.get("result") or result,
+            "logistics": tracking_info,
             "raw_response": result,
         }
         
