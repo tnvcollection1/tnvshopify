@@ -57,8 +57,12 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - `/app/frontend/src/components/storefront/LuxuryProductListing.jsx` - Product grid with filters, sorting
   - `/app/frontend/src/components/storefront/LuxuryProductDetail.jsx` - Image gallery, size/color selectors
   - `/app/frontend/src/components/storefront/LuxuryShoppingCart.jsx` - Cart with promo codes
+  - `/app/frontend/src/components/storefront/LuxuryCheckout.jsx` - Multi-step checkout with COD
+  - `/app/frontend/src/components/storefront/LuxuryOrderConfirmation.jsx` - Order success page
   - `/app/frontend/src/components/storefront/config/storeConfig.js` - Store configuration & domain mapping
-- **Backend Endpoint**: `GET /api/storefront/products` - Public products API
+- **Backend Endpoints**: 
+  - `GET /api/storefront/products` - Public products API
+  - `POST /api/storefront/orders/cod` - Cash on Delivery orders
 - **Features**:
   - Hero carousel with auto-slide
   - Category grid with hover effects
@@ -69,7 +73,10 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - Promo code support (WELCOME10)
   - Currency-aware pricing per store
   - ✅ **WhatsApp Order Support** - Order via WhatsApp from product page and cart
-- **Routes**: `/store/:storeSlug`, `/store/:storeSlug/products`, `/store/:storeSlug/product/:productId`, `/store/:storeSlug/cart`
+  - ✅ **Cash on Delivery (COD)** - For both India and Pakistan stores
+  - ✅ **Multi-step Checkout** - Shipping → Payment → Confirmation
+  - ✅ **Localized Forms** - Country-specific placeholders and labels
+- **Routes**: `/store/:storeSlug`, `/store/:storeSlug/products`, `/store/:storeSlug/product/:productId`, `/store/:storeSlug/cart`, `/store/:storeSlug/checkout`
 - **Deployment**: Can be deployed to Vercel/Netlify with custom domains
 
 ### Store Cleanup ✅ 
