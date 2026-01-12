@@ -103,6 +103,18 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   Expected delivery: 3-5 business days 📅
   ```
 
+### Admin Storefront Orders Dashboard ✅ ENHANCED
+- **Route**: `/storefront-orders`
+- **Features**:
+  - Stats cards: Total Orders, Pending, Confirmed, Shipped, Delivered
+  - Search by order ID, customer name, email, phone
+  - Filter by store (TNC Collection IN/PK) and status
+  - Order table with status badges, payment info, actions
+  - **One-click status update with WhatsApp notification checkbox**
+  - WhatsApp notification preview before sending
+  - Courier selection (DTDC, Delhivery, BlueDart, TCS, Leopards, etc.)
+  - Tracking number input for shipped orders
+
 ### Store Cleanup ✅ 
 - Removed ashmiaa/asmiaa stores from database
 - Remaining stores: tnvcollection, tnvcollectionpk
