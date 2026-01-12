@@ -108,7 +108,7 @@ export const getStoreConfig = (storeSlugOrDomain) => {
  */
 export const detectStore = () => {
   if (typeof window === 'undefined') {
-    return STORE_CONFIG[import.meta.env.VITE_DEFAULT_STORE || 'tnvcollection'];
+    return STORE_CONFIG[import.meta.env.VITE_DEFAULT_STORE || 'tnvcollectionpk'];
   }
   
   const hostname = window.location.hostname;
