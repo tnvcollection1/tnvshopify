@@ -589,9 +589,33 @@ const MrPorterHome = () => {
         const res = await fetch(`${API}/api/storefront/home-config?store=${storeConfig?.id || 'tnvcollection'}`);
         if (res.ok) {
           const data = await res.json();
+          
+          // Transform banners from API format to component format
+          const transformedBanners = (data.banners || []).map(b => ({
+            id: b.id,
+            title: b.title || b.name || '',
+            subtitle: b.subtitle || '',
+            description: b.description || '',
+            image: b.image || b.image_url || '',
+            cta: b.cta || b.button_text || 'SHOP NOW',
+            link: b.link || b.link_url || '/products',
+            textColor: b.text_color || 'white',
+            textPosition: b.text_position || 'left'
+          }));
+          
+          // Transform collections from API format to component format
+          const transformedCollections = (data.collections || []).map(c => ({
+            id: c.id,
+            title: c.title || c.name || '',
+            subtitle: c.subtitle || c.description || '',
+            image: c.image || c.image_url || '',
+            link: c.link || c.link_url || '/products',
+            size: c.size || (c.position === 0 ? 'large' : 'small')
+          }));
+          
           setHomeData({
-            banners: data.banners || [],
-            collections: data.collections || [],
+            banners: transformedBanners,
+            collections: transformedCollections,
             loading: false
           });
         } else {
