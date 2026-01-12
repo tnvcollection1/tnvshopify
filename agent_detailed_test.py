@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://variant-master-3.preview.emergentagent.com/api'
+base_url = 'https://dwzconnect.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
