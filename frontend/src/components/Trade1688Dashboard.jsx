@@ -117,10 +117,26 @@ const OrderCard = ({ order, onViewDetails, onCreateDwzOrder, creatingDwz }) => {
   
   // Auto-fetch tracking for shipped orders
   useEffect(() => {
+    const loadTracking = async () => {
+      if (loadingTracking || trackingInfo) return;
+      setLoadingTracking(true);
+      try {
+        const res = await fetch(`${API}/api/1688/logistics/${orderId}`);
+        const data = await res.json();
+        if (data.success && data.logistics?.length > 0) {
+          setTrackingInfo(data.logistics[0]);
+        }
+      } catch (e) {
+        console.log('Could not fetch tracking:', e);
+      } finally {
+        setLoadingTracking(false);
+      }
+    };
+    
     if (status === 'waitbuyerreceive' || status === 'success' || status === 'confirm_goods') {
-      fetchTracking();
+      loadTracking();
     }
-  }, [status, orderId]);
+  }, [status, orderId, loadingTracking, trackingInfo]);
   
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow" data-testid={`order-card-${orderId}`}>
