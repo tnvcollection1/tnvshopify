@@ -93,8 +93,12 @@ const MrPorterHeader = ({ storeConfig }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
+  const [shopifyMenus, setShopifyMenus] = useState([]);
+  const [navigation, setNavigation] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const storeSlug = storeConfig?.id || 'tnvcollectionpk';
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -107,11 +111,80 @@ const MrPorterHeader = ({ storeConfig }) => {
     setActiveMenu(null);
   }, [location.pathname]);
 
-  const navigation = [
+  // Fetch Shopify menus
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        const res = await fetch(`${API}/api/shopify/menus?store_name=${storeSlug}`);
+        if (res.ok) {
+          const data = await res.json();
+          setShopifyMenus(data.menus || []);
+          
+          // Find main menu
+          const mainMenu = data.menus?.find(m => 
+            m.handle === 'main-menu' || m.title?.toLowerCase().includes('main')
+          );
+          
+          if (mainMenu && mainMenu.items?.length > 0) {
+            // Transform Shopify menu items to navigation format
+            const navItems = mainMenu.items.map(item => {
+              // Convert Shopify URL to local path
+              let path = item.url || '/products';
+              if (path.includes('/collections/')) {
+                const handle = path.split('/collections/')[1]?.split('?')[0];
+                path = `/products?collection=${handle}`;
+              } else if (path === '/' || path === '#') {
+                path = '/products';
+              }
+              
+              return {
+                name: item.title,
+                path: path,
+                submenu: item.items?.map(sub => sub.title) || [],
+                subItems: item.items?.map(sub => {
+                  let subPath = sub.url || '/products';
+                  if (subPath.includes('/collections/')) {
+                    const handle = subPath.split('/collections/')[1]?.split('?')[0];
+                    subPath = `/products?collection=${handle}`;
+                  }
+                  return { name: sub.title, path: subPath };
+                }) || []
+              };
+            });
+            
+            // Add collections and sale if not present
+            if (!navItems.some(n => n.name.toLowerCase() === 'collections')) {
+              navItems.splice(1, 0, { 
+                name: 'Collections', 
+                path: '/collections',
+                submenu: ['All Collections', 'Featured', 'Seasonal']
+              });
+            }
+            if (!navItems.some(n => n.name.toLowerCase() === 'sale')) {
+              navItems.push({ 
+                name: 'Sale', 
+                path: '/products?collection=sale',
+                highlight: true 
+              });
+            }
+            
+            setNavigation(navItems);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch menus:', e);
+      }
+    };
+    
+    fetchMenus();
+  }, [storeSlug]);
+
+  // Default navigation if no Shopify menus
+  const defaultNavigation = [
     { 
       name: 'What\'s New', 
-      path: '/products?collection=new',
-      submenu: ['New In Today', 'New In This Week', 'Trending Now']
+      path: '/products?collection=new-arrivals',
+      submenu: []
     },
     { 
       name: 'Collections', 
@@ -121,22 +194,22 @@ const MrPorterHeader = ({ storeConfig }) => {
     { 
       name: 'Clothing', 
       path: '/products?category=clothing',
-      submenu: ['Coats & Jackets', 'Shirts', 'T-Shirts', 'Trousers', 'Suits']
+      submenu: []
     },
     { 
       name: 'Shoes', 
       path: '/products?category=shoes',
-      submenu: ['Sneakers', 'Boots', 'Loafers', 'Sandals', 'Formal']
+      submenu: []
     },
     { 
       name: 'Bags', 
       path: '/products?category=bags',
-      submenu: ['Backpacks', 'Briefcases', 'Tote Bags', 'Travel Bags']
+      submenu: []
     },
     { 
       name: 'Accessories', 
-      path: '/products?category=accessories',
-      submenu: ['Watches', 'Sunglasses', 'Belts', 'Wallets', 'Jewelry']
+      path: '/products?collection=accessories',
+      submenu: []
     },
     { 
       name: 'Sale', 
@@ -144,6 +217,8 @@ const MrPorterHeader = ({ storeConfig }) => {
       highlight: true 
     },
   ];
+
+  const activeNavigation = navigation.length > 0 ? navigation : defaultNavigation;
 
   return (
     <>
