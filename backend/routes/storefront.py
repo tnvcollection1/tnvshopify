@@ -1010,7 +1010,8 @@ async def create_collection(collection: CollectionCreate, store: str = "tnvcolle
     
     result = await db.storefront_collections.insert_one(collection_doc)
     collection_doc["id"] = str(result.inserted_id)
-    del collection_doc["_id"] if "_id" in collection_doc else None
+    if "_id" in collection_doc:
+        del collection_doc["_id"]
     
     return {
         "success": True,
