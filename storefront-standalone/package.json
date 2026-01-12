@@ -2,6 +2,7 @@
   "name": "tnc-collection-storefront",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "TNC Collection E-commerce Storefront",
   "scripts": {
     "dev": "vite",
