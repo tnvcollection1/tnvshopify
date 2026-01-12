@@ -955,6 +955,10 @@ class BannerCreate(BaseModel):
     text_position: str = "left"  # left, center, right
     is_active: bool = True
     order: int = 0
+    # Size specifications
+    size_type: str = "hero"  # hero, wide, standard, mobile, square, custom
+    width: Optional[int] = 1920
+    height: Optional[int] = 800
 
 class CollectionCreate(BaseModel):
     title: str
@@ -964,6 +968,129 @@ class CollectionCreate(BaseModel):
     size: str = "small"  # large, small
     is_active: bool = True
     order: int = 0
+
+
+@router.get("/banner-sizes")
+async def get_banner_sizes():
+    """Get available banner size specifications"""
+    return {
+        "success": True,
+        "sizes": BANNER_SIZES,
+        "recommended": {
+            "hero": "Best for homepage hero section - full width, high impact",
+            "wide": "Good for promotional banners - wide aspect ratio",
+            "standard": "Versatile size for various sections",
+            "mobile": "Optimized for mobile devices",
+            "square": "Perfect for social media style content"
+        }
+    }
+
+
+@router.post("/upload-banner-image")
+async def upload_banner_image(
+    file: UploadFile = File(...),
+    store: str = Form(default="tnvcollection")
+):
+    """Upload a banner image and return the URL"""
+    
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid file type. Allowed types: {', '.join(allowed_types)}"
+        )
+    
+    # Generate unique filename
+    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    unique_id = uuid.uuid4().hex[:12]
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{store}_{timestamp}_{unique_id}.{ext}"
+    
+    # Save file
+    file_path = BANNERS_DIR / filename
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+    
+    # Generate URL - use the API endpoint to serve the image
+    image_url = f"/api/storefront/banner-image/{filename}"
+    
+    return {
+        "success": True,
+        "filename": filename,
+        "image_url": image_url,
+        "full_url": f"{{BACKEND_URL}}{image_url}",
+        "message": "Image uploaded successfully"
+    }
+
+
+@router.get("/banner-image/{filename}")
+async def get_banner_image(filename: str):
+    """Serve a banner image"""
+    file_path = BANNERS_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    # Determine content type
+    ext = filename.split(".")[-1].lower()
+    content_types = {
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "png": "image/png",
+        "webp": "image/webp",
+        "gif": "image/gif"
+    }
+    content_type = content_types.get(ext, "image/jpeg")
+    
+    return FileResponse(file_path, media_type=content_type)
+
+
+@router.get("/uploaded-images")
+async def list_uploaded_images(store: str = "tnvcollection"):
+    """List all uploaded banner images for a store"""
+    images = []
+    
+    for file_path in BANNERS_DIR.glob(f"{store}_*"):
+        if file_path.is_file():
+            stat = file_path.stat()
+            images.append({
+                "filename": file_path.name,
+                "url": f"/api/storefront/banner-image/{file_path.name}",
+                "size_bytes": stat.st_size,
+                "created_at": datetime.fromtimestamp(stat.st_ctime).isoformat()
+            })
+    
+    # Sort by creation time, newest first
+    images.sort(key=lambda x: x["created_at"], reverse=True)
+    
+    return {
+        "success": True,
+        "images": images,
+        "total": len(images)
+    }
+
+
+@router.delete("/uploaded-images/{filename}")
+async def delete_uploaded_image(filename: str, store: str = "tnvcollection"):
+    """Delete an uploaded banner image"""
+    # Security check - ensure filename belongs to the store
+    if not filename.startswith(f"{store}_"):
+        raise HTTPException(status_code=403, detail="Cannot delete images from other stores")
+    
+    file_path = BANNERS_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    try:
+        file_path.unlink()
+        return {"success": True, "message": "Image deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete image: {str(e)}")
 
 
 @router.get("/home-config")
