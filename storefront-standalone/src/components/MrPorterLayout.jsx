@@ -298,7 +298,7 @@ const MrPorterHeader = ({ storeConfig }) => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center justify-center gap-8 pb-3 border-b border-gray-100">
-            {navigation.map((item) => (
+            {activeNavigation.map((item) => (
               <div 
                 key={item.path}
                 className="relative"
@@ -316,19 +316,31 @@ const MrPorterHeader = ({ storeConfig }) => {
                   {item.name}
                 </Link>
                 
-                {/* Dropdown */}
-                {item.submenu && activeMenu === item.name && (
+                {/* Dropdown with subItems */}
+                {((item.subItems && item.subItems.length > 0) || (item.submenu && item.submenu.length > 0)) && activeMenu === item.name && (
                   <div className="absolute top-full left-0 pt-2 z-50">
-                    <div className="bg-white shadow-lg border border-gray-100 py-3 min-w-[180px]">
-                      {item.submenu.map((sub, idx) => (
-                        <Link
-                          key={idx}
-                          to={`${item.path}&sub=${encodeURIComponent(sub)}`}
-                          className="block px-4 py-2 text-xs text-gray-600 hover:text-black hover:bg-gray-50 transition"
-                        >
-                          {sub}
-                        </Link>
-                      ))}
+                    <div className="bg-white shadow-lg border border-gray-100 py-3 min-w-[200px]">
+                      {item.subItems && item.subItems.length > 0 ? (
+                        item.subItems.map((sub, idx) => (
+                          <Link
+                            key={idx}
+                            to={sub.path}
+                            className="block px-4 py-2 text-xs text-gray-600 hover:text-black hover:bg-gray-50 transition"
+                          >
+                            {sub.name}
+                          </Link>
+                        ))
+                      ) : (
+                        item.submenu?.map((sub, idx) => (
+                          <Link
+                            key={idx}
+                            to={`${item.path}&sub=${encodeURIComponent(sub)}`}
+                            className="block px-4 py-2 text-xs text-gray-600 hover:text-black hover:bg-gray-50 transition"
+                          >
+                            {sub}
+                          </Link>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}
