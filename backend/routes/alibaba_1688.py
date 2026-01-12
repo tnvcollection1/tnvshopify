@@ -5459,3 +5459,47 @@ async def generate_product_title(request: TitleGenerationRequest):
             "error": str(e),
         }
 
+
+
+# Image proxy endpoint to bypass CORS/mixed content issues
+@router.get("/image-proxy")
+async def proxy_image(url: str = Query(..., description="Image URL to proxy")):
+    """
+    Proxy images from 1688/Alibaba to bypass CORS and mixed content issues.
+    Converts http:// to https:// and fetches the image.
+    """
+    try:
+        # Convert http to https
+        if url.startswith('http://'):
+            url = url.replace('http://', 'https://')
+        
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+            response = await client.get(
+                url,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Accept': 'image/*,*/*',
+                    'Referer': 'https://1688.com/',
+                }
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail="Failed to fetch image")
+            
+            # Get content type
+            content_type = response.headers.get('content-type', 'image/jpeg')
+            
+            from fastapi.responses import Response
+            return Response(
+                content=response.content,
+                media_type=content_type,
+                headers={
+                    'Cache-Control': 'public, max-age=86400',
+                    'Access-Control-Allow-Origin': '*',
+                }
+            )
+            
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="Image fetch timeout")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image proxy error: {str(e)}")
