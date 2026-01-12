@@ -1,59 +1,69 @@
-<analysis>**original_problem_statement**: The user initially wanted a Shopify application to integrate with 1688.com for product management and order fulfillment. The scope has significantly expanded. The most recent and major task was to build two public-facing, multi-tenant, e-commerce storefronts ( for India and  for Pakistan) inspired by .
+<analysis>**original_problem_statement**: The user initially requested a Shopify application to integrate with 1688.com. The project has since evolved into building two public, multi-tenant e-commerce storefronts ( for India and  for Pakistan). The latest requests involved a complete visual redesign to mimic  and implementing a robust synchronization system to pull products, collections, menus, and pages directly from the user's Shopify stores, making them the source of truth for the storefront's content.
 
 **PRODUCT REQUIREMENTS**:
-- Build two separate storefronts with a luxury design aesthetic.
-- Implement store-specific configurations for currency (INR/PKR), shipping info, and contact details.
-- Add Order via WhatsApp functionality.
-- Implement a Cash on Delivery (COD) checkout option.
-- Create a customer-facing page to track order status.
-- Implement automated WhatsApp notifications for order status changes (e.g., Shipped, Delivered).
-- Enhance the admin dashboard to manage these new storefront orders.
-- Package the entire storefront into a standalone application, decoupled from the admin panel, ready for deployment on Vercel.
+- Redesign the existing luxury storefront to match the minimal black/white, editorial aesthetic of .
+- Implement a backend system to manage homepage banners and featured collections.
+- Create a comprehensive sync mechanism with Shopify to fetch products, collections, pages, and navigation menus for both the India and Pakistan stores.
+- The storefront's header, navigation, and content sections (like featured collections) must dynamically display the data synced from Shopify.
+- Guide the user to correctly configure their custom domains (, ) on Namecheap to point to the Vercel deployment.
+- Ensure the user can preview both stores on the Vercel deployment URL before the custom domains are live.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The original 1688 integration platform (React/FastAPI/MongoDB) is functional. On top of this, a complete, multi-tenant luxury storefront has been successfully built and packaged into a standalone Vite application located at .
-
-This new storefront includes:
-- A modern, responsive UI for the homepage, product listing, and product detail pages.
-- Store-specific configurations for India (tnvcollection) and Pakistan (tnvcollectionpk).
-- Fully functional Order via WhatsApp and Cash on Delivery (COD) features.
-- A customer-facing order tracking page that displays real-time shipment status.
-- A backend system that triggers WhatsApp notifications for order status updates.
-- An enhanced admin dashboard () to manage storefront orders and trigger notifications.
-- A complete, build-verified, standalone Vite project in  ready for deployment.
+- A standalone Vite/React storefront application at .
+- The storefront has been redesigned with a -inspired theme.
+- A full-featured backend sync service () that uses both REST and GraphQL APIs to pull products, collections, pages, and menus from the user's two Shopify stores ( and ).
+- The data for both stores has been successfully synced into the application's MongoDB database.
+- The storefront components (, ) have been updated to dynamically render navigation menus and featured content using the synced Shopify data.
+- An admin panel () exists to manage homepage banners.
+- A store preview mechanism is implemented, allowing the user to view each store on the Vercel deployment URL via a query parameter (e.g., ).
 
 **Last working item**:
--   **Last item agent was working**: Guiding the user through the final steps of deploying the standalone storefront package () to Vercel and configuring the necessary environment variables (, ). The agent also configured the WhatsApp number for the Pakistan store and is waiting for the user to provide the number for the India store.
--   **Status**: USER VERIFICATION PENDING
--   **Agent Testing Done**: Y (Agent successfully built the standalone package and tested all individual storefront features via screenshots and API calls before packaging.)
--   **Which testing method agent to use?**: Manual testing by the user on their live Vercel deployment.
--   **User Testing Done**: N (The user is in the process of deploying the application.)
+-   **Last item agent was working**: The agent was working on matching the storefront banners to the user's live Shopify stores. It successfully scraped the banner details from both  and  but has not yet added this data to the database or updated the frontend to display them.
+-   **Status**: IN PROGRESS
+-   **Agent Testing Done**: N
+-   **Which testing method agent to use?**: backend testing agent to script the API calls for adding the scraped banners to the database. Then, use the screenshot tool to verify the banners appear correctly on the homepage for both stores using the  preview URLs.
+-   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Configure India Store's WhatsApp Number (P0)
+-   **Issue 1**: Implement Banners from Live Shopify Stores (P0)
+-   **Issue 2**: Finalize Vercel Deployment and Custom Domain Configuration (P1)
 
 **Issues Detail**:
--   **Issue 1: Configure India Store's WhatsApp Number**
-    -   **Attempted fixes**: The agent has already configured the Pakistan store's number ().
+-   **Issue 1: Implement Banners from Live Shopify Stores**
+    -   **Attempted fixes**: The agent scraped the banner image URLs and links from the user's live Shopify sites.
     -   **Next debug checklist**:
-        1.  Receive the WhatsApp number for the India store () from the user.
-        2.  Update the  field in .
-        3.  Inform the user to redeploy their Vercel project for the changes to take effect.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will complete the WhatsApp ordering functionality for the India storefront, ensuring customers are directed to the correct contact number.
-    -   **Status**: BLOCKED (Waiting for user input)
+        1.  Formulate a plan to use the scraped banner information.
+        2.  For each store ( and ), make  requests to the  endpoint to save the banner data (image URL, title, link) into the database.
+        3.  Confirm the  component's  hook correctly fetches and displays this banner data from the  endpoint.
+        4.  Test by taking screenshots of the preview URLs ( and ) to ensure the correct banners are displayed for each store.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will complete the user's request to make the storefront's content match their live Shopify stores, fulfilling a key requirement of the redesign.
+    -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend (User manual test on Vercel).
+    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Blocked on other issue**: None.
+
+-   **Issue 2: Finalize Vercel Deployment and Custom Domain Configuration**
+    -   **Attempted fixes**: The agent provided detailed instructions for updating DNS records on Namecheap and redeploying on Vercel. The user has started this process.
+    -   **Next debug checklist**:
+        1.  Guide the user to redeploy the latest code changes to Vercel, ensuring the Use existing Build Cache option is disabled.
+        2.  Ask the user to confirm they have updated the  and  records for both  and  in their Namecheap account.
+        3.  Check the domain status in the Vercel dashboard to ensure they show a Valid Configuration.
+        4.  Once live, guide the user to test both custom domain URLs.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is the final step to launch the two storefronts for public access on their intended custom domains.
+    -   **Status**: BLOCKED (on user action)
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Frontend (manual user testing).
     -   **Blocked on other issue**: None.
 
 **In progress Task List**:
--   **Task 1: Finalize Vercel Deployment of Standalone Storefront** (P0)
-    -   **Where to resume**: Assisting the user with their Vercel deployment. The user has been given all instructions and was last confirming the correct backend API URL to use.
-    -   **What will be achieved with this?**: The user will have two live, customer-facing storefronts on their custom domains (, ).
-    -   **Status**: USER VERIFICATION PENDING
-    -   **Should Test frontend/backend/both after fix?**: Frontend (User manual test).
-    -   **Blocked on something**: Blocked on the user completing the deployment and on receiving the India WhatsApp number.
+-   **Task 1: MR PORTER Redesign & Shopify Data Integration**
+    -   **Where to resume**: The final step is to implement the live banners scraped from the user's Shopify stores.
+    -   **What will be achieved with this?**: A fully data-driven storefront with a  aesthetic, where content (menus, collections, banners) is sourced directly from Shopify.
+    -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Blocked on something**: None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
@@ -65,90 +75,90 @@ This new storefront includes:
     -   (P3) **Push Notifications**: Add push notification capabilities to the Chrome Extension.
 
 **Completed work in this session**
--   **DWZ Order Creation UI**: Implemented the frontend modal to complete the DWZ order creation flow.
--   **Multi-Tenant Luxury Storefront**: Built a complete, Stella McCartney-inspired storefront for two stores ( and ).
--   **WhatsApp Ordering**: Added Order via WhatsApp buttons on product and cart pages.
--   **Cash on Delivery (COD)**: Implemented a full COD checkout flow, customized for both India and Pakistan.
--   **Order Tracking & Notifications**: Created a customer-facing order tracking page and enabled automated WhatsApp notifications for status updates.
--   **Admin Order Management**: Enhanced the storefront orders dashboard to support WhatsApp notifications.
--   **Standalone Storefront Package**: Created a new, self-contained Vite project in  and guided the user on deploying it to Vercel.
+-   **MR PORTER Redesign**: The storefront was completely restyled to a minimal black/white  theme.
+-   **Banner/Collection Admin Panel**: An admin UI at  was created to manage homepage banners.
+-   **Full Shopify Sync**: A robust sync service was built to fetch Products, Collections, Pages, and Menus (via GraphQL) from both of the user's Shopify stores. Both stores were successfully synced.
+-   **Dynamic Storefront Content**: The storefront's navigation, homepage, and product listing pages were updated to dynamically display content from the synced Shopify data.
+-   **Store Preview Feature**: A  query parameter was added to allow easy previewing of both stores on the Vercel deployment URL.
+-   **Vercel/DNS Guidance**: Provided extensive step-by-step instructions for Vercel deployment and Namecheap DNS configuration.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1**: Inconsistent currency display in the competitor analysis history section of the admin panel.
 -   **Issue 2**: The large backend files  and  need to be refactored for better maintainability.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: Long-standing Shopify OAuth and login stability issues.
--   **Recurrence count**: High.
--   **Status**: RESOLVED.
+-   None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Decoupled Frontend**: The customer-facing storefront () is a separate application from the admin panel (), allowing for independent deployment and scaling.
--   **Multi-tenancy via Config**: A single frontend codebase serves multiple stores by loading dynamic configurations () based on the hostname.
--   **Vite Tooling**: Using Vite for the standalone storefront provides a fast development experience and an optimized production build.
+-   **Headless E-commerce**: The storefront acts as a head for content managed in Shopify. Data is synced to a middle-layer database (MongoDB) and served via a FastAPI backend.
+-   **Shopify GraphQL API**: Used for fetching nested data like navigation menus, which is not easily accessible via the REST API.
+-   **Multi-tenancy by Hostname/Query**: A single frontend codebase serves multiple stores by detecting the domain or a URL parameter, then loading the correct configuration and fetching store-specific data.
+-   **Vercel Deployment**: The standard workflow for deploying the standalone Vite/React frontend, including managing custom domains and environment variables.
 
 **key DB schema**
--   **stores**: Contains configuration for each storefront. The  store was removed, leaving  and .
--   **storefront_orders**: Stores all orders from the new storefronts, including customer details, line items, and payment/fulfillment status.
+-   **shopify_products**: Stores synced products from Shopify.
+-   **shopify_collections**: Stores synced collections from Shopify.
+-   **shopify_pages**: Stores synced pages from Shopify.
+-   **shopify_menus**: (New) Stores synced navigation menus from Shopify.
+-   **storefront_banners**: (New) Stores data for homepage banners managed via the admin panel.
 
 **changes in tech stack**
--   **Vite**: Introduced as the build tool for the new standalone storefront application in . The original admin panel still uses Create React App.
+-   No new technologies were introduced, but the implementation now relies heavily on the **Shopify GraphQL API** for fetching navigation data.
 
 **All files of reference**
--   All files within  are critical for the user's current task.
--   : Contains all new backend logic for the storefront.
--   : The admin dashboard for managing new orders.
+-   : Contains all logic for syncing with Shopify.
+-   : Defines API endpoints for the storefront.
+-   : The main homepage component that needs banner implementation.
+-   : The main layout component that renders the dynamic navigation.
+-   : Handles the multi-store logic.
+-   : Admin UI for managing banners.
 
 **Areas that need refactoring**:
--   The new storefront components in  could be further broken down into smaller, more reusable pieces for better maintainability.
--   The backend files  and  remain large and would benefit from being split into smaller, service-oriented modules.
+-    and  are large and should be modularized.
+-   The new  and  components are becoming complex and could be broken down into smaller, more focused sub-components (e.g., Header, Footer, MobileMenu, FeaturedCollectionGrid).
 
 **key api endpoints**
--   : Creates a new storefront order with COD payment.
--   : Fetches product listings for the storefront.
--   : Updates an order's status and triggers a WhatsApp notification.
--   : Fetches order details for the customer tracking page.
+-   : Creates a new banner for a store.
+-   : Fetches all synced collections for a store.
+-   : Fetches all data needed for the homepage (banners, featured collections).
+-   : Triggers a full data sync for the specified store.
 
 **Critical Info for New Agent**
--   **Focus on the Standalone App**: The user's entire focus is now on the new storefront located in . Do not make changes in the old  unless it's for the admin panel.
--   **User is Deploying**: The user is actively deploying the  package to Vercel. Your immediate task is to support this process and finalize the configuration.
--   **Awaiting User Input**: You are blocked waiting for the user to provide the WhatsApp number for the India store. This is the last piece of missing configuration.
+-   The user is non-technical and requires clear, step-by-step instructions for tasks like Vercel deployment and DNS configuration.
+-   The source of truth for all product, collection, and menu content is Shopify. The application's database is a synchronized cache.
+-   The immediate goal is to make the storefront perfectly mirror the content (especially banners and menus) of the user's live Shopify stores, but within the new  design.
+-   The  and  query parameters are essential for testing and previewing the two different stores before custom domains are fully functional.
 
 **documents and test reports created in this job**
--    (heavily updated with all new storefront features)
--   
--   
--   
+-    (updated with redesign and Shopify sync requirements).
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Confirms they want to proceed with creating a standalone package for Vercel.
-2.  **Agent**: Creates the standalone package and asks to configure WhatsApp numbers.
-3.  **User**: Says yes.
-4.  **Agent**: Asks for the numbers again.
-5.  **User**: Says yes again.
-6.  **Agent**: Acknowledges and waits.
-7.  **User**: Provides the Pakistan WhatsApp number ().
-8.  **Agent**: Confirms receipt and updates the configuration.
-9.  **User**: Shares a screenshot of their Vercel deployment screen, asking what to do next.
-10. **Agent**: Provides final instructions on setting environment variables and clicking Deploy.
+1.  **User**: Asks how to redeploy to see the latest changes.
+2.  **User**: Asks for confirmation on the data flow and which URL to deploy to.
+3.  **User**: Asks how the two separate stores will work on a single deployment.
+4.  **User**: Mentions their India Shopify store is now open and ready to sync.
+5.  **User**: Asks how to preview both stores after sync.
+6.  **User**: Asks to make the storefront exactly match the Shopify banners, menu, and collections.
+7.  **User**: Asks for help enabling the correct API scopes in Shopify.
+8.  **User**: Confirms all permissions have been given.
+9.  **User**: Shares a screenshot of their Namecheap DNS settings and asks about banners.
+10. **User**: Provides the Shopify store URLs to scrape banners from.
 
 **Project Health Check:**
--   **Mocked**: None.
--   **Broken**: The Order via WhatsApp feature for the India store is incomplete as it's missing the correct phone number. The user's live deployment on Vercel is in progress and not yet verified.
+-   **Broken**: The user's live Vercel deployment is out-of-date and does not have any of the recent Shopify sync features or the  redesign. The homepage banners are not implemented. The custom domain configuration is still in progress and likely not working.
 
 **3rd Party Integrations**
--   Shopify Admin API
--   1688 Open Platform
--   DWZ56 API
--    (used for LLM translation)
--   **Vercel**: The new, designated deployment platform for the standalone storefront.
+-   **Shopify**: Deep integration using both REST API (products, collections, pages) and GraphQL API (menus/navigation).
+-   **1688 Open Platform**: Original integration, not a recent focus.
+-   **Vercel**: The deployment platform for the  frontend.
+-   **Namecheap**: The user's domain registrar.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES, for the initial DWZ modal feature.
--   **Test files created**: No new test files were created in this session.
+-   **Testing agent used after significant changes**: NO (not for the redesign and Shopify sync).
+-   **Test files created**: None.
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
@@ -156,4 +166,4 @@ This new storefront includes:
 -   **Warehouse PIN**: 
 
 **What agent forgot to execute**
--   The agent's workflow was efficient. All user requests in this session were fully addressed, culminating in the creation and packaging of the standalone storefront as requested. No tasks were forgotten.</analysis>
+-   The agent scraped the banner information from the user's Shopify stores but did not complete the task by adding this data to the database and ensuring it was displayed on the frontend. This is the immediate next step.</analysis>
