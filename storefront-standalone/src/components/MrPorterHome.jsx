@@ -574,6 +574,82 @@ const ServiceBar = () => {
   );
 };
 
+// ===================== FEATURED COLLECTIONS FROM SHOPIFY =====================
+const FeaturedCollections = ({ storeConfig }) => {
+  const storeSlug = storeConfig?.id || 'tnvcollectionpk';
+  const [collections, setCollections] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        const res = await fetch(`${API}/api/storefront/collections?store=${storeSlug}&limit=50`);
+        if (res.ok) {
+          const data = await res.json();
+          // Filter for featured collections (new arrivals, sale, trending, etc.)
+          const featured = (data.collections || []).filter(c => {
+            const title = c.title?.toLowerCase() || '';
+            return title.includes('new') || title.includes('sale') || 
+                   title.includes('trend') || title.includes('clearance') ||
+                   title.includes('featured') || title.includes('arrival');
+          }).slice(0, 6);
+          
+          // If no featured, just take first 6
+          setCollections(featured.length > 0 ? featured : (data.collections || []).slice(0, 6));
+        }
+      } catch (e) {
+        console.error('Failed to fetch collections:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCollections();
+  }, [storeSlug]);
+
+  if (loading || collections.length === 0) return null;
+
+  return (
+    <section className="bg-[#f8f8f8] py-12 md:py-16" data-testid="featured-collections">
+      <div className="max-w-[1440px] mx-auto px-4 lg:px-8">
+        <div className="text-center mb-10">
+          <p className="text-xs tracking-[0.3em] text-gray-500 mb-2">SHOP BY</p>
+          <h2 className="text-2xl md:text-3xl font-light tracking-wide">Featured Collections</h2>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+          {collections.map((collection) => (
+            <Link
+              key={collection.shopify_collection_id || collection.handle}
+              to={`/products?collection=${collection.handle}`}
+              className="group text-center"
+            >
+              <div className="aspect-square bg-white rounded-full overflow-hidden mb-4 mx-auto w-24 md:w-32 lg:w-36 shadow-sm group-hover:shadow-md transition-shadow">
+                <img
+                  src={collection.image_url || `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&q=80`}
+                  alt={collection.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+              </div>
+              <h3 className="text-xs md:text-sm font-medium tracking-wide uppercase group-hover:underline">
+                {collection.title}
+              </h3>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link 
+            to="/collections"
+            className="inline-flex items-center gap-2 text-xs tracking-[0.15em] uppercase border border-black px-6 py-3 hover:bg-black hover:text-white transition-all"
+          >
+            VIEW ALL COLLECTIONS <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // ===================== MAIN HOME COMPONENT =====================
 const MrPorterHome = () => {
   const storeConfig = useStore();
@@ -641,8 +717,9 @@ const MrPorterHome = () => {
         storeConfig={storeConfig} 
         title="New Arrivals" 
         subtitle="Just In"
-        collection="new"
+        collection="new-arrivals"
       />
+      <FeaturedCollections storeConfig={storeConfig} />
       <BrandBar storeConfig={storeConfig} />
       <ProductCarousel 
         storeConfig={storeConfig} 
