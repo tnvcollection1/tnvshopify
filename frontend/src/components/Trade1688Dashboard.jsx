@@ -353,7 +353,7 @@ const Trade1688Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [creatingDwzOrder, setCreatingDwzOrder] = useState(null);
   
-  // Create DWZ order from 1688 order
+  // Create DWZ order from 1688 order - uses tracking number from 1688 seller
   const handleCreateDwzOrder = async (order) => {
     const baseInfo = order.baseInfo || order;
     const orderId = baseInfo.idOfStr || baseInfo.id || order.id;
@@ -361,6 +361,24 @@ const Trade1688Dashboard = () => {
     setCreatingDwzOrder(orderId);
     
     try {
+      // First, fetch tracking info from 1688
+      let trackingNumber = orderId; // Default to order ID
+      let courierName = '';
+      
+      try {
+        const logisticsRes = await fetch(`${API}/api/1688/logistics/${orderId}`);
+        const logisticsData = await logisticsRes.json();
+        
+        if (logisticsData.success && logisticsData.logistics?.length > 0) {
+          const firstLogistics = logisticsData.logistics[0];
+          trackingNumber = firstLogistics.tracking_number || orderId;
+          courierName = firstLogistics.courier_name || '';
+          console.log(`Found tracking: ${trackingNumber} (${courierName})`);
+        }
+      } catch (logErr) {
+        console.log('Could not fetch logistics, using order ID as tracking:', logErr);
+      }
+      
       // Get the shipping address from nativeLogistics
       const logistics = order.nativeLogistics || {};
       const receiverInfo = baseInfo.receiverInfo || {};
@@ -374,24 +392,22 @@ const Trade1688Dashboard = () => {
         logistics.address,
       ].filter(Boolean).join(' ') || receiverInfo.toArea || '';
       
-      // Use order ID as internal order number (courier tracking from seller would require logistics API)
-      const internalOrderNumber = orderId;
-      
       // Get first product info for the order
       const firstProduct = order.productItems?.[0] || {};
       
       const dwzOrderData = {
-        internal_order_number: internalOrderNumber,
+        internal_order_number: trackingNumber, // Use 1688 tracking number as internal order number
         recipient_name: logistics.contactPerson || receiverInfo.toFullName || baseInfo.buyerContact?.name || 'Unknown',
         recipient_phone: baseInfo.buyerContact?.mobile || baseInfo.buyerContact?.phone || '',
         recipient_address: address,
         postal_code: logistics.zip || receiverInfo.toPost || '',
         product_name: firstProduct.name || '1688 Order',
         quantity: order.productItems?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 1,
-        remark: `1688 Order: ${orderId}`, // Will use configured remark
+        remark: courierName ? `${courierName}: ${trackingNumber}` : `1688: ${orderId}`,
         declared_value: baseInfo.totalAmount || 0,
         source: '1688',
         source_order_id: orderId,
+        source_tracking_number: trackingNumber,
       };
       
       const res = await fetch(`${API}/api/dwz56/orders`, {
@@ -403,7 +419,7 @@ const Trade1688Dashboard = () => {
       const data = await res.json();
       
       if (data.success || data.order_id) {
-        toast.success(`DWZ order created: ${data.order_id || data.waybill_number || 'Success'}`);
+        toast.success(`DWZ order created with tracking: ${trackingNumber}`);
       } else {
         throw new Error(data.detail || data.error || 'Failed to create DWZ order');
       }
