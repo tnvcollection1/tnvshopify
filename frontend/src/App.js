@@ -89,6 +89,12 @@ import ShoppingCart from "@/components/storefront/ShoppingCart";
 import Checkout from "@/components/storefront/Checkout";
 import OrderConfirmation from "@/components/storefront/OrderConfirmation";
 import OrderTracking from "@/components/storefront/OrderTracking";
+// Luxury Storefront Components (Stella McCartney Style)
+import { LuxuryStorefrontLayout } from "@/components/storefront/LuxuryStorefrontLayout";
+import LuxuryStorefrontHome from "@/components/storefront/LuxuryStorefrontHome";
+import LuxuryProductListing from "@/components/storefront/LuxuryProductListing";
+import LuxuryProductDetail from "@/components/storefront/LuxuryProductDetail";
+import LuxuryShoppingCart from "@/components/storefront/LuxuryShoppingCart";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
