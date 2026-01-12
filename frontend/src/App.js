@@ -869,37 +869,7 @@ function AppRoutes() {
         } 
       />
       
-      {/* Store-Specific Storefront Routes - Using Luxury Layout */}
-      <Route 
-        path="/store/:storeSlug" 
-        element={<LuxuryStorefrontWrapper />} 
-      />
-      <Route 
-        path="/store/:storeSlug/products" 
-        element={<LuxuryStorefrontWrapper page="listing" />} 
-      />
-      <Route 
-        path="/store/:storeSlug/product/:productId" 
-        element={<LuxuryStorefrontWrapper page="detail" />} 
-      />
-      <Route 
-        path="/store/:storeSlug/cart" 
-        element={<LuxuryStorefrontWrapper page="cart" />} 
-      />
-      <Route 
-        path="/store/:storeSlug/checkout" 
-        element={<LuxuryStorefrontWrapper page="checkout" />} 
-      />
-      <Route 
-        path="/store/:storeSlug/order-confirmation/:orderId" 
-        element={<LuxuryStorefrontWrapper page="confirmation" />} 
-      />
-      <Route 
-        path="/store/:storeSlug/track" 
-        element={<LuxuryStorefrontWrapper page="tracking" />} 
-      />
-
-      {/* Luxury Storefront Routes (Stella McCartney Style) */}
+      {/* Store-Specific Storefront Routes - Using Luxury Layout (Stella McCartney Style) */}
       <Route 
         path="/store/:storeSlug" 
         element={<LuxuryStorefrontWrapper />} 
