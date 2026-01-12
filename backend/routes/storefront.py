@@ -1300,3 +1300,377 @@ async def delete_collection(collection_id: str, store: str = "tnvcollection"):
         "message": "Collection deleted successfully"
     }
 
+
+
+# ===================== MENU MANAGEMENT =====================
+
+class MenuItemCreate(BaseModel):
+    title: str
+    link: str = "/"
+    parent_id: Optional[str] = None  # For nested menus
+    menu_type: str = "header"  # header, footer, mobile
+    icon: Optional[str] = None
+    is_active: bool = True
+    order: int = 0
+    children: Optional[List[dict]] = []  # For nested items
+
+class TagCreate(BaseModel):
+    name: str
+    slug: str
+    description: Optional[str] = ""
+    color: Optional[str] = "#000000"
+    is_active: bool = True
+
+
+@router.get("/menus")
+async def get_menus(store: str = "tnvcollection", menu_type: str = None):
+    """Get all menus for a store"""
+    db = get_db()
+    
+    query = {"store_name": store}
+    if menu_type:
+        query["menu_type"] = menu_type
+    
+    menus = await db.storefront_menus.find(query).sort("order", 1).to_list(100)
+    
+    # Convert ObjectId to string and build hierarchy
+    for menu in menus:
+        menu["id"] = str(menu["_id"])
+        del menu["_id"]
+    
+    # Build nested structure for parent items
+    root_menus = [m for m in menus if not m.get("parent_id")]
+    for menu in root_menus:
+        menu["children"] = [m for m in menus if m.get("parent_id") == menu["id"]]
+    
+    return {
+        "success": True,
+        "menus": root_menus,
+        "total": len(root_menus)
+    }
+
+
+@router.post("/menus")
+async def create_menu(menu: MenuItemCreate, store: str = "tnvcollection"):
+    """Create a new menu item"""
+    db = get_db()
+    
+    now = datetime.now(timezone.utc).isoformat()
+    menu_doc = {
+        **menu.dict(),
+        "store_name": store,
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    result = await db.storefront_menus.insert_one(menu_doc)
+    menu_doc["id"] = str(result.inserted_id)
+    if "_id" in menu_doc:
+        del menu_doc["_id"]
+    
+    return {
+        "success": True,
+        "menu": menu_doc,
+        "message": "Menu item created successfully"
+    }
+
+
+@router.put("/menus/{menu_id}")
+async def update_menu(menu_id: str, menu: MenuItemCreate, store: str = "tnvcollection"):
+    """Update a menu item"""
+    db = get_db()
+    from bson import ObjectId
+    
+    now = datetime.now(timezone.utc).isoformat()
+    update_doc = {
+        **menu.dict(),
+        "updated_at": now
+    }
+    
+    result = await db.storefront_menus.update_one(
+        {"_id": ObjectId(menu_id), "store_name": store},
+        {"$set": update_doc}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    
+    return {
+        "success": True,
+        "message": "Menu item updated successfully"
+    }
+
+
+@router.delete("/menus/{menu_id}")
+async def delete_menu(menu_id: str, store: str = "tnvcollection"):
+    """Delete a menu item and its children"""
+    db = get_db()
+    from bson import ObjectId
+    
+    # Delete the menu item
+    result = await db.storefront_menus.delete_one(
+        {"_id": ObjectId(menu_id), "store_name": store}
+    )
+    
+    # Also delete any children
+    await db.storefront_menus.delete_many(
+        {"parent_id": menu_id, "store_name": store}
+    )
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    
+    return {
+        "success": True,
+        "message": "Menu item deleted successfully"
+    }
+
+
+@router.post("/menus/bulk")
+async def create_bulk_menus(menus: List[MenuItemCreate], store: str = "tnvcollection"):
+    """Create multiple menu items at once"""
+    db = get_db()
+    
+    now = datetime.now(timezone.utc).isoformat()
+    menu_docs = []
+    
+    for menu in menus:
+        menu_doc = {
+            **menu.dict(),
+            "store_name": store,
+            "created_at": now,
+            "updated_at": now
+        }
+        menu_docs.append(menu_doc)
+    
+    if menu_docs:
+        result = await db.storefront_menus.insert_many(menu_docs)
+        return {
+            "success": True,
+            "message": f"Created {len(result.inserted_ids)} menu items",
+            "count": len(result.inserted_ids)
+        }
+    
+    return {"success": True, "message": "No menus to create", "count": 0}
+
+
+@router.delete("/menus/clear")
+async def clear_menus(store: str = "tnvcollection", menu_type: str = None):
+    """Clear all menus for a store (optionally by type)"""
+    db = get_db()
+    
+    query = {"store_name": store}
+    if menu_type:
+        query["menu_type"] = menu_type
+    
+    result = await db.storefront_menus.delete_many(query)
+    
+    return {
+        "success": True,
+        "message": f"Deleted {result.deleted_count} menu items",
+        "count": result.deleted_count
+    }
+
+
+# ===================== TAGS MANAGEMENT =====================
+
+@router.get("/tags")
+async def get_tags(store: str = "tnvcollection", include_inactive: bool = False):
+    """Get all tags for a store"""
+    db = get_db()
+    
+    query = {"store_name": store}
+    if not include_inactive:
+        query["is_active"] = True
+    
+    tags = await db.storefront_tags.find(query).sort("name", 1).to_list(200)
+    
+    for tag in tags:
+        tag["id"] = str(tag["_id"])
+        del tag["_id"]
+    
+    return {
+        "success": True,
+        "tags": tags,
+        "total": len(tags)
+    }
+
+
+@router.post("/tags")
+async def create_tag(tag: TagCreate, store: str = "tnvcollection"):
+    """Create a new tag"""
+    db = get_db()
+    
+    # Check if tag with same slug exists
+    existing = await db.storefront_tags.find_one({
+        "store_name": store,
+        "slug": tag.slug
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Tag with this slug already exists")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    tag_doc = {
+        **tag.dict(),
+        "store_name": store,
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    result = await db.storefront_tags.insert_one(tag_doc)
+    tag_doc["id"] = str(result.inserted_id)
+    if "_id" in tag_doc:
+        del tag_doc["_id"]
+    
+    return {
+        "success": True,
+        "tag": tag_doc,
+        "message": "Tag created successfully"
+    }
+
+
+@router.put("/tags/{tag_id}")
+async def update_tag(tag_id: str, tag: TagCreate, store: str = "tnvcollection"):
+    """Update a tag"""
+    db = get_db()
+    from bson import ObjectId
+    
+    now = datetime.now(timezone.utc).isoformat()
+    update_doc = {
+        **tag.dict(),
+        "updated_at": now
+    }
+    
+    result = await db.storefront_tags.update_one(
+        {"_id": ObjectId(tag_id), "store_name": store},
+        {"$set": update_doc}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    
+    return {
+        "success": True,
+        "message": "Tag updated successfully"
+    }
+
+
+@router.delete("/tags/{tag_id}")
+async def delete_tag(tag_id: str, store: str = "tnvcollection"):
+    """Delete a tag"""
+    db = get_db()
+    from bson import ObjectId
+    
+    result = await db.storefront_tags.delete_one(
+        {"_id": ObjectId(tag_id), "store_name": store}
+    )
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    
+    return {
+        "success": True,
+        "message": "Tag deleted successfully"
+    }
+
+
+@router.post("/tags/bulk")
+async def create_bulk_tags(tags: List[TagCreate], store: str = "tnvcollection"):
+    """Create multiple tags at once"""
+    db = get_db()
+    
+    now = datetime.now(timezone.utc).isoformat()
+    tag_docs = []
+    
+    for tag in tags:
+        # Skip if slug already exists
+        existing = await db.storefront_tags.find_one({
+            "store_name": store,
+            "slug": tag.slug
+        })
+        if not existing:
+            tag_doc = {
+                **tag.dict(),
+                "store_name": store,
+                "created_at": now,
+                "updated_at": now
+            }
+            tag_docs.append(tag_doc)
+    
+    if tag_docs:
+        result = await db.storefront_tags.insert_many(tag_docs)
+        return {
+            "success": True,
+            "message": f"Created {len(result.inserted_ids)} tags",
+            "count": len(result.inserted_ids)
+        }
+    
+    return {"success": True, "message": "No new tags to create", "count": 0}
+
+
+# ===================== NAVIGATION CONFIG =====================
+
+@router.get("/navigation")
+async def get_navigation(store: str = "tnvcollection"):
+    """Get complete navigation structure for storefront"""
+    db = get_db()
+    
+    # Get header menus
+    header_menus = await db.storefront_menus.find({
+        "store_name": store,
+        "menu_type": "header",
+        "is_active": True,
+        "parent_id": None
+    }).sort("order", 1).to_list(20)
+    
+    # Get children for each header menu
+    for menu in header_menus:
+        menu["id"] = str(menu["_id"])
+        del menu["_id"]
+        children = await db.storefront_menus.find({
+            "store_name": store,
+            "parent_id": menu["id"],
+            "is_active": True
+        }).sort("order", 1).to_list(50)
+        for child in children:
+            child["id"] = str(child["_id"])
+            del child["_id"]
+        menu["children"] = children
+    
+    # Get footer menus
+    footer_menus = await db.storefront_menus.find({
+        "store_name": store,
+        "menu_type": "footer",
+        "is_active": True,
+        "parent_id": None
+    }).sort("order", 1).to_list(20)
+    
+    for menu in footer_menus:
+        menu["id"] = str(menu["_id"])
+        del menu["_id"]
+        children = await db.storefront_menus.find({
+            "store_name": store,
+            "parent_id": menu["id"],
+            "is_active": True
+        }).sort("order", 1).to_list(50)
+        for child in children:
+            child["id"] = str(child["_id"])
+            del child["_id"]
+        menu["children"] = children
+    
+    # Get active tags
+    tags = await db.storefront_tags.find({
+        "store_name": store,
+        "is_active": True
+    }).sort("name", 1).to_list(100)
+    
+    for tag in tags:
+        tag["id"] = str(tag["_id"])
+        del tag["_id"]
+    
+    return {
+        "success": True,
+        "header": header_menus,
+        "footer": footer_menus,
+        "tags": tags
+    }
