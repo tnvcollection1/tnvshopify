@@ -46,6 +46,15 @@ import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
+// Helper to fix image URLs (convert http to https)
+const fixImageUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http://')) {
+    return url.replace('http://', 'https://');
+  }
+  return url;
+};
+
 // Order Status Badge
 const OrderStatusBadge = ({ status }) => {
   const statusConfig = {
@@ -74,7 +83,7 @@ const OrderStatusBadge = ({ status }) => {
 };
 
 // Order Card Component
-const OrderCard = ({ order, onViewDetails }) => {
+const OrderCard = ({ order, onViewDetails, onCreateDwzOrder, creatingDwz }) => {
   const [expanded, setExpanded] = useState(false);
   
   // Handle nested baseInfo structure from 1688 API
