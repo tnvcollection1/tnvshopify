@@ -68,6 +68,7 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - Sort by (Newest, Price, Name)
   - Promo code support (WELCOME10)
   - Currency-aware pricing per store
+  - ✅ **WhatsApp Order Support** - Order via WhatsApp from product page and cart
 - **Routes**: `/store/:storeSlug`, `/store/:storeSlug/products`, `/store/:storeSlug/product/:productId`, `/store/:storeSlug/cart`
 - **Deployment**: Can be deployed to Vercel/Netlify with custom domains
 
