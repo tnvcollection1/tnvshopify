@@ -119,6 +119,106 @@ async def get_store_config(store_name: str) -> dict:
     return store
 
 
+# ==================== Product Endpoints ====================
+
+@router.get("/products")
+async def get_storefront_products(
+    store: str = "tnvcollection",
+    limit: int = 48,
+    page: int = 1,
+    category: Optional[str] = None,
+    collection: Optional[str] = None,
+    search: Optional[str] = None
+):
+    """
+    Get products for the public storefront
+    Filters by store and returns only active products
+    """
+    db = get_db()
+    
+    # Build query
+    query = {
+        "store_name": store,
+        "$or": [
+            {"status": "active"},
+            {"status": {"$exists": False}}  # Include products without status field
+        ]
+    }
+    
+    # Add category filter if provided
+    if category:
+        query["product_type"] = {"$regex": category, "$options": "i"}
+    
+    # Add search filter if provided
+    if search:
+        query["$and"] = [
+            query.get("$or", []),
+            {"$or": [
+                {"title": {"$regex": search, "$options": "i"}},
+                {"tags": {"$regex": search, "$options": "i"}}
+            ]}
+        ]
+        del query["$or"]
+    
+    # Calculate skip for pagination
+    skip = (page - 1) * limit
+    
+    # Fetch products
+    cursor = db.shopify_products.find(
+        query,
+        {"_id": 0}
+    ).skip(skip).limit(limit).sort("updated_at", -1)
+    
+    products = await cursor.to_list(length=limit)
+    
+    # Get total count
+    total = await db.shopify_products.count_documents(query)
+    
+    return {
+        "success": True,
+        "products": products,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "has_more": (page * limit) < total
+    }
+
+
+@router.get("/products/{product_id}")
+async def get_storefront_product(
+    product_id: str,
+    store: str = "tnvcollection"
+):
+    """
+    Get a single product by ID for the storefront
+    """
+    db = get_db()
+    
+    # Try to find by shopify_product_id first, then by id
+    product = await db.shopify_products.find_one(
+        {
+            "store_name": store,
+            "$or": [
+                {"shopify_product_id": product_id},
+                {"shopify_product_id": int(product_id) if product_id.isdigit() else product_id},
+                {"id": product_id}
+            ]
+        },
+        {"_id": 0}
+    )
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    return {
+        "success": True,
+        "product": product
+    }
+
+
+# ==================== Order Endpoints ====================
+
+
 async def create_shopify_order(store_name: str, order_data: dict) -> dict:
     """Create order in Shopify"""
     store = await get_store_config(store_name)
