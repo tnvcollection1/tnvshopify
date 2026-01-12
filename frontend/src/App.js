@@ -675,6 +675,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/store-management" 
+        element={
+          <ProtectedRoute>
+            <StoreManagement />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/storefront-cms" 
         element={
           <ProtectedRoute>
