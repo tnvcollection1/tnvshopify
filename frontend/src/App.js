@@ -109,9 +109,7 @@ function StorefrontWrapper({ page = 'home' }) {
   // Map store names to display names
   const storeDisplayNames = {
     'tnvcollection': 'TNC Collection',
-    'tnvcollectionpk': 'TNC Collection PK',
-    'ashmiaa': 'Ashmiaa',
-    'asmia': 'Asmia'
+    'tnvcollectionpk': 'TNC Collection PK'
   };
   
   const displayName = storeDisplayNames[storeName] || storeName;
@@ -125,6 +123,21 @@ function StorefrontWrapper({ page = 'home' }) {
       {page === 'checkout' && <Checkout storeName={storeName} />}
       {page === 'confirmation' && <OrderConfirmation />}
     </StorefrontLayout>
+  );
+}
+
+// Luxury Storefront Wrapper (Stella McCartney Style)
+function LuxuryStorefrontWrapper({ page = 'home' }) {
+  return (
+    <LuxuryStorefrontLayout>
+      {page === 'home' && <LuxuryStorefrontHome />}
+      {page === 'listing' && <LuxuryProductListing />}
+      {page === 'detail' && <LuxuryProductDetail />}
+      {page === 'cart' && <LuxuryShoppingCart />}
+      {page === 'checkout' && <Checkout />}
+      {page === 'confirmation' && <OrderConfirmation />}
+      {page === 'tracking' && <OrderTracking />}
+    </LuxuryStorefrontLayout>
   );
 }
 
