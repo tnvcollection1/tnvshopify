@@ -270,6 +270,21 @@ const UpdateStatusModal = ({ order, open, onClose, onUpdate }) => {
             />
           </div>
 
+          {/* WhatsApp Notification Checkbox */}
+          <label className="flex items-center gap-3 p-3 bg-green-50 rounded-lg cursor-pointer border border-green-200">
+            <input
+              type="checkbox"
+              checked={sendWhatsApp}
+              onChange={(e) => setSendWhatsApp(e.target.checked)}
+              className="w-4 h-4 text-green-600 rounded"
+            />
+            <MessageCircle className="w-5 h-5 text-green-600" />
+            <div>
+              <span className="text-sm font-medium text-green-800">Send WhatsApp notification</span>
+              <p className="text-xs text-green-600">Customer will be notified about this status change</p>
+            </div>
+          </label>
+
           <div className="flex gap-3 pt-4">
             <Button variant="outline" onClick={onClose} className="flex-1">
               Cancel
