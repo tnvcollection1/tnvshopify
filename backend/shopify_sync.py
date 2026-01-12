@@ -772,8 +772,8 @@ class ShopifyOrderSync:
 
     def fetch_menus(self) -> List[Dict]:
         """
-        Fetch navigation menus from Shopify store using REST API
-        Note: Shopify's navigation is accessed via the Online Store API
+        Fetch navigation menus from Shopify store using GraphQL API
+        Note: Shopify's navigation menus require GraphQL access
         
         Returns:
             List of menu dictionaries
@@ -785,23 +785,69 @@ class ShopifyOrderSync:
             import requests
             
             all_menus = []
-            logger.info("Fetching Shopify Navigation Menus...")
+            logger.info("Fetching Shopify Navigation Menus via GraphQL...")
             
-            # Use the REST API directly for menus
-            url = f"https://{self.shop_url}/admin/api/{self.api_version}/menus.json"
+            # Use GraphQL API for menus
+            url = f"https://{self.shop_url}/admin/api/{self.api_version}/graphql.json"
             headers = {
                 "X-Shopify-Access-Token": self.access_token,
                 "Content-Type": "application/json"
             }
             
-            response = requests.get(url, headers=headers, timeout=30)
+            # GraphQL query for menus
+            query = """
+            {
+                menus(first: 50) {
+                    edges {
+                        node {
+                            id
+                            title
+                            handle
+                            items(first: 50) {
+                                edges {
+                                    node {
+                                        id
+                                        title
+                                        url
+                                        type
+                                        items(first: 20) {
+                                            edges {
+                                                node {
+                                                    id
+                                                    title
+                                                    url
+                                                    type
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """
+            
+            response = requests.post(
+                url, 
+                headers=headers, 
+                json={"query": query},
+                timeout=30
+            )
             
             if response.status_code == 200:
                 data = response.json()
-                menus = data.get('menus', [])
                 
-                for menu in menus:
-                    parsed = self._parse_menu(menu)
+                if 'errors' in data:
+                    logger.warning(f"GraphQL errors: {data['errors']}")
+                    return []
+                
+                menus_data = data.get('data', {}).get('menus', {}).get('edges', [])
+                
+                for edge in menus_data:
+                    menu_node = edge.get('node', {})
+                    parsed = self._parse_graphql_menu(menu_node)
                     if parsed:
                         all_menus.append(parsed)
                 
@@ -816,6 +862,61 @@ class ShopifyOrderSync:
             return []
         finally:
             self.disconnect()
+    
+    def _parse_graphql_menu(self, menu_node: dict) -> Optional[Dict]:
+        """Parse GraphQL menu response into database format"""
+        try:
+            # Extract ID from GraphQL global ID (gid://shopify/Menu/123456)
+            gid = menu_node.get('id', '')
+            menu_id = gid.split('/')[-1] if gid else ''
+            
+            items = []
+            for item_edge in menu_node.get('items', {}).get('edges', []):
+                item_node = item_edge.get('node', {})
+                item = self._parse_graphql_menu_item(item_node)
+                if item:
+                    items.append(item)
+            
+            return {
+                'shopify_menu_id': menu_id,
+                'title': menu_node.get('title', ''),
+                'handle': menu_node.get('handle', ''),
+                'items': items,
+            }
+        except Exception as e:
+            logger.error(f"Error parsing GraphQL menu: {str(e)}")
+            return None
+    
+    def _parse_graphql_menu_item(self, item_node: dict) -> Optional[Dict]:
+        """Parse GraphQL menu item into database format"""
+        try:
+            gid = item_node.get('id', '')
+            item_id = gid.split('/')[-1] if gid else ''
+            
+            # Parse nested items
+            nested_items = []
+            for nested_edge in item_node.get('items', {}).get('edges', []):
+                nested_node = nested_edge.get('node', {})
+                nested_gid = nested_node.get('id', '')
+                nested_id = nested_gid.split('/')[-1] if nested_gid else ''
+                nested_items.append({
+                    'id': nested_id,
+                    'title': nested_node.get('title', ''),
+                    'url': nested_node.get('url', ''),
+                    'type': nested_node.get('type', ''),
+                    'items': []
+                })
+            
+            return {
+                'id': item_id,
+                'title': item_node.get('title', ''),
+                'url': item_node.get('url', ''),
+                'type': item_node.get('type', ''),
+                'items': nested_items
+            }
+        except Exception as e:
+            logger.error(f"Error parsing GraphQL menu item: {str(e)}")
+            return None
     
     def _parse_menu(self, menu: dict) -> Optional[Dict]:
         """Parse Shopify menu into database format"""
