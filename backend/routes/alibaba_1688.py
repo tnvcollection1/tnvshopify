@@ -5661,23 +5661,38 @@ async def create_dwz_order_from_1688(request: Create1688DwzOrderRequest):
             "cRCity": native_logistics.get("city", ""),
             "cRProvince": native_logistics.get("province", ""),
             # Goods info
-            "cGoods": first_product.get("name", "1688 Order"),
+            "cGoods": first_product.get("name", "1688 Order")[:50] if first_product.get("name") else "1688 Order",
             "iQuantity": sum(item.get("quantity", 1) for item in product_items),
-            "fPrice": base_info.get("totalAmount", 0),
+            "fPrice": float(base_info.get("totalAmount", 0) or 0),
         }
         
-        payload = build_request_payload("PreInputSet", {"Record": dwz_record})
+        # Use RecList format as expected by DWZ API
+        payload = build_request_payload("PreInputSet", {"RecList": [dwz_record]})
         dwz_response = await dwz_api_request(payload)
         
-        if dwz_response.get("ReturnValue", 0) < 0:
+        return_value = dwz_response.get("ReturnValue", 0)
+        if return_value < 0:
+            # Map error codes to messages
+            error_messages = {
+                -1: "Authentication failed",
+                -2: "Invalid request format",
+                -3: "Missing required fields (cEmsKind, cDes)",
+                -4: "Invalid courier type",
+                -5: "Invalid destination",
+            }
+            error_msg = error_messages.get(return_value, f"Unknown error: {return_value}")
             raise HTTPException(
                 status_code=400, 
-                detail=f"DWZ API error: {dwz_response.get('ReturnValue')}"
+                detail=f"DWZ API error: {error_msg}. Raw: {dwz_response}"
             )
+        
+        # Get created record ID
+        created_ids = dwz_response.get("RecIDs", [])
         
         return {
             "success": True,
             "message": "DWZ order created successfully",
+            "dwz_record_id": created_ids[0] if created_ids else None,
             "tracking_number_1688": tracking_number,
             "courier_1688": courier_name,
             "reference_number": reference_number,
