@@ -425,7 +425,7 @@ const Trade1688Dashboard = () => {
     
     try {
       // First, fetch tracking info from 1688
-      let trackingNumber = orderId; // Default to order ID
+      let trackingNumber = ''; 
       let courierName = '';
       
       try {
@@ -434,12 +434,17 @@ const Trade1688Dashboard = () => {
         
         if (logisticsData.success && logisticsData.logistics?.length > 0) {
           const firstLogistics = logisticsData.logistics[0];
-          trackingNumber = firstLogistics.tracking_number || orderId;
+          trackingNumber = firstLogistics.tracking_number || '';
           courierName = firstLogistics.courier_name || '';
           console.log(`Found tracking: ${trackingNumber} (${courierName})`);
         }
       } catch (logErr) {
-        console.log('Could not fetch logistics, using order ID as tracking:', logErr);
+        console.log('Could not fetch logistics:', logErr);
+      }
+      
+      if (!trackingNumber) {
+        toast.error('No tracking number found for this order. Order must be shipped first.');
+        return;
       }
       
       // Get the shipping address from nativeLogistics
@@ -455,25 +460,70 @@ const Trade1688Dashboard = () => {
         logistics.address,
       ].filter(Boolean).join(' ') || receiverInfo.toArea || '';
       
-      // Get first product info for the order
+      // Get first product info and extract color/size from SKU
       const firstProduct = order.productItems?.[0] || {};
+      const skuInfos = firstProduct.skuInfos || [];
       
+      // Extract color and size from SKU info
+      let color1688 = '';
+      let size1688 = '';
+      for (const sku of skuInfos) {
+        const name = (sku.name || '').toLowerCase();
+        const value = sku.value || '';
+        if (name.includes('颜色') || name.includes('color') || name.includes('colour')) {
+          color1688 = value;
+        }
+        if (name.includes('尺码') || name.includes('size') || name.includes('尺寸')) {
+          size1688 = value;
+        }
+      }
+      
+      // Get color code (first letter of color, uppercase)
+      const colorCode = color1688 ? color1688.charAt(0).toUpperCase() : 'X';
+      
+      // Format date as DDMM
+      const now = new Date();
+      const dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth() + 1).padStart(2, '0');
+      
+      // Generate reference number: TNVIN0901Y41015
+      // Format: {COMPANY}{COUNTRY}{DDMM}{COLOR}{SIZE}{SEQ}
+      // For now using orderId last 3 digits as sequence
+      const seqNum = orderId.slice(-3);
+      const referenceNumber = `TNV${'IN'}${dateStr}${colorCode}${size1688 || '00'}${seqNum}`;
+      
+      // Build remarks with color/size verification info
+      const remarks = [
+        `✅ Using 1688 data (${color1688 || 'N/A'}/${size1688 || 'N/A'}) for the waybill`,
+        `📦 ${courierName}: ${trackingNumber}`,
+      ].join(' | ');
+      
+      // DWZ order data following the proper field names
       const dwzOrderData = {
-        internal_order_number: trackingNumber, // Use 1688 tracking number as internal order number
-        recipient_name: logistics.contactPerson || receiverInfo.toFullName || baseInfo.buyerContact?.name || 'Unknown',
-        recipient_phone: baseInfo.buyerContact?.mobile || baseInfo.buyerContact?.phone || '',
-        recipient_address: address,
-        postal_code: logistics.zip || receiverInfo.toPost || '',
-        product_name: firstProduct.name || '1688 Order',
-        quantity: order.productItems?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 1,
-        remark: courierName ? `${courierName}: ${trackingNumber}` : `1688: ${orderId}`,
-        declared_value: baseInfo.totalAmount || 0,
+        // Internal tracking = 1688 seller's tracking number
+        cNum: trackingNumber,
+        // Reference number = TNVIN0901Y41015 format
+        cRNo: referenceNumber,
+        // Remarks with color/size info
+        cMemo: remarks,
+        // Tag = 1688 order ID (or Shopify order if linked)
+        cMark: `1688-${orderId.slice(-8)}`,
+        // Receiver info
+        cReceiver: logistics.contactPerson || receiverInfo.toFullName || baseInfo.buyerContact?.name || 'Unknown',
+        cRPhone: baseInfo.buyerContact?.mobile || baseInfo.buyerContact?.phone || '',
+        cRAddr: address,
+        cRPostcode: logistics.zip || receiverInfo.toPost || '',
+        // Goods info
+        cGoods: firstProduct.name || '1688 Order',
+        iQuantity: order.productItems?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 1,
+        fPrice: baseInfo.totalAmount || 0,
+        // Metadata
         source: '1688',
         source_order_id: orderId,
-        source_tracking_number: trackingNumber,
+        color_1688: color1688,
+        size_1688: size1688,
       };
       
-      const res = await fetch(`${API}/api/dwz56/orders`, {
+      const res = await fetch(`${API}/api/dwz56/shipment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dwzOrderData),
@@ -481,8 +531,8 @@ const Trade1688Dashboard = () => {
       
       const data = await res.json();
       
-      if (data.success || data.order_id) {
-        toast.success(`DWZ order created with tracking: ${trackingNumber}`);
+      if (data.success || data.waybill_number) {
+        toast.success(`DWZ order created! Ref: ${referenceNumber}`);
       } else {
         throw new Error(data.detail || data.error || 'Failed to create DWZ order');
       }
