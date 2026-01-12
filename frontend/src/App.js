@@ -666,6 +666,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/menu-tags" 
+        element={
+          <ProtectedRoute>
+            <MenuTagsManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/storefront-cms" 
         element={
           <ProtectedRoute>
