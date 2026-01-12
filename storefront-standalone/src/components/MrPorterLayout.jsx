@@ -376,17 +376,35 @@ const MrPorterHeader = ({ storeConfig }) => {
         {menuOpen && (
           <div className="lg:hidden fixed inset-0 top-[calc(2rem+3.5rem)] bg-white z-40 overflow-y-auto">
             <nav className="px-4 py-6">
-              {navigation.map((item) => (
+              {activeNavigation.map((item) => (
                 <div key={item.path} className="border-b border-gray-100">
                   <Link
                     to={item.path}
                     onClick={() => setMenuOpen(false)}
-                    className={`block py-4 text-sm tracking-[0.1em] uppercase ${
+                    className={`flex items-center justify-between py-4 text-sm tracking-[0.1em] uppercase ${
                       item.highlight ? 'text-red-600' : 'text-black'
                     }`}
                   >
                     {item.name}
+                    {item.subItems && item.subItems.length > 0 && (
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    )}
                   </Link>
+                  {/* Sub-items for mobile */}
+                  {item.subItems && item.subItems.length > 0 && (
+                    <div className="pb-2 pl-4 space-y-2">
+                      {item.subItems.slice(0, 5).map((sub, idx) => (
+                        <Link
+                          key={idx}
+                          to={sub.path}
+                          onClick={() => setMenuOpen(false)}
+                          className="block py-2 text-xs text-gray-500 hover:text-black"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
               
