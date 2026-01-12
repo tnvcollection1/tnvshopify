@@ -216,6 +216,74 @@ async def get_storefront_product(
     }
 
 
+# ==================== Collections Endpoint ====================
+
+@router.get("/collections")
+async def get_storefront_collections(
+    store: str = "tnvcollection",
+    collection_type: Optional[str] = None,
+    limit: int = 100
+):
+    """
+    Get all synced collections for the storefront
+    """
+    db = get_db()
+    
+    query = {"store_name": store}
+    if collection_type:
+        query["collection_type"] = collection_type
+    
+    collections = await db.shopify_collections.find(
+        query,
+        {"_id": 0}
+    ).sort("title", 1).to_list(limit)
+    
+    return {
+        "success": True,
+        "collections": collections,
+        "total": len(collections)
+    }
+
+
+@router.get("/collections/{handle}")
+async def get_storefront_collection(
+    handle: str,
+    store: str = "tnvcollection"
+):
+    """
+    Get a single collection by handle
+    """
+    db = get_db()
+    
+    collection = await db.shopify_collections.find_one(
+        {"store_name": store, "handle": handle},
+        {"_id": 0}
+    )
+    
+    if not collection:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    
+    # Get products in this collection
+    products = await db.shopify_products.find(
+        {
+            "store_name": store,
+            "$or": [
+                {"collections": {"$elemMatch": {"handle": handle}}},
+                {"collection_handles": handle},
+                {"product_type": {"$regex": handle, "$options": "i"}}
+            ]
+        },
+        {"_id": 0}
+    ).limit(50).to_list(50)
+    
+    return {
+        "success": True,
+        "collection": collection,
+        "products": products,
+        "product_count": len(products)
+    }
+
+
 # ==================== Order Endpoints ====================
 
 
