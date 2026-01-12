@@ -918,7 +918,8 @@ async def create_banner(banner: BannerCreate, store: str = "tnvcollection"):
     
     result = await db.storefront_banners.insert_one(banner_doc)
     banner_doc["id"] = str(result.inserted_id)
-    del banner_doc["_id"] if "_id" in banner_doc else None
+    if "_id" in banner_doc:
+        del banner_doc["_id"]
     
     return {
         "success": True,
