@@ -2204,6 +2204,283 @@ async def sync_all_store_products(background_tasks: BackgroundTasks):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==================== Shopify Collections Sync ====================
+
+@api_router.post("/shopify/sync-collections/{store_name}")
+async def sync_shopify_collections(store_name: str, background_tasks: BackgroundTasks):
+    """
+    Sync collections from a specific Shopify store
+    """
+    try:
+        store = await db.stores.find_one({"store_name": store_name})
+        if not store:
+            raise HTTPException(status_code=404, detail=f"Store '{store_name}' not found")
+        
+        domain = store.get("shopify_domain")
+        token = store.get("shopify_token")
+        
+        if not domain or not token:
+            raise HTTPException(status_code=400, detail="Store missing Shopify credentials")
+        
+        background_tasks.add_task(_sync_collections_background, store_name, domain, token)
+        
+        return {
+            "success": True,
+            "message": f"Collection sync started for {store_name}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error starting collection sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _sync_collections_background(store_name: str, domain: str, token: str):
+    """Background task to sync collections"""
+    try:
+        sync = ShopifyOrderSync(domain, token)
+        collections = sync.fetch_collections()
+        
+        synced = 0
+        for collection in collections:
+            collection['store_name'] = store_name
+            collection['synced_at'] = datetime.now(timezone.utc).isoformat()
+            
+            await db.shopify_collections.update_one(
+                {
+                    "store_name": store_name,
+                    "shopify_collection_id": collection['shopify_collection_id']
+                },
+                {"$set": collection},
+                upsert=True
+            )
+            synced += 1
+        
+        logger.info(f"✅ Collection sync completed for {store_name}: {synced} collections")
+        
+    except Exception as e:
+        logger.error(f"❌ Collection sync failed for {store_name}: {str(e)}")
+
+
+@api_router.get("/shopify/collections")
+async def get_shopify_collections(store_name: str = None):
+    """Get synced Shopify collections from database"""
+    try:
+        query = {}
+        if store_name and store_name != 'all':
+            query["store_name"] = store_name
+        
+        collections = await db.shopify_collections.find(query, {"_id": 0}).to_list(500)
+        
+        return {
+            "success": True,
+            "collections": collections,
+            "total": len(collections)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching collections: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Shopify Pages Sync ====================
+
+@api_router.post("/shopify/sync-pages/{store_name}")
+async def sync_shopify_pages(store_name: str, background_tasks: BackgroundTasks):
+    """
+    Sync pages from a specific Shopify store
+    """
+    try:
+        store = await db.stores.find_one({"store_name": store_name})
+        if not store:
+            raise HTTPException(status_code=404, detail=f"Store '{store_name}' not found")
+        
+        domain = store.get("shopify_domain")
+        token = store.get("shopify_token")
+        
+        if not domain or not token:
+            raise HTTPException(status_code=400, detail="Store missing Shopify credentials")
+        
+        background_tasks.add_task(_sync_pages_background, store_name, domain, token)
+        
+        return {
+            "success": True,
+            "message": f"Pages sync started for {store_name}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error starting pages sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _sync_pages_background(store_name: str, domain: str, token: str):
+    """Background task to sync pages"""
+    try:
+        sync = ShopifyOrderSync(domain, token)
+        pages = sync.fetch_pages()
+        
+        synced = 0
+        for page in pages:
+            page['store_name'] = store_name
+            page['synced_at'] = datetime.now(timezone.utc).isoformat()
+            
+            await db.shopify_pages.update_one(
+                {
+                    "store_name": store_name,
+                    "shopify_page_id": page['shopify_page_id']
+                },
+                {"$set": page},
+                upsert=True
+            )
+            synced += 1
+        
+        logger.info(f"✅ Pages sync completed for {store_name}: {synced} pages")
+        
+    except Exception as e:
+        logger.error(f"❌ Pages sync failed for {store_name}: {str(e)}")
+
+
+@api_router.get("/shopify/pages")
+async def get_shopify_pages(store_name: str = None):
+    """Get synced Shopify pages from database"""
+    try:
+        query = {}
+        if store_name and store_name != 'all':
+            query["store_name"] = store_name
+        
+        pages = await db.shopify_pages.find(query, {"_id": 0}).to_list(500)
+        
+        return {
+            "success": True,
+            "pages": pages,
+            "total": len(pages)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching pages: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Shopify Menus Sync ====================
+
+@api_router.post("/shopify/sync-menus/{store_name}")
+async def sync_shopify_menus(store_name: str, background_tasks: BackgroundTasks):
+    """
+    Sync navigation menus from a specific Shopify store
+    """
+    try:
+        store = await db.stores.find_one({"store_name": store_name})
+        if not store:
+            raise HTTPException(status_code=404, detail=f"Store '{store_name}' not found")
+        
+        domain = store.get("shopify_domain")
+        token = store.get("shopify_token")
+        
+        if not domain or not token:
+            raise HTTPException(status_code=400, detail="Store missing Shopify credentials")
+        
+        background_tasks.add_task(_sync_menus_background, store_name, domain, token)
+        
+        return {
+            "success": True,
+            "message": f"Menus sync started for {store_name}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error starting menus sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _sync_menus_background(store_name: str, domain: str, token: str):
+    """Background task to sync menus"""
+    try:
+        sync = ShopifyOrderSync(domain, token)
+        menus = sync.fetch_menus()
+        
+        synced = 0
+        for menu in menus:
+            menu['store_name'] = store_name
+            menu['synced_at'] = datetime.now(timezone.utc).isoformat()
+            
+            await db.shopify_menus.update_one(
+                {
+                    "store_name": store_name,
+                    "shopify_menu_id": menu['shopify_menu_id']
+                },
+                {"$set": menu},
+                upsert=True
+            )
+            synced += 1
+        
+        logger.info(f"✅ Menus sync completed for {store_name}: {synced} menus")
+        
+    except Exception as e:
+        logger.error(f"❌ Menus sync failed for {store_name}: {str(e)}")
+
+
+@api_router.get("/shopify/menus")
+async def get_shopify_menus(store_name: str = None):
+    """Get synced Shopify menus from database"""
+    try:
+        query = {}
+        if store_name and store_name != 'all':
+            query["store_name"] = store_name
+        
+        menus = await db.shopify_menus.find(query, {"_id": 0}).to_list(100)
+        
+        return {
+            "success": True,
+            "menus": menus,
+            "total": len(menus)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching menus: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Sync All Shopify Data ====================
+
+@api_router.post("/shopify/sync-all/{store_name}")
+async def sync_all_shopify_data(store_name: str, background_tasks: BackgroundTasks):
+    """
+    Sync all Shopify data (products, collections, pages, menus) for a store
+    """
+    try:
+        store = await db.stores.find_one({"store_name": store_name})
+        if not store:
+            raise HTTPException(status_code=404, detail=f"Store '{store_name}' not found")
+        
+        domain = store.get("shopify_domain")
+        token = store.get("shopify_token")
+        
+        if not domain or not token:
+            raise HTTPException(status_code=400, detail="Store missing Shopify credentials")
+        
+        # Start all sync tasks
+        background_tasks.add_task(_sync_products_background, store_name, domain, token)
+        background_tasks.add_task(_sync_collections_background, store_name, domain, token)
+        background_tasks.add_task(_sync_pages_background, store_name, domain, token)
+        background_tasks.add_task(_sync_menus_background, store_name, domain, token)
+        
+        return {
+            "success": True,
+            "message": f"Full sync started for {store_name}",
+            "syncing": ["products", "collections", "pages", "menus"]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error starting full sync: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.get("/shopify/products")
 async def get_shopify_products(
     store_name: str = None,
