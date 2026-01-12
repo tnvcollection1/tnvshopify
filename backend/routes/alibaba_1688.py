@@ -5503,3 +5503,194 @@ async def proxy_image(url: str = Query(..., description="Image URL to proxy")):
         raise HTTPException(status_code=504, detail="Image fetch timeout")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image proxy error: {str(e)}")
+
+
+# Create DWZ order from 1688 order
+class Create1688DwzOrderRequest(BaseModel):
+    order_id: str = Field(..., description="1688 Order ID")
+    company_prefix: str = Field(default="TNV", description="Company prefix for reference number")
+    courier_type: Optional[str] = Field(None, description="DWZ courier type (auto-detected if not provided)")
+    destination: Optional[str] = Field(None, description="Destination country (auto-detected if not provided)")
+    shopify_order_number: Optional[str] = Field(None, description="Shopify order number for tag")
+    shopify_color: Optional[str] = Field(None, description="Shopify variant color for verification")
+    shopify_size: Optional[str] = Field(None, description="Shopify variant size for verification")
+
+
+@router.post("/create-dwz-from-1688")
+async def create_dwz_order_from_1688(request: Create1688DwzOrderRequest):
+    """
+    Create a DWZ56 shipment from a 1688 order.
+    
+    Uses:
+    - 1688 seller's tracking number as Internal Tracking (cNum)
+    - Generated reference number format: {COMPANY}{COUNTRY}{DDMM}{COLOR}{SIZE}{SEQ}
+    - 1688 order ID or Shopify order number as Tag (cMark)
+    - Color/size info in remarks for verification
+    """
+    from routes.dwz56 import make_api_request as dwz_api_request, build_request_payload
+    from datetime import datetime, timezone
+    
+    db = get_db()
+    
+    try:
+        # Step 1: Get logistics/tracking info from 1688
+        params = {
+            "orderId": request.order_id,
+            "webSite": "1688",
+        }
+        
+        logistics_result = await make_api_request(
+            "com.alibaba.logistics/alibaba.trade.getLogisticsInfos.buyerView",
+            params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        logistics_list = logistics_result.get("result") or []
+        if not logistics_list:
+            raise HTTPException(status_code=400, detail="No logistics/tracking info found. Order must be shipped first.")
+        
+        first_logistics = logistics_list[0]
+        tracking_number = first_logistics.get("logisticsBillNo")
+        courier_name = first_logistics.get("logisticsCompanyName", "")
+        
+        if not tracking_number:
+            raise HTTPException(status_code=400, detail="No tracking number found in logistics info")
+        
+        # Step 2: Get order details for color/size and address
+        order_params = {
+            "orderId": request.order_id,
+            "webSite": "1688",
+        }
+        
+        order_result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.get.buyerView",
+            order_params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        order_info = order_result.get("result") or order_result
+        base_info = order_info.get("baseInfo", {})
+        product_items = order_info.get("productItems", [])
+        native_logistics = order_info.get("nativeLogistics", {})
+        
+        # Step 3: Extract color and size from 1688 order
+        first_product = product_items[0] if product_items else {}
+        sku_infos = first_product.get("skuInfos", [])
+        
+        color_1688 = ""
+        size_1688 = ""
+        for sku in sku_infos:
+            name = (sku.get("name") or "").lower()
+            value = sku.get("value") or ""
+            if "颜色" in name or "color" in name:
+                color_1688 = value
+            if "尺码" in name or "size" in name or "尺寸" in name:
+                size_1688 = value
+        
+        # Get color code using the helper
+        color_code, color_display = extract_color_from_1688(color_1688)
+        
+        # Step 4: Determine country and courier from store mapping (or use provided)
+        # Try to detect from order or use defaults
+        country_code = request.destination or "IN"  # Default to India
+        courier_type = request.courier_type
+        
+        if not courier_type:
+            # Auto-detect based on country
+            if country_code in ["IN", "India"]:
+                courier_type = "印度专线"
+                country_code = "IN"
+            elif country_code in ["PK", "Pakistan"]:
+                courier_type = "巴基斯坦专线"
+                country_code = "PK"
+            else:
+                courier_type = "印度专线"  # Default
+                country_code = "IN"
+        
+        # Step 5: Generate reference number
+        # Format: TNVIN0901Y41015 = {COMPANY}{COUNTRY}{DDMM}{COLOR}{SIZE}{SEQ}
+        now = datetime.now(timezone.utc)
+        date_str = f"{now.day:02d}{now.month:02d}"
+        size_str = size_1688 if size_1688 else "00"
+        seq_num = request.order_id[-3:] if request.order_id else "000"
+        
+        reference_number = f"{request.company_prefix}{country_code}{date_str}{color_code}{size_str}{seq_num}"
+        
+        # Step 6: Build remarks with verification info
+        remarks_parts = []
+        remarks_parts.append(f"✅ Using 1688 data ({color_1688 or 'N/A'}/{size_1688 or 'N/A'}) for the waybill")
+        if request.shopify_color or request.shopify_size:
+            remarks_parts.append(f"✅ Shopify data ({request.shopify_color or 'N/A'}/{request.shopify_size or 'N/A'}) for verification")
+        remarks_parts.append(f"📦 {courier_name}: {tracking_number}")
+        
+        remarks = " | ".join(remarks_parts)
+        
+        # Step 7: Build tag (Shopify order number or 1688 order ID)
+        tag = request.shopify_order_number if request.shopify_order_number else f"1688-{request.order_id[-8:]}"
+        
+        # Step 8: Build address
+        address_parts = [
+            native_logistics.get("province"),
+            native_logistics.get("city"),
+            native_logistics.get("area"),
+            native_logistics.get("town"),
+            native_logistics.get("address"),
+        ]
+        full_address = " ".join(filter(None, address_parts))
+        
+        # Step 9: Create DWZ shipment
+        dwz_record = {
+            "iID": 0,
+            "nItemType": 1,
+            "nLanguage": 1,
+            "cEmsKind": courier_type,
+            "cDes": country_code,
+            # Internal tracking = 1688 seller's tracking
+            "cNum": tracking_number,
+            # Reference number in configured format
+            "cRNo": reference_number,
+            # Remarks with color/size verification
+            "cMemo": remarks,
+            # Tag = Shopify order or 1688 ID
+            "cMark": tag,
+            # Receiver info
+            "cReceiver": native_logistics.get("contactPerson") or base_info.get("buyerContact", {}).get("name", ""),
+            "cRPhone": native_logistics.get("mobile") or base_info.get("buyerContact", {}).get("mobile", ""),
+            "cRAddr": full_address,
+            "cRPostcode": native_logistics.get("zip", ""),
+            "cRCity": native_logistics.get("city", ""),
+            "cRProvince": native_logistics.get("province", ""),
+            # Goods info
+            "cGoods": first_product.get("name", "1688 Order"),
+            "iQuantity": sum(item.get("quantity", 1) for item in product_items),
+            "fPrice": base_info.get("totalAmount", 0),
+        }
+        
+        payload = build_request_payload("PreInputSet", {"Record": dwz_record})
+        dwz_response = await dwz_api_request(payload)
+        
+        if dwz_response.get("ReturnValue", 0) < 0:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"DWZ API error: {dwz_response.get('ReturnValue')}"
+            )
+        
+        return {
+            "success": True,
+            "message": "DWZ order created successfully",
+            "tracking_number_1688": tracking_number,
+            "courier_1688": courier_name,
+            "reference_number": reference_number,
+            "tag": tag,
+            "color_code": color_code,
+            "color_display": color_display,
+            "size": size_1688,
+            "remarks": remarks,
+            "dwz_response": dwz_response,
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to create DWZ from 1688: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create DWZ order: {str(e)}")
