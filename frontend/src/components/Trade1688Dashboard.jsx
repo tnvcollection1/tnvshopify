@@ -85,6 +85,8 @@ const OrderStatusBadge = ({ status }) => {
 // Order Card Component
 const OrderCard = ({ order, onViewDetails, onCreateDwzOrder, creatingDwz }) => {
   const [expanded, setExpanded] = useState(false);
+  const [trackingInfo, setTrackingInfo] = useState(null);
+  const [loadingTracking, setLoadingTracking] = useState(false);
   
   // Handle nested baseInfo structure from 1688 API
   const baseInfo = order.baseInfo || order;
@@ -95,6 +97,30 @@ const OrderCard = ({ order, onViewDetails, onCreateDwzOrder, creatingDwz }) => {
   const createTime = baseInfo.createTime || order.createTime || order.gmtCreate;
   const sellerName = baseInfo.sellerContact?.companyName || baseInfo.sellerLoginId || order.sellerCompanyName || 'Unknown Seller';
   const productItems = order.productItems || order.orderEntries || [];
+  
+  // Fetch tracking info when order is shipped
+  const fetchTracking = async () => {
+    if (loadingTracking || trackingInfo) return;
+    setLoadingTracking(true);
+    try {
+      const res = await fetch(`${API}/api/1688/logistics/${orderId}`);
+      const data = await res.json();
+      if (data.success && data.logistics?.length > 0) {
+        setTrackingInfo(data.logistics[0]);
+      }
+    } catch (e) {
+      console.log('Could not fetch tracking:', e);
+    } finally {
+      setLoadingTracking(false);
+    }
+  };
+  
+  // Auto-fetch tracking for shipped orders
+  useEffect(() => {
+    if (status === 'waitbuyerreceive' || status === 'success' || status === 'confirm_goods') {
+      fetchTracking();
+    }
+  }, [status, orderId]);
   
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow" data-testid={`order-card-${orderId}`}>
@@ -128,6 +154,33 @@ const OrderCard = ({ order, onViewDetails, onCreateDwzOrder, creatingDwz }) => {
                 </span>
               )}
             </div>
+            {/* Tracking Info */}
+            {trackingInfo && (
+              <div className="flex items-center gap-2 text-sm mt-1">
+                <Truck className="w-3 h-3 text-purple-500" />
+                <span className="text-purple-700 font-medium">{trackingInfo.courier_name}</span>
+                <code className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-xs font-mono">
+                  {trackingInfo.tracking_number}
+                </code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 px-1"
+                  onClick={() => {
+                    navigator.clipboard.writeText(trackingInfo.tracking_number);
+                    toast.success('Tracking number copied');
+                  }}
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
+            {loadingTracking && (
+              <div className="flex items-center gap-1 text-xs text-zinc-400">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Loading tracking...
+              </div>
+            )}
           </div>
           <div className="text-right">
             <p className="text-xl font-bold text-orange-600">¥{parseFloat(totalAmount).toFixed(2)}</p>
