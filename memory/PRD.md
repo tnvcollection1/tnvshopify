@@ -46,13 +46,30 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ### Latest Updates (Jan 12, 2025)
 
-### MR PORTER Style Storefront Redesign ✅ NEW
+### Dynamic Homepage Banners Implementation ✅ COMPLETED
+- **Feature**: Homepage banners now dynamically fetch from backend API using actual Shopify CDN images
+- **India Store (tnvcollection) Banners**:
+  - DESIGNER COLLECTION - Designer shoes image from Shopify
+  - FORMAL ELEGANCE - Formal shoes image from Shopify
+  - GENUINE LEATHER - Leather shoes image from Shopify
+- **Pakistan Store (tnvcollectionpk) Banners**:
+  - READY TO DISPATCH - Ready to wear collection image
+  - DESIGNER SHOES - Designer shoes image from Shopify
+  - GENUINE LEATHER - Leather shoes image from Shopify
+- **Frontend Updates**:
+  - `LuxuryStorefrontHome.jsx` - Updated to fetch banners from `/api/storefront/home-config` API
+  - `HeroSection` component now accepts `banners` prop from API
+  - Fallback to default banners if API returns empty
+- **Testing**: 13/13 backend tests passed, 100% frontend verification
+- **Test File**: `/app/tests/test_iteration33_storefront_banners.py`
+
+### MR PORTER Style Storefront Redesign ✅
 - **Design Inspiration**: mrporter.com - clean black/white minimal luxury aesthetic
 - **Standalone Package**: `/app/storefront-standalone/` - ready for Vercel deployment
 - **New Components**:
   - `MrPorterLayout.jsx` - Clean header with mega-menu navigation, minimal footer
   - `MrPorterHome.jsx` - Hero banner, editorial grid, product carousels, brand bar, journal section
-- **Admin Backend - Banner & Collection Manager** ✅ NEW
+- **Admin Backend - Banner & Collection Manager** ✅
   - **Route**: `/storefront-config`
   - **Features**:
     - Hero banner management (CRUD) with image preview
