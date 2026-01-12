@@ -112,6 +112,11 @@ const MrPorterHeader = ({ storeConfig }) => {
       submenu: ['New In Today', 'New In This Week', 'Trending Now']
     },
     { 
+      name: 'Collections', 
+      path: '/collections',
+      submenu: ['All Collections', 'Featured', 'Seasonal']
+    },
+    { 
       name: 'Clothing', 
       path: '/products?category=clothing',
       submenu: ['Coats & Jackets', 'Shirts', 'T-Shirts', 'Trousers', 'Suits']
