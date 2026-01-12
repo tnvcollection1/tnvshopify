@@ -104,26 +104,33 @@ const OrderCard = ({ order, onViewDetails, onCreateDwzOrder, creatingDwz }) => {
   
   // Auto-fetch tracking for shipped orders
   useEffect(() => {
+    let isMounted = true;
+    
     const loadTracking = async () => {
-      if (loadingTracking || trackingInfo) return;
+      if (trackingInfo) return; // Already have tracking
       setLoadingTracking(true);
       try {
         const res = await fetch(`${API}/api/1688/logistics/${orderId}`);
         const data = await res.json();
-        if (data.success && data.logistics?.length > 0) {
+        if (isMounted && data.success && data.logistics?.length > 0) {
           setTrackingInfo(data.logistics[0]);
         }
       } catch (e) {
         console.log('Could not fetch tracking:', e);
       } finally {
-        setLoadingTracking(false);
+        if (isMounted) {
+          setLoadingTracking(false);
+        }
       }
     };
     
-    if (status === 'waitbuyerreceive' || status === 'success' || status === 'confirm_goods') {
+    const isShipped = status === 'waitbuyerreceive' || status === 'success' || status === 'confirm_goods';
+    if (isShipped && orderId) {
       loadTracking();
     }
-  }, [status, orderId, loadingTracking, trackingInfo]);
+    
+    return () => { isMounted = false; };
+  }, [status, orderId]); // Only depend on status and orderId
   
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow" data-testid={`order-card-${orderId}`}>
