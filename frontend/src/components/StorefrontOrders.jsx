@@ -17,7 +17,10 @@ import {
   DollarSign,
   Edit2,
   ChevronRight,
-  X
+  X,
+  MessageCircle,
+  ExternalLink,
+  Send
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +37,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import axios from 'axios';
