@@ -755,6 +755,146 @@ const Trade1688Dashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* DWZ Order Creation Dialog */}
+      <Dialog open={showDwzDialog} onOpenChange={setShowDwzDialog}>
+        <DialogContent className="max-w-lg" data-testid="dwz-create-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="w-5 h-5 text-orange-500" />
+              Create DWZ Shipment
+            </DialogTitle>
+            <DialogDescription>
+              Create a DWZ56 shipping order from this 1688 order. Fill in the Shopify data for verification.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedOrder && (
+            <div className="space-y-4 py-2">
+              {/* Order Summary */}
+              <div className="bg-zinc-50 rounded-lg p-3 border">
+                <p className="text-sm text-zinc-500 mb-1">1688 Order</p>
+                <p className="font-mono font-medium text-sm">
+                  #{(selectedOrder.baseInfo || selectedOrder).idOfStr || selectedOrder.id}
+                </p>
+              </div>
+
+              {/* Company Prefix & Destination */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="company_prefix">Company Prefix</Label>
+                  <Input
+                    id="company_prefix"
+                    placeholder="TNV"
+                    value={dwzFormData.company_prefix}
+                    onChange={(e) => setDwzFormData(prev => ({ ...prev, company_prefix: e.target.value }))}
+                    data-testid="dwz-company-prefix"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="destination">Destination</Label>
+                  <Select 
+                    value={dwzFormData.destination} 
+                    onValueChange={(val) => setDwzFormData(prev => ({ ...prev, destination: val }))}
+                  >
+                    <SelectTrigger id="destination" data-testid="dwz-destination">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="IN">India (IN)</SelectItem>
+                      <SelectItem value="PK">Pakistan (PK)</SelectItem>
+                      <SelectItem value="BD">Bangladesh (BD)</SelectItem>
+                      <SelectItem value="LK">Sri Lanka (LK)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Shopify Order Number */}
+              <div className="space-y-2">
+                <Label htmlFor="shopify_order_number">Shopify Order Number</Label>
+                <Input
+                  id="shopify_order_number"
+                  placeholder="e.g., #1234"
+                  value={dwzFormData.shopify_order_number}
+                  onChange={(e) => setDwzFormData(prev => ({ ...prev, shopify_order_number: e.target.value }))}
+                  data-testid="dwz-shopify-order"
+                />
+                <p className="text-xs text-zinc-500">Used as the Tag/Mark on the DWZ waybill</p>
+              </div>
+
+              {/* Shopify Color & Size for Verification */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="shopify_color">Shopify Color</Label>
+                  <Input
+                    id="shopify_color"
+                    placeholder="e.g., Yellow, Black"
+                    value={dwzFormData.shopify_color}
+                    onChange={(e) => setDwzFormData(prev => ({ ...prev, shopify_color: e.target.value }))}
+                    data-testid="dwz-shopify-color"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="shopify_size">Shopify Size</Label>
+                  <Input
+                    id="shopify_size"
+                    placeholder="e.g., L, XL, 42"
+                    value={dwzFormData.shopify_size}
+                    onChange={(e) => setDwzFormData(prev => ({ ...prev, shopify_size: e.target.value }))}
+                    data-testid="dwz-shopify-size"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-zinc-500 -mt-2">
+                These are compared with 1688 order data to verify consistency (MATCH/MISMATCH shown in remarks)
+              </p>
+
+              {/* Configured Remark */}
+              <div className="space-y-2">
+                <Label htmlFor="configured_remark">Configured Remark</Label>
+                <Textarea
+                  id="configured_remark"
+                  placeholder="Pre-configured message to include in DWZ remarks..."
+                  value={dwzFormData.configured_remark}
+                  onChange={(e) => setDwzFormData(prev => ({ ...prev, configured_remark: e.target.value }))}
+                  rows={2}
+                  data-testid="dwz-configured-remark"
+                />
+                <p className="text-xs text-zinc-500">This message will appear at the beginning of the DWZ remarks</p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowDwzDialog(false)}
+              data-testid="dwz-cancel-btn"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateDwzOrder}
+              disabled={creatingDwzOrder}
+              className="bg-orange-600 hover:bg-orange-700"
+              data-testid="dwz-create-btn"
+            >
+              {creatingDwzOrder ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Create DWZ Order
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
