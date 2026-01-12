@@ -5618,11 +5618,51 @@ async def create_dwz_order_from_1688(request: Create1688DwzOrderRequest):
         reference_number = f"{request.company_prefix}{country_code}{date_str}{color_code}{size_str}{seq_num}"
         
         # Step 6: Build remarks with verification info
+        # Format:
+        # [Configured Remark]
+        # ✅ Using 1688 data (Color/Size) for the waybill
+        # ✅ Showing Shopify data (Color/Size) for verification
+        # 🔄 Color: MATCH/MISMATCH | Size: MATCH/MISMATCH
+        
         remarks_parts = []
+        
+        # Add configured remark first if provided
+        if request.configured_remark:
+            remarks_parts.append(request.configured_remark)
+        
+        # 1688 data
         remarks_parts.append(f"✅ Using 1688 data ({color_1688 or 'N/A'}/{size_1688 or 'N/A'}) for the waybill")
+        
+        # Shopify data and match/mismatch verification
         if request.shopify_color or request.shopify_size:
-            remarks_parts.append(f"✅ Shopify data ({request.shopify_color or 'N/A'}/{request.shopify_size or 'N/A'}) for verification")
-        remarks_parts.append(f"📦 {courier_name}: {tracking_number}")
+            remarks_parts.append(f"✅ Showing Shopify data ({request.shopify_color or 'N/A'}/{request.shopify_size or 'N/A'}) for verification")
+            
+            # Compare color and size
+            color_match = "N/A"
+            size_match = "N/A"
+            
+            if request.shopify_color and color_1688:
+                # Normalize colors for comparison (lowercase, strip whitespace)
+                shopify_color_norm = request.shopify_color.lower().strip()
+                color_1688_norm = color_1688.lower().strip()
+                # Also check if translated color matches
+                color_display_norm = color_display.lower().strip() if color_display else ""
+                
+                if shopify_color_norm == color_1688_norm or shopify_color_norm == color_display_norm or color_1688_norm in shopify_color_norm or shopify_color_norm in color_1688_norm:
+                    color_match = "✅ MATCH"
+                else:
+                    color_match = "❌ MISMATCH"
+            
+            if request.shopify_size and size_1688:
+                shopify_size_norm = request.shopify_size.lower().strip()
+                size_1688_norm = size_1688.lower().strip()
+                
+                if shopify_size_norm == size_1688_norm:
+                    size_match = "✅ MATCH"
+                else:
+                    size_match = "❌ MISMATCH"
+            
+            remarks_parts.append(f"Color: {color_match} | Size: {size_match}")
         
         remarks = " | ".join(remarks_parts)
         
