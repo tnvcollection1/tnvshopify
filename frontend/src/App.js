@@ -894,6 +894,36 @@ function AppRoutes() {
         path="/store/:storeName/order-confirmation/:orderId" 
         element={<StorefrontWrapper page="confirmation" />} 
       />
+
+      {/* Luxury Storefront Routes (Stella McCartney Style) */}
+      <Route 
+        path="/store/:storeSlug" 
+        element={<LuxuryStorefrontWrapper />} 
+      />
+      <Route 
+        path="/store/:storeSlug/products" 
+        element={<LuxuryStorefrontWrapper page="listing" />} 
+      />
+      <Route 
+        path="/store/:storeSlug/product/:productId" 
+        element={<LuxuryStorefrontWrapper page="detail" />} 
+      />
+      <Route 
+        path="/store/:storeSlug/cart" 
+        element={<LuxuryStorefrontWrapper page="cart" />} 
+      />
+      <Route 
+        path="/store/:storeSlug/checkout" 
+        element={<LuxuryStorefrontWrapper page="checkout" />} 
+      />
+      <Route 
+        path="/store/:storeSlug/order-confirmation/:orderId" 
+        element={<LuxuryStorefrontWrapper page="confirmation" />} 
+      />
+      <Route 
+        path="/store/:storeSlug/track" 
+        element={<LuxuryStorefrontWrapper page="tracking" />} 
+      />
     </Routes>
   );
 }
