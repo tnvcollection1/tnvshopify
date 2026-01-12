@@ -242,6 +242,25 @@ const OrderCard = ({ order, onViewDetails, onCreateDwzOrder, creatingDwz }) => {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => onCreateDwzOrder(order)}
+              disabled={creatingDwz === orderId}
+              className="text-orange-600 border-orange-200 hover:bg-orange-50"
+            >
+              {creatingDwz === orderId ? (
+                <>
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Send className="w-3 h-3 mr-1" />
+                  Create DWZ
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 navigator.clipboard.writeText(orderId);
                 toast.success('Order ID copied');
