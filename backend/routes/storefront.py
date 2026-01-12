@@ -853,3 +853,234 @@ async def list_storefront_orders(
         "pages": (total + limit - 1) // limit
     }
 
+
+
+# ==================== Home Page Configuration ====================
+
+class BannerCreate(BaseModel):
+    title: str
+    subtitle: Optional[str] = ""
+    description: Optional[str] = ""
+    image: str
+    cta: str = "SHOP NOW"
+    link: str = "/products"
+    text_color: str = "white"
+    text_position: str = "left"  # left, center, right
+    is_active: bool = True
+    order: int = 0
+
+class CollectionCreate(BaseModel):
+    title: str
+    subtitle: Optional[str] = ""
+    image: str
+    link: str = "/products"
+    size: str = "small"  # large, small
+    is_active: bool = True
+    order: int = 0
+
+
+@router.get("/home-config")
+async def get_home_config(store: str = "tnvcollection"):
+    """Get homepage configuration including banners and collections"""
+    db = get_db()
+    
+    # Get active banners sorted by order
+    banners = await db.storefront_banners.find(
+        {"store_name": store, "is_active": True},
+        {"_id": 0}
+    ).sort("order", 1).to_list(10)
+    
+    # Get active collections sorted by order
+    collections = await db.storefront_collections.find(
+        {"store_name": store, "is_active": True},
+        {"_id": 0}
+    ).sort("order", 1).to_list(10)
+    
+    return {
+        "success": True,
+        "banners": banners,
+        "collections": collections
+    }
+
+
+@router.post("/banners")
+async def create_banner(banner: BannerCreate, store: str = "tnvcollection"):
+    """Create a new homepage banner (admin endpoint)"""
+    db = get_db()
+    
+    now = datetime.now(timezone.utc).isoformat()
+    banner_doc = {
+        **banner.dict(),
+        "store_name": store,
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    result = await db.storefront_banners.insert_one(banner_doc)
+    banner_doc["id"] = str(result.inserted_id)
+    del banner_doc["_id"] if "_id" in banner_doc else None
+    
+    return {
+        "success": True,
+        "banner": banner_doc,
+        "message": "Banner created successfully"
+    }
+
+
+@router.get("/banners")
+async def list_banners(store: str = "tnvcollection", include_inactive: bool = False):
+    """List all banners for a store (admin endpoint)"""
+    db = get_db()
+    
+    query = {"store_name": store}
+    if not include_inactive:
+        query["is_active"] = True
+    
+    banners = await db.storefront_banners.find(query).sort("order", 1).to_list(50)
+    
+    # Convert ObjectId to string
+    for banner in banners:
+        banner["id"] = str(banner["_id"])
+        del banner["_id"]
+    
+    return {
+        "success": True,
+        "banners": banners
+    }
+
+
+@router.put("/banners/{banner_id}")
+async def update_banner(banner_id: str, banner: BannerCreate, store: str = "tnvcollection"):
+    """Update a banner (admin endpoint)"""
+    db = get_db()
+    from bson import ObjectId
+    
+    now = datetime.now(timezone.utc).isoformat()
+    update_doc = {
+        **banner.dict(),
+        "updated_at": now
+    }
+    
+    result = await db.storefront_banners.update_one(
+        {"_id": ObjectId(banner_id), "store_name": store},
+        {"$set": update_doc}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    
+    return {
+        "success": True,
+        "message": "Banner updated successfully"
+    }
+
+
+@router.delete("/banners/{banner_id}")
+async def delete_banner(banner_id: str, store: str = "tnvcollection"):
+    """Delete a banner (admin endpoint)"""
+    db = get_db()
+    from bson import ObjectId
+    
+    result = await db.storefront_banners.delete_one(
+        {"_id": ObjectId(banner_id), "store_name": store}
+    )
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    
+    return {
+        "success": True,
+        "message": "Banner deleted successfully"
+    }
+
+
+@router.post("/collections")
+async def create_collection(collection: CollectionCreate, store: str = "tnvcollection"):
+    """Create a new homepage collection (admin endpoint)"""
+    db = get_db()
+    
+    now = datetime.now(timezone.utc).isoformat()
+    collection_doc = {
+        **collection.dict(),
+        "store_name": store,
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    result = await db.storefront_collections.insert_one(collection_doc)
+    collection_doc["id"] = str(result.inserted_id)
+    del collection_doc["_id"] if "_id" in collection_doc else None
+    
+    return {
+        "success": True,
+        "collection": collection_doc,
+        "message": "Collection created successfully"
+    }
+
+
+@router.get("/collections")
+async def list_collections(store: str = "tnvcollection", include_inactive: bool = False):
+    """List all collections for a store (admin endpoint)"""
+    db = get_db()
+    
+    query = {"store_name": store}
+    if not include_inactive:
+        query["is_active"] = True
+    
+    collections = await db.storefront_collections.find(query).sort("order", 1).to_list(50)
+    
+    # Convert ObjectId to string
+    for collection in collections:
+        collection["id"] = str(collection["_id"])
+        del collection["_id"]
+    
+    return {
+        "success": True,
+        "collections": collections
+    }
+
+
+@router.put("/collections/{collection_id}")
+async def update_collection(collection_id: str, collection: CollectionCreate, store: str = "tnvcollection"):
+    """Update a collection (admin endpoint)"""
+    db = get_db()
+    from bson import ObjectId
+    
+    now = datetime.now(timezone.utc).isoformat()
+    update_doc = {
+        **collection.dict(),
+        "updated_at": now
+    }
+    
+    result = await db.storefront_collections.update_one(
+        {"_id": ObjectId(collection_id), "store_name": store},
+        {"$set": update_doc}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    
+    return {
+        "success": True,
+        "message": "Collection updated successfully"
+    }
+
+
+@router.delete("/collections/{collection_id}")
+async def delete_collection(collection_id: str, store: str = "tnvcollection"):
+    """Delete a collection (admin endpoint)"""
+    db = get_db()
+    from bson import ObjectId
+    
+    result = await db.storefront_collections.delete_one(
+        {"_id": ObjectId(collection_id), "store_name": store}
+    )
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    
+    return {
+        "success": True,
+        "message": "Collection deleted successfully"
+    }
+
