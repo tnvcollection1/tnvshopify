@@ -164,7 +164,7 @@ const EmptyCart = ({ storeSlug }) => (
 
 // ===================== ORDER SUMMARY =====================
 
-const OrderSummary = ({ cart, cartTotal, storeConfig, onCheckout }) => {
+const OrderSummary = ({ cart, cartTotal, storeConfig, onCheckout, onWhatsAppOrder }) => {
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   
@@ -251,9 +251,28 @@ const OrderSummary = ({ cart, cartTotal, storeConfig, onCheckout }) => {
         Proceed to Checkout
       </button>
 
-      {/* Payment Icons */}
-      <div className="flex items-center justify-center gap-4 mt-6 opacity-60">
-        <span className="text-xs text-gray-500">Secure payments</span>
+      {/* WhatsApp Order Button */}
+      <div className="mt-3">
+        <WhatsAppOrderButton 
+          cart={cart} 
+          cartTotal={cartTotal} 
+          storeConfig={storeConfig}
+          promoApplied={promoApplied}
+        />
+      </div>
+
+      {/* Or Divider */}
+      <div className="flex items-center gap-4 my-4">
+        <div className="flex-1 border-t border-gray-300"></div>
+        <span className="text-xs text-gray-400 uppercase">or</span>
+        <div className="flex-1 border-t border-gray-300"></div>
+      </div>
+
+      {/* Payment Info */}
+      <div className="text-center">
+        <p className="text-xs text-gray-500">
+          Secure checkout with Razorpay, UPI, Cards & more
+        </p>
       </div>
     </div>
   );
