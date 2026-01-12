@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { 
   ShoppingBag, Search, Menu, X, Heart, User, ChevronDown, 
   MapPin, Phone, Mail, Instagram, Facebook, ArrowRight 
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { detectStore, getStoreConfig, formatPrice } from './config/storeConfig';
+import { detectStore, getStoreConfig } from './config/storeConfig';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
