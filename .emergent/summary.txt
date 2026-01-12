@@ -1,74 +1,81 @@
-<analysis>**original_problem_statement**: The user is building a Shopify application to integrate with 1688.com, focusing on product scraping, linking, order management, and fulfillment via DWZ56.
+<analysis>**original_problem_statement**: The user initially wanted a Shopify application to integrate with 1688.com for product management and order fulfillment. The scope has significantly expanded. The most recent and major task was to build two public-facing, multi-tenant, e-commerce storefronts ( for India and  for Pakistan) inspired by .
 
-Recent user requests that have been worked on include:
-1.  **UI/UX Fixes**: Correcting a 401 Unauthorized error in the 1688 Trade Center, fixing non-loading images, and resolving translation issues in the AI Product Editor.
-2.  **Feature Implementation**: Adding an Auto Link All button to the product catalog.
-3.  **DWZ Order Creation**: Implementing a feature to create a DWZ56 shipping order directly from a 1688 order.
-4.  **Custom DWZ Formatting**: The DWZ order must have a specifically formatted reference number () and a detailed remark that includes a pre-configured message and a comparison between 1688 and Shopify product attributes (color, size) to verify consistency.
+**PRODUCT REQUIREMENTS**:
+- Build two separate storefronts with a luxury design aesthetic.
+- Implement store-specific configurations for currency (INR/PKR), shipping info, and contact details.
+- Add Order via WhatsApp functionality.
+- Implement a Cash on Delivery (COD) checkout option.
+- Create a customer-facing page to track order status.
+- Implement automated WhatsApp notifications for order status changes (e.g., Shipped, Delivered).
+- Enhance the admin dashboard to manage these new storefront orders.
+- Package the entire storefront into a standalone application, decoupled from the admin panel, ready for deployment on Vercel.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack React/FastAPI/MongoDB platform. The previous P0 authentication bug has been resolved with a new server-side session validation mechanism. The 1688 Trade Center is now fully functional, with correct API tokens configured, allowing it to fetch and display orders and shipping addresses. A backend image proxy has been implemented to fix image loading issues. The AI product editor's translation feature is working correctly.
+The original 1688 integration platform (React/FastAPI/MongoDB) is functional. On top of this, a complete, multi-tenant luxury storefront has been successfully built and packaged into a standalone Vite application located at .
 
-The Create DWZ feature has been partially implemented. A button exists on each 1688 order, and a dedicated backend endpoint () has been created. This endpoint successfully generates the complex reference number and detailed remarks as specified by the user.
+This new storefront includes:
+- A modern, responsive UI for the homepage, product listing, and product detail pages.
+- Store-specific configurations for India (tnvcollection) and Pakistan (tnvcollectionpk).
+- Fully functional Order via WhatsApp and Cash on Delivery (COD) features.
+- A customer-facing order tracking page that displays real-time shipment status.
+- A backend system that triggers WhatsApp notifications for order status updates.
+- An enhanced admin dashboard () to manage storefront orders and trigger notifications.
+- A complete, build-verified, standalone Vite project in  ready for deployment.
 
 **Last working item**:
--   **Last item agent was working**: Implementing the user-specified format for remarks in DWZ order creation. The agent successfully built and tested the backend endpoint () to generate remarks that include a pre-configured message, 1688 data, Shopify data, and a match/mismatch status for color and size. The agent's final step was to update the frontend to collect the necessary Shopify data to pass to this new endpoint, but this UI work was not started.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: Y (Backend endpoint tested via scripts)
--   **Which testing method agent to use?**: Frontend testing agent.
--   **User Testing Done**: N
+-   **Last item agent was working**: Guiding the user through the final steps of deploying the standalone storefront package () to Vercel and configuring the necessary environment variables (, ). The agent also configured the WhatsApp number for the Pakistan store and is waiting for the user to provide the number for the India store.
+-   **Status**: USER VERIFICATION PENDING
+-   **Agent Testing Done**: Y (Agent successfully built the standalone package and tested all individual storefront features via screenshots and API calls before packaging.)
+-   **Which testing method agent to use?**: Manual testing by the user on their live Vercel deployment.
+-   **User Testing Done**: N (The user is in the process of deploying the application.)
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Complete the Create DWZ Order UI Flow (P0)
+-   **Issue 1**: Configure India Store's WhatsApp Number (P0)
 
 **Issues Detail**:
--   **Issue 1: Complete the Create DWZ Order UI Flow**
-    -   **Attempted fixes**: The backend endpoint is complete and functional. No frontend work has been attempted.
+-   **Issue 1: Configure India Store's WhatsApp Number**
+    -   **Attempted fixes**: The agent has already configured the Pakistan store's number ().
     -   **Next debug checklist**:
-        1.  In , modify the  function.
-        2.  When the Create DWZ button is clicked, open a modal to collect additional information.
-        3.  The modal should contain input fields for Shopify Color, Shopify Size, and a Configured Remark.
-        4.  On modal submission, call the  endpoint, passing the 1688 order ID along with the data collected from the modal.
-        5.  Display a success or error toast notification based on the API response.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will complete the user's requirement for a verifiable logistics workflow, allowing them to create DWZ orders with remarks that bridge the data between the 1688 purchase and the corresponding Shopify order.
-    -   **Status**: NOT STARTED (for the frontend portion)
+        1.  Receive the WhatsApp number for the India store () from the user.
+        2.  Update the  field in .
+        3.  Inform the user to redeploy their Vercel project for the changes to take effect.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will complete the WhatsApp ordering functionality for the India storefront, ensuring customers are directed to the correct contact number.
+    -   **Status**: BLOCKED (Waiting for user input)
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both.
+    -   **Should Test frontend/backend/both after fix?**: Frontend (User manual test on Vercel).
     -   **Blocked on other issue**: None.
 
 **In progress Task List**:
--   **Task 1: Complete Create DWZ Order UI Flow** (P0)
-    -   **Where to resume**: .
-    -   **What will be achieved with this?**: A complete, user-facing feature for creating DWZ shipping orders directly from the 1688 orders list, with rich, verifiable remarks.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Both.
-    -   **Blocked on something**: No.
+-   **Task 1: Finalize Vercel Deployment of Standalone Storefront** (P0)
+    -   **Where to resume**: Assisting the user with their Vercel deployment. The user has been given all instructions and was last confirming the correct backend API URL to use.
+    -   **What will be achieved with this?**: The user will have two live, customer-facing storefronts on their custom domains (, ).
+    -   **Status**: USER VERIFICATION PENDING
+    -   **Should Test frontend/backend/both after fix?**: Frontend (User manual test).
+    -   **Blocked on something**: Blocked on the user completing the deployment and on receiving the India WhatsApp number.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
     -   (P1) **Sooxie.com Integration**: Plan and implement an integration with the Sooxie.com API.
-    -   (P2) **Inconsistent currency display**: Address inconsistent currency formatting in the competitor analysis history.
+    -   (P2) **Inconsistent currency display**: Address inconsistent currency formatting in the competitor analysis history of the original admin panel.
 -   **Future Tasks**:
     -   (P3) **Refactor  and **: Break down large monolithic files into smaller, domain-specific modules.
     -   (P3) **CSV Export**: Implement CSV export for competitor price comparison.
     -   (P3) **Push Notifications**: Add push notification capabilities to the Chrome Extension.
 
 **Completed work in this session**
--   **P0 Auth Bug Fix**: Resolved persistent logout issues by implementing server-side session validation via a new  endpoint.
--   **1688 API Authentication**: Successfully guided the user to acquire and configure the correct access tokens for both Merchant and Trade/Buyer apps, fixing all 401 errors.
--   **1688 Trade Center Fixes**:
-    -   Corrected UI data parsing to properly display nested order information.
-    -   Implemented a backend image proxy to resolve mixed-content errors for product images.
-    -   Enabled logistics sync to fetch and display the seller's tracking number and courier for shipped orders.
--   **AI Product Editor Translation**: Fixed the LLM integration to correctly translate 1688 product data.
--   **Bulk Variant Creation Testing**: Confirmed the end-to-end functionality of the bulk variant creation feature.
--   **Auto Link All Feature**: Verified the existence and functionality of the bulk auto-linking feature.
--   **DWZ Order Creation Backend**: Created the  endpoint, which generates a DWZ order with a custom-formatted reference number and detailed remarks comparing 1688 and Shopify data.
+-   **DWZ Order Creation UI**: Implemented the frontend modal to complete the DWZ order creation flow.
+-   **Multi-Tenant Luxury Storefront**: Built a complete, Stella McCartney-inspired storefront for two stores ( and ).
+-   **WhatsApp Ordering**: Added Order via WhatsApp buttons on product and cart pages.
+-   **Cash on Delivery (COD)**: Implemented a full COD checkout flow, customized for both India and Pakistan.
+-   **Order Tracking & Notifications**: Created a customer-facing order tracking page and enabled automated WhatsApp notifications for status updates.
+-   **Admin Order Management**: Enhanced the storefront orders dashboard to support WhatsApp notifications.
+-   **Standalone Storefront Package**: Created a new, self-contained Vite project in  and guided the user on deploying it to Vercel.
 
 **Earlier issues found/mentioned but not fixed**
--   The handoff from the previous session mentioned  and the need for  and  refactoring. These have not yet been addressed.
+-   **Issue 1**: Inconsistent currency display in the competitor analysis history section of the admin panel.
+-   **Issue 2**: The large backend files  and  need to be refactored for better maintainability.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**: Long-standing Shopify OAuth and login stability issues.
@@ -79,72 +86,74 @@ The Create DWZ feature has been partially implemented. A button exists on each 1
 
 
 **Key Technical Concepts**
--   **Server-Side Session Validation**: Using a  endpoint to verify a token on app load to maintain a stable login state.
--   **API-side Image Proxy**: A backend endpoint that fetches images from an external domain to bypass browser security restrictions (CORS, mixed-content).
--   **Dynamic Reference Number Generation**: Creating complex, formatted IDs based on multiple data points (date, country, color, size, sequence).
--   **OAuth Flow Debugging**: Systematically guiding a user to obtain and configure correct API access tokens for multiple third-party applications.
--   **Complex API Data Mapping**: Deconstructing and mapping nested API responses (1688 orders, logistics) to frontend components.
+-   **Decoupled Frontend**: The customer-facing storefront () is a separate application from the admin panel (), allowing for independent deployment and scaling.
+-   **Multi-tenancy via Config**: A single frontend codebase serves multiple stores by loading dynamic configurations () based on the hostname.
+-   **Vite Tooling**: Using Vite for the standalone storefront provides a fast development experience and an optimized production build.
 
 **key DB schema**
--   **agents**: Stores user credentials. An issue with partial records being created in the  collection was fixed by enhancing the  endpoint logic.
+-   **stores**: Contains configuration for each storefront. The  store was removed, leaving  and .
+-   **storefront_orders**: Stores all orders from the new storefronts, including customer details, line items, and payment/fulfillment status.
+
+**changes in tech stack**
+-   **Vite**: Introduced as the build tool for the new standalone storefront application in . The original admin panel still uses Create React App.
 
 **All files of reference**
--    (Primary file for the next task)
--    (Contains the backend logic for the DWZ creation)
--    (Contains the client-side auth fix)
--    (Contains the server-side auth fix)
+-   All files within  are critical for the user's current task.
+-   : Contains all new backend logic for the storefront.
+-   : The admin dashboard for managing new orders.
 
 **Areas that need refactoring**:
--   ****: This file is excessively large and handles auth, product search, orders, logistics, and DWZ creation logic. It should be broken down into smaller, more maintainable services.
--   ****: This component is becoming large. The  and the planned DWZ creation modal should be extracted into their own files.
+-   The new storefront components in  could be further broken down into smaller, more reusable pieces for better maintainability.
+-   The backend files  and  remain large and would benefit from being split into smaller, service-oriented modules.
 
 **key api endpoints**
--   : (New) Creates a DWZ order from a 1688 order with custom formatting.
--   : (Updated) Fetches logistics and tracking info for a 1688 order.
--   : (New) Proxies images from .
--   : (New) Validates the current user's session token.
+-   : Creates a new storefront order with COD payment.
+-   : Fetches product listings for the storefront.
+-   : Updates an order's status and triggers a WhatsApp notification.
+-   : Fetches order details for the customer tracking page.
 
 **Critical Info for New Agent**
--   **Primary Task**: Your main task is to build the frontend UI for the Create DWZ Order feature. The backend endpoint is complete and tested. You need to create a modal in  to collect Shopify Color, Shopify Size, and a Configured Remark from the user and pass this data to the  endpoint.
--   **Auth is Stable**: All previous authentication issues, both for the app itself and for the 1688 API, have been resolved. The necessary access tokens are correctly configured in the  file.
--   **Backend is Ready**: The backend logic for DWZ order creation, including generating the complex reference number and detailed remarks, is fully implemented in . You should not need to modify it unless a bug is found.
+-   **Focus on the Standalone App**: The user's entire focus is now on the new storefront located in . Do not make changes in the old  unless it's for the admin panel.
+-   **User is Deploying**: The user is actively deploying the  package to Vercel. Your immediate task is to support this process and finalize the configuration.
+-   **Awaiting User Input**: You are blocked waiting for the user to provide the WhatsApp number for the India store. This is the last piece of missing configuration.
 
 **documents and test reports created in this job**
+-    (heavily updated with all new storefront features)
 -   
 -   
--    (Updated)
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks for format of DWZ order fields.
-2.  **Agent**: Provides a summary of available DWZ fields and asks for the desired configuration.
-3.  **User**: Provides the exact format for the DWZ  and , including a comparison between Shopify and 1688 data.
-4.  **Agent**: Implements the backend logic for the new format.
-5.  **User**: Clarifies the remark should include a pre-configured message and a match/mismatch indicator.
-6.  **Agent**: Updates the backend to include the full remark logic and tests it successfully.
-7.  **User**: same isue (referring to images not loading) and Can u confirm while placing order on dwz whats values we can send them so we can configure.
-8.  **Agent**: Fixes image loading with a proxy and provides a detailed list of configurable DWZ fields.
-9.  **User**: did u auto link all ? and provides a screenshot.
-10. **Agent**: Demonstrates that the Auto-Link All feature is working correctly.
+1.  **User**: Confirms they want to proceed with creating a standalone package for Vercel.
+2.  **Agent**: Creates the standalone package and asks to configure WhatsApp numbers.
+3.  **User**: Says yes.
+4.  **Agent**: Asks for the numbers again.
+5.  **User**: Says yes again.
+6.  **Agent**: Acknowledges and waits.
+7.  **User**: Provides the Pakistan WhatsApp number ().
+8.  **Agent**: Confirms receipt and updates the configuration.
+9.  **User**: Shares a screenshot of their Vercel deployment screen, asking what to do next.
+10. **Agent**: Provides final instructions on setting environment variables and clicking Deploy.
 
 **Project Health Check:**
--   **Mocked**: No mocked components.
--   **Broken**: The frontend UI for the final step of DWZ order creation is missing.
+-   **Mocked**: None.
+-   **Broken**: The Order via WhatsApp feature for the India store is incomplete as it's missing the correct phone number. The user's live deployment on Vercel is in progress and not yet verified.
 
 **3rd Party Integrations**
 -   Shopify Admin API
--   1688 Open Platform (Merchant App & Trade/Buyer App) - **Tokens are configured and working.**
+-   1688 Open Platform
 -   DWZ56 API
--    library with **Emergent LLM Key** (used for translation)
+-    (used for LLM translation)
+-   **Vercel**: The new, designated deployment platform for the standalone storefront.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (for auth fix and bulk variant creation)
--   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: Test cases were added by the testing agent in  and .
--   **Known regressions**: None in this session. The major P0 auth regression from the previous fork was fixed.
+-   **Testing agent used after significant changes**: YES, for the initial DWZ modal feature.
+-   **Test files created**: No new test files were created in this session.
+-   **Known regressions**: None.
 
 **Credentials to test flow:**
 -   **Admin Login**:  / 
 -   **Warehouse PIN**: 
 
 **What agent forgot to execute**
--   The agent fully implemented the backend for the user's detailed DWZ remark request but did not build the corresponding frontend UI (a modal to collect Shopify color/size and a configured remark) to complete the feature.</analysis>
+-   The agent's workflow was efficient. All user requests in this session were fully addressed, culminating in the creation and packaging of the standalone storefront as requested. No tasks were forgotten.</analysis>
