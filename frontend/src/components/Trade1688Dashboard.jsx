@@ -128,18 +128,24 @@ const OrderCard = ({ order, onViewDetails }) => {
       <CardContent className="pt-3">
         {/* Product Items Preview */}
         <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
-          {productItems.slice(0, 4).map((item, i) => (
-            <div 
-              key={i}
-              className="flex-shrink-0 w-16 h-16 rounded-lg bg-zinc-100 overflow-hidden border"
-            >
-              {item.productImg || item.picUrl ? (
-                <img 
-                  src={item.productImg || item.picUrl} 
-                  alt={item.productName || 'Product'}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
+          {productItems.slice(0, 4).map((item, i) => {
+            // Handle productImgUrl which can be an array
+            const imgUrl = Array.isArray(item.productImgUrl) 
+              ? item.productImgUrl[0] 
+              : (item.productImgUrl || item.productImg || item.picUrl);
+            
+            return (
+              <div 
+                key={i}
+                className="flex-shrink-0 w-16 h-16 rounded-lg bg-zinc-100 overflow-hidden border"
+              >
+                {imgUrl ? (
+                  <img 
+                    src={imgUrl} 
+                    alt={item.name || item.productName || 'Product'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <Package className="w-6 h-6 text-zinc-300" />
                 </div>
