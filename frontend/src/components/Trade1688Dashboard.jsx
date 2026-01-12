@@ -46,9 +46,13 @@ import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Helper to fix image URLs (convert http to https)
+// Helper to fix image URLs (use proxy for 1688 images)
 const fixImageUrl = (url) => {
   if (!url) return null;
+  // Use proxy for alicdn images to avoid CORS/mixed content
+  if (url.includes('alicdn.com') || url.includes('1688.com')) {
+    return `${API}/api/1688/image-proxy?url=${encodeURIComponent(url)}`;
+  }
   if (url.startsWith('http://')) {
     return url.replace('http://', 'https://');
   }
