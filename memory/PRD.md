@@ -29,8 +29,9 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - Warehouse receiving interface (mobile-friendly) ✅
 
 ### 6. Customer Storefront
-- Public e-commerce storefront (net-a-porter inspired) ✅
+- Public e-commerce storefront (Stella McCartney inspired) ✅ **UPDATED**
 - Storefront CMS for content management ✅
+- Multi-tenant support (tnvcollection.com & tnvcollection.pk) ✅ **NEW**
 
 ### 7. Competitor Analysis
 - Google Vision API for image-based competitor search ✅
@@ -44,6 +45,35 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 ## What's Been Implemented
 
 ### Latest Updates (Jan 12, 2025)
+
+### Luxury Storefront (Stella McCartney Style) ✅ NEW
+- **Architecture**: Multi-tenant storefront supporting multiple stores with custom domains
+- **Stores**:
+  - `tnvcollection` → tnvcollection.com (India - ₹ INR)
+  - `tnvcollectionpk` → tnvcollection.pk (Pakistan - Rs PKR)
+- **Components**:
+  - `/app/frontend/src/components/storefront/LuxuryStorefrontLayout.jsx` - Header, Footer, Cart Context
+  - `/app/frontend/src/components/storefront/LuxuryStorefrontHome.jsx` - Hero slider, Category grid, Featured products
+  - `/app/frontend/src/components/storefront/LuxuryProductListing.jsx` - Product grid with filters, sorting
+  - `/app/frontend/src/components/storefront/LuxuryProductDetail.jsx` - Image gallery, size/color selectors
+  - `/app/frontend/src/components/storefront/LuxuryShoppingCart.jsx` - Cart with promo codes
+  - `/app/frontend/src/components/storefront/config/storeConfig.js` - Store configuration & domain mapping
+- **Backend Endpoint**: `GET /api/storefront/products` - Public products API
+- **Features**:
+  - Hero carousel with auto-slide
+  - Category grid with hover effects
+  - Product cards with image swap on hover
+  - Filter sidebar (Category, Price, Size)
+  - Grid size toggle (2/4 columns)
+  - Sort by (Newest, Price, Name)
+  - Promo code support (WELCOME10)
+  - Currency-aware pricing per store
+- **Routes**: `/store/:storeSlug`, `/store/:storeSlug/products`, `/store/:storeSlug/product/:productId`, `/store/:storeSlug/cart`
+- **Deployment**: Can be deployed to Vercel/Netlify with custom domains
+
+### Store Cleanup ✅ 
+- Removed ashmiaa/asmiaa stores from database
+- Remaining stores: tnvcollection, tnvcollectionpk
 
 ### Create DWZ Order from 1688 Modal ✅ NEW
 - **Component**: `/app/frontend/src/components/Trade1688Dashboard.jsx` (lines 760-897)
