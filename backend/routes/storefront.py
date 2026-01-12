@@ -622,6 +622,78 @@ class StatusUpdate(BaseModel):
     note: Optional[str] = ""
     tracking_number: Optional[str] = None
     courier: Optional[str] = None
+    send_whatsapp: bool = True  # Default to sending WhatsApp notification
+
+
+def generate_whatsapp_status_message(order: dict, new_status: str, tracking_number: str = None, courier: str = None) -> str:
+    """Generate WhatsApp message for order status update"""
+    customer_name = order.get('customer', {}).get('first_name', 'Customer')
+    order_id = order.get('order_id', 'N/A')
+    total = order.get('total', 0)
+    currency = order.get('currency', 'INR')
+    currency_symbol = '₹' if currency == 'INR' else 'Rs'
+    payment_method = order.get('payment_method', 'cod')
+    
+    status_messages = {
+        'confirmed': (
+            f"✅ *Order Confirmed!*\n\n"
+            f"Hi {customer_name}!\n\n"
+            f"Your order #{order_id} has been confirmed and is being processed.\n\n"
+            f"💰 Total: {currency_symbol}{total:,.0f}\n"
+            f"{'💵 Payment: Cash on Delivery' if payment_method == 'cod' else '✓ Payment: Received'}\n\n"
+            f"We'll notify you when it ships! 📦"
+        ),
+        'processing': (
+            f"📦 *Order Processing*\n\n"
+            f"Hi {customer_name}!\n\n"
+            f"Your order #{order_id} is being prepared for shipment.\n\n"
+            f"We'll send tracking details soon! 🚚"
+        ),
+        'shipped': (
+            f"🚚 *Order Shipped!*\n\n"
+            f"Hi {customer_name}!\n\n"
+            f"Great news! Your order #{order_id} is on its way!\n\n"
+            f"📦 *Tracking Details:*\n"
+            f"Courier: {courier or 'Our Partner'}\n"
+            f"Tracking #: {tracking_number or 'Will be updated'}\n\n"
+            f"{'💵 Amount to pay on delivery: ' + currency_symbol + str(int(total)) if payment_method == 'cod' else ''}\n\n"
+            f"Expected delivery: 3-5 business days 📅"
+        ),
+        'out_for_delivery': (
+            f"🏃 *Out for Delivery!*\n\n"
+            f"Hi {customer_name}!\n\n"
+            f"Your order #{order_id} is out for delivery TODAY! 🎉\n\n"
+            f"{'💵 Please keep ' + currency_symbol + str(int(total)) + ' ready for cash payment.' if payment_method == 'cod' else ''}\n\n"
+            f"Our delivery partner will contact you shortly. 📞"
+        ),
+        'delivered': (
+            f"🎉 *Order Delivered!*\n\n"
+            f"Hi {customer_name}!\n\n"
+            f"Your order #{order_id} has been delivered! 📦✓\n\n"
+            f"We hope you love your purchase! 💝\n\n"
+            f"Thank you for shopping with TNC Collection! 🛍️\n\n"
+            f"Need help? Just reply to this message."
+        ),
+        'cancelled': (
+            f"❌ *Order Cancelled*\n\n"
+            f"Hi {customer_name},\n\n"
+            f"Your order #{order_id} has been cancelled.\n\n"
+            f"If you have any questions, please reply to this message.\n\n"
+            f"We hope to serve you again soon! 🙏"
+        )
+    }
+    
+    return status_messages.get(new_status, f"📋 Order #{order_id} status updated to: {new_status}")
+
+
+def generate_whatsapp_link(phone: str, message: str) -> str:
+    """Generate WhatsApp click-to-chat link"""
+    import urllib.parse
+    clean_phone = ''.join(filter(str.isdigit, phone))
+    if len(clean_phone) == 10:
+        clean_phone = '91' + clean_phone  # Default to India
+    encoded_message = urllib.parse.quote(message)
+    return f"https://wa.me/{clean_phone}?text={encoded_message}"
 
 
 @router.put("/orders/{order_id}/status")
