@@ -5514,6 +5514,7 @@ class Create1688DwzOrderRequest(BaseModel):
     shopify_order_number: Optional[str] = Field(None, description="Shopify order number for tag")
     shopify_color: Optional[str] = Field(None, description="Shopify variant color for verification")
     shopify_size: Optional[str] = Field(None, description="Shopify variant size for verification")
+    configured_remark: Optional[str] = Field(None, description="Previously configured remark to include")
 
 
 @router.post("/create-dwz-from-1688")
