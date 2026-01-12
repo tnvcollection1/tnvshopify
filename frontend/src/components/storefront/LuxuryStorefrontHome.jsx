@@ -8,11 +8,12 @@ const API = process.env.REACT_APP_BACKEND_URL;
 
 // ===================== HERO SECTION =====================
 
-const HeroSection = ({ storeConfig }) => {
+const HeroSection = ({ storeConfig, banners }) => {
   const storeSlug = storeConfig?.id || 'tnvcollection';
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  const slides = [
+  // Default fallback slides if no banners from API
+  const defaultSlides = [
     {
       title: 'Spring Summer',
       subtitle: '2025 Collection',
@@ -30,8 +31,20 @@ const HeroSection = ({ storeConfig }) => {
       link: `/store/${storeSlug}/products`
     }
   ];
+  
+  // Use banners from API if available, otherwise use defaults
+  const slides = banners?.length > 0 ? banners.map(b => ({
+    title: b.title || '',
+    subtitle: b.subtitle || '',
+    description: b.description || '',
+    image: b.image || b.image_url || '',
+    cta: b.cta || b.button_text || 'Shop Now',
+    link: b.link ? (b.link.startsWith('/') ? `/store/${storeSlug}${b.link}` : b.link) : `/store/${storeSlug}/products`,
+    textPosition: b.text_position || 'left'
+  })) : defaultSlides;
 
   useEffect(() => {
+    if (slides.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000);
