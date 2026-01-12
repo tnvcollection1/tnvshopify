@@ -104,7 +104,16 @@ const OrderCard = ({ order, onViewDetails }) => {
               {createTime && (
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  {new Date(createTime).toLocaleDateString()}
+                  {(() => {
+                    // Handle 1688 date format: "20260109180137000+0800"
+                    if (typeof createTime === 'string' && createTime.length >= 14) {
+                      const year = createTime.slice(0, 4);
+                      const month = createTime.slice(4, 6);
+                      const day = createTime.slice(6, 8);
+                      return `${year}-${month}-${day}`;
+                    }
+                    return new Date(createTime).toLocaleDateString();
+                  })()}
                 </span>
               )}
             </div>
