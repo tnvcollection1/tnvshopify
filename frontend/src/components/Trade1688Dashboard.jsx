@@ -146,12 +146,13 @@ const OrderCard = ({ order, onViewDetails }) => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Package className="w-6 h-6 text-zinc-300" />
-                </div>
-              )}
-            </div>
-          ))}
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-6 h-6 text-zinc-300" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
           {productItems.length > 4 && (
             <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-zinc-100 flex items-center justify-center border">
               <span className="text-sm font-medium text-zinc-500">+{productItems.length - 4}</span>
