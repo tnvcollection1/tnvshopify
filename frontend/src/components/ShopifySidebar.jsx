@@ -87,6 +87,7 @@ const ShopifySidebar = () => {
         { label: 'Storefront Manager', path: '/storefront-cms', icon: Layout },
         { label: 'Banner & Collections', path: '/storefront-config', icon: Image },
         { label: 'Menu & Tags', path: '/menu-tags', icon: Menu },
+        { label: 'Store Management', path: '/store-management', icon: Globe },
         { label: 'Drafts', path: '/drafts', icon: FileText },
         { label: 'Fulfillment', path: '/fulfillment', icon: Truck },
         { label: 'Fulfillment Pipeline', path: '/fulfillment-pipeline', icon: Truck },
