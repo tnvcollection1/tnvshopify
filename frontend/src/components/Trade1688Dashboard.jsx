@@ -75,11 +75,14 @@ const OrderStatusBadge = ({ status }) => {
 const OrderCard = ({ order, onViewDetails }) => {
   const [expanded, setExpanded] = useState(false);
   
-  const orderId = order.id || order.orderId || order.tradeId;
-  const totalAmount = order.totalAmount || order.sumPayment || 0;
-  const status = order.orderStatus || order.status || 'unknown';
-  const createTime = order.createTime || order.gmtCreate;
-  const sellerName = order.sellerCompanyName || order.sellerLoginId || 'Unknown Seller';
+  // Handle nested baseInfo structure from 1688 API
+  const baseInfo = order.baseInfo || order;
+  
+  const orderId = baseInfo.idOfStr || baseInfo.id || order.id || order.orderId || order.tradeId;
+  const totalAmount = baseInfo.totalAmount || order.totalAmount || order.sumPayment || 0;
+  const status = baseInfo.status || order.orderStatus || order.status || 'unknown';
+  const createTime = baseInfo.createTime || order.createTime || order.gmtCreate;
+  const sellerName = baseInfo.sellerContact?.companyName || baseInfo.sellerLoginId || order.sellerCompanyName || 'Unknown Seller';
   const productItems = order.productItems || order.orderEntries || [];
   
   return (
