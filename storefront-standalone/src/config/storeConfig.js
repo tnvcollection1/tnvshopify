@@ -105,10 +105,24 @@ export const getStoreConfig = (storeSlugOrDomain) => {
 
 /**
  * Detect store from current window location
+ * Supports preview mode via ?store=tnvcollection or ?store=tnvcollectionpk
  */
 export const detectStore = () => {
   if (typeof window === 'undefined') {
     return STORE_CONFIG[import.meta.env.VITE_DEFAULT_STORE || 'tnvcollectionpk'];
+  }
+  
+  // Check for store preview parameter in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const previewStore = urlParams.get('store');
+  if (previewStore && STORE_CONFIG[previewStore]) {
+    return STORE_CONFIG[previewStore];
+  }
+  
+  // Check localStorage for persisted store preference (for preview)
+  const savedStore = localStorage.getItem('preview_store');
+  if (savedStore && STORE_CONFIG[savedStore]) {
+    return STORE_CONFIG[savedStore];
   }
   
   const hostname = window.location.hostname;
