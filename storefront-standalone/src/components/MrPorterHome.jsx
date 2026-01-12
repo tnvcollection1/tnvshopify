@@ -583,19 +583,43 @@ const FeaturedCollections = ({ storeConfig }) => {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const res = await fetch(`${API}/api/storefront/collections?store=${storeSlug}&limit=50`);
+        const res = await fetch(`${API}/api/storefront/collections?store=${storeSlug}&limit=100`);
         if (res.ok) {
           const data = await res.json();
-          // Filter for featured collections (new arrivals, sale, trending, etc.)
-          const featured = (data.collections || []).filter(c => {
-            const title = c.title?.toLowerCase() || '';
-            return title.includes('new') || title.includes('sale') || 
-                   title.includes('trend') || title.includes('clearance') ||
-                   title.includes('featured') || title.includes('arrival');
-          }).slice(0, 6);
+          const allCollections = data.collections || [];
           
-          // If no featured, just take first 6
-          setCollections(featured.length > 0 ? featured : (data.collections || []).slice(0, 6));
+          // Priority collections to show (in order)
+          const priorityHandles = [
+            'men', 'women', 'new-arrival', 'new-arrivals', 'best-sllers', 'best-sellers',
+            'sale', 'sale-2024', 'sale-2025', 'rts', 'sto', 'ready-to-ship',
+            'mens-bag', 'shop-bags', 'accessories', 'formalshoes', 'sneakers'
+          ];
+          
+          // Find collections by priority handles
+          const featured = [];
+          for (const handle of priorityHandles) {
+            const found = allCollections.find(c => 
+              c.handle?.toLowerCase() === handle.toLowerCase()
+            );
+            if (found && !featured.some(f => f.handle === found.handle)) {
+              featured.push(found);
+            }
+            if (featured.length >= 8) break;
+          }
+          
+          // If we don't have enough, add some based on title keywords
+          if (featured.length < 6) {
+            const keywords = ['men', 'women', 'shoe', 'bag', 'new', 'sale', 'best'];
+            for (const col of allCollections) {
+              if (featured.length >= 8) break;
+              const title = col.title?.toLowerCase() || '';
+              if (keywords.some(k => title.includes(k)) && !featured.some(f => f.handle === col.handle)) {
+                featured.push(col);
+              }
+            }
+          }
+          
+          setCollections(featured.slice(0, 8));
         }
       } catch (e) {
         console.error('Failed to fetch collections:', e);
@@ -616,23 +640,26 @@ const FeaturedCollections = ({ storeConfig }) => {
           <h2 className="text-2xl md:text-3xl font-light tracking-wide">Featured Collections</h2>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-          {collections.map((collection) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 md:gap-8">
+          {collections.slice(0, 8).map((collection) => (
             <Link
               key={collection.shopify_collection_id || collection.handle}
               to={`/products?collection=${collection.handle}`}
-              className="group text-center"
+              className="group"
             >
-              <div className="aspect-square bg-white rounded-full overflow-hidden mb-4 mx-auto w-24 md:w-32 lg:w-36 shadow-sm group-hover:shadow-md transition-shadow">
+              <div className="aspect-[4/5] bg-gray-100 overflow-hidden mb-4 relative">
                 <img
-                  src={collection.image_url || `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&q=80`}
+                  src={collection.image_url || `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80`}
                   alt={collection.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                  <h3 className="text-white text-sm md:text-base font-medium tracking-wide uppercase">
+                    {collection.title}
+                  </h3>
+                </div>
               </div>
-              <h3 className="text-xs md:text-sm font-medium tracking-wide uppercase group-hover:underline">
-                {collection.title}
-              </h3>
             </Link>
           ))}
         </div>
