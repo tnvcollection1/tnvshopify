@@ -146,11 +146,45 @@ const UpdateStatusModal = ({ order, open, onClose, onUpdate }) => {
     onUpdate();
     onClose();
   };
-      setLoading(false);
-    }
-  };
 
   if (!order) return null;
+
+  // Show WhatsApp notification dialog after successful update
+  if (whatsAppNotification) {
+    return (
+      <Dialog open={open} onOpenChange={skipWhatsApp}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <MessageCircle className="w-5 h-5" />
+              Send WhatsApp Notification
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <p className="text-sm text-gray-600 mb-3">
+              Customer: <strong>{whatsAppNotification.phone}</strong>
+            </p>
+            <div className="bg-gray-50 p-4 rounded-lg max-h-64 overflow-y-auto">
+              <pre className="text-sm whitespace-pre-wrap font-sans">
+                {whatsAppNotification.message}
+              </pre>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={skipWhatsApp}>
+              Skip
+            </Button>
+            <Button onClick={openWhatsApp} className="bg-green-600 hover:bg-green-700">
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Open WhatsApp
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -211,11 +245,13 @@ const UpdateStatusModal = ({ order, open, onClose, onUpdate }) => {
                     <SelectValue placeholder="Select courier" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="DHL Express">DHL Express</SelectItem>
-                    <SelectItem value="FedEx">FedEx</SelectItem>
-                    <SelectItem value="TCS">TCS</SelectItem>
-                    <SelectItem value="Blue Dart">Blue Dart</SelectItem>
+                    <SelectItem value="DTDC Express">DTDC Express</SelectItem>
                     <SelectItem value="Delhivery">Delhivery</SelectItem>
+                    <SelectItem value="BlueDart">BlueDart</SelectItem>
+                    <SelectItem value="Ecom Express">Ecom Express</SelectItem>
+                    <SelectItem value="India Post">India Post</SelectItem>
+                    <SelectItem value="TCS">TCS (Pakistan)</SelectItem>
+                    <SelectItem value="Leopards">Leopards (Pakistan)</SelectItem>
                     <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
