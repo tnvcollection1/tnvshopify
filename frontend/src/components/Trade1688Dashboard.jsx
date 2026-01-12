@@ -584,7 +584,12 @@ const Trade1688Dashboard = () => {
             ) : (
               <div className="space-y-4">
                 {filteredOrders.map((order, i) => (
-                  <OrderCard key={order.id || order.orderId || i} order={order} />
+                  <OrderCard 
+                    key={order.id || order.orderId || i} 
+                    order={order}
+                    onCreateDwzOrder={handleCreateDwzOrder}
+                    creatingDwz={creatingDwzOrder}
+                  />
                 ))}
               </div>
             )}
