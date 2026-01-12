@@ -2,13 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, ChevronRight, Heart, Share2, Truck, 
-  RotateCcw, Shield, Minus, Plus, Check, X 
+  RotateCcw, Shield, Minus, Plus, Check, X, MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStore, useCart } from './LuxuryStorefrontLayout';
 import { formatPrice } from './config/storeConfig';
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+// ===================== WHATSAPP QUICK ORDER =====================
+
+const generateQuickOrderMessage = (product, variant, quantity, storeConfig) => {
+  const storeName = storeConfig?.name || 'TNC Collection';
+  const currency = storeConfig?.currency?.symbol || '₹';
+  const price = parseFloat(variant?.price || product.variants?.[0]?.price || 0);
+  
+  let message = `🛍️ *Quick Order from ${storeName}*\n\n`;
+  message += `*Product:* ${product.title}\n`;
+  if (variant?.title && variant.title !== 'Default Title') {
+    message += `*Variant:* ${variant.title}\n`;
+  }
+  message += `*Quantity:* ${quantity}\n`;
+  message += `*Price:* ${currency}${price.toLocaleString()} each\n`;
+  message += `*Total:* ${currency}${(price * quantity).toLocaleString()}\n\n`;
+  message += `📦 Please confirm availability and share payment details.\n`;
+  message += `📍 I will provide my shipping address.`;
+  
+  return encodeURIComponent(message);
+};
 
 // ===================== IMAGE GALLERY =====================
 
