@@ -141,9 +141,10 @@ const OrderCard = ({ order, onViewDetails, onCreateDwzOrder, creatingDwz }) => {
         <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
           {productItems.slice(0, 4).map((item, i) => {
             // Handle productImgUrl which can be an array
-            const imgUrl = Array.isArray(item.productImgUrl) 
+            const rawImgUrl = Array.isArray(item.productImgUrl) 
               ? item.productImgUrl[0] 
               : (item.productImgUrl || item.productImg || item.picUrl);
+            const imgUrl = fixImageUrl(rawImgUrl);
             
             return (
               <div 
@@ -175,9 +176,10 @@ const OrderCard = ({ order, onViewDetails, onCreateDwzOrder, creatingDwz }) => {
         {expanded && (
           <div className="pt-3 border-t mt-3 space-y-3">
             {productItems.map((item, i) => {
-              const imgUrl = Array.isArray(item.productImgUrl) 
+              const rawImgUrl = Array.isArray(item.productImgUrl) 
                 ? item.productImgUrl[0] 
                 : (item.productImgUrl || item.productImg || item.picUrl);
+              const imgUrl = fixImageUrl(rawImgUrl);
               
               return (
                 <div key={i} className="flex gap-3 p-2 bg-zinc-50 rounded-lg">
