@@ -407,15 +407,11 @@ const LuxuryFooter = ({ storeConfig }) => {
 
 export const LuxuryStorefrontLayout = ({ children }) => {
   const { storeSlug } = useParams();
-  const [storeConfig, setStoreConfig] = useState(null);
   
-  useEffect(() => {
-    // First try to get from URL param, then detect from domain
-    const config = storeSlug 
-      ? getStoreConfig(storeSlug)
-      : detectStore();
-    setStoreConfig(config);
-  }, [storeSlug]);
+  // Compute store config directly instead of using effect + state
+  const storeConfig = storeSlug 
+    ? getStoreConfig(storeSlug)
+    : detectStore();
 
   if (!storeConfig) {
     return (
