@@ -349,6 +349,24 @@ const ProductInfo = ({ product, storeConfig }) => {
         >
           Buy Now
         </button>
+        
+        {/* WhatsApp Quick Order */}
+        <button
+          onClick={() => {
+            const whatsappNumber = storeConfig?.contact?.whatsapp?.replace(/[^0-9]/g, '') || '';
+            if (!whatsappNumber || whatsappNumber.includes('XXXX')) {
+              toast.info('WhatsApp ordering will be available soon!');
+              return;
+            }
+            const message = generateQuickOrderMessage(product, selectedVariant, quantity, storeConfig);
+            window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+          }}
+          className="w-full py-4 bg-[#25D366] text-white text-sm tracking-wider uppercase hover:bg-[#128C7E] transition flex items-center justify-center gap-2"
+          data-testid="whatsapp-quick-order-btn"
+        >
+          <MessageCircle className="w-5 h-5" />
+          Order via WhatsApp
+        </button>
       </div>
 
       {/* Wishlist & Share */}
