@@ -13,6 +13,7 @@ import LuxuryShoppingCart from './components/LuxuryShoppingCart';
 import LuxuryCheckout from './components/LuxuryCheckout';
 import LuxuryOrderConfirmation from './components/LuxuryOrderConfirmation';
 import LuxuryOrderTracking from './components/LuxuryOrderTracking';
+import CollectionsPage from './components/CollectionsPage';
 
 function App() {
   return (
@@ -22,6 +23,13 @@ function App() {
         <Route path="/" element={
           <MrPorterLayout>
             <MrPorterHome />
+          </MrPorterLayout>
+        } />
+        
+        {/* Collections Page */}
+        <Route path="/collections" element={
+          <MrPorterLayout>
+            <CollectionsPage />
           </MrPorterLayout>
         } />
         
