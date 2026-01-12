@@ -81,6 +81,8 @@ const UpdateStatusModal = ({ order, open, onClose, onUpdate }) => {
   const [courier, setCourier] = useState(order?.courier || '');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sendWhatsApp, setSendWhatsApp] = useState(true);
+  const [whatsAppNotification, setWhatsAppNotification] = useState(null);
 
   useEffect(() => {
     if (order) {
@@ -88,6 +90,7 @@ const UpdateStatusModal = ({ order, open, onClose, onUpdate }) => {
       setTrackingNumber(order.tracking_number || '');
       setCourier(order.courier || '');
       setNote('');
+      setWhatsAppNotification(null);
     }
   }, [order]);
 
@@ -96,7 +99,8 @@ const UpdateStatusModal = ({ order, open, onClose, onUpdate }) => {
     try {
       const payload = {
         status,
-        note: note || `Status updated to ${status}`
+        note: note || `Status updated to ${status}`,
+        send_whatsapp: sendWhatsApp
       };
       
       if (status === 'shipped' || trackingNumber) {
@@ -111,13 +115,37 @@ const UpdateStatusModal = ({ order, open, onClose, onUpdate }) => {
 
       if (response.data.success) {
         toast.success(`Order status updated to ${status}`);
-        onUpdate();
-        onClose();
+        
+        // Show WhatsApp notification if available
+        if (response.data.whatsapp_notification && sendWhatsApp) {
+          setWhatsAppNotification(response.data.whatsapp_notification);
+        } else {
+          onUpdate();
+          onClose();
+        }
       }
     } catch (error) {
       console.error('Error updating status:', error);
       toast.error(error.response?.data?.detail || 'Failed to update status');
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const openWhatsApp = () => {
+    if (whatsAppNotification?.link) {
+      window.open(whatsAppNotification.link, '_blank');
+    }
+    setWhatsAppNotification(null);
+    onUpdate();
+    onClose();
+  };
+
+  const skipWhatsApp = () => {
+    setWhatsAppNotification(null);
+    onUpdate();
+    onClose();
+  };
       setLoading(false);
     }
   };
