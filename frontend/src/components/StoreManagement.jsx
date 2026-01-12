@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
+const STORES_API = `${API}/api/wamerce/stores`;
 
 const CURRENCY_OPTIONS = [
   { code: "PKR", symbol: "Rs", name: "Pakistani Rupee" },
