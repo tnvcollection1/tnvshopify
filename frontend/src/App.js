@@ -657,6 +657,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/storefront-config" 
+        element={
+          <ProtectedRoute>
+            <StorefrontConfigManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/storefront-cms" 
         element={
           <ProtectedRoute>
