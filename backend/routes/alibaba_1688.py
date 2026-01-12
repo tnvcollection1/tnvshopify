@@ -5727,20 +5727,26 @@ async def create_dwz_order_from_1688(request: Create1688DwzOrderRequest):
                 detail=f"DWZ API error: {error_msg}. Raw: {dwz_response}"
             )
         
-        # Get created record ID
+        # Get created record ID and AWB from response
         created_ids = dwz_response.get("RecIDs", [])
+        err_list = dwz_response.get("ErrList", [])
+        awb_number = err_list[0].get("cNo") if err_list else None
         
         return {
             "success": True,
             "message": "DWZ order created successfully",
-            "dwz_record_id": created_ids[0] if created_ids else None,
+            "dwz_record_id": created_ids[0] if created_ids else (err_list[0].get("iID") if err_list else None),
+            "awb_number": awb_number,
             "tracking_number_1688": tracking_number,
             "courier_1688": courier_name,
             "reference_number": reference_number,
             "tag": tag,
+            "color_1688": color_1688,
             "color_code": color_code,
             "color_display": color_display,
-            "size": size_1688,
+            "size_1688": size_1688,
+            "shopify_color": request.shopify_color,
+            "shopify_size": request.shopify_size,
             "remarks": remarks,
             "dwz_response": dwz_response,
         }
