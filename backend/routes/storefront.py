@@ -779,11 +779,42 @@ async def update_order_status(order_id: str, update: StatusUpdate, background_ta
             background_tasks.add_task(email_svc.send_delivery_confirmation, email_order)
             logger.info(f"Delivery confirmation email queued for order {order_id}")
     
+    # Generate WhatsApp notification link
+    whatsapp_notification = None
+    if update.send_whatsapp:
+        customer_phone = order.get('customer', {}).get('phone') or \
+                        order.get('shipping_address', {}).get('phone')
+        if customer_phone:
+            wa_message = generate_whatsapp_status_message(
+                order, 
+                update.status, 
+                update.tracking_number, 
+                update.courier
+            )
+            whatsapp_link = generate_whatsapp_link(customer_phone, wa_message)
+            whatsapp_notification = {
+                "phone": customer_phone,
+                "message": wa_message,
+                "link": whatsapp_link
+            }
+            
+            # Save notification record
+            await db.whatsapp_order_notifications.insert_one({
+                "order_id": order_id,
+                "status": update.status,
+                "phone": customer_phone,
+                "message": wa_message,
+                "whatsapp_link": whatsapp_link,
+                "created_at": now,
+                "sent": False
+            })
+    
     return {
         "success": True,
         "order_id": order_id,
         "new_status": update.status,
-        "message": f"Order status updated to {update.status}"
+        "message": f"Order status updated to {update.status}",
+        "whatsapp_notification": whatsapp_notification
     }
 
 
