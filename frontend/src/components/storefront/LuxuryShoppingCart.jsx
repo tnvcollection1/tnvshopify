@@ -2,10 +2,75 @@ import React, { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { 
   X, Minus, Plus, ShoppingBag, ArrowRight, Trash2,
-  ChevronLeft, Tag, Truck
+  ChevronLeft, Tag, Truck, MessageCircle
 } from 'lucide-react';
 import { useStore, useCart } from './LuxuryStorefrontLayout';
 import { formatPrice } from './config/storeConfig';
+
+// ===================== WHATSAPP ORDER HELPER =====================
+
+const generateWhatsAppMessage = (cart, cartTotal, storeConfig, promoApplied = false) => {
+  const storeName = storeConfig?.name || 'TNC Collection';
+  const currency = storeConfig?.currency?.symbol || '₹';
+  
+  let message = `🛍️ *New Order from ${storeName}*\n\n`;
+  message += `*Order Details:*\n`;
+  message += `─────────────────\n`;
+  
+  cart.forEach((item, index) => {
+    message += `${index + 1}. *${item.title}*\n`;
+    if (item.variantTitle && item.variantTitle !== 'Default Title') {
+      message += `   Variant: ${item.variantTitle}\n`;
+    }
+    message += `   Qty: ${item.quantity} × ${currency}${item.price.toLocaleString()}\n`;
+    message += `   Subtotal: ${currency}${(item.quantity * item.price).toLocaleString()}\n\n`;
+  });
+  
+  message += `─────────────────\n`;
+  
+  const shipping = cartTotal >= 5000 ? 0 : 199;
+  const discount = promoApplied ? cartTotal * 0.1 : 0;
+  const total = cartTotal + shipping - discount;
+  
+  message += `*Subtotal:* ${currency}${cartTotal.toLocaleString()}\n`;
+  if (promoApplied) {
+    message += `*Discount (10%):* -${currency}${discount.toLocaleString()}\n`;
+  }
+  message += `*Shipping:* ${shipping === 0 ? 'FREE' : currency + shipping}\n`;
+  message += `*Total:* ${currency}${total.toLocaleString()}\n\n`;
+  
+  message += `📦 Please confirm my order and share payment details.\n`;
+  message += `📍 I will provide my shipping address.`;
+  
+  return encodeURIComponent(message);
+};
+
+const WhatsAppOrderButton = ({ cart, cartTotal, storeConfig, promoApplied }) => {
+  const whatsappNumber = storeConfig?.contact?.whatsapp?.replace(/[^0-9]/g, '') || '';
+  
+  const handleWhatsAppOrder = () => {
+    if (!whatsappNumber || whatsappNumber.includes('XXXX')) {
+      // Demo mode - show alert
+      alert('WhatsApp ordering will be available once the store owner configures their WhatsApp number.');
+      return;
+    }
+    
+    const message = generateWhatsAppMessage(cart, cartTotal, storeConfig, promoApplied);
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  return (
+    <button
+      onClick={handleWhatsAppOrder}
+      className="w-full py-4 bg-[#25D366] text-white text-sm tracking-wider uppercase hover:bg-[#128C7E] transition flex items-center justify-center gap-2"
+      data-testid="whatsapp-order-btn"
+    >
+      <MessageCircle className="w-5 h-5" />
+      Order via WhatsApp
+    </button>
+  );
+};
 
 // ===================== CART ITEM =====================
 
