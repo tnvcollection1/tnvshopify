@@ -12,7 +12,7 @@ from bson import ObjectId
 import re
 import secrets
 
-router = APIRouter(prefix="/api/stores", tags=["Store Management"])
+router = APIRouter(prefix="/api/wamerce/stores", tags=["Wamerce Store Management"])
 
 # Database connection (imported from main server)
 def get_db():
