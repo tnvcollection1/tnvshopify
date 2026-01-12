@@ -600,7 +600,68 @@ const MrPorterFooter = ({ storeConfig }) => {
 
 // ===================== MAIN LAYOUT =====================
 export const MrPorterLayout = ({ children }) => {
-  const storeConfig = detectStore();
+  const [storeConfig, setStoreConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const loadStore = async () => {
+      // First try to get store from static config (for faster initial load)
+      const staticConfig = detectStore();
+      setStoreConfig(staticConfig);
+      
+      // Then try to load dynamic config from API
+      try {
+        const hostname = window.location.hostname;
+        const urlParams = new URLSearchParams(window.location.search);
+        const previewStore = urlParams.get('store');
+        
+        let subdomain = previewStore;
+        
+        // Extract subdomain from hostname (e.g., storename.wamerce.com)
+        if (!subdomain && hostname.endsWith('.wamerce.com')) {
+          subdomain = hostname.replace('.wamerce.com', '');
+          if (subdomain === 'www') subdomain = null;
+        }
+        
+        // If we have a subdomain, try to load from API
+        if (subdomain) {
+          const res = await fetch(`${API}/api/stores/by-subdomain/${subdomain}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.store) {
+              // Merge API config with detected config
+              setStoreConfig(prev => ({
+                ...prev,
+                ...data.store,
+                id: data.store.subdomain || prev?.id
+              }));
+            }
+          }
+        }
+        
+        // Try custom domain lookup
+        if (!subdomain && !previewStore) {
+          const res = await fetch(`${API}/api/stores/by-domain/${hostname}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.store) {
+              setStoreConfig(prev => ({
+                ...prev,
+                ...data.store,
+                id: data.store.subdomain || prev?.id
+              }));
+            }
+          }
+        }
+      } catch (e) {
+        console.log('Using static store config');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadStore();
+  }, []);
 
   if (!storeConfig) {
     return (
