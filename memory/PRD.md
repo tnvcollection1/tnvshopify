@@ -81,6 +81,34 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - **Database Backup**: Created full JSON backup of all products, collections, stores, and customers
 - **Script**: `/var/www/wamerce/backend/scripts/download_all_images.py`
 
+### Storefront Admin Panel - Banner & Collection Customization ✅ COMPLETED
+- **New Sidebar Section**: Added "Storefront" section with:
+  - Banners & Collections (`/storefront-config`)
+  - Menu & Tags (`/menu-tags`)
+  - Orders (`/storefront-orders`)
+- **Features Available**:
+  - Add/Edit/Delete hero banners with image upload
+  - Manage homepage featured collections
+  - Store selector (India/Pakistan)
+  - Banner size recommendations (Hero 1920x800, Wide, Standard, Mobile, Square)
+  - Active/Inactive toggle for each item
+  - Image library for uploaded assets
+- **API Endpoints Working**:
+  - `GET/POST /api/storefront/banners` - List/create banners
+  - `PUT/DELETE /api/storefront/banners/{id}` - Update/delete banner
+  - `GET/POST /api/storefront/collections` - List/create collections (homepage)
+  - `GET /api/storefront/home-config` - Get all active banners & collections
+
+### Custom Domain Status:
+| Domain | Target | Status |
+|--------|--------|--------|
+| wamerce.com | VPS (Admin) | ✅ Working |
+| api.wamerce.com | VPS (Backend) | ✅ Working |
+| tnvcollectionpk.wamerce.com | VPS (Storefront) | ✅ Working |
+| tnvcollection.wamerce.com | VPS (Storefront) | ✅ Working |
+| tnvcollection.com | Vercel (DNS not pointing to VPS) | ⚠️ Needs DNS update |
+| tnvcollection.pk | Shopify (DNS not pointing to VPS) | ⚠️ Needs DNS update |
+
 ### Previous Updates (Jan 12, 2025)
 
 ### Menu & Tags Management System ✅ COMPLETED
