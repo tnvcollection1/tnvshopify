@@ -4,7 +4,7 @@ import {
   X, Minus, Plus, ShoppingBag, ArrowRight, Trash2,
   ChevronLeft, Tag, Truck, MessageCircle
 } from 'lucide-react';
-import { useStore, useCart } from './LuxuryStorefrontLayout';
+import { useStore, useCart } from './MrPorterLayout';
 import { formatPrice } from '../config/storeConfig';
 
 // ===================== WHATSAPP ORDER HELPER =====================

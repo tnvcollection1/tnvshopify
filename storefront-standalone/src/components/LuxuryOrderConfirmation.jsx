@@ -5,7 +5,7 @@ import {
   Copy, MessageCircle, ArrowRight, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useStore } from './LuxuryStorefrontLayout';
+import { useStore } from './MrPorterLayout';
 import { formatPrice } from '../config/storeConfig';
 
 const API = import.meta.env.VITE_API_URL;
