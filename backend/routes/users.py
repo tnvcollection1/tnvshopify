@@ -432,6 +432,28 @@ async def login_user(username: str, password: str):
         raise HTTPException(status_code=500, detail="Login failed")
 
 
+
+@users_router.get("/available-stores")
+async def get_available_stores():
+    """Get list of all stores for assigning to merchants"""
+    try:
+        stores = await db.stores.find({}, {"_id": 0, "store_name": 1, "domain": 1, "status": 1}).to_list(100)
+        return {
+            "success": True, 
+            "stores": [
+                {
+                    "name": s.get("store_name"),
+                    "domain": s.get("domain"),
+                    "status": s.get("status", "active")
+                } for s in stores
+            ]
+        }
+    except Exception as e:
+        logger.error(f"Error fetching stores: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @users_router.get("/activity/recent")
 async def get_recent_activity(limit: int = 50):
     """Get recent user activity log"""
