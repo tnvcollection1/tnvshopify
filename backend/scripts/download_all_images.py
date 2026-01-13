@@ -18,8 +18,9 @@ from datetime import datetime
 # Configuration
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 DB_NAME = os.environ.get('DB_NAME', 'shopify_customers_db')
-IMAGES_DIR = Path('/app/backend/static/uploads/products')
-BANNERS_DIR = Path('/app/backend/static/uploads/banners')
+BASE_DIR = Path(os.environ.get('IMAGES_BASE_DIR', '/var/www/wamerce/backend/static/uploads'))
+IMAGES_DIR = BASE_DIR / 'products'
+BANNERS_DIR = BASE_DIR / 'banners'
 MAX_CONCURRENT = 20
 
 # Create directories
