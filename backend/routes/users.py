@@ -110,8 +110,14 @@ async def get_roles():
             {
                 "id": "admin",
                 "name": "Administrator",
-                "description": "Full access - can manage users, sync to Shopify, and access all features",
+                "description": "Full access - can manage users, all stores, sync to Shopify, and access all features",
                 "permissions": get_permissions("admin")
+            },
+            {
+                "id": "merchant",
+                "name": "Merchant",
+                "description": "Store owner - can manage only their assigned stores, view orders, send messages",
+                "permissions": get_permissions("merchant")
             },
             {
                 "id": "manager",
