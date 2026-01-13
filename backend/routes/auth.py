@@ -83,13 +83,19 @@ async def login_agent(credentials: AgentLogin):
             {"$set": {"last_login": datetime.now(timezone.utc).isoformat()}}
         )
         
+        # Get permissions based on role
+        role = agent.get("role", "agent")
+        permissions = get_role_permissions(role)
+        
         return {
             "success": True,
             "agent": {
                 "id": agent["id"],
                 "username": agent["username"],
                 "full_name": agent["full_name"],
-                "role": agent["role"]
+                "role": role,
+                "assigned_stores": agent.get("assigned_stores", []),
+                "permissions": permissions
             }
         }
     except HTTPException:
@@ -97,6 +103,53 @@ async def login_agent(credentials: AgentLogin):
     except Exception as e:
         logger.error(f"Error logging in: {str(e)}")
         raise HTTPException(status_code=500, detail="Login failed")
+
+
+def get_role_permissions(role: str) -> dict:
+    """Get permissions based on role"""
+    permissions = {
+        "admin": {
+            "can_view": True,
+            "can_edit": True,
+            "can_delete": True,
+            "can_sync_shopify": True,
+            "can_manage_users": True,
+            "can_view_revenue": True,
+            "can_manage_all_stores": True,
+            "can_access_settings": True,
+        },
+        "merchant": {
+            "can_view": True,
+            "can_edit": True,
+            "can_delete": False,
+            "can_sync_shopify": False,
+            "can_manage_users": False,
+            "can_view_revenue": True,
+            "can_manage_all_stores": False,
+            "can_access_settings": False,
+        },
+        "agent": {
+            "can_view": True,
+            "can_edit": True,
+            "can_delete": False,
+            "can_sync_shopify": False,
+            "can_manage_users": False,
+            "can_view_revenue": True,
+            "can_manage_all_stores": False,
+            "can_access_settings": False,
+        },
+        "viewer": {
+            "can_view": True,
+            "can_edit": False,
+            "can_delete": False,
+            "can_sync_shopify": False,
+            "can_manage_users": False,
+            "can_view_revenue": False,
+            "can_manage_all_stores": False,
+            "can_access_settings": False,
+        }
+    }
+    return permissions.get(role, permissions["viewer"])
 
 
 @router.post("/signup")
