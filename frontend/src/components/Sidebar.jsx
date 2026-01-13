@@ -52,7 +52,7 @@ const Sidebar = () => {
   const location = useLocation();
   const { logout, agent, isAdmin } = useAuth();
   const { stores, selectedStore, switchStore, syncStoreData, syncing, getStoreName } = useStore();
-  const [expandedSections, setExpandedSections] = useState(['whatsapp', 'shopify']);
+  const [expandedSections, setExpandedSections] = useState(['whatsapp', 'shopify', 'storefront']);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
