@@ -256,6 +256,16 @@ const Sidebar = () => {
         { icon: Settings, label: 'Store Settings', path: '/settings' },
       ]
     },
+    { 
+      icon: LayoutTemplate, 
+      label: 'Storefront', 
+      section: 'storefront',
+      children: [
+        { icon: LayoutTemplate, label: 'Banners & Collections', path: '/storefront-config' },
+        { icon: Tags, label: 'Menus & Tags', path: '/menu-tags' },
+        { icon: ShoppingBag, label: 'Orders', path: '/storefront-orders' },
+      ]
+    },
     { icon: Users, label: 'User Management', path: '/users' },
     { icon: Shield, label: 'Super Admin', path: '/super-admin' },
     { icon: CreditCard, label: 'Subscription', path: '/pricing' },
