@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://ecomm-hub-18.preview.emergentagent.com/api'
+base_url = 'https://ecom-tenant-hub-1.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 
