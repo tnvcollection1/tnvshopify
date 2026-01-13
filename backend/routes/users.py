@@ -39,6 +39,21 @@ def get_permissions(role: str) -> dict:
             "can_view_phone": True,
             "can_export": True,
             "can_send_messages": True,
+            "can_manage_all_stores": True,
+            "can_access_settings": True,
+        },
+        "merchant": {
+            "can_view": True,
+            "can_edit": True,
+            "can_delete": False,
+            "can_sync_shopify": False,
+            "can_manage_users": False,
+            "can_view_revenue": True,
+            "can_view_phone": True,
+            "can_export": True,
+            "can_send_messages": True,
+            "can_manage_all_stores": False,  # Only assigned stores
+            "can_access_settings": False,
         },
         "manager": {
             "can_view": True,
@@ -50,6 +65,8 @@ def get_permissions(role: str) -> dict:
             "can_view_phone": True,
             "can_export": True,
             "can_send_messages": True,
+            "can_manage_all_stores": False,
+            "can_access_settings": False,
         },
         "viewer": {
             "can_view": True,
@@ -61,6 +78,8 @@ def get_permissions(role: str) -> dict:
             "can_view_phone": False,
             "can_export": False,
             "can_send_messages": False,
+            "can_manage_all_stores": False,
+            "can_access_settings": False,
         }
     }
     return permissions.get(role, permissions["viewer"])
