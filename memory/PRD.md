@@ -44,7 +44,33 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ## What's Been Implemented
 
-### Latest Updates (Jan 12, 2025)
+### Latest Updates (Jan 13, 2025) - VPS DEPLOYMENT FIX ✅
+
+### Admin Panel & Storefront Deployment Fix ✅ COMPLETED
+- **Problem**: Admin panel login was failing due to hardcoded API URL pointing to old preview environment
+- **Root Cause**: Frontend `.env` files had `REACT_APP_BACKEND_URL` and `VITE_API_URL` pointing to `https://merchant-platform-12.preview.emergentagent.com` instead of `https://api.wamerce.com`
+- **Fixes Applied**:
+  1. Updated `/app/frontend/.env` with correct API URL
+  2. Updated `/app/storefront-standalone/.env` with correct API URL
+  3. Fixed component imports (`MrPorterHome.jsx`, `LuxuryProductDetail.jsx`, etc.) to use `MrPorterLayout` instead of `LuxuryStorefrontLayout`
+  4. Rebuilt both admin panel and storefront with correct configuration
+  5. Deployed new builds to VPS via SCP
+  6. Reloaded Nginx to apply changes
+- **Current Deployment Status**:
+  | URL | Service | Status |
+  |-----|---------|--------|
+  | wamerce.com | Admin Panel | ✅ Working (login functional) |
+  | api.wamerce.com | Backend API | ✅ Working |
+  | tnvcollectionpk.wamerce.com | Storefront (Pakistan) | ✅ Deployed |
+  | tnvcollection.wamerce.com | Storefront (India) | ✅ Deployed |
+  | tnvcollection.com / tnvcollection.pk | Coming Soon Page | ✅ As requested |
+- **VPS Details**:
+  - IP: 159.198.36.164
+  - Backend: PM2 managed FastAPI on port 8001
+  - Database: MongoDB Atlas
+  - Nginx: Reverse proxy with SSL certificates
+
+### Previous Updates (Jan 12, 2025)
 
 ### Menu & Tags Management System ✅ COMPLETED
 - **New Admin UI**: Menu & Tags Manager at `/menu-tags`
