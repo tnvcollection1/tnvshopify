@@ -189,7 +189,7 @@ def export_full_backup():
     """Export full database backup as JSON"""
     print("\n💾 Creating full JSON backup...")
     
-    backup_dir = Path('/app/backend/static/uploads/backups')
+    backup_dir = BASE_DIR / 'backups'
     backup_dir.mkdir(parents=True, exist_ok=True)
     
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
