@@ -517,7 +517,8 @@ const UserManagement = () => {
                   disabled={selectedUser.username === 'admin'}
                 >
                   <option value="viewer">👁️ Viewer - Read-only access</option>
-                  <option value="manager">✏️ Manager - View & Edit</option>
+                  <option value="merchant">🏪 Merchant - Manage assigned stores</option>
+                  <option value="manager">✏️ Manager - View & Edit all</option>
                   <option value="admin">🛡️ Admin - Full access</option>
                 </select>
               </div>
@@ -537,13 +538,20 @@ const UserManagement = () => {
               </div>
               
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Store Access</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Store Access {formData.role === 'merchant' ? '*' : ''}
+                </label>
                 <Input
                   value={formData.stores}
                   onChange={(e) => setFormData({...formData, stores: e.target.value})}
                   placeholder="store1, store2 (leave empty for all)"
                   className="bg-gray-700 border-gray-600"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.role === 'merchant' 
+                    ? '⚠️ Required for merchants. Comma-separated store names.'
+                    : 'Comma-separated store names. Empty = access to all stores.'}
+                </p>
               </div>
             </div>
             
