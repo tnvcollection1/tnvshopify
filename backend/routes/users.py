@@ -207,8 +207,8 @@ async def create_user(
     """Create a new user (admin only)"""
     try:
         # Validate role
-        if role not in ["admin", "manager", "viewer"]:
-            raise HTTPException(status_code=400, detail="Invalid role. Must be admin, manager, or viewer")
+        if role not in ["admin", "merchant", "manager", "viewer"]:
+            raise HTTPException(status_code=400, detail="Invalid role. Must be admin, merchant, manager, or viewer")
         
         # Check if username exists
         existing = await db.users.find_one({"username": username})
@@ -226,6 +226,10 @@ async def create_user(
         if stores:
             stores_list = [s.strip() for s in stores.split(",") if s.strip()]
         
+        # Merchants must have at least one store assigned
+        if role == "merchant" and not stores_list:
+            raise HTTPException(status_code=400, detail="Merchants must have at least one store assigned")
+        
         # Create user
         user = {
             "id": str(uuid.uuid4()),
@@ -242,7 +246,7 @@ async def create_user(
         }
         
         await db.users.insert_one(user)
-        logger.info(f"✅ New user created: {username} with role {role}")
+        logger.info(f"✅ New user created: {username} with role {role}, stores: {stores_list}")
         
         # Return without password and _id
         user.pop("password", None)
