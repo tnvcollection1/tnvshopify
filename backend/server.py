@@ -594,6 +594,19 @@ async def root():
     return {"message": "Customer Manager API"}
 
 
+@api_router.get("/download/deployment-package")
+async def download_deployment_package():
+    """Download the Wamerce deployment package for VPS setup"""
+    file_path = ROOT_DIR / "static" / "uploads" / "wamerce-deploy.tar.gz"
+    if file_path.exists():
+        return FileResponse(
+            path=str(file_path),
+            filename="wamerce-deploy.tar.gz",
+            media_type="application/gzip"
+        )
+    raise HTTPException(status_code=404, detail="Deployment package not found")
+
+
 @api_router.post("/agents/register")
 async def register_agent(agent: AgentCreate):
     """
