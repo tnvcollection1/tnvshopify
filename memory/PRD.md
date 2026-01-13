@@ -99,6 +99,28 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   - `GET/POST /api/storefront/collections` - List/create collections (homepage)
   - `GET /api/storefront/home-config` - Get all active banners & collections
 
+### Role-Based Access Control (RBAC) for Merchants ✅ COMPLETED
+- **New "Merchant" Role Added**:
+  - Can manage only their assigned stores
+  - Can view orders, send messages, export data
+  - Cannot sync to Shopify or manage users
+  - Cannot access platform settings
+- **Updated Backend**:
+  - `/app/backend/models/agent.py` - Added `assigned_stores` field
+  - `/app/backend/routes/users.py` - Added merchant role with permissions
+  - `/app/backend/routes/auth.py` - Returns permissions and assigned_stores in login
+- **Updated Frontend**:
+  - User Management (`/users`) now shows Merchant role option
+  - Create/Edit user forms support store assignment
+  - Visual distinction with 🏪 icon for merchants
+- **Role Permissions**:
+  | Role | View | Edit | Delete | Manage Users | All Stores | Settings |
+  |------|------|------|--------|--------------|------------|----------|
+  | Admin | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+  | Merchant | ✅ | ✅ | ❌ | ❌ | ❌ (assigned only) | ❌ |
+  | Manager | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+  | Viewer | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+
 ### Custom Domain Status:
 | Domain | Target | Status |
 |--------|--------|--------|
