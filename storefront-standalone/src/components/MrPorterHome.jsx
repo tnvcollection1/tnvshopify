@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useStore } from './LuxuryStorefrontLayout';
+import { useStore } from './MrPorterLayout';
 import { formatPrice, getApiUrl } from '../config/storeConfig';
 
 const API = import.meta.env.VITE_API_URL || getApiUrl();

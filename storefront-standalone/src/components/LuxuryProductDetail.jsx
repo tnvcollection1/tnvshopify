@@ -5,7 +5,7 @@ import {
   RotateCcw, Shield, Minus, Plus, Check, X, MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useStore, useCart } from './LuxuryStorefrontLayout';
+import { useStore, useCart } from './MrPorterLayout';
 import { formatPrice } from '../config/storeConfig';
 
 const API = import.meta.env.VITE_API_URL;
