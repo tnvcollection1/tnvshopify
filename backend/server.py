@@ -620,6 +620,19 @@ async def download_database_export():
     raise HTTPException(status_code=404, detail="Database export not found")
 
 
+@api_router.get("/download/admin-panel")
+async def download_admin_panel():
+    """Download the Wamerce admin panel for VPS deployment"""
+    file_path = ROOT_DIR / "static" / "uploads" / "admin-panel.tar.gz"
+    if file_path.exists():
+        return FileResponse(
+            path=str(file_path),
+            filename="admin-panel.tar.gz",
+            media_type="application/gzip"
+        )
+    raise HTTPException(status_code=404, detail="Admin panel not found")
+
+
 @api_router.post("/agents/register")
 async def register_agent(agent: AgentCreate):
     """
