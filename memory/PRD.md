@@ -63,12 +63,23 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
   | api.wamerce.com | Backend API | ✅ Working |
   | tnvcollectionpk.wamerce.com | Storefront (Pakistan) | ✅ Deployed |
   | tnvcollection.wamerce.com | Storefront (India) | ✅ Deployed |
-  | tnvcollection.com / tnvcollection.pk | Coming Soon Page | ✅ As requested |
+  | tnvcollection.com | Storefront (India) | ✅ ACTIVATED |
+  | tnvcollection.pk | Storefront (Pakistan) | ✅ ACTIVATED |
 - **VPS Details**:
   - IP: 159.198.36.164
   - Backend: PM2 managed FastAPI on port 8001
   - Database: MongoDB Atlas
   - Nginx: Reverse proxy with SSL certificates
+
+### Shopify Data Independence ✅ COMPLETED
+- **Downloaded 39,332 product images** from Shopify CDN to local VPS storage
+- **Storage Used**: 7.7GB for all product images
+  - tnvcollection: 909MB
+  - tnvcollectionpk: 642MB
+  - ashmiaa: 6.1GB (legacy)
+- **Static File Serving**: Added `/api/static/uploads/` endpoint to serve local images
+- **Database Backup**: Created full JSON backup of all products, collections, stores, and customers
+- **Script**: `/var/www/wamerce/backend/scripts/download_all_images.py`
 
 ### Previous Updates (Jan 12, 2025)
 
