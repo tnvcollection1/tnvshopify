@@ -288,7 +288,7 @@ async def update_user(
         if email:
             update["email"] = email
         if role:
-            if role not in ["admin", "manager", "viewer"]:
+            if role not in ["admin", "merchant", "manager", "viewer"]:
                 raise HTTPException(status_code=400, detail="Invalid role")
             update["role"] = role
         if status:
@@ -296,7 +296,12 @@ async def update_user(
                 raise HTTPException(status_code=400, detail="Invalid status")
             update["status"] = status
         if stores is not None:
-            update["stores"] = [s.strip() for s in stores.split(",") if s.strip()] if stores else []
+            stores_list = [s.strip() for s in stores.split(",") if s.strip()] if stores else []
+            # Validate merchant has stores
+            new_role = role or existing.get("role")
+            if new_role == "merchant" and not stores_list:
+                raise HTTPException(status_code=400, detail="Merchants must have at least one store assigned")
+            update["stores"] = stores_list
         
         if not update:
             raise HTTPException(status_code=400, detail="No fields to update")
