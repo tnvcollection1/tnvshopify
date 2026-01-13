@@ -173,23 +173,26 @@ const UserManagement = () => {
   const getRoleBadge = (role) => {
     const styles = {
       admin: 'bg-red-500/20 text-red-300 border-red-500/50',
+      merchant: 'bg-purple-500/20 text-purple-300 border-purple-500/50',
       manager: 'bg-blue-500/20 text-blue-300 border-blue-500/50',
       viewer: 'bg-green-500/20 text-green-300 border-green-500/50'
     };
     const icons = {
       admin: <Shield className="w-3 h-3" />,
+      merchant: <Store className="w-3 h-3" />,
       manager: <Edit3 className="w-3 h-3" />,
       viewer: <Eye className="w-3 h-3" />
     };
     const labels = {
       admin: 'Admin',
+      merchant: 'Merchant',
       manager: 'Manager',
       viewer: 'Viewer'
     };
     
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border ${styles[role]}`}>
-        {icons[role]} {labels[role]}
+      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border ${styles[role] || styles.viewer}`}>
+        {icons[role] || icons.viewer} {labels[role] || role}
       </span>
     );
   };
