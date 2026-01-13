@@ -607,6 +607,19 @@ async def download_deployment_package():
     raise HTTPException(status_code=404, detail="Deployment package not found")
 
 
+@api_router.get("/download/database-export")
+async def download_database_export():
+    """Download the Wamerce database export for VPS migration"""
+    file_path = ROOT_DIR / "static" / "uploads" / "wamerce-database.tar.gz"
+    if file_path.exists():
+        return FileResponse(
+            path=str(file_path),
+            filename="wamerce-database.tar.gz",
+            media_type="application/gzip"
+        )
+    raise HTTPException(status_code=404, detail="Database export not found")
+
+
 @api_router.post("/agents/register")
 async def register_agent(agent: AgentCreate):
     """
