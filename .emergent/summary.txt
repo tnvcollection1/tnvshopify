@@ -1,89 +1,85 @@
-<analysis>**original_problem_statement**: The user initially requested a Shopify application to integrate with 1688.com. The project has since evolved into building two public, multi-tenant e-commerce storefronts ( for India and  for Pakistan). The latest requests involved a complete visual redesign to mimic  and implementing a robust synchronization system to pull products, collections, menus, and pages directly from the user's Shopify stores, making them the source of truth for the storefront's content.
-
-**PRODUCT REQUIREMENTS**:
-- Redesign the existing luxury storefront to match the minimal black/white, editorial aesthetic of .
-- Implement a backend system to manage homepage banners and featured collections.
-- Create a comprehensive sync mechanism with Shopify to fetch products, collections, pages, and navigation menus for both the India and Pakistan stores.
-- The storefront's header, navigation, and content sections (like featured collections) must dynamically display the data synced from Shopify.
-- Guide the user to correctly configure their custom domains (, ) on Namecheap to point to the Vercel deployment.
-- Ensure the user can preview both stores on the Vercel deployment URL before the custom domains are live.
+<analysis>**original_problem_statement**: The user wants to build a multi-tenant e-commerce platform named , inspired by Shopify. Key requirements include allowing merchants to create their own stores with unique subdomains (e.g., ), the ability to connect custom domains (like ), and a central admin panel for managing stores, banners, menus, and tags. The immediate goal is to deploy this entire platform to a Namecheap VPS the user has recently purchased. The initial tenant stores are  (India) and  (Pakistan).
 
 **User's preferred language**: English
 
 **what currently exists?**
-- A standalone Vite/React storefront application at .
-- The storefront has been redesigned with a -inspired theme.
-- A full-featured backend sync service () that uses both REST and GraphQL APIs to pull products, collections, pages, and menus from the user's two Shopify stores ( and ).
-- The data for both stores has been successfully synced into the application's MongoDB database.
-- The storefront components (, ) have been updated to dynamically render navigation menus and featured content using the synced Shopify data.
-- An admin panel () exists to manage homepage banners.
-- A store preview mechanism is implemented, allowing the user to view each store on the Vercel deployment URL via a query parameter (e.g., ).
+- A full-stack application comprising a FastAPI backend, a React admin panel (), and a standalone React storefront ().
+- The backend features a robust Shopify sync mechanism, with all data stored in a MongoDB database.
+- A comprehensive admin panel has been developed with UI for:
+    - **Store Management**: Creating and managing merchant stores, which automatically get a  URL.
+    - **Banner Management**: An interface to upload and manage homepage banners, including an image uploader and size guidelines.
+    - **Menu & Tags Management**: A system for creating and organizing navigation menus and product tags for each store.
+- The storefront is now fully dynamic. It detects the hostname (subdomain or custom domain) from the URL and fetches the corresponding store's configuration and content from the backend APIs.
+- A complete set of deployment scripts and a detailed guide for an AlmaLinux 9 VPS are located in the  directory.
+- The user has successfully SSH'd into their Namecheap VPS and executed the initial server setup commands, installing all necessary dependencies like Node.js, Python, Nginx, and MongoDB.
 
 **Last working item**:
--   **Last item agent was working**: The agent was working on matching the storefront banners to the user's live Shopify stores. It successfully scraped the banner details from both  and  but has not yet added this data to the database or updated the frontend to display them.
+-   **Last item agent was working**: Guiding the user to deploy the application onto their new Namecheap VPS. The agent instructed the user to transfer the application code via , which failed because the command was executed from the user's local machine instead of the Emergent environment where the code resides. The immediate task is to devise a new method for code transfer and continue the deployment process.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: backend testing agent to script the API calls for adding the scraped banners to the database. Then, use the screenshot tool to verify the banners appear correctly on the homepage for both stores using the  preview URLs.
+-   **Which testing method agent to use?**: Manual testing by user after the full deployment is complete. This will involve checking the live admin dashboard, the storefront subdomains, and the custom domain configurations.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Implement Banners from Live Shopify Stores (P0)
--   **Issue 2**: Finalize Vercel Deployment and Custom Domain Configuration (P1)
+-   **Issue 1**: Complete the full deployment of the Wamerce platform to the user's VPS (P0).
+-   **Issue 2**: Finalize and verify custom domain mapping for  and  after deployment (P1).
 
 **Issues Detail**:
--   **Issue 1: Implement Banners from Live Shopify Stores**
-    -   **Attempted fixes**: The agent scraped the banner image URLs and links from the user's live Shopify sites.
+-   **Issue 1: Complete VPS Deployment**
+    -   **Attempted fixes**: An attempt to use  from the user's local machine failed as the code is not locally available to the user.
     -   **Next debug checklist**:
-        1.  Formulate a plan to use the scraped banner information.
-        2.  For each store ( and ), make  requests to the  endpoint to save the banner data (image URL, title, link) into the database.
-        3.  Confirm the  component's  hook correctly fetches and displays this banner data from the  endpoint.
-        4.  Test by taking screenshots of the preview URLs ( and ) to ensure the correct banners are displayed for each store.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will complete the user's request to make the storefront's content match their live Shopify stores, fulfilling a key requirement of the redesign.
+        1.  Devise a new method to transfer the code. A good approach would be to create a script that the user can run on their VPS. This script would  the repository or download a zipped archive of the  and  directories.
+        2.  Guide the user to execute this script to place the code in the  directory on their server.
+        3.  Provide step-by-step instructions for the user to run the remaining deployment scripts:  (install dependencies),  (configure web server),  (secure domains), and  (run apps with PM2).
+        4.  Confirm that all services are running and accessible via their respective domains (, , etc.).
+    -   **Why fix this issue and what will be achieved with the fix?**: This is the final step to launch the user's platform on their self-hosted server.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Both.
     -   **Blocked on other issue**: None.
 
--   **Issue 2: Finalize Vercel Deployment and Custom Domain Configuration**
-    -   **Attempted fixes**: The agent provided detailed instructions for updating DNS records on Namecheap and redeploying on Vercel. The user has started this process.
+-   **Issue 2: Finalize Custom Domain Mapping**
+    -   **Attempted fixes**: User has configured A records for  and its subdomains.
     -   **Next debug checklist**:
-        1.  Guide the user to redeploy the latest code changes to Vercel, ensuring the Use existing Build Cache option is disabled.
-        2.  Ask the user to confirm they have updated the  and  records for both  and  in their Namecheap account.
-        3.  Check the domain status in the Vercel dashboard to ensure they show a Valid Configuration.
-        4.  Once live, guide the user to test both custom domain URLs.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the final step to launch the two storefronts for public access on their intended custom domains.
-    -   **Status**: BLOCKED (on user action)
+        1.  Once the VPS deployment is live, instruct the user to add the DNS records for their custom domains on Namecheap.
+        2.  For : Add an  record for the root () pointing to the VPS IP () and a  record for  pointing to .
+        3.  Repeat the process for .
+        4.  Verify that accessing both custom domains loads the correct storefronts.
+    -   **Why fix this issue and what will be achieved with the fix?**: It enables merchants on the platform to use their own branded domains, a core feature of the Shopify-like model.
+    -   **Status**: BLOCKED
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Frontend (manual user testing).
-    -   **Blocked on other issue**: None.
+    -   **Blocked on other issue**: Complete VPS Deployment.
 
 **In progress Task List**:
--   **Task 1: MR PORTER Redesign & Shopify Data Integration**
-    -   **Where to resume**: The final step is to implement the live banners scraped from the user's Shopify stores.
-    -   **What will be achieved with this?**: A fully data-driven storefront with a  aesthetic, where content (menus, collections, banners) is sourced directly from Shopify.
+-   **Task 1: Deploy Wamerce Platform to User's VPS**
+    -   **Where to resume**: The server dependencies are installed. The next step is to transfer the application code from the Emergent environment to the user's VPS directory .
+    -   **What will be achieved with this?**: A live, self-hosted, multi-tenant e-commerce platform.
     -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: Both.
     -   **Blocked on something**: None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
+    -   (P0) **Merchant Onboarding Flow**: Develop a UI within the admin panel for new merchants to sign up and have their  subdomain automatically created.
     -   (P1) **Sooxie.com Integration**: Plan and implement an integration with the Sooxie.com API.
-    -   (P2) **Inconsistent currency display**: Address inconsistent currency formatting in the competitor analysis history of the original admin panel.
 -   **Future Tasks**:
-    -   (P3) **Refactor  and **: Break down large monolithic files into smaller, domain-specific modules.
-    -   (P3) **CSV Export**: Implement CSV export for competitor price comparison.
-    -   (P3) **Push Notifications**: Add push notification capabilities to the Chrome Extension.
+    -   (P2) **Isolate Merchant Admins**: Implement a role-based access control system so merchants can log in to manage only their own store's data (products, orders, banners).
+    -   (P2) **Refactor Monolithic Files**: Break down  and  into smaller, more maintainable modules.
+    -   (P3) **Address Inconsistent Currency Display**: Fix currency formatting in the competitor analysis section.
+    -   (P3) **CSV Export**: Add functionality to export competitor price data to CSV.
+    -   (P3) **Push Notifications**: Implement push notifications for the Chrome Extension.
 
 **Completed work in this session**
--   **MR PORTER Redesign**: The storefront was completely restyled to a minimal black/white  theme.
--   **Banner/Collection Admin Panel**: An admin UI at  was created to manage homepage banners.
--   **Full Shopify Sync**: A robust sync service was built to fetch Products, Collections, Pages, and Menus (via GraphQL) from both of the user's Shopify stores. Both stores were successfully synced.
--   **Dynamic Storefront Content**: The storefront's navigation, homepage, and product listing pages were updated to dynamically display content from the synced Shopify data.
--   **Store Preview Feature**: A  query parameter was added to allow easy previewing of both stores on the Vercel deployment URL.
--   **Vercel/DNS Guidance**: Provided extensive step-by-step instructions for Vercel deployment and Namecheap DNS configuration.
+-   **Platform Architecture Refactor (Shopify Model)**: The entire application was re-architected to support a multi-tenant model with subdomains () and custom domains, all from a single deployment.
+-   **Store Management System**: A full-featured system with a backend API () and an admin UI was created to dynamically manage merchant stores.
+-   **Banner Management System**: A backend and admin UI were built to manage homepage banners, including image uploads and size recommendations.
+-   **Menu & Tags Management System**: A system was developed to allow admins to create and manage navigation menus (with drag-drop reordering) and product tags for each store.
+-   **VPS Deployment Preparation**: A complete set of deployment scripts and a comprehensive guide for the user's AlmaLinux 9 VPS were created and placed in .
+-   **Successful Server Setup**: The agent successfully guided the user via SSH to install all necessary server dependencies (Node.js, MongoDB, Nginx, Python) on their Namecheap VPS.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1**: Inconsistent currency display in the competitor analysis history section of the admin panel.
+-   **Issue 1**: Inconsistent currency display in the competitor analysis history of the original admin panel.
 -   **Issue 2**: The large backend files  and  need to be refactored for better maintainability.
 
 **Known issue recurrence from previous fork**
@@ -93,77 +89,66 @@
 
 
 **Key Technical Concepts**
--   **Headless E-commerce**: The storefront acts as a head for content managed in Shopify. Data is synced to a middle-layer database (MongoDB) and served via a FastAPI backend.
--   **Shopify GraphQL API**: Used for fetching nested data like navigation menus, which is not easily accessible via the REST API.
--   **Multi-tenancy by Hostname/Query**: A single frontend codebase serves multiple stores by detecting the domain or a URL parameter, then loading the correct configuration and fetching store-specific data.
--   **Vercel Deployment**: The standard workflow for deploying the standalone Vite/React frontend, including managing custom domains and environment variables.
+-   **Multi-Tenant SaaS Architecture**: The application is structured as a SaaS platform () serving multiple tenant stores, each accessible via a unique subdomain or a custom domain.
+-   **Dynamic Store Configuration**: The storefront application is tenant-aware. It uses the request's hostname to call a backend API () and dynamically load the specific store's configuration (name, currency, etc.).
+-   **Wildcard DNS**: The platform relies on a wildcard  record () for  to direct all subdomain traffic to the same VPS, where Nginx and the application handle the routing.
+-   **VPS Deployment & Management**: The project has moved to a self-hosting model on a Namecheap VPS, requiring manual setup of Nginx (as a reverse proxy), MongoDB, process management with PM2, and SSL certificates with Certbot.
 
 **key DB schema**
--   **shopify_products**: Stores synced products from Shopify.
--   **shopify_collections**: Stores synced collections from Shopify.
--   **shopify_pages**: Stores synced pages from Shopify.
--   **shopify_menus**: (New) Stores synced navigation menus from Shopify.
--   **storefront_banners**: (New) Stores data for homepage banners managed via the admin panel.
-
-**changes in tech stack**
--   No new technologies were introduced, but the implementation now relies heavily on the **Shopify GraphQL API** for fetching navigation data.
+-   **stores**: (New) Collection to hold configuration for each merchant store, including , , , , and .
+-   **storefront_menus**: (New) Stores navigation menu structures for each tenant.
+-   **storefront_tags**: (New) Stores product tags for each tenant.
+-   , , : Existing collections that are now effectively partitioned by .
 
 **All files of reference**
--   : Contains all logic for syncing with Shopify.
--   : Defines API endpoints for the storefront.
--   : The main homepage component that needs banner implementation.
--   : The main layout component that renders the dynamic navigation.
--   : Handles the multi-store logic.
--   : Admin UI for managing banners.
-
-**Areas that need refactoring**:
--    and  are large and should be modularized.
--   The new  and  components are becoming complex and could be broken down into smaller, more focused sub-components (e.g., Header, Footer, MobileMenu, FeaturedCollectionGrid).
-
-**key api endpoints**
--   : Creates a new banner for a store.
--   : Fetches all synced collections for a store.
--   : Fetches all data needed for the homepage (banners, featured collections).
--   : Triggers a full data sync for the specified store.
+-   : All scripts and guides in this directory are essential for the ongoing deployment.
+-   : The API for the store management system.
+-   : The UI for managing stores.
+-   : The core component for the dynamic, multi-tenant storefront.
 
 **Critical Info for New Agent**
--   The user is non-technical and requires clear, step-by-step instructions for tasks like Vercel deployment and DNS configuration.
--   The source of truth for all product, collection, and menu content is Shopify. The application's database is a synchronized cache.
--   The immediate goal is to make the storefront perfectly mirror the content (especially banners and menus) of the user's live Shopify stores, but within the new  design.
--   The  and  query parameters are essential for testing and previewing the two different stores before custom domains are fully functional.
+-   You are continuing a live deployment session with the user. The user's VPS IP is , and the root password is .
+-   The VPS is running AlmaLinux 9, and the scripts in  are tailored for it.
+-   The user has successfully installed all server dependencies via SSH.
+-   **Your immediate task is to solve the code transfer problem.** The  command failed because the user does not have the  directory locally. You need to create a new method for the user to get the code onto their VPS (e.g., provide a one-line  or  command to run on their server).
+-   After the code is transferred, guide the user through executing the remaining deployment scripts in  sequentially. Provide clear, step-by-step instructions and ask for confirmation at each stage.
+-   The final DNS setup will point  and its subdomains (, , ) to the VPS IP, and merchant custom domains (like ) will use a CNAME pointing to .
 
 **documents and test reports created in this job**
--    (updated with redesign and Shopify sync requirements).
+-   
+-   
+-   All shell scripts in 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks how to redeploy to see the latest changes.
-2.  **User**: Asks for confirmation on the data flow and which URL to deploy to.
-3.  **User**: Asks how the two separate stores will work on a single deployment.
-4.  **User**: Mentions their India Shopify store is now open and ready to sync.
-5.  **User**: Asks how to preview both stores after sync.
-6.  **User**: Asks to make the storefront exactly match the Shopify banners, menu, and collections.
-7.  **User**: Asks for help enabling the correct API scopes in Shopify.
-8.  **User**: Confirms all permissions have been given.
-9.  **User**: Shares a screenshot of their Namecheap DNS settings and asks about banners.
-10. **User**: Provides the Shopify store URLs to scrape banners from.
+1.  **User**: Agrees to prepare the codebase for self-hosting on their Namecheap server.
+2.  **User**: Shares a screenshot of Namecheap VPS hosting options.
+3.  **User**: Shares a screenshot confirming the purchase of the VPS.
+4.  **User**: Shares a screenshot of the active VPS control panel.
+5.  **User**: Shares another screenshot of the VPS panel.
+6.  **User**: Shares another screenshot of the VPS panel.
+7.  **User**: Provides the VPS root password: .
+8.  **User**: Shares a screenshot of incorrect DNS settings.
+9.  **User**: Shares a screenshot of the corrected DNS settings.
+10. **User**: Posts the full terminal output showing successful installation of all server dependencies.
+11. **User (Pending)**: Shows the  command failing with No such file or directory, indicating they need a new way to get the code onto their server.
 
 **Project Health Check:**
--   **Broken**: The user's live Vercel deployment is out-of-date and does not have any of the recent Shopify sync features or the  redesign. The homepage banners are not implemented. The custom domain configuration is still in progress and likely not working.
+-   **Broken**: The entire platform is undeployed and exists only in the development environment. The deployment process is currently paused, awaiting a solution for code transfer.
+-   **Mocked**: None.
 
 **3rd Party Integrations**
--   **Shopify**: Deep integration using both REST API (products, collections, pages) and GraphQL API (menus/navigation).
--   **1688 Open Platform**: Original integration, not a recent focus.
--   **Vercel**: The deployment platform for the  frontend.
--   **Namecheap**: The user's domain registrar.
+-   **Shopify**: Used for product and content sourcing.
+-   **Namecheap**: The user's DNS and VPS hosting provider.
 
 **Testing status**
--   **Testing agent used after significant changes**: NO (not for the redesign and Shopify sync).
--   **Test files created**: None.
+-   **Testing agent used after significant changes**: YES, for previous feature implementations.
+-   **Test files created**:  exists from previous testing cycles.
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
 -   **Admin Login**:  / 
--   **Warehouse PIN**: 
+-   **VPS IP**: 
+-   **VPS Root Password**: 
 
 **What agent forgot to execute**
--   The agent scraped the banner information from the user's Shopify stores but did not complete the task by adding this data to the database and ensuring it was displayed on the frontend. This is the immediate next step.</analysis>
+-   The agent provided an  command that was logically incorrect for the user's context, as the source files were on the Emergent server, not the user's local machine. This needs to be corrected to unblock the deployment.</analysis>
