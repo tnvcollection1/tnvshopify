@@ -754,6 +754,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/cart-recovery" 
+        element={
+          <ProtectedRoute>
+            <CartRecoveryDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/checkout" 
         element={<CheckoutPage />}
       />
