@@ -333,6 +333,37 @@ const UnifiedStoreSettings = () => {
     });
   };
 
+  // Drag and Drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end for reordering
+  const handleDragEnd = (event, section) => {
+    const { active, over } = event;
+    
+    if (active.id !== over?.id) {
+      setConfig(prev => {
+        const items = prev[section];
+        const oldIndex = items.findIndex(item => item.id === active.id);
+        const newIndex = items.findIndex(item => item.id === over.id);
+        
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        newItems.forEach((item, i) => item.order = i);
+        
+        return { ...prev, [section]: newItems };
+      });
+      toast.success('Order updated');
+    }
+  };
+
   // Sidebar sections
   const sections = [
     { id: 'general', label: 'General Settings', icon: Settings, platform: 'both' },
