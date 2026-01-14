@@ -274,7 +274,7 @@ const CartScreen = ({ cart, onUpdateQuantity, onRemove, onCheckout }) => {
       <div className="flex flex-col items-center justify-center h-full pb-16">
         <span className="text-6xl mb-4">🛒</span>
         <h3 className="text-xl font-bold mb-2">Your bag is empty</h3>
-        <p className="text-gray-500 text-sm">Looks like you haven't added anything yet</p>
+        <p className="text-gray-500 text-sm">Looks like you have not added anything yet</p>
       </div>
     );
   }
