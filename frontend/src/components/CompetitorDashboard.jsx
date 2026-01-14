@@ -676,7 +676,7 @@ const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedS
 };
 
 // ==================== Analysis Results Card ====================
-const AnalysisResultsCard = ({ analysis, onRefresh }) => {
+const AnalysisResultsCard = ({ analysis, onRefresh, formatPrice, getCurrencySymbol, getCurrencyConfig }) => {
   const [loading, setLoading] = useState(false);
   const [fullAnalysis, setFullAnalysis] = useState(null);
 
