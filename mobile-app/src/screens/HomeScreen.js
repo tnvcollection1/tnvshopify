@@ -29,6 +29,7 @@ import PromoBanner, { FlashSaleBanner, CompactBanner } from '../components/Promo
 import Skeleton from '../components/SkeletonLoader';
 import { useStore } from '../context/StoreContext';
 import { useTheme } from '../context/ThemeContext';
+import { pullToRefreshHaptic, successHaptic } from '../services/haptics';
 import * as api from '../services/api';
 import { borderRadius, typography, spacing, gradients } from '../theme';
 
@@ -203,8 +204,11 @@ const HomeScreen = () => {
   };
 
   const onRefresh = () => {
+    pullToRefreshHaptic();
     setRefreshing(true);
-    fetchData();
+    fetchData().then(() => {
+      successHaptic();
+    });
   };
 
   // Header background opacity based on scroll
