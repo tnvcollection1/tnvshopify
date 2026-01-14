@@ -958,6 +958,10 @@ function AppRoutes() {
       <Route path="/tnv/collection/:collectionId" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
       <Route path="/tnv/brand/:brandName" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
       <Route path="/tnv/category/:categoryName" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
+      <Route path="/tnv/cart" element={<TNVStoreWrapper><TNVCart /></TNVStoreWrapper>} />
+      <Route path="/tnv/checkout" element={<TNVStoreWrapper><TNVCheckout /></TNVStoreWrapper>} />
+      <Route path="/tnv/order-confirmation/:orderId" element={<TNVStoreWrapper><TNVOrderConfirmation /></TNVStoreWrapper>} />
+      <Route path="/tnv/track/:orderId" element={<TNVStoreWrapper><TNVOrderConfirmation /></TNVStoreWrapper>} />
     </Routes>
   );
 }
