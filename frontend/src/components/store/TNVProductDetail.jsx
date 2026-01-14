@@ -93,7 +93,7 @@ const TNVProductDetail = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl mb-4">Product not found</p>
-          <Link to="/store" className="text-blue-500 hover:underline">Back to store</Link>
+          <Link to="/tnv" className="text-blue-500 hover:underline">Back to store</Link>
         </div>
       </div>
     );
