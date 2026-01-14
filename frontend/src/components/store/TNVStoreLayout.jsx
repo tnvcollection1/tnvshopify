@@ -415,69 +415,8 @@ export const TNVHeader = () => {
           </div>
         </div>
       )}
-                                      {item.name}
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                          
-                          {/* Featured Image */}
-                          {megaMenu[cat.name].featuredImage && (
-                            <div className="min-w-[200px]">
-                              <Link to={megaMenu[cat.name].featuredLink || '#'}>
-                                <img 
-                                  src={megaMenu[cat.name].featuredImage} 
-                                  alt={megaMenu[cat.name].featuredTitle}
-                                  className="w-full h-64 object-cover rounded-lg"
-                                />
-                                <p className="text-sm font-medium mt-2 text-center">
-                                  {megaMenu[cat.name].featuredTitle}
-                                </p>
-                              </Link>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </nav>
 
-          {/* Search + Icons */}
-          <div className="flex items-center space-x-2">
-            {/* Search Bar - Desktop */}
-            <div className="hidden md:flex items-center">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for Trench Coats"
-                  className="w-64 pl-10 pr-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-            </div>
-            
-            {/* Mobile Search */}
-            <button className="md:hidden p-2" onClick={() => setSearchOpen(!searchOpen)}>
-              <Search className="w-5 h-5" />
-            </button>
-
-            {/* User */}
-            <Link to="/tnv/account" className="p-2.5 hover:bg-gray-100 rounded-full">
-              <User className="w-5 h-5" />
-            </Link>
-            
-            {/* Wishlist */}
-            <Link to="/tnv/wishlist" className="relative p-2.5 hover:bg-gray-100 rounded-full">
-              <Heart className="w-5 h-5" />
-              {wishlist.length > 0 && (
-                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+      {/* Mobile Menu */}
                   {wishlist.length}
                 </span>
               )}
