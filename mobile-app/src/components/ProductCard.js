@@ -212,27 +212,21 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.xl,
     overflow: 'hidden',
-    ...shadows.md,
   },
   containerHorizontal: {
     width: 165,
-    backgroundColor: colors.white,
     borderRadius: borderRadius.xl,
     overflow: 'hidden',
-    ...shadows.md,
   },
   imageContainer: {
     aspectRatio: 3 / 4,
-    backgroundColor: colors.background,
     position: 'relative',
   },
   imageContainerH: {
     width: 165,
     height: 220,
-    backgroundColor: colors.background,
     position: 'relative',
   },
   image: {
@@ -242,7 +236,6 @@ const styles = StyleSheet.create({
   placeholder: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.background,
   },
   placeholderText: {
     fontSize: 32,
@@ -257,7 +250,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.sm,
   },
   discountText: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: typography.tiny,
     fontWeight: typography.bold,
     letterSpacing: 0.5,
@@ -266,13 +259,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.sm,
     left: spacing.sm,
-    backgroundColor: colors.primary,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.sm,
   },
   newBadgeText: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: typography.tiny,
     fontWeight: typography.bold,
     letterSpacing: 1,
@@ -283,11 +275,9 @@ const styles = StyleSheet.create({
     right: spacing.sm,
     width: 36,
     height: 36,
-    backgroundColor: colors.white,
     borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.md,
   },
   wishlistBtnActive: {
     backgroundColor: '#FFF0F3',
@@ -299,13 +289,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: spacing.sm,
     right: spacing.sm,
-    backgroundColor: colors.primary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
   },
   quickAddText: {
-    color: colors.white,
     fontSize: typography.tiny,
     fontWeight: typography.bold,
     letterSpacing: 0.5,
@@ -315,7 +303,6 @@ const styles = StyleSheet.create({
   },
   brand: {
     fontSize: typography.caption,
-    color: colors.textSecondary,
     fontWeight: typography.medium,
     marginBottom: spacing.xs,
     textTransform: 'uppercase',
@@ -324,7 +311,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: typography.bodySmall,
     fontWeight: typography.medium,
-    color: colors.text,
     marginBottom: spacing.sm,
     lineHeight: 20,
   },
@@ -337,12 +323,10 @@ const styles = StyleSheet.create({
   price: {
     fontSize: typography.body,
     fontWeight: typography.bold,
-    color: colors.text,
     marginRight: spacing.sm,
   },
   comparePrice: {
     fontSize: typography.bodySmall,
-    color: colors.textTertiary,
     textDecorationLine: 'line-through',
     marginRight: spacing.sm,
   },
@@ -354,8 +338,8 @@ const styles = StyleSheet.create({
   },
   discountPillText: {
     fontSize: typography.tiny,
-    color: colors.error,
     fontWeight: typography.semibold,
+    color: '#EF4444',
   },
   deliveryRow: {
     flexDirection: 'row',
@@ -363,7 +347,6 @@ const styles = StyleSheet.create({
   },
   deliveryText: {
     fontSize: typography.caption,
-    color: colors.textSecondary,
   },
   deliveryHighlight: {
     fontSize: typography.caption,
@@ -381,11 +364,9 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: typography.caption,
     fontWeight: typography.semibold,
-    color: colors.text,
   },
   ratingCount: {
     fontSize: typography.caption,
-    color: colors.textTertiary,
     marginLeft: 4,
   },
 });
