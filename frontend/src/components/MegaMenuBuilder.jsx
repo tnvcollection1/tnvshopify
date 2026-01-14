@@ -641,9 +641,48 @@ const MegaMenuBuilder = () => {
     }
   }, [store]);
   
+  // Fetch templates
+  const fetchTemplates = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/api/mega-menu/templates`);
+      const data = await res.json();
+      setTemplates(data.templates || []);
+    } catch (e) {
+      console.log('Failed to fetch templates');
+    }
+  }, []);
+  
   useEffect(() => {
     fetchConfig();
-  }, [fetchConfig]);
+    fetchTemplates();
+  }, [fetchConfig, fetchTemplates]);
+  
+  // Apply template
+  const handleApplyTemplate = async (templateKey, merge = false) => {
+    if (!merge && sections.length > 0) {
+      if (!window.confirm('This will replace your current menu. Continue?')) return;
+    }
+    
+    setApplyingTemplate(templateKey);
+    try {
+      const res = await fetch(`${API}/api/mega-menu/templates/${templateKey}/apply/${store}?merge=${merge}`, {
+        method: 'POST'
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        toast.success(data.message);
+        fetchConfig();
+        setShowTemplates(false);
+      } else {
+        toast.error('Failed to apply template');
+      }
+    } catch (e) {
+      toast.error('Failed to apply template');
+    } finally {
+      setApplyingTemplate(null);
+    }
+  };
   
   const handleSave = async () => {
     setSaving(true);
