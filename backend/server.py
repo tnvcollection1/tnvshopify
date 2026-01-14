@@ -58,6 +58,7 @@ from routes.storefront_cms import router as storefront_cms_router, set_database 
 from routes.storefront_config import router as storefront_config_router, set_database as set_storefront_config_db
 from routes.storefront_banners import router as storefront_banners_router, set_database as set_storefront_banners_db
 from routes.analytics import router as analytics_router, set_database as set_analytics_db
+from routes.checkout import router as checkout_router, set_database as set_checkout_db
 from routes.warehouse import router as warehouse_router, set_database as set_warehouse_db
 from security.store_access import set_database as set_security_db, verify_store_access, require_admin, require_merchant_or_admin
 from routes.secure_admin import router as secure_admin_router, set_database as set_secure_admin_db
