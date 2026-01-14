@@ -176,7 +176,7 @@ const TNVCart = () => {
               <div className="mt-6 pt-6 border-t space-y-3">
                 <div className="flex items-center space-x-3 text-sm text-gray-600">
                   <Truck className="w-5 h-5 text-green-600" />
-                  <span>Free delivery on orders over {formatPrice(500)}</span>
+                  <span>Free delivery on orders over {formatPrice(deliveryThreshold)}</span>
                 </div>
                 <div className="flex items-center space-x-3 text-sm text-gray-600">
                   <Shield className="w-5 h-5 text-blue-600" />
