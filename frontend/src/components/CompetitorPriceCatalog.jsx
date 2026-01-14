@@ -140,7 +140,7 @@ const PriceDiffBadge = ({ yourPrice, competitorPrice }) => {
 
 // ==================== Main Component ====================
 const CompetitorPriceCatalog = () => {
-  const { selectedStore, stores } = useStore();
+  const { selectedStore, stores, formatPrice, getCurrencySymbol } = useStore();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState({});
