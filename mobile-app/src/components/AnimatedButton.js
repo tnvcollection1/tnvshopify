@@ -1,6 +1,7 @@
 /**
  * Animated Button Component
  * Button with press animations and various styles
+ * Supports dark mode
  */
 
 import React, { useRef } from 'react';
@@ -13,7 +14,8 @@ import {
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, borderRadius, typography, shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { borderRadius, typography } from '../theme';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 

@@ -1,12 +1,14 @@
 /**
  * Enhanced Category Circle Component
  * Animated circular category with gradient borders
+ * Supports dark mode
  */
 
 import React, { useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, borderRadius, typography, spacing, shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { borderRadius, typography, spacing } from '../theme';
 
 const CategoryCircle = ({ 
   name, 

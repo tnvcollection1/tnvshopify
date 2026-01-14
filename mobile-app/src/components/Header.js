@@ -1,6 +1,7 @@
 /**
  * Enhanced Header Component
  * Modern header with animations and sleek design
+ * Supports dark mode
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -18,7 +19,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../context/StoreContext';
 import { useCart } from '../context/CartContext';
-import { colors, borderRadius, typography, spacing, shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { borderRadius, typography, spacing } from '../theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

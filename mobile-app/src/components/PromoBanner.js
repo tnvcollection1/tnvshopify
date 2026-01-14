@@ -1,6 +1,7 @@
 /**
  * Enhanced Promo Banner Component
  * Animated promotional banners with gradients
+ * Supports dark mode
  */
 
 import React, { useRef, useEffect } from 'react';
@@ -13,7 +14,8 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, borderRadius, typography, spacing, shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { borderRadius, typography, spacing } from '../theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

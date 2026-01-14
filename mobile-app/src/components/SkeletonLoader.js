@@ -1,11 +1,13 @@
 /**
  * Skeleton Loader Component
  * Animated placeholder for loading states
+ * Supports dark mode
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useContext } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
-import { colors, borderRadius } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { borderRadius } from '../theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
