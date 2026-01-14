@@ -689,6 +689,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/header-config" 
+        element={
+          <ProtectedRoute>
+            <HeaderConfigManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/menu-tags" 
         element={
           <ProtectedRoute>
