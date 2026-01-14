@@ -283,7 +283,7 @@ export const TNVHeader = () => {
           </Link>
 
           {/* Main Category Tabs - Desktop */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1 category-dropdown-container">
             {categories.filter(c => c.active !== false).map(cat => {
               // Fashion categories (WOMEN, MEN) show gender selection dropdown on click
               const isFashionCategory = ['WOMEN', 'MEN', 'FASHION'].includes(cat.name.toUpperCase());
