@@ -196,7 +196,7 @@ const TNVHomePage = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl sm:text-2xl font-bold">New Arrivals</h2>
-            <Link to="/store/collection/new" className="text-sm font-medium hover:underline">View All →</Link>
+            <Link to="/tnv/collection/new" className="text-sm font-medium hover:underline">View All →</Link>
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
