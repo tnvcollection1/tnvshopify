@@ -1,7 +1,6 @@
 /**
- * Home Screen
- * Main landing page with banners, categories, and products
- * Now uses dynamic configuration from backend API
+ * Enhanced Home Screen
+ * Beautiful landing page with animations and modern design
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -14,56 +13,166 @@ import {
   FlatList,
   Dimensions,
   RefreshControl,
+  Animated,
+  Image,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
 import CategoryCircle from '../components/CategoryCircle';
-import PromoBanner from '../components/PromoBanner';
+import PromoBanner, { FlashSaleBanner, CompactBanner } from '../components/PromoBanner';
+import Skeleton from '../components/SkeletonLoader';
 import { useStore } from '../context/StoreContext';
 import * as api from '../services/api';
+import { colors, borderRadius, typography, spacing, shadows } from '../theme';
 
-const { width } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Fallback categories if API fails
+// Default categories with gradients
 const defaultCategories = [
-  { name: 'New In', icon: { value: '✨' }, image: 'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=200' },
-  { name: 'Dresses', icon: { value: '👗' }, image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200' },
-  { name: 'Shoes', icon: { value: '👟' }, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200' },
-  { name: 'Bags', icon: { value: '👜' }, image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200' },
-  { name: 'Sports', icon: { value: '🏃' }, image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200' },
-  { name: 'Watches', icon: { value: '⌚' }, image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=200' },
+  { name: 'New In', icon: '✨', gradient: ['#667eea', '#764ba2'] },
+  { name: 'Dresses', icon: '👗', gradient: ['#f093fb', '#f5576c'] },
+  { name: 'Shoes', icon: '👟', gradient: ['#4facfe', '#00f2fe'] },
+  { name: 'Bags', icon: '👜', gradient: ['#fa709a', '#fee140'] },
+  { name: 'Sports', icon: '🏃', gradient: ['#11998e', '#38ef7d'] },
+  { name: 'Watches', icon: '⌚', gradient: ['#ee0979', '#ff6a00'] },
+  { name: 'Beauty', icon: '💄', gradient: ['#a8edea', '#fed6e3'] },
+  { name: 'Sale', icon: '🔥', gradient: ['#ff416c', '#ff4b2b'] },
 ];
+
+// Section Header Component
+const SectionHeader = ({ title, subtitle, onViewAll, style }) => (
+  <View style={[styles.sectionHeader, style]}>
+    <View>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
+    </View>
+    {onViewAll && (
+      <TouchableOpacity onPress={onViewAll} style={styles.viewAllBtn}>
+        <Text style={styles.viewAllText}>View All</Text>
+        <Text style={styles.viewAllArrow}>→</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+);
+
+// Gender Card Component
+const GenderCard = ({ title, image, gradient, onPress }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      damping: 15,
+      stiffness: 300,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      damping: 15,
+      stiffness: 300,
+    }).start();
+  };
+
+  return (
+    <Animated.View style={[styles.genderCard, { transform: [{ scale: scaleAnim }] }]}>
+      <TouchableOpacity
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={1}
+        style={styles.genderTouchable}
+      >
+        <LinearGradient
+          colors={gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.genderGradient}
+        >
+          <View style={styles.genderOverlay} />
+          <Text style={styles.genderTitle}>{title}</Text>
+          <Text style={styles.genderSubtitle}>SHOP NOW →</Text>
+        </LinearGradient>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+// Category Pill Component
+const CategoryPill = ({ name, icon, gradient, onPress, index }) => {
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 400,
+        delay: index * 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 400,
+        delay: index * 50,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={{
+        transform: [{ translateY: slideAnim }],
+        opacity: opacityAnim,
+      }}
+    >
+      <TouchableOpacity onPress={onPress} style={styles.categoryPill}>
+        <LinearGradient
+          colors={gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.categoryPillGradient}
+        >
+          <Text style={styles.categoryPillIcon}>{icon}</Text>
+        </LinearGradient>
+        <Text style={styles.categoryPillName}>{name}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+// Trending Badge
+const TrendingBadge = () => (
+  <View style={styles.trendingBadge}>
+    <Text style={styles.trendingIcon}>🔥</Text>
+    <Text style={styles.trendingText}>TRENDING</Text>
+  </View>
+);
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { navConfig, isLoading: configLoading } = useStore();
+  const scrollY = useRef(new Animated.Value(0)).current;
   
   const [products, setProducts] = useState([]);
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [currentBanner, setCurrentBanner] = useState(0);
-  const bannerRef = useRef(null);
 
-  // Get categories from backend config or use defaults
   const categories = navConfig?.categories?.filter(c => c.active !== false) || defaultCategories;
 
   useEffect(() => {
     fetchData();
   }, []);
-
-  useEffect(() => {
-    if (banners.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentBanner((prev) => (prev + 1) % banners.length);
-      }, 4000);
-      return () => clearInterval(interval);
-    }
-  }, [banners]);
 
   const fetchData = async () => {
     try {
@@ -86,68 +195,127 @@ const HomeScreen = () => {
     fetchData();
   };
 
+  // Header background opacity based on scroll
+  const headerBg = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <Header showSearch />
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* Skeleton loaders */}
+          <View style={styles.genderBanner}>
+            <Skeleton.Rect width={(SCREEN_WIDTH - 48) / 2} height={200} borderRadius={borderRadius.xl} />
+            <Skeleton.Rect width={(SCREEN_WIDTH - 48) / 2} height={200} borderRadius={borderRadius.xl} />
+          </View>
+          <View style={{ marginTop: spacing.xl, paddingHorizontal: spacing.lg }}>
+            <Skeleton.Banner />
+          </View>
+          <View style={{ flexDirection: 'row', paddingHorizontal: spacing.lg, marginTop: spacing.xl }}>
+            {[1, 2, 3, 4, 5].map(i => (
+              <Skeleton.CategoryCircle key={i} />
+            ))}
+          </View>
+          <Skeleton.ProductGrid count={4} />
+        </ScrollView>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Header showSearch />
 
-      <ScrollView
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
         }
       >
-        {/* Gender Selection Banner */}
+        {/* Gender Selection Cards */}
         <View style={styles.genderBanner}>
-          <TouchableOpacity
-            style={[styles.genderCard, { backgroundColor: '#faf6f3' }]}
+          <GenderCard
+            title="WOMEN"
+            gradient={['#ffecd2', '#fcb69f']}
             onPress={() => navigation.navigate('Category', { category: 'women' })}
-          >
-            <Text style={styles.genderTitle}>WOMEN</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.genderCard, { backgroundColor: '#f3f6fa' }]}
+          />
+          <GenderCard
+            title="MEN"
+            gradient={['#a1c4fd', '#c2e9fb']}
             onPress={() => navigation.navigate('Category', { category: 'men' })}
-          >
-            <Text style={styles.genderTitle}>MEN</Text>
-          </TouchableOpacity>
+          />
         </View>
 
-        {/* Promo Banner */}
-        <PromoBanner
-          title="30% CASHBACK"
-          subtitle="On Sports Apparel & Footwear"
-          code="SPORTS30"
-          colors={['#10b981', '#14b8a6', '#06b6d4']}
-        />
+        {/* Flash Sale Banner */}
+        <View style={{ marginTop: spacing.lg }}>
+          <FlashSaleBanner
+            endTime={new Date(Date.now() + 6 * 60 * 60 * 1000)}
+            onPress={() => navigation.navigate('Category', { category: 'sale' })}
+          />
+        </View>
 
-        {/* Category Circles - Dynamic from backend */}
+        {/* Main Promo Banner */}
+        <View style={{ marginTop: spacing.xl }}>
+          <PromoBanner
+            title="30% CASHBACK"
+            subtitle="On Sports Apparel & Footwear"
+            code="SPORTS30"
+            colors={['#11998e', '#38ef7d']}
+            onPress={() => navigation.navigate('Category', { category: 'sports' })}
+          />
+        </View>
+
+        {/* Categories */}
         <View style={styles.section}>
+          <SectionHeader title="Shop by Category" />
           <FlatList
             horizontal
             data={categories.slice(0, 8)}
             keyExtractor={(item, idx) => item.name || idx.toString()}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesContainer}
-            renderItem={({ item }) => (
-              <CategoryCircle
+            renderItem={({ item, index }) => (
+              <CategoryPill
                 name={item.name}
-                image={item.image}
-                emoji={item.icon?.value || item.icon}
-                bgColor={item.bgColor}
+                icon={item.icon?.value || item.icon}
+                gradient={item.gradient || defaultCategories[index % defaultCategories.length].gradient}
+                index={index}
                 onPress={() => navigation.navigate('Category', { category: item.name.toLowerCase() })}
               />
             )}
           />
         </View>
 
-        {/* Today's Picks */}
+        {/* Compact Banners Row */}
+        <View style={styles.compactBannersRow}>
+          <CompactBanner
+            title="Free Shipping on ₹999+"
+            icon="🚚"
+            color="#22C55E"
+            onPress={() => {}}
+          />
+        </View>
+
+        {/* Today's Picks - Horizontal */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Today's Picks</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Browse')}>
-              <Text style={styles.viewAll}>View All →</Text>
-            </TouchableOpacity>
-          </View>
+          <SectionHeader
+            title="Today's Picks"
+            subtitle="Curated just for you"
+            onViewAll={() => navigation.navigate('Browse')}
+          />
           <FlatList
             horizontal
             data={products.slice(0, 8)}
@@ -160,35 +328,64 @@ const HomeScreen = () => {
           />
         </View>
 
-        {/* Mega Sale Banner */}
-        <PromoBanner
-          title="MEGA SALE"
-          subtitle="Up to 70% OFF"
-          colors={['#f43f5e', '#ec4899', '#d946ef']}
-          onPress={() => navigation.navigate('Category', { category: 'sale' })}
-        />
+        {/* Sale Banner */}
+        <View style={{ marginTop: spacing.xl }}>
+          <PromoBanner
+            title="MEGA SALE"
+            subtitle="Up to 70% OFF on selected items"
+            colors={colors.gradientSale}
+            size="lg"
+            onPress={() => navigation.navigate('Category', { category: 'sale' })}
+          />
+        </View>
 
-        {/* New Arrivals */}
+        {/* Trending Now */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>New Arrivals</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewAll}>View All →</Text>
-            </TouchableOpacity>
+          <View style={styles.trendingHeader}>
+            <SectionHeader
+              title="Trending Now"
+              subtitle="What everyone's buying"
+              onViewAll={() => navigation.navigate('Browse', { filter: 'trending' })}
+            />
+            <TrendingBadge />
           </View>
           <View style={styles.productsGrid}>
-            {products.slice(0, 6).map((product) => (
-              <ProductCard
-                key={product.shopify_product_id}
-                product={product}
-                style={styles.gridProduct}
-              />
+            {products.slice(0, 4).map((product, index) => (
+              <View key={product.shopify_product_id} style={styles.gridProduct}>
+                <ProductCard product={product} showQuickAdd />
+              </View>
             ))}
           </View>
         </View>
 
-        <View style={{ height: 20 }} />
-      </ScrollView>
+        {/* New Arrivals */}
+        <View style={styles.section}>
+          <SectionHeader
+            title="New Arrivals"
+            subtitle="Fresh drops this week"
+            onViewAll={() => navigation.navigate('Browse', { filter: 'new' })}
+          />
+          <View style={styles.productsGrid}>
+            {products.slice(4, 10).map((product) => (
+              <View key={product.shopify_product_id} style={styles.gridProduct}>
+                <ProductCard product={product} />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Bottom Promo */}
+        <View style={{ marginTop: spacing.xl, marginBottom: spacing.xxxl }}>
+          <PromoBanner
+            title="PREMIUM MEMBER"
+            subtitle="Get exclusive access to deals"
+            colors={['#667eea', '#764ba2']}
+            size="md"
+          />
+        </View>
+
+        <View style={{ height: 100 }} />
+      </Animated.ScrollView>
     </View>
   );
 };
@@ -196,60 +393,148 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
+  },
+  scrollView: {
+    flex: 1,
   },
   genderBanner: {
     flexDirection: 'row',
-    padding: 16,
-    gap: 12,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    gap: spacing.md,
   },
   genderCard: {
     flex: 1,
-    aspectRatio: 0.8,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    height: 200,
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+    ...shadows.lg,
+  },
+  genderTouchable: {
+    flex: 1,
+  },
+  genderGradient: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    padding: spacing.lg,
+  },
+  genderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   genderTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: typography.h2,
+    fontWeight: typography.extrabold,
+    color: colors.text,
     letterSpacing: 2,
   },
+  genderSubtitle: {
+    fontSize: typography.caption,
+    fontWeight: typography.semibold,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
   section: {
-    marginTop: 24,
+    marginTop: spacing.xxl,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    alignItems: 'flex-end',
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
+    color: colors.text,
   },
-  viewAll: {
-    fontSize: 14,
-    color: '#666',
+  sectionSubtitle: {
+    fontSize: typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  viewAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  viewAllText: {
+    fontSize: typography.bodySmall,
+    color: colors.textSecondary,
+    fontWeight: typography.medium,
+  },
+  viewAllArrow: {
+    fontSize: typography.body,
+    color: colors.textSecondary,
+    marginLeft: spacing.xs,
   },
   categoriesContainer: {
-    paddingHorizontal: 16,
-    gap: 16,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.lg,
+  },
+  categoryPill: {
+    alignItems: 'center',
+    width: 70,
+  },
+  categoryPillGradient: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.md,
+  },
+  categoryPillIcon: {
+    fontSize: 26,
+  },
+  categoryPillName: {
+    fontSize: typography.caption,
+    fontWeight: typography.medium,
+    color: colors.text,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  compactBannersRow: {
+    marginTop: spacing.xl,
   },
   productsContainer: {
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.md,
   },
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
   },
   gridProduct: {
-    width: (width - 48) / 2,
-    marginHorizontal: 4,
-    marginBottom: 12,
+    width: (SCREEN_WIDTH - spacing.md * 3) / 2,
+    marginHorizontal: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  trendingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: spacing.lg,
+  },
+  trendingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
+  },
+  trendingIcon: {
+    fontSize: 12,
+    marginRight: spacing.xs,
+  },
+  trendingText: {
+    fontSize: typography.tiny,
+    fontWeight: typography.bold,
+    color: '#D97706',
+    letterSpacing: 0.5,
   },
 });
 
