@@ -419,7 +419,7 @@ export const TNVHeader = () => {
                     <div className="bg-white rounded-2xl shadow-2xl border p-6 min-w-[500px]">
                       <div className="grid grid-cols-2 gap-4">
                         <Link 
-                          to="/tnv/women/clothing"
+                          to={`${baseUrl}/women/clothing`}
                           onClick={() => setActiveCategory(null)}
                           className="group block"
                         >
@@ -436,7 +436,7 @@ export const TNVHeader = () => {
                         </Link>
                         
                         <Link 
-                          to="/tnv/men/clothing"
+                          to={`${baseUrl}/men/clothing`}
                           onClick={() => setActiveCategory(null)}
                           className="group block"
                         >
@@ -479,7 +479,7 @@ export const TNVHeader = () => {
               <User className="w-5 h-5" />
               <ChevronDown className="w-3 h-3" />
             </button>
-            <Link to="/tnv/wishlist" className="text-black p-2 hover:bg-gray-100 rounded relative">
+            <Link to={`${baseUrl}/wishlist`} className="text-black p-2 hover:bg-gray-100 rounded relative">
               <Heart className="w-5 h-5" />
               {wishlist.length > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -487,7 +487,7 @@ export const TNVHeader = () => {
                 </span>
               )}
             </Link>
-            <Link to="/tnv/cart" className="text-black p-2 hover:bg-gray-100 rounded relative">
+            <Link to={`${baseUrl}/cart`} className="text-black p-2 hover:bg-gray-100 rounded relative">
               <ShoppingBag className="w-5 h-5" />
               {cartCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -573,11 +573,11 @@ export const TNVHeader = () => {
             ))}
             
             <div className="border-t mt-2 pt-2">
-              <Link to="/tnv/account" className="flex items-center px-4 py-3 hover:bg-gray-50">
+              <Link to={`${baseUrl}/account`} className="flex items-center px-4 py-3 hover:bg-gray-50">
                 <User className="w-5 h-5 mr-3" />
                 <span>My Account</span>
               </Link>
-              <Link to="/tnv/orders" className="flex items-center px-4 py-3 hover:bg-gray-50">
+              <Link to={`${baseUrl}/orders`} className="flex items-center px-4 py-3 hover:bg-gray-50">
                 <ShoppingBag className="w-5 h-5 mr-3" />
                 <span>Track Order</span>
               </Link>
