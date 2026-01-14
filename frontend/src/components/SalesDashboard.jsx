@@ -181,7 +181,7 @@ const SalesDashboard = () => {
               {Math.abs(overview?.revenue_growth || 0)}%
             </span>
           </div>
-          <h3 className="text-3xl font-bold text-gray-900">{formatCurrency(overview?.total_revenue || 0)}</h3>
+          <h3 className="text-3xl font-bold text-gray-900">{formatWithSymbol(overview?.total_revenue || 0)}</h3>
           <p className="text-gray-500 text-sm mt-1">Total Revenue</p>
         </div>
 
@@ -226,7 +226,7 @@ const SalesDashboard = () => {
               {overview?.conversion_rate || 3.2}%
             </span>
           </div>
-          <h3 className="text-3xl font-bold text-gray-900">{formatCurrency(overview?.avg_order_value || 0)}</h3>
+          <h3 className="text-3xl font-bold text-gray-900">{formatWithSymbol(overview?.avg_order_value || 0)}</h3>
           <p className="text-gray-500 text-sm mt-1">Avg. Order Value</p>
         </div>
       </div>
