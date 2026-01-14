@@ -267,7 +267,7 @@ const ProductSelector = ({ onSelectProduct, selectedStore }) => {
               </div>
               <div className="p-2">
                 <p className="text-xs font-medium truncate">{product.title}</p>
-                <p className="text-sm font-bold text-green-600">₹{product.price?.toLocaleString()}</p>
+                <p className="text-sm font-bold text-green-600">{formatPrice(product.price)}</p>
               </div>
             </div>
           ))}
