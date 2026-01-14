@@ -746,7 +746,7 @@ const AnalysisResultsCard = ({ analysis, onRefresh }) => {
       <div className="p-4 grid grid-cols-3 gap-4">
         <div className="text-center p-3 bg-blue-50 rounded-lg">
           <p className="text-xs text-gray-600 mb-1">Your Price</p>
-          <p className="text-2xl font-bold text-blue-600">₹{analysis.your_price?.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-blue-600">{formatPrice(analysis.your_price)}</p>
         </div>
         
         {priceAnalysis ? (
@@ -754,8 +754,7 @@ const AnalysisResultsCard = ({ analysis, onRefresh }) => {
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <p className="text-xs text-gray-600 mb-1">Avg Competitor</p>
               <p className="text-2xl font-bold text-gray-700">
-                {priceAnalysis.currency === 'INR' ? '₹' : priceAnalysis.currency + ' '}
-                {priceAnalysis.avg_competitor_price?.toLocaleString()}
+                {formatPrice(priceAnalysis.avg_competitor_price)}
               </p>
               {priceAnalysis.prices_converted && (
                 <p className="text-xs text-green-600 mt-1">✓ Currency converted</p>
