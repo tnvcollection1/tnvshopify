@@ -1,17 +1,25 @@
-// CheckoutScreen.js
+/**
+ * Checkout Screen
+ * Multi-step checkout flow
+ * Supports dark mode
+ */
+
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '../context/CartContext';
 import { useStore } from '../context/StoreContext';
+import { useTheme } from '../context/ThemeContext';
 import * as api from '../services/api';
+import { spacing, borderRadius, typography } from '../theme';
 
 const CheckoutScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { cart, cartTotal, clearCart } = useCart();
   const { formatPrice } = useStore();
+  const { colors, statusBarStyle } = useTheme();
   
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -49,43 +57,95 @@ const CheckoutScreen = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+    <View style={[styles.container, { paddingBottom: insets.bottom, backgroundColor: colors.background }]}>
+      <StatusBar barStyle={statusBarStyle} />
+      
       {/* Progress */}
-      <View style={styles.progress}>
+      <View style={[styles.progress, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         {['Shipping', 'Payment', 'Review'].map((s, i) => (
           <View key={s} style={styles.progressItem}>
-            <View style={[styles.progressDot, step > i && styles.progressDotActive]} />
-            <Text style={[styles.progressLabel, step > i && styles.progressLabelActive]}>{s}</Text>
+            <View style={[
+              styles.progressDot, 
+              { backgroundColor: colors.border },
+              step > i && { backgroundColor: colors.primary }
+            ]} />
+            <Text style={[
+              styles.progressLabel, 
+              { color: colors.textTertiary },
+              step > i && { color: colors.text }
+            ]}>{s}</Text>
           </View>
         ))}
       </View>
 
       <ScrollView style={styles.content}>
         {step === 1 && (
-          <View style={styles.form}>
-            <Text style={styles.formTitle}>Shipping Address</Text>
+          <View style={[styles.form, { backgroundColor: colors.card }]}>
+            <Text style={[styles.formTitle, { color: colors.text }]}>Shipping Address</Text>
             <View style={styles.row}>
-              <TextInput style={[styles.input, styles.halfInput]} placeholder="First Name" value={form.firstName} onChangeText={v => setForm({...form, firstName: v})} />
-              <TextInput style={[styles.input, styles.halfInput]} placeholder="Last Name" value={form.lastName} onChangeText={v => setForm({...form, lastName: v})} />
+              <TextInput 
+                style={[styles.input, styles.halfInput, { backgroundColor: colors.background, color: colors.text }]} 
+                placeholder="First Name" 
+                placeholderTextColor={colors.textTertiary}
+                value={form.firstName} 
+                onChangeText={v => setForm({...form, firstName: v})} 
+              />
+              <TextInput 
+                style={[styles.input, styles.halfInput, { backgroundColor: colors.background, color: colors.text }]} 
+                placeholder="Last Name" 
+                placeholderTextColor={colors.textTertiary}
+                value={form.lastName} 
+                onChangeText={v => setForm({...form, lastName: v})} 
+              />
             </View>
-            <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" value={form.email} onChangeText={v => setForm({...form, email: v})} />
-            <TextInput style={styles.input} placeholder="Phone" keyboardType="phone-pad" value={form.phone} onChangeText={v => setForm({...form, phone: v})} />
-            <TextInput style={styles.input} placeholder="Address" value={form.address} onChangeText={v => setForm({...form, address: v})} />
-            <TextInput style={styles.input} placeholder="City" value={form.city} onChangeText={v => setForm({...form, city: v})} />
+            <TextInput 
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]} 
+              placeholder="Email" 
+              placeholderTextColor={colors.textTertiary}
+              keyboardType="email-address" 
+              value={form.email} 
+              onChangeText={v => setForm({...form, email: v})} 
+            />
+            <TextInput 
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]} 
+              placeholder="Phone" 
+              placeholderTextColor={colors.textTertiary}
+              keyboardType="phone-pad" 
+              value={form.phone} 
+              onChangeText={v => setForm({...form, phone: v})} 
+            />
+            <TextInput 
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]} 
+              placeholder="Address" 
+              placeholderTextColor={colors.textTertiary}
+              value={form.address} 
+              onChangeText={v => setForm({...form, address: v})} 
+            />
+            <TextInput 
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]} 
+              placeholder="City" 
+              placeholderTextColor={colors.textTertiary}
+              value={form.city} 
+              onChangeText={v => setForm({...form, city: v})} 
+            />
           </View>
         )}
 
         {step === 2 && (
-          <View style={styles.form}>
-            <Text style={styles.formTitle}>Payment Method</Text>
+          <View style={[styles.form, { backgroundColor: colors.card }]}>
+            <Text style={[styles.formTitle, { color: colors.text }]}>Payment Method</Text>
             {['cod', 'card'].map(method => (
               <TouchableOpacity
                 key={method}
-                style={[styles.paymentOption, form.paymentMethod === method && styles.paymentOptionActive]}
+                style={[
+                  styles.paymentOption, 
+                  { borderColor: colors.border },
+                  form.paymentMethod === method && { borderColor: colors.primary, backgroundColor: colors.background }
+                ]}
                 onPress={() => setForm({...form, paymentMethod: method})}
               >
                 <Text style={styles.paymentIcon}>{method === 'cod' ? '💵' : '💳'}</Text>
-                <Text style={styles.paymentLabel}>
+                <Text style={[styles.paymentLabel, { color: colors.text }]}>
                   {method === 'cod' ? 'Cash on Delivery' : 'Credit/Debit Card'}
                 </Text>
               </TouchableOpacity>
@@ -94,34 +154,41 @@ const CheckoutScreen = () => {
         )}
 
         {step === 3 && (
-          <View style={styles.form}>
-            <Text style={styles.formTitle}>Order Summary</Text>
+          <View style={[styles.form, { backgroundColor: colors.card }]}>
+            <Text style={[styles.formTitle, { color: colors.text }]}>Order Summary</Text>
             <View style={styles.summaryItem}>
-              <Text>Subtotal</Text><Text>{formatPrice(cartTotal)}</Text>
+              <Text style={{ color: colors.textSecondary }}>Subtotal</Text>
+              <Text style={{ color: colors.text }}>{formatPrice(cartTotal)}</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text>Delivery</Text><Text>{deliveryFee === 0 ? 'FREE' : formatPrice(deliveryFee)}</Text>
+              <Text style={{ color: colors.textSecondary }}>Delivery</Text>
+              <Text style={{ color: deliveryFee === 0 ? colors.success : colors.text }}>
+                {deliveryFee === 0 ? 'FREE' : formatPrice(deliveryFee)}
+              </Text>
             </View>
-            <View style={[styles.summaryItem, styles.totalItem]}>
-              <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>{formatPrice(total)}</Text>
+            <View style={[styles.summaryItem, styles.totalItem, { borderTopColor: colors.border }]}>
+              <Text style={[styles.totalLabel, { color: colors.text }]}>Total</Text>
+              <Text style={[styles.totalValue, { color: colors.text }]}>{formatPrice(total)}</Text>
             </View>
           </View>
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
         {step > 1 && (
-          <TouchableOpacity style={styles.backBtn} onPress={() => setStep(step - 1)}>
-            <Text style={styles.backBtnText}>Back</Text>
+          <TouchableOpacity 
+            style={[styles.backBtn, { borderColor: colors.primary }]} 
+            onPress={() => setStep(step - 1)}
+          >
+            <Text style={[styles.backBtnText, { color: colors.primary }]}>Back</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={[styles.nextBtn, step > 1 && { flex: 1 }]}
+          style={[styles.nextBtn, { backgroundColor: colors.primary }, step > 1 && { flex: 1 }]}
           onPress={() => step < 3 ? setStep(step + 1) : handlePlaceOrder()}
           disabled={loading}
         >
-          <Text style={styles.nextBtnText}>
+          <Text style={[styles.nextBtnText, { color: colors.textInverse }]}>
             {loading ? 'Processing...' : step < 3 ? 'Continue' : `Place Order - ${formatPrice(total)}`}
           </Text>
         </TouchableOpacity>
@@ -131,32 +198,115 @@ const CheckoutScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  progress: { flexDirection: 'row', justifyContent: 'center', padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#eee' },
-  progressItem: { alignItems: 'center', marginHorizontal: 20 },
-  progressDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#ddd', marginBottom: 4 },
-  progressDotActive: { backgroundColor: '#000' },
-  progressLabel: { fontSize: 12, color: '#999' },
-  progressLabelActive: { color: '#000', fontWeight: '600' },
-  content: { flex: 1 },
-  form: { backgroundColor: '#fff', margin: 16, padding: 16, borderRadius: 12 },
-  formTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
-  row: { flexDirection: 'row', gap: 12 },
-  input: { backgroundColor: '#f5f5f5', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 8, fontSize: 16, marginBottom: 12 },
-  halfInput: { flex: 1 },
-  paymentOption: { flexDirection: 'row', alignItems: 'center', padding: 16, borderWidth: 2, borderColor: '#eee', borderRadius: 12, marginBottom: 12 },
-  paymentOptionActive: { borderColor: '#000', backgroundColor: '#f8f8f8' },
-  paymentIcon: { fontSize: 24, marginRight: 12 },
-  paymentLabel: { fontSize: 16, fontWeight: '500' },
-  summaryItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 },
-  totalItem: { borderTopWidth: 1, borderTopColor: '#eee', marginTop: 8, paddingTop: 16 },
-  totalLabel: { fontSize: 18, fontWeight: 'bold' },
-  totalValue: { fontSize: 20, fontWeight: 'bold' },
-  footer: { flexDirection: 'row', padding: 16, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#eee', gap: 12 },
-  backBtn: { paddingVertical: 16, paddingHorizontal: 24, borderWidth: 2, borderColor: '#000', borderRadius: 30 },
-  backBtnText: { fontSize: 16, fontWeight: 'bold' },
-  nextBtn: { flex: 2, backgroundColor: '#000', paddingVertical: 16, borderRadius: 30, alignItems: 'center' },
-  nextBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  container: { 
+    flex: 1,
+  },
+  progress: { 
+    flexDirection: 'row', 
+    justifyContent: 'center', 
+    padding: spacing.lg, 
+    borderBottomWidth: 1,
+  },
+  progressItem: { 
+    alignItems: 'center', 
+    marginHorizontal: spacing.xl,
+  },
+  progressDot: { 
+    width: 24, 
+    height: 24, 
+    borderRadius: 12, 
+    marginBottom: spacing.xs,
+  },
+  progressLabel: { 
+    fontSize: typography.caption,
+  },
+  content: { 
+    flex: 1,
+  },
+  form: { 
+    margin: spacing.lg, 
+    padding: spacing.lg, 
+    borderRadius: borderRadius.lg,
+  },
+  formTitle: { 
+    fontSize: typography.h4, 
+    fontWeight: typography.bold, 
+    marginBottom: spacing.lg,
+  },
+  row: { 
+    flexDirection: 'row', 
+    gap: spacing.md,
+  },
+  input: { 
+    paddingHorizontal: spacing.lg, 
+    paddingVertical: spacing.md, 
+    borderRadius: borderRadius.md, 
+    fontSize: typography.body, 
+    marginBottom: spacing.md,
+  },
+  halfInput: { 
+    flex: 1,
+  },
+  paymentOption: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    padding: spacing.lg, 
+    borderWidth: 2, 
+    borderRadius: borderRadius.lg, 
+    marginBottom: spacing.md,
+  },
+  paymentIcon: { 
+    fontSize: 24, 
+    marginRight: spacing.md,
+  },
+  paymentLabel: { 
+    fontSize: typography.body, 
+    fontWeight: typography.medium,
+  },
+  summaryItem: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    paddingVertical: spacing.sm,
+  },
+  totalItem: { 
+    borderTopWidth: 1, 
+    marginTop: spacing.sm, 
+    paddingTop: spacing.lg,
+  },
+  totalLabel: { 
+    fontSize: typography.h4, 
+    fontWeight: typography.bold,
+  },
+  totalValue: { 
+    fontSize: typography.h3, 
+    fontWeight: typography.bold,
+  },
+  footer: { 
+    flexDirection: 'row', 
+    padding: spacing.lg, 
+    borderTopWidth: 1, 
+    gap: spacing.md,
+  },
+  backBtn: { 
+    paddingVertical: spacing.lg, 
+    paddingHorizontal: spacing.xl, 
+    borderWidth: 2, 
+    borderRadius: borderRadius.full,
+  },
+  backBtnText: { 
+    fontSize: typography.body, 
+    fontWeight: typography.bold,
+  },
+  nextBtn: { 
+    flex: 2, 
+    paddingVertical: spacing.lg, 
+    borderRadius: borderRadius.full, 
+    alignItems: 'center',
+  },
+  nextBtnText: { 
+    fontSize: typography.body, 
+    fontWeight: typography.bold,
+  },
 });
 
 export default CheckoutScreen;

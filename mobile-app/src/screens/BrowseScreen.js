@@ -1,6 +1,7 @@
 /**
  * Browse Screen
  * Product listing with filters
+ * Supports dark mode
  */
 
 import React, { useState, useEffect } from 'react';
@@ -13,17 +14,21 @@ import {
   Dimensions,
   Modal,
   ScrollView,
+  StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../context/ThemeContext';
 import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
 import * as api from '../services/api';
+import { spacing, borderRadius, typography } from '../theme';
 
 const { width } = Dimensions.get('window');
 const PRODUCT_WIDTH = (width - 48) / 2;
 
 const BrowseScreen = () => {
   const insets = useSafeAreaInsets();
+  const { colors, statusBarStyle } = useTheme();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterVisible, setFilterVisible] = useState(false);
@@ -69,17 +74,18 @@ const BrowseScreen = () => {
   ];
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <StatusBar barStyle={statusBarStyle} />
       <Header title="Browse" showSearch />
 
       {/* Sort & Filter Bar */}
-      <View style={styles.filterBar}>
+      <View style={[styles.filterBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity
-          style={styles.filterBtn}
+          style={[styles.filterBtn, { backgroundColor: colors.background }]}
           onPress={() => setFilterVisible(true)}
         >
           <Text>🔧</Text>
-          <Text style={styles.filterBtnText}>Filter</Text>
+          <Text style={[styles.filterBtnText, { color: colors.text }]}>Filter</Text>
         </TouchableOpacity>
 
         <View style={styles.sortContainer}>
@@ -88,14 +94,16 @@ const BrowseScreen = () => {
               key={option.value}
               style={[
                 styles.sortBtn,
-                sortBy === option.value && styles.sortBtnActive,
+                { backgroundColor: colors.background },
+                sortBy === option.value && { backgroundColor: colors.primary },
               ]}
               onPress={() => setSortBy(option.value)}
             >
               <Text
                 style={[
                   styles.sortBtnText,
-                  sortBy === option.value && styles.sortBtnTextActive,
+                  { color: colors.textSecondary },
+                  sortBy === option.value && { color: colors.textInverse },
                 ]}
               >
                 {option.label}
@@ -118,11 +126,11 @@ const BrowseScreen = () => {
         ListEmptyComponent={
           loading ? (
             <View style={styles.loading}>
-              <Text>Loading...</Text>
+              <Text style={{ color: colors.textSecondary }}>Loading...</Text>
             </View>
           ) : (
             <View style={styles.empty}>
-              <Text>No products found</Text>
+              <Text style={{ color: colors.textSecondary }}>No products found</Text>
             </View>
           )
         }
@@ -134,46 +142,52 @@ const BrowseScreen = () => {
         animationType="slide"
         presentationStyle="pageSheet"
       >
-        <View style={styles.filterModal}>
-          <View style={styles.filterHeader}>
-            <Text style={styles.filterTitle}>Filters</Text>
+        <View style={[styles.filterModal, { backgroundColor: colors.surface }]}>
+          <View style={[styles.filterHeader, { borderBottomColor: colors.border }]}>
+            <Text style={[styles.filterTitle, { color: colors.text }]}>Filters</Text>
             <TouchableOpacity onPress={() => setFilterVisible(false)}>
-              <Text style={styles.closeBtn}>✕</Text>
+              <Text style={[styles.closeBtn, { color: colors.textSecondary }]}>✕</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.filterContent}>
             {/* Size Filter */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Size</Text>
+            <View style={[styles.filterSection, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.filterSectionTitle, { color: colors.text }]}>Size</Text>
               <View style={styles.filterOptions}>
                 {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
-                  <TouchableOpacity key={size} style={styles.filterOption}>
-                    <Text>{size}</Text>
+                  <TouchableOpacity 
+                    key={size} 
+                    style={[styles.filterOption, { backgroundColor: colors.background }]}
+                  >
+                    <Text style={{ color: colors.text }}>{size}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
             </View>
 
             {/* Price Filter */}
-            <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Price Range</Text>
+            <View style={[styles.filterSection, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.filterSectionTitle, { color: colors.text }]}>Price Range</Text>
               <View style={styles.filterOptions}>
                 {['Under 100', '100-300', '300-500', '500+'].map((range) => (
-                  <TouchableOpacity key={range} style={styles.filterOption}>
-                    <Text>AED {range}</Text>
+                  <TouchableOpacity 
+                    key={range} 
+                    style={[styles.filterOption, { backgroundColor: colors.background }]}
+                  >
+                    <Text style={{ color: colors.text }}>₹{range}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
             </View>
           </ScrollView>
 
-          <View style={styles.filterFooter}>
+          <View style={[styles.filterFooter, { borderTopColor: colors.border }]}>
             <TouchableOpacity
-              style={styles.applyBtn}
+              style={[styles.applyBtn, { backgroundColor: colors.primary }]}
               onPress={() => setFilterVisible(false)}
             >
-              <Text style={styles.applyBtnText}>Apply Filters</Text>
+              <Text style={[styles.applyBtnText, { color: colors.textInverse }]}>Apply Filters</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -185,57 +199,45 @@ const BrowseScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   filterBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   filterBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 20,
-    marginRight: 12,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    marginRight: spacing.md,
   },
   filterBtnText: {
-    marginLeft: 6,
-    fontSize: 14,
+    marginLeft: spacing.sm,
+    fontSize: typography.bodySmall,
   },
   sortContainer: {
     flex: 1,
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   sortBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  sortBtnActive: {
-    backgroundColor: '#000',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
   },
   sortBtnText: {
-    fontSize: 12,
-    color: '#666',
-  },
-  sortBtnTextActive: {
-    color: '#fff',
+    fontSize: typography.caption,
   },
   productsContainer: {
-    padding: 12,
+    padding: spacing.md,
   },
   row: {
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   loading: {
     padding: 40,
@@ -247,63 +249,55 @@ const styles = StyleSheet.create({
   },
   filterModal: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   filterHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   filterTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
   },
   closeBtn: {
     fontSize: 20,
-    color: '#666',
   },
   filterContent: {
     flex: 1,
   },
   filterSection: {
-    padding: 16,
+    padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   filterSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontSize: typography.body,
+    fontWeight: typography.semibold,
+    marginBottom: spacing.md,
   },
   filterOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   filterOption: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
   },
   filterFooter: {
-    padding: 16,
+    padding: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
   },
   applyBtn: {
-    backgroundColor: '#000',
-    paddingVertical: 16,
-    borderRadius: 30,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
   },
   applyBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: typography.body,
+    fontWeight: typography.bold,
   },
 });
 

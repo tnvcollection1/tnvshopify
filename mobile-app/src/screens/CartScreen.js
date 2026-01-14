@@ -1,6 +1,7 @@
 /**
  * Cart Screen
  * Shopping bag with items and checkout
+ * Supports dark mode
  */
 
 import React from 'react';
@@ -11,37 +12,42 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
+  StatusBar,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '../context/CartContext';
 import { useStore } from '../context/StoreContext';
+import { useTheme } from '../context/ThemeContext';
 import Header from '../components/Header';
+import { spacing, borderRadius, typography } from '../theme';
 
 const CartScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { cart, cartTotal, removeFromCart, updateQuantity } = useCart();
   const { formatPrice } = useStore();
+  const { colors, shadows, statusBarStyle } = useTheme();
 
   const deliveryFee = cartTotal >= 500 ? 0 : 50;
   const total = cartTotal + deliveryFee;
 
   if (cart.length === 0) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+        <StatusBar barStyle={statusBarStyle} />
         <Header title="Shopping Bag" />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>🛒</Text>
-          <Text style={styles.emptyTitle}>Your bag is empty</Text>
-          <Text style={styles.emptySubtitle}>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>Your bag is empty</Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
             Looks like you haven't added anything yet
           </Text>
           <TouchableOpacity
-            style={styles.shopBtn}
+            style={[styles.shopBtn, { backgroundColor: colors.primary }]}
             onPress={() => navigation.navigate('Home')}
           >
-            <Text style={styles.shopBtnText}>Start Shopping</Text>
+            <Text style={[styles.shopBtnText, { color: colors.textInverse }]}>Start Shopping</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -49,52 +55,53 @@ const CartScreen = () => {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <StatusBar barStyle={statusBarStyle} />
       <Header title={`Shopping Bag (${cart.length})`} />
 
       <ScrollView style={styles.content}>
         {/* Cart Items */}
         {cart.map((item, idx) => (
-          <View key={`${item.productId}-${item.variantId}`} style={styles.cartItem}>
+          <View key={`${item.productId}-${item.variantId}`} style={[styles.cartItem, { backgroundColor: colors.card }, shadows.sm]}>
             <Image
               source={{ uri: item.image }}
-              style={styles.itemImage}
+              style={[styles.itemImage, { backgroundColor: colors.background }]}
               resizeMode="cover"
             />
             <View style={styles.itemInfo}>
-              <Text style={styles.itemBrand}>TNV Collection</Text>
-              <Text style={styles.itemTitle} numberOfLines={2}>
+              <Text style={[styles.itemBrand, { color: colors.textSecondary }]}>TNV Collection</Text>
+              <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={2}>
                 {item.title}
               </Text>
               <View style={styles.itemVariants}>
                 {item.size && (
-                  <Text style={styles.variant}>Size: {item.size}</Text>
+                  <Text style={[styles.variant, { backgroundColor: colors.background, color: colors.textSecondary }]}>Size: {item.size}</Text>
                 )}
                 {item.color && (
-                  <Text style={styles.variant}>Color: {item.color}</Text>
+                  <Text style={[styles.variant, { backgroundColor: colors.background, color: colors.textSecondary }]}>Color: {item.color}</Text>
                 )}
               </View>
               <View style={styles.itemActions}>
-                <View style={styles.quantityContainer}>
+                <View style={[styles.quantityContainer, { borderColor: colors.border }]}>
                   <TouchableOpacity
                     style={styles.qtyBtn}
                     onPress={() =>
                       updateQuantity(item.productId, item.variantId, item.quantity - 1)
                     }
                   >
-                    <Text style={styles.qtyBtnText}>−</Text>
+                    <Text style={[styles.qtyBtnText, { color: colors.text }]}>−</Text>
                   </TouchableOpacity>
-                  <Text style={styles.quantity}>{item.quantity}</Text>
+                  <Text style={[styles.quantity, { color: colors.text }]}>{item.quantity}</Text>
                   <TouchableOpacity
                     style={styles.qtyBtn}
                     onPress={() =>
                       updateQuantity(item.productId, item.variantId, item.quantity + 1)
                     }
                   >
-                    <Text style={styles.qtyBtnText}>+</Text>
+                    <Text style={[styles.qtyBtnText, { color: colors.text }]}>+</Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={styles.itemPrice}>
+                <Text style={[styles.itemPrice, { color: colors.text }]}>
                   {formatPrice(item.price * item.quantity)}
                 </Text>
               </View>
@@ -110,37 +117,38 @@ const CartScreen = () => {
       </ScrollView>
 
       {/* Order Summary */}
-      <View style={[styles.summary, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.summary, { paddingBottom: insets.bottom + 16, backgroundColor: colors.surface, borderTopColor: colors.border }]}>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Subtotal</Text>
-          <Text style={styles.summaryValue}>{formatPrice(cartTotal)}</Text>
+          <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Subtotal</Text>
+          <Text style={[styles.summaryValue, { color: colors.text }]}>{formatPrice(cartTotal)}</Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Delivery</Text>
+          <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Delivery</Text>
           <Text
             style={[
               styles.summaryValue,
+              { color: colors.text },
               deliveryFee === 0 && styles.freeDelivery,
             ]}
           >
             {deliveryFee === 0 ? 'FREE' : formatPrice(deliveryFee)}
           </Text>
         </View>
-        <View style={[styles.summaryRow, styles.totalRow]}>
-          <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalValue}>{formatPrice(total)}</Text>
+        <View style={[styles.summaryRow, styles.totalRow, { borderTopColor: colors.border }]}>
+          <Text style={[styles.totalLabel, { color: colors.text }]}>Total</Text>
+          <Text style={[styles.totalValue, { color: colors.text }]}>{formatPrice(total)}</Text>
         </View>
 
         <TouchableOpacity
-          style={styles.checkoutBtn}
+          style={[styles.checkoutBtn, { backgroundColor: colors.primary }]}
           onPress={() => navigation.navigate('Checkout')}
         >
-          <Text style={styles.checkoutBtnText}>Checkout →</Text>
+          <Text style={[styles.checkoutBtnText, { color: colors.textInverse }]}>Checkout →</Text>
         </TouchableOpacity>
 
         <View style={styles.trustBadges}>
-          <Text style={styles.trustBadge}>🚚 Free delivery over AED 500</Text>
-          <Text style={styles.trustBadge}>🔒 Secure checkout</Text>
+          <Text style={[styles.trustBadge, { color: colors.textSecondary }]}>🚚 Free delivery over ₹500</Text>
+          <Text style={[styles.trustBadge, { color: colors.textSecondary }]}>🔒 Secure checkout</Text>
         </View>
       </View>
     </View>
@@ -150,7 +158,6 @@ const CartScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   emptyContainer: {
     flex: 1,
@@ -160,84 +167,75 @@ const styles = StyleSheet.create({
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
+    marginBottom: spacing.sm,
   },
   emptySubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 24,
+    fontSize: typography.bodySmall,
+    marginBottom: spacing.xl,
   },
   shopBtn: {
-    backgroundColor: '#000',
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 30,
+    paddingHorizontal: spacing.xxxl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.full,
   },
   shopBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: typography.body,
+    fontWeight: typography.bold,
   },
   content: {
     flex: 1,
   },
   cartItem: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginTop: 12,
-    borderRadius: 12,
-    padding: 12,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
   },
   itemImage: {
     width: 80,
     height: 100,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+    borderRadius: borderRadius.md,
   },
   itemInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
   itemBrand: {
-    fontSize: 11,
-    color: '#666',
+    fontSize: typography.tiny,
   },
   itemTitle: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: typography.bodySmall,
+    fontWeight: typography.medium,
     marginTop: 2,
   },
   itemVariants: {
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 6,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   variant: {
-    fontSize: 11,
-    color: '#666',
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 8,
+    fontSize: typography.tiny,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: borderRadius.sm,
   },
   itemActions: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 12,
+    marginTop: spacing.md,
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#eee',
-    borderRadius: 8,
+    borderRadius: borderRadius.md,
   },
   qtyBtn: {
     width: 32,
@@ -247,81 +245,74 @@ const styles = StyleSheet.create({
   },
   qtyBtnText: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: typography.medium,
   },
   quantity: {
     width: 32,
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: typography.semibold,
   },
   itemPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: typography.body,
+    fontWeight: typography.bold,
   },
   removeBtn: {
-    padding: 4,
+    padding: spacing.xs,
   },
   removeIcon: {
     fontSize: 18,
   },
   summary: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   summaryLabel: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: typography.bodySmall,
   },
   summaryValue: {
-    fontSize: 14,
+    fontSize: typography.bodySmall,
   },
   freeDelivery: {
     color: '#22c55e',
-    fontWeight: '600',
+    fontWeight: typography.semibold,
   },
   totalRow: {
-    marginTop: 8,
-    paddingTop: 12,
+    marginTop: spacing.sm,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
   },
   totalLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: typography.body,
+    fontWeight: typography.bold,
   },
   totalValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
   },
   checkoutBtn: {
-    backgroundColor: '#000',
-    paddingVertical: 16,
-    borderRadius: 30,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: spacing.lg,
   },
   checkoutBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: typography.body,
+    fontWeight: typography.bold,
   },
   trustBadges: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
-    marginTop: 12,
+    gap: spacing.lg,
+    marginTop: spacing.md,
   },
   trustBadge: {
-    fontSize: 11,
-    color: '#666',
+    fontSize: typography.tiny,
   },
 });
 

@@ -1,27 +1,36 @@
-// Placeholder screens - Implement based on specifications
+/**
+ * Wishlist Screen
+ * Display user's saved items
+ * Supports dark mode
+ */
 
-// WishlistScreen.js
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Dimensions, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from '../context/StoreContext';
+import { useTheme } from '../context/ThemeContext';
 import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
-import { FlatList, Dimensions } from 'react-native';
+import { spacing, typography, borderRadius } from '../theme';
 
 const { width } = Dimensions.get('window');
 
 const WishlistScreen = () => {
   const insets = useSafeAreaInsets();
   const { wishlist } = useStore();
+  const { colors, statusBarStyle } = useTheme();
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <StatusBar barStyle={statusBarStyle} />
       <Header title="Wishlist" />
       {wishlist.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>❤️</Text>
-          <Text style={styles.emptyTitle}>Your wishlist is empty</Text>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>Your wishlist is empty</Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            Save items you love by tapping the heart icon
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -40,12 +49,35 @@ const WishlistScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyIcon: { fontSize: 64, marginBottom: 16 },
-  emptyTitle: { fontSize: 18, fontWeight: 'bold' },
-  list: { padding: 12 },
-  row: { justifyContent: 'space-between', marginBottom: 12 },
+  container: { 
+    flex: 1, 
+  },
+  empty: { 
+    flex: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  emptyIcon: { 
+    fontSize: 64, 
+    marginBottom: spacing.lg,
+  },
+  emptyTitle: { 
+    fontSize: typography.h4, 
+    fontWeight: typography.bold,
+    marginBottom: spacing.sm,
+  },
+  emptySubtitle: {
+    fontSize: typography.bodySmall,
+    textAlign: 'center',
+  },
+  list: { 
+    padding: spacing.md,
+  },
+  row: { 
+    justifyContent: 'space-between', 
+    marginBottom: spacing.md,
+  },
 });
 
 export default WishlistScreen;
