@@ -1,26 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { Search, User, ShoppingBag, Heart, ChevronLeft, ChevronRight, MapPin, Gift, Menu, X } from 'lucide-react';
+import { Search, User, ShoppingBag, Heart, ChevronLeft, ChevronRight, ChevronDown, MapPin, Gift, Menu, X, Globe } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Store configurations
+// Country & Currency Data
+const COUNTRIES = [
+  { code: 'AE', name: 'United Arab Emirates', currency: 'AED', symbol: 'د.إ', rate: 3.67 },
+  { code: 'AU', name: 'Australia', currency: 'AUD', symbol: 'A$', rate: 1.53 },
+  { code: 'BD', name: 'Bangladesh', currency: 'BDT', symbol: '৳', rate: 109.50 },
+  { code: 'CA', name: 'Canada', currency: 'CAD', symbol: 'C$', rate: 1.36 },
+  { code: 'CN', name: 'China', currency: 'CNY', symbol: '¥', rate: 7.24 },
+  { code: 'DE', name: 'Germany', currency: 'EUR', symbol: '€', rate: 0.92 },
+  { code: 'EG', name: 'Egypt', currency: 'EGP', symbol: 'E£', rate: 30.90 },
+  { code: 'FR', name: 'France', currency: 'EUR', symbol: '€', rate: 0.92 },
+  { code: 'GB', name: 'United Kingdom', currency: 'GBP', symbol: '£', rate: 0.79 },
+  { code: 'HK', name: 'Hong Kong', currency: 'HKD', symbol: 'HK$', rate: 7.82 },
+  { code: 'ID', name: 'Indonesia', currency: 'IDR', symbol: 'Rp', rate: 15650 },
+  { code: 'IN', name: 'India', currency: 'INR', symbol: '₹', rate: 83.12 },
+  { code: 'IT', name: 'Italy', currency: 'EUR', symbol: '€', rate: 0.92 },
+  { code: 'JP', name: 'Japan', currency: 'JPY', symbol: '¥', rate: 149.50 },
+  { code: 'KR', name: 'South Korea', currency: 'KRW', symbol: '₩', rate: 1320 },
+  { code: 'KW', name: 'Kuwait', currency: 'KWD', symbol: 'د.ك', rate: 0.31 },
+  { code: 'LK', name: 'Sri Lanka', currency: 'LKR', symbol: 'Rs', rate: 322 },
+  { code: 'MY', name: 'Malaysia', currency: 'MYR', symbol: 'RM', rate: 4.72 },
+  { code: 'NP', name: 'Nepal', currency: 'NPR', symbol: 'रू', rate: 133 },
+  { code: 'NZ', name: 'New Zealand', currency: 'NZD', symbol: 'NZ$', rate: 1.64 },
+  { code: 'OM', name: 'Oman', currency: 'OMR', symbol: 'ر.ع.', rate: 0.38 },
+  { code: 'PH', name: 'Philippines', currency: 'PHP', symbol: '₱', rate: 55.80 },
+  { code: 'PK', name: 'Pakistan', currency: 'PKR', symbol: 'Rs', rate: 278.50 },
+  { code: 'QA', name: 'Qatar', currency: 'QAR', symbol: 'ر.ق', rate: 3.64 },
+  { code: 'SA', name: 'Saudi Arabia', currency: 'SAR', symbol: 'ر.س', rate: 3.75 },
+  { code: 'SG', name: 'Singapore', currency: 'SGD', symbol: 'S$', rate: 1.34 },
+  { code: 'TH', name: 'Thailand', currency: 'THB', symbol: '฿', rate: 35.50 },
+  { code: 'TR', name: 'Turkey', currency: 'TRY', symbol: '₺', rate: 30.20 },
+  { code: 'US', name: 'United States', currency: 'USD', symbol: '$', rate: 1 },
+  { code: 'VN', name: 'Vietnam', currency: 'VND', symbol: '₫', rate: 24500 },
+  { code: 'ZA', name: 'South Africa', currency: 'ZAR', symbol: 'R', rate: 18.90 },
+];
+
+// Store configurations with base currency
 const STORE_CONFIGS = {
   tnvcollection: {
     name: 'TNV Collection',
     subdomain: 'tnvcollection',
-    currency: 'INR',
-    currencySymbol: '₹',
+    baseCurrency: 'INR',
+    baseSymbol: '₹',
     region: 'India',
-    country: 'IN'
+    defaultCountry: 'IN'
   },
   tnvcollectionpk: {
     name: 'TNV Collection', 
     subdomain: 'tnvcollectionpk',
-    currency: 'PKR',
-    currencySymbol: 'Rs.',
+    baseCurrency: 'PKR',
+    baseSymbol: 'Rs',
     region: 'Pakistan',
-    country: 'PK'
+    defaultCountry: 'PK'
   }
 };
 
@@ -36,6 +71,12 @@ const StorefrontPreview = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  
+  // Country/Currency state
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(true);
+  const countryDropdownRef = useRef(null);
 
   // Extract store name from URL path
   const getStoreName = () => {
@@ -46,6 +87,47 @@ const StorefrontPreview = () => {
   };
 
   const storeName = getStoreName();
+
+  // Detect visitor's country on load
+  useEffect(() => {
+    const detectCountry = async () => {
+      try {
+        // Try to get country from IP
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        const detectedCountry = COUNTRIES.find(c => c.code === data.country_code);
+        if (detectedCountry) {
+          setSelectedCountry(detectedCountry);
+        } else {
+          // Fallback to store default
+          const config = STORE_CONFIGS[storeName];
+          const defaultCountry = COUNTRIES.find(c => c.code === config?.defaultCountry) || COUNTRIES.find(c => c.code === 'US');
+          setSelectedCountry(defaultCountry);
+        }
+      } catch (error) {
+        console.error('Error detecting location:', error);
+        // Fallback to store default
+        const config = STORE_CONFIGS[storeName];
+        const defaultCountry = COUNTRIES.find(c => c.code === config?.defaultCountry) || COUNTRIES.find(c => c.code === 'US');
+        setSelectedCountry(defaultCountry);
+      } finally {
+        setDetectingLocation(false);
+      }
+    };
+
+    detectCountry();
+  }, [storeName]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target)) {
+        setCountryDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -91,21 +173,52 @@ const StorefrontPreview = () => {
     }
   };
 
+  // Convert price from store's base currency to selected country's currency
+  const convertPrice = (price) => {
+    if (!storeConfig || !selectedCountry) return price;
+    
+    const basePrice = parseFloat(price);
+    const baseCountry = COUNTRIES.find(c => c.currency === storeConfig.baseCurrency);
+    
+    if (!baseCountry) return price;
+    
+    // Convert to USD first, then to target currency
+    const priceInUSD = basePrice / baseCountry.rate;
+    const convertedPrice = priceInUSD * selectedCountry.rate;
+    
+    return convertedPrice;
+  };
+
   const formatPrice = (price) => {
-    if (!storeConfig) return price;
-    const num = parseFloat(price);
-    return `${storeConfig.currencySymbol}${num.toLocaleString()}`;
+    if (!selectedCountry) return price;
+    const converted = convertPrice(price);
+    
+    // Format based on currency
+    if (selectedCountry.rate > 100) {
+      // For currencies with large values (JPY, KRW, IDR, VND, etc.)
+      return `${selectedCountry.symbol}${Math.round(converted).toLocaleString()}`;
+    }
+    return `${selectedCountry.symbol}${converted.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
   };
 
   const nextBanner = () => setCurrentBanner(prev => (prev + 1) % banners.length);
   const prevBanner = () => setCurrentBanner(prev => (prev - 1 + banners.length) % banners.length);
 
-  if (loading) {
+  const handleCountrySelect = (country) => {
+    setSelectedCountry(country);
+    setCountryDropdownOpen(false);
+    // Save to localStorage for persistence
+    localStorage.setItem('selectedCountry', JSON.stringify(country));
+  };
+
+  if (loading || detectingLocation) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-sm tracking-widest text-gray-500">LOADING</p>
+          <p className="text-sm tracking-widest text-gray-500">
+            {detectingLocation ? 'DETECTING LOCATION...' : 'LOADING'}
+          </p>
         </div>
       </div>
     );
@@ -115,24 +228,58 @@ const StorefrontPreview = () => {
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
       {/* Preview Mode Banner */}
       <div className="bg-amber-400 text-black text-center py-1.5 text-[10px] tracking-wider font-medium">
-        PREVIEW MODE — {storeConfig?.name} ({storeConfig?.region}) — Changes reflect before VPS deployment
+        PREVIEW MODE — {storeConfig?.name} ({storeConfig?.region}) — Prices shown in {selectedCountry?.currency}
       </div>
 
       {/* Top Utility Bar - MR PORTER Style */}
       <div className="bg-black text-white">
         <div className="max-w-[1400px] mx-auto px-4">
           <div className="flex items-center justify-between h-10">
-            {/* Left - Location */}
-            <div className="flex items-center space-x-4">
-              <button className="flex items-center space-x-1.5 text-[11px] tracking-wide hover:text-gray-300 transition">
-                <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />
-                <span>SHIP TO: {storeConfig?.country}</span>
+            {/* Left - Country/Currency Selector */}
+            <div className="relative" ref={countryDropdownRef}>
+              <button 
+                onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
+                className="flex items-center space-x-2 text-[11px] tracking-wide hover:text-gray-300 transition py-2"
+              >
+                <Globe className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <span className="hidden sm:inline">SHIP TO:</span>
+                <span className="font-medium">{selectedCountry?.code}</span>
+                <span className="text-gray-400">|</span>
+                <span>{selectedCountry?.currency}</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${countryDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
+
+              {/* Country Dropdown */}
+              {countryDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 w-80 bg-white text-black shadow-xl border border-gray-200 z-50 max-h-[400px] overflow-y-auto">
+                  <div className="p-4 border-b border-gray-200 sticky top-0 bg-white">
+                    <h3 className="text-xs font-medium tracking-wider mb-2">SELECT YOUR LOCATION</h3>
+                    <p className="text-[10px] text-gray-500">Prices and shipping will be updated accordingly</p>
+                  </div>
+                  <div className="py-2">
+                    {COUNTRIES.map((country) => (
+                      <button
+                        key={country.code}
+                        onClick={() => handleCountrySelect(country)}
+                        className={`w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition ${
+                          selectedCountry?.code === country.code ? 'bg-gray-100' : ''
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <span className="text-lg">{getFlagEmoji(country.code)}</span>
+                          <span className="text-sm">{country.name}</span>
+                        </div>
+                        <span className="text-xs text-gray-500">{country.symbol} {country.currency}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Center - Promo */}
             <div className="hidden md:block text-center">
-              <p className="text-[11px] tracking-[0.15em]">FREE SHIPPING ON ORDERS OVER {storeConfig?.currencySymbol}5,000</p>
+              <p className="text-[11px] tracking-[0.15em]">FREE SHIPPING ON ALL ORDERS • USE CODE: WELCOME10</p>
             </div>
 
             {/* Right - Utilities */}
@@ -145,7 +292,7 @@ const StorefrontPreview = () => {
       </div>
 
       {/* Main Header - MR PORTER Style */}
-      <header className={`sticky top-0 z-50 bg-white transition-all duration-300 ${isScrolled ? 'shadow-sm' : ''}`}>
+      <header className={`sticky top-0 z-40 bg-white transition-all duration-300 ${isScrolled ? 'shadow-sm' : ''}`}>
         {/* Top Header Row - Icons */}
         <div className="border-b border-gray-100">
           <div className="max-w-[1400px] mx-auto px-4">
@@ -547,6 +694,15 @@ const StorefrontPreview = () => {
       `}</style>
     </div>
   );
+};
+
+// Helper function to get flag emoji from country code
+const getFlagEmoji = (countryCode) => {
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt());
+  return String.fromCodePoint(...codePoints);
 };
 
 export default StorefrontPreview;
