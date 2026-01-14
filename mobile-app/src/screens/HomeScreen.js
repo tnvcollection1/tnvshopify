@@ -47,24 +47,28 @@ const defaultCategories = [
 ];
 
 // Section Header Component
-const SectionHeader = ({ title, subtitle, onViewAll, style }) => (
-  <View style={[styles.sectionHeader, style]}>
-    <View>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
+const SectionHeader = ({ title, subtitle, onViewAll, style }) => {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.sectionHeader, style]}>
+      <View>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
+        {subtitle && <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>{subtitle}</Text>}
+      </View>
+      {onViewAll && (
+        <TouchableOpacity onPress={onViewAll} style={styles.viewAllBtn}>
+          <Text style={[styles.viewAllText, { color: colors.textSecondary }]}>View All</Text>
+          <Text style={[styles.viewAllArrow, { color: colors.textSecondary }]}>→</Text>
+        </TouchableOpacity>
+      )}
     </View>
-    {onViewAll && (
-      <TouchableOpacity onPress={onViewAll} style={styles.viewAllBtn}>
-        <Text style={styles.viewAllText}>View All</Text>
-        <Text style={styles.viewAllArrow}>→</Text>
-      </TouchableOpacity>
-    )}
-  </View>
-);
+  );
+};
 
 // Gender Card Component
 const GenderCard = ({ title, image, gradient, onPress }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { colors, shadows, isDark } = useTheme();
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -85,7 +89,7 @@ const GenderCard = ({ title, image, gradient, onPress }) => {
   };
 
   return (
-    <Animated.View style={[styles.genderCard, { transform: [{ scale: scaleAnim }] }]}>
+    <Animated.View style={[styles.genderCard, shadows.lg, { transform: [{ scale: scaleAnim }] }]}>
       <TouchableOpacity
         onPress={onPress}
         onPressIn={handlePressIn}
@@ -100,8 +104,8 @@ const GenderCard = ({ title, image, gradient, onPress }) => {
           style={styles.genderGradient}
         >
           <View style={styles.genderOverlay} />
-          <Text style={styles.genderTitle}>{title}</Text>
-          <Text style={styles.genderSubtitle}>SHOP NOW →</Text>
+          <Text style={[styles.genderTitle, { color: isDark ? '#FFFFFF' : '#1a1a1a' }]}>{title}</Text>
+          <Text style={[styles.genderSubtitle, { color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' }]}>SHOP NOW →</Text>
         </LinearGradient>
       </TouchableOpacity>
     </Animated.View>
@@ -112,6 +116,7 @@ const GenderCard = ({ title, image, gradient, onPress }) => {
 const CategoryPill = ({ name, icon, gradient, onPress, index }) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const { colors, shadows } = useTheme();
 
   useEffect(() => {
     Animated.parallel([
@@ -142,23 +147,26 @@ const CategoryPill = ({ name, icon, gradient, onPress, index }) => {
           colors={gradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.categoryPillGradient}
+          style={[styles.categoryPillGradient, shadows.md]}
         >
           <Text style={styles.categoryPillIcon}>{icon}</Text>
         </LinearGradient>
-        <Text style={styles.categoryPillName}>{name}</Text>
+        <Text style={[styles.categoryPillName, { color: colors.text }]}>{name}</Text>
       </TouchableOpacity>
     </Animated.View>
   );
 };
 
 // Trending Badge
-const TrendingBadge = () => (
-  <View style={styles.trendingBadge}>
-    <Text style={styles.trendingIcon}>🔥</Text>
-    <Text style={styles.trendingText}>TRENDING</Text>
-  </View>
-);
+const TrendingBadge = () => {
+  const { isDark } = useTheme();
+  return (
+    <View style={[styles.trendingBadge, { backgroundColor: isDark ? '#422006' : '#FEF3C7' }]}>
+      <Text style={styles.trendingIcon}>🔥</Text>
+      <Text style={[styles.trendingText, { color: isDark ? '#FBBF24' : '#D97706' }]}>TRENDING</Text>
+    </View>
+  );
+};
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -339,7 +347,7 @@ const HomeScreen = () => {
           <PromoBanner
             title="MEGA SALE"
             subtitle="Up to 70% OFF on selected items"
-            colors={colors.gradientSale}
+            colors={gradients.sale}
             size="lg"
             onPress={() => navigation.navigate('Category', { category: 'sale' })}
           />
@@ -399,7 +407,6 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -415,7 +422,6 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: borderRadius.xl,
     overflow: 'hidden',
-    ...shadows.lg,
   },
   genderTouchable: {
     flex: 1,
@@ -432,13 +438,11 @@ const styles = StyleSheet.create({
   genderTitle: {
     fontSize: typography.h2,
     fontWeight: typography.extrabold,
-    color: colors.text,
     letterSpacing: 2,
   },
   genderSubtitle: {
     fontSize: typography.caption,
     fontWeight: typography.semibold,
-    color: colors.textSecondary,
     marginTop: spacing.xs,
   },
   section: {
@@ -454,11 +458,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: typography.h4,
     fontWeight: typography.bold,
-    color: colors.text,
   },
   sectionSubtitle: {
     fontSize: typography.caption,
-    color: colors.textSecondary,
     marginTop: spacing.xs,
   },
   viewAllBtn: {
@@ -467,12 +469,10 @@ const styles = StyleSheet.create({
   },
   viewAllText: {
     fontSize: typography.bodySmall,
-    color: colors.textSecondary,
     fontWeight: typography.medium,
   },
   viewAllArrow: {
     fontSize: typography.body,
-    color: colors.textSecondary,
     marginLeft: spacing.xs,
   },
   categoriesContainer: {
@@ -489,7 +489,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.md,
   },
   categoryPillIcon: {
     fontSize: 26,
@@ -497,7 +496,6 @@ const styles = StyleSheet.create({
   categoryPillName: {
     fontSize: typography.caption,
     fontWeight: typography.medium,
-    color: colors.text,
     marginTop: spacing.sm,
     textAlign: 'center',
   },
@@ -527,7 +525,6 @@ const styles = StyleSheet.create({
   trendingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF3C7',
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
@@ -539,7 +536,6 @@ const styles = StyleSheet.create({
   trendingText: {
     fontSize: typography.tiny,
     fontWeight: typography.bold,
-    color: '#D97706',
     letterSpacing: 0.5,
   },
 });
