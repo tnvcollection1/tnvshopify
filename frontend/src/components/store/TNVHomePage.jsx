@@ -286,7 +286,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <div className="group relative bg-white rounded-lg overflow-hidden">
-      <Link to={`/store/product/${product.shopify_product_id}`}>
+      <Link to={`/tnv/product/${product.shopify_product_id}`}>
         <div className="aspect-[3/4] overflow-hidden bg-gray-100">
           <img
             src={imageError ? 'https://via.placeholder.com/400x500?text=No+Image' : image}
