@@ -1,6 +1,7 @@
 /**
  * Home Screen
  * Main landing page with banners, categories, and products
+ * Now uses dynamic configuration from backend API
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -21,13 +22,26 @@ import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
 import CategoryCircle from '../components/CategoryCircle';
 import PromoBanner from '../components/PromoBanner';
+import { useStore } from '../context/StoreContext';
 import * as api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
+// Fallback categories if API fails
+const defaultCategories = [
+  { name: 'New In', icon: { value: '✨' }, image: 'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=200' },
+  { name: 'Dresses', icon: { value: '👗' }, image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200' },
+  { name: 'Shoes', icon: { value: '👟' }, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200' },
+  { name: 'Bags', icon: { value: '👜' }, image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200' },
+  { name: 'Sports', icon: { value: '🏃' }, image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200' },
+  { name: 'Watches', icon: { value: '⌚' }, image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=200' },
+];
+
 const HomeScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { navConfig, isLoading: configLoading } = useStore();
+  
   const [products, setProducts] = useState([]);
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,14 +49,8 @@ const HomeScreen = () => {
   const [currentBanner, setCurrentBanner] = useState(0);
   const bannerRef = useRef(null);
 
-  const categories = [
-    { name: 'New In', image: 'https://images.unsplash.com/photo-1558171813-4c088753af8f?w=200' },
-    { name: 'Dresses', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200' },
-    { name: 'Shoes', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200' },
-    { name: 'Bags', image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200' },
-    { name: 'Sports', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200' },
-    { name: 'Watches', image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=200' },
-  ];
+  // Get categories from backend config or use defaults
+  const categories = navConfig?.categories?.filter(c => c.active !== false) || defaultCategories;
 
   useEffect(() => {
     fetchData();
@@ -112,18 +120,20 @@ const HomeScreen = () => {
           colors={['#10b981', '#14b8a6', '#06b6d4']}
         />
 
-        {/* Category Circles */}
+        {/* Category Circles - Dynamic from backend */}
         <View style={styles.section}>
           <FlatList
             horizontal
-            data={categories}
-            keyExtractor={(item) => item.name}
+            data={categories.slice(0, 8)}
+            keyExtractor={(item, idx) => item.name || idx.toString()}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesContainer}
             renderItem={({ item }) => (
               <CategoryCircle
                 name={item.name}
                 image={item.image}
+                emoji={item.icon?.value || item.icon}
+                bgColor={item.bgColor}
                 onPress={() => navigation.navigate('Category', { category: item.name.toLowerCase() })}
               />
             )}
