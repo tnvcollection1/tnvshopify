@@ -20,6 +20,7 @@ const CategoryCircle = ({
   size = 'md', // sm, md, lg
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { colors, shadows } = useTheme();
   const hasImage = image && !emoji && !icon;
   const displayIcon = icon?.value || icon || emoji || '📁';
 
@@ -63,9 +64,9 @@ const CategoryCircle = ({
           colors={gradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={[styles.gradientBorder, { width: s.circle + 4, height: s.circle + 4, borderRadius: (s.circle + 4) / 2 }]}
+          style={[styles.gradientBorder, shadows.sm, { width: s.circle + 4, height: s.circle + 4, borderRadius: (s.circle + 4) / 2 }]}
         >
-          <View style={[styles.innerCircle, { width: s.circle, height: s.circle, borderRadius: s.circle / 2 }]}>
+          <View style={[styles.innerCircle, { backgroundColor: colors.surface, width: s.circle, height: s.circle, borderRadius: s.circle / 2 }]}>
             {hasImage ? (
               <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
             ) : (
@@ -80,7 +81,7 @@ const CategoryCircle = ({
         </LinearGradient>
 
         {/* Name */}
-        <Text style={[styles.name, { fontSize: s.text }]} numberOfLines={2}>
+        <Text style={[styles.name, { color: colors.text, fontSize: s.text }]} numberOfLines={2}>
           {name}
         </Text>
       </TouchableOpacity>
@@ -126,10 +127,8 @@ const styles = StyleSheet.create({
   gradientBorder: {
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.sm,
   },
   innerCircle: {
-    backgroundColor: colors.white,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -149,7 +148,6 @@ const styles = StyleSheet.create({
   },
   name: {
     fontWeight: typography.medium,
-    color: colors.text,
     textAlign: 'center',
     marginTop: spacing.sm,
     lineHeight: 16,
