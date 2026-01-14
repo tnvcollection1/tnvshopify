@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '../context/CartContext';
 import { useStore } from '../context/StoreContext';
 import { useTheme } from '../context/ThemeContext';
+import { lightHaptic, mediumHaptic, errorHaptic, successHaptic } from '../services/haptics';
 import Header from '../components/Header';
 import { spacing, borderRadius, typography } from '../theme';
 
