@@ -155,7 +155,11 @@ async def get_cart(session_id: str, store: str = Query("tnvcollection")):
     
     items = cart.get("items", [])
     subtotal = sum(item["price"] * item["quantity"] for item in items)
-    shipping = 0 if subtotal > 200 else 25  # Free shipping over 200 AED
+    
+    # Use store-specific shipping thresholds
+    free_threshold = store_config.get("free_shipping_threshold", 2000)
+    shipping_cost = store_config.get("shipping_cost", 150)
+    shipping = 0 if subtotal >= free_threshold else shipping_cost
     
     return {
         "items": items,
@@ -163,7 +167,10 @@ async def get_cart(session_id: str, store: str = Query("tnvcollection")):
         "shipping": shipping,
         "discount": 0,
         "total": round(subtotal + shipping, 2),
-        "item_count": sum(item["quantity"] for item in items)
+        "item_count": sum(item["quantity"] for item in items),
+        "currency": store_config["currency"],
+        "currency_symbol": store_config["currency_symbol"],
+        "free_shipping_threshold": free_threshold
     }
 
 
