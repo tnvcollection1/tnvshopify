@@ -50,6 +50,14 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 ### TNV Collection Storefront - Namshi.com Design ✅ COMPLETED
 Built a complete Namshi.com-inspired e-commerce storefront accessible at `/tnv` routes.
 
+**Design Matches Namshi.com:**
+- **Header**: Language toggle (English | العربية) + "Cash On Delivery" promo + Region selector (🇦🇪 AE)
+- **Logo Bar**: NAMSHI logo with FASHION badge + Category tabs with icons (FASHION, Beauty, Baby & Kids, Home & More, PREMIUM) + Search bar + User/Wishlist/Cart
+- **Hero Banner**: Full-width lifestyle images with overlay text + "Shop Now" button
+- **Product Cards** (horizontal scroll): Product image, discount badge, brand, title, price with strikethrough, "Free delivery", **"GET IT TODAY/TOMORROW"** delivery info
+- **Promo Banners**: Gradient backgrounds with bold text (30% CASHBACK, MEGA SALE)
+- **Category Circles**: Round images with labels (New In, Handbags, Dresses, Shoes, Sports, Pants, Sandals, Watches)
+
 **New Components Created:**
 - `/app/frontend/src/components/store/TNVStoreLayout.jsx` - Store context provider with:
   - Multi-region support (UAE, Saudi Arabia, Kuwait, Qatar, Bahrain, Oman, Pakistan, India)
