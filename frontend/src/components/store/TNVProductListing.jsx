@@ -80,7 +80,7 @@ const TNVProductListing = () => {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <nav className="text-sm">
-            <Link to="/store" className="text-gray-500 hover:text-black">Home</Link>
+            <Link to="/tnv" className="text-gray-500 hover:text-black">Home</Link>
             <span className="mx-2 text-gray-300">/</span>
             <span className="text-black">{categoryTitles[category] || category}</span>
           </nav>
