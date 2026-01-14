@@ -46,27 +46,38 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
   // Get store-specific config
   const storeConfig = STORE_CONFIGS[storeName] || STORE_CONFIGS['tnvcollection'];
   
-  // Set default region based on store
-  const getDefaultRegion = () => {
-    return REGIONS.find(r => r.code === storeConfig.defaultRegion) || REGIONS[0];
+  // Set default region based on store - use initializer function
+  const getDefaultRegion = (store) => {
+    const config = STORE_CONFIGS[store] || STORE_CONFIGS['tnvcollection'];
+    const saved = localStorage.getItem(`tnv_region_${store}`);
+    if (saved) {
+      try { return JSON.parse(saved); } catch { /* ignore */ }
+    }
+    return REGIONS.find(r => r.code === config.defaultRegion) || REGIONS[0];
   };
   
-  const [region, setRegion] = useState(getDefaultRegion());
-  const [cart, setCart] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
+  const getInitialCart = (store) => {
+    const saved = localStorage.getItem(`tnv_cart_${store}`);
+    if (saved) {
+      try { return JSON.parse(saved); } catch { /* ignore */ }
+    }
+    return [];
+  };
+  
+  const getInitialWishlist = (store) => {
+    const saved = localStorage.getItem(`tnv_wishlist_${store}`);
+    if (saved) {
+      try { return JSON.parse(saved); } catch { /* ignore */ }
+    }
+    return [];
+  };
+  
+  const [region, setRegion] = useState(() => getDefaultRegion(storeName));
+  const [cart, setCart] = useState(() => getInitialCart(storeName));
+  const [wishlist, setWishlist] = useState(() => getInitialWishlist(storeName));
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [navConfig, setNavConfig] = useState(null);
-
-  // When store changes, update region to store default
-  useEffect(() => {
-    const savedRegion = localStorage.getItem(`tnv_region_${storeName}`);
-    if (savedRegion) {
-      setRegion(JSON.parse(savedRegion));
-    } else {
-      setRegion(getDefaultRegion());
-    }
-  }, [storeName]);
 
   const detectRegion = async () => {
     try {
@@ -88,13 +99,8 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
   };
 
   useEffect(() => {
-    const savedCart = localStorage.getItem(`tnv_cart_${storeName}`);
-    const savedWishlist = localStorage.getItem(`tnv_wishlist_${storeName}`);
-    
-    if (savedCart) setCart(JSON.parse(savedCart));
-    if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
-
     fetchNavConfig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeName]);
 
   useEffect(() => { localStorage.setItem(`tnv_region_${storeName}`, JSON.stringify(region)); }, [region, storeName]);
