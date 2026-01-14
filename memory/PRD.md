@@ -10,10 +10,26 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - Admin panel for store management
 - Dynamic header/menu/banner configuration
 - **Multi-store support with different currencies (INR/PKR)**
+- **Mega Menu with Visual Builder** ✅
 
 ## What's Been Implemented
 
 ### January 14, 2026 (Latest Session)
+
+**Mega Menu with Visual Builder** ✅ COMPLETED
+- Full mega menu dropdowns on storefront header (Namshi-style)
+- 4 default sections: FASHION, WOMEN, MEN, BEAUTY
+- Each section has: columns, items, promo banners, quick links
+- Hover to open (desktop, 150ms delay), click on mobile
+- Visual Builder admin page (`/mega-menu-builder`):
+  - Drag-and-drop reordering with @dnd-kit
+  - Live preview panel
+  - Store selector (India/Pakistan)
+  - Add/Edit/Delete columns, items, banners
+  - Clone menu between stores
+  - Global settings (hover delay, animation, max width)
+- Store-specific configurations (different menus per store)
+- Backend API: `/api/mega-menu/*` (full CRUD)
 
 **Multi-Store/Multi-Currency Support** ✅ COMPLETED
 - Two stores: `tnvcollection` (India/INR/₹) and `tnvcollectionpk` (Pakistan/PKR/Rs.)
