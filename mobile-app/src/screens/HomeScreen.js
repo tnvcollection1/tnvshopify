@@ -1,6 +1,7 @@
 /**
  * Enhanced Home Screen
  * Beautiful landing page with animations and modern design
+ * Supports light/dark mode
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -15,6 +16,7 @@ import {
   RefreshControl,
   Animated,
   Image,
+  StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -26,21 +28,22 @@ import CategoryCircle from '../components/CategoryCircle';
 import PromoBanner, { FlashSaleBanner, CompactBanner } from '../components/PromoBanner';
 import Skeleton from '../components/SkeletonLoader';
 import { useStore } from '../context/StoreContext';
+import { useTheme } from '../context/ThemeContext';
 import * as api from '../services/api';
-import { colors, borderRadius, typography, spacing, shadows } from '../theme';
+import { borderRadius, typography, spacing, gradients } from '../theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Default categories with gradients
 const defaultCategories = [
-  { name: 'New In', icon: '✨', gradient: ['#667eea', '#764ba2'] },
-  { name: 'Dresses', icon: '👗', gradient: ['#f093fb', '#f5576c'] },
-  { name: 'Shoes', icon: '👟', gradient: ['#4facfe', '#00f2fe'] },
-  { name: 'Bags', icon: '👜', gradient: ['#fa709a', '#fee140'] },
-  { name: 'Sports', icon: '🏃', gradient: ['#11998e', '#38ef7d'] },
-  { name: 'Watches', icon: '⌚', gradient: ['#ee0979', '#ff6a00'] },
-  { name: 'Beauty', icon: '💄', gradient: ['#a8edea', '#fed6e3'] },
-  { name: 'Sale', icon: '🔥', gradient: ['#ff416c', '#ff4b2b'] },
+  { name: 'New In', icon: '✨', gradient: gradients.purple },
+  { name: 'Dresses', icon: '👗', gradient: gradients.pink },
+  { name: 'Shoes', icon: '👟', gradient: gradients.cyan },
+  { name: 'Bags', icon: '👜', gradient: gradients.orange },
+  { name: 'Sports', icon: '🏃', gradient: gradients.green },
+  { name: 'Watches', icon: '⌚', gradient: gradients.red },
+  { name: 'Beauty', icon: '💄', gradient: gradients.teal },
+  { name: 'Sale', icon: '🔥', gradient: gradients.fire },
 ];
 
 // Section Header Component
