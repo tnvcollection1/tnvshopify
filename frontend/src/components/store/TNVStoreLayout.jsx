@@ -280,17 +280,17 @@ export const TNVHeader = () => {
   // Use API data or defaults
   const mainTabs = categoryTabs.length > 0 ? categoryTabs : defaultCategoryTabs;
   
-  // Default sub-navigation items (EXACTLY like Namshi)
+  // Default sub-navigation items (EXACTLY like Namshi) - use baseUrl
   const defaultSubNavItems = [
-    { id: 'sub-clothing', name: 'CLOTHING', path: '/tnv/clothing', highlight: false },
-    { id: 'sub-shoes', name: 'SHOES', path: '/tnv/shoes', highlight: false },
-    { id: 'sub-accessories', name: 'ACCESSORIES', path: '/tnv/accessories', highlight: false },
-    { id: 'sub-bags', name: 'BAGS', path: '/tnv/bags', highlight: false },
-    { id: 'sub-sports', name: 'SPORTS', path: '/tnv/sports', highlight: false },
-    { id: 'sub-new', name: 'NEW ARRIVALS', path: '/tnv/new-arrivals', highlight: false },
-    { id: 'sub-premium', name: 'PREMIUM', path: '/tnv/premium', highlight: false },
-    { id: 'sub-sale', name: 'SALE', path: '/tnv/sale', highlight: true },
-    { id: 'sub-brands', name: 'BRANDS', path: '/tnv/brands', highlight: false },
+    { id: 'sub-clothing', name: 'CLOTHING', path: `${baseUrl}/clothing`, highlight: false },
+    { id: 'sub-shoes', name: 'SHOES', path: `${baseUrl}/shoes`, highlight: false },
+    { id: 'sub-accessories', name: 'ACCESSORIES', path: `${baseUrl}/accessories`, highlight: false },
+    { id: 'sub-bags', name: 'BAGS', path: `${baseUrl}/bags`, highlight: false },
+    { id: 'sub-sports', name: 'SPORTS', path: `${baseUrl}/sports`, highlight: false },
+    { id: 'sub-new', name: 'NEW ARRIVALS', path: `${baseUrl}/new-arrivals`, highlight: false },
+    { id: 'sub-premium', name: 'PREMIUM', path: `${baseUrl}/premium`, highlight: false },
+    { id: 'sub-sale', name: 'SALE', path: `${baseUrl}/sale`, highlight: true },
+    { id: 'sub-brands', name: 'BRANDS', path: `${baseUrl}/brands`, highlight: false },
   ];
   
   const subNavList = subNavItems.length > 0 ? subNavItems : defaultSubNavItems;
