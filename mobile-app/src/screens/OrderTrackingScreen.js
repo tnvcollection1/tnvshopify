@@ -1,6 +1,7 @@
 /**
  * Order Tracking Screen
  * Track order status and delivery
+ * Supports dark mode
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,14 +13,20 @@ import {
   StyleSheet,
   Linking,
   RefreshControl,
+  StatusBar,
 } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../context/ThemeContext';
+import Header from '../components/Header';
 import * as api from '../services/api';
+import { spacing, borderRadius, typography } from '../theme';
 
 const OrderTrackingScreen = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors, statusBarStyle, isDark } = useTheme();
   const { orderId } = route.params;
 
   const [order, setOrder] = useState(null);
@@ -36,7 +43,6 @@ const OrderTrackingScreen = () => {
       setOrder(res.order || res);
     } catch (e) {
       console.log('Error fetching tracking:', e);
-      // Try regular order fetch as fallback
       try {
         const orderRes = await api.getOrder(orderId);
         setOrder(orderRes.order || orderRes);
@@ -56,46 +62,14 @@ const OrderTrackingScreen = () => {
 
   const getStatusSteps = () => {
     const allSteps = [
-      {
-        key: 'confirmed',
-        label: 'Order Confirmed',
-        description: 'We have received your order',
-        icon: '✓',
-      },
-      {
-        key: 'processing',
-        label: 'Processing',
-        description: 'Your order is being prepared',
-        icon: '📦',
-      },
-      {
-        key: 'shipped',
-        label: 'Shipped',
-        description: 'Your order is on the way',
-        icon: '🚚',
-      },
-      {
-        key: 'out_for_delivery',
-        label: 'Out for Delivery',
-        description: 'Your order will arrive today',
-        icon: '🛵',
-      },
-      {
-        key: 'delivered',
-        label: 'Delivered',
-        description: 'Order has been delivered',
-        icon: '🏠',
-      },
+      { key: 'confirmed', label: 'Order Confirmed', description: 'We have received your order', icon: '✓' },
+      { key: 'processing', label: 'Processing', description: 'Your order is being prepared', icon: '📦' },
+      { key: 'shipped', label: 'Shipped', description: 'Your order is on the way', icon: '🚚' },
+      { key: 'out_for_delivery', label: 'Out for Delivery', description: 'Your order will arrive today', icon: '🛵' },
+      { key: 'delivered', label: 'Delivered', description: 'Order has been delivered', icon: '🏠' },
     ];
 
-    const statusOrder = [
-      'pending',
-      'confirmed',
-      'processing',
-      'shipped',
-      'out_for_delivery',
-      'delivered',
-    ];
+    const statusOrder = ['pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered'];
     const currentStatus = order?.status || 'confirmed';
     const currentIndex = statusOrder.indexOf(currentStatus);
 
@@ -111,16 +85,18 @@ const OrderTrackingScreen = () => {
 
   const handleWhatsAppSupport = () => {
     const message = `Hi! I need help with my order ${orderId}`;
-    const phone = '971501234567'; // Replace with actual support number
-    Linking.openURL(
-      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-    );
+    const phone = '971501234567';
+    Linking.openURL(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`);
   };
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.loading]}>
-        <Text>Loading...</Text>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+        <StatusBar barStyle={statusBarStyle} />
+        <Header title="Order Tracking" />
+        <View style={styles.loading}>
+          <Text style={{ color: colors.textSecondary }}>Loading...</Text>
+        </View>
       </View>
     );
   }
@@ -128,21 +104,22 @@ const OrderTrackingScreen = () => {
   const statusSteps = getStatusSteps();
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: colors.background }]}>
+      <StatusBar barStyle={statusBarStyle} />
+      <Header title="Order Tracking" />
+      
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         showsVerticalScrollIndicator={false}
       >
         {/* Order Header */}
-        <View style={styles.orderHeader}>
+        <View style={[styles.orderHeader, { backgroundColor: colors.card }]}>
           <View>
-            <Text style={styles.orderLabel}>Order ID</Text>
-            <Text style={styles.orderId}>{orderId}</Text>
+            <Text style={[styles.orderLabel, { color: colors.textSecondary }]}>Order ID</Text>
+            <Text style={[styles.orderId, { color: colors.text }]}>{orderId}</Text>
           </View>
-          <View style={styles.statusBadge}>
+          <View style={[styles.statusBadge, { backgroundColor: colors.success }]}>
             <Text style={styles.statusText}>
               {order?.status?.replace(/_/g, ' ').toUpperCase() || 'CONFIRMED'}
             </Text>
@@ -150,7 +127,7 @@ const OrderTrackingScreen = () => {
         </View>
 
         {/* Estimated Delivery */}
-        <View style={styles.deliveryCard}>
+        <View style={[styles.deliveryCard, { backgroundColor: colors.primary }]}>
           <Text style={styles.deliveryLabel}>Estimated Delivery</Text>
           <Text style={styles.deliveryDate}>
             {order?.estimated_delivery || '3-5 business days'}
@@ -164,24 +141,24 @@ const OrderTrackingScreen = () => {
         </View>
 
         {/* Status Timeline */}
-        <View style={styles.timelineCard}>
-          <Text style={styles.cardTitle}>Order Progress</Text>
+        <View style={[styles.timelineCard, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Order Progress</Text>
           {statusSteps.map((step, idx) => (
             <View key={step.key} style={styles.timelineItem}>
               <View style={styles.timelineLeft}>
                 <View
                   style={[
                     styles.timelineIcon,
-                    step.completed && styles.timelineIconCompleted,
-                    step.active && styles.timelineIconActive,
+                    { backgroundColor: colors.background },
+                    step.completed && { backgroundColor: isDark ? colors.success + '30' : '#dcfce7' },
+                    step.active && { backgroundColor: colors.success },
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.timelineEmoji,
-                      step.completed && styles.timelineEmojiCompleted,
-                    ]}
-                  >
+                  <Text style={[
+                    styles.timelineEmoji,
+                    step.completed && { color: colors.success },
+                    step.active && { color: '#FFFFFF' },
+                  ]}>
                     {step.completed && !step.active ? '✓' : step.icon}
                   </Text>
                 </View>
@@ -189,24 +166,24 @@ const OrderTrackingScreen = () => {
                   <View
                     style={[
                       styles.timelineLine,
-                      step.completed && styles.timelineLineCompleted,
+                      { backgroundColor: colors.border },
+                      step.completed && { backgroundColor: colors.success },
                     ]}
                   />
                 )}
               </View>
               <View style={styles.timelineContent}>
-                <Text
-                  style={[
-                    styles.timelineLabel,
-                    step.completed && styles.timelineLabelCompleted,
-                    step.active && styles.timelineLabelActive,
-                  ]}
-                >
+                <Text style={[
+                  styles.timelineLabel,
+                  { color: colors.textTertiary },
+                  step.completed && { color: colors.success },
+                  step.active && { color: colors.text },
+                ]}>
                   {step.label}
                 </Text>
-                <Text style={styles.timelineDescription}>{step.description}</Text>
+                <Text style={[styles.timelineDescription, { color: colors.textSecondary }]}>{step.description}</Text>
                 {step.active && order?.status_updated_at && (
-                  <Text style={styles.timelineDate}>
+                  <Text style={[styles.timelineDate, { color: colors.textTertiary }]}>
                     {new Date(order.status_updated_at).toLocaleString()}
                   </Text>
                 )}
@@ -217,26 +194,26 @@ const OrderTrackingScreen = () => {
 
         {/* Courier Info */}
         {order?.courier && (
-          <View style={styles.courierCard}>
-            <Text style={styles.cardTitle}>Courier Information</Text>
+          <View style={[styles.courierCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Courier Information</Text>
             <View style={styles.courierInfo}>
-              <View style={styles.courierIcon}>
+              <View style={[styles.courierIcon, { backgroundColor: colors.background }]}>
                 <Text style={styles.courierEmoji}>🚚</Text>
               </View>
               <View style={styles.courierDetails}>
-                <Text style={styles.courierName}>{order.courier}</Text>
+                <Text style={[styles.courierName, { color: colors.text }]}>{order.courier}</Text>
                 {order.tracking_number && (
-                  <Text style={styles.courierTracking}>
+                  <Text style={[styles.courierTracking, { color: colors.textSecondary }]}>
                     Tracking: {order.tracking_number}
                   </Text>
                 )}
               </View>
               {order.courier_tracking_url && (
                 <TouchableOpacity
-                  style={styles.trackCourierBtn}
+                  style={[styles.trackCourierBtn, { backgroundColor: colors.primary }]}
                   onPress={() => Linking.openURL(order.courier_tracking_url)}
                 >
-                  <Text style={styles.trackCourierText}>Track</Text>
+                  <Text style={[styles.trackCourierText, { color: colors.textInverse }]}>Track</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -245,28 +222,25 @@ const OrderTrackingScreen = () => {
 
         {/* Shipping Address */}
         {order?.shipping_address && (
-          <View style={styles.addressCard}>
-            <Text style={styles.cardTitle}>Delivery Address</Text>
-            <Text style={styles.addressName}>
+          <View style={[styles.addressCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Delivery Address</Text>
+            <Text style={[styles.addressName, { color: colors.text }]}>
               {order.customer?.firstName} {order.customer?.lastName}
             </Text>
-            <Text style={styles.addressLine}>{order.shipping_address.address}</Text>
-            <Text style={styles.addressLine}>
+            <Text style={[styles.addressLine, { color: colors.textSecondary }]}>{order.shipping_address.address}</Text>
+            <Text style={[styles.addressLine, { color: colors.textSecondary }]}>
               {order.shipping_address.city}, {order.shipping_address.country}
             </Text>
           </View>
         )}
 
         {/* Help Section */}
-        <View style={styles.helpCard}>
-          <Text style={styles.helpTitle}>Need Help?</Text>
-          <Text style={styles.helpSubtitle}>
+        <View style={[styles.helpCard, { backgroundColor: colors.card }]}>
+          <Text style={[styles.helpTitle, { color: colors.text }]}>Need Help?</Text>
+          <Text style={[styles.helpSubtitle, { color: colors.textSecondary }]}>
             Our support team is here to assist you
           </Text>
-          <TouchableOpacity
-            style={styles.whatsappBtn}
-            onPress={handleWhatsAppSupport}
-          >
+          <TouchableOpacity style={styles.whatsappBtn} onPress={handleWhatsAppSupport}>
             <Text style={styles.whatsappEmoji}>💬</Text>
             <Text style={styles.whatsappText}>Chat on WhatsApp</Text>
           </TouchableOpacity>
@@ -279,87 +253,82 @@ const OrderTrackingScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   loading: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   content: {
-    padding: 16,
+    padding: spacing.lg,
   },
   orderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.lg,
   },
   orderLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
+    fontSize: typography.caption,
+    marginBottom: spacing.xs,
   },
   orderId: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: typography.body,
+    fontWeight: typography.bold,
     fontFamily: 'monospace',
   },
   statusBadge: {
-    backgroundColor: '#22c55e',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.lg,
   },
   statusText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontSize: typography.caption,
+    fontWeight: typography.bold,
   },
   deliveryCard: {
-    backgroundColor: '#000',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 16,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.lg,
   },
   deliveryLabel: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
-    marginBottom: 4,
+    fontSize: typography.bodySmall,
+    marginBottom: spacing.xs,
   },
   deliveryDate: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
   },
   trackingInfo: {
-    marginTop: 16,
-    paddingTop: 16,
+    marginTop: spacing.lg,
+    paddingTop: spacing.lg,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.2)',
   },
   trackingLabel: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: typography.caption,
+    marginBottom: spacing.xs,
   },
   trackingNumber: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#FFFFFF',
+    fontSize: typography.body,
     fontFamily: 'monospace',
   },
   timelineCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.lg,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 16,
+    fontSize: typography.body,
+    fontWeight: typography.bold,
+    marginBottom: spacing.lg,
   },
   timelineItem: {
     flexDirection: 'row',
@@ -367,67 +336,43 @@ const styles = StyleSheet.create({
   },
   timelineLeft: {
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: spacing.lg,
   },
   timelineIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  timelineIconCompleted: {
-    backgroundColor: '#dcfce7',
-  },
-  timelineIconActive: {
-    backgroundColor: '#22c55e',
   },
   timelineEmoji: {
     fontSize: 18,
   },
-  timelineEmojiCompleted: {
-    color: '#22c55e',
-  },
   timelineLine: {
     width: 2,
     flex: 1,
-    backgroundColor: '#eee',
-    marginVertical: 4,
-  },
-  timelineLineCompleted: {
-    backgroundColor: '#22c55e',
+    marginVertical: spacing.xs,
   },
   timelineContent: {
     flex: 1,
-    paddingBottom: 16,
+    paddingBottom: spacing.lg,
   },
   timelineLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#999',
-  },
-  timelineLabelCompleted: {
-    color: '#22c55e',
-  },
-  timelineLabelActive: {
-    color: '#000',
+    fontSize: typography.bodySmall,
+    fontWeight: typography.semibold,
   },
   timelineDescription: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
+    fontSize: typography.caption,
+    marginTop: spacing.xs,
   },
   timelineDate: {
-    fontSize: 11,
-    color: '#999',
-    marginTop: 4,
+    fontSize: typography.tiny,
+    marginTop: spacing.xs,
   },
   courierCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.lg,
   },
   courierInfo: {
     flexDirection: 'row',
@@ -437,10 +382,9 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   courierEmoji: {
     fontSize: 24,
@@ -449,74 +393,67 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   courierName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: typography.body,
+    fontWeight: typography.semibold,
   },
   courierTracking: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
+    fontSize: typography.caption,
+    marginTop: spacing.xs,
   },
   trackCourierBtn: {
-    backgroundColor: '#000',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.lg,
   },
   trackCourierText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: typography.caption,
+    fontWeight: typography.semibold,
   },
   addressCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.lg,
   },
   addressName: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: typography.body,
+    fontWeight: typography.semibold,
+    marginBottom: spacing.xs,
   },
   addressLine: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 2,
+    fontSize: typography.bodySmall,
+    marginBottom: spacing.xs,
   },
   helpCard: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   helpTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
+    marginBottom: spacing.xs,
   },
   helpSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 16,
+    fontSize: typography.bodySmall,
+    marginBottom: spacing.lg,
   },
   whatsappBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#25D366',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.full,
   },
   whatsappEmoji: {
     fontSize: 20,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   whatsappText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontSize: typography.body,
+    fontWeight: typography.bold,
   },
 });
 
