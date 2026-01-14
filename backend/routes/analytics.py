@@ -47,6 +47,9 @@ async def get_overview_stats(
 ):
     """Get overview statistics for dashboard"""
     
+    # Get store configuration
+    store_config = get_store_config(store)
+    
     # Calculate date range
     days = {"7d": 7, "30d": 30, "90d": 90, "1y": 365}.get(period, 30)
     start_date = datetime.now(timezone.utc) - timedelta(days=days)
