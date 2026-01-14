@@ -318,7 +318,7 @@ export const TNVHeader = () => {
       </div>
 
       {/* MAIN HEADER - BLACK background like Namshi */}
-      <div className="bg-black h-[72px]">
+      <div className="h-[72px]" style={{ backgroundColor: '#000000' }}>
         <div className="max-w-7xl mx-auto px-4 flex items-center h-full gap-3">
           {/* Mobile Menu Button */}
           <button 
@@ -330,7 +330,7 @@ export const TNVHeader = () => {
 
           {/* Logo - WHITE italic like NAMSHI on black bg */}
           <Link to="/tnv" className="shrink-0 mr-4">
-            <span className="text-white text-2xl font-black italic tracking-wide">NAMSHI</span>
+            <span style={{ color: '#FFFFFF' }} className="text-2xl font-black italic tracking-wide">NAMSHI</span>
           </Link>
 
           {/* Category Tabs with Images - EXACTLY like Namshi */}
