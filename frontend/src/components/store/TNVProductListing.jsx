@@ -5,6 +5,15 @@ import { useStore } from './TNVStoreLayout';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Helper to get full image URL (handles relative proxy URLs)
+const getImageUrl = (src) => {
+  if (!src) return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=500&fit=crop';
+  if (src.startsWith('/api/')) {
+    return `${API_URL}${src}`;
+  }
+  return src;
+};
+
 // Category Hero Banner Component (Namshi-style)
 const CategoryHeroBanner = ({ currentCategory }) => {
   const categories = [
