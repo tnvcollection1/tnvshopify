@@ -385,7 +385,7 @@ const SalesDashboard = () => {
                     <td className="py-3 font-medium">{order.id}</td>
                     <td className="py-3 text-gray-600">{order.customer}</td>
                     <td className="py-3 text-gray-600">{order.items}</td>
-                    <td className="py-3 font-medium">{formatCurrency(order.total)}</td>
+                    <td className="py-3 font-medium">{formatWithSymbol(order.total)}</td>
                     <td className="py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         order.status === 'delivered' ? 'bg-green-100 text-green-700' :
@@ -437,7 +437,7 @@ const SalesDashboard = () => {
                 <p className="text-sm text-gray-500">Returning Rate</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(customerStats?.avg_lifetime_value || 0)}</p>
+                <p className="text-2xl font-bold text-gray-900">{formatWithSymbol(customerStats?.avg_lifetime_value || 0)}</p>
                 <p className="text-sm text-gray-500">Avg. LTV</p>
               </div>
             </div>
