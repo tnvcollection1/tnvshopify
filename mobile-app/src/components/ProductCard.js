@@ -137,7 +137,7 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
 
           {/* New Badge */}
           {!discount && product.tags?.includes('new') && (
-            <View style={styles.newBadge}>
+            <View style={[styles.newBadge, { backgroundColor: colors.primary }]}>
               <Text style={styles.newBadgeText}>NEW</Text>
             </View>
           )}
@@ -190,7 +190,7 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
 
           {/* Delivery Info */}
           <View style={styles.deliveryRow}>
-            <Text style={styles.deliveryText}>Free delivery • Get it </Text>
+            <Text style={[styles.deliveryText, { color: colors.textSecondary }]}>Free delivery • Get it </Text>
             <Text style={[styles.deliveryHighlight, { color: delivery.color }]}>
               {delivery.label}
             </Text>
@@ -200,8 +200,8 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
           {product.rating && (
             <View style={styles.ratingRow}>
               <Text style={styles.ratingStar}>⭐</Text>
-              <Text style={styles.ratingText}>{product.rating}</Text>
-              <Text style={styles.ratingCount}>({product.reviewCount || 0})</Text>
+              <Text style={[styles.ratingText, { color: colors.text }]}>{product.rating}</Text>
+              <Text style={[styles.ratingCount, { color: colors.textTertiary }]}>({product.reviewCount || 0})</Text>
             </View>
           )}
         </View>
