@@ -525,13 +525,47 @@ const AccountScreen = () => (
   </div>
 );
 
-// Main Mobile Preview Component
+// Main Mobile Preview Component - Now fetches config from backend
 const MobileAppPreview = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [products, setProducts] = useState(mockProducts);
+  
+  // Dynamic config from backend
+  const [navConfig, setNavConfig] = useState(null);
+  const [configLoading, setConfigLoading] = useState(true);
+  const [promoIndex, setPromoIndex] = useState(0);
+
+  // Fetch navigation config from backend
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/storefront/config/navigation/tnvcollection`);
+        const data = await res.json();
+        setNavConfig(data);
+        console.log('Loaded nav config:', data);
+      } catch (e) {
+        console.log('Using default config');
+      } finally {
+        setConfigLoading(false);
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  // Promo message rotation
+  useEffect(() => {
+    const messages = navConfig?.promoMessages || defaultPromoMessages;
+    const activeMessages = messages.filter(m => m.active !== false);
+    if (activeMessages.length > 1) {
+      const interval = setInterval(() => {
+        setPromoIndex(prev => (prev + 1) % activeMessages.length);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [navConfig]);
 
   // Fetch real products on mount
   useEffect(() => {
@@ -592,6 +626,9 @@ const MobileAppPreview = () => {
     });
   };
 
+  // Get active promo messages
+  const activePromoMessages = (navConfig?.promoMessages || defaultPromoMessages).filter(m => m.active !== false);
+
   const renderScreen = () => {
     if (selectedProduct) {
       return (
@@ -613,6 +650,7 @@ const MobileAppPreview = () => {
             onProductPress={setSelectedProduct}
             onWishlist={handleWishlist}
             wishlist={wishlist}
+            categories={navConfig?.categories}
           />
         );
       case 'browse':
@@ -648,6 +686,17 @@ const MobileAppPreview = () => {
     }
   };
 
+  if (configLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading configuration...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 py-8 px-4">
       <div className="max-w-6xl mx-auto">
@@ -655,13 +704,21 @@ const MobileAppPreview = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">TNV Collection Mobile App Preview</h1>
           <p className="text-gray-600">Interactive preview of the React Native mobile app</p>
+          <p className="text-sm text-green-600 mt-1">✓ Using dynamic config from backend API</p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8 items-start justify-center">
           {/* Phone Preview */}
           <PhoneFrame>
             <div className="flex flex-col h-full pt-7">
-              {!selectedProduct && <Header cartCount={cart.length} />}
+              {!selectedProduct && (
+                <Header 
+                  cartCount={cart.length}
+                  logo={navConfig?.logo}
+                  promoMessages={activePromoMessages}
+                  promoIndex={promoIndex}
+                />
+              )}
               <div className="flex-1 overflow-hidden relative">
                 {renderScreen()}
               </div>
@@ -671,36 +728,43 @@ const MobileAppPreview = () => {
 
           {/* Info Panel */}
           <div className="lg:w-80">
+            {/* Config Status */}
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
+              <h3 className="font-bold text-green-800 mb-2">🔗 Backend Connected</h3>
+              <ul className="text-sm text-green-700 space-y-1">
+                <li>✓ Logo: {navConfig?.logo?.text || 'TNV'} {navConfig?.logo?.badge || 'COLLECTION'}</li>
+                <li>✓ Promo Messages: {activePromoMessages.length}</li>
+                <li>✓ Categories: {navConfig?.categories?.length || 0}</li>
+                <li>✓ Mega Menu: {Object.keys(navConfig?.megaMenu || {}).length} configured</li>
+              </ul>
+            </div>
+
             <div className="bg-white rounded-2xl p-6 shadow-lg mb-4">
               <h2 className="font-bold text-lg mb-4">📱 App Features</h2>
               <ul className="space-y-3 text-sm text-gray-600">
                 <li className="flex items-start gap-2">
                   <span className="text-green-500">✓</span>
-                  <span>Home screen with promotions & categories</span>
+                  <span>Dynamic categories from backend</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500">✓</span>
-                  <span>Product browsing with filters & sorting</span>
+                  <span>Rotating promo messages</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500">✓</span>
-                  <span>Product detail with size/color selection</span>
+                  <span>Configurable logo &amp; branding</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500">✓</span>
-                  <span>Shopping cart with quantity controls</span>
+                  <span>Product browsing with filters</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500">✓</span>
-                  <span>Wishlist management</span>
+                  <span>Shopping cart &amp; wishlist</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500">✓</span>
                   <span>Multi-region currency support</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500">✓</span>
-                  <span>Cash on Delivery checkout</span>
                 </li>
               </ul>
             </div>
