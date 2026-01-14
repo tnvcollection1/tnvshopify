@@ -22,6 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from '../context/StoreContext';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../context/ThemeContext';
+import { addToCartHaptic, wishlistHaptic, selectionHaptic, lightHaptic } from '../services/haptics';
 import AnimatedButton from '../components/AnimatedButton';
 import Skeleton from '../components/SkeletonLoader';
 import * as api from '../services/api';
