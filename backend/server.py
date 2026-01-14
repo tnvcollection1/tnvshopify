@@ -58,6 +58,7 @@ from routes.storefront_cms import router as storefront_cms_router, set_database 
 from routes.storefront_config import router as storefront_config_router, set_database as set_storefront_config_db
 from routes.storefront_banners import router as storefront_banners_router, set_database as set_storefront_banners_db
 from routes.mega_menu import router as mega_menu_router, set_database as set_mega_menu_db
+from routes.ecommerce import router as ecommerce_router, set_database as set_ecommerce_db
 from routes.analytics import router as analytics_router, set_database as set_analytics_db
 from routes.checkout import router as checkout_router, set_database as set_checkout_db
 from routes.warehouse import router as warehouse_router, set_database as set_warehouse_db
