@@ -646,3 +646,512 @@ async def clone_mega_menu(source_store: str, target_store: str):
     )
     
     return {"success": True, "message": f"Menu cloned from {source_store} to {target_store}"}
+
+
+# ======================
+# MEGA MENU TEMPLATES
+# ======================
+
+MEGA_MENU_TEMPLATES = {
+    "fashion_store": {
+        "id": "template-fashion",
+        "name": "Fashion Store",
+        "description": "Perfect for clothing, shoes, and accessories stores",
+        "preview": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=200&fit=crop",
+        "sections": [
+            {
+                "id": "tpl-fashion",
+                "categoryId": "cat-fashion",
+                "categoryName": "FASHION",
+                "enabled": True,
+                "layout": "columns",
+                "columns": [
+                    {
+                        "id": "tpl-women",
+                        "title": "WOMEN",
+                        "titleLink": "/women",
+                        "width": 1,
+                        "items": [
+                            {"id": "tf1", "name": "Dresses", "path": "/women/dresses"},
+                            {"id": "tf2", "name": "Tops", "path": "/women/tops"},
+                            {"id": "tf3", "name": "Jeans", "path": "/women/jeans"},
+                            {"id": "tf4", "name": "Skirts", "path": "/women/skirts"},
+                            {"id": "tf5", "name": "Activewear", "path": "/women/activewear"},
+                            {"id": "tf6", "name": "View All", "path": "/women", "badge": "→"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-men",
+                        "title": "MEN",
+                        "titleLink": "/men",
+                        "width": 1,
+                        "items": [
+                            {"id": "tm1", "name": "T-Shirts", "path": "/men/tshirts"},
+                            {"id": "tm2", "name": "Shirts", "path": "/men/shirts"},
+                            {"id": "tm3", "name": "Jeans", "path": "/men/jeans"},
+                            {"id": "tm4", "name": "Jackets", "path": "/men/jackets"},
+                            {"id": "tm5", "name": "Suits", "path": "/men/suits"},
+                            {"id": "tm6", "name": "View All", "path": "/men", "badge": "→"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-shoes",
+                        "title": "SHOES",
+                        "titleLink": "/shoes",
+                        "width": 1,
+                        "items": [
+                            {"id": "ts1", "name": "Sneakers", "path": "/shoes/sneakers"},
+                            {"id": "ts2", "name": "Heels", "path": "/shoes/heels"},
+                            {"id": "ts3", "name": "Boots", "path": "/shoes/boots"},
+                            {"id": "ts4", "name": "Sandals", "path": "/shoes/sandals"},
+                            {"id": "ts5", "name": "Sports", "path": "/shoes/sports"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-brands",
+                        "title": "BRANDS",
+                        "titleLink": "/brands",
+                        "width": 1,
+                        "items": [
+                            {"id": "tb1", "name": "Nike", "path": "/brand/nike"},
+                            {"id": "tb2", "name": "Adidas", "path": "/brand/adidas"},
+                            {"id": "tb3", "name": "Zara", "path": "/brand/zara"},
+                            {"id": "tb4", "name": "H&M", "path": "/brand/hm"},
+                            {"id": "tb5", "name": "All Brands", "path": "/brands", "badge": "500+"}
+                        ]
+                    }
+                ],
+                "promoBanners": [
+                    {
+                        "id": "tpl-promo-1",
+                        "image": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=500&fit=crop",
+                        "title": "New Season",
+                        "subtitle": "Up to 50% Off",
+                        "link": "/sale",
+                        "buttonText": "Shop Now",
+                        "position": "right"
+                    }
+                ],
+                "quickLinks": [
+                    {"id": "tql1", "name": "New Arrivals", "path": "/new", "highlight": True},
+                    {"id": "tql2", "name": "Sale", "path": "/sale", "highlight": True},
+                    {"id": "tql3", "name": "Best Sellers", "path": "/bestsellers"}
+                ]
+            }
+        ]
+    },
+    "electronics": {
+        "id": "template-electronics",
+        "name": "Electronics Store",
+        "description": "Great for tech, gadgets, and electronics stores",
+        "preview": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=200&fit=crop",
+        "sections": [
+            {
+                "id": "tpl-electronics",
+                "categoryId": "cat-electronics",
+                "categoryName": "ELECTRONICS",
+                "enabled": True,
+                "layout": "columns",
+                "columns": [
+                    {
+                        "id": "tpl-phones",
+                        "title": "PHONES & TABLETS",
+                        "titleLink": "/phones",
+                        "width": 1,
+                        "items": [
+                            {"id": "te1", "name": "Smartphones", "path": "/phones/smartphones"},
+                            {"id": "te2", "name": "Tablets", "path": "/phones/tablets"},
+                            {"id": "te3", "name": "Cases & Covers", "path": "/phones/cases"},
+                            {"id": "te4", "name": "Chargers", "path": "/phones/chargers"},
+                            {"id": "te5", "name": "Screen Protectors", "path": "/phones/screen-protectors"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-computers",
+                        "title": "COMPUTERS",
+                        "titleLink": "/computers",
+                        "width": 1,
+                        "items": [
+                            {"id": "tc1", "name": "Laptops", "path": "/computers/laptops"},
+                            {"id": "tc2", "name": "Desktops", "path": "/computers/desktops"},
+                            {"id": "tc3", "name": "Monitors", "path": "/computers/monitors"},
+                            {"id": "tc4", "name": "Keyboards", "path": "/computers/keyboards"},
+                            {"id": "tc5", "name": "Mouse", "path": "/computers/mouse"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-audio",
+                        "title": "AUDIO",
+                        "titleLink": "/audio",
+                        "width": 1,
+                        "items": [
+                            {"id": "ta1", "name": "Headphones", "path": "/audio/headphones"},
+                            {"id": "ta2", "name": "Earbuds", "path": "/audio/earbuds"},
+                            {"id": "ta3", "name": "Speakers", "path": "/audio/speakers"},
+                            {"id": "ta4", "name": "Soundbars", "path": "/audio/soundbars"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-gaming",
+                        "title": "GAMING",
+                        "titleLink": "/gaming",
+                        "width": 1,
+                        "items": [
+                            {"id": "tg1", "name": "Consoles", "path": "/gaming/consoles"},
+                            {"id": "tg2", "name": "Controllers", "path": "/gaming/controllers"},
+                            {"id": "tg3", "name": "Gaming Chairs", "path": "/gaming/chairs"},
+                            {"id": "tg4", "name": "VR Headsets", "path": "/gaming/vr"}
+                        ]
+                    }
+                ],
+                "promoBanners": [
+                    {
+                        "id": "tpl-tech-promo",
+                        "image": "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400&h=500&fit=crop",
+                        "title": "Tech Deals",
+                        "subtitle": "Save Big",
+                        "link": "/deals",
+                        "buttonText": "Shop Deals",
+                        "position": "right"
+                    }
+                ],
+                "quickLinks": [
+                    {"id": "teql1", "name": "New Releases", "path": "/new", "highlight": True},
+                    {"id": "teql2", "name": "Deals", "path": "/deals", "highlight": True},
+                    {"id": "teql3", "name": "Best Sellers", "path": "/bestsellers"}
+                ]
+            }
+        ]
+    },
+    "beauty": {
+        "id": "template-beauty",
+        "name": "Beauty & Cosmetics",
+        "description": "Ideal for beauty, skincare, and cosmetics stores",
+        "preview": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=200&fit=crop",
+        "sections": [
+            {
+                "id": "tpl-beauty",
+                "categoryId": "cat-beauty",
+                "categoryName": "BEAUTY",
+                "enabled": True,
+                "layout": "columns",
+                "columns": [
+                    {
+                        "id": "tpl-makeup",
+                        "title": "MAKEUP",
+                        "titleLink": "/makeup",
+                        "width": 1,
+                        "items": [
+                            {"id": "tbm1", "name": "Face", "path": "/makeup/face"},
+                            {"id": "tbm2", "name": "Eyes", "path": "/makeup/eyes"},
+                            {"id": "tbm3", "name": "Lips", "path": "/makeup/lips"},
+                            {"id": "tbm4", "name": "Nails", "path": "/makeup/nails"},
+                            {"id": "tbm5", "name": "Brushes & Tools", "path": "/makeup/tools"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-skincare",
+                        "title": "SKINCARE",
+                        "titleLink": "/skincare",
+                        "width": 1,
+                        "items": [
+                            {"id": "tbs1", "name": "Cleansers", "path": "/skincare/cleansers"},
+                            {"id": "tbs2", "name": "Moisturizers", "path": "/skincare/moisturizers"},
+                            {"id": "tbs3", "name": "Serums", "path": "/skincare/serums"},
+                            {"id": "tbs4", "name": "Sunscreen", "path": "/skincare/sunscreen"},
+                            {"id": "tbs5", "name": "Masks", "path": "/skincare/masks"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-hair",
+                        "title": "HAIR CARE",
+                        "titleLink": "/haircare",
+                        "width": 1,
+                        "items": [
+                            {"id": "tbh1", "name": "Shampoo", "path": "/haircare/shampoo"},
+                            {"id": "tbh2", "name": "Conditioner", "path": "/haircare/conditioner"},
+                            {"id": "tbh3", "name": "Treatments", "path": "/haircare/treatments"},
+                            {"id": "tbh4", "name": "Styling", "path": "/haircare/styling"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-fragrance",
+                        "title": "FRAGRANCE",
+                        "titleLink": "/fragrance",
+                        "width": 1,
+                        "items": [
+                            {"id": "tbf1", "name": "Women's Perfume", "path": "/fragrance/women"},
+                            {"id": "tbf2", "name": "Men's Cologne", "path": "/fragrance/men"},
+                            {"id": "tbf3", "name": "Gift Sets", "path": "/fragrance/gifts"},
+                            {"id": "tbf4", "name": "Body Mists", "path": "/fragrance/mists"}
+                        ]
+                    }
+                ],
+                "promoBanners": [
+                    {
+                        "id": "tpl-beauty-promo",
+                        "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=500&fit=crop",
+                        "title": "Glow Up",
+                        "subtitle": "New Collections",
+                        "link": "/new",
+                        "buttonText": "Explore",
+                        "position": "right"
+                    }
+                ],
+                "quickLinks": [
+                    {"id": "tbql1", "name": "New In", "path": "/new", "highlight": True},
+                    {"id": "tbql2", "name": "Sale", "path": "/sale", "highlight": True},
+                    {"id": "tbql3", "name": "Gift Sets", "path": "/gifts"}
+                ]
+            }
+        ]
+    },
+    "home_living": {
+        "id": "template-home",
+        "name": "Home & Living",
+        "description": "Perfect for furniture, decor, and home goods stores",
+        "preview": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=200&fit=crop",
+        "sections": [
+            {
+                "id": "tpl-home",
+                "categoryId": "cat-home",
+                "categoryName": "HOME",
+                "enabled": True,
+                "layout": "columns",
+                "columns": [
+                    {
+                        "id": "tpl-furniture",
+                        "title": "FURNITURE",
+                        "titleLink": "/furniture",
+                        "width": 1,
+                        "items": [
+                            {"id": "thf1", "name": "Sofas", "path": "/furniture/sofas"},
+                            {"id": "thf2", "name": "Beds", "path": "/furniture/beds"},
+                            {"id": "thf3", "name": "Tables", "path": "/furniture/tables"},
+                            {"id": "thf4", "name": "Chairs", "path": "/furniture/chairs"},
+                            {"id": "thf5", "name": "Storage", "path": "/furniture/storage"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-decor",
+                        "title": "DECOR",
+                        "titleLink": "/decor",
+                        "width": 1,
+                        "items": [
+                            {"id": "thd1", "name": "Wall Art", "path": "/decor/wall-art"},
+                            {"id": "thd2", "name": "Mirrors", "path": "/decor/mirrors"},
+                            {"id": "thd3", "name": "Vases", "path": "/decor/vases"},
+                            {"id": "thd4", "name": "Candles", "path": "/decor/candles"},
+                            {"id": "thd5", "name": "Plants", "path": "/decor/plants"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-kitchen",
+                        "title": "KITCHEN",
+                        "titleLink": "/kitchen",
+                        "width": 1,
+                        "items": [
+                            {"id": "thk1", "name": "Cookware", "path": "/kitchen/cookware"},
+                            {"id": "thk2", "name": "Dinnerware", "path": "/kitchen/dinnerware"},
+                            {"id": "thk3", "name": "Appliances", "path": "/kitchen/appliances"},
+                            {"id": "thk4", "name": "Storage", "path": "/kitchen/storage"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-bedding",
+                        "title": "BEDDING",
+                        "titleLink": "/bedding",
+                        "width": 1,
+                        "items": [
+                            {"id": "thb1", "name": "Bed Sheets", "path": "/bedding/sheets"},
+                            {"id": "thb2", "name": "Pillows", "path": "/bedding/pillows"},
+                            {"id": "thb3", "name": "Duvets", "path": "/bedding/duvets"},
+                            {"id": "thb4", "name": "Blankets", "path": "/bedding/blankets"}
+                        ]
+                    }
+                ],
+                "promoBanners": [
+                    {
+                        "id": "tpl-home-promo",
+                        "image": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=500&fit=crop",
+                        "title": "Home Refresh",
+                        "subtitle": "New Arrivals",
+                        "link": "/new",
+                        "buttonText": "Shop Now",
+                        "position": "right"
+                    }
+                ],
+                "quickLinks": [
+                    {"id": "thql1", "name": "New Arrivals", "path": "/new", "highlight": True},
+                    {"id": "thql2", "name": "Sale", "path": "/sale", "highlight": True},
+                    {"id": "thql3", "name": "Room Ideas", "path": "/inspiration"}
+                ]
+            }
+        ]
+    },
+    "grocery": {
+        "id": "template-grocery",
+        "name": "Grocery & Food",
+        "description": "For grocery, food delivery, and supermarket stores",
+        "preview": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=200&fit=crop",
+        "sections": [
+            {
+                "id": "tpl-grocery",
+                "categoryId": "cat-grocery",
+                "categoryName": "GROCERY",
+                "enabled": True,
+                "layout": "columns",
+                "columns": [
+                    {
+                        "id": "tpl-fresh",
+                        "title": "FRESH",
+                        "titleLink": "/fresh",
+                        "width": 1,
+                        "items": [
+                            {"id": "tgf1", "name": "Fruits", "path": "/fresh/fruits"},
+                            {"id": "tgf2", "name": "Vegetables", "path": "/fresh/vegetables"},
+                            {"id": "tgf3", "name": "Dairy", "path": "/fresh/dairy"},
+                            {"id": "tgf4", "name": "Meat & Seafood", "path": "/fresh/meat"},
+                            {"id": "tgf5", "name": "Bakery", "path": "/fresh/bakery"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-pantry",
+                        "title": "PANTRY",
+                        "titleLink": "/pantry",
+                        "width": 1,
+                        "items": [
+                            {"id": "tgp1", "name": "Rice & Grains", "path": "/pantry/rice"},
+                            {"id": "tgp2", "name": "Pasta", "path": "/pantry/pasta"},
+                            {"id": "tgp3", "name": "Canned Goods", "path": "/pantry/canned"},
+                            {"id": "tgp4", "name": "Spices", "path": "/pantry/spices"},
+                            {"id": "tgp5", "name": "Sauces", "path": "/pantry/sauces"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-beverages",
+                        "title": "BEVERAGES",
+                        "titleLink": "/beverages",
+                        "width": 1,
+                        "items": [
+                            {"id": "tgb1", "name": "Water", "path": "/beverages/water"},
+                            {"id": "tgb2", "name": "Juice", "path": "/beverages/juice"},
+                            {"id": "tgb3", "name": "Soft Drinks", "path": "/beverages/soft-drinks"},
+                            {"id": "tgb4", "name": "Coffee & Tea", "path": "/beverages/coffee"}
+                        ]
+                    },
+                    {
+                        "id": "tpl-snacks",
+                        "title": "SNACKS",
+                        "titleLink": "/snacks",
+                        "width": 1,
+                        "items": [
+                            {"id": "tgs1", "name": "Chips", "path": "/snacks/chips"},
+                            {"id": "tgs2", "name": "Cookies", "path": "/snacks/cookies"},
+                            {"id": "tgs3", "name": "Chocolate", "path": "/snacks/chocolate"},
+                            {"id": "tgs4", "name": "Nuts", "path": "/snacks/nuts"}
+                        ]
+                    }
+                ],
+                "promoBanners": [
+                    {
+                        "id": "tpl-grocery-promo",
+                        "image": "https://images.unsplash.com/photo-1506617420156-8e4536971650?w=400&h=500&fit=crop",
+                        "title": "Fresh Deals",
+                        "subtitle": "Daily Savings",
+                        "link": "/deals",
+                        "buttonText": "Shop Now",
+                        "position": "right"
+                    }
+                ],
+                "quickLinks": [
+                    {"id": "tgql1", "name": "Today's Deals", "path": "/deals", "highlight": True},
+                    {"id": "tgql2", "name": "Weekly Specials", "path": "/specials", "highlight": True},
+                    {"id": "tgql3", "name": "Recipes", "path": "/recipes"}
+                ]
+            }
+        ]
+    }
+}
+
+
+@router.get("/templates")
+async def get_templates():
+    """Get all available mega menu templates"""
+    templates = []
+    for key, template in MEGA_MENU_TEMPLATES.items():
+        templates.append({
+            "id": template["id"],
+            "key": key,
+            "name": template["name"],
+            "description": template["description"],
+            "preview": template["preview"],
+            "sectionsCount": len(template["sections"])
+        })
+    return {"templates": templates}
+
+
+@router.get("/templates/{template_key}")
+async def get_template(template_key: str):
+    """Get a specific mega menu template"""
+    if template_key not in MEGA_MENU_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return MEGA_MENU_TEMPLATES[template_key]
+
+
+@router.post("/templates/{template_key}/apply/{store}")
+async def apply_template(template_key: str, store: str, merge: bool = False):
+    """Apply a mega menu template to a store
+    
+    Args:
+        template_key: The template to apply
+        store: The store to apply it to
+        merge: If True, merge with existing sections. If False, replace all sections.
+    """
+    if template_key not in MEGA_MENU_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    template = MEGA_MENU_TEMPLATES[template_key]
+    
+    if merge:
+        # Get existing config and merge
+        existing = await _db.mega_menu_configs.find_one({"store": store})
+        if existing:
+            existing_sections = existing.get("sections", [])
+            existing_names = {s.get("categoryName") for s in existing_sections}
+            
+            # Add only new sections from template
+            new_sections = [s for s in template["sections"] if s.get("categoryName") not in existing_names]
+            all_sections = existing_sections + new_sections
+        else:
+            all_sections = template["sections"]
+    else:
+        all_sections = template["sections"]
+    
+    config = {
+        "store": store,
+        "sections": all_sections,
+        "globalSettings": {
+            "hoverDelay": 150,
+            "animationType": "fade",
+            "maxWidth": "1200px",
+            "showOnMobile": True
+        },
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "applied_template": template_key
+    }
+    
+    await _db.mega_menu_configs.update_one(
+        {"store": store},
+        {"$set": config},
+        upsert=True
+    )
+    
+    return {
+        "success": True, 
+        "message": f"Template '{template['name']}' applied to {store}",
+        "template": template_key,
+        "sectionsAdded": len(all_sections)
+    }
+
