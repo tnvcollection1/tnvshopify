@@ -4,7 +4,7 @@
  * Supports dark mode
  */
 
-import React, { useEffect, useRef, useContext } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { borderRadius } from '../theme';
@@ -14,6 +14,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // Shimmer animation component
 const ShimmerEffect = ({ style }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
+  const { colors, isDark } = useTheme();
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -34,11 +35,14 @@ const ShimmerEffect = ({ style }) => {
 
   return (
     <View style={[styles.shimmerContainer, style]}>
-      <View style={styles.shimmerBackground} />
+      <View style={[styles.shimmerBackground, { backgroundColor: colors.border }]} />
       <Animated.View
         style={[
           styles.shimmer,
-          { transform: [{ translateX }] },
+          { 
+            transform: [{ translateX }],
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)',
+          },
         ]}
       />
     </View>
@@ -84,21 +88,24 @@ export const SkeletonText = ({ width = '100%', lines = 1, style }) => (
 );
 
 // Pre-built skeleton layouts
-export const ProductCardSkeleton = ({ horizontal }) => (
-  <View style={[styles.productCard, horizontal && styles.productCardHorizontal]}>
-    <SkeletonRect
-      width={horizontal ? 150 : '100%'}
-      height={horizontal ? 200 : undefined}
-      style={horizontal ? {} : { aspectRatio: 3 / 4 }}
-      borderRadius={borderRadius.lg}
-    />
-    <View style={styles.productCardInfo}>
-      <SkeletonText width={60} />
-      <SkeletonText width="90%" style={{ marginTop: 8 }} />
-      <SkeletonText width="60%" style={{ marginTop: 8 }} />
+export const ProductCardSkeleton = ({ horizontal }) => {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.productCard, { backgroundColor: colors.card }, horizontal && styles.productCardHorizontal]}>
+      <SkeletonRect
+        width={horizontal ? 150 : '100%'}
+        height={horizontal ? 200 : undefined}
+        style={horizontal ? {} : { aspectRatio: 3 / 4 }}
+        borderRadius={borderRadius.lg}
+      />
+      <View style={styles.productCardInfo}>
+        <SkeletonText width={60} />
+        <SkeletonText width="90%" style={{ marginTop: 8 }} />
+        <SkeletonText width="60%" style={{ marginTop: 8 }} />
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 export const CategoryCircleSkeleton = () => (
   <View style={styles.categoryCircle}>
@@ -132,15 +139,13 @@ const styles = StyleSheet.create({
   },
   shimmerBackground: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.borderLight,
   },
   shimmer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     transform: [{ skewX: '-20deg' }],
   },
   skeleton: {
-    backgroundColor: colors.borderLight,
+    overflow: 'hidden',
   },
   textContainer: {
     width: '100%',
@@ -148,10 +153,9 @@ const styles = StyleSheet.create({
   textLine: {
     height: 14,
     borderRadius: borderRadius.sm,
-    backgroundColor: colors.borderLight,
+    overflow: 'hidden',
   },
   productCard: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     overflow: 'hidden',
   },
