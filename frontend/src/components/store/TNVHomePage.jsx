@@ -152,7 +152,7 @@ const TNVHomePage = () => {
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold">Today's Picks</h2>
+            <h2 className="text-lg font-bold">Today&apos;s Picks</h2>
             <Link to={`${baseUrl}/products`} className="text-sm text-gray-500 hover:text-black">View All →</Link>
           </div>
           
