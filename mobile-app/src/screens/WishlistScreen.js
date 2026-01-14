@@ -5,10 +5,11 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, Dimensions, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Dimensions, StatusBar, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from '../context/StoreContext';
 import { useTheme } from '../context/ThemeContext';
+import { pullToRefreshHaptic } from '../services/haptics';
 import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
 import { spacing, typography, borderRadius } from '../theme';
@@ -17,8 +18,18 @@ const { width } = Dimensions.get('window');
 
 const WishlistScreen = () => {
   const insets = useSafeAreaInsets();
-  const { wishlist } = useStore();
+  const { wishlist, refreshWishlist } = useStore();
   const { colors, statusBarStyle } = useTheme();
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = async () => {
+    pullToRefreshHaptic();
+    setRefreshing(true);
+    if (refreshWishlist) {
+      await refreshWishlist();
+    }
+    setRefreshing(false);
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
@@ -39,6 +50,13 @@ const WishlistScreen = () => {
           keyExtractor={(item) => item.shopify_product_id?.toString()}
           contentContainerStyle={styles.list}
           columnWrapperStyle={styles.row}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+            />
+          }
           renderItem={({ item }) => (
             <ProductCard product={item} style={{ width: (width - 48) / 2 }} />
           )}
