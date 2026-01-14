@@ -341,7 +341,7 @@ export const TNVHeader = () => {
                 className="relative"
                 onClick={() => cat.hasMegaMenu && setActiveCategory(activeCategory === cat.name ? null : cat.name)}
               >
-                <div className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-100 transition ${activeCategory === cat.name ? 'bg-gray-100' : ''}`}>
+                <div className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/10 transition ${activeCategory === cat.name ? 'bg-white/10' : ''}`}>
                   {/* Category Image Box - Like Namshi */}
                   <div 
                     className="w-11 h-11 rounded overflow-hidden flex items-center justify-center"
@@ -354,7 +354,7 @@ export const TNVHeader = () => {
                       onError={(e) => { e.target.style.display = 'none'; }}
                     />
                   </div>
-                  <span className="text-black text-xs font-medium whitespace-nowrap">
+                  <span className="text-white text-xs font-medium whitespace-nowrap">
                     {cat.name}
                   </span>
                 </div>
