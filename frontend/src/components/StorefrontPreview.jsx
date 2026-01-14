@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, Link } from 'react-router-dom';
 import { Search, User, ShoppingBag, Heart, ChevronLeft, ChevronRight, ChevronDown, MapPin, Gift, Menu, X, Globe } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
