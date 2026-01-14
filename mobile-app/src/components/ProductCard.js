@@ -63,12 +63,16 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
   };
 
   const handlePress = () => {
+    lightHaptic();
     navigation.navigate('ProductDetail', {
       productId: product.shopify_product_id,
     });
   };
 
   const handleWishlistPress = () => {
+    // Trigger haptic feedback
+    wishlistHaptic();
+    
     // Bounce animation
     Animated.sequence([
       Animated.spring(wishlistAnim, {
