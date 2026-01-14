@@ -1,7 +1,7 @@
 # Shopify 1688 Integration Platform - PRD
 
 ## Original Problem Statement
-Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tmall for e-commerce operations.
+Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tmall for e-commerce operations. Additionally, build a multi-tenant e-commerce platform (wamerce.com) allowing merchants to have their own stores with custom domains. The latest directive is to create a Namshi.com-inspired storefront for TNV Collection.
 
 ## Core Requirements
 
@@ -29,9 +29,10 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 - Warehouse receiving interface (mobile-friendly) ✅
 
 ### 6. Customer Storefront
-- Public e-commerce storefront (Stella McCartney inspired) ✅ **UPDATED**
+- Public e-commerce storefront (Stella McCartney inspired) ✅
+- **Namshi.com-inspired storefront (TNV Store)** ✅ **NEW - Jan 14, 2025**
 - Storefront CMS for content management ✅
-- Multi-tenant support (tnvcollection.com & tnvcollection.pk) ✅ **NEW**
+- Multi-tenant support (tnvcollection.com & tnvcollection.pk) ✅
 
 ### 7. Competitor Analysis
 - Google Vision API for image-based competitor search ✅
@@ -44,7 +45,88 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 
 ## What's Been Implemented
 
-### Latest Updates (Jan 13, 2025) - VPS DEPLOYMENT FIX ✅
+### Latest Updates (Jan 14, 2025) - NAMSHI-INSPIRED STOREFRONT ✅ NEW
+
+### TNV Collection Storefront - Namshi.com Design ✅ COMPLETED
+Built a complete Namshi.com-inspired e-commerce storefront accessible at `/tnv` routes.
+
+**New Components Created:**
+- `/app/frontend/src/components/store/TNVStoreLayout.jsx` - Store context provider with:
+  - Multi-region support (UAE, Saudi Arabia, Kuwait, Qatar, Bahrain, Oman, Pakistan, India)
+  - Currency conversion with auto-detection via IP geolocation
+  - Cart management with localStorage persistence
+  - Wishlist functionality
+- `/app/frontend/src/components/store/TNVHomePage.jsx` - Homepage with:
+  - Hero category grid (Women/Men/Kids)
+  - Features bar (Free Delivery, Easy Returns, 100% Authentic, COD)
+  - Banner carousel with navigation
+  - "Labels You Love" brand section (Nike, Adidas, Puma, etc.)
+  - New Arrivals product grid
+  - Shop by Category section
+  - Trending Now section
+  - MEGA SALE promo banner
+- `/app/frontend/src/components/store/TNVProductListing.jsx` - Product listing with:
+  - Filters sidebar (Category, Price, Size, Color)
+  - Sort dropdown (Newest, Price Low-High, Price High-Low, Name)
+  - Grid toggle (2/3/4 columns)
+  - Product cards with discount badges, wishlist hearts
+  - Responsive mobile filter modal
+- `/app/frontend/src/components/store/TNVProductDetail.jsx` - Product detail with:
+  - Image gallery with navigation arrows
+  - Size/Color selectors
+  - Quantity picker
+  - Add to Bag / Buy Now buttons
+  - Delivery info section
+  - Product tabs (Description, Details, Reviews)
+  - Related products section
+- `/app/frontend/src/components/store/TNVCart.jsx` - Shopping cart with:
+  - Cart items with quantity controls
+  - Remove item functionality
+  - Promo code input
+  - Order summary (Subtotal, Delivery, Total)
+  - Free delivery threshold indicator
+  - Trust badges and payment methods
+- `/app/frontend/src/components/store/TNVCheckout.jsx` - Multi-step checkout:
+  - Step 1: Shipping address form
+  - Step 2: Payment method (COD, Card, Apple Pay)
+  - Step 3: Order review and confirmation
+  - Order summary sidebar
+- `/app/frontend/src/components/store/TNVOrderConfirmation.jsx` - Order confirmation:
+  - Success message with order ID
+  - Order status timeline
+  - Order items summary
+  - Delivery/contact info
+  - Track Order button
+
+**Routes Added:**
+```
+/tnv - Homepage
+/tnv/products - All products
+/tnv/men - Men's Fashion
+/tnv/women - Women's Fashion  
+/tnv/kids - Kids' Fashion
+/tnv/sale - Sale items
+/tnv/product/:productId - Product detail
+/tnv/collection/:collectionId - Collection page
+/tnv/brand/:brandName - Brand page
+/tnv/category/:categoryName - Category page
+/tnv/cart - Shopping cart
+/tnv/checkout - Checkout flow
+/tnv/order-confirmation/:orderId - Order confirmation
+/tnv/track/:orderId - Order tracking
+```
+
+**Features:**
+- Region/currency selector in header with 8 regions
+- Automatic IP-based region detection
+- Cart persists via localStorage
+- Wishlist with toggle functionality
+- Responsive design (mobile-first)
+- All navigation links properly use /tnv prefix
+
+**Testing:** 100% pass rate - All features verified working
+
+### Previous Updates (Jan 13, 2025) - VPS DEPLOYMENT FIX ✅
 
 ### Admin Panel & Storefront Deployment Fix ✅ COMPLETED
 - **Problem**: Admin panel login was failing due to hardcoded API URL pointing to old preview environment
