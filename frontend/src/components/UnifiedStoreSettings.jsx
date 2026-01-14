@@ -720,12 +720,22 @@ const UnifiedStoreSettings = () => {
                           />
                         </div>
                         <div className="col-span-2">
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Image URL</label>
-                          <input
-                            value={banner.image}
-                            onChange={(e) => updateArrayItem('heroBanners', index, 'image', e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg text-sm"
-                          />
+                          <label className="block text-xs font-medium text-gray-500 mb-1">Banner Image</label>
+                          <div className="flex gap-3 items-start">
+                            <ImageUploader 
+                              category="banners"
+                              currentImage={banner.image}
+                              onUpload={(url) => updateArrayItem('heroBanners', index, 'image', url)}
+                            />
+                            <div className="flex-1">
+                              <input
+                                value={banner.image}
+                                onChange={(e) => updateArrayItem('heroBanners', index, 'image', e.target.value)}
+                                className="w-full px-3 py-2 border rounded-lg text-sm"
+                                placeholder="Or paste image URL..."
+                              />
+                            </div>
+                          </div>
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-gray-500 mb-1">Text Position</label>
