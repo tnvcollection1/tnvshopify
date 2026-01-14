@@ -84,6 +84,8 @@ import AIProductEditor from "@/components/AIProductEditor";
 import ProductLinkManager from "@/components/ProductLinkManager";
 import Trade1688Dashboard from "@/components/Trade1688Dashboard";
 import StorefrontPreview from "@/components/StorefrontPreview";
+import ProductPagePreview from "@/components/ProductPagePreview";
+import CollectionPagePreview from "@/components/CollectionPagePreview";
 // Storefront Components
 import { StorefrontLayout, CartProvider } from "@/components/storefront/StorefrontLayout";
 import StorefrontHome from "@/components/storefront/StorefrontHome";
