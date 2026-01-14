@@ -412,10 +412,10 @@ export const TNVFooter = () => {
           <div>
             <h4 className="font-semibold mb-4">Shop</h4>
             <ul className="space-y-2 text-sm text-gray-600">
-              <li><Link to="/store/women" className="hover:text-black">Women</Link></li>
-              <li><Link to="/store/men" className="hover:text-black">Men</Link></li>
-              <li><Link to="/store/kids" className="hover:text-black">Kids</Link></li>
-              <li><Link to="/store/sale" className="hover:text-black">Sale</Link></li>
+              <li><Link to="/tnv/women" className="hover:text-black">Women</Link></li>
+              <li><Link to="/tnv/men" className="hover:text-black">Men</Link></li>
+              <li><Link to="/tnv/kids" className="hover:text-black">Kids</Link></li>
+              <li><Link to="/tnv/sale" className="hover:text-black">Sale</Link></li>
             </ul>
           </div>
 
