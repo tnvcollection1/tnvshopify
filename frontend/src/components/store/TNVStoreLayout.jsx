@@ -158,13 +158,18 @@ export const TNVHeader = () => {
     { text: '100% Genuine Products', icon: '✓' },
     { text: 'Easy Returns', icon: '↩️' },
   ];
-  const categories = navConfig?.categories || [
-    { name: 'WOMEN', path: '/women', subNav: ['CLOTHING', 'SHOES', 'ACCESSORIES', 'BAGS', 'SPORTS', 'NEW ARRIVALS', 'PREMIUM', 'SALE', 'BRANDS'] },
-    { name: 'MEN', path: '/men', subNav: ['CLOTHING', 'SHOES', 'ACCESSORIES', 'BAGS', 'SPORTS', 'NEW ARRIVALS', 'PREMIUM', 'SALE', 'BRANDS'] },
-    { name: 'KIDS', path: '/kids' },
-    { name: 'Beauty', path: '/beauty' },
-    { name: 'Home', path: '/home' },
+  
+  // Main category tabs (like Namshi: FASHION, Beauty, BAGS & KIDS, HOME & MORE, PREMIUM)
+  const mainTabs = navConfig?.categories || [
+    { name: 'FASHION', path: '/fashion', icon: { value: '👗' }, bgColor: '#c8e6c9', hasMegaMenu: true },
+    { name: 'Beauty', path: '/beauty', icon: { value: '💄' }, bgColor: '#f5f5f5' },
+    { name: 'BAGS & KIDS', path: '/bags', icon: { value: '👜' }, bgColor: '#ffe0b2' },
+    { name: 'HOME & MORE', path: '/home', icon: { value: '🏠' }, bgColor: '#e0f2f1' },
+    { name: 'PREMIUM', path: '/premium', icon: { value: '⭐' }, bgColor: '#f5f5f5' },
   ];
+  
+  // Sub-navigation items (shown below main header on category pages)
+  const subNavItems = ['CLOTHING', 'SHOES', 'ACCESSORIES', 'BAGS', 'SPORTS', 'NEW ARRIVALS', 'PREMIUM', 'SALE', 'BRANDS'];
   const megaMenu = navConfig?.megaMenu || {};
 
   // Auto-rotate promo messages
@@ -181,43 +186,43 @@ export const TNVHeader = () => {
     if (path.startsWith('/women')) return 'WOMEN';
     if (path.startsWith('/men')) return 'MEN';
     if (path.startsWith('/kids')) return 'KIDS';
+    if (path.startsWith('/beauty')) return 'Beauty';
     return null;
   };
 
   const currentCategory = getCurrentCategory();
-  const currentCategoryConfig = categories.find(c => c.name === currentCategory);
+  const showSubNav = currentCategory === 'WOMEN' || currentCategory === 'MEN';
 
   return (
     <header className="sticky top-0 z-50 bg-white">
-      {/* TOP BAR - Promo Carousel + Language (Height: 36px) */}
-      <div className="bg-[#1a1a1a] text-white h-9">
+      {/* TOP BAR - Language + Promo + Region (like Namshi) */}
+      <div className="bg-white border-b h-9">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-full">
           {/* Language Toggle */}
           <div className="flex items-center space-x-2 text-[13px]">
-            <button className="font-medium hover:text-gray-300">English</button>
-            <span className="text-gray-500">|</span>
-            <button className="hover:text-gray-300 font-arabic">العربية</button>
+            <button className="font-medium text-black border-b-2 border-black pb-0.5">English</button>
+            <span className="text-gray-300">|</span>
+            <button className="text-gray-500 hover:text-black font-arabic">العربية</button>
           </div>
           
           {/* Rotating Promo Messages */}
           <div className="flex items-center space-x-3">
             <button 
               onClick={() => setPromoIndex(prev => (prev - 1 + promoMessages.length) % promoMessages.length)}
-              className="p-1 hover:bg-white/10 rounded"
+              className="p-1 hover:bg-gray-100 rounded"
             >
               <ChevronLeft className="w-4 h-4 text-gray-400" />
             </button>
             
-            <div className="flex items-center space-x-2 min-w-[200px] justify-center">
-              <span className="text-base">{promoMessages[promoIndex]?.icon}</span>
-              <span className="text-[13px] font-medium whitespace-nowrap">
+            <div className="flex items-center space-x-2 min-w-[180px] justify-center">
+              <span className="text-[13px] text-black font-medium whitespace-nowrap">
                 {promoMessages[promoIndex]?.text}
               </span>
             </div>
             
             <button 
               onClick={() => setPromoIndex(prev => (prev + 1) % promoMessages.length)}
-              className="p-1 hover:bg-white/10 rounded"
+              className="p-1 hover:bg-gray-100 rounded"
             >
               <ChevronRight className="w-4 h-4 text-gray-400" />
             </button>
@@ -227,11 +232,10 @@ export const TNVHeader = () => {
           <div className="relative">
             <button 
               onClick={() => setRegionDropdown(!regionDropdown)}
-              className="flex items-center space-x-1.5 text-[13px] hover:text-gray-300"
+              className="flex items-center space-x-1.5 text-[13px] hover:opacity-80"
             >
               <span className="text-base">{region.flag}</span>
-              <span>{region.code}</span>
-              <ChevronDown className="w-3 h-3" />
+              <ChevronDown className="w-3 h-3 text-gray-600" />
             </button>
             
             {regionDropdown && (
@@ -252,91 +256,55 @@ export const TNVHeader = () => {
         </div>
       </div>
 
-      {/* MAIN HEADER (Height: 64px) */}
-      <div className="border-b h-16">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-full">
+      {/* MAIN HEADER - Black bar with Logo, Categories, Search, Actions (like Namshi) */}
+      <div className="bg-black h-16">
+        <div className="max-w-7xl mx-auto px-4 flex items-center h-full gap-4">
           {/* Mobile Menu Button */}
           <button 
-            className="lg:hidden p-2 -ml-2"
+            className="lg:hidden p-2 text-white"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
 
           {/* Logo */}
-          <Link to="/tnv" className="flex items-center space-x-2">
-            {logo.image ? (
-              <img src={logo.image} alt={logo.text} style={{ height: logo.height || 32 }} />
-            ) : (
-              <>
-                <span className="text-2xl font-black tracking-tight text-black">{logo.text}</span>
-                {logo.badge && (
-                  <span 
-                    className="hidden sm:flex items-center text-white px-3 py-1 rounded-full text-xs font-bold"
-                    style={{ background: `linear-gradient(135deg, ${logo.badgeColor || '#FF6B9D'}, ${logo.badgeColor || '#FF6B9D'}90)` }}
-                  >
-                    {logo.badge}
-                  </span>
-                )}
-              </>
-            )}
+          <Link to="/tnv" className="flex items-center shrink-0">
+            <span className="text-white text-xl font-black tracking-wide italic">{logo.text}</span>
           </Link>
 
-          {/* Main Category Tabs - Desktop */}
-          <nav className="hidden lg:flex items-center space-x-1 category-dropdown-container">
-            {categories.filter(c => c.active !== false).map(cat => {
-              // Fashion categories (WOMEN, MEN) show gender selection dropdown on click
-              const isFashionCategory = ['WOMEN', 'MEN', 'FASHION'].includes(cat.name.toUpperCase());
+          {/* Main Category Tabs - Desktop (Namshi style with image boxes) */}
+          <nav className="hidden lg:flex items-center space-x-2 category-dropdown-container ml-4">
+            {mainTabs.filter(c => c.active !== false).map(cat => {
+              const isFashionCategory = cat.name.toUpperCase() === 'FASHION' || cat.hasMegaMenu;
               
               return (
                 <div 
                   key={cat.name}
                   className="relative"
-                  onMouseEnter={() => !isFashionCategory && setActiveCategory(cat.name)}
-                  onMouseLeave={() => setActiveCategory(null)}
+                  onClick={() => isFashionCategory && setActiveCategory(activeCategory === cat.name ? null : cat.name)}
                 >
-                  {isFashionCategory ? (
-                    // Fashion category - shows dropdown on click
-                    <button
-                      onClick={() => setActiveCategory(activeCategory === cat.name ? null : cat.name)}
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-full hover:bg-gray-100 transition ${activeCategory === cat.name ? 'bg-gray-100' : ''}`}
+                  <div
+                    className={`flex items-center space-x-1.5 px-2 py-1.5 rounded cursor-pointer transition ${activeCategory === cat.name ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                  >
+                    {/* Category Icon/Image Box (Namshi style) */}
+                    <div 
+                      className="w-10 h-10 rounded flex items-center justify-center text-lg overflow-hidden"
+                      style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
                     >
-                      {cat.icon && (
-                        <span 
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
-                          style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
-                        >
-                          {cat.icon.value || cat.icon}
-                        </span>
+                      {cat.image ? (
+                        <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{cat.icon?.value || cat.icon || '📁'}</span>
                       )}
-                      <span className={`text-[13px] font-medium ${cat.highlight ? 'text-red-500' : 'text-gray-700'}`}>
-                        {cat.name}
-                      </span>
-                      <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${activeCategory === cat.name ? 'rotate-180' : ''}`} />
-                    </button>
-                  ) : (
-                    // Non-fashion category - direct link
-                    <Link
-                      to={`/tnv${cat.path}`}
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-full hover:bg-gray-100 transition ${currentCategory === cat.name ? 'bg-gray-100' : ''}`}
-                    >
-                      {cat.icon && (
-                        <span 
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
-                          style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
-                        >
-                          {cat.icon.value || cat.icon}
-                        </span>
-                      )}
-                      <span className={`text-[13px] font-medium ${cat.highlight ? 'text-red-500' : 'text-gray-700'}`}>
-                        {cat.name}
-                      </span>
-                    </Link>
-                  )}
+                    </div>
+                    <span className="text-white text-[13px] font-medium whitespace-nowrap">
+                      {cat.name}
+                    </span>
+                  </div>
 
-                  {/* Gender Selection Dropdown (for WOMEN/MEN/FASHION) */}
+                  {/* Fashion Category Dropdown - Gender Selection */}
                   {isFashionCategory && activeCategory === cat.name && (
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50">
+                    <div className="absolute top-full left-0 pt-2 z-50">
                       <div className="bg-white rounded-2xl shadow-2xl border p-6 min-w-[500px]">
                         <div className="grid grid-cols-2 gap-4">
                           {/* WOMEN Card */}
@@ -352,7 +320,7 @@ export const TNVHeader = () => {
                                 className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                               />
                               <div className="absolute inset-0 flex items-start justify-center pt-4">
-                                <h3 className="text-2xl font-bold tracking-wide">WOMEN</h3>
+                                <h3 className="text-2xl font-bold tracking-wide text-black">WOMEN</h3>
                               </div>
                             </div>
                           </Link>
@@ -370,7 +338,7 @@ export const TNVHeader = () => {
                                 className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                               />
                               <div className="absolute inset-0 flex items-start justify-center pt-4">
-                                <h3 className="text-2xl font-bold tracking-wide">MEN</h3>
+                                <h3 className="text-2xl font-bold tracking-wide text-black">MEN</h3>
                               </div>
                             </div>
                           </Link>
@@ -378,25 +346,75 @@ export const TNVHeader = () => {
                       </div>
                     </div>
                   )}
+                </div>
+              );
+            })}
+          </nav>
 
-                  {/* Mega Menu Dropdown (for non-fashion categories with mega menu) */}
-                  {!isFashionCategory && activeCategory === cat.name && megaMenu[cat.name] && (
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50">
-                      <div className="bg-white rounded-xl shadow-2xl border p-8 min-w-[800px]">
-                        <div className="flex gap-12">
-                          {/* Menu Columns */}
-                          {megaMenu[cat.name].columns?.map((column, idx) => (
-                            <div key={idx} className="min-w-[160px]">
-                              <h4 className="text-sm font-bold text-gray-900 mb-4 uppercase">
-                                {column.title}
-                              </h4>
-                              <ul className="space-y-2">
-                                {column.items?.map((item, i) => (
-                                  <li key={i}>
-                                    <Link 
-                                      to={`/tnv${item.path}`}
-                                      className="text-sm text-gray-600 hover:text-black hover:underline"
-                                    >
+          {/* Search Bar (Namshi style) */}
+          <div className="flex-1 hidden md:block max-w-md mx-4">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search for Guess Bags"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white rounded px-4 py-2.5 text-sm pr-10 placeholder-gray-400"
+              />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
+          </div>
+
+          {/* Actions (Namshi style) */}
+          <div className="flex items-center space-x-3 ml-auto">
+            <button className="text-white p-2 hover:bg-white/10 rounded hidden md:block">
+              <User className="w-5 h-5" />
+            </button>
+            <Link to="/tnv/wishlist" className="text-white p-2 hover:bg-white/10 rounded relative">
+              <Heart className="w-5 h-5" />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+            <Link to="/tnv/cart" className="text-white p-2 hover:bg-white/10 rounded relative">
+              <ShoppingBag className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* SUB-NAVIGATION BAR (shown on category pages like Namshi) */}
+      {showSubNav && (
+        <div className="bg-white border-b h-10">
+          <div className="max-w-7xl mx-auto px-4 flex items-center h-full">
+            {/* Current Category with dropdown */}
+            <div className="flex items-center space-x-2 pr-4 border-r">
+              <span className="text-sm font-bold text-black">{currentCategory}</span>
+              <ChevronDown className="w-3 h-3 text-gray-600" />
+            </div>
+            
+            {/* Sub-navigation items */}
+            <nav className="flex items-center space-x-4 ml-4 overflow-x-auto">
+              {subNavItems.map(item => (
+                <Link
+                  key={item}
+                  to={`/tnv/${currentCategory?.toLowerCase()}/${item.toLowerCase().replace(' ', '-')}`}
+                  className="text-[13px] text-gray-600 hover:text-black whitespace-nowrap py-2"
+                >
+                  {item}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
                                       {item.name}
                                     </Link>
                                   </li>
