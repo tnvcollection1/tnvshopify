@@ -313,7 +313,7 @@ const ProductSelector = ({ onSelectProduct, selectedStore, formatPrice }) => {
 };
 
 // ==================== Analysis Dialog ====================
-const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedStore, onStoreChange }) => {
+const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedStore, onStoreChange, formatPrice, getCurrencySymbol }) => {
   const [mode, setMode] = useState('select'); // 'select', 'upload', or 'title'
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [uploading, setUploading] = useState(false);
