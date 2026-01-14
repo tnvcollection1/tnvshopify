@@ -164,6 +164,7 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { navConfig, isLoading: configLoading } = useStore();
+  const { colors, shadows, isDark, statusBarStyle } = useTheme();
   const scrollY = useRef(new Animated.Value(0)).current;
   
   const [products, setProducts] = useState([]);
