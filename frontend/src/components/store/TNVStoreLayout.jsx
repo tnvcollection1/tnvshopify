@@ -329,7 +329,7 @@ export const TNVHeader = () => {
             {categories.map(cat => (
               <Link
                 key={cat.name}
-                to={`/store${cat.path}`}
+                to={`/tnv${cat.path}`}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block px-4 py-3 text-sm font-medium hover:bg-gray-50 ${cat.highlight ? 'text-red-500' : ''}`}
               >
@@ -337,8 +337,8 @@ export const TNVHeader = () => {
               </Link>
             ))}
             <div className="border-t mt-2 pt-2">
-              <Link to="/store/account" className="block px-4 py-3 text-sm hover:bg-gray-50">My Account</Link>
-              <Link to="/store/orders" className="block px-4 py-3 text-sm hover:bg-gray-50">Track Order</Link>
+              <Link to="/tnv/account" className="block px-4 py-3 text-sm hover:bg-gray-50">My Account</Link>
+              <Link to="/tnv/orders" className="block px-4 py-3 text-sm hover:bg-gray-50">Track Order</Link>
               <a href="#" className="block px-4 py-3 text-sm hover:bg-gray-50">Help & Support</a>
             </div>
           </nav>
