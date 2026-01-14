@@ -38,6 +38,7 @@ const Header = ({ showSearch, title, transparent = false }) => {
   const navigation = useNavigation();
   const { region, regions, changeRegion, navConfig } = useStore();
   const { cartCount } = useCart();
+  const { colors, shadows, isDark } = useTheme();
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [regionModal, setRegionModal] = useState(false);
@@ -113,7 +114,7 @@ const Header = ({ showSearch, title, transparent = false }) => {
     <>
       {/* Promo Bar - Animated */}
       <LinearGradient
-        colors={['#1a1a1a', '#2d2d2d']}
+        colors={isDark ? ['#1a1a1a', '#2d2d2d'] : ['#1a1a1a', '#2d2d2d']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.promoBar}
@@ -136,13 +137,17 @@ const Header = ({ showSearch, title, transparent = false }) => {
       </LinearGradient>
 
       {/* Main Header */}
-      <View style={[styles.header, transparent && styles.headerTransparent]}>
+      <View style={[
+        styles.header, 
+        { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        transparent && styles.headerTransparent
+      ]}>
         {title ? (
           <View style={styles.titleContainer}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-              <Text style={styles.backIcon}>←</Text>
+              <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
             </TouchableOpacity>
-            <Text style={styles.title}>{title}</Text>
+            <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
             <View style={{ width: 40 }} />
           </View>
         ) : (
@@ -152,7 +157,7 @@ const Header = ({ showSearch, title, transparent = false }) => {
               style={styles.logoContainer}
               onPress={() => navigation.navigate('Home')}
             >
-              <Text style={styles.logo}>{logo.text}</Text>
+              <Text style={[styles.logo, { color: colors.text }]}>{logo.text}</Text>
               {logo.badge && (
                 <LinearGradient
                   colors={[logo.badgeColor || '#FF3366', '#FF6B8A']}
@@ -172,7 +177,7 @@ const Header = ({ showSearch, title, transparent = false }) => {
                   style={styles.actionBtn}
                   onPress={() => setSearchVisible(true)}
                 >
-                  <View style={styles.searchIconContainer}>
+                  <View style={[styles.searchIconContainer, { backgroundColor: colors.background }]}>
                     <Text style={styles.actionIcon}>🔍</Text>
                   </View>
                 </TouchableOpacity>
@@ -192,6 +197,7 @@ const Header = ({ showSearch, title, transparent = false }) => {
                   <Animated.View 
                     style={[
                       styles.cartBadge,
+                      { backgroundColor: colors.accent, borderColor: colors.surface },
                       { transform: [{ scale: cartBounce }] }
                     ]}
                   >
@@ -212,12 +218,12 @@ const Header = ({ showSearch, title, transparent = false }) => {
         animationType="slide"
         presentationStyle="pageSheet"
       >
-        <View style={styles.searchModal}>
-          <View style={styles.searchHeader}>
-            <View style={styles.searchInputContainer}>
+        <View style={[styles.searchModal, { backgroundColor: colors.surface }]}>
+          <View style={[styles.searchHeader, { borderBottomColor: colors.border }]}>
+            <View style={[styles.searchInputContainer, { backgroundColor: colors.background }]}>
               <Text style={styles.searchInputIcon}>🔍</Text>
               <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, { color: colors.text }]}
                 placeholder="Search for products, brands..."
                 placeholderTextColor={colors.textTertiary}
                 value={searchQuery}
@@ -228,7 +234,7 @@ const Header = ({ showSearch, title, transparent = false }) => {
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <Text style={styles.clearBtn}>✕</Text>
+                  <Text style={[styles.clearBtn, { color: colors.textTertiary }]}>✕</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -236,24 +242,24 @@ const Header = ({ showSearch, title, transparent = false }) => {
               style={styles.cancelBtn}
               onPress={() => setSearchVisible(false)}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={[styles.cancelText, { color: colors.textSecondary }]}>Cancel</Text>
             </TouchableOpacity>
           </View>
 
           {/* Recent Searches */}
           <View style={styles.recentSearches}>
-            <Text style={styles.recentTitle}>Popular Searches</Text>
+            <Text style={[styles.recentTitle, { color: colors.textSecondary }]}>Popular Searches</Text>
             <View style={styles.searchTags}>
               {['Dresses', 'Sneakers', 'Bags', 'Watches', 'Summer Sale'].map((tag) => (
                 <TouchableOpacity
                   key={tag}
-                  style={styles.searchTag}
+                  style={[styles.searchTag, { backgroundColor: colors.background }]}
                   onPress={() => {
                     setSearchQuery(tag);
                     handleSearch();
                   }}
                 >
-                  <Text style={styles.searchTagText}>{tag}</Text>
+                  <Text style={[styles.searchTagText, { color: colors.text }]}>{tag}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -267,14 +273,14 @@ const Header = ({ showSearch, title, transparent = false }) => {
         animationType="slide"
         presentationStyle="pageSheet"
       >
-        <View style={styles.regionModal}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Region</Text>
+        <View style={[styles.regionModal, { backgroundColor: colors.surface }]}>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Select Region</Text>
             <TouchableOpacity 
               onPress={() => setRegionModal(false)}
-              style={styles.closeBtn}
+              style={[styles.closeBtn, { backgroundColor: colors.background }]}
             >
-              <Text style={styles.closeBtnText}>✕</Text>
+              <Text style={[styles.closeBtnText, { color: colors.textSecondary }]}>✕</Text>
             </TouchableOpacity>
           </View>
           
@@ -284,7 +290,8 @@ const Header = ({ showSearch, title, transparent = false }) => {
                 key={r.code}
                 style={[
                   styles.regionItem,
-                  region.code === r.code && styles.regionItemActive,
+                  { backgroundColor: colors.background },
+                  region.code === r.code && [styles.regionItemActive, { borderColor: colors.primary, backgroundColor: colors.primary + '10' }],
                 ]}
                 onPress={() => {
                   changeRegion(r);
@@ -293,11 +300,11 @@ const Header = ({ showSearch, title, transparent = false }) => {
               >
                 <Text style={styles.regionItemFlag}>{r.flag}</Text>
                 <View style={styles.regionItemInfo}>
-                  <Text style={styles.regionItemName}>{r.name}</Text>
-                  <Text style={styles.regionItemCurrency}>{r.currency}</Text>
+                  <Text style={[styles.regionItemName, { color: colors.text }]}>{r.name}</Text>
+                  <Text style={[styles.regionItemCurrency, { color: colors.textSecondary }]}>{r.currency}</Text>
                 </View>
                 {region.code === r.code && (
-                  <View style={styles.checkmarkContainer}>
+                  <View style={[styles.checkmarkContainer, { backgroundColor: colors.primary }]}>
                     <Text style={styles.checkmark}>✓</Text>
                   </View>
                 )}
@@ -319,7 +326,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   promoText: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: typography.caption,
     fontWeight: typography.medium,
   },
@@ -338,7 +345,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   regionCode: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: typography.caption,
     fontWeight: typography.medium,
     marginLeft: spacing.xs,
@@ -354,9 +361,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    backgroundColor: colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
   },
   headerTransparent: {
     backgroundColor: 'transparent',
@@ -376,12 +381,10 @@ const styles = StyleSheet.create({
   },
   backIcon: {
     fontSize: 24,
-    color: colors.text,
   },
   title: {
     fontSize: typography.h4,
     fontWeight: typography.bold,
-    color: colors.text,
   },
   logoContainer: {
     flexDirection: 'row',
@@ -390,7 +393,6 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 28,
     fontWeight: typography.extrabold,
-    color: colors.text,
     letterSpacing: -1,
   },
   badge: {
@@ -400,7 +402,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
   },
   badgeText: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: typography.tiny,
     fontWeight: typography.bold,
     letterSpacing: 0.5,
@@ -417,7 +419,6 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   searchIconContainer: {
-    backgroundColor: colors.background,
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -431,36 +432,31 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: colors.accent,
     borderRadius: borderRadius.full,
     minWidth: 20,
     height: 20,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: colors.white,
   },
   cartBadgeText: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: typography.tiny,
     fontWeight: typography.bold,
   },
   searchModal: {
     flex: 1,
-    backgroundColor: colors.white,
   },
   searchHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
   },
   searchInputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background,
     borderRadius: borderRadius.full,
     paddingHorizontal: spacing.md,
     height: 48,
@@ -472,18 +468,15 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: typography.body,
-    color: colors.text,
   },
   clearBtn: {
     fontSize: 16,
-    color: colors.textTertiary,
     padding: spacing.xs,
   },
   cancelBtn: {
     marginLeft: spacing.md,
   },
   cancelText: {
-    color: colors.textSecondary,
     fontSize: typography.body,
     fontWeight: typography.medium,
   },
@@ -493,7 +486,6 @@ const styles = StyleSheet.create({
   recentTitle: {
     fontSize: typography.bodySmall,
     fontWeight: typography.semibold,
-    color: colors.textSecondary,
     marginBottom: spacing.md,
   },
   searchTags: {
@@ -502,18 +494,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   searchTag: {
-    backgroundColor: colors.background,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
   },
   searchTagText: {
     fontSize: typography.bodySmall,
-    color: colors.text,
   },
   regionModal: {
     flex: 1,
-    backgroundColor: colors.white,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -521,24 +510,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
   },
   modalTitle: {
     fontSize: typography.h4,
     fontWeight: typography.bold,
-    color: colors.text,
   },
   closeBtn: {
     width: 36,
     height: 36,
-    backgroundColor: colors.background,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeBtnText: {
     fontSize: 16,
-    color: colors.textSecondary,
   },
   regionList: {
     padding: spacing.md,
@@ -547,14 +532,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.lg,
-    backgroundColor: colors.background,
     borderRadius: borderRadius.xl,
     marginBottom: spacing.sm,
   },
   regionItemActive: {
-    backgroundColor: colors.primary + '10',
     borderWidth: 2,
-    borderColor: colors.primary,
   },
   regionItemFlag: {
     fontSize: 32,
@@ -566,24 +548,21 @@ const styles = StyleSheet.create({
   regionItemName: {
     fontSize: typography.body,
     fontWeight: typography.semibold,
-    color: colors.text,
   },
   regionItemCurrency: {
     fontSize: typography.bodySmall,
-    color: colors.textSecondary,
     marginTop: spacing.xs,
   },
   checkmarkContainer: {
     width: 28,
     height: 28,
-    backgroundColor: colors.primary,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkmark: {
     fontSize: 16,
-    color: colors.white,
+    color: '#FFFFFF',
     fontWeight: typography.bold,
   },
 });
