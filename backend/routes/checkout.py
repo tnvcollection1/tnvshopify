@@ -136,12 +136,22 @@ async def add_to_cart(item: CartItem, session_id: str):
 
 
 @router.get("/cart/{session_id}")
-async def get_cart(session_id: str):
+async def get_cart(session_id: str, store: str = Query("tnvcollection")):
     """Get cart contents"""
     cart = await _db.carts.find_one({"session_id": session_id}, {"_id": 0})
+    store_config = get_store_config(store)
     
     if not cart:
-        return {"items": [], "subtotal": 0, "total": 0}
+        return {
+            "items": [], 
+            "subtotal": 0, 
+            "shipping": 0,
+            "discount": 0,
+            "total": 0,
+            "item_count": 0,
+            "currency": store_config["currency"],
+            "currency_symbol": store_config["currency_symbol"]
+        }
     
     items = cart.get("items", [])
     subtotal = sum(item["price"] * item["quantity"] for item in items)
