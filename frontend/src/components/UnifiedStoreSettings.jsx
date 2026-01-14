@@ -547,7 +547,7 @@ const UnifiedStoreSettings = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold">Logo & Branding</h2>
-                  <p className="text-gray-500">Customize your store's visual identity</p>
+                  <p className="text-gray-500">Customize your store&apos;s visual identity</p>
                 </div>
                 <button
                   onClick={() => saveSection('branding')}
@@ -851,7 +851,7 @@ const UnifiedStoreSettings = () => {
               {config.heroBanners.length === 0 && (
                 <div className="bg-white border rounded-xl p-12 text-center text-gray-500">
                   <Image className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p>No banners yet. Click "Add Banner" to create one.</p>
+                  <p>No banners yet. Click &quot;Add Banner&quot; to create one.</p>
                 </div>
               )}
             </div>
