@@ -128,7 +128,7 @@ const TNVHomePage = () => {
                       <p className="text-white/80 text-sm mb-2">{banner.subtitle || 'NEW COLLECTION'}</p>
                       <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-bold mb-4">{banner.title}</h2>
                       <Link 
-                        to="/store/collection/all"
+                        to="/tnv/collection/all"
                         className="inline-block bg-white text-black px-6 py-3 font-medium hover:bg-gray-100 transition"
                       >
                         Shop Now
