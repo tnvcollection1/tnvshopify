@@ -16,17 +16,57 @@ const REGIONS = [
   { code: 'QA', name: 'Qatar', currency: 'QAR', symbol: 'QAR', rate: 3.64, flag: '🇶🇦' },
   { code: 'BH', name: 'Bahrain', currency: 'BHD', symbol: 'BHD', rate: 0.38, flag: '🇧🇭' },
   { code: 'OM', name: 'Oman', currency: 'OMR', symbol: 'OMR', rate: 0.38, flag: '🇴🇲' },
-  { code: 'PK', name: 'Pakistan', currency: 'PKR', symbol: 'Rs', rate: 278.50, flag: '🇵🇰' },
+  { code: 'PK', name: 'Pakistan', currency: 'PKR', symbol: 'Rs.', rate: 278.50, flag: '🇵🇰' },
   { code: 'IN', name: 'India', currency: 'INR', symbol: '₹', rate: 83.12, flag: '🇮🇳' },
 ];
 
+// Store-specific configurations
+const STORE_CONFIGS = {
+  'tnvcollection': {
+    defaultRegion: 'IN',
+    currency: 'INR',
+    symbol: '₹',
+    country: 'India',
+    baseUrl: '/tnv',
+    freeShippingThreshold: 2000,
+    shippingCost: 150
+  },
+  'tnvcollectionpk': {
+    defaultRegion: 'PK',
+    currency: 'PKR',
+    symbol: 'Rs.',
+    country: 'Pakistan',
+    baseUrl: '/tnv-pk',
+    freeShippingThreshold: 5000,
+    shippingCost: 300
+  }
+};
+
 export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
-  const [region, setRegion] = useState(REGIONS[0]);
+  // Get store-specific config
+  const storeConfig = STORE_CONFIGS[storeName] || STORE_CONFIGS['tnvcollection'];
+  
+  // Set default region based on store
+  const getDefaultRegion = () => {
+    return REGIONS.find(r => r.code === storeConfig.defaultRegion) || REGIONS[0];
+  };
+  
+  const [region, setRegion] = useState(getDefaultRegion());
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [navConfig, setNavConfig] = useState(null);
+
+  // When store changes, update region to store default
+  useEffect(() => {
+    const savedRegion = localStorage.getItem(`tnv_region_${storeName}`);
+    if (savedRegion) {
+      setRegion(JSON.parse(savedRegion));
+    } else {
+      setRegion(getDefaultRegion());
+    }
+  }, [storeName]);
 
   const detectRegion = async () => {
     try {
@@ -48,21 +88,18 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
   };
 
   useEffect(() => {
-    const savedRegion = localStorage.getItem('tnv_region');
-    const savedCart = localStorage.getItem('tnv_cart');
-    const savedWishlist = localStorage.getItem('tnv_wishlist');
+    const savedCart = localStorage.getItem(`tnv_cart_${storeName}`);
+    const savedWishlist = localStorage.getItem(`tnv_wishlist_${storeName}`);
     
-    if (savedRegion) setRegion(JSON.parse(savedRegion));
     if (savedCart) setCart(JSON.parse(savedCart));
     if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
 
-    if (!savedRegion) detectRegion();
     fetchNavConfig();
-  }, []);
+  }, [storeName]);
 
-  useEffect(() => { localStorage.setItem('tnv_region', JSON.stringify(region)); }, [region]);
-  useEffect(() => { localStorage.setItem('tnv_cart', JSON.stringify(cart)); }, [cart]);
-  useEffect(() => { localStorage.setItem('tnv_wishlist', JSON.stringify(wishlist)); }, [wishlist]);
+  useEffect(() => { localStorage.setItem(`tnv_region_${storeName}`, JSON.stringify(region)); }, [region, storeName]);
+  useEffect(() => { localStorage.setItem(`tnv_cart_${storeName}`, JSON.stringify(cart)); }, [cart, storeName]);
+  useEffect(() => { localStorage.setItem(`tnv_wishlist_${storeName}`, JSON.stringify(wishlist)); }, [wishlist, storeName]);
 
   const addToCart = (product, variant, quantity = 1) => {
     setCart(prev => {
@@ -111,18 +148,26 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
   const cartTotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  // Format price - uses store's default currency
   const formatPrice = (price) => {
-    const baseRate = 83.12;
+    // If price is already in store's currency (INR for India, PKR for Pakistan)
+    // Display in the selected region's currency
+    const baseRate = storeConfig.currency === 'INR' ? 83.12 : 278.50; // INR or PKR base
     const converted = (parseFloat(price) / baseRate) * region.rate;
     if (region.rate < 1) return `${region.symbol} ${converted.toFixed(3)}`;
     return `${region.symbol} ${Math.round(converted).toLocaleString()}`;
   };
+  
+  // Format price in store's native currency (no conversion)
+  const formatStoreCurrency = (price) => {
+    return `${storeConfig.symbol} ${Math.round(parseFloat(price)).toLocaleString()}`;
+  };
 
   return (
     <StoreContext.Provider value={{
-      storeName, region, setRegion, regions: REGIONS, cart, addToCart, removeFromCart,
+      storeName, storeConfig, region, setRegion, regions: REGIONS, cart, addToCart, removeFromCart,
       updateCartQuantity, cartTotal, cartCount, wishlist, toggleWishlist, isInWishlist,
-      user, setUser, searchQuery, setSearchQuery, formatPrice, API_URL, navConfig
+      user, setUser, searchQuery, setSearchQuery, formatPrice, formatStoreCurrency, API_URL, navConfig
     }}>
       {children}
     </StoreContext.Provider>
