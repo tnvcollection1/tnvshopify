@@ -841,15 +841,19 @@ const UnifiedStoreSettings = () => {
                       </div>
                     )}
                   </div>
-                ))}
-
-                {config.heroBanners.length === 0 && (
-                  <div className="bg-white border rounded-xl p-12 text-center text-gray-500">
-                    <Image className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p>No banners yet. Click "Add Banner" to create one.</p>
+                        )}
+                      </SortableItem>
+                    ))}
                   </div>
-                )}
-              </div>
+                </SortableContext>
+              </DndContext>
+
+              {config.heroBanners.length === 0 && (
+                <div className="bg-white border rounded-xl p-12 text-center text-gray-500">
+                  <Image className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>No banners yet. Click "Add Banner" to create one.</p>
+                </div>
+              )}
             </div>
           )}
 
