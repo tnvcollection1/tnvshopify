@@ -160,7 +160,10 @@ export const StoreProvider = ({ children }) => {
     getStoreParam,
     getStoreName,
     getCurrentStore,
-    fetchStores
+    fetchStores,
+    formatPrice,
+    getCurrencySymbol,
+    getCurrencyConfig
   };
 
   return (
