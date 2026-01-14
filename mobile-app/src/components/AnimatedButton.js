@@ -55,6 +55,16 @@ const AnimatedButton = ({
     }).start();
   };
 
+  const handlePress = () => {
+    // Trigger haptic feedback based on variant
+    if (variant === 'primary' || variant === 'gradient') {
+      heavyHaptic();
+    } else {
+      mediumHaptic();
+    }
+    onPress && onPress();
+  };
+
   const getSizeStyles = () => {
     switch (size) {
       case 'sm':
@@ -163,7 +173,7 @@ const AnimatedButton = ({
   if (variant === 'gradient') {
     return (
       <AnimatedTouchable
-        onPress={onPress}
+        onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled || loading}
