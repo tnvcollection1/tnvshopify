@@ -741,6 +741,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/mega-menu-builder" 
+        element={
+          <ProtectedRoute>
+            <MegaMenuBuilder />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/checkout" 
         element={<CheckoutPage />}
       />
