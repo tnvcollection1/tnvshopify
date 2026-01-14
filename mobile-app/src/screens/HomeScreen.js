@@ -208,7 +208,8 @@ const HomeScreen = () => {
 
   if (loading) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+        <StatusBar barStyle={statusBarStyle} />
         <Header showSearch />
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Skeleton loaders */}
