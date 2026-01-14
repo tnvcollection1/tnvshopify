@@ -376,7 +376,10 @@ const TNVProductDetail = () => {
               </div>
             )}
             {activeTab === 'reviews' && (
-              <p className="text-gray-500">No reviews yet. Be the first to review this product!</p>
+              <ProductReviews 
+                productId={product.shopify_product_id} 
+                storeName={storeName}
+              />
             )}
           </div>
         </div>
