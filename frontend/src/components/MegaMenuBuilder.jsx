@@ -618,6 +618,9 @@ const MegaMenuBuilder = () => {
   const [globalSettings, setGlobalSettings] = useState({});
   const [activePreview, setActivePreview] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [templates, setTemplates] = useState([]);
+  const [applyingTemplate, setApplyingTemplate] = useState(null);
   
   const baseUrl = store === 'tnvcollectionpk' ? '/tnv-pk' : '/tnv';
   
