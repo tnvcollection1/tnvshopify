@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Backend API URL - Update this for production
 const API_URL = 'https://wamerce.com/api';
-// For development, use: 'https://custom-storefront-2.preview.emergentagent.com/api'
+// For development, use: 'https://fashion-marketplace-43.preview.emergentagent.com/api'
 
 const api = axios.create({
   baseURL: API_URL,

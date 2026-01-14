@@ -3,73 +3,53 @@
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (FastAPI backend, React frontend, MongoDB) is deployed on a Namecheap VPS. The admin panel at  is functional.
+A full-stack application (FastAPI backend, React frontend, MongoDB) is in place. The main focus of this session was to build out a mobile app and address critical pending issues.
 
-In the local environment, a new -inspired storefront (TNV Store) has been substantially built. This includes a dynamic, configurable header, homepage, product listing/detail pages, and a functional navigation flow that matches user feedback (e.g., category-specific hero banners, dropdowns).
-
-A backend API () and a corresponding admin UI () have been created to manage the storefront's header. However, the backend currently serves hardcoded data, and the admin UI is not wired up to save changes.
-
-A critical security fix for merchant data isolation (P0 vulnerability) has been implemented via new secure endpoints but has not been thoroughly tested. A boilerplate for a React Native mobile app has also been created in the  directory.
+The following has been accomplished:
+-   A comprehensive React Native mobile app boilerplate was created in . It includes navigation, screens, context providers, and a service layer.
+-   A web-based preview for the mobile app was created and is accessible at .
+-   Both the React Native app and the web preview are now dynamic, fetching their header configuration (logo, promo messages, categories) from the backend API.
+-   A critical P0 security vulnerability (Merchant Data Isolation) was thoroughly tested and verified as fixed.
+-   The P1 issue of the non-functional Admin UI for Header Configuration () was resolved. The UI is now fully connected to the backend, and a bug in the backend's config-merging logic was fixed.
+-   A P2 issue regarding Shopify CDN image dependency was resolved by implementing an on-demand image proxy service () that caches images locally. Frontend components have been updated to use this new service.
+-   The storefront header has undergone multiple redesigns to match user feedback inspired by .
 
 **Last working item**:
--   **Last item agent was working**: The user requested a mobile app. The agent began creating a React Native boilerplate project, setting up the file structure, navigation, context providers, screens, and basic components. The work is mid-flight.
+-   **Last item agent was working**: The user provided a screenshot and requested an exact replica of the  header. The agent's last action was to modify the header in  to have a **white background** and a **WOMEN/MEN selector dropdown**, as per the user's latest, specific instructions. The agent was about to take a screenshot to verify this final change.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: Manual testing. The agent needs to run the Expo app on a simulator or device to verify the boilerplate.
+-   **Which testing method agent to use?**: screenshot tool
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Merchant Data Isolation Security Fix requires verification (P0)
--   **Issue 2**: DNS for  is not pointing to the VPS (P1)
--   **Issue 3**: Admin UI for Header Config is not functional (P1)
--   **Issue 4**: Platform API responses link to Shopify CDN instead of local images (P2)
--   **Issue 5**: Large monolithic backend files require refactoring (P3)
+-   Issue 1: Replicate Namshi.com header exactly (P0)
+-   Issue 2: DNS for  is not pointing to the VPS (P1)
+-   Issue 3: Large monolithic backend files require refactoring (P3)
+-   Issue 4: Inconsistent currency display in admin panel (P3)
 
 **Issues Detail**:
--   **Issue 1: Merchant Data Isolation Security Fix requires verification**
-    -   **Attempted fixes**: Created a FastAPI dependency and new secure routes (). Basic  tests were performed.
+-   **Issue 1: Replicate Namshi.com header exactly (P0)**
+    -   **Attempted fixes**: The header in  has been through multiple iterations. The latest change was to implement a white background and a WOMEN/MEN selector dropdown. Code has been changed, but visual verification is pending.
     -   **Next debug checklist**:
-        1.  Create two distinct merchants in the database, each assigned to a different store.
-        2.  Write a test script (or use curl) to log in as Merchant A.
-        3.  Using Merchant A's token, attempt to access data (products, orders) for Merchant B's store via the secure endpoints.
-        4.  Verify that the API returns a  error.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical P0 security vulnerability in a multi-tenant application. A fix will ensure merchants can only access their own data.
-    -   **Status**: USER VERIFICATION PENDING
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend
+        1.  Take a screenshot of the  route.
+        2.  Meticulously compare the screenshot against the user's latest  screenshot, focusing on the white background, black logo text, and the WOMEN/MEN selector dropdown.
+        3.  Address any remaining discrepancies.
+    -   **Why fix this issue and what will be achieved with the fix?**: The user has repeatedly emphasized that a pixel-perfect match with the  UI is a top priority.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
--   **Issue 2: DNS for  not pointing to VPS**
-    -   **Attempted fixes**: The agent successfully guided the user to update DNS for . The user has not yet updated .
+-   **Issue 2: DNS for  not pointing to VPS (P1)**
+    -   **Attempted fixes**: None this session.
     -   **Next debug checklist**: Guide the user to update the A records for  to point to the VPS IP .
-    -   **Why fix this issue and what will be achieved with the fix?**: To make the Pakistan storefront live on the user's self-hosted platform.
+    -   **Why fix this issue and what will be achieved with the fix?**: To make the Pakistan storefront live.
     -   **Status**: BLOCKED (User Action Pending)
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
--   **Issue 3: Admin UI for Header Config is not functional**
-    -   **Attempted fixes**: The agent created the frontend component () and a backend route ().
-    -   **Next debug checklist**:
-        1.  Modify  to store/retrieve configuration from the MongoDB database instead of a hardcoded variable.
-        2.  Implement / methods in the backend route to handle updates.
-        3.  Wire up the  component to fetch data on load and save changes to the backend API.
-    -   **Why fix this issue and what will be achieved with the fix?**: To allow the user to dynamically manage their storefront's appearance without code changes, which was the original intent.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: None
-
--   **Issue 4: Platform not fully independent of Shopify**
-    -   **Attempted fixes**: Downloaded ~39,000 images and configured a static file server.
-    -   **Next debug checklist**: Modify backend API endpoints (e.g., in ) to return URLs for the locally served images instead of Shopify CDN URLs.
-    -   **Why fix this issue and what will be achieved with the fix?**: To achieve full data independence and create a self-contained platform.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: None
-
--   **Issue 5: Refactor large backend files**
+-   **Issue 3: Refactor large backend files (P3)**
     -   **Attempted fixes**: None.
     -   **Next debug checklist**: Systematically extract functionality from  and  into smaller, dedicated route files.
     -   **Why fix this issue and what will be achieved with the fix?**: To improve code maintainability, readability, and scalability.
@@ -78,77 +58,80 @@ A critical security fix for merchant data isolation (P0 vulnerability) has been 
     -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
 
+-   **Issue 4: Inconsistent currency display in admin panel (P3)**
+    -   **Attempted fixes**: None.
+    -   **Next debug checklist**:
+        1.  Navigate to the competitor analysis history feature in the admin panel.
+        2.  Identify where currency is displayed inconsistently.
+        3.  Trace the data source and formatting logic in the relevant backend and frontend files.
+    -   **Why fix this issue and what will be achieved with the fix?**: To improve usability and data consistency in the admin panel.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on other issue**: None
+
 **In progress Task List**:
--   **Task 1: Complete the Mobile App deliverables**
-    -   **Where to resume**: The agent has created the basic file structure for a React Native boilerplate in . The next steps are to flesh out the components and screens, create detailed Figma-style mockups for each screen, and build a web-based mobile preview (PWA).
-    -   **What will be achieved with this?**: A complete set of initial assets for the user's mobile app development.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Both (the RN app and the PWA)
-    -   **Blocked on something**: None
+-   None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
     -   (P1) **Deploy Namshi Storefront to VPS**: Deploy the newly built TNV storefront to .
+    -   (P2) **Mega Menu Implementation**: Build out the full mega menu dropdowns with product categories, as seen on .
 -   **Future Tasks**:
     -   (P2) **Sooxie.com Integration**: Plan and implement an integration with the Sooxie.com API.
-    -   (P3) **Refactor Monolithic Files**: Break down  and .
+    -   (P3) **Automated Security Testing**: Set up automated tests for the security endpoints to prevent regressions.
 
 **Completed work in this session**
--   **Namshi.com Storefront Redesign**: Built a new React storefront that visually and functionally matches the  design, including a dynamic header, mega menus, category-specific landing pages, and complex navigation flows.
--   **Backend for Storefront Config**: Created a new FastAPI endpoint () and a corresponding admin UI component () for header management.
--   **P0 Security Fix (Merchant Data Isolation)**: Implemented a FastAPI dependency and secure API routes to prevent merchants from accessing other tenants' data.
--   **Mobile App Guidance & Boilerplate**: Created a detailed guide document () and a React Native boilerplate project ().
+-   **Mobile App Boilerplate & Dynamic Config (FINISHED)**: Created a comprehensive React Native boilerplate, a web preview, and connected both to the backend for dynamic header configuration.
+-   **P0 Security Fix Verification (FINISHED)**: Thoroughly tested and confirmed the merchant data isolation fix is working correctly.
+-   **P1 Header Config Admin UI (FINISHED)**: Fixed and verified the admin UI for managing the storefront header, including a backend bug fix for config merging.
+-   **P2 Shopify Image Independence (FINISHED)**: Implemented an on-demand image proxy to cache Shopify images locally and updated the frontend to use it, making the platform independent of Shopify's CDN.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1**: Inconsistent currency display in the competitor analysis history feature of the admin panel.
+-   **Issue 1**: Inconsistent currency display in the competitor analysis history feature of the admin panel. This was noted in the previous handoff and remains unaddressed.
 
 **Known issue recurrence from previous fork**
--   **Issue 1**: User repeatedly correcting the UI to match .
-    -   **Recurrence count**: 4+ times.
-    -   **Status**: RESOLVED (for now). The latest implementation matches the user's feedback, but the agent should be vigilant.
+-   **Issue recurrence in previous fork**: User repeatedly correcting the UI to match .
+-   **Recurrence count**: 5+ (This was the primary driver of the work in the latter half of the session).
+-   **Status**: IN PROGRESS
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   Multi-Tenant SaaS Architecture
--   VPS Deployment (Nginx, PM2)
--   Headless E-commerce (React Frontend, FastAPI Backend)
--   Role-Based Access Control (RBAC)
--   Mobile App Development (React Native, Expo)
+-   On-demand Image Proxy & Caching
+-   Middleware-style API response transformation
+-   Dynamic configuration for Mobile & Web UIs
+-   React Native boilerplate structure
+-   Multi-tenant security testing
 
 **key DB schema**
--   **agents**: Contains users for the admin panel. Schema includes  and . (No changes this session).
+-   No schema changes. The  collection in MongoDB is now actively used for header management.
 
 **All files of reference**
--   : New backend route to provide header configuration. (Currently returns hardcoded data).
--   : New FastAPI dependency for checking merchant store access.
--   : New secure endpoints that use the access dependency.
--   : New admin UI to manage header settings. (Currently a mock, not connected to the backend).
--   : Heavily modified to match Namshi's header, mega menu, and dropdown logic.
--   : Modified to include category-specific hero banners.
--   : New detailed document outlining the mobile app plan.
--   : New directory containing the React Native boilerplate.
--   : Updated with routes for the new admin page and storefront sub-categories.
--   : Updated to include the new  and  routers.
+-   **/app/frontend/src/components/store/TNVStoreLayout.jsx**: Heavily modified for the Namshi-style header redesign. This is the primary file for the current task.
+-   **/app/backend/routes/image_proxy.py**: New file containing the on-demand image proxy service.
+-   **/app/frontend/src/components/MobileAppPreview.jsx**: New file for the web-based preview of the mobile app.
+-   **/app/mobile-app/**: Directory containing the new, comprehensive React Native boilerplate.
+-   **/app/backend/routes/storefront_config.py**: Modified to fix a config-merging bug.
+-   **/app/backend/routes/storefront.py**: Modified to transform product image URLs.
+-   **/app/frontend/src/components/store/TNVHomePage.jsx**: Modified to use an image URL helper for proxied images.
+-   **/app/frontend/src/components/store/TNVProductListing.jsx**: Modified to use an image URL helper for proxied images.
 
 **Areas that need refactoring**:
--   The new  endpoint must be connected to a database instead of using hardcoded JSON.
--   The  component needs to be connected to the backend API to become functional.
--   Monolithic backend files (, ) still require breaking down into smaller modules.
+-   Monolithic backend files (, ) still need to be broken down into smaller modules.
 
 **key api endpoints**
--   : (New) Fetches header configuration for a specific store.
--   : (New) Gets products, filtered by the authenticated merchant's assigned stores.
--   : (New) Gets orders, filtered by the authenticated merchant's assigned stores.
--   : (New) Gets customers, filtered by the authenticated merchant's assigned stores.
--   : (New) Gets the stores assigned to the authenticated merchant.
+-   : (New) Fetches and caches an image from Shopify.
+-   : Fetches header configuration.
+-   : Saves header configuration.
+-   : All secure endpoints for merchant data were verified.
+-   : Now returns proxied image URLs.
 
 **Critical Info for New Agent**
--   **The user is highly detail-oriented about the UI matching .** Always refer to the latest screenshots provided by the user before making UI changes. The navigation flow is complex and has been revised multiple times.
--   **The P0 security fix is implemented but not properly tested.** It is critical to verify this fix with real merchant accounts to ensure data isolation before any deployment.
--   **The Header Configuration admin page is currently a mock.** It looks functional, but it is not connected to the backend API, and the API itself returns hardcoded data. This needs to be fully implemented.
--   The immediate next step is to continue building the mobile app assets as requested by the user.
+-   **The user's top priority is a pixel-perfect copy of the  UI.** The immediate task is to verify your last change to the header (white background, WOMEN/MEN selector) by taking a screenshot of the  route and comparing it meticulously to the user's reference image. Be prepared for further minor adjustments.
+-   The image proxy system is working. When adding new components with product images, ensure you use the full backend URL () plus the relative proxy path () to avoid broken images in the development environment. A helper function  was added in  as a pattern.
+-   The P0 security fix and P1 Header Config Admin UI are **complete and verified**. Do not revisit them unless a new bug is reported.
 
 **documents and test reports created in this job**
 -   
@@ -156,25 +139,20 @@ A critical security fix for merchant data isolation (P0 vulnerability) has been 
 -    (updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. User confirms the category page layout with hero banners is now correct.
-9.  User provides a screenshot and points out that clicking a main category (e.g., WOMEN) should open a dropdown with selection cards, not navigate directly. (FIXED)
-8.  User receives the summary for the new Header Config admin UI.
-7.  User confirms the product listing page with hero banners is correct, but the sub-category page is a black screen. (FIXED)
-6.  User provides a screenshot showing a large banner that should appear when a category like WOMEN is clicked. (FIXED)
-5.  User confirms the mobile app guide and security fix summary.
-4.  User provides a screenshot showing missing header elements (promo bar items, dropdown menu). (FIXED)
-3.  User confirms the new Namshi-like design looks good but points out the header and layout are still not an exact match. (FIXED)
-2.  User receives the initial summary for the completed Namshi-style storefront.
-1.  **Mobile app** - The user's latest request, which is currently in progress.
+-   10.  - **Status: IN PROGRESS**. This is the current task. The agent has made the code change and needs to verify it.
+-   9.  - **Status: IN PROGRESS**. User provided a new screenshot and re-emphasized the need for an exact match.
+-   8.  - **Status: ADDRESSED**. The agent explained how to view the app via the web preview.
+-   7.  - **Status: ADDRESSED**. The agent had just finished the P0/P1 fixes and the user was redirecting focus back to the mobile app.
+-   6.  - **Status: Information provided by user**.
+-   5.  (to making both the RN app and web preview dynamic) - **Status: COMPLETED**. The agent implemented this.
+-   4.  - **Status: ADDRESSED**.
+-   3.  - **Status: ADDRESSED**.
+-   2.  (User chose Option A to continue mobile app work initially) - **Status: ADDRESSED**. The agent completed the mobile app work before moving to the P0/P1 issues.
+-   1.  - **Status: COMPLETED**. The initial request to build the mobile app boilerplate is done.
 
 **Project Health Check:**
--   **Broken**:
-    -    domain is not live.
-    -   The P0 security fix for merchant data isolation has not been properly verified.
-    -   The  admin UI is non-functional (a mock).
--   **Mocked**:
-    -    still displays a Coming Soon page. The new storefront is only available in the local preview.
-    -   The  is a boilerplate and not a running application.
+-   **Broken**: The storefront header UI does not yet match the user's latest, very specific request.
+-   **Mocked**:  on the VPS still displays a Coming Soon page. The new storefront is only available in the local preview.
 
 **3rd Party Integrations**
 -   Shopify (as a data source)
@@ -183,7 +161,7 @@ A critical security fix for merchant data isolation (P0 vulnerability) has been 
 -   React Native / Expo (for mobile app)
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (for the initial storefront build)
+-   **Testing agent used after significant changes**: NO
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None
 -   **Known regressions**: None
@@ -195,5 +173,5 @@ A critical security fix for merchant data isolation (P0 vulnerability) has been 
 -   **MongoDB Atlas URI**: 
 
 **What agent forgot to execute**
--   The agent created a complete UI for the  and a backend endpoint that returns hardcoded data, but **forgot to connect them**. The admin UI does not save any data, and the backend doesn't retrieve data from the database, making the entire feature non-functional.
--   The agent did not perform adequate testing for the critical P0 security fix. Testing with a static  command and a hardcoded  header does not simulate a real-world scenario or validate the end-to-end security flow.</analysis>
+-   The agent initially missed the extreme level of detail the user required for the  UI match, leading to several rounds of rework on the header.
+-   The agent did not initially use absolute URLs for the image proxy in the React dev environment, causing broken images that needed a subsequent fix.</analysis>
