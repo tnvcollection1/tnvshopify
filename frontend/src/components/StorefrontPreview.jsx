@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { Search, User, ShoppingBag, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, User, ShoppingBag, Heart, ChevronLeft, ChevronRight, MapPin, Gift, Menu, X } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -11,14 +11,16 @@ const STORE_CONFIGS = {
     subdomain: 'tnvcollection',
     currency: 'INR',
     currencySymbol: '₹',
-    region: 'India'
+    region: 'India',
+    country: 'IN'
   },
   tnvcollectionpk: {
     name: 'TNV Collection', 
     subdomain: 'tnvcollectionpk',
     currency: 'PKR',
     currencySymbol: 'Rs.',
-    region: 'Pakistan'
+    region: 'Pakistan',
+    country: 'PK'
   }
 };
 
@@ -32,6 +34,8 @@ const StorefrontPreview = () => {
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Extract store name from URL path
   const getStoreName = () => {
@@ -110,50 +114,176 @@ const StorefrontPreview = () => {
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
       {/* Preview Mode Banner */}
-      <div className="bg-[#1a1a1a] text-white text-center py-2 text-xs tracking-wider">
+      <div className="bg-amber-400 text-black text-center py-1.5 text-[10px] tracking-wider font-medium">
         PREVIEW MODE — {storeConfig?.name} ({storeConfig?.region}) — Changes reflect before VPS deployment
       </div>
 
-      {/* Top Announcement Bar */}
-      <div className="bg-black text-white text-center py-3 text-xs tracking-[0.2em]">
-        FREE SHIPPING ON ALL ORDERS OVER {storeConfig?.currencySymbol}5,000 — USE CODE: WELCOME10
+      {/* Top Utility Bar - MR PORTER Style */}
+      <div className="bg-black text-white">
+        <div className="max-w-[1400px] mx-auto px-4">
+          <div className="flex items-center justify-between h-10">
+            {/* Left - Location */}
+            <div className="flex items-center space-x-4">
+              <button className="flex items-center space-x-1.5 text-[11px] tracking-wide hover:text-gray-300 transition">
+                <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <span>SHIP TO: {storeConfig?.country}</span>
+              </button>
+            </div>
+
+            {/* Center - Promo */}
+            <div className="hidden md:block text-center">
+              <p className="text-[11px] tracking-[0.15em]">FREE SHIPPING ON ORDERS OVER {storeConfig?.currencySymbol}5,000</p>
+            </div>
+
+            {/* Right - Utilities */}
+            <div className="flex items-center space-x-5">
+              <a href="#" className="text-[11px] tracking-wide hover:text-gray-300 transition hidden sm:block">HELP</a>
+              <a href="#" className="text-[11px] tracking-wide hover:text-gray-300 transition hidden sm:block">CONTACT</a>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Header */}
-      <header className={`sticky top-0 z-50 bg-white transition-shadow duration-300 ${isScrolled ? 'shadow-sm' : ''}`}>
-        <div className="border-b border-gray-200">
-          <div className="max-w-[1400px] mx-auto px-6">
-            <div className="flex items-center justify-between h-16">
-              {/* Left Navigation */}
-              <nav className="hidden lg:flex items-center space-x-8">
-                <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition">WHAT'S NEW</a>
-                <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition">CLOTHING</a>
-                <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition">SHOES</a>
-                <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition">BAGS</a>
-              </nav>
-
-              {/* Logo */}
-              <div className="absolute left-1/2 transform -translate-x-1/2">
-                <h1 className="text-xl tracking-[0.3em] font-light">TNV COLLECTION</h1>
+      {/* Main Header - MR PORTER Style */}
+      <header className={`sticky top-0 z-50 bg-white transition-all duration-300 ${isScrolled ? 'shadow-sm' : ''}`}>
+        {/* Top Header Row - Icons */}
+        <div className="border-b border-gray-100">
+          <div className="max-w-[1400px] mx-auto px-4">
+            <div className="flex items-center justify-between h-14">
+              {/* Left Icons */}
+              <div className="flex items-center space-x-4">
+                <button 
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="lg:hidden hover:text-gray-600 transition"
+                >
+                  {mobileMenuOpen ? <X className="w-5 h-5" strokeWidth={1.5} /> : <Menu className="w-5 h-5" strokeWidth={1.5} />}
+                </button>
+                <button 
+                  onClick={() => setSearchOpen(!searchOpen)}
+                  className="flex items-center space-x-2 hover:text-gray-600 transition"
+                >
+                  <Search className="w-5 h-5" strokeWidth={1.5} />
+                  <span className="text-[11px] tracking-wide hidden sm:inline">SEARCH</span>
+                </button>
               </div>
 
-              {/* Right Navigation */}
-              <div className="flex items-center space-x-6">
-                <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition hidden lg:block">ACCESSORIES</a>
-                <a href="#" className="text-[11px] tracking-[0.15em] font-medium text-red-600 hover:text-red-700 transition hidden lg:block">SALE</a>
-                <div className="flex items-center space-x-4 ml-8">
-                  <button className="hover:text-gray-600 transition"><Search className="w-5 h-5" strokeWidth={1.5} /></button>
-                  <button className="hover:text-gray-600 transition"><Heart className="w-5 h-5" strokeWidth={1.5} /></button>
-                  <button className="hover:text-gray-600 transition"><User className="w-5 h-5" strokeWidth={1.5} /></button>
-                  <button className="hover:text-gray-600 transition relative">
-                    <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-black text-white text-[9px] rounded-full flex items-center justify-center">0</span>
-                  </button>
-                </div>
+              {/* Center Logo */}
+              <div className="absolute left-1/2 transform -translate-x-1/2">
+                <a href="#" className="block">
+                  <h1 className="text-xl md:text-2xl tracking-[0.4em] font-light text-black">TNV</h1>
+                </a>
+              </div>
+
+              {/* Right Icons */}
+              <div className="flex items-center space-x-5">
+                <button className="flex items-center space-x-2 hover:text-gray-600 transition hidden sm:flex">
+                  <Gift className="w-5 h-5" strokeWidth={1.5} />
+                  <span className="text-[11px] tracking-wide">REWARDS</span>
+                </button>
+                <button className="flex items-center space-x-2 hover:text-gray-600 transition">
+                  <Heart className="w-5 h-5" strokeWidth={1.5} />
+                  <span className="text-[11px] tracking-wide hidden sm:inline">WISHLIST</span>
+                </button>
+                <button className="flex items-center space-x-2 hover:text-gray-600 transition">
+                  <User className="w-5 h-5" strokeWidth={1.5} />
+                  <span className="text-[11px] tracking-wide hidden sm:inline">ACCOUNT</span>
+                </button>
+                <button className="flex items-center space-x-2 hover:text-gray-600 transition relative">
+                  <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+                  <span className="text-[11px] tracking-wide hidden sm:inline">BAG (0)</span>
+                </button>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Navigation Row */}
+        <nav className="hidden lg:block border-b border-gray-200">
+          <div className="max-w-[1400px] mx-auto px-4">
+            <div className="flex items-center justify-center space-x-10 h-12">
+              <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition relative group">
+                WHAT'S NEW
+                <span className="absolute -bottom-[13px] left-0 w-full h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </a>
+              <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition relative group">
+                DESIGNERS
+                <span className="absolute -bottom-[13px] left-0 w-full h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </a>
+              <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition relative group">
+                CLOTHING
+                <span className="absolute -bottom-[13px] left-0 w-full h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </a>
+              <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition relative group">
+                SHOES
+                <span className="absolute -bottom-[13px] left-0 w-full h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </a>
+              <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition relative group">
+                BAGS
+                <span className="absolute -bottom-[13px] left-0 w-full h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </a>
+              <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition relative group">
+                ACCESSORIES
+                <span className="absolute -bottom-[13px] left-0 w-full h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </a>
+              <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition relative group">
+                WATCHES
+                <span className="absolute -bottom-[13px] left-0 w-full h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </a>
+              <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition relative group">
+                SPORT
+                <span className="absolute -bottom-[13px] left-0 w-full h-0.5 bg-black scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </a>
+              <a href="#" className="text-[11px] tracking-[0.15em] font-medium text-red-600 hover:text-red-700 transition relative group">
+                SALE
+                <span className="absolute -bottom-[13px] left-0 w-full h-0.5 bg-red-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        {/* Search Overlay */}
+        {searchOpen && (
+          <div className="absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50">
+            <div className="max-w-[800px] mx-auto px-4 py-6">
+              <div className="flex items-center border-b-2 border-black">
+                <Search className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
+                <input
+                  type="text"
+                  placeholder="Search for products, brands and more..."
+                  className="flex-1 px-4 py-3 text-lg focus:outline-none"
+                  autoFocus
+                />
+                <button onClick={() => setSearchOpen(false)} className="text-gray-400 hover:text-black">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="mt-4">
+                <p className="text-xs text-gray-500 tracking-wide">POPULAR SEARCHES</p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {['Loafers', 'Sneakers', 'Bags', 'Boots', 'Formal Shoes'].map(term => (
+                    <button key={term} className="px-3 py-1 bg-gray-100 text-sm hover:bg-gray-200 transition">
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50">
+            <div className="py-4">
+              {['WHAT\'S NEW', 'DESIGNERS', 'CLOTHING', 'SHOES', 'BAGS', 'ACCESSORIES', 'WATCHES', 'SPORT'].map(item => (
+                <a key={item} href="#" className="block px-6 py-3 text-sm tracking-wide hover:bg-gray-50">
+                  {item}
+                </a>
+              ))}
+              <a href="#" className="block px-6 py-3 text-sm tracking-wide text-red-600 hover:bg-gray-50">SALE</a>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Hero Banner - MR PORTER Style */}
@@ -170,13 +300,13 @@ const StorefrontPreview = () => {
                   alt={banner.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
                 <div className="absolute inset-0 flex items-end justify-center pb-20">
                   <div className="text-center text-white max-w-2xl px-4">
-                    <p className="text-xs tracking-[0.3em] mb-3 opacity-90">{banner.subtitle || 'THE COLLECTION'}</p>
-                    <h2 className="text-4xl md:text-5xl font-light tracking-wide mb-4">{banner.title}</h2>
+                    <p className="text-[11px] tracking-[0.4em] mb-4 opacity-90">{banner.subtitle || 'THE COLLECTION'}</p>
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-light tracking-wide mb-4">{banner.title}</h2>
                     <p className="text-sm tracking-wide mb-8 opacity-90 max-w-md mx-auto">{banner.description || 'Discover our latest arrivals'}</p>
-                    <button className="bg-white text-black px-10 py-4 text-xs tracking-[0.2em] hover:bg-gray-100 transition-colors">
+                    <button className="bg-white text-black px-12 py-4 text-[11px] tracking-[0.2em] font-medium hover:bg-gray-100 transition-colors">
                       {banner.button_text || 'SHOP NOW'}
                     </button>
                   </div>
@@ -226,7 +356,7 @@ const StorefrontPreview = () => {
               <h2 className="text-2xl font-light tracking-wide">What's New Today</h2>
               <p className="text-sm text-gray-500 mt-1 tracking-wide">Discover what just landed at TNV Collection</p>
             </div>
-            <a href="#" className="text-xs tracking-[0.15em] font-medium hover:text-gray-600 transition border-b border-black pb-0.5">
+            <a href="#" className="text-[11px] tracking-[0.15em] font-medium hover:text-gray-600 transition border-b border-black pb-0.5">
               SHOP ALL NEW
             </a>
           </div>
@@ -246,7 +376,7 @@ const StorefrontPreview = () => {
                       <Heart className="w-5 h-5 text-gray-600 hover:text-black" strokeWidth={1.5} />
                     </button>
                   </div>
-                  <p className="text-xs tracking-[0.1em] font-medium text-gray-500 mb-1">TNV COLLECTION</p>
+                  <p className="text-[10px] tracking-[0.15em] font-medium text-gray-500 mb-1">TNV COLLECTION</p>
                   <h3 className="text-sm font-light leading-snug mb-2 line-clamp-2">{product.title}</h3>
                   <p className="text-sm font-medium">
                     {formatPrice(product.variants?.[0]?.price || product.price || 0)}
@@ -277,7 +407,7 @@ const StorefrontPreview = () => {
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
                 <div className="absolute inset-0 flex items-end justify-center pb-8">
-                  <span className="text-white text-xs tracking-[0.2em] font-medium">{cat.name}</span>
+                  <span className="text-white text-[11px] tracking-[0.2em] font-medium">{cat.name}</span>
                 </div>
               </a>
             ))}
@@ -297,13 +427,13 @@ const StorefrontPreview = () => {
               />
             </div>
             <div className="py-8 md:py-0 md:px-12">
-              <p className="text-xs tracking-[0.3em] text-gray-500 mb-4">THE EDIT</p>
+              <p className="text-[11px] tracking-[0.4em] text-gray-500 mb-4">THE EDIT</p>
               <h2 className="text-3xl md:text-4xl font-light tracking-wide mb-6">Wardrobe Essentials</h2>
               <p className="text-gray-600 leading-relaxed mb-8">
                 The pieces we think every man should have. Timeless designs crafted from premium materials, 
                 built to last and designed to elevate your everyday style.
               </p>
-              <button className="bg-black text-white px-10 py-4 text-xs tracking-[0.2em] hover:bg-gray-900 transition-colors">
+              <button className="bg-black text-white px-12 py-4 text-[11px] tracking-[0.2em] font-medium hover:bg-gray-900 transition-colors">
                 SHOP THE EDIT
               </button>
             </div>
@@ -328,7 +458,7 @@ const StorefrontPreview = () => {
                     <Heart className="w-5 h-5 text-gray-600 hover:text-black" strokeWidth={1.5} />
                   </button>
                 </div>
-                <p className="text-xs tracking-[0.1em] font-medium text-gray-500 mb-1">TNV COLLECTION</p>
+                <p className="text-[10px] tracking-[0.15em] font-medium text-gray-500 mb-1">TNV COLLECTION</p>
                 <h3 className="text-sm font-light leading-snug mb-2 line-clamp-2">{product.title}</h3>
                 <p className="text-sm font-medium">
                   {formatPrice(product.variants?.[0]?.price || product.price || 0)}
@@ -350,7 +480,7 @@ const StorefrontPreview = () => {
               placeholder="Enter your email address"
               className="flex-1 bg-transparent border border-gray-700 px-4 py-3 text-sm focus:outline-none focus:border-white transition-colors"
             />
-            <button className="bg-white text-black px-8 py-3 text-xs tracking-[0.15em] font-medium hover:bg-gray-100 transition-colors">
+            <button className="bg-white text-black px-8 py-3 text-[11px] tracking-[0.15em] font-medium hover:bg-gray-100 transition-colors">
               SUBSCRIBE
             </button>
           </div>
@@ -362,7 +492,7 @@ const StorefrontPreview = () => {
         <div className="max-w-[1400px] mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div>
-              <h4 className="text-xs tracking-[0.2em] font-medium mb-6">CUSTOMER SERVICE</h4>
+              <h4 className="text-[11px] tracking-[0.2em] font-medium mb-6">CUSTOMER SERVICE</h4>
               <ul className="space-y-3">
                 <li><a href="#" className="text-sm text-gray-400 hover:text-white transition">Contact Us</a></li>
                 <li><a href="#" className="text-sm text-gray-400 hover:text-white transition">FAQs</a></li>
@@ -371,7 +501,7 @@ const StorefrontPreview = () => {
               </ul>
             </div>
             <div>
-              <h4 className="text-xs tracking-[0.2em] font-medium mb-6">ABOUT US</h4>
+              <h4 className="text-[11px] tracking-[0.2em] font-medium mb-6">ABOUT US</h4>
               <ul className="space-y-3">
                 <li><a href="#" className="text-sm text-gray-400 hover:text-white transition">Our Story</a></li>
                 <li><a href="#" className="text-sm text-gray-400 hover:text-white transition">Careers</a></li>
@@ -379,7 +509,7 @@ const StorefrontPreview = () => {
               </ul>
             </div>
             <div>
-              <h4 className="text-xs tracking-[0.2em] font-medium mb-6">LEGAL</h4>
+              <h4 className="text-[11px] tracking-[0.2em] font-medium mb-6">LEGAL</h4>
               <ul className="space-y-3">
                 <li><a href="#" className="text-sm text-gray-400 hover:text-white transition">Privacy Policy</a></li>
                 <li><a href="#" className="text-sm text-gray-400 hover:text-white transition">Terms of Service</a></li>
@@ -387,7 +517,7 @@ const StorefrontPreview = () => {
               </ul>
             </div>
             <div>
-              <h4 className="text-xs tracking-[0.2em] font-medium mb-6">FOLLOW US</h4>
+              <h4 className="text-[11px] tracking-[0.2em] font-medium mb-6">FOLLOW US</h4>
               <ul className="space-y-3">
                 <li><a href="#" className="text-sm text-gray-400 hover:text-white transition">Instagram</a></li>
                 <li><a href="#" className="text-sm text-gray-400 hover:text-white transition">Facebook</a></li>
@@ -397,7 +527,7 @@ const StorefrontPreview = () => {
           </div>
 
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between">
-            <p className="text-lg tracking-[0.3em] font-light mb-4 md:mb-0">TNV COLLECTION</p>
+            <p className="text-xl tracking-[0.4em] font-light mb-4 md:mb-0">TNV COLLECTION</p>
             <p className="text-xs text-gray-500">© 2025 TNV Collection. All Rights Reserved.</p>
           </div>
         </div>
