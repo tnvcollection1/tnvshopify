@@ -34,6 +34,7 @@ const AnimatedButton = ({
   textStyle,
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { colors, shadows, gradients } = useTheme();
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -100,17 +101,17 @@ const AnimatedButton = ({
       case 'gradient':
         return {
           button: { backgroundColor: 'transparent' },
-          text: { color: colors.white },
+          text: { color: '#FFFFFF' },
         };
       case 'danger':
         return {
           button: { backgroundColor: colors.error },
-          text: { color: colors.white },
+          text: { color: '#FFFFFF' },
         };
       default:
         return {
           button: { backgroundColor: colors.primary },
-          text: { color: colors.white },
+          text: { color: colors.textInverse },
         };
     }
   };
@@ -169,7 +170,7 @@ const AnimatedButton = ({
         style={[{ transform: [{ scale: scaleAnim }] }, fullWidth && styles.fullWidth]}
       >
         <LinearGradient
-          colors={gradient || colors.gradientAccent}
+          colors={gradient || gradients.accent}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[buttonStyles, { backgroundColor: undefined }]}
