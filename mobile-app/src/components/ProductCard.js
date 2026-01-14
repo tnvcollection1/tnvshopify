@@ -1,6 +1,7 @@
 /**
  * Enhanced Product Card Component
  * Beautiful product display with animations and effects
+ * Supports dark mode
  */
 
 import React, { useRef, useState } from 'react';
@@ -16,13 +17,15 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../context/StoreContext';
-import { colors, borderRadius, typography, shadows, spacing } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { borderRadius, typography, spacing, gradients } from '../theme';
 
 const { width } = Dimensions.get('window');
 
 const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
   const navigation = useNavigation();
   const { formatPrice, toggleWishlist, isInWishlist } = useStore();
+  const { colors, shadows } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const wishlistAnim = useRef(new Animated.Value(1)).current;
   const [imageLoaded, setImageLoaded] = useState(false);
