@@ -354,7 +354,7 @@ export const TNVHeader = () => {
                       onError={(e) => { e.target.style.display = 'none'; }}
                     />
                   </div>
-                  <span className="text-white text-xs font-medium whitespace-nowrap">
+                  <span style={{ color: '#FFFFFF' }} className="text-xs font-medium whitespace-nowrap">
                     {cat.name}
                   </span>
                 </div>
