@@ -397,7 +397,7 @@ const ProductCard = ({ product }) => {
   const { formatPrice, toggleWishlist, isInWishlist } = useStore();
   const [imageError, setImageError] = useState(false);
   
-  const image = product.images?.[0]?.src || 'https://via.placeholder.com/400x500?text=No+Image';
+  const image = getImageUrl(product.images?.[0]?.src);
   const price = product.variants?.[0]?.price || product.price || 0;
   const comparePrice = product.variants?.[0]?.compare_at_price;
   const discount = comparePrice ? Math.round((1 - price / comparePrice) * 100) : 0;
@@ -407,7 +407,7 @@ const ProductCard = ({ product }) => {
       <Link to={`/tnv/product/${product.shopify_product_id}`}>
         <div className="aspect-[3/4] overflow-hidden bg-gray-100">
           <img
-            src={imageError ? 'https://via.placeholder.com/400x500?text=No+Image' : image}
+            src={imageError ? 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=500&fit=crop' : image}
             alt={product.title}
             onError={() => setImageError(true)}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
