@@ -13,6 +13,7 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   - Success, Warning, Error notifications
   - Selection feedback for pickers
   - Special patterns: Theme toggle, Add to cart (celebratory), Wishlist (heartbeat)
+  - Pull-to-refresh haptic pattern
   
 - **Components with Haptics**:
   - `AnimatedButton` - Primary/gradient buttons trigger heavy haptic, others medium
@@ -20,6 +21,12 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   - `SettingsScreen` - Theme toggle triggers satisfying click
   - `ProductDetailScreen` - Size/color selection, quantity change, add to cart
   - `CartScreen` - Quantity changes, remove item, checkout button
+  
+- **Screens with Pull-to-Refresh Haptics**:
+  - `HomeScreen` - Refresh triggers light haptic, success haptic on complete
+  - `BrowseScreen` - Refresh + sort selection haptics
+  - `WishlistScreen` - Refresh haptic
+  - `OrderTrackingScreen` - Refresh + WhatsApp support button haptic
   
 - **New Dependency**: `expo-haptics@^15.0.8`
 
