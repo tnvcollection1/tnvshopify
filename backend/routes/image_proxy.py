@@ -182,7 +182,11 @@ def transform_shopify_url_to_local(url: str, base_url: str = "") -> str:
         return url
     
     # Skip if already a local URL
-    if url.startswith('/') or url.startswith(base_url):
+    if url.startswith('/'):
+        return url
+    
+    # Skip if starts with base_url (only if base_url is provided)
+    if base_url and url.startswith(base_url):
         return url
     
     # Only transform Shopify URLs
