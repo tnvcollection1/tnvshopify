@@ -100,8 +100,7 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
 
   useEffect(() => {
     fetchNavConfig();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeName]);
+  }, [storeName]); // eslint-disable-line
 
   useEffect(() => { localStorage.setItem(`tnv_region_${storeName}`, JSON.stringify(region)); }, [region, storeName]);
   useEffect(() => { localStorage.setItem(`tnv_cart_${storeName}`, JSON.stringify(cart)); }, [cart, storeName]);
