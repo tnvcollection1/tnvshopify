@@ -93,6 +93,27 @@ Both the React Native app AND the web preview now fetch configuration from the b
 - `/app/frontend/src/components/MobileAppPreview.jsx` - Interactive PWA preview
 - Route: `/mobile-app-preview` - View the mobile app design in browser
 
+### P2 - Replace Shopify CDN URLs ✅ COMPLETED (Jan 14, 2025)
+Created an image proxy system to serve Shopify CDN images locally.
+
+**Implementation:**
+- `/app/backend/routes/image_proxy.py` - Image proxy service
+- Caches images on-demand in `/app/backend/static/uploads/cache/`
+- Transforms Shopify CDN URLs to local proxy URLs in API responses
+- `getImageUrl()` helper in frontend to prepend backend URL
+
+**How it works:**
+1. Backend API transforms `https://cdn.shopify.com/...` → `/api/images/proxy?url=...`
+2. Frontend prepends `REACT_APP_BACKEND_URL` to relative URLs
+3. Proxy fetches from Shopify CDN on first request
+4. Subsequent requests served from local cache
+
+**Endpoints:**
+- `GET /api/images/proxy?url=...` - Proxy and cache an image
+- `GET /api/images/cached/{filename}` - Serve cached image
+- `GET /api/images/stats` - Cache statistics
+- `DELETE /api/images/clear` - Clear cache
+
 ### P1 Header Config Admin UI ✅ COMPLETED (Jan 14, 2025)
 Fixed and verified the Header Configuration admin page at `/header-config`.
 
