@@ -152,6 +152,19 @@ function LuxuryStorefrontWrapper({ page = 'home' }) {
   );
 }
 
+// TNV Store Wrapper (Namshi-inspired)
+function TNVStoreWrapper({ children }) {
+  return (
+    <TNVStoreProvider storeName="tnvcollection">
+      <TNVHeader />
+      <main className="min-h-screen">
+        {children}
+      </main>
+      <TNVFooter />
+    </TNVStoreProvider>
+  );
+}
+
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
   const { agent, loading } = useAuth();
