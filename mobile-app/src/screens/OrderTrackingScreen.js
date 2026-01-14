@@ -18,6 +18,7 @@ import {
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
+import { pullToRefreshHaptic, successHaptic, mediumHaptic } from '../services/haptics';
 import Header from '../components/Header';
 import * as api from '../services/api';
 import { spacing, borderRadius, typography } from '../theme';
