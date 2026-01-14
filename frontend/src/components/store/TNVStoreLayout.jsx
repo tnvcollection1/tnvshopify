@@ -162,9 +162,33 @@ export const TNVHeader = () => {
     { text: 'Easy Returns' },
   ];
   
-  // Main category tabs - EXACTLY like Namshi with images
-  const mainTabs = [
+  // Category tabs state - fetched from API
+  const [categoryTabs, setCategoryTabs] = useState([]);
+  const [subNavItems, setSubNavItems] = useState([]);
+
+  // Fetch category tabs and sub-nav from API
+  useEffect(() => {
+    const fetchLayoutConfig = async () => {
+      try {
+        const [tabsRes, subNavRes] = await Promise.all([
+          fetch(`${API_URL}/api/storefront/banners/category-tabs/tnvcollection`),
+          fetch(`${API_URL}/api/storefront/banners/sub-nav/tnvcollection`)
+        ]);
+        const tabsData = await tabsRes.json();
+        const subNavData = await subNavRes.json();
+        if (tabsData.categoryTabs) setCategoryTabs(tabsData.categoryTabs);
+        if (subNavData.subNavItems) setSubNavItems(subNavData.subNavItems);
+      } catch (e) {
+        console.log('Using default layout config');
+      }
+    };
+    fetchLayoutConfig();
+  }, []);
+  
+  // Default category tabs - EXACTLY like Namshi with images
+  const defaultCategoryTabs = [
     { 
+      id: 'cat-fashion',
       name: 'FASHION', 
       path: '/fashion', 
       bgColor: '#c8e6c9', // Light green
@@ -172,24 +196,28 @@ export const TNVHeader = () => {
       hasMegaMenu: true 
     },
     { 
+      id: 'cat-beauty',
       name: 'Beauty', 
       path: '/beauty', 
       bgColor: '#f5f5f5',
       image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop'
     },
     { 
+      id: 'cat-bags',
       name: 'BAGS & KIDS', 
       path: '/bags', 
       bgColor: '#ffe0b2', // Peach/orange
       image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=100&h=100&fit=crop'
     },
     { 
+      id: 'cat-home',
       name: 'HOME & MORE', 
       path: '/home', 
       bgColor: '#b2dfdb', // Teal
       image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=100&h=100&fit=crop'
     },
     { 
+      id: 'cat-premium',
       name: 'PREMIUM', 
       path: '/premium', 
       bgColor: '#f5f5f5',
@@ -197,8 +225,23 @@ export const TNVHeader = () => {
     },
   ];
   
-  // Sub-navigation items (EXACTLY like Namshi)
-  const subNavItems = ['CLOTHING', 'SHOES', 'ACCESSORIES', 'BAGS', 'SPORTS', 'NEW ARRIVALS', 'PREMIUM', 'SALE', 'BRANDS'];
+  // Use API data or defaults
+  const mainTabs = categoryTabs.length > 0 ? categoryTabs : defaultCategoryTabs;
+  
+  // Default sub-navigation items (EXACTLY like Namshi)
+  const defaultSubNavItems = [
+    { id: 'sub-clothing', name: 'CLOTHING', path: '/tnv/clothing', highlight: false },
+    { id: 'sub-shoes', name: 'SHOES', path: '/tnv/shoes', highlight: false },
+    { id: 'sub-accessories', name: 'ACCESSORIES', path: '/tnv/accessories', highlight: false },
+    { id: 'sub-bags', name: 'BAGS', path: '/tnv/bags', highlight: false },
+    { id: 'sub-sports', name: 'SPORTS', path: '/tnv/sports', highlight: false },
+    { id: 'sub-new', name: 'NEW ARRIVALS', path: '/tnv/new-arrivals', highlight: false },
+    { id: 'sub-premium', name: 'PREMIUM', path: '/tnv/premium', highlight: false },
+    { id: 'sub-sale', name: 'SALE', path: '/tnv/sale', highlight: true },
+    { id: 'sub-brands', name: 'BRANDS', path: '/tnv/brands', highlight: false },
+  ];
+  
+  const subNavList = subNavItems.length > 0 ? subNavItems : defaultSubNavItems;
 
   // Auto-rotate promo messages
   useEffect(() => {
