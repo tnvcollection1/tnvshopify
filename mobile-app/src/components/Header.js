@@ -1,10 +1,9 @@
 /**
- * Header Component
- * App header with logo, search, and action icons
- * Now uses dynamic configuration from backend API
+ * Enhanced Header Component
+ * Modern header with animations and sleek design
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,21 +11,28 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
+  Animated,
+  Dimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../context/StoreContext';
 import { useCart } from '../context/CartContext';
+import { colors, borderRadius, typography, spacing, shadows } from '../theme';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Default promo messages fallback
 const defaultPromoMessages = [
   { text: 'Cash On Delivery', icon: '💵', active: true },
-  { text: 'Free Delivery', icon: '🚚', active: true },
+  { text: 'Free Delivery on ₹999+', icon: '🚚', active: true },
+  { text: 'Easy Returns', icon: '↩️', active: true },
 ];
 
 // Default logo config fallback
-const defaultLogo = { text: 'TNV', badge: 'COLLECTION', badgeColor: '#FF6B9D' };
+const defaultLogo = { text: 'TNV', badge: 'COLLECTION', badgeColor: '#FF3366' };
 
-const Header = ({ showSearch, title }) => {
+const Header = ({ showSearch, title, transparent = false }) => {
   const navigation = useNavigation();
   const { region, regions, changeRegion, navConfig } = useStore();
   const { cartCount } = useCart();
@@ -34,21 +40,64 @@ const Header = ({ showSearch, title }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [regionModal, setRegionModal] = useState(false);
   const [promoIndex, setPromoIndex] = useState(0);
+  
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const cartBounce = useRef(new Animated.Value(1)).current;
 
   // Get config from backend or use defaults
   const logo = navConfig?.logo || defaultLogo;
   const promoMessages = (navConfig?.promoMessages || defaultPromoMessages).filter(m => m.active !== false);
   const currentPromo = promoMessages[promoIndex] || promoMessages[0] || defaultPromoMessages[0];
 
-  // Rotate promo messages
+  // Rotate promo messages with animation
   useEffect(() => {
     if (promoMessages.length > 1) {
       const interval = setInterval(() => {
-        setPromoIndex(prev => (prev + 1) % promoMessages.length);
-      }, 3000);
+        Animated.sequence([
+          Animated.timing(slideAnim, {
+            toValue: -30,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 30,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start();
+        
+        setTimeout(() => {
+          setPromoIndex(prev => (prev + 1) % promoMessages.length);
+        }, 200);
+      }, 4000);
       return () => clearInterval(interval);
     }
   }, [promoMessages.length]);
+
+  // Bounce cart badge when count changes
+  useEffect(() => {
+    if (cartCount > 0) {
+      Animated.sequence([
+        Animated.spring(cartBounce, {
+          toValue: 1.3,
+          useNativeDriver: true,
+          damping: 10,
+          stiffness: 400,
+        }),
+        Animated.spring(cartBounce, {
+          toValue: 1,
+          useNativeDriver: true,
+          damping: 10,
+          stiffness: 400,
+        }),
+      ]).start();
+    }
+  }, [cartCount]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -60,62 +109,99 @@ const Header = ({ showSearch, title }) => {
 
   return (
     <>
-      {/* Promo Bar - Dynamic from backend */}
-      <View style={styles.promoBar}>
-        <Text style={styles.promoText}>{currentPromo.icon} {currentPromo.text}</Text>
+      {/* Promo Bar - Animated */}
+      <LinearGradient
+        colors={['#1a1a1a', '#2d2d2d']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.promoBar}
+      >
+        <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
+          <Text style={styles.promoText}>
+            <Text style={styles.promoIcon}>{currentPromo.icon}</Text>
+            {'  '}{currentPromo.text}
+          </Text>
+        </Animated.View>
+        
         <TouchableOpacity
           style={styles.regionBtn}
           onPress={() => setRegionModal(true)}
         >
           <Text style={styles.regionFlag}>{region.flag}</Text>
           <Text style={styles.regionCode}>{region.code}</Text>
+          <Text style={styles.regionArrow}>▼</Text>
         </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
       {/* Main Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, transparent && styles.headerTransparent]}>
         {title ? (
-          <Text style={styles.title}>{title}</Text>
-        ) : (
-          <View style={styles.logoContainer}>
-            <Text style={styles.logo}>{logo.text}</Text>
-            {logo.badge && (
-              <View style={[styles.badge, { backgroundColor: logo.badgeColor || '#FF6B9D' }]}>
-                <Text style={styles.badgeText}>{logo.badge}</Text>
-              </View>
-            )}
-          </View>
-        )}
-
-        <View style={styles.actions}>
-          {showSearch && (
-            <TouchableOpacity
-              style={styles.actionBtn}
-              onPress={() => setSearchVisible(true)}
-            >
-              <Text style={styles.actionIcon}>🔍</Text>
+          <View style={styles.titleContainer}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+              <Text style={styles.backIcon}>←</Text>
             </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            style={styles.actionBtn}
-            onPress={() => navigation.navigate('Wishlist')}
-          >
-            <Text style={styles.actionIcon}>❤️</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionBtn}
-            onPress={() => navigation.navigate('Cart')}
-          >
-            <Text style={styles.actionIcon}>🛒</Text>
-            {cartCount > 0 && (
-              <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>
-                  {cartCount > 9 ? '9+' : cartCount}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
+            <Text style={styles.title}>{title}</Text>
+            <View style={{ width: 40 }} />
+          </View>
+        ) : (
+          <>
+            {/* Logo */}
+            <TouchableOpacity 
+              style={styles.logoContainer}
+              onPress={() => navigation.navigate('Home')}
+            >
+              <Text style={styles.logo}>{logo.text}</Text>
+              {logo.badge && (
+                <LinearGradient
+                  colors={[logo.badgeColor || '#FF3366', '#FF6B8A']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.badge}
+                >
+                  <Text style={styles.badgeText}>{logo.badge}</Text>
+                </LinearGradient>
+              )}
+            </TouchableOpacity>
+
+            {/* Actions */}
+            <View style={styles.actions}>
+              {showSearch && (
+                <TouchableOpacity
+                  style={styles.actionBtn}
+                  onPress={() => setSearchVisible(true)}
+                >
+                  <View style={styles.searchIconContainer}>
+                    <Text style={styles.actionIcon}>🔍</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => navigation.navigate('Wishlist')}
+              >
+                <Text style={styles.actionIcon}>♡</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={() => navigation.navigate('Cart')}
+              >
+                <Text style={styles.actionIcon}>🛍️</Text>
+                {cartCount > 0 && (
+                  <Animated.View 
+                    style={[
+                      styles.cartBadge,
+                      { transform: [{ scale: cartBounce }] }
+                    ]}
+                  >
+                    <Text style={styles.cartBadgeText}>
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </Text>
+                  </Animated.View>
+                )}
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </View>
 
       {/* Search Modal */}
@@ -126,20 +212,49 @@ const Header = ({ showSearch, title }) => {
       >
         <View style={styles.searchModal}>
           <View style={styles.searchHeader}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search for products..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
-              autoFocus
-            />
+            <View style={styles.searchInputContainer}>
+              <Text style={styles.searchInputIcon}>🔍</Text>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search for products, brands..."
+                placeholderTextColor={colors.textTertiary}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearch}
+                autoFocus
+                returnKeyType="search"
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery('')}>
+                  <Text style={styles.clearBtn}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <TouchableOpacity
               style={styles.cancelBtn}
               onPress={() => setSearchVisible(false)}
             >
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
+          </View>
+
+          {/* Recent Searches */}
+          <View style={styles.recentSearches}>
+            <Text style={styles.recentTitle}>Popular Searches</Text>
+            <View style={styles.searchTags}>
+              {['Dresses', 'Sneakers', 'Bags', 'Watches', 'Summer Sale'].map((tag) => (
+                <TouchableOpacity
+                  key={tag}
+                  style={styles.searchTag}
+                  onPress={() => {
+                    setSearchQuery(tag);
+                    handleSearch();
+                  }}
+                >
+                  <Text style={styles.searchTagText}>{tag}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
       </Modal>
@@ -153,30 +268,40 @@ const Header = ({ showSearch, title }) => {
         <View style={styles.regionModal}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Select Region</Text>
-            <TouchableOpacity onPress={() => setRegionModal(false)}>
-              <Text style={styles.closeBtn}>✕</Text>
+            <TouchableOpacity 
+              onPress={() => setRegionModal(false)}
+              style={styles.closeBtn}
+            >
+              <Text style={styles.closeBtnText}>✕</Text>
             </TouchableOpacity>
           </View>
-          {regions.map((r) => (
-            <TouchableOpacity
-              key={r.code}
-              style={[
-                styles.regionItem,
-                region.code === r.code && styles.regionItemActive,
-              ]}
-              onPress={() => {
-                changeRegion(r);
-                setRegionModal(false);
-              }}
-            >
-              <Text style={styles.regionItemFlag}>{r.flag}</Text>
-              <Text style={styles.regionItemName}>{r.name}</Text>
-              <Text style={styles.regionItemCurrency}>{r.currency}</Text>
-              {region.code === r.code && (
-                <Text style={styles.checkmark}>✓</Text>
-              )}
-            </TouchableOpacity>
-          ))}
+          
+          <View style={styles.regionList}>
+            {regions.map((r) => (
+              <TouchableOpacity
+                key={r.code}
+                style={[
+                  styles.regionItem,
+                  region.code === r.code && styles.regionItemActive,
+                ]}
+                onPress={() => {
+                  changeRegion(r);
+                  setRegionModal(false);
+                }}
+              >
+                <Text style={styles.regionItemFlag}>{r.flag}</Text>
+                <View style={styles.regionItemInfo}>
+                  <Text style={styles.regionItemName}>{r.name}</Text>
+                  <Text style={styles.regionItemCurrency}>{r.currency}</Text>
+                </View>
+                {region.code === r.code && (
+                  <View style={styles.checkmarkContainer}>
+                    <Text style={styles.checkmark}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </Modal>
     </>
@@ -185,165 +310,279 @@ const Header = ({ showSearch, title }) => {
 
 const styles = StyleSheet.create({
   promoBar: {
-    backgroundColor: '#1a1a1a',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
   promoText: {
-    color: '#fff',
-    fontSize: 13,
+    color: colors.white,
+    fontSize: typography.caption,
+    fontWeight: typography.medium,
+  },
+  promoIcon: {
+    fontSize: 14,
   },
   regionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
   },
   regionFlag: {
-    fontSize: 16,
+    fontSize: 14,
   },
   regionCode: {
-    color: '#fff',
-    fontSize: 13,
+    color: colors.white,
+    fontSize: typography.caption,
+    fontWeight: typography.medium,
+    marginLeft: spacing.xs,
+  },
+  regionArrow: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 8,
+    marginLeft: spacing.xs,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: colors.borderLight,
   },
-  logoContainer: {
+  headerTransparent: {
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
+  },
+  titleContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
   },
-  logo: {
-    fontSize: 24,
-    fontWeight: '900',
-  },
-  badge: {
-    backgroundColor: '#FF6B9D',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  actionBtn: {
+  backBtn: {
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  backIcon: {
+    fontSize: 24,
+    color: colors.text,
+  },
+  title: {
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
+    color: colors.text,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logo: {
+    fontSize: 28,
+    fontWeight: typography.extrabold,
+    color: colors.text,
+    letterSpacing: -1,
+  },
+  badge: {
+    marginLeft: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
+  },
+  badgeText: {
+    color: colors.white,
+    fontSize: typography.tiny,
+    fontWeight: typography.bold,
+    letterSpacing: 0.5,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  searchIconContainer: {
+    backgroundColor: colors.background,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   actionIcon: {
-    fontSize: 20,
+    fontSize: 22,
   },
   cartBadge: {
     position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: '#000',
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+    backgroundColor: colors.accent,
+    borderRadius: borderRadius.full,
+    minWidth: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.white,
   },
   cartBadgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
+    color: colors.white,
+    fontSize: typography.tiny,
+    fontWeight: typography.bold,
   },
   searchModal: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   searchHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: colors.borderLight,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.md,
+    height: 48,
+  },
+  searchInputIcon: {
+    fontSize: 18,
+    marginRight: spacing.sm,
   },
   searchInput: {
     flex: 1,
-    height: 44,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 22,
-    paddingHorizontal: 16,
+    fontSize: typography.body,
+    color: colors.text,
+  },
+  clearBtn: {
     fontSize: 16,
+    color: colors.textTertiary,
+    padding: spacing.xs,
   },
   cancelBtn: {
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
   cancelText: {
-    color: '#666',
-    fontSize: 16,
+    color: colors.textSecondary,
+    fontSize: typography.body,
+    fontWeight: typography.medium,
+  },
+  recentSearches: {
+    padding: spacing.lg,
+  },
+  recentTitle: {
+    fontSize: typography.bodySmall,
+    fontWeight: typography.semibold,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  searchTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  searchTag: {
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+  },
+  searchTagText: {
+    fontSize: typography.bodySmall,
+    color: colors.text,
   },
   regionModal: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: colors.borderLight,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
+    color: colors.text,
   },
   closeBtn: {
-    fontSize: 20,
-    color: '#666',
+    width: 36,
+    height: 36,
+    backgroundColor: colors.background,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeBtnText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+  },
+  regionList: {
+    padding: spacing.md,
   },
   regionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    padding: spacing.lg,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.xl,
+    marginBottom: spacing.sm,
   },
   regionItemActive: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.primary + '10',
+    borderWidth: 2,
+    borderColor: colors.primary,
   },
   regionItemFlag: {
-    fontSize: 24,
-    marginRight: 12,
+    fontSize: 32,
+    marginRight: spacing.md,
+  },
+  regionItemInfo: {
+    flex: 1,
   },
   regionItemName: {
-    flex: 1,
-    fontSize: 16,
+    fontSize: typography.body,
+    fontWeight: typography.semibold,
+    color: colors.text,
   },
   regionItemCurrency: {
-    fontSize: 14,
-    color: '#666',
-    marginRight: 8,
+    fontSize: typography.bodySmall,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  checkmarkContainer: {
+    width: 28,
+    height: 28,
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   checkmark: {
-    fontSize: 18,
-    color: '#22c55e',
+    fontSize: 16,
+    color: colors.white,
+    fontWeight: typography.bold,
   },
 });
 
