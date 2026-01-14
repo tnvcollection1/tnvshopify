@@ -33,11 +33,9 @@ async def get_overview_stats(
     start_date = datetime.now(timezone.utc) - timedelta(days=days)
     
     # Get orders from database
-    orders_collection = None
     if _db is not None:
         orders_collection = _db.orders
-    
-    if orders_collection:
+        
         # Real data from database
         pipeline = [
             {"$match": {"store": store, "created_at": {"$gte": start_date.isoformat()}}},
