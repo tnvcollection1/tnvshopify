@@ -365,7 +365,7 @@ const CheckoutPage = () => {
                     <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <p className="text-gray-500">Your cart is empty</p>
                     <button
-                      onClick={() => navigate('/tnv')}
+                      onClick={() => navigate(getStoreBaseUrl())}
                       className="mt-4 px-6 py-2 bg-black text-white rounded-lg"
                     >
                       Continue Shopping
