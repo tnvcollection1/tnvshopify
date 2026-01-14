@@ -353,7 +353,7 @@ const ProductDetailScreen = () => {
                         { borderColor: colors.border },
                         isSelected && { borderColor: colors.primary, backgroundColor: colors.primary }
                       ]}
-                      onPress={() => setSelectedSize(size)}
+                      onPress={() => handleSizeSelect(size)}
                     >
                       <Text style={[
                         styles.sizeBtnText, 
@@ -383,7 +383,7 @@ const ProductDetailScreen = () => {
                         styles.colorBtn,
                         isSelected && { borderColor: colors.primary }
                       ]}
-                      onPress={() => setSelectedColor(color)}
+                      onPress={() => handleColorSelect(color)}
                     >
                       <View style={[styles.colorSwatch, { backgroundColor: color.toLowerCase(), borderColor: colors.border }]} />
                       <Text style={[styles.colorName, { color: colors.textSecondary }]}>{color}</Text>
@@ -400,7 +400,7 @@ const ProductDetailScreen = () => {
             <View style={styles.quantitySelector}>
               <TouchableOpacity
                 style={[styles.qtyBtn, { borderColor: colors.border }]}
-                onPress={() => setQuantity(Math.max(1, quantity - 1))}
+                onPress={() => handleQuantityChange(-1)}
               >
                 <Text style={[styles.qtyBtnText, { color: colors.text }]}>−</Text>
               </TouchableOpacity>
