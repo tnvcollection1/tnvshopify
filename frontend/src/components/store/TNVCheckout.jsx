@@ -7,7 +7,8 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const TNVCheckout = () => {
   const navigate = useNavigate();
-  const { cart, cartTotal, formatPrice, region, storeName } = useStore();
+  const { cart, cartTotal, formatPrice, region, storeName, storeConfig } = useStore();
+  const baseUrl = storeConfig?.baseUrl || '/tnv';
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -17,7 +18,7 @@ const TNVCheckout = () => {
     phone: '',
     address: '',
     city: '',
-    country: region?.name || 'UAE',
+    country: storeConfig?.country || region?.name || 'India',
     postalCode: '',
     paymentMethod: 'cod'
   });
@@ -62,7 +63,7 @@ const TNVCheckout = () => {
         total,
         paymentMethod: formData.paymentMethod,
         store: storeName,
-        currency: region?.currency || 'AED'
+        currency: storeConfig?.currency || region?.currency || 'INR'
       };
 
       const res = await fetch(`${API_URL}/api/storefront/orders/cod`, {
@@ -74,7 +75,7 @@ const TNVCheckout = () => {
       const data = await res.json();
       
       if (data.order_id || data.success) {
-        navigate(`/tnv/order-confirmation/${data.order_id || data.orderId}`);
+        navigate(`${baseUrl}/order-confirmation/${data.order_id || data.orderId}`);
       } else {
         alert('Failed to place order. Please try again.');
       }
@@ -91,7 +92,7 @@ const TNVCheckout = () => {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
-          <Link to="/tnv" className="text-blue-500 hover:underline">Continue Shopping</Link>
+          <Link to={baseUrl} className="text-blue-500 hover:underline">Continue Shopping</Link>
         </div>
       </div>
     );
@@ -103,7 +104,7 @@ const TNVCheckout = () => {
       <div className="bg-white border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/tnv/cart" className="flex items-center text-gray-600 hover:text-black">
+            <Link to={`${baseUrl}/cart`} className="flex items-center text-gray-600 hover:text-black">
               <ChevronLeft className="w-5 h-5 mr-1" />
               <span>Back to Bag</span>
             </Link>
