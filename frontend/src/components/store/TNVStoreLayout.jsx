@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, User, Heart, ShoppingBag, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, User, Heart, ShoppingBag, ChevronDown, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -26,6 +26,7 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
   const [wishlist, setWishlist] = useState([]);
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [navConfig, setNavConfig] = useState(null);
 
   useEffect(() => {
     const savedRegion = localStorage.getItem('tnv_region');
@@ -37,6 +38,7 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
     if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
 
     if (!savedRegion) detectRegion();
+    fetchNavConfig();
   }, []);
 
   useEffect(() => { localStorage.setItem('tnv_region', JSON.stringify(region)); }, [region]);
@@ -50,6 +52,16 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
       const detected = REGIONS.find(r => r.code === data.country_code);
       if (detected) setRegion(detected);
     } catch (e) { console.log('Could not detect region'); }
+  };
+
+  const fetchNavConfig = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/storefront/config/navigation/${storeName}`);
+      const data = await res.json();
+      setNavConfig(data);
+    } catch (e) {
+      console.log('Using default nav config');
+    }
   };
 
   const addToCart = (product, variant, quantity = 1) => {
@@ -110,60 +122,109 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
     <StoreContext.Provider value={{
       storeName, region, setRegion, regions: REGIONS, cart, addToCart, removeFromCart,
       updateCartQuantity, cartTotal, cartCount, wishlist, toggleWishlist, isInWishlist,
-      user, setUser, searchQuery, setSearchQuery, formatPrice, API_URL
+      user, setUser, searchQuery, setSearchQuery, formatPrice, API_URL, navConfig
     }}>
       {children}
     </StoreContext.Provider>
   );
 };
 
-// Namshi-style Header
+// Namshi-style Header with Mega Menu
 export const TNVHeader = () => {
-  const { region, setRegion, regions, cartCount, wishlist, searchQuery, setSearchQuery } = useStore();
+  const { region, setRegion, regions, cartCount, wishlist, searchQuery, setSearchQuery, navConfig } = useStore();
   const [searchOpen, setSearchOpen] = useState(false);
   const [regionDropdown, setRegionDropdown] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [promoIndex, setPromoIndex] = useState(0);
+  const location = useLocation();
 
-  // Category tabs with icons like Namshi
-  const categories = [
-    { name: 'FASHION', icon: '👗', path: '/products', color: '#FF6B9D', bgColor: '#FFE8F0' },
-    { name: 'Beauty', icon: '💄', path: '/beauty', color: '#9B59B6', bgColor: '#F3E5F5' },
-    { name: 'Baby & Kids', icon: '👶', path: '/kids', color: '#3498DB', bgColor: '#E3F2FD' },
-    { name: 'Home & More', icon: '🏠', path: '/home', color: '#27AE60', bgColor: '#E8F5E9' },
-    { name: 'PREMIUM', icon: '✨', path: '/premium', color: '#F39C12', bgColor: '#FFF8E1' },
+  // Get config from backend or use defaults
+  const logo = navConfig?.logo || { text: 'TNV', badge: 'COLLECTION', badgeColor: '#FF6B9D' };
+  const promoMessages = navConfig?.promoMessages || [
+    { text: 'Cash On Delivery', icon: '💵' },
+    { text: 'Free Delivery and Exchange', icon: '🚚' },
+    { text: '100% Genuine Products', icon: '✓' },
+    { text: 'Easy Returns', icon: '↩️' },
   ];
+  const categories = navConfig?.categories || [
+    { name: 'WOMEN', path: '/women', subNav: ['CLOTHING', 'SHOES', 'ACCESSORIES', 'BAGS', 'SPORTS', 'NEW ARRIVALS', 'PREMIUM', 'SALE', 'BRANDS'] },
+    { name: 'MEN', path: '/men', subNav: ['CLOTHING', 'SHOES', 'ACCESSORIES', 'BAGS', 'SPORTS', 'NEW ARRIVALS', 'PREMIUM', 'SALE', 'BRANDS'] },
+    { name: 'KIDS', path: '/kids' },
+    { name: 'Beauty', path: '/beauty' },
+    { name: 'Home', path: '/home' },
+  ];
+  const megaMenu = navConfig?.megaMenu || {};
+
+  // Auto-rotate promo messages
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPromoIndex(prev => (prev + 1) % promoMessages.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [promoMessages.length]);
+
+  // Get current category from URL
+  const getCurrentCategory = () => {
+    const path = location.pathname.replace('/tnv', '');
+    if (path.startsWith('/women')) return 'WOMEN';
+    if (path.startsWith('/men')) return 'MEN';
+    if (path.startsWith('/kids')) return 'KIDS';
+    return null;
+  };
+
+  const currentCategory = getCurrentCategory();
+  const currentCategoryConfig = categories.find(c => c.name === currentCategory);
 
   return (
     <header className="sticky top-0 z-50 bg-white">
-      {/* Top Bar - Language & Promo */}
-      <div className="bg-[#1a1a1a] text-white">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-9">
+      {/* TOP BAR - Promo Carousel + Language (Height: 36px) */}
+      <div className="bg-[#1a1a1a] text-white h-9">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-full">
           {/* Language Toggle */}
-          <div className="flex items-center space-x-3 text-sm">
+          <div className="flex items-center space-x-2 text-[13px]">
             <button className="font-medium hover:text-gray-300">English</button>
             <span className="text-gray-500">|</span>
-            <button className="hover:text-gray-300">العربية</button>
+            <button className="hover:text-gray-300 font-arabic">العربية</button>
           </div>
           
-          {/* Promo Carousel */}
-          <div className="flex items-center space-x-4">
-            <ChevronLeft className="w-4 h-4 text-gray-400 cursor-pointer hover:text-white" />
-            <span className="text-sm font-medium">Cash On Delivery</span>
-            <ChevronRight className="w-4 h-4 text-gray-400 cursor-pointer hover:text-white" />
+          {/* Rotating Promo Messages */}
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => setPromoIndex(prev => (prev - 1 + promoMessages.length) % promoMessages.length)}
+              className="p-1 hover:bg-white/10 rounded"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-400" />
+            </button>
+            
+            <div className="flex items-center space-x-2 min-w-[200px] justify-center">
+              <span className="text-base">{promoMessages[promoIndex]?.icon}</span>
+              <span className="text-[13px] font-medium whitespace-nowrap">
+                {promoMessages[promoIndex]?.text}
+              </span>
+            </div>
+            
+            <button 
+              onClick={() => setPromoIndex(prev => (prev + 1) % promoMessages.length)}
+              className="p-1 hover:bg-white/10 rounded"
+            >
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </button>
           </div>
           
           {/* Region Selector */}
           <div className="relative">
             <button 
               onClick={() => setRegionDropdown(!regionDropdown)}
-              className="flex items-center space-x-1 text-sm hover:text-gray-300"
+              className="flex items-center space-x-1.5 text-[13px] hover:text-gray-300"
             >
-              <span>{region.flag}</span>
+              <span className="text-base">{region.flag}</span>
               <span>{region.code}</span>
               <ChevronDown className="w-3 h-3" />
             </button>
             
             {regionDropdown && (
-              <div className="absolute top-full right-0 mt-1 bg-white text-black shadow-xl rounded-lg overflow-hidden min-w-[180px] z-50">
+              <div className="absolute top-full right-0 mt-2 bg-white text-black shadow-xl rounded-lg overflow-hidden min-w-[180px] z-50 border">
                 {regions.map(r => (
                   <button
                     key={r.code}
@@ -180,88 +241,183 @@ export const TNVHeader = () => {
         </div>
       </div>
 
-      {/* Main Header */}
-      <div className="border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/tnv" className="flex items-center space-x-3">
-              <span className="text-2xl font-black tracking-tight text-black">NAMSHI</span>
-              <span className="hidden sm:flex items-center bg-gradient-to-r from-pink-500 to-rose-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                FASHION
-              </span>
-            </Link>
+      {/* MAIN HEADER (Height: 64px) */}
+      <div className="border-b h-16">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-full">
+          {/* Mobile Menu Button */}
+          <button 
+            className="lg:hidden p-2 -ml-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
 
-            {/* Category Tabs */}
-            <nav className="hidden lg:flex items-center space-x-1">
-              {categories.map(cat => (
-                <Link
-                  key={cat.name}
-                  to={`/tnv${cat.path}`}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-full hover:bg-gray-100 transition group"
-                >
+          {/* Logo */}
+          <Link to="/tnv" className="flex items-center space-x-2">
+            {logo.image ? (
+              <img src={logo.image} alt={logo.text} style={{ height: logo.height || 32 }} />
+            ) : (
+              <>
+                <span className="text-2xl font-black tracking-tight text-black">{logo.text}</span>
+                {logo.badge && (
                   <span 
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-base"
-                    style={{ backgroundColor: cat.bgColor }}
+                    className="hidden sm:flex items-center text-white px-3 py-1 rounded-full text-xs font-bold"
+                    style={{ background: `linear-gradient(135deg, ${logo.badgeColor || '#FF6B9D'}, ${logo.badgeColor || '#FF6B9D'}90)` }}
                   >
-                    {cat.icon}
+                    {logo.badge}
                   </span>
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-black">{cat.name}</span>
+                )}
+              </>
+            )}
+          </Link>
+
+          {/* Main Category Tabs - Desktop */}
+          <nav className="hidden lg:flex items-center space-x-1">
+            {categories.filter(c => c.active !== false).map(cat => (
+              <div 
+                key={cat.name}
+                className="relative"
+                onMouseEnter={() => setActiveCategory(cat.name)}
+                onMouseLeave={() => setActiveCategory(null)}
+              >
+                <Link
+                  to={`/tnv${cat.path}`}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-full hover:bg-gray-100 transition ${currentCategory === cat.name ? 'bg-gray-100' : ''}`}
+                >
+                  {cat.icon && (
+                    <span 
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                      style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
+                    >
+                      {cat.icon.value || cat.icon}
+                    </span>
+                  )}
+                  <span className={`text-[13px] font-medium ${cat.highlight ? 'text-red-500' : 'text-gray-700'}`}>
+                    {cat.name}
+                  </span>
+                  {cat.subNav && <ChevronDown className="w-3 h-3 text-gray-400" />}
                 </Link>
-              ))}
-            </nav>
 
-            {/* Search + Icons */}
-            <div className="flex items-center space-x-4">
-              {/* Search */}
-              <div className="hidden md:flex items-center">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search for Trench Coats"
-                    className="w-64 pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                  />
-                </div>
+                {/* Mega Menu Dropdown */}
+                {activeCategory === cat.name && megaMenu[cat.name] && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50">
+                    <div className="bg-white rounded-xl shadow-2xl border p-8 min-w-[800px]">
+                      <div className="flex gap-12">
+                        {/* Menu Columns */}
+                        {megaMenu[cat.name].columns?.map((column, idx) => (
+                          <div key={idx} className="min-w-[160px]">
+                            <h4 className="text-sm font-bold text-gray-900 mb-4 uppercase">
+                              {column.title}
+                            </h4>
+                            <ul className="space-y-2">
+                              {column.items?.map((item, i) => (
+                                <li key={i}>
+                                  <Link 
+                                    to={`/tnv${item.path}`}
+                                    className="text-sm text-gray-600 hover:text-black hover:underline"
+                                  >
+                                    {item.name}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                        
+                        {/* Featured Image */}
+                        {megaMenu[cat.name].featuredImage && (
+                          <div className="min-w-[200px]">
+                            <Link to={megaMenu[cat.name].featuredLink || '#'}>
+                              <img 
+                                src={megaMenu[cat.name].featuredImage} 
+                                alt={megaMenu[cat.name].featuredTitle}
+                                className="w-full h-64 object-cover rounded-lg"
+                              />
+                              <p className="text-sm font-medium mt-2 text-center">
+                                {megaMenu[cat.name].featuredTitle}
+                              </p>
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              
-              {/* Mobile Search Toggle */}
-              <button className="md:hidden p-2" onClick={() => setSearchOpen(!searchOpen)}>
-                <Search className="w-5 h-5" />
-              </button>
+            ))}
+          </nav>
 
-              {/* User */}
-              <Link to="/tnv/account" className="p-2 hover:bg-gray-100 rounded-full">
-                <User className="w-5 h-5" />
-              </Link>
-              
-              {/* Wishlist */}
-              <Link to="/tnv/wishlist" className="relative p-2 hover:bg-gray-100 rounded-full">
-                <Heart className="w-5 h-5" />
-                {wishlist.length > 0 && (
-                  <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
-                    {wishlist.length}
-                  </span>
-                )}
-              </Link>
-              
-              {/* Cart */}
-              <Link to="/tnv/cart" className="relative p-2 hover:bg-gray-100 rounded-full">
-                <ShoppingBag className="w-5 h-5" />
-                {cartCount > 0 && (
-                  <span className="absolute top-0 right-0 w-4 h-4 bg-black text-white text-[10px] rounded-full flex items-center justify-center font-bold">
-                    {cartCount}
-                  </span>
-                )}
-              </Link>
+          {/* Search + Icons */}
+          <div className="flex items-center space-x-2">
+            {/* Search Bar - Desktop */}
+            <div className="hidden md:flex items-center">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search for Trench Coats"
+                  className="w-64 pl-10 pr-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
             </div>
+            
+            {/* Mobile Search */}
+            <button className="md:hidden p-2" onClick={() => setSearchOpen(!searchOpen)}>
+              <Search className="w-5 h-5" />
+            </button>
+
+            {/* User */}
+            <Link to="/tnv/account" className="p-2.5 hover:bg-gray-100 rounded-full">
+              <User className="w-5 h-5" />
+            </Link>
+            
+            {/* Wishlist */}
+            <Link to="/tnv/wishlist" className="relative p-2.5 hover:bg-gray-100 rounded-full">
+              <Heart className="w-5 h-5" />
+              {wishlist.length > 0 && (
+                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+            
+            {/* Cart */}
+            <Link to="/tnv/cart" className="relative p-2.5 hover:bg-gray-100 rounded-full">
+              <ShoppingBag className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-black text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Mobile Search */}
+      {/* SECONDARY NAV - Sub Categories (Height: 48px) */}
+      {currentCategoryConfig?.subNav && (
+        <div className="hidden lg:block bg-white border-b h-12">
+          <div className="max-w-7xl mx-auto px-4 h-full">
+            <nav className="flex items-center space-x-8 h-full overflow-x-auto">
+              {currentCategoryConfig.subNav.map((item, idx) => (
+                <Link
+                  key={idx}
+                  to={`/tnv${currentCategoryConfig.path}/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                  className={`text-[13px] font-medium uppercase whitespace-nowrap hover:text-black transition ${
+                    item === 'SALE' ? 'text-red-500' : 'text-gray-600'
+                  }`}
+                >
+                  {item}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Search Bar */}
       {searchOpen && (
         <div className="md:hidden px-4 py-3 bg-white border-b">
           <div className="relative">
@@ -277,31 +433,80 @@ export const TNVHeader = () => {
           </div>
         </div>
       )}
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden bg-white border-b max-h-[70vh] overflow-y-auto">
+          <nav className="py-2">
+            {categories.filter(c => c.active !== false).map(cat => (
+              <div key={cat.name}>
+                <Link
+                  to={`/tnv${cat.path}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                >
+                  <div className="flex items-center space-x-3">
+                    {cat.icon && (
+                      <span 
+                        className="w-10 h-10 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
+                      >
+                        {cat.icon.value || cat.icon}
+                      </span>
+                    )}
+                    <span className={`font-medium ${cat.highlight ? 'text-red-500' : ''}`}>{cat.name}</span>
+                  </div>
+                  {cat.subNav && <ChevronRight className="w-5 h-5 text-gray-400" />}
+                </Link>
+                
+                {/* Sub nav items */}
+                {cat.subNav && (
+                  <div className="bg-gray-50 px-4 py-2">
+                    <div className="flex flex-wrap gap-2">
+                      {cat.subNav.slice(0, 6).map((item, idx) => (
+                        <Link
+                          key={idx}
+                          to={`/tnv${cat.path}/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`text-xs px-3 py-1.5 rounded-full ${
+                            item === 'SALE' ? 'bg-red-100 text-red-600' : 'bg-white text-gray-600'
+                          }`}
+                        >
+                          {item}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            <div className="border-t mt-2 pt-2">
+              <Link to="/tnv/account" className="flex items-center px-4 py-3 hover:bg-gray-50">
+                <User className="w-5 h-5 mr-3" />
+                <span>My Account</span>
+              </Link>
+              <Link to="/tnv/orders" className="flex items-center px-4 py-3 hover:bg-gray-50">
+                <ShoppingBag className="w-5 h-5 mr-3" />
+                <span>Track Order</span>
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };
 
-// Namshi-style Footer
+// Footer Component
 export const TNVFooter = () => {
   const { regions } = useStore();
 
   const footerLinks = [
-    {
-      title: 'About Us',
-      links: ['About Us', 'Privacy Policy', 'Consumer Rights']
-    },
-    {
-      title: 'Top Brands',
-      links: ['Nike', 'New Balance', 'Adidas', 'Guess', 'Tommy Hilfiger', 'All Brands']
-    },
-    {
-      title: 'Women Fashion',
-      links: ['Clothing', 'Shoes', 'Accessories', 'Bags', 'Sports', 'Sale']
-    },
-    {
-      title: 'Men Fashion',
-      links: ['New In', 'Clothing', 'Shoes', 'Bags', 'Accessories', 'Sale']
-    }
+    { title: 'About Us', links: ['About Us', 'Privacy Policy', 'Consumer Rights'] },
+    { title: 'Top Brands', links: ['Nike', 'New Balance', 'Adidas', 'Guess', 'Tommy Hilfiger', 'All Brands'] },
+    { title: 'Women Fashion', links: ['Clothing', 'Shoes', 'Accessories', 'Bags', 'Sports', 'Sale'] },
+    { title: 'Men Fashion', links: ['New In', 'Clothing', 'Shoes', 'Bags', 'Accessories', 'Sale'] }
   ];
 
   return (
@@ -339,15 +544,11 @@ export const TNVFooter = () => {
             <h4 className="font-bold text-sm mb-4">Shop on the go</h4>
             <div className="flex flex-col space-y-2">
               <button className="bg-black text-white px-3 py-2 rounded-lg text-xs flex items-center space-x-2">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                </svg>
+                <span>🍎</span>
                 <span>App Store</span>
               </button>
               <button className="bg-black text-white px-3 py-2 rounded-lg text-xs flex items-center space-x-2">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3 20.5v-17c0-.83.67-1.5 1.5-1.5.31 0 .61.1.86.28l15.14 8.5c.52.29.52 1.02 0 1.32l-15.14 8.5c-.25.18-.55.28-.86.28-.83 0-1.5-.67-1.5-1.5v-.08z"/>
-                </svg>
+                <span>▶️</span>
                 <span>Google Play</span>
               </button>
             </div>
@@ -358,9 +559,9 @@ export const TNVFooter = () => {
         <div className="border-t mt-8 pt-8 flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center space-x-4 mb-4 md:mb-0">
             <span className="text-sm text-gray-500">Follow Us</span>
-            {['facebook', 'instagram', 'twitter', 'youtube'].map(social => (
-              <a key={social} href="#" className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200">
-                <span className="text-xs">{social[0].toUpperCase()}</span>
+            {['F', 'I', 'T', 'Y'].map((social, idx) => (
+              <a key={idx} href="#" className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200">
+                <span className="text-xs font-bold">{social}</span>
               </a>
             ))}
           </div>
@@ -374,7 +575,7 @@ export const TNVFooter = () => {
 
         {/* Copyright */}
         <div className="text-center mt-8 pt-4 border-t">
-          <p className="text-sm text-gray-500">©2025 NAMSHI. ALL RIGHTS RESERVED</p>
+          <p className="text-sm text-gray-500">©2025 TNV COLLECTION. ALL RIGHTS RESERVED</p>
         </div>
       </div>
     </footer>
