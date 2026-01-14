@@ -806,6 +806,15 @@ const MegaMenuBuilder = () => {
                 </div>
               </div>
               
+              {/* Templates Button */}
+              <button 
+                onClick={() => setShowTemplates(!showTemplates)}
+                className={`px-3 py-2 border rounded-lg text-sm flex items-center gap-2 hover:bg-gray-50 ${showTemplates ? 'bg-purple-50 border-purple-300 text-purple-700' : ''}`}
+                data-testid="templates-btn"
+              >
+                <Sparkles className="w-4 h-4" /> Templates
+              </button>
+              
               {/* Settings */}
               <button 
                 onClick={() => setShowSettings(!showSettings)}
