@@ -301,7 +301,7 @@ const ProductCardHorizontal = ({ product }) => {
       <Link to={`/tnv/product/${product.shopify_product_id}`}>
         <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-gray-100 mb-2">
           <img
-            src={imageError ? 'https://via.placeholder.com/200x250?text=No+Image' : image}
+            src={imageError ? 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=300&fit=crop' : image}
             alt={product.title}
             onError={() => setImageError(true)}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
