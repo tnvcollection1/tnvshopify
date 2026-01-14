@@ -518,7 +518,7 @@ const CompetitorPriceCatalog = () => {
                     {/* Your Price */}
                     <td className="px-4 py-3">
                       <span className="font-semibold text-gray-900">
-                        ₹{(product.price || 0).toLocaleString()}
+                        {formatPrice(product.price || 0)}
                       </span>
                     </td>
 
@@ -549,7 +549,7 @@ const CompetitorPriceCatalog = () => {
                             ? 'text-red-600' 
                             : 'text-green-600'
                         }`}>
-                          ₹{product.lowestCompetitorPrice.toLocaleString()}
+                          {formatPrice(product.lowestCompetitorPrice)}
                         </span>
                       ) : (
                         <span className="text-gray-400">-</span>
