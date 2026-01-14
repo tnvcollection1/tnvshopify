@@ -317,20 +317,20 @@ export const TNVHeader = () => {
         </div>
       </div>
 
-      {/* MAIN HEADER - BLACK background like Namshi */}
-      <div className="h-[72px]" style={{ backgroundColor: '#000000' }}>
+      {/* MAIN HEADER - WHITE background like Namshi */}
+      <div className="bg-white border-b h-[72px]">
         <div className="max-w-7xl mx-auto px-4 flex items-center h-full gap-3">
           {/* Mobile Menu Button */}
           <button 
-            className="lg:hidden p-2 text-white"
+            className="lg:hidden p-2 text-black"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
 
-          {/* Logo - WHITE italic like NAMSHI on black bg */}
+          {/* Logo - BLACK italic like NAMSHI */}
           <Link to="/tnv" className="shrink-0 mr-4">
-            <span style={{ color: '#FFFFFF' }} className="text-2xl font-black italic tracking-wide">NAMSHI</span>
+            <span className="text-black text-2xl font-black italic tracking-wide">NAMSHI</span>
           </Link>
 
           {/* Category Tabs with Images - EXACTLY like Namshi */}
