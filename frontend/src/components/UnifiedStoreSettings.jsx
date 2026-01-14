@@ -849,8 +849,15 @@ const UnifiedStoreSettings = () => {
                           <input value={tab.path} onChange={(e) => updateArrayItem('categoryTabs', index, 'path', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Image URL</label>
-                          <input value={tab.image} onChange={(e) => updateArrayItem('categoryTabs', index, 'image', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                          <label className="block text-xs font-medium text-gray-500 mb-1">Category Image</label>
+                          <div className="flex gap-2 items-start">
+                            <ImageUploader 
+                              category="categories"
+                              currentImage={tab.image}
+                              onUpload={(url) => updateArrayItem('categoryTabs', index, 'image', url)}
+                            />
+                            <input value={tab.image} onChange={(e) => updateArrayItem('categoryTabs', index, 'image', e.target.value)} className="flex-1 px-3 py-2 border rounded-lg text-sm" placeholder="Or paste URL..." />
+                          </div>
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-gray-500 mb-1">Background Color</label>
