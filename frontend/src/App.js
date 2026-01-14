@@ -718,6 +718,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/sales-dashboard" 
+        element={
+          <ProtectedRoute>
+            <SalesDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/menu-tags" 
         element={
           <ProtectedRoute>
