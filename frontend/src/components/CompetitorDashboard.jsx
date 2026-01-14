@@ -523,7 +523,8 @@ const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedS
         {mode === 'select' ? (
           <ProductSelector 
             selectedStore={selectedStore} 
-            onSelectProduct={handleProductSelect} 
+            onSelectProduct={handleProductSelect}
+            formatPrice={formatPrice}
           />
         ) : mode === 'title' ? (
           /* Title Search Form */
