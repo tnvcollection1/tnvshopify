@@ -12,24 +12,41 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 
 ## What's Been Implemented
 
-### January 14, 2026 (Latest)
-- **Unified Store Settings Page** (`/store-settings`)
-  - All-in-one configuration dashboard
-  - General Settings, Logo & Branding, Hero Banners, Category Tabs, Sub Navigation, Promo Messages, Mobile App
-  - Image upload support integrated
-  
-- **Image Upload API** (`/app/backend/routes/image_upload.py`)
-  - `POST /api/uploads/image?category={type}` - Upload images
-  - `GET /api/uploads/images/{category}/{filename}` - Serve images
-  - `GET /api/uploads/list/{category}` - List images
-  - `DELETE /api/uploads/images/{category}/{filename}` - Delete images
-  - Supports: JPEG, PNG, GIF, WebP (max 10MB)
+### January 14, 2026 (Latest Session)
 
-- **Header Styling Fixed** - Matches Namshi.com:
-  - White background with black NAMSHI logo
-  - Category tabs with colored image boxes
-  - WOMEN/MEN dropdown selector
-  - Sub-navigation with SALE highlighted in red
+**Sales Dashboard** (`/sales-dashboard`)
+- Revenue overview cards with growth percentages
+- Revenue chart (Area + Line for orders)
+- Sales by category pie chart
+- Top selling products list
+- Orders by status bar chart
+- Recent orders table
+- Customer locations breakdown
+- Period selector (7d, 30d, 90d, 1y)
+
+**Checkout + Razorpay Payment** (`/checkout`)
+- 3-step checkout: Cart → Shipping → Payment
+- Cart management (add, update, remove items)
+- Shipping address form with validation
+- Payment methods: Razorpay (online) & COD
+- Order confirmation page
+- Coupon code support
+
+**Backend APIs**
+- `/api/analytics/*` - Dashboard metrics
+- `/api/checkout/cart/*` - Cart CRUD
+- `/api/checkout/order/*` - Order management
+- `/api/checkout/webhook/razorpay` - Payment webhooks
+
+**Unified Store Settings** (`/store-settings`)
+- All-in-one configuration dashboard
+- General Settings, Logo & Branding, Hero Banners, Category Tabs, Sub Navigation, Promo Messages, Mobile App
+- Image upload support integrated
+- Drag-and-drop reordering (@dnd-kit)
+
+**Image Upload API** (`/api/uploads/`)
+- Upload images for banners, categories, products
+- Supports: JPEG, PNG, GIF, WebP (max 10MB)
 
 ### Previous Work
 - Banner & Menu Backend API (`/api/storefront/banners/`)
