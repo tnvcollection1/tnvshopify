@@ -232,7 +232,8 @@ const HomeScreen = () => {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <StatusBar barStyle={statusBarStyle} />
       <Header showSearch />
 
       <Animated.ScrollView
@@ -246,7 +247,7 @@ const HomeScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.primary}
+            tintColor={colors.accent}
           />
         }
       >
@@ -254,7 +255,7 @@ const HomeScreen = () => {
         <View style={styles.genderBanner}>
           <GenderCard
             title="WOMEN"
-            gradient={['#ffecd2', '#fcb69f']}
+            gradient={isDark ? ['#4a3728', '#3d2a1f'] : ['#ffecd2', '#fcb69f']}
             onPress={() => navigation.navigate('Category', { category: 'women' })}
           />
           <GenderCard
