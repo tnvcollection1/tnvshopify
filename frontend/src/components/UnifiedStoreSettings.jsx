@@ -1,14 +1,98 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Save, Plus, Trash2, Edit2, Eye, EyeOff, 
   Image, Type, Palette, ChevronDown, ChevronUp, 
   Loader2, Smartphone, Monitor, Layout, Grid3X3, 
   Menu, Megaphone, Settings, Store, Sparkles,
-  Upload, X, Check, RefreshCw, ExternalLink
+  Upload, X, Check, RefreshCw, ExternalLink, ImagePlus
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
+
+// Image Upload Component
+const ImageUploader = ({ onUpload, category = 'general', currentImage, label }) => {
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be less than 10MB');
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch(`${API}/api/uploads/image?category=${category}`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        const fullUrl = `${API}${data.url}`;
+        onUpload(fullUrl);
+        toast.success('Image uploaded successfully');
+      } else {
+        toast.error('Failed to upload image');
+      }
+    } catch (e) {
+      toast.error('Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      {label && <label className="block text-xs font-medium text-gray-500">{label}</label>}
+      <div className="flex gap-2 items-start">
+        {/* Preview */}
+        {currentImage && (
+          <div className="w-20 h-14 rounded border overflow-hidden bg-gray-100 flex-shrink-0">
+            <img src={currentImage} alt="" className="w-full h-full object-cover" onError={(e) => e.target.src = 'https://via.placeholder.com/80x56'} />
+          </div>
+        )}
+        
+        {/* Upload Button */}
+        <div className="flex-1">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleUpload}
+            className="hidden"
+            id={`upload-${category}-${Math.random()}`}
+          />
+          <label 
+            htmlFor={fileInputRef.current?.id}
+            onClick={() => fileInputRef.current?.click()}
+            className={`flex items-center gap-2 px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition ${uploading ? 'opacity-50 cursor-wait' : ''}`}
+          >
+            {uploading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <ImagePlus className="w-4 h-4 text-gray-400" />
+            )}
+            <span className="text-sm text-gray-500">{uploading ? 'Uploading...' : 'Upload Image'}</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const UnifiedStoreSettings = () => {
   const [activeSection, setActiveSection] = useState('general');
