@@ -431,74 +431,182 @@ export const TNVHeader = () => {
 
           {/* Category Tabs with Images - EXACTLY like Namshi */}
           <nav className="hidden lg:flex items-center gap-1 category-dropdown-container">
-            {mainTabs.map(cat => (
-              <div 
-                key={cat.name}
-                className="relative"
-                onClick={() => cat.hasMegaMenu && setActiveCategory(activeCategory === cat.name ? null : cat.name)}
-              >
-                <div className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-100 transition ${activeCategory === cat.name ? 'bg-gray-100' : ''}`}>
-                  {/* Category Image Box - Like Namshi */}
-                  <div 
-                    className="w-11 h-11 rounded overflow-hidden flex items-center justify-center"
-                    style={{ backgroundColor: cat.bgColor }}
-                  >
-                    <img 
-                      src={cat.image} 
-                      alt={cat.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
+            {mainTabs.map(cat => {
+              const megaSection = getMegaMenuSection(cat.name);
+              const hasMegaMenu = cat.hasMegaMenu || megaSection;
+              
+              return (
+                <div 
+                  key={cat.name}
+                  className="relative"
+                  onMouseEnter={() => hasMegaMenu && handleCategoryHover(cat.name)}
+                  onMouseLeave={handleCategoryLeave}
+                  onClick={() => hasMegaMenu && setActiveCategory(activeCategory === cat.name ? null : cat.name)}
+                >
+                  <div className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-100 transition ${activeCategory === cat.name ? 'bg-gray-100' : ''}`}>
+                    {/* Category Image Box - Like Namshi */}
+                    <div 
+                      className="w-11 h-11 rounded overflow-hidden flex items-center justify-center"
+                      style={{ backgroundColor: cat.bgColor }}
+                    >
+                      <img 
+                        src={cat.image} 
+                        alt={cat.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    </div>
+                    <span className="text-black text-xs font-medium whitespace-nowrap">
+                      {cat.name}
+                    </span>
                   </div>
-                  <span className="text-black text-xs font-medium whitespace-nowrap">
-                    {cat.name}
-                  </span>
-                </div>
 
-                {/* Fashion Dropdown - Gender Selection */}
-                {cat.hasMegaMenu && activeCategory === cat.name && (
-                  <div className="absolute top-full left-0 pt-2 z-50">
-                    <div className="bg-white rounded-2xl shadow-2xl border p-6 min-w-[500px]">
-                      <div className="grid grid-cols-2 gap-4">
-                        <Link 
-                          to={`${baseUrl}/women/clothing`}
-                          onClick={() => setActiveCategory(null)}
-                          className="group block"
-                        >
-                          <div className="relative overflow-hidden rounded-xl bg-[#faf6f3] aspect-[3/4]">
-                            <img 
-                              src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=500&fit=crop"
-                              alt="Women"
-                              className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                            />
-                            <div className="absolute inset-0 flex items-start justify-center pt-4">
-                              <h3 className="text-2xl font-bold tracking-wide text-black">WOMEN</h3>
-                            </div>
+                  {/* Dynamic Mega Menu Dropdown */}
+                  {hasMegaMenu && activeCategory === cat.name && megaSection && (
+                    <div 
+                      className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50"
+                      onMouseEnter={() => {
+                        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+                      }}
+                      onMouseLeave={handleCategoryLeave}
+                    >
+                      <div 
+                        className="bg-white rounded-2xl shadow-2xl border p-6 animate-fadeIn"
+                        style={{ 
+                          maxWidth: megaMenuConfig?.globalSettings?.maxWidth || '1000px',
+                          minWidth: '800px',
+                          backgroundColor: megaSection.backgroundColor || '#fff'
+                        }}
+                      >
+                        <div className="flex gap-6">
+                          {/* Menu Columns */}
+                          <div className="flex-1 grid grid-cols-4 gap-6">
+                            {megaSection.columns?.map(column => (
+                              <div key={column.id}>
+                                <Link 
+                                  to={`${baseUrl}${column.titleLink || '#'}`}
+                                  className="font-bold text-sm text-gray-900 mb-3 pb-2 border-b block hover:text-blue-600"
+                                  onClick={() => setActiveCategory(null)}
+                                >
+                                  {column.title}
+                                </Link>
+                                <ul className="space-y-2">
+                                  {column.items?.map(item => (
+                                    <li key={item.id} className="flex items-center gap-2">
+                                      <Link 
+                                        to={`${baseUrl}${item.path}`}
+                                        className="text-sm text-gray-600 hover:text-black hover:underline"
+                                        onClick={() => setActiveCategory(null)}
+                                      >
+                                        {item.name}
+                                      </Link>
+                                      {item.badge && (
+                                        <span 
+                                          className="text-xs px-1.5 py-0.5 rounded"
+                                          style={{ backgroundColor: item.badgeColor || '#ef4444', color: 'white' }}
+                                        >
+                                          {item.badge}
+                                        </span>
+                                      )}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
                           </div>
-                        </Link>
+                          
+                          {/* Promo Banner */}
+                          {megaSection.promoBanners?.length > 0 && (
+                            <div className="w-48 flex-shrink-0">
+                              {megaSection.promoBanners.slice(0, 1).map(banner => (
+                                <Link 
+                                  key={banner.id}
+                                  to={`${baseUrl}${banner.link}`}
+                                  className="block relative rounded-lg overflow-hidden group"
+                                  onClick={() => setActiveCategory(null)}
+                                >
+                                  <img 
+                                    src={banner.image} 
+                                    alt={banner.title} 
+                                    className="w-full aspect-[4/5] object-cover group-hover:scale-105 transition-transform duration-300" 
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3">
+                                    {banner.title && <h5 className="text-white font-bold text-sm">{banner.title}</h5>}
+                                    {banner.subtitle && <p className="text-white/80 text-xs">{banner.subtitle}</p>}
+                                    {banner.buttonText && (
+                                      <span className="inline-block mt-2 px-2 py-1 bg-white text-black text-xs rounded group-hover:bg-gray-100">{banner.buttonText}</span>
+                                    )}
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                         
-                        <Link 
-                          to={`${baseUrl}/men/clothing`}
-                          onClick={() => setActiveCategory(null)}
-                          className="group block"
-                        >
-                          <div className="relative overflow-hidden rounded-xl bg-[#f3f6fa] aspect-[3/4]">
-                            <img 
-                              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop"
-                              alt="Men"
-                              className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                            />
-                            <div className="absolute inset-0 flex items-start justify-center pt-4">
-                              <h3 className="text-2xl font-bold tracking-wide text-black">MEN</h3>
-                            </div>
+                        {/* Quick Links */}
+                        {megaSection.quickLinks?.length > 0 && (
+                          <div className="mt-4 pt-4 border-t flex gap-4">
+                            {megaSection.quickLinks.map(link => (
+                              <Link 
+                                key={link.id}
+                                to={`${baseUrl}${link.path}`}
+                                className={`text-sm ${link.highlight ? 'text-red-500 font-semibold' : 'text-gray-600'} hover:underline`}
+                                onClick={() => setActiveCategory(null)}
+                              >
+                                {link.name}
+                              </Link>
+                            ))}
                           </div>
-                        </Link>
+                        )}
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                  
+                  {/* Fallback: Gender Selection for Fashion (when no mega menu config) */}
+                  {hasMegaMenu && activeCategory === cat.name && !megaSection && cat.name === 'FASHION' && (
+                    <div className="absolute top-full left-0 pt-2 z-50">
+                      <div className="bg-white rounded-2xl shadow-2xl border p-6 min-w-[500px]">
+                        <div className="grid grid-cols-2 gap-4">
+                          <Link 
+                            to={`${baseUrl}/women/clothing`}
+                            onClick={() => setActiveCategory(null)}
+                            className="group block"
+                          >
+                            <div className="relative overflow-hidden rounded-xl bg-[#faf6f3] aspect-[3/4]">
+                              <img 
+                                src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=500&fit=crop"
+                                alt="Women"
+                                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                              />
+                              <div className="absolute inset-0 flex items-start justify-center pt-4">
+                                <h3 className="text-2xl font-bold tracking-wide text-black">WOMEN</h3>
+                              </div>
+                            </div>
+                          </Link>
+                          
+                          <Link 
+                            to={`${baseUrl}/men/clothing`}
+                            onClick={() => setActiveCategory(null)}
+                            className="group block"
+                          >
+                            <div className="relative overflow-hidden rounded-xl bg-[#f3f6fa] aspect-[3/4]">
+                              <img 
+                                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop"
+                                alt="Men"
+                                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                              />
+                              <div className="absolute inset-0 flex items-start justify-center pt-4">
+                                <h3 className="text-2xl font-bold tracking-wide text-black">MEN</h3>
+                              </div>
+                            </div>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
 
           {/* Search Bar - Like Namshi */}
