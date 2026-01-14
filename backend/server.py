@@ -66,6 +66,7 @@ from routes.marketing import router as marketing_router, set_database as set_mar
 from routes.settings import router as settings_router, set_database as set_settings_db
 from routes.competitor_analysis import router as competitor_router, set_database as set_competitor_db
 from routes.whatsapp_otp import router as whatsapp_otp_router, set_database as set_whatsapp_otp_db
+from routes.image_proxy import router as image_proxy_router
 from services.fulfillment_webhooks import router as fulfillment_webhooks_router
 from services.whatsapp_notifications import router as whatsapp_notifications_router
 from services.notification_preferences_service import router as notification_preferences_router, set_database as set_notification_prefs_db
