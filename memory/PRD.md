@@ -55,6 +55,19 @@ Build a Shopify application that deeply integrates with 1688.com, Taobao, and Tm
 ### React Native Mobile App Boilerplate ✅ COMPLETED
 Created a complete React Native mobile app boilerplate at `/app/mobile-app/` with all screens and components.
 
+**DYNAMIC BACKEND CONFIGURATION ✅ ADDED (Jan 14, 2025)**
+Both the React Native app AND the web preview now fetch configuration from the backend API:
+- Logo (text, badge, badge color) - dynamic from `/api/storefront/config/navigation/{store}`
+- Promo Messages - rotates through active messages from backend
+- Categories - displays categories configured in admin panel
+- Mega Menu - configured from backend
+
+**Files Updated:**
+- `/app/frontend/src/components/MobileAppPreview.jsx` - Fetches and uses backend config
+- `/app/mobile-app/src/components/Header.js` - Uses dynamic logo and promo messages
+- `/app/mobile-app/src/components/CategoryCircle.js` - Supports emoji icons from backend
+- `/app/mobile-app/src/screens/HomeScreen.js` - Uses dynamic categories from StoreContext
+
 **Files Created (25 total):**
 - **App Entry**: `App.js` - Main app with providers (Auth, Cart, Store)
 - **Screens (13)**: HomeScreen, BrowseScreen, ProductDetailScreen, CartScreen, CheckoutScreen, WishlistScreen, AccountScreen, SearchScreen, CategoryScreen, OrderConfirmationScreen, OrderTrackingScreen, LoginScreen, RegisterScreen, ForgotPasswordScreen
