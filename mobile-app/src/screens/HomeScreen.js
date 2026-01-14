@@ -260,7 +260,7 @@ const HomeScreen = () => {
           />
           <GenderCard
             title="MEN"
-            gradient={['#a1c4fd', '#c2e9fb']}
+            gradient={isDark ? ['#2a3a4a', '#1f2d3a'] : ['#a1c4fd', '#c2e9fb']}
             onPress={() => navigation.navigate('Category', { category: 'men' })}
           />
         </View>
