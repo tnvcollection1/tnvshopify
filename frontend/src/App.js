@@ -213,6 +213,10 @@ function AppRoutes() {
       {/* Storefront Preview Routes - No Auth Required */}
       <Route path="/tnvcollectionpreview" element={<StorefrontPreview />} />
       <Route path="/tnvcollectionpkpreview" element={<StorefrontPreview />} />
+      <Route path="/tnvcollectionpreview/product/:productId" element={<ProductPagePreview />} />
+      <Route path="/tnvcollectionpkpreview/product/:productId" element={<ProductPagePreview />} />
+      <Route path="/tnvcollectionpreview/collection/:collectionHandle" element={<CollectionPagePreview />} />
+      <Route path="/tnvcollectionpkpreview/collection/:collectionHandle" element={<CollectionPagePreview />} />
       <Route path="/:storeSlug" element={<StorefrontPreview />} />
       
       <Route path="/" element={<LandingRoute />} />
