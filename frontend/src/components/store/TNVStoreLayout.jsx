@@ -266,12 +266,12 @@ export const TNVHeader = () => {
               <Search className="w-5 h-5" />
             </button>
             
-            <Link to="/store/account" className="hidden sm:flex items-center space-x-1 text-sm hover:text-gray-600">
+            <Link to="/tnv/account" className="hidden sm:flex items-center space-x-1 text-sm hover:text-gray-600">
               <User className="w-5 h-5" />
               <span className="hidden md:inline">Account</span>
             </Link>
             
-            <Link to="/store/wishlist" className="relative flex items-center space-x-1 text-sm hover:text-gray-600">
+            <Link to="/tnv/wishlist" className="relative flex items-center space-x-1 text-sm hover:text-gray-600">
               <Heart className="w-5 h-5" />
               {wishlist.length > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
@@ -280,7 +280,7 @@ export const TNVHeader = () => {
               )}
             </Link>
             
-            <Link to="/store/cart" className="relative flex items-center space-x-1 text-sm hover:text-gray-600">
+            <Link to="/tnv/cart" className="relative flex items-center space-x-1 text-sm hover:text-gray-600">
               <ShoppingBag className="w-5 h-5" />
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-black text-white text-[10px] rounded-full flex items-center justify-center">
@@ -296,7 +296,7 @@ export const TNVHeader = () => {
           {categories.map(cat => (
             <Link
               key={cat.name}
-              to={`/store${cat.path}`}
+              to={`/tnv${cat.path}`}
               className={`text-sm font-medium hover:text-gray-600 transition ${cat.highlight ? 'text-red-500' : ''}`}
             >
               {cat.name}
