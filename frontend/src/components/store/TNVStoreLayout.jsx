@@ -129,10 +129,9 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
   );
 };
 
-// Namshi-style Header with Mega Menu
+// Namshi-style Header - EXACT COPY
 export const TNVHeader = () => {
   const { region, setRegion, regions, cartCount, wishlist, searchQuery, setSearchQuery, navConfig } = useStore();
-  const [searchOpen, setSearchOpen] = useState(false);
   const [regionDropdown, setRegionDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
@@ -150,27 +149,51 @@ export const TNVHeader = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  // Get config from backend or use defaults
-  const logo = navConfig?.logo || { text: 'TNV', badge: 'COLLECTION', badgeColor: '#FF6B9D' };
+  // Promo messages (rotating)
   const promoMessages = navConfig?.promoMessages || [
-    { text: 'Cash On Delivery', icon: '💵' },
-    { text: 'Free Delivery and Exchange', icon: '🚚' },
-    { text: '100% Genuine Products', icon: '✓' },
-    { text: 'Easy Returns', icon: '↩️' },
+    { text: 'Cash On Delivery' },
+    { text: 'Free Delivery and Exchange' },
+    { text: '100% Genuine Products' },
+    { text: 'Easy Returns' },
   ];
   
-  // Main category tabs (like Namshi: FASHION, Beauty, BAGS & KIDS, HOME & MORE, PREMIUM)
-  const mainTabs = navConfig?.categories || [
-    { name: 'FASHION', path: '/fashion', icon: { value: '👗' }, bgColor: '#c8e6c9', hasMegaMenu: true },
-    { name: 'Beauty', path: '/beauty', icon: { value: '💄' }, bgColor: '#f5f5f5' },
-    { name: 'BAGS & KIDS', path: '/bags', icon: { value: '👜' }, bgColor: '#ffe0b2' },
-    { name: 'HOME & MORE', path: '/home', icon: { value: '🏠' }, bgColor: '#e0f2f1' },
-    { name: 'PREMIUM', path: '/premium', icon: { value: '⭐' }, bgColor: '#f5f5f5' },
+  // Main category tabs - EXACTLY like Namshi with images
+  const mainTabs = [
+    { 
+      name: 'FASHION', 
+      path: '/fashion', 
+      bgColor: '#a8e6a3', // Light green like Namshi
+      image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=100&h=100&fit=crop',
+      hasMegaMenu: true 
+    },
+    { 
+      name: 'Beauty', 
+      path: '/beauty', 
+      bgColor: '#f5f5f5',
+      image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop'
+    },
+    { 
+      name: 'BAGS & KIDS', 
+      path: '/bags', 
+      bgColor: '#ffccbc', // Peach/orange like Namshi
+      image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=100&h=100&fit=crop'
+    },
+    { 
+      name: 'HOME & MORE', 
+      path: '/home', 
+      bgColor: '#b2dfdb', // Teal like Namshi
+      image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=100&h=100&fit=crop'
+    },
+    { 
+      name: 'PREMIUM', 
+      path: '/premium', 
+      bgColor: '#f5f5f5',
+      image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=100&h=100&fit=crop'
+    },
   ];
   
-  // Sub-navigation items (shown below main header on category pages)
+  // Sub-navigation items (EXACTLY like Namshi)
   const subNavItems = ['CLOTHING', 'SHOES', 'ACCESSORIES', 'BAGS', 'SPORTS', 'NEW ARRIVALS', 'PREMIUM', 'SALE', 'BRANDS'];
-  const megaMenu = navConfig?.megaMenu || {};
 
   // Auto-rotate promo messages
   useEffect(() => {
@@ -186,7 +209,6 @@ export const TNVHeader = () => {
     if (path.startsWith('/women')) return 'WOMEN';
     if (path.startsWith('/men')) return 'MEN';
     if (path.startsWith('/kids')) return 'KIDS';
-    if (path.startsWith('/beauty')) return 'Beauty';
     return null;
   };
 
@@ -195,56 +217,54 @@ export const TNVHeader = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-white">
-      {/* TOP BAR - Language + Promo + Region (like Namshi) */}
-      <div className="bg-white border-b h-9">
+      {/* TOP BAR - EXACTLY like Namshi */}
+      <div className="bg-white border-b h-10">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-full">
-          {/* Language Toggle */}
-          <div className="flex items-center space-x-2 text-[13px]">
-            <button className="font-medium text-black border-b-2 border-black pb-0.5">English</button>
+          {/* Language Toggle - Left */}
+          <div className="flex items-center gap-2 text-sm">
+            <button className="text-red-500 border-b-2 border-red-500 pb-0.5 font-medium">English</button>
             <span className="text-gray-300">|</span>
-            <button className="text-gray-500 hover:text-black font-arabic">العربية</button>
+            <button className="text-gray-600 hover:text-black font-arabic">العربية</button>
           </div>
           
-          {/* Rotating Promo Messages */}
-          <div className="flex items-center space-x-3">
+          {/* Promo Carousel - Center */}
+          <div className="flex items-center gap-2">
             <button 
               onClick={() => setPromoIndex(prev => (prev - 1 + promoMessages.length) % promoMessages.length)}
-              className="p-1 hover:bg-gray-100 rounded"
+              className="p-1 hover:bg-gray-100 rounded text-gray-400"
             >
-              <ChevronLeft className="w-4 h-4 text-gray-400" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
             
-            <div className="flex items-center space-x-2 min-w-[180px] justify-center">
-              <span className="text-[13px] text-black font-medium whitespace-nowrap">
-                {promoMessages[promoIndex]?.text}
-              </span>
-            </div>
+            <span className="text-sm text-black min-w-[160px] text-center">
+              {promoMessages[promoIndex]?.text}
+            </span>
             
             <button 
               onClick={() => setPromoIndex(prev => (prev + 1) % promoMessages.length)}
-              className="p-1 hover:bg-gray-100 rounded"
+              className="p-1 hover:bg-gray-100 rounded text-gray-400"
             >
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           
-          {/* Region Selector */}
+          {/* Region Selector - Right */}
           <div className="relative">
             <button 
               onClick={() => setRegionDropdown(!regionDropdown)}
-              className="flex items-center space-x-1.5 text-[13px] hover:opacity-80"
+              className="flex items-center gap-1 text-sm hover:opacity-80"
             >
-              <span className="text-base">{region.flag}</span>
+              <span className="text-lg">{region.flag}</span>
               <ChevronDown className="w-3 h-3 text-gray-600" />
             </button>
             
             {regionDropdown && (
-              <div className="absolute top-full right-0 mt-2 bg-white text-black shadow-xl rounded-lg overflow-hidden min-w-[180px] z-50 border">
+              <div className="absolute top-full right-0 mt-2 bg-white shadow-xl rounded-lg overflow-hidden min-w-[180px] z-50 border">
                 {regions.map(r => (
                   <button
                     key={r.code}
                     onClick={() => { setRegion(r); setRegionDropdown(false); }}
-                    className={`w-full px-4 py-2.5 text-left hover:bg-gray-100 flex items-center space-x-2 text-sm ${region.code === r.code ? 'bg-gray-50 font-medium' : ''}`}
+                    className={`w-full px-4 py-2.5 text-left hover:bg-gray-100 flex items-center gap-2 text-sm ${region.code === r.code ? 'bg-gray-50 font-medium' : ''}`}
                   >
                     <span>{r.flag}</span>
                     <span>{r.name}</span>
@@ -256,9 +276,9 @@ export const TNVHeader = () => {
         </div>
       </div>
 
-      {/* MAIN HEADER - Black bar with Logo, Categories, Search, Actions (like Namshi) */}
-      <div className="bg-black h-16">
-        <div className="max-w-7xl mx-auto px-4 flex items-center h-full gap-4">
+      {/* MAIN HEADER - Black bar EXACTLY like Namshi */}
+      <div className="bg-black h-[70px]">
+        <div className="max-w-7xl mx-auto px-4 flex items-center h-full gap-3">
           {/* Mobile Menu Button */}
           <button 
             className="lg:hidden p-2 text-white"
@@ -267,113 +287,107 @@ export const TNVHeader = () => {
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
 
-          {/* Logo */}
-          <Link to="/tnv" className="flex items-center shrink-0">
-            <span className="text-white text-xl font-black tracking-wide italic">{logo.text}</span>
+          {/* Logo - Italic like NAMSHI */}
+          <Link to="/tnv" className="shrink-0 mr-2">
+            <span className="text-white text-2xl font-black italic tracking-wide">NAMSHI</span>
           </Link>
 
-          {/* Main Category Tabs - Desktop (Namshi style with image boxes) */}
-          <nav className="hidden lg:flex items-center space-x-2 category-dropdown-container ml-4">
-            {mainTabs.filter(c => c.active !== false).map(cat => {
-              const isFashionCategory = cat.name.toUpperCase() === 'FASHION' || cat.hasMegaMenu;
-              
-              return (
-                <div 
-                  key={cat.name}
-                  className="relative"
-                  onClick={() => isFashionCategory && setActiveCategory(activeCategory === cat.name ? null : cat.name)}
-                >
-                  <div
-                    className={`flex items-center space-x-1.5 px-2 py-1.5 rounded cursor-pointer transition ${activeCategory === cat.name ? 'bg-white/10' : 'hover:bg-white/5'}`}
+          {/* Category Tabs with Images - EXACTLY like Namshi */}
+          <nav className="hidden lg:flex items-center gap-1 category-dropdown-container">
+            {mainTabs.map(cat => (
+              <div 
+                key={cat.name}
+                className="relative"
+                onClick={() => cat.hasMegaMenu && setActiveCategory(activeCategory === cat.name ? null : cat.name)}
+              >
+                <div className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/10 transition ${activeCategory === cat.name ? 'bg-white/10' : ''}`}>
+                  {/* Category Image Box - Like Namshi */}
+                  <div 
+                    className="w-11 h-11 rounded overflow-hidden flex items-center justify-center"
+                    style={{ backgroundColor: cat.bgColor }}
                   >
-                    {/* Category Icon/Image Box (Namshi style) */}
-                    <div 
-                      className="w-10 h-10 rounded flex items-center justify-center text-lg overflow-hidden"
-                      style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
-                    >
-                      {cat.image ? (
-                        <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span>{cat.icon?.value || cat.icon || '📁'}</span>
-                      )}
-                    </div>
-                    <span className="text-white text-[13px] font-medium whitespace-nowrap">
-                      {cat.name}
-                    </span>
+                    <img 
+                      src={cat.image} 
+                      alt={cat.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
                   </div>
+                  <span className="text-white text-xs font-medium whitespace-nowrap">
+                    {cat.name}
+                  </span>
+                </div>
 
-                  {/* Fashion Category Dropdown - Gender Selection */}
-                  {isFashionCategory && activeCategory === cat.name && (
-                    <div className="absolute top-full left-0 pt-2 z-50">
-                      <div className="bg-white rounded-2xl shadow-2xl border p-6 min-w-[500px]">
-                        <div className="grid grid-cols-2 gap-4">
-                          {/* WOMEN Card */}
-                          <Link 
-                            to="/tnv/women/clothing"
-                            onClick={() => setActiveCategory(null)}
-                            className="group block"
-                          >
-                            <div className="relative overflow-hidden rounded-xl bg-[#faf6f3] aspect-[3/4]">
-                              <img 
-                                src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=500&fit=crop"
-                                alt="Women"
-                                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                              />
-                              <div className="absolute inset-0 flex items-start justify-center pt-4">
-                                <h3 className="text-2xl font-bold tracking-wide text-black">WOMEN</h3>
-                              </div>
+                {/* Fashion Dropdown - Gender Selection */}
+                {cat.hasMegaMenu && activeCategory === cat.name && (
+                  <div className="absolute top-full left-0 pt-2 z-50">
+                    <div className="bg-white rounded-2xl shadow-2xl border p-6 min-w-[500px]">
+                      <div className="grid grid-cols-2 gap-4">
+                        <Link 
+                          to="/tnv/women/clothing"
+                          onClick={() => setActiveCategory(null)}
+                          className="group block"
+                        >
+                          <div className="relative overflow-hidden rounded-xl bg-[#faf6f3] aspect-[3/4]">
+                            <img 
+                              src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=500&fit=crop"
+                              alt="Women"
+                              className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 flex items-start justify-center pt-4">
+                              <h3 className="text-2xl font-bold tracking-wide text-black">WOMEN</h3>
                             </div>
-                          </Link>
-                          
-                          {/* MEN Card */}
-                          <Link 
-                            to="/tnv/men/clothing"
-                            onClick={() => setActiveCategory(null)}
-                            className="group block"
-                          >
-                            <div className="relative overflow-hidden rounded-xl bg-[#f3f6fa] aspect-[3/4]">
-                              <img 
-                                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop"
-                                alt="Men"
-                                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                              />
-                              <div className="absolute inset-0 flex items-start justify-center pt-4">
-                                <h3 className="text-2xl font-bold tracking-wide text-black">MEN</h3>
-                              </div>
+                          </div>
+                        </Link>
+                        
+                        <Link 
+                          to="/tnv/men/clothing"
+                          onClick={() => setActiveCategory(null)}
+                          className="group block"
+                        >
+                          <div className="relative overflow-hidden rounded-xl bg-[#f3f6fa] aspect-[3/4]">
+                            <img 
+                              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop"
+                              alt="Men"
+                              className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 flex items-start justify-center pt-4">
+                              <h3 className="text-2xl font-bold tracking-wide text-black">MEN</h3>
                             </div>
-                          </Link>
-                        </div>
+                          </div>
+                        </Link>
                       </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  </div>
+                )}
+              </div>
+            ))}
           </nav>
 
-          {/* Search Bar (Namshi style) */}
-          <div className="flex-1 hidden md:block max-w-md mx-4">
+          {/* Search Bar - Like Namshi */}
+          <div className="flex-1 hidden md:block max-w-sm mx-3">
             <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search for Guess Bags"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white rounded px-4 py-2.5 text-sm pr-10 placeholder-gray-400"
+                className="w-full bg-white rounded pl-10 pr-4 py-2.5 text-sm placeholder-gray-400"
               />
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             </div>
           </div>
 
-          {/* Actions (Namshi style) */}
-          <div className="flex items-center space-x-3 ml-auto">
-            <button className="text-white p-2 hover:bg-white/10 rounded hidden md:block">
+          {/* Action Icons - Like Namshi */}
+          <div className="flex items-center gap-1 ml-auto">
+            <button className="text-white p-2 hover:bg-white/10 rounded hidden md:flex items-center gap-1">
               <User className="w-5 h-5" />
+              <ChevronDown className="w-3 h-3" />
             </button>
             <Link to="/tnv/wishlist" className="text-white p-2 hover:bg-white/10 rounded relative">
               <Heart className="w-5 h-5" />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center">
                   {wishlist.length}
                 </span>
               )}
@@ -381,7 +395,7 @@ export const TNVHeader = () => {
             <Link to="/tnv/cart" className="text-white p-2 hover:bg-white/10 rounded relative">
               <ShoppingBag className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
@@ -390,23 +404,23 @@ export const TNVHeader = () => {
         </div>
       </div>
 
-      {/* SUB-NAVIGATION BAR (shown on category pages like Namshi) */}
+      {/* SUB-NAVIGATION BAR - EXACTLY like Namshi */}
       {showSubNav && (
-        <div className="bg-white border-b h-10">
+        <div className="bg-white border-b h-11">
           <div className="max-w-7xl mx-auto px-4 flex items-center h-full">
-            {/* Current Category with dropdown */}
-            <div className="flex items-center space-x-2 pr-4 border-r">
+            {/* Current Category Dropdown */}
+            <div className="flex items-center gap-1 pr-4 border-r border-gray-300">
               <span className="text-sm font-bold text-black">{currentCategory}</span>
               <ChevronDown className="w-3 h-3 text-gray-600" />
             </div>
             
-            {/* Sub-navigation items */}
-            <nav className="flex items-center space-x-4 ml-4 overflow-x-auto">
+            {/* Sub-nav Links */}
+            <nav className="flex items-center gap-6 ml-4 overflow-x-auto">
               {subNavItems.map(item => (
                 <Link
                   key={item}
                   to={`/tnv/${currentCategory?.toLowerCase()}/${item.toLowerCase().replace(' ', '-')}`}
-                  className="text-[13px] text-gray-600 hover:text-black whitespace-nowrap py-2"
+                  className={`text-xs font-medium whitespace-nowrap py-2 hover:text-black transition ${item === 'SALE' ? 'text-red-500' : 'text-gray-600'}`}
                 >
                   {item}
                 </Link>
