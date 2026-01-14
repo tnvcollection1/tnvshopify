@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package,
   ArrowUpRight, ArrowDownRight, Calendar, RefreshCw, Download,
-  BarChart3, PieChart as PieChartIcon, Activity, Clock, MapPin
+  BarChart3, PieChart as PieChartIcon, Activity, Clock, MapPin, Store
 } from 'lucide-react';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 const API = process.env.REACT_APP_BACKEND_URL || '';
 
 const SalesDashboard = () => {
+  const [store, setStore] = useState('tnvcollection');
   const [period, setPeriod] = useState('30d');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -28,16 +29,16 @@ const SalesDashboard = () => {
 
   useEffect(() => {
     fetchAllData();
-  }, [period]);
+  }, [period, store]);
 
   const fetchAllData = async () => {
     setLoading(true);
     try {
       const [overviewRes, chartRes, productsRes, statusRes, customersRes, categoryRes, ordersRes] = await Promise.all([
-        fetch(`${API}/api/analytics/overview?period=${period}`),
-        fetch(`${API}/api/analytics/revenue-chart?period=${period}`),
-        fetch(`${API}/api/analytics/top-products?limit=8`),
-        fetch(`${API}/api/analytics/orders-by-status`),
+        fetch(`${API}/api/analytics/overview?period=${period}&store=${store}`),
+        fetch(`${API}/api/analytics/revenue-chart?period=${period}&store=${store}`),
+        fetch(`${API}/api/analytics/top-products?limit=8&store=${store}`),
+        fetch(`${API}/api/analytics/orders-by-status?store=${store}`),
         fetch(`${API}/api/analytics/customer-stats`),
         fetch(`${API}/api/analytics/sales-by-category`),
         fetch(`${API}/api/analytics/recent-orders?limit=8`)
