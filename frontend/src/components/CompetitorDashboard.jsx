@@ -607,7 +607,7 @@ const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedS
             />
             <div className="flex-1">
               <p className="font-medium">{selectedProduct.title}</p>
-              <p className="text-sm text-gray-600">₹{selectedProduct.price?.toLocaleString()}</p>
+              <p className="text-sm text-gray-600">{formatPrice(selectedProduct.price)}</p>
             </div>
             <Button 
               variant="ghost" 
