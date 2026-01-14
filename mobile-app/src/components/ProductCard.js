@@ -88,8 +88,8 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
   };
 
   const cardStyle = horizontal
-    ? [styles.containerHorizontal, style]
-    : [styles.container, style];
+    ? [styles.containerHorizontal, { backgroundColor: colors.card }, shadows.md, style]
+    : [styles.container, { backgroundColor: colors.card }, shadows.md, style];
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -101,11 +101,11 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
         activeOpacity={1}
       >
         {/* Image Container */}
-        <View style={horizontal ? styles.imageContainerH : styles.imageContainer}>
+        <View style={[horizontal ? styles.imageContainerH : styles.imageContainer, { backgroundColor: colors.background }]}>
           {/* Placeholder gradient while loading */}
           {!imageLoaded && (
             <LinearGradient
-              colors={['#f5f5f5', '#e8e8e8', '#f5f5f5']}
+              colors={[colors.background, colors.border, colors.background]}
               style={StyleSheet.absoluteFillObject}
             />
           )}
@@ -118,7 +118,7 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
               onLoad={() => setImageLoaded(true)}
             />
           ) : (
-            <View style={[styles.image, styles.placeholder]}>
+            <View style={[styles.image, styles.placeholder, { backgroundColor: colors.background }]}>
               <Text style={styles.placeholderText}>📷</Text>
             </View>
           )}
@@ -126,7 +126,7 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
           {/* Discount Badge */}
           {discount > 0 && (
             <LinearGradient
-              colors={colors.gradientSale}
+              colors={gradients.sale}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.discountBadge}
