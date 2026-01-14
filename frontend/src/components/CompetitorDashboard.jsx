@@ -631,7 +631,7 @@ const AnalysisDialog = ({ isOpen, onClose, onAnalysisComplete, stores, selectedS
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Your Price (₹) *</label>
+              <label className="text-sm font-medium">Your Price ({getCurrencySymbol()}) *</label>
               <Input
                 type="number"
                 value={form.your_price}
