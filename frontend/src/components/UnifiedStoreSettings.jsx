@@ -684,7 +684,7 @@ const UnifiedStoreSettings = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold">Hero Banners</h2>
-                  <p className="text-gray-500">Homepage slider banners</p>
+                  <p className="text-gray-500">Homepage slider banners - <span className="text-blue-500 font-medium">Drag to reorder</span></p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -716,68 +716,77 @@ const UnifiedStoreSettings = () => {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {config.heroBanners.map((banner, index) => (
-                  <div 
-                    key={banner.id || index} 
-                    className={`bg-white border rounded-xl overflow-hidden ${!banner.active ? 'opacity-60' : ''}`}
-                  >
-                    <div className="flex items-center gap-4 p-4 border-b bg-gray-50">
-                      <div className="flex flex-col gap-1">
-                        <button onClick={() => moveArrayItem('heroBanners', index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-200 rounded disabled:opacity-30">
-                          <ChevronUp className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => moveArrayItem('heroBanners', index, 1)} disabled={index === config.heroBanners.length - 1} className="p-1 hover:bg-gray-200 rounded disabled:opacity-30">
-                          <ChevronDown className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <img src={banner.image} alt="" className="w-24 h-14 object-cover rounded" />
-                      <div className="flex-1">
-                        <h4 className="font-semibold">{banner.title}</h4>
-                        <p className="text-sm text-gray-500">{banner.subtitle}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => updateArrayItem('heroBanners', index, 'active', !banner.active)}
-                          className={`p-2 rounded ${banner.active ? 'text-green-600 bg-green-50' : 'text-gray-400 bg-gray-100'}`}
-                        >
-                          {banner.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                        </button>
-                        <button
-                          onClick={() => setEditingItem(editingItem === `banner-${index}` ? null : `banner-${index}`)}
-                          className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => deleteArrayItem('heroBanners', index)}
-                          className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(event) => handleDragEnd(event, 'heroBanners')}
+              >
+                <SortableContext
+                  items={config.heroBanners.map(b => b.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-4">
+                    {config.heroBanners.map((banner, index) => (
+                      <SortableItem key={banner.id} id={banner.id}>
+                        {({ listeners, isDragging }) => (
+                          <div 
+                            className={`bg-white border rounded-xl overflow-hidden ${!banner.active ? 'opacity-60' : ''} ${isDragging ? 'shadow-lg ring-2 ring-blue-400' : ''}`}
+                          >
+                            <div className="flex items-center gap-4 p-4 border-b bg-gray-50">
+                              <div 
+                                {...listeners}
+                                className="cursor-grab active:cursor-grabbing p-2 hover:bg-gray-200 rounded"
+                                title="Drag to reorder"
+                              >
+                                <GripVertical className="w-5 h-5 text-gray-400" />
+                              </div>
+                              <img src={banner.image} alt="" className="w-24 h-14 object-cover rounded" />
+                              <div className="flex-1">
+                                <h4 className="font-semibold">{banner.title}</h4>
+                                <p className="text-sm text-gray-500">{banner.subtitle}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => updateArrayItem('heroBanners', index, 'active', !banner.active)}
+                                  className={`p-2 rounded ${banner.active ? 'text-green-600 bg-green-50' : 'text-gray-400 bg-gray-100'}`}
+                                >
+                                  {banner.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                </button>
+                                <button
+                                  onClick={() => setEditingItem(editingItem === `banner-${index}` ? null : `banner-${index}`)}
+                                  className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => deleteArrayItem('heroBanners', index)}
+                                  className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
 
-                    {editingItem === `banner-${index}` && (
-                      <div className="p-4 grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Title</label>
-                          <input
-                            value={banner.title}
-                            onChange={(e) => updateArrayItem('heroBanners', index, 'title', e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Subtitle</label>
-                          <input
-                            value={banner.subtitle || ''}
-                            onChange={(e) => updateArrayItem('heroBanners', index, 'subtitle', e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Button Text</label>
+                            {editingItem === `banner-${index}` && (
+                              <div className="p-4 grid grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">Title</label>
+                                  <input
+                                    value={banner.title}
+                                    onChange={(e) => updateArrayItem('heroBanners', index, 'title', e.target.value)}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">Subtitle</label>
+                                  <input
+                                    value={banner.subtitle || ''}
+                                    onChange={(e) => updateArrayItem('heroBanners', index, 'subtitle', e.target.value)}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">Button Text</label>
                           <input
                             value={banner.buttonText || ''}
                             onChange={(e) => updateArrayItem('heroBanners', index, 'buttonText', e.target.value)}
