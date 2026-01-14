@@ -20,7 +20,7 @@ const TNVCart = () => {
           <div className="bg-white rounded-2xl p-12">
             <ShoppingBag className="w-20 h-20 mx-auto text-gray-300 mb-6" />
             <h1 className="text-2xl font-bold mb-2">Your bag is empty</h1>
-            <p className="text-gray-500 mb-8">Looks like you haven't added anything to your bag yet.</p>
+            <p className="text-gray-500 mb-8">Looks like you haven&apos;t added anything to your bag yet.</p>
             <Link 
               to={baseUrl}
               className="inline-block bg-black text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition"
