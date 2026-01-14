@@ -94,12 +94,6 @@ const OrderTrackingScreen = () => {
     });
   };
 
-  const handleWhatsAppSupport = () => {
-    const message = `Hi! I need help with my order ${orderId}`;
-    const phone = '971501234567';
-    Linking.openURL(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`);
-  };
-
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
