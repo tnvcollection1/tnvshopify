@@ -208,6 +208,11 @@ function NotificationDashboardWrapper() {
 function AppRoutes() {
   return (
     <Routes>
+      {/* Storefront Preview Routes - No Auth Required */}
+      <Route path="/tnvcollectionpreview" element={<StorefrontPreview />} />
+      <Route path="/tnvcollectionpkpreview" element={<StorefrontPreview />} />
+      <Route path="/:storeSlug" element={<StorefrontPreview />} />
+      
       <Route path="/" element={<LandingRoute />} />
       <Route path="/login" element={<LoginRoute />} />
       <Route path="/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
