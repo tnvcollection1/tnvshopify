@@ -396,6 +396,59 @@ async def save_mega_menu(store: str, category: str, mega_menu: MegaMenuConfig):
 
 
 # ======================
+# MOBILE APP CONFIG
+# ======================
+
+class MobileAppConfig(BaseModel):
+    appName: str = "TNV Collection"
+    primaryColor: str = "#000000"
+    accentColor: str = "#FF6B9D"
+    showBottomNav: bool = True
+    enablePushNotifications: bool = True
+    enableWishlist: bool = True
+    enableCart: bool = True
+    splashScreenImage: Optional[str] = None
+    appIcon: Optional[str] = None
+
+DEFAULT_MOBILE_APP_CONFIG = {
+    "appName": "TNV Collection",
+    "primaryColor": "#000000",
+    "accentColor": "#FF6B9D",
+    "showBottomNav": True,
+    "enablePushNotifications": True,
+    "enableWishlist": True,
+    "enableCart": True,
+    "splashScreenImage": None,
+    "appIcon": None
+}
+
+
+@router.get("/mobile-app/{store}")
+async def get_mobile_app_config(store: str):
+    """Get mobile app configuration for a store"""
+    config = await _db.storefront_nav_config.find_one({"store": store}, {"mobileApp": 1, "_id": 0})
+    
+    if config and config.get("mobileApp"):
+        return {"mobileApp": config["mobileApp"]}
+    
+    return {"mobileApp": DEFAULT_MOBILE_APP_CONFIG}
+
+
+@router.post("/mobile-app/{store}")
+async def save_mobile_app_config(store: str, config: MobileAppConfig):
+    """Save mobile app configuration for a store"""
+    config_dict = config.dict()
+    
+    await _db.storefront_nav_config.update_one(
+        {"store": store},
+        {"$set": {"mobileApp": config_dict, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    
+    return {"success": True, "message": "Mobile app config saved"}
+
+
+# ======================
 # MEASUREMENTS & DIMENSIONS (Reference)
 # ======================
 
