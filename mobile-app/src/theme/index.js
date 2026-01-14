@@ -1,9 +1,10 @@
 /**
- * Theme Configuration
- * Centralized design tokens for consistent styling
+ * Enhanced Theme Configuration
+ * Supports light and dark mode with dynamic color switching
  */
 
-export const colors = {
+// Light mode colors
+export const lightColors = {
   // Primary
   primary: '#000000',
   primaryLight: '#333333',
@@ -19,10 +20,12 @@ export const colors = {
   errorLight: '#F87171',
   warning: '#F59E0B',
   
-  // Neutrals
-  white: '#FFFFFF',
+  // Backgrounds
   background: '#FAFAFA',
   surface: '#FFFFFF',
+  card: '#FFFFFF',
+  
+  // Borders
   border: '#E5E5E5',
   borderLight: '#F0F0F0',
   
@@ -31,14 +34,76 @@ export const colors = {
   textSecondary: '#666666',
   textTertiary: '#999999',
   textLight: '#CCCCCC',
+  textInverse: '#FFFFFF',
   
-  // Gradients (as arrays)
-  gradientPrimary: ['#000000', '#333333'],
-  gradientAccent: ['#FF3366', '#FF6B8A', '#FF8FA3'],
-  gradientSuccess: ['#22C55E', '#4ADE80'],
-  gradientSale: ['#F43F5E', '#EC4899', '#D946EF'],
-  gradientBlue: ['#3B82F6', '#60A5FA', '#93C5FD'],
-  gradientGold: ['#F59E0B', '#FBBF24', '#FCD34D'],
+  // Special
+  white: '#FFFFFF',
+  black: '#000000',
+  overlay: 'rgba(0,0,0,0.5)',
+  
+  // Status bar
+  statusBar: 'dark-content',
+};
+
+// Dark mode colors
+export const darkColors = {
+  // Primary
+  primary: '#FFFFFF',
+  primaryLight: '#E0E0E0',
+  
+  // Accent
+  accent: '#FF6B8A',
+  accentLight: '#FF8FA3',
+  
+  // Success/Error
+  success: '#4ADE80',
+  successLight: '#86EFAC',
+  error: '#F87171',
+  errorLight: '#FCA5A5',
+  warning: '#FBBF24',
+  
+  // Backgrounds
+  background: '#0A0A0A',
+  surface: '#1A1A1A',
+  card: '#242424',
+  
+  // Borders
+  border: '#333333',
+  borderLight: '#2A2A2A',
+  
+  // Text
+  text: '#FFFFFF',
+  textSecondary: '#A0A0A0',
+  textTertiary: '#707070',
+  textLight: '#505050',
+  textInverse: '#000000',
+  
+  // Special
+  white: '#FFFFFF',
+  black: '#000000',
+  overlay: 'rgba(0,0,0,0.7)',
+  
+  // Status bar
+  statusBar: 'light-content',
+};
+
+// Gradients (same for both modes)
+export const gradients = {
+  primary: ['#000000', '#333333'],
+  primaryDark: ['#FFFFFF', '#E0E0E0'],
+  accent: ['#FF3366', '#FF6B8A', '#FF8FA3'],
+  success: ['#22C55E', '#4ADE80'],
+  sale: ['#F43F5E', '#EC4899', '#D946EF'],
+  blue: ['#3B82F6', '#60A5FA', '#93C5FD'],
+  gold: ['#F59E0B', '#FBBF24', '#FCD34D'],
+  purple: ['#667eea', '#764ba2'],
+  pink: ['#f093fb', '#f5576c'],
+  cyan: ['#4facfe', '#00f2fe'],
+  orange: ['#fa709a', '#fee140'],
+  green: ['#11998e', '#38ef7d'],
+  red: ['#ee0979', '#ff6a00'],
+  teal: ['#a8edea', '#fed6e3'],
+  fire: ['#ff416c', '#ff4b2b'],
 };
 
 export const spacing = {
@@ -71,7 +136,7 @@ export const typography = {
   caption: 12,
   tiny: 10,
   
-  // Font weights (for system fonts)
+  // Font weights
   light: '300',
   regular: '400',
   medium: '500',
@@ -111,6 +176,38 @@ export const shadows = {
   },
 };
 
+// Dark mode specific shadows
+export const darkShadows = {
+  sm: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  xl: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+};
+
 export const animations = {
   fast: 150,
   normal: 300,
@@ -127,11 +224,17 @@ export const animations = {
   },
 };
 
+// Default export for backward compatibility
+export const colors = lightColors;
+
 export default {
-  colors,
+  lightColors,
+  darkColors,
+  gradients,
   spacing,
   borderRadius,
   typography,
   shadows,
+  darkShadows,
   animations,
 };
