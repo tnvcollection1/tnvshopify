@@ -161,10 +161,23 @@ function LuxuryStorefrontWrapper({ page = 'home' }) {
   );
 }
 
-// TNV Store Wrapper (Namshi-inspired)
-function TNVStoreWrapper({ children }) {
+// TNV Store Wrapper (Namshi-inspired) - Supports multi-store (tnvcollection for INR, tnvcollectionpk for PKR)
+function TNVStoreWrapper({ children, storeName = "tnvcollection" }) {
   return (
-    <TNVStoreProvider storeName="tnvcollection">
+    <TNVStoreProvider storeName={storeName}>
+      <TNVHeader />
+      <main className="min-h-screen">
+        {children}
+      </main>
+      <TNVFooter />
+    </TNVStoreProvider>
+  );
+}
+
+// Pakistan Store Wrapper (PKR currency)
+function TNVPKStoreWrapper({ children }) {
+  return (
+    <TNVStoreProvider storeName="tnvcollectionpk">
       <TNVHeader />
       <main className="min-h-screen">
         {children}
@@ -1010,6 +1023,20 @@ function AppRoutes() {
       <Route path="/tnv/checkout" element={<TNVStoreWrapper><TNVCheckout /></TNVStoreWrapper>} />
       <Route path="/tnv/order-confirmation/:orderId" element={<TNVStoreWrapper><TNVOrderConfirmation /></TNVStoreWrapper>} />
       <Route path="/tnv/track/:orderId" element={<TNVStoreWrapper><TNVOrderConfirmation /></TNVStoreWrapper>} />
+      
+      {/* TNV Pakistan Store Routes (PKR Currency) */}
+      <Route path="/tnv-pk" element={<TNVPKStoreWrapper><TNVHomePage /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/products" element={<TNVPKStoreWrapper><TNVProductListing /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/:category" element={<TNVPKStoreWrapper><TNVProductListing /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/:category/:subcategory" element={<TNVPKStoreWrapper><TNVProductListing /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/product/:productId" element={<TNVPKStoreWrapper><TNVProductDetail /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/collection/:collectionId" element={<TNVPKStoreWrapper><TNVProductListing /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/brand/:brandName" element={<TNVPKStoreWrapper><TNVProductListing /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/category/:categoryName" element={<TNVPKStoreWrapper><TNVProductListing /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/cart" element={<TNVPKStoreWrapper><TNVCart /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/checkout" element={<TNVPKStoreWrapper><TNVCheckout /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/order-confirmation/:orderId" element={<TNVPKStoreWrapper><TNVOrderConfirmation /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/track/:orderId" element={<TNVPKStoreWrapper><TNVOrderConfirmation /></TNVPKStoreWrapper>} />
     </Routes>
   );
 }
