@@ -9,10 +9,23 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - React Native mobile app
 - Admin panel for store management
 - Dynamic header/menu/banner configuration
+- **Multi-store support with different currencies (INR/PKR)**
 
 ## What's Been Implemented
 
 ### January 14, 2026 (Latest Session)
+
+**Multi-Store/Multi-Currency Support** ✅ COMPLETED
+- Two stores: `tnvcollection` (India/INR/₹) and `tnvcollectionpk` (Pakistan/PKR/Rs.)
+- Store-specific routes: `/tnv` (India) and `/tnv-pk` (Pakistan)
+- Backend APIs accept `store` query parameter
+- Frontend detects store from URL path
+- Store-specific configurations:
+  - INR: Free shipping at ₹2,000, shipping cost ₹150
+  - PKR: Free shipping at Rs.5,000, shipping cost Rs.300
+- Sales Dashboard with store selector dropdown
+- Header shows "TNV" for India, "TNV PK" for Pakistan
+- Region flags: 🇮🇳 for India, 🇵🇰 for Pakistan
 
 **Sales Dashboard** (`/sales-dashboard`)
 - Revenue overview cards with growth percentages
@@ -23,14 +36,16 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - Recent orders table
 - Customer locations breakdown
 - Period selector (7d, 30d, 90d, 1y)
+- **Store selector (INR/PKR)** ✅
 
-**Checkout + Razorpay Payment** (`/checkout`)
+**Checkout + Razorpay Payment** (`/checkout`, `/tnv/checkout`, `/tnv-pk/checkout`)
 - 3-step checkout: Cart → Shipping → Payment
 - Cart management (add, update, remove items)
 - Shipping address form with validation
 - Payment methods: Razorpay (online) & COD
 - Order confirmation page
 - Coupon code support
+- **Store-aware currency display** ✅
 
 **Backend APIs**
 - `/api/analytics/*` - Dashboard metrics
