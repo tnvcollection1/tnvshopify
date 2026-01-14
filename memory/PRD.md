@@ -124,11 +124,12 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 
 ### P2 (Medium Priority)
 - [ ] Sooxie.com API integration
-- [ ] DNS setup for `tnvcollection.pk`
+- [ ] Complete e-commerce features (order tracking, wishlists, reviews)
 
 ### P3 (Low Priority)
-- [ ] Backend file refactoring
-- [ ] Drag-and-drop reordering for banners
+- [ ] Backend file refactoring (split server.py, alibaba_1688.py)
+- [ ] Consistent currency display in admin panel
+- [ ] Mobile app enhancements (push notifications, offline mode)
 
 ## Credentials
 - Admin: `admin` / `admin`
