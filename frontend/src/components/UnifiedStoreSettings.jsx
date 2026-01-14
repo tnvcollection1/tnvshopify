@@ -4,11 +4,53 @@ import {
   Image, Type, Palette, ChevronDown, ChevronUp, 
   Loader2, Smartphone, Monitor, Layout, Grid3X3, 
   Menu, Megaphone, Settings, Store, Sparkles,
-  Upload, X, Check, RefreshCw, ExternalLink, ImagePlus
+  Upload, X, Check, RefreshCw, ExternalLink, ImagePlus, GripVertical
 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
+
+// Sortable Item Wrapper Component
+const SortableItem = ({ id, children }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      {children({ listeners, isDragging })}
+    </div>
+  );
+};
 
 // Image Upload Component
 const ImageUploader = ({ onUpload, category = 'general', currentImage, label }) => {
