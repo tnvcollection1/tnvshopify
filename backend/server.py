@@ -76,6 +76,7 @@ from routes.image_upload import router as image_upload_router
 from routes.push_notifications import router as push_notifications_router
 from services.fulfillment_webhooks import router as fulfillment_webhooks_router
 from services.whatsapp_notifications import router as whatsapp_notifications_router
+from services.cart_recovery_service import router as cart_recovery_router
 from services.notification_preferences_service import router as notification_preferences_router, set_database as set_notification_prefs_db
 from routes.order_notifications import router as order_notifications_router, set_db as set_order_notifications_db
 from services.fulfillment_pipeline_service import router as fulfillment_pipeline_router
