@@ -306,7 +306,7 @@ const CheckoutPage = () => {
             </div>
             
             <button
-              onClick={() => navigate('/tnv')}
+              onClick={() => navigate(getStoreBaseUrl())}
               className="w-full py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition"
             >
               Continue Shopping
