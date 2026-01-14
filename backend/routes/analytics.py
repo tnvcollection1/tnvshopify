@@ -20,6 +20,25 @@ def set_database(db: AsyncIOMotorDatabase):
     global _db
     _db = db
 
+# Store configurations
+STORE_CONFIG = {
+    "tnvcollection": {
+        "currency": "INR",
+        "currency_symbol": "₹",
+        "country": "India",
+        "base_revenue": 125000,
+    },
+    "tnvcollectionpk": {
+        "currency": "PKR",
+        "currency_symbol": "Rs.",
+        "country": "Pakistan",
+        "base_revenue": 2500000,  # Higher number for PKR
+    }
+}
+
+def get_store_config(store: str):
+    return STORE_CONFIG.get(store, STORE_CONFIG["tnvcollection"])
+
 
 @router.get("/overview")
 async def get_overview_stats(
