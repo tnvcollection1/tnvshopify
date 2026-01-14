@@ -863,7 +863,7 @@ const UnifiedStoreSettings = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold">Category Tabs</h2>
-                  <p className="text-gray-500">Navigation categories with images (FASHION, Beauty, etc.)</p>
+                  <p className="text-gray-500">Navigation categories - <span className="text-blue-500 font-medium">Drag to reorder</span></p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -891,53 +891,63 @@ const UnifiedStoreSettings = () => {
                 </div>
               </div>
 
-              <div className="bg-white border rounded-xl divide-y">
-                {config.categoryTabs.map((tab, index) => (
-                  <div key={tab.id || index} className={`${!tab.active ? 'opacity-60' : ''}`}>
-                    <div className="flex items-center gap-4 p-4">
-                      <div className="flex flex-col gap-1">
-                        <button onClick={() => moveArrayItem('categoryTabs', index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-200 rounded disabled:opacity-30">
-                          <ChevronUp className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => moveArrayItem('categoryTabs', index, 1)} disabled={index === config.categoryTabs.length - 1} className="p-1 hover:bg-gray-200 rounded disabled:opacity-30">
-                          <ChevronDown className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div className="w-12 h-12 rounded overflow-hidden" style={{ backgroundColor: tab.bgColor }}>
-                        <img src={tab.image} alt="" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold">{tab.name}</h4>
-                        <p className="text-sm text-gray-500">{tab.path}</p>
-                      </div>
-                      {tab.hasMegaMenu && <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">Mega Menu</span>}
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => updateArrayItem('categoryTabs', index, 'active', !tab.active)} className={`p-2 rounded ${tab.active ? 'text-green-600 bg-green-50' : 'text-gray-400 bg-gray-100'}`}>
-                          {tab.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                        </button>
-                        <button onClick={() => setEditingItem(editingItem === `tab-${index}` ? null : `tab-${index}`)} className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => deleteArrayItem('categoryTabs', index)} className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(event) => handleDragEnd(event, 'categoryTabs')}
+              >
+                <SortableContext
+                  items={config.categoryTabs.map(t => t.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="bg-white border rounded-xl divide-y">
+                    {config.categoryTabs.map((tab, index) => (
+                      <SortableItem key={tab.id} id={tab.id}>
+                        {({ listeners, isDragging }) => (
+                          <div className={`${!tab.active ? 'opacity-60' : ''} ${isDragging ? 'bg-blue-50' : ''}`}>
+                            <div className="flex items-center gap-4 p-4">
+                              <div 
+                                {...listeners}
+                                className="cursor-grab active:cursor-grabbing p-2 hover:bg-gray-200 rounded"
+                                title="Drag to reorder"
+                              >
+                                <GripVertical className="w-5 h-5 text-gray-400" />
+                              </div>
+                              <div className="w-12 h-12 rounded overflow-hidden" style={{ backgroundColor: tab.bgColor }}>
+                                <img src={tab.image} alt="" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold">{tab.name}</h4>
+                                <p className="text-sm text-gray-500">{tab.path}</p>
+                              </div>
+                              {tab.hasMegaMenu && <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">Mega Menu</span>}
+                              <div className="flex items-center gap-2">
+                                <button onClick={() => updateArrayItem('categoryTabs', index, 'active', !tab.active)} className={`p-2 rounded ${tab.active ? 'text-green-600 bg-green-50' : 'text-gray-400 bg-gray-100'}`}>
+                                  {tab.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                </button>
+                                <button onClick={() => setEditingItem(editingItem === `tab-${index}` ? null : `tab-${index}`)} className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100">
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => deleteArrayItem('categoryTabs', index)} className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
 
-                    {editingItem === `tab-${index}` && (
-                      <div className="p-4 bg-gray-50 border-t grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Name</label>
-                          <input value={tab.name} onChange={(e) => updateArrayItem('categoryTabs', index, 'name', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Path</label>
-                          <input value={tab.path} onChange={(e) => updateArrayItem('categoryTabs', index, 'path', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Category Image</label>
-                          <div className="flex gap-2 items-start">
-                            <ImageUploader 
+                            {editingItem === `tab-${index}` && (
+                              <div className="p-4 bg-gray-50 border-t grid grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">Name</label>
+                                  <input value={tab.name} onChange={(e) => updateArrayItem('categoryTabs', index, 'name', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">Path</label>
+                                  <input value={tab.path} onChange={(e) => updateArrayItem('categoryTabs', index, 'path', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">Category Image</label>
+                                  <div className="flex gap-2 items-start">
+                                    <ImageUploader 
                               category="categories"
                               currentImage={tab.image}
                               onUpload={(url) => updateArrayItem('categoryTabs', index, 'image', url)}
