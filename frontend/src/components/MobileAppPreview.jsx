@@ -185,7 +185,7 @@ const HomeScreen = ({ products, onProductPress, onWishlist, wishlist }) => (
     {/* Today's Picks */}
     <div className="px-4">
       <div className="flex justify-between items-center mb-3">
-        <h2 className="font-bold text-lg">Today's Picks</h2>
+        <h2 className="font-bold text-lg">Today&apos;s Picks</h2>
         <span className="text-sm text-gray-500">View All →</span>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2">
