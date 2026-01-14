@@ -337,8 +337,8 @@ const ProductPage = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {relatedProducts.map((p, idx) => (
                 <Link 
-                  key={p.id || idx} 
-                  to={`/${storeName}preview/product/${p.id}`}
+                  key={p.shopify_product_id || p.id || idx} 
+                  to={`/${storeName}preview/product/${p.shopify_product_id || p.id}`}
                   className="group"
                 >
                   <div className="aspect-[3/4] bg-white overflow-hidden mb-4">
