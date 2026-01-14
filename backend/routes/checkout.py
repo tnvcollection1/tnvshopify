@@ -140,6 +140,7 @@ async def get_cart(session_id: str, store: str = Query("tnvcollection")):
     """Get cart contents"""
     cart = await _db.carts.find_one({"session_id": session_id}, {"_id": 0})
     store_config = get_store_config(store)
+    free_threshold = store_config.get("free_shipping_threshold", 2000)
     
     if not cart:
         return {
@@ -150,14 +151,14 @@ async def get_cart(session_id: str, store: str = Query("tnvcollection")):
             "total": 0,
             "item_count": 0,
             "currency": store_config["currency"],
-            "currency_symbol": store_config["currency_symbol"]
+            "currency_symbol": store_config["currency_symbol"],
+            "free_shipping_threshold": free_threshold
         }
     
     items = cart.get("items", [])
     subtotal = sum(item["price"] * item["quantity"] for item in items)
     
     # Use store-specific shipping thresholds
-    free_threshold = store_config.get("free_shipping_threshold", 2000)
     shipping_cost = store_config.get("shipping_cost", 150)
     shipping = 0 if subtotal >= free_threshold else shipping_cost
     
