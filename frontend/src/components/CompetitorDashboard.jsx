@@ -173,7 +173,7 @@ const NotificationBell = () => {
 };
 
 // ==================== Product Selector ====================
-const ProductSelector = ({ onSelectProduct, selectedStore }) => {
+const ProductSelector = ({ onSelectProduct, selectedStore, formatPrice }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
