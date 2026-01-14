@@ -15,9 +15,11 @@ import {
   Modal,
   ScrollView,
   StatusBar,
+  RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
+import { pullToRefreshHaptic, successHaptic, selectionHaptic, lightHaptic } from '../services/haptics';
 import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
 import * as api from '../services/api';
@@ -31,6 +33,7 @@ const BrowseScreen = () => {
   const { colors, statusBarStyle } = useTheme();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
   const [gridCols, setGridCols] = useState(2);
