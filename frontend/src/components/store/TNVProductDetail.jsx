@@ -113,9 +113,9 @@ const TNVProductDetail = () => {
       <div className="bg-gray-50 border-b">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <nav className="text-sm flex items-center space-x-2">
-            <Link to="/store" className="text-gray-500 hover:text-black">Home</Link>
+            <Link to="/tnv" className="text-gray-500 hover:text-black">Home</Link>
             <span className="text-gray-300">/</span>
-            <Link to="/store/collection/all" className="text-gray-500 hover:text-black">Products</Link>
+            <Link to="/tnv/collection/all" className="text-gray-500 hover:text-black">Products</Link>
             <span className="text-gray-300">/</span>
             <span className="text-black truncate max-w-[200px]">{product.title}</span>
           </nav>
