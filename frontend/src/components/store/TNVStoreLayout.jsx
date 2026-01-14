@@ -479,13 +479,13 @@ export const TNVHeader = () => {
           
           {/* Sub-nav Links */}
           <nav className="flex items-center gap-6 ml-4 overflow-x-auto">
-            {subNavItems.map(item => (
+            {subNavList.map(item => (
               <Link
-                key={item}
-                to={`/tnv/${selectedGender.toLowerCase()}/${item.toLowerCase().replace(' ', '-')}`}
-                className={`text-xs font-medium whitespace-nowrap py-2 hover:text-black transition ${item === 'SALE' ? 'text-red-500' : 'text-gray-600'}`}
+                key={item.id || item.name}
+                to={item.path || `/tnv/${selectedGender.toLowerCase()}/${item.name.toLowerCase().replace(' ', '-')}`}
+                className={`text-xs font-medium whitespace-nowrap py-2 hover:text-black transition ${item.highlight ? 'text-red-500' : 'text-gray-600'}`}
               >
-                {item}
+                {item.name}
               </Link>
             ))}
           </nav>
