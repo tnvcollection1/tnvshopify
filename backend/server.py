@@ -58,6 +58,7 @@ from routes.storefront_cms import router as storefront_cms_router, set_database 
 from routes.storefront_config import router as storefront_config_router, set_database as set_storefront_config_db
 from routes.warehouse import router as warehouse_router, set_database as set_warehouse_db
 from security.store_access import set_database as set_security_db, verify_store_access, require_admin, require_merchant_or_admin
+from routes.secure_admin import router as secure_admin_router, set_database as set_secure_admin_db
 from routes.shopify_sync import router as shopify_sync_router, set_dependencies as set_shopify_sync_deps
 from routes.whatsapp_api import router as whatsapp_api_router, set_dependencies as set_whatsapp_api_deps
 from routes.store_management import router as store_management_router
