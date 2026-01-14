@@ -10,13 +10,16 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, timezone
-from bson import ObjectId
-import os
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 router = APIRouter(prefix="/api/storefront/config", tags=["Storefront Config"])
 
-# Get MongoDB connection from server
-from server import get_db
+# Database reference
+_db: AsyncIOMotorDatabase = None
+
+def set_database(db: AsyncIOMotorDatabase):
+    global _db
+    _db = db
 
 # ======================
 # PYDANTIC MODELS
@@ -93,9 +96,9 @@ DEFAULT_PROMO_MESSAGES = [
 
 DEFAULT_CATEGORIES = [
     {
-        "name": "FASHION",
-        "path": "/products",
-        "icon": {"type": "emoji", "value": "👗"},
+        "name": "WOMEN",
+        "path": "/women",
+        "icon": {"type": "emoji", "value": "👩"},
         "color": "#FF6B9D",
         "bgColor": "#FFE8F0",
         "order": 0,
@@ -103,36 +106,37 @@ DEFAULT_CATEGORIES = [
         "subNav": ["CLOTHING", "SHOES", "ACCESSORIES", "BAGS", "SPORTS", "NEW ARRIVALS", "PREMIUM", "SALE", "BRANDS"]
     },
     {
+        "name": "MEN",
+        "path": "/men",
+        "icon": {"type": "emoji", "value": "👨"},
+        "color": "#3498DB",
+        "bgColor": "#E3F2FD",
+        "order": 1,
+        "active": True,
+        "subNav": ["CLOTHING", "SHOES", "ACCESSORIES", "BAGS", "SPORTS", "NEW ARRIVALS", "PREMIUM", "SALE", "BRANDS"]
+    },
+    {
+        "name": "KIDS",
+        "path": "/kids",
+        "icon": {"type": "emoji", "value": "👶"},
+        "color": "#27AE60",
+        "bgColor": "#E8F5E9",
+        "order": 2,
+        "active": True
+    },
+    {
         "name": "Beauty",
         "path": "/beauty",
         "icon": {"type": "emoji", "value": "💄"},
         "color": "#9B59B6",
         "bgColor": "#F3E5F5",
-        "order": 1,
-        "active": True
-    },
-    {
-        "name": "Baby & Kids",
-        "path": "/kids",
-        "icon": {"type": "emoji", "value": "👶"},
-        "color": "#3498DB",
-        "bgColor": "#E3F2FD",
-        "order": 2,
-        "active": True
-    },
-    {
-        "name": "Home & More",
-        "path": "/home",
-        "icon": {"type": "emoji", "value": "🏠"},
-        "color": "#27AE60",
-        "bgColor": "#E8F5E9",
         "order": 3,
         "active": True
     },
     {
-        "name": "PREMIUM",
-        "path": "/premium",
-        "icon": {"type": "emoji", "value": "✨"},
+        "name": "Home",
+        "path": "/home",
+        "icon": {"type": "emoji", "value": "🏠"},
         "color": "#F39C12",
         "bgColor": "#FFF8E1",
         "order": 4,
@@ -237,10 +241,8 @@ DEFAULT_MEGA_MENU = {
 @router.get("/navigation/{store}")
 async def get_navigation_config(store: str):
     """Get full navigation configuration for a store"""
-    db = get_db()
-    
     # Try to find existing config
-    config = db.storefront_nav_config.find_one({"store": store}, {"_id": 0})
+    config = await _db.storefront_nav_config.find_one({"store": store}, {"_id": 0})
     
     if not config:
         # Return default config
@@ -262,13 +264,11 @@ async def get_navigation_config(store: str):
 @router.post("/navigation/{store}")
 async def save_navigation_config(store: str, config: NavigationConfig):
     """Save/update navigation configuration for a store"""
-    db = get_db()
-    
     config_dict = config.dict()
     config_dict["store"] = store
     config_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
     
-    db.storefront_nav_config.update_one(
+    await _db.storefront_nav_config.update_one(
         {"store": store},
         {"$set": config_dict},
         upsert=True
@@ -280,9 +280,7 @@ async def save_navigation_config(store: str, config: NavigationConfig):
 @router.get("/promo-messages/{store}")
 async def get_promo_messages(store: str):
     """Get promo carousel messages for a store"""
-    db = get_db()
-    
-    config = db.storefront_nav_config.find_one({"store": store}, {"promoMessages": 1, "_id": 0})
+    config = await _db.storefront_nav_config.find_one({"store": store}, {"promoMessages": 1, "_id": 0})
     
     if config and config.get("promoMessages"):
         return {"messages": config["promoMessages"]}
@@ -293,11 +291,9 @@ async def get_promo_messages(store: str):
 @router.post("/promo-messages/{store}")
 async def save_promo_messages(store: str, messages: List[PromoMessage]):
     """Save promo carousel messages for a store"""
-    db = get_db()
-    
     messages_dict = [m.dict() for m in messages]
     
-    db.storefront_nav_config.update_one(
+    await _db.storefront_nav_config.update_one(
         {"store": store},
         {"$set": {"promoMessages": messages_dict, "updated_at": datetime.now(timezone.utc).isoformat()}},
         upsert=True
@@ -309,9 +305,7 @@ async def save_promo_messages(store: str, messages: List[PromoMessage]):
 @router.get("/menu/{store}")
 async def get_menu_categories(store: str):
     """Get menu categories with icons for a store"""
-    db = get_db()
-    
-    config = db.storefront_nav_config.find_one({"store": store}, {"categories": 1, "_id": 0})
+    config = await _db.storefront_nav_config.find_one({"store": store}, {"categories": 1, "_id": 0})
     
     if config and config.get("categories"):
         return {"categories": config["categories"]}
@@ -322,11 +316,9 @@ async def get_menu_categories(store: str):
 @router.post("/menu/{store}")
 async def save_menu_categories(store: str, categories: List[MenuCategory]):
     """Save menu categories for a store"""
-    db = get_db()
-    
     categories_dict = [c.dict() for c in categories]
     
-    db.storefront_nav_config.update_one(
+    await _db.storefront_nav_config.update_one(
         {"store": store},
         {"$set": {"categories": categories_dict, "updated_at": datetime.now(timezone.utc).isoformat()}},
         upsert=True
@@ -338,9 +330,7 @@ async def save_menu_categories(store: str, categories: List[MenuCategory]):
 @router.get("/logo/{store}")
 async def get_logo_config(store: str):
     """Get logo configuration for a store"""
-    db = get_db()
-    
-    config = db.storefront_nav_config.find_one({"store": store}, {"logo": 1, "_id": 0})
+    config = await _db.storefront_nav_config.find_one({"store": store}, {"logo": 1, "_id": 0})
     
     if config and config.get("logo"):
         return {"logo": config["logo"]}
@@ -357,9 +347,7 @@ async def get_logo_config(store: str):
 @router.post("/logo/{store}")
 async def save_logo_config(store: str, logo: LogoConfig):
     """Save logo configuration for a store"""
-    db = get_db()
-    
-    db.storefront_nav_config.update_one(
+    await _db.storefront_nav_config.update_one(
         {"store": store},
         {"$set": {"logo": logo.dict(), "updated_at": datetime.now(timezone.utc).isoformat()}},
         upsert=True
@@ -371,9 +359,7 @@ async def save_logo_config(store: str, logo: LogoConfig):
 @router.get("/mega-menu/{store}/{category}")
 async def get_mega_menu(store: str, category: str):
     """Get mega menu configuration for a specific category"""
-    db = get_db()
-    
-    config = db.storefront_nav_config.find_one({"store": store}, {"megaMenu": 1, "_id": 0})
+    config = await _db.storefront_nav_config.find_one({"store": store}, {"megaMenu": 1, "_id": 0})
     
     if config and config.get("megaMenu") and config["megaMenu"].get(category.upper()):
         return {"megaMenu": config["megaMenu"][category.upper()]}
@@ -388,9 +374,7 @@ async def get_mega_menu(store: str, category: str):
 @router.post("/mega-menu/{store}/{category}")
 async def save_mega_menu(store: str, category: str, mega_menu: MegaMenuConfig):
     """Save mega menu configuration for a specific category"""
-    db = get_db()
-    
-    db.storefront_nav_config.update_one(
+    await _db.storefront_nav_config.update_one(
         {"store": store},
         {"$set": {f"megaMenu.{category.upper()}": mega_menu.dict(), "updated_at": datetime.now(timezone.utc).isoformat()}},
         upsert=True
@@ -400,7 +384,7 @@ async def save_mega_menu(store: str, category: str, mega_menu: MegaMenuConfig):
 
 
 # ======================
-# MEASUREMENTS & DIMENSIONS
+# MEASUREMENTS & DIMENSIONS (Reference)
 # ======================
 
 """
