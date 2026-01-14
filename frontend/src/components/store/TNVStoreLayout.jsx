@@ -135,14 +135,19 @@ export const TNVHeader = () => {
   const [regionDropdown, setRegionDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
+  const [genderDropdown, setGenderDropdown] = useState(false);
+  const [selectedGender, setSelectedGender] = useState('WOMEN');
   const [promoIndex, setPromoIndex] = useState(0);
   const location = useLocation();
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest('.category-dropdown-container')) {
         setActiveCategory(null);
+      }
+      if (!e.target.closest('.gender-dropdown-container')) {
+        setGenderDropdown(false);
       }
     };
     document.addEventListener('click', handleClickOutside);
@@ -162,7 +167,7 @@ export const TNVHeader = () => {
     { 
       name: 'FASHION', 
       path: '/fashion', 
-      bgColor: '#a8e6a3', // Light green like Namshi
+      bgColor: '#c8e6c9', // Light green
       image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=100&h=100&fit=crop',
       hasMegaMenu: true 
     },
@@ -175,13 +180,13 @@ export const TNVHeader = () => {
     { 
       name: 'BAGS & KIDS', 
       path: '/bags', 
-      bgColor: '#ffccbc', // Peach/orange like Namshi
+      bgColor: '#ffe0b2', // Peach/orange
       image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=100&h=100&fit=crop'
     },
     { 
       name: 'HOME & MORE', 
       path: '/home', 
-      bgColor: '#b2dfdb', // Teal like Namshi
+      bgColor: '#b2dfdb', // Teal
       image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=100&h=100&fit=crop'
     },
     { 
@@ -203,17 +208,10 @@ export const TNVHeader = () => {
     return () => clearInterval(interval);
   }, [promoMessages.length]);
 
-  // Get current category from URL
-  const getCurrentCategory = () => {
-    const path = location.pathname.replace('/tnv', '');
-    if (path.startsWith('/women')) return 'WOMEN';
-    if (path.startsWith('/men')) return 'MEN';
-    if (path.startsWith('/kids')) return 'KIDS';
-    return null;
+  const handleGenderSelect = (gender) => {
+    setSelectedGender(gender);
+    setGenderDropdown(false);
   };
-
-  const currentCategory = getCurrentCategory();
-  const showSubNav = currentCategory === 'WOMEN' || currentCategory === 'MEN';
 
   return (
     <header className="sticky top-0 z-50 bg-white">
@@ -276,20 +274,20 @@ export const TNVHeader = () => {
         </div>
       </div>
 
-      {/* MAIN HEADER - Black bar EXACTLY like Namshi */}
-      <div className="bg-black h-[70px]">
+      {/* MAIN HEADER - WHITE background like Namshi */}
+      <div className="bg-white border-b h-[72px]">
         <div className="max-w-7xl mx-auto px-4 flex items-center h-full gap-3">
           {/* Mobile Menu Button */}
           <button 
-            className="lg:hidden p-2 text-white"
+            className="lg:hidden p-2 text-black"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
 
-          {/* Logo - Italic like NAMSHI */}
-          <Link to="/tnv" className="shrink-0 mr-2">
-            <span className="text-white text-2xl font-black italic tracking-wide">NAMSHI</span>
+          {/* Logo - BLACK italic like NAMSHI */}
+          <Link to="/tnv" className="shrink-0 mr-4">
+            <span className="text-black text-2xl font-black italic tracking-wide">NAMSHI</span>
           </Link>
 
           {/* Category Tabs with Images - EXACTLY like Namshi */}
@@ -300,7 +298,7 @@ export const TNVHeader = () => {
                 className="relative"
                 onClick={() => cat.hasMegaMenu && setActiveCategory(activeCategory === cat.name ? null : cat.name)}
               >
-                <div className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-white/10 transition ${activeCategory === cat.name ? 'bg-white/10' : ''}`}>
+                <div className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-100 transition ${activeCategory === cat.name ? 'bg-gray-100' : ''}`}>
                   {/* Category Image Box - Like Namshi */}
                   <div 
                     className="w-11 h-11 rounded overflow-hidden flex items-center justify-center"
@@ -313,7 +311,7 @@ export const TNVHeader = () => {
                       onError={(e) => { e.target.style.display = 'none'; }}
                     />
                   </div>
-                  <span className="text-white text-xs font-medium whitespace-nowrap">
+                  <span className="text-black text-xs font-medium whitespace-nowrap">
                     {cat.name}
                   </span>
                 </div>
@@ -373,29 +371,29 @@ export const TNVHeader = () => {
                 placeholder="Search for Guess Bags"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white rounded pl-10 pr-4 py-2.5 text-sm placeholder-gray-400"
+                className="w-full bg-gray-100 rounded-full pl-10 pr-4 py-2.5 text-sm placeholder-gray-400 border-0"
               />
             </div>
           </div>
 
-          {/* Action Icons - Like Namshi */}
+          {/* Action Icons - Like Namshi (BLACK icons) */}
           <div className="flex items-center gap-1 ml-auto">
-            <button className="text-white p-2 hover:bg-white/10 rounded hidden md:flex items-center gap-1">
+            <button className="text-black p-2 hover:bg-gray-100 rounded hidden md:flex items-center gap-1">
               <User className="w-5 h-5" />
               <ChevronDown className="w-3 h-3" />
             </button>
-            <Link to="/tnv/wishlist" className="text-white p-2 hover:bg-white/10 rounded relative">
+            <Link to="/tnv/wishlist" className="text-black p-2 hover:bg-gray-100 rounded relative">
               <Heart className="w-5 h-5" />
               {wishlist.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {wishlist.length}
                 </span>
               )}
             </Link>
-            <Link to="/tnv/cart" className="text-white p-2 hover:bg-white/10 rounded relative">
+            <Link to="/tnv/cart" className="text-black p-2 hover:bg-gray-100 rounded relative">
               <ShoppingBag className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-white text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
@@ -404,31 +402,52 @@ export const TNVHeader = () => {
         </div>
       </div>
 
-      {/* SUB-NAVIGATION BAR - EXACTLY like Namshi */}
-      {showSubNav && (
-        <div className="bg-white border-b h-11">
-          <div className="max-w-7xl mx-auto px-4 flex items-center h-full">
-            {/* Current Category Dropdown */}
-            <div className="flex items-center gap-1 pr-4 border-r border-gray-300">
-              <span className="text-sm font-bold text-black">{currentCategory}</span>
-              <ChevronDown className="w-3 h-3 text-gray-600" />
-            </div>
+      {/* GENDER SELECTOR BAR - WOMEN / MEN dropdown + sub-nav - EXACTLY like Namshi */}
+      <div className="bg-white border-b h-11">
+        <div className="max-w-7xl mx-auto px-4 flex items-center h-full">
+          {/* Gender Dropdown */}
+          <div className="relative gender-dropdown-container">
+            <button 
+              onClick={() => setGenderDropdown(!genderDropdown)}
+              className="flex items-center gap-1 pr-4 border-r border-gray-300 font-bold text-sm"
+            >
+              <span>{selectedGender}</span>
+              <ChevronDown className={`w-3 h-3 transition-transform ${genderDropdown ? 'rotate-180' : ''}`} />
+            </button>
             
-            {/* Sub-nav Links */}
-            <nav className="flex items-center gap-6 ml-4 overflow-x-auto">
-              {subNavItems.map(item => (
-                <Link
-                  key={item}
-                  to={`/tnv/${currentCategory?.toLowerCase()}/${item.toLowerCase().replace(' ', '-')}`}
-                  className={`text-xs font-medium whitespace-nowrap py-2 hover:text-black transition ${item === 'SALE' ? 'text-red-500' : 'text-gray-600'}`}
+            {/* Gender Dropdown Menu */}
+            {genderDropdown && (
+              <div className="absolute top-full left-0 mt-2 bg-white shadow-xl rounded-lg border overflow-hidden z-50 min-w-[120px]">
+                <button 
+                  onClick={() => handleGenderSelect('WOMEN')}
+                  className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 ${selectedGender === 'WOMEN' ? 'bg-gray-50 font-bold' : ''}`}
                 >
-                  {item}
-                </Link>
-              ))}
-            </nav>
+                  WOMEN
+                </button>
+                <button 
+                  onClick={() => handleGenderSelect('MEN')}
+                  className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 ${selectedGender === 'MEN' ? 'bg-gray-50 font-bold' : ''}`}
+                >
+                  MEN
+                </button>
+              </div>
+            )}
           </div>
+          
+          {/* Sub-nav Links */}
+          <nav className="flex items-center gap-6 ml-4 overflow-x-auto">
+            {subNavItems.map(item => (
+              <Link
+                key={item}
+                to={`/tnv/${selectedGender.toLowerCase()}/${item.toLowerCase().replace(' ', '-')}`}
+                className={`text-xs font-medium whitespace-nowrap py-2 hover:text-black transition ${item === 'SALE' ? 'text-red-500' : 'text-gray-600'}`}
+              >
+                {item}
+              </Link>
+            ))}
+          </nav>
         </div>
-      )}
+      </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
