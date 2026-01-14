@@ -30,7 +30,10 @@ const TNVCheckout = () => {
     }));
   };
 
-  const deliveryFee = cartTotal >= 500 ? 0 : 50;
+  // Use store-specific thresholds
+  const freeShippingThreshold = storeConfig?.freeShippingThreshold || 2000;
+  const shippingCost = storeConfig?.shippingCost || 150;
+  const deliveryFee = cartTotal >= freeShippingThreshold ? 0 : shippingCost;
   const total = cartTotal + deliveryFee;
 
   const handlePlaceOrder = async () => {
