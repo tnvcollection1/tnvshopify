@@ -54,7 +54,7 @@ const TNVCart = () => {
               <div key={`${item.productId}-${item.variantId}`} className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
                 <div className="flex gap-4">
                   {/* Product Image */}
-                  <Link to={`/tnv/product/${item.productId}`} className="flex-shrink-0">
+                  <Link to={`${baseUrl}/product/${item.productId}`} className="flex-shrink-0">
                     <img
                       src={item.image || 'https://via.placeholder.com/120x150?text=No+Image'}
                       alt={item.title}
