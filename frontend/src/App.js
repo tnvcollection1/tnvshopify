@@ -1035,7 +1035,10 @@ function AppRoutes() {
       <Route path="/tnv/cart" element={<TNVStoreWrapper><TNVCart /></TNVStoreWrapper>} />
       <Route path="/tnv/checkout" element={<TNVStoreWrapper><TNVCheckout /></TNVStoreWrapper>} />
       <Route path="/tnv/order-confirmation/:orderId" element={<TNVStoreWrapper><TNVOrderConfirmation /></TNVStoreWrapper>} />
-      <Route path="/tnv/track/:orderId" element={<TNVStoreWrapper><TNVOrderConfirmation /></TNVStoreWrapper>} />
+      <Route path="/tnv/track/:orderId" element={<TNVStoreWrapper><OrderTrackingPage /></TNVStoreWrapper>} />
+      <Route path="/tnv/track" element={<TNVStoreWrapper><OrderTrackingPage /></TNVStoreWrapper>} />
+      <Route path="/tnv/wishlist" element={<TNVStoreWrapper><WishlistPage /></TNVStoreWrapper>} />
+      <Route path="/tnv/account" element={<TNVStoreWrapper><CustomerAccountPage /></TNVStoreWrapper>} />
       
       {/* TNV Pakistan Store Routes (PKR Currency) */}
       <Route path="/tnv-pk" element={<TNVPKStoreWrapper><TNVHomePage /></TNVPKStoreWrapper>} />
@@ -1049,7 +1052,10 @@ function AppRoutes() {
       <Route path="/tnv-pk/cart" element={<TNVPKStoreWrapper><TNVCart /></TNVPKStoreWrapper>} />
       <Route path="/tnv-pk/checkout" element={<TNVPKStoreWrapper><TNVCheckout /></TNVPKStoreWrapper>} />
       <Route path="/tnv-pk/order-confirmation/:orderId" element={<TNVPKStoreWrapper><TNVOrderConfirmation /></TNVPKStoreWrapper>} />
-      <Route path="/tnv-pk/track/:orderId" element={<TNVPKStoreWrapper><TNVOrderConfirmation /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/track/:orderId" element={<TNVPKStoreWrapper><OrderTrackingPage /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/track" element={<TNVPKStoreWrapper><OrderTrackingPage /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/wishlist" element={<TNVPKStoreWrapper><WishlistPage /></TNVPKStoreWrapper>} />
+      <Route path="/tnv-pk/account" element={<TNVPKStoreWrapper><CustomerAccountPage /></TNVPKStoreWrapper>} />
     </Routes>
   );
 }
