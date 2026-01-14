@@ -47,7 +47,7 @@ const PhoneFrame = ({ children }) => (
 // Product Card Component
 const ProductCard = ({ product, onPress, onWishlist, isWishlisted }) => {
   const discount = product.compare_price ? Math.round((1 - product.price / product.compare_price) * 100) : 0;
-  const delivery = Math.random() > 0.5 ? 'TODAY' : 'TOMORROW';
+  const delivery = product.id % 2 === 0 ? 'TODAY' : 'TOMORROW';
 
   return (
     <div 
