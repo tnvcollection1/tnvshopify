@@ -115,6 +115,34 @@ export const StoreProvider = ({ children }) => {
     return storeNames[storeId] || storeId;
   }, []);
 
+  // Get currency config for a store
+  const getCurrencyConfig = useCallback((storeId = null) => {
+    const store = storeId || selectedStore;
+    const currencyConfigs = {
+      'tnvcollection': { symbol: '₹', code: 'INR', name: 'Indian Rupee', locale: 'en-IN' },
+      'tnvcollectionpk': { symbol: 'Rs.', code: 'PKR', name: 'Pakistani Rupee', locale: 'en-PK' },
+      'ashmiaa': { symbol: '₹', code: 'INR', name: 'Indian Rupee', locale: 'en-IN' },
+      'asmia': { symbol: '₹', code: 'INR', name: 'Indian Rupee', locale: 'en-IN' }
+    };
+    return currencyConfigs[store] || { symbol: '₹', code: 'INR', name: 'Indian Rupee', locale: 'en-IN' };
+  }, [selectedStore]);
+
+  // Format price with store-specific currency
+  const formatPrice = useCallback((price, storeId = null) => {
+    if (price === null || price === undefined) return '-';
+    const config = getCurrencyConfig(storeId);
+    const formattedNumber = Number(price).toLocaleString(config.locale, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+    return `${config.symbol}${formattedNumber}`;
+  }, [getCurrencyConfig]);
+
+  // Get just the currency symbol
+  const getCurrencySymbol = useCallback((storeId = null) => {
+    return getCurrencyConfig(storeId).symbol;
+  }, [getCurrencyConfig]);
+
   // Get current store info
   const getCurrentStore = useCallback(() => {
     if (!selectedStore) return null;
