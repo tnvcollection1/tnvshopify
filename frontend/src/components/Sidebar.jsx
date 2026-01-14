@@ -262,6 +262,7 @@ const Sidebar = () => {
       section: 'storefront',
       children: [
         { icon: LayoutTemplate, label: 'Banners & Collections', path: '/storefront-config' },
+        { icon: Settings, label: 'Header Config', path: '/header-config' },
         { icon: Tags, label: 'Menus & Tags', path: '/menu-tags' },
         { icon: ShoppingBag, label: 'Orders', path: '/storefront-orders' },
       ]
