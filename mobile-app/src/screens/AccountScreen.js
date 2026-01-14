@@ -1,6 +1,7 @@
 /**
  * Account Screen
  * User profile and settings
+ * Supports dark mode
  */
 
 import React from 'react';
@@ -11,18 +12,22 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  StatusBar,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
+import { useTheme } from '../context/ThemeContext';
 import Header from '../components/Header';
+import { spacing, borderRadius, typography } from '../theme';
 
 const AccountScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { user, isAuthenticated, logout } = useAuth();
   const { region, changeRegion, regions } = useStore();
+  const { colors, statusBarStyle } = useTheme();
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -36,50 +41,52 @@ const AccountScreen = () => {
     { icon: '❤️', title: 'Wishlist', screen: 'Wishlist' },
     { icon: '📍', title: 'Addresses', screen: 'Addresses' },
     { icon: '💳', title: 'Payment Methods', screen: 'PaymentMethods' },
-    { icon: '🔔', title: 'Notifications', screen: 'Notifications' },
+    { icon: '⚙️', title: 'Settings', screen: 'Settings' },
+    { icon: '🔔', title: 'Notifications', screen: 'NotificationSettings' },
     { icon: '❓', title: 'Help & Support', screen: 'Support' },
     { icon: '📜', title: 'Terms & Conditions', screen: 'Terms' },
   ];
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <StatusBar barStyle={statusBarStyle} />
       <Header title="Account" />
 
       <ScrollView style={styles.content}>
         {/* User Info */}
         {isAuthenticated ? (
-          <View style={styles.userCard}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
+          <View style={[styles.userCard, { backgroundColor: colors.card }]}>
+            <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+              <Text style={[styles.avatarText, { color: colors.textInverse }]}>
                 {user?.name?.[0]?.toUpperCase() || '👤'}
               </Text>
             </View>
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>{user?.name || 'User'}</Text>
-              <Text style={styles.userEmail}>{user?.email}</Text>
+              <Text style={[styles.userName, { color: colors.text }]}>{user?.name || 'User'}</Text>
+              <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{user?.email}</Text>
             </View>
             <TouchableOpacity style={styles.editBtn}>
               <Text>✏️</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={styles.guestCard}>
-            <Text style={styles.guestTitle}>Welcome to TNV Collection</Text>
-            <Text style={styles.guestSubtitle}>
+          <View style={[styles.guestCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.guestTitle, { color: colors.text }]}>Welcome to TNV Collection</Text>
+            <Text style={[styles.guestSubtitle, { color: colors.textSecondary }]}>
               Sign in to access your orders, wishlist, and more
             </Text>
             <TouchableOpacity
-              style={styles.signInBtn}
+              style={[styles.signInBtn, { backgroundColor: colors.primary }]}
               onPress={() => navigation.navigate('Auth')}
             >
-              <Text style={styles.signInBtnText}>Sign In</Text>
+              <Text style={[styles.signInBtnText, { color: colors.textInverse }]}>Sign In</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Region Selector */}
-        <View style={styles.regionSection}>
-          <Text style={styles.sectionTitle}>Region & Currency</Text>
+        <View style={[styles.regionSection, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Region & Currency</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.regionOptions}>
               {regions.map((r) => (
@@ -87,12 +94,17 @@ const AccountScreen = () => {
                   key={r.code}
                   style={[
                     styles.regionOption,
-                    region.code === r.code && styles.regionOptionActive,
+                    { backgroundColor: colors.background },
+                    region.code === r.code && { backgroundColor: colors.primary },
                   ]}
                   onPress={() => changeRegion(r)}
                 >
                   <Text style={styles.regionFlag}>{r.flag}</Text>
-                  <Text style={styles.regionCode}>{r.code}</Text>
+                  <Text style={[
+                    styles.regionCode, 
+                    { color: colors.text },
+                    region.code === r.code && { color: colors.textInverse }
+                  ]}>{r.code}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -100,30 +112,33 @@ const AccountScreen = () => {
         </View>
 
         {/* Menu Items */}
-        <View style={styles.menuSection}>
+        <View style={[styles.menuSection, { backgroundColor: colors.card }]}>
           {menuItems.map((item, idx) => (
             <TouchableOpacity
               key={idx}
-              style={styles.menuItem}
+              style={[styles.menuItem, { borderBottomColor: colors.border }]}
               onPress={() => navigation.navigate(item.screen)}
             >
               <Text style={styles.menuIcon}>{item.icon}</Text>
-              <Text style={styles.menuTitle}>{item.title}</Text>
-              <Text style={styles.menuArrow}>›</Text>
+              <Text style={[styles.menuTitle, { color: colors.text }]}>{item.title}</Text>
+              <Text style={[styles.menuArrow, { color: colors.textTertiary }]}>›</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Logout */}
         {isAuthenticated && (
-          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Logout</Text>
+          <TouchableOpacity 
+            style={[styles.logoutBtn, { backgroundColor: colors.card }]} 
+            onPress={handleLogout}
+          >
+            <Text style={[styles.logoutText, { color: colors.error }]}>Logout</Text>
           </TouchableOpacity>
         )}
 
         {/* App Info */}
         <View style={styles.appInfo}>
-          <Text style={styles.appVersion}>TNV Collection v1.0.0</Text>
+          <Text style={[styles.appVersion, { color: colors.textTertiary }]}>TNV Collection v1.0.0</Text>
         </View>
       </ScrollView>
     </View>
@@ -133,7 +148,6 @@ const AccountScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   content: {
     flex: 1,
@@ -141,148 +155,129 @@ const styles = StyleSheet.create({
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    margin: 16,
-    padding: 16,
-    borderRadius: 16,
+    margin: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: borderRadius.xl,
   },
   avatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    color: '#fff',
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: typography.bold,
   },
   userInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
   userName: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
   },
   userEmail: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
+    fontSize: typography.bodySmall,
+    marginTop: spacing.xs,
   },
   editBtn: {
-    padding: 8,
+    padding: spacing.sm,
   },
   guestCard: {
-    backgroundColor: '#fff',
-    margin: 16,
-    padding: 24,
-    borderRadius: 16,
+    margin: spacing.lg,
+    padding: spacing.xl,
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
   },
   guestTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
+    marginBottom: spacing.sm,
   },
   guestSubtitle: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: typography.bodySmall,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   signInBtn: {
-    backgroundColor: '#000',
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 24,
+    paddingHorizontal: spacing.xxxl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.full,
   },
   signInBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: typography.body,
+    fontWeight: typography.bold,
   },
   regionSection: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 16,
-    borderRadius: 16,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: borderRadius.xl,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontSize: typography.bodySmall,
+    fontWeight: typography.semibold,
+    marginBottom: spacing.md,
   },
   regionOptions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   regionOption: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: '#f5f5f5',
-  },
-  regionOptionActive: {
-    backgroundColor: '#000',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.lg,
   },
   regionFlag: {
     fontSize: 24,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   regionCode: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: typography.caption,
+    fontWeight: typography.medium,
   },
   menuSection: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    borderRadius: 16,
+    marginHorizontal: spacing.lg,
+    borderRadius: borderRadius.xl,
     overflow: 'hidden',
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   menuIcon: {
     fontSize: 20,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   menuTitle: {
     flex: 1,
-    fontSize: 15,
+    fontSize: typography.body,
   },
   menuArrow: {
     fontSize: 20,
-    color: '#ccc',
   },
   logoutBtn: {
-    margin: 16,
-    padding: 16,
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    margin: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
   },
   logoutText: {
-    color: '#ef4444',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: typography.body,
+    fontWeight: typography.semibold,
   },
   appInfo: {
     alignItems: 'center',
-    padding: 24,
+    padding: spacing.xl,
   },
   appVersion: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: typography.caption,
   },
 });
 

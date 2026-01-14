@@ -1,6 +1,7 @@
 /**
  * Search Screen
  * Product search with results
+ * Supports dark mode
  */
 
 import React, { useState, useEffect } from 'react';
@@ -13,11 +14,14 @@ import {
   StyleSheet,
   Dimensions,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../context/ThemeContext';
 import ProductCard from '../components/ProductCard';
 import * as api from '../services/api';
+import { spacing, borderRadius, typography } from '../theme';
 
 const { width } = Dimensions.get('window');
 const PRODUCT_WIDTH = (width - 48) / 2;
@@ -26,6 +30,7 @@ const SearchScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors, statusBarStyle } = useTheme();
   const initialQuery = route.params?.query || '';
 
   const [searchQuery, setSearchQuery] = useState(initialQuery);
@@ -50,7 +55,6 @@ const SearchScreen = () => {
       setResults(res.products || []);
     } catch (e) {
       console.log('Search error:', e);
-      // Fallback: filter from all products
       try {
         const allRes = await api.getProducts({ limit: 200 });
         const filtered = (allRes.products || []).filter(p =>
@@ -74,14 +78,17 @@ const SearchScreen = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+      <StatusBar barStyle={statusBarStyle} />
+      
       {/* Search Header */}
-      <View style={styles.header}>
-        <View style={styles.searchContainer}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search for products, brands..."
+            placeholderTextColor={colors.textTertiary}
             value={searchQuery}
             onChangeText={setSearchQuery}
             onSubmitEditing={handleSearch}
@@ -90,7 +97,7 @@ const SearchScreen = () => {
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Text style={styles.clearIcon}>✕</Text>
+              <Text style={[styles.clearIcon, { color: colors.textTertiary }]}>✕</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -98,20 +105,20 @@ const SearchScreen = () => {
           style={styles.cancelBtn}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.cancelText}>Cancel</Text>
+          <Text style={[styles.cancelText, { color: colors.textSecondary }]}>Cancel</Text>
         </TouchableOpacity>
       </View>
 
       {/* Content */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#000" />
-          <Text style={styles.loadingText}>Searching...</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Searching...</Text>
         </View>
       ) : results.length > 0 ? (
         <>
-          <View style={styles.resultsHeader}>
-            <Text style={styles.resultsCount}>
+          <View style={[styles.resultsHeader, { backgroundColor: colors.card }]}>
+            <Text style={[styles.resultsCount, { color: colors.textSecondary }]}>
               {results.length} results for "{searchQuery}"
             </Text>
           </View>
@@ -129,27 +136,27 @@ const SearchScreen = () => {
       ) : searchQuery ? (
         <View style={styles.noResults}>
           <Text style={styles.noResultsIcon}>🔍</Text>
-          <Text style={styles.noResultsTitle}>No results found</Text>
-          <Text style={styles.noResultsSubtitle}>
+          <Text style={[styles.noResultsTitle, { color: colors.text }]}>No results found</Text>
+          <Text style={[styles.noResultsSubtitle, { color: colors.textSecondary }]}>
             Try searching with different keywords
           </Text>
         </View>
       ) : (
         <View style={styles.suggestions}>
-          <Text style={styles.sectionTitle}>Popular Searches</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Popular Searches</Text>
           <View style={styles.tags}>
             {recentSearches.map((term, idx) => (
               <TouchableOpacity
                 key={idx}
-                style={styles.tag}
+                style={[styles.tag, { backgroundColor: colors.card }]}
                 onPress={() => handleQuickSearch(term)}
               >
-                <Text style={styles.tagText}>{term}</Text>
+                <Text style={[styles.tagText, { color: colors.text }]}>{term}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          <Text style={[styles.sectionTitle, { marginTop: 24 }]}>
+          <Text style={[styles.sectionTitle, { marginTop: spacing.xl, color: colors.text }]}>
             Trending Categories
           </Text>
           <View style={styles.categories}>
@@ -163,11 +170,11 @@ const SearchScreen = () => {
             ].map((cat, idx) => (
               <TouchableOpacity
                 key={idx}
-                style={styles.categoryItem}
+                style={[styles.categoryItem, { backgroundColor: colors.card }]}
                 onPress={() => handleQuickSearch(cat.name)}
               >
                 <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
-                <Text style={styles.categoryName}>{cat.name}</Text>
+                <Text style={[styles.categoryName, { color: colors.text }]}>{cat.name}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -180,46 +187,41 @@ const SearchScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 24,
-    paddingHorizontal: 16,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.lg,
     height: 44,
   },
   searchIcon: {
     fontSize: 16,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: typography.body,
     height: '100%',
   },
   clearIcon: {
     fontSize: 16,
-    color: '#999',
-    padding: 4,
+    padding: spacing.xs,
   },
   cancelBtn: {
-    marginLeft: 12,
-    padding: 8,
+    marginLeft: spacing.md,
+    padding: spacing.sm,
   },
   cancelText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: typography.body,
   },
   loadingContainer: {
     flex: 1,
@@ -227,86 +229,80 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    color: '#666',
+    marginTop: spacing.md,
   },
   resultsHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#f5f5f5',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   resultsCount: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: typography.bodySmall,
   },
   productsContainer: {
-    padding: 12,
+    padding: spacing.md,
   },
   row: {
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   noResults: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 40,
+    padding: spacing.xxl,
   },
   noResultsIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   noResultsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontSize: typography.h4,
+    fontWeight: typography.bold,
+    marginBottom: spacing.sm,
   },
   noResultsSubtitle: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: typography.bodySmall,
     textAlign: 'center',
   },
   suggestions: {
-    padding: 16,
+    padding: spacing.lg,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 12,
+    fontSize: typography.body,
+    fontWeight: typography.bold,
+    marginBottom: spacing.md,
   },
   tags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   tag: {
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
   },
   tagText: {
-    fontSize: 14,
+    fontSize: typography.bodySmall,
   },
   categories: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: spacing.md,
   },
   categoryItem: {
     width: '30%',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
     alignItems: 'center',
   },
   categoryEmoji: {
     fontSize: 32,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   categoryName: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: typography.caption,
+    fontWeight: typography.medium,
   },
 });
 

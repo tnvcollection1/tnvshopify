@@ -1,6 +1,7 @@
 /**
  * Login Screen
  * User sign in form
+ * Supports dark mode
  */
 
 import React, { useState } from 'react';
@@ -14,15 +15,19 @@ import {
   Platform,
   ScrollView,
   Alert,
+  StatusBar,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { spacing, borderRadius, typography } from '../../theme';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { login } = useAuth();
+  const { colors, statusBarStyle } = useTheme();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,9 +53,10 @@ const LoginScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.surface }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <StatusBar barStyle={statusBarStyle} />
       <ScrollView
         contentContainerStyle={[
           styles.content,
@@ -60,22 +66,23 @@ const LoginScreen = () => {
       >
         {/* Logo */}
         <View style={styles.header}>
-          <Text style={styles.logo}>TNV</Text>
-          <View style={styles.badge}>
+          <Text style={[styles.logo, { color: colors.text }]}>TNV</Text>
+          <View style={[styles.badge, { backgroundColor: colors.accent }]}>
             <Text style={styles.badgeText}>COLLECTION</Text>
           </View>
         </View>
 
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to continue shopping</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Welcome Back</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Sign in to continue shopping</Text>
 
         {/* Form */}
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Email</Text>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Email</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
               placeholder="Enter your email"
+              placeholderTextColor={colors.textTertiary}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -85,11 +92,12 @@ const LoginScreen = () => {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Password</Text>
-            <View style={styles.passwordContainer}>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Password</Text>
+            <View style={[styles.passwordContainer, { backgroundColor: colors.background }]}>
               <TextInput
-                style={styles.passwordInput}
+                style={[styles.passwordInput, { color: colors.text }]}
                 placeholder="Enter your password"
+                placeholderTextColor={colors.textTertiary}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -109,15 +117,15 @@ const LoginScreen = () => {
             style={styles.forgotBtn}
             onPress={() => navigation.navigate('ForgotPassword')}
           >
-            <Text style={styles.forgotText}>Forgot Password?</Text>
+            <Text style={[styles.forgotText, { color: colors.text }]}>Forgot Password?</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.loginBtn, loading && styles.loginBtnDisabled]}
+            style={[styles.loginBtn, { backgroundColor: colors.primary }, loading && styles.loginBtnDisabled]}
             onPress={handleLogin}
             disabled={loading}
           >
-            <Text style={styles.loginBtnText}>
+            <Text style={[styles.loginBtnText, { color: colors.textInverse }]}>
               {loading ? 'Signing In...' : 'Sign In'}
             </Text>
           </TouchableOpacity>
@@ -125,28 +133,28 @@ const LoginScreen = () => {
 
         {/* Divider */}
         <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine} />
+          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+          <Text style={[styles.dividerText, { color: colors.textTertiary }]}>or</Text>
+          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
         </View>
 
         {/* Social Login */}
         <View style={styles.socialBtns}>
-          <TouchableOpacity style={styles.socialBtn}>
+          <TouchableOpacity style={[styles.socialBtn, { backgroundColor: colors.background }]}>
             <Text style={styles.socialIcon}>🍎</Text>
-            <Text style={styles.socialText}>Apple</Text>
+            <Text style={[styles.socialText, { color: colors.text }]}>Apple</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialBtn}>
+          <TouchableOpacity style={[styles.socialBtn, { backgroundColor: colors.background }]}>
             <Text style={styles.socialIcon}>G</Text>
-            <Text style={styles.socialText}>Google</Text>
+            <Text style={[styles.socialText, { color: colors.text }]}>Google</Text>
           </TouchableOpacity>
         </View>
 
         {/* Register Link */}
         <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>Don't have an account? </Text>
+          <Text style={[styles.registerText, { color: colors.textSecondary }]}>Don't have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.registerLink}>Sign Up</Text>
+            <Text style={[styles.registerLink, { color: colors.primary }]}>Sign Up</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -157,153 +165,140 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
-    padding: 24,
+    padding: spacing.xl,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xxxl,
   },
   logo: {
     fontSize: 32,
     fontWeight: '900',
   },
   badge: {
-    backgroundColor: '#FF6B9D',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    marginLeft: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.xl,
+    marginLeft: spacing.sm,
   },
   badgeText: {
     color: '#fff',
-    fontSize: 11,
-    fontWeight: 'bold',
+    fontSize: typography.tiny,
+    fontWeight: typography.bold,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: typography.h2,
+    fontWeight: typography.bold,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: typography.body,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xxxl,
   },
   form: {
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: spacing.lg,
   },
   inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
+    fontSize: typography.bodySmall,
+    fontWeight: typography.semibold,
+    marginBottom: spacing.sm,
   },
   input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
+    borderRadius: borderRadius.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    fontSize: typography.body,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
+    borderRadius: borderRadius.lg,
   },
   passwordInput: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    fontSize: typography.body,
   },
   eyeBtn: {
-    padding: 14,
+    padding: spacing.md,
   },
   eyeIcon: {
     fontSize: 20,
   },
   forgotBtn: {
     alignSelf: 'flex-end',
-    marginBottom: 24,
+    marginBottom: spacing.xl,
   },
   forgotText: {
-    fontSize: 14,
-    color: '#000',
-    fontWeight: '500',
+    fontSize: typography.bodySmall,
+    fontWeight: typography.medium,
   },
   loginBtn: {
-    backgroundColor: '#000',
-    borderRadius: 30,
-    paddingVertical: 16,
+    borderRadius: borderRadius.full,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
   },
   loginBtnDisabled: {
-    backgroundColor: '#999',
+    opacity: 0.6,
   },
   loginBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: typography.body,
+    fontWeight: typography.bold,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 24,
+    marginVertical: spacing.xl,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#eee',
   },
   dividerText: {
-    marginHorizontal: 16,
-    fontSize: 14,
-    color: '#999',
+    marginHorizontal: spacing.lg,
+    fontSize: typography.bodySmall,
   },
   socialBtns: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 32,
+    gap: spacing.md,
+    marginBottom: spacing.xxxl,
   },
   socialBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 8,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.lg,
+    gap: spacing.sm,
   },
   socialIcon: {
     fontSize: 20,
   },
   socialText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: typography.body,
+    fontWeight: typography.medium,
   },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
   registerText: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: typography.bodySmall,
   },
   registerLink: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: typography.bodySmall,
+    fontWeight: typography.bold,
   },
 });
 
