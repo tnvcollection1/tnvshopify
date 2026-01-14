@@ -100,10 +100,14 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - `GET /api/storefront/banners/category-tabs/{store}` - Category tabs
 - `GET /api/storefront/banners/sub-nav/{store}` - Sub-navigation
 - `GET /api/storefront/config/mobile-app/{store}` - Mobile app config
+- `GET /api/analytics/overview?store={store}` - Dashboard metrics (returns currency)
+- `GET /api/checkout/cart/{session_id}?store={store}` - Cart with store currency
 
 ## Access URLs
+- **India Store**: `/tnv` (INR currency ₹)
+- **Pakistan Store**: `/tnv-pk` (PKR currency Rs.)
 - **Store Settings**: `/store-settings`
-- **Web Store**: `/tnv`
+- **Sales Dashboard**: `/sales-dashboard`
 - **Mobile Preview**: `/mobile-app-preview`
 - **Login**: admin / admin
 
@@ -111,10 +115,12 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 
 ### P0 (Critical)
 - [x] Header matches Namshi.com ✅
+- [x] Multi-store/Multi-currency (INR/PKR) ✅
 
 ### P1 (High Priority)
 - [ ] Deploy storefront to VPS (`tnvcollection.com`)
-- [ ] Mega Menu implementation
+- [ ] Mega Menu with visual builder
+- [ ] DNS setup for `tnvcollection.pk` (A record → 159.198.36.164)
 
 ### P2 (Medium Priority)
 - [ ] Sooxie.com API integration
