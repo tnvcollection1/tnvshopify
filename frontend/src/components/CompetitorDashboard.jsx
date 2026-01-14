@@ -988,7 +988,13 @@ const CompetitorDashboard = () => {
           <div>
             <h2 className="text-lg font-semibold mb-4">Current Analysis</h2>
             {currentAnalysis ? (
-              <AnalysisResultsCard analysis={currentAnalysis} onRefresh={loadData} />
+              <AnalysisResultsCard 
+                analysis={currentAnalysis} 
+                onRefresh={loadData}
+                formatPrice={formatPrice}
+                getCurrencySymbol={getCurrencySymbol}
+                getCurrencyConfig={getCurrencyConfig}
+              />
             ) : (
               <div className="bg-white rounded-lg border p-12 text-center">
                 <Package className="w-12 h-12 mx-auto text-gray-300 mb-4" />
