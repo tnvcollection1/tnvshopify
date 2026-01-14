@@ -405,38 +405,38 @@ export const TNVHeader = () => {
             ))}
           </nav>
 
-          {/* Search Bar - Like Namshi on black bg */}
+          {/* Search Bar - Like Namshi */}
           <div className="flex-1 hidden md:block max-w-sm mx-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search for Guess Bags"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white rounded-sm pl-10 pr-4 py-2.5 text-sm placeholder-gray-400 border-0"
+                className="w-full bg-gray-100 rounded-full pl-10 pr-4 py-2.5 text-sm placeholder-gray-400 border-0"
               />
             </div>
           </div>
 
-          {/* Action Icons - WHITE on black bg */}
+          {/* Action Icons - BLACK icons like Namshi */}
           <div className="flex items-center gap-1 ml-auto">
-            <button className="text-white p-2 hover:bg-white/10 rounded hidden md:flex items-center gap-1">
+            <button className="text-black p-2 hover:bg-gray-100 rounded hidden md:flex items-center gap-1">
               <User className="w-5 h-5" />
               <ChevronDown className="w-3 h-3" />
             </button>
-            <Link to="/tnv/wishlist" className="text-white p-2 hover:bg-white/10 rounded relative">
+            <Link to="/tnv/wishlist" className="text-black p-2 hover:bg-gray-100 rounded relative">
               <Heart className="w-5 h-5" />
               {wishlist.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {wishlist.length}
                 </span>
               )}
             </Link>
-            <Link to="/tnv/cart" className="text-white p-2 hover:bg-white/10 rounded relative">
+            <Link to="/tnv/cart" className="text-black p-2 hover:bg-gray-100 rounded relative">
               <ShoppingBag className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
