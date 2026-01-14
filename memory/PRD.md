@@ -125,6 +125,8 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - `GET /api/mega-menu/config/{store}` - Full mega menu configuration
 - `GET /api/mega-menu/section/{store}/{category}` - Single mega menu section
 - `POST /api/mega-menu/config/{store}` - Save mega menu configuration
+- `GET /api/mega-menu/templates` - List all available templates
+- `POST /api/mega-menu/templates/{key}/apply/{store}` - Apply template to store
 
 ## Access URLs
 - **India Store**: `/tnv` (INR currency ₹)
