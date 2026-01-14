@@ -139,6 +139,17 @@ export const TNVHeader = () => {
   const [promoIndex, setPromoIndex] = useState(0);
   const location = useLocation();
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.category-dropdown-container')) {
+        setActiveCategory(null);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   // Get config from backend or use defaults
   const logo = navConfig?.logo || { text: 'TNV', badge: 'COLLECTION', badgeColor: '#FF6B9D' };
   const promoMessages = navConfig?.promoMessages || [
