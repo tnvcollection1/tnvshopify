@@ -1028,7 +1028,7 @@ const CompetitorDashboard = () => {
                         <div className="flex-1">
                           <p className="font-medium truncate">{analysis.product_name}</p>
                           <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
-                            <span>₹{analysis.your_price?.toLocaleString()}</span>
+                            <span>{formatPrice(analysis.your_price)}</span>
                             <span>•</span>
                             <span>{analysis.competitor_pages?.length || 0} competitors</span>
                           </div>
