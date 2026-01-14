@@ -16,7 +16,8 @@ const getImageUrl = (src) => {
 };
 
 const TNVHomePage = () => {
-  const { storeName, formatPrice, toggleWishlist, isInWishlist } = useStore();
+  const { storeName, formatPrice, toggleWishlist, isInWishlist, storeConfig } = useStore();
+  const baseUrl = storeConfig?.baseUrl || '/tnv';
   const [banners, setBanners] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
