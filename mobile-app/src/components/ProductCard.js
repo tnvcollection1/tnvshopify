@@ -18,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../context/StoreContext';
 import { useTheme } from '../context/ThemeContext';
+import { wishlistHaptic, addToCartHaptic, lightHaptic } from '../services/haptics';
 import { borderRadius, typography, spacing, gradients } from '../theme';
 
 const { width } = Dimensions.get('window');
