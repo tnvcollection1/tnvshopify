@@ -1073,6 +1073,8 @@ const CompetitorDashboard = () => {
         stores={stores}
         selectedStore={analysisStore}
         onStoreChange={setAnalysisStore}
+        formatPrice={formatPrice}
+        getCurrencySymbol={getCurrencySymbol}
       />
     </div>
   );
