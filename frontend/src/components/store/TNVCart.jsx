@@ -68,7 +68,7 @@ const TNVCart = () => {
                       <div>
                         <p className="text-xs text-gray-500 mb-1">TNV Collection</p>
                         <Link 
-                          to={`/tnv/product/${item.productId}`}
+                          to={`${baseUrl}/product/${item.productId}`}
                           className="font-medium text-sm sm:text-base line-clamp-2 hover:text-gray-600"
                         >
                           {item.title}
@@ -164,7 +164,7 @@ const TNVCart = () => {
 
               {/* Checkout Button */}
               <button
-                onClick={() => navigate('/tnv/checkout')}
+                onClick={() => navigate(`${baseUrl}/checkout`)}
                 className="w-full py-4 bg-black text-white rounded-full font-bold text-lg hover:bg-gray-800 transition flex items-center justify-center space-x-2"
                 data-testid="checkout-btn"
               >
