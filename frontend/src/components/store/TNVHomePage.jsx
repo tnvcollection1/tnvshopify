@@ -110,7 +110,7 @@ const TNVHomePage = () => {
                     </h2>
                     <p className="text-white/90 text-lg mb-6">{banner.subtitle || 'Fresh Fits, Fresh Start'}</p>
                     <Link 
-                      to="/tnv/products"
+                      to={`${baseUrl}/products`}
                       className="inline-block bg-white text-black px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition shadow-lg"
                     >
                       Shop Now
@@ -126,7 +126,7 @@ const TNVHomePage = () => {
               <div className="max-w-md">
                 <h2 className="text-gray-800 text-4xl md:text-5xl font-bold mb-2">Reset in Style</h2>
                 <p className="text-gray-600 text-lg mb-6">Fresh Fits, Fresh Start</p>
-                <Link to="/tnv/products" className="inline-block bg-black text-white px-8 py-3 rounded-full font-bold hover:bg-gray-800 transition">
+                <Link to={`${baseUrl}/products`} className="inline-block bg-black text-white px-8 py-3 rounded-full font-bold hover:bg-gray-800 transition">
                   Shop Now
                 </Link>
               </div>
@@ -153,7 +153,7 @@ const TNVHomePage = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold">Today's Picks</h2>
-            <Link to="/tnv/products" className="text-sm text-gray-500 hover:text-black">View All →</Link>
+            <Link to={`${baseUrl}/products`} className="text-sm text-gray-500 hover:text-black">View All →</Link>
           </div>
           
           <ProductCarousel products={products.slice(0, 8)} />
@@ -191,7 +191,7 @@ const TNVHomePage = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold">Trending Now</h2>
-            <Link to="/tnv/products" className="text-sm text-gray-500 hover:text-black">View All →</Link>
+            <Link to={`${baseUrl}/products`} className="text-sm text-gray-500 hover:text-black">View All →</Link>
           </div>
           
           <ProductCarousel products={products.slice(8, 16)} />
@@ -204,7 +204,7 @@ const TNVHomePage = () => {
           <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 rounded-2xl p-8 text-center">
             <h3 className="text-white text-2xl md:text-3xl font-black mb-2">MEGA SALE</h3>
             <p className="text-white/90 text-lg mb-4">Up to 70% OFF on selected items</p>
-            <Link to="/tnv/sale" className="inline-block bg-white text-pink-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition">
+            <Link to={`${baseUrl}/sale`} className="inline-block bg-white text-pink-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition">
               Shop Now
             </Link>
           </div>
@@ -223,7 +223,7 @@ const TNVHomePage = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold">New Arrivals</h2>
-            <Link to="/tnv/products" className="text-sm text-gray-500 hover:text-black">View All →</Link>
+            <Link to={`${baseUrl}/products`} className="text-sm text-gray-500 hover:text-black">View All →</Link>
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
