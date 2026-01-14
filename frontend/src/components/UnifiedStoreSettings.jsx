@@ -1083,8 +1083,12 @@ const UnifiedStoreSettings = () => {
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                        )}
+                      </SortableItem>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             </div>
           )}
 
