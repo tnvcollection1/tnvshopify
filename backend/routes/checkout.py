@@ -285,6 +285,8 @@ async def create_order(request: CreateOrderRequest, session_id: str, store: str 
             "order_id": order_id,
             "payment_method": "cod",
             "total": order_doc["total"],
+            "currency": store_config["currency"],
+            "currency_symbol": store_config["currency_symbol"],
             "message": "Order placed successfully. Pay on delivery."
         }
     
@@ -293,9 +295,16 @@ async def create_order(request: CreateOrderRequest, session_id: str, store: str 
     if not client:
         raise HTTPException(status_code=500, detail="Payment gateway not configured")
     
-    # Convert AED to paise (INR) - In production, use proper currency conversion
-    # For demo, we'll use 1 AED = 22 INR approximately
-    amount_inr = int(total * 22 * 100)  # Convert to paise
+    # Convert to INR for Razorpay
+    if store_config["currency"] == "INR":
+        amount_inr = int(total * 100)  # Already INR, convert to paise
+    elif store_config["currency"] == "PKR":
+        # Convert PKR to INR
+        pkr_to_inr_rate = store_config.get("pkr_to_inr_rate", 0.32)
+        amount_inr = int(total * pkr_to_inr_rate * 100)  # Convert to paise
+    else:
+        # Default conversion for other currencies
+        amount_inr = int(total * 22 * 100)
     
     try:
         razorpay_order = client.order.create({
@@ -305,6 +314,9 @@ async def create_order(request: CreateOrderRequest, session_id: str, store: str 
             "payment_capture": 1,
             "notes": {
                 "order_id": order_id,
+                "store": store,
+                "original_currency": store_config["currency"],
+                "original_amount": total,
                 "customer_name": request.shipping_address.full_name
             }
         })
@@ -320,8 +332,10 @@ async def create_order(request: CreateOrderRequest, session_id: str, store: str 
             "razorpay_order_id": razorpay_order["id"],
             "razorpay_key": os.environ.get('RAZORPAY_KEY_ID', ''),
             "amount": amount_inr,
-            "currency": "INR",
-            "total_aed": order_doc["total"],
+            "razorpay_currency": "INR",
+            "total": order_doc["total"],
+            "currency": store_config["currency"],
+            "currency_symbol": store_config["currency_symbol"],
             "customer": {
                 "name": request.shipping_address.full_name,
                 "email": request.shipping_address.email,
