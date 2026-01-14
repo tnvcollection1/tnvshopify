@@ -37,6 +37,26 @@ import { useStore } from '../contexts/StoreContext';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
+// Store selector component for admin pages
+const StoreSelector = ({ selectedStore, stores, onStoreChange, className = '' }) => {
+  return (
+    <select
+      value={selectedStore || ''}
+      onChange={(e) => onStoreChange(e.target.value)}
+      className={`border rounded-lg px-3 py-2 text-sm bg-white ${className}`}
+      data-testid="store-selector"
+    >
+      {stores.map((store) => (
+        <option key={store.store_name} value={store.store_name}>
+          {store.store_name === 'tnvcollection' ? '🇮🇳 TNV India (INR)' :
+           store.store_name === 'tnvcollectionpk' ? '🇵🇰 TNV Pakistan (PKR)' :
+           store.store_name}
+        </option>
+      ))}
+    </select>
+  );
+};
+
 // ==================== Notification Bell Component ====================
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
