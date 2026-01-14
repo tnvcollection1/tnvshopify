@@ -212,7 +212,8 @@ async def get_storefront_products(
 @router.get("/products/{product_id}")
 async def get_storefront_product(
     product_id: str,
-    store: str = "tnvcollection"
+    store: str = "tnvcollection",
+    localize_images: bool = True
 ):
     """
     Get a single product by ID for the storefront
@@ -234,6 +235,11 @@ async def get_storefront_product(
     
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Transform Shopify CDN URLs to local proxy URLs
+    if localize_images:
+        from routes.image_proxy import transform_product_images
+        product = transform_product_images(product)
     
     return {
         "success": True,
