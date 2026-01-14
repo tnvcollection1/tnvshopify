@@ -1,9 +1,9 @@
 /**
- * Product Card Component
- * Displays product information in a card format
+ * Enhanced Product Card Component
+ * Beautiful product display with animations and effects
  */
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -11,26 +11,52 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../context/StoreContext';
+import { colors, borderRadius, typography, shadows, spacing } from '../theme';
 
 const { width } = Dimensions.get('window');
 
-const ProductCard = ({ product, horizontal, style }) => {
+const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
   const navigation = useNavigation();
   const { formatPrice, toggleWishlist, isInWishlist } = useStore();
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const wishlistAnim = useRef(new Animated.Value(1)).current;
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const image = product.images?.[0]?.src;
   const price = product.variants?.[0]?.price || product.price || 0;
   const comparePrice = product.variants?.[0]?.compare_at_price;
-  const discount = comparePrice
-    ? Math.round((1 - price / comparePrice) * 100)
-    : 0;
+  const discount = comparePrice ? Math.round((1 - price / comparePrice) * 100) : 0;
+  const inWishlist = isInWishlist(product.shopify_product_id);
 
-  // Random delivery for demo
-  const deliveryOptions = ['TODAY', 'TOMORROW'];
+  // Delivery estimation
+  const deliveryOptions = [
+    { label: 'TODAY', color: colors.success },
+    { label: 'TOMORROW', color: colors.warning },
+  ];
   const delivery = deliveryOptions[Math.floor(Math.random() * 2)];
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      damping: 15,
+      stiffness: 300,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      damping: 15,
+      stiffness: 300,
+    }).start();
+  };
 
   const handlePress = () => {
     navigation.navigate('ProductDetail', {
@@ -38,96 +64,173 @@ const ProductCard = ({ product, horizontal, style }) => {
     });
   };
 
+  const handleWishlistPress = () => {
+    // Bounce animation
+    Animated.sequence([
+      Animated.spring(wishlistAnim, {
+        toValue: 1.3,
+        useNativeDriver: true,
+        damping: 10,
+        stiffness: 400,
+      }),
+      Animated.spring(wishlistAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        damping: 10,
+        stiffness: 400,
+      }),
+    ]).start();
+    
+    toggleWishlist(product);
+  };
+
   const cardStyle = horizontal
     ? [styles.containerHorizontal, style]
     : [styles.container, style];
 
   return (
-    <TouchableOpacity style={cardStyle} onPress={handlePress} activeOpacity={0.9}>
-      {/* Image */}
-      <View style={horizontal ? styles.imageContainerH : styles.imageContainer}>
-        {image ? (
-          <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
-        ) : (
-          <View style={[styles.image, styles.placeholder]}>
-            <Text style={styles.placeholderText}>No Image</Text>
-          </View>
-        )}
-
-        {/* Discount Badge */}
-        {discount > 0 && (
-          <View style={styles.discountBadge}>
-            <Text style={styles.discountText}>-{discount}%</Text>
-          </View>
-        )}
-
-        {/* Wishlist Button */}
-        <TouchableOpacity
-          style={styles.wishlistBtn}
-          onPress={() => toggleWishlist(product)}
-        >
-          <Text style={styles.wishlistIcon}>
-            {isInWishlist(product.shopify_product_id) ? '❤️' : '🤍'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Info */}
-      <View style={styles.info}>
-        <Text style={styles.brand} numberOfLines={1}>
-          {product.vendor || 'TNV Collection'}
-        </Text>
-        <Text style={styles.title} numberOfLines={2}>
-          {product.title}
-        </Text>
-
-        <View style={styles.priceRow}>
-          <Text style={styles.price}>{formatPrice(price)}</Text>
-          {comparePrice && (
-            <Text style={styles.comparePrice}>{formatPrice(comparePrice)}</Text>
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <TouchableOpacity
+        style={cardStyle}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={1}
+      >
+        {/* Image Container */}
+        <View style={horizontal ? styles.imageContainerH : styles.imageContainer}>
+          {/* Placeholder gradient while loading */}
+          {!imageLoaded && (
+            <LinearGradient
+              colors={['#f5f5f5', '#e8e8e8', '#f5f5f5']}
+              style={StyleSheet.absoluteFillObject}
+            />
           )}
+          
+          {image ? (
+            <Image
+              source={{ uri: image }}
+              style={styles.image}
+              resizeMode="cover"
+              onLoad={() => setImageLoaded(true)}
+            />
+          ) : (
+            <View style={[styles.image, styles.placeholder]}>
+              <Text style={styles.placeholderText}>📷</Text>
+            </View>
+          )}
+
+          {/* Discount Badge */}
           {discount > 0 && (
-            <Text style={styles.discountLabel}>-{discount}%</Text>
+            <LinearGradient
+              colors={colors.gradientSale}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.discountBadge}
+            >
+              <Text style={styles.discountText}>-{discount}%</Text>
+            </LinearGradient>
+          )}
+
+          {/* New Badge */}
+          {!discount && product.tags?.includes('new') && (
+            <View style={styles.newBadge}>
+              <Text style={styles.newBadgeText}>NEW</Text>
+            </View>
+          )}
+
+          {/* Wishlist Button */}
+          <Animated.View style={{ transform: [{ scale: wishlistAnim }] }}>
+            <TouchableOpacity
+              style={[styles.wishlistBtn, inWishlist && styles.wishlistBtnActive]}
+              onPress={handleWishlistPress}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.wishlistIcon}>
+                {inWishlist ? '❤️' : '🤍'}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Quick Add Button */}
+          {showQuickAdd && (
+            <TouchableOpacity style={styles.quickAddBtn}>
+              <Text style={styles.quickAddText}>+ ADD</Text>
+            </TouchableOpacity>
           )}
         </View>
 
-        <Text style={styles.delivery}>Free delivery</Text>
-        <Text style={styles.eta}>
-          GET IT{' '}
-          <Text
-            style={[
-              styles.etaHighlight,
-              delivery === 'TODAY' ? styles.etaToday : styles.etaTomorrow,
-            ]}
-          >
-            {delivery}
+        {/* Info Section */}
+        <View style={styles.info}>
+          {/* Brand */}
+          <Text style={styles.brand} numberOfLines={1}>
+            {product.vendor || 'TNV Collection'}
           </Text>
-        </Text>
-      </View>
-    </TouchableOpacity>
+          
+          {/* Title */}
+          <Text style={styles.title} numberOfLines={2}>
+            {product.title}
+          </Text>
+
+          {/* Price Row */}
+          <View style={styles.priceRow}>
+            <Text style={styles.price}>{formatPrice(price)}</Text>
+            {comparePrice && (
+              <Text style={styles.comparePrice}>{formatPrice(comparePrice)}</Text>
+            )}
+            {discount > 0 && (
+              <View style={styles.discountPill}>
+                <Text style={styles.discountPillText}>{discount}% OFF</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Delivery Info */}
+          <View style={styles.deliveryRow}>
+            <Text style={styles.deliveryText}>Free delivery • Get it </Text>
+            <Text style={[styles.deliveryHighlight, { color: delivery.color }]}>
+              {delivery.label}
+            </Text>
+          </View>
+
+          {/* Rating (if available) */}
+          {product.rating && (
+            <View style={styles.ratingRow}>
+              <Text style={styles.ratingStar}>⭐</Text>
+              <Text style={styles.ratingText}>{product.rating}</Text>
+              <Text style={styles.ratingCount}>({product.reviewCount || 0})</Text>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.xl,
     overflow: 'hidden',
+    ...shadows.md,
   },
   containerHorizontal: {
-    width: 150,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    width: 165,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.xl,
     overflow: 'hidden',
+    ...shadows.md,
   },
   imageContainer: {
     aspectRatio: 3 / 4,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
+    position: 'relative',
   },
   imageContainerH: {
-    width: 150,
-    height: 200,
-    backgroundColor: '#f5f5f5',
+    width: 165,
+    height: 220,
+    backgroundColor: colors.background,
+    position: 'relative',
   },
   image: {
     width: '100%',
@@ -136,98 +239,151 @@ const styles = StyleSheet.create({
   placeholder: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.background,
   },
   placeholderText: {
-    color: '#999',
-    fontSize: 12,
+    fontSize: 32,
+    opacity: 0.3,
   },
   discountBadge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: '#ef4444',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    top: spacing.sm,
+    left: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
   },
   discountText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
+    color: colors.white,
+    fontSize: typography.tiny,
+    fontWeight: typography.bold,
+    letterSpacing: 0.5,
+  },
+  newBadge: {
+    position: 'absolute',
+    top: spacing.sm,
+    left: spacing.sm,
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  newBadgeText: {
+    color: colors.white,
+    fontSize: typography.tiny,
+    fontWeight: typography.bold,
+    letterSpacing: 1,
   },
   wishlistBtn: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 32,
-    height: 32,
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    top: spacing.sm,
+    right: spacing.sm,
+    width: 36,
+    height: 36,
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...shadows.md,
+  },
+  wishlistBtnActive: {
+    backgroundColor: '#FFF0F3',
   },
   wishlistIcon: {
-    fontSize: 16,
+    fontSize: 18,
+  },
+  quickAddBtn: {
+    position: 'absolute',
+    bottom: spacing.sm,
+    right: spacing.sm,
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+  },
+  quickAddText: {
+    color: colors.white,
+    fontSize: typography.tiny,
+    fontWeight: typography.bold,
+    letterSpacing: 0.5,
   },
   info: {
-    padding: 10,
+    padding: spacing.md,
   },
   brand: {
-    fontSize: 11,
-    color: '#666',
-    marginBottom: 2,
+    fontSize: typography.caption,
+    color: colors.textSecondary,
+    fontWeight: typography.medium,
+    marginBottom: spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   title: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginBottom: 6,
-    minHeight: 32,
+    fontSize: typography.bodySmall,
+    fontWeight: typography.medium,
+    color: colors.text,
+    marginBottom: spacing.sm,
+    lineHeight: 20,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    marginBottom: 4,
+    marginBottom: spacing.sm,
   },
   price: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginRight: 6,
+    fontSize: typography.body,
+    fontWeight: typography.bold,
+    color: colors.text,
+    marginRight: spacing.sm,
   },
   comparePrice: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: typography.bodySmall,
+    color: colors.textTertiary,
     textDecorationLine: 'line-through',
-    marginRight: 6,
+    marginRight: spacing.sm,
   },
-  discountLabel: {
-    fontSize: 11,
-    color: '#ef4444',
-    fontWeight: '600',
+  discountPill: {
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
   },
-  delivery: {
-    fontSize: 11,
-    color: '#666',
+  discountPillText: {
+    fontSize: typography.tiny,
+    color: colors.error,
+    fontWeight: typography.semibold,
   },
-  eta: {
-    fontSize: 11,
-    color: '#666',
-    marginTop: 2,
+  deliveryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  etaHighlight: {
-    fontWeight: 'bold',
+  deliveryText: {
+    fontSize: typography.caption,
+    color: colors.textSecondary,
   },
-  etaToday: {
-    color: '#22c55e',
+  deliveryHighlight: {
+    fontSize: typography.caption,
+    fontWeight: typography.bold,
   },
-  etaTomorrow: {
-    color: '#f97316',
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
+  ratingStar: {
+    fontSize: 12,
+    marginRight: 4,
+  },
+  ratingText: {
+    fontSize: typography.caption,
+    fontWeight: typography.semibold,
+    color: colors.text,
+  },
+  ratingCount: {
+    fontSize: typography.caption,
+    color: colors.textTertiary,
+    marginLeft: 4,
   },
 });
 
