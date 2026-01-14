@@ -94,42 +94,54 @@ const ProductCard = ({ product, onPress, onWishlist, isWishlisted }) => {
   );
 };
 
-// Header Component
-const Header = ({ showBack, title, onBack, cartCount = 0 }) => (
-  <>
-    {/* Promo Bar */}
-    <div className="bg-gray-900 px-4 py-2 flex justify-between items-center text-white text-sm">
-      <span>💵 Cash On Delivery</span>
-      <span>🇦🇪 AE</span>
-    </div>
-    {/* Main Header */}
-    <div className="px-4 py-3 flex items-center justify-between border-b bg-white">
-      {showBack ? (
-        <button onClick={onBack} className="p-1">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-      ) : (
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-black">TNV</span>
-          <span className="bg-pink-400 text-white text-xs font-bold px-2 py-1 rounded-full">COLLECTION</span>
-        </div>
-      )}
-      {title && <span className="font-bold text-lg">{title}</span>}
-      <div className="flex items-center gap-2">
-        <button className="p-2"><Search className="w-5 h-5" /></button>
-        <button className="p-2"><Heart className="w-5 h-5" /></button>
-        <button className="p-2 relative">
-          <ShoppingBag className="w-5 h-5" />
-          {cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-black text-white text-xs rounded-full flex items-center justify-center">
-              {cartCount}
-            </span>
-          )}
-        </button>
+// Header Component - Now uses dynamic config
+const Header = ({ showBack, title, onBack, cartCount = 0, logo, promoMessages, promoIndex }) => {
+  const currentPromo = promoMessages?.[promoIndex] || defaultPromoMessages[0];
+  const logoConfig = logo || defaultLogo;
+  
+  return (
+    <>
+      {/* Promo Bar - Dynamic from backend */}
+      <div className="bg-gray-900 px-4 py-2 flex justify-between items-center text-white text-sm">
+        <span>{currentPromo.icon} {currentPromo.text}</span>
+        <span>🇦🇪 AE</span>
       </div>
-    </div>
-  </>
-);
+      {/* Main Header */}
+      <div className="px-4 py-3 flex items-center justify-between border-b bg-white">
+        {showBack ? (
+          <button onClick={onBack} className="p-1">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-black">{logoConfig.text}</span>
+            {logoConfig.badge && (
+              <span 
+                className="text-white text-xs font-bold px-2 py-1 rounded-full"
+                style={{ backgroundColor: logoConfig.badgeColor || '#FF6B9D' }}
+              >
+                {logoConfig.badge}
+              </span>
+            )}
+          </div>
+        )}
+        {title && <span className="font-bold text-lg">{title}</span>}
+        <div className="flex items-center gap-2">
+          <button className="p-2"><Search className="w-5 h-5" /></button>
+          <button className="p-2"><Heart className="w-5 h-5" /></button>
+          <button className="p-2 relative">
+            <ShoppingBag className="w-5 h-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-black text-white text-xs rounded-full flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
 
 // Bottom Tab Bar
 const TabBar = ({ activeTab, onTabChange }) => (
