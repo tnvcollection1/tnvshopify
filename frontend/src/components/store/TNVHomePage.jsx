@@ -177,7 +177,7 @@ const TNVHomePage = () => {
             ].map((brand, idx) => (
               <Link 
                 key={idx}
-                to={`/store/brand/${brand.name.toLowerCase()}`}
+                to={`/tnv/brand/${brand.name.toLowerCase()}`}
                 className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 bg-white border rounded-xl flex items-center justify-center hover:shadow-lg transition p-4"
               >
                 {brand.logo ? (
