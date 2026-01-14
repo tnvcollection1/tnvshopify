@@ -890,6 +890,75 @@ const MegaMenuBuilder = () => {
         </div>
       )}
       
+      {/* Templates Panel */}
+      {showTemplates && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                  Quick Start Templates
+                </h3>
+                <p className="text-sm text-gray-600">Apply a pre-built menu structure with one click</p>
+              </div>
+              <button onClick={() => setShowTemplates(false)} className="p-2 hover:bg-white/50 rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-5 gap-4">
+              {templates.map(template => {
+                const IconComponent = TEMPLATE_ICONS[template.key] || Package;
+                return (
+                  <div 
+                    key={template.id}
+                    className="bg-white rounded-xl border shadow-sm overflow-hidden hover:shadow-lg transition group"
+                  >
+                    <div className="aspect-[2/1] overflow-hidden">
+                      <img 
+                        src={template.preview} 
+                        alt={template.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <IconComponent className="w-4 h-4 text-purple-500" />
+                        <h4 className="font-semibold text-sm">{template.name}</h4>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-3 line-clamp-2">{template.description}</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleApplyTemplate(template.key, false)}
+                          disabled={applyingTemplate === template.key}
+                          className="flex-1 py-1.5 bg-purple-500 text-white rounded-lg text-xs font-medium hover:bg-purple-600 disabled:opacity-50 flex items-center justify-center gap-1"
+                        >
+                          {applyingTemplate === template.key ? (
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Check className="w-3 h-3" />
+                          )}
+                          Apply
+                        </button>
+                        <button
+                          onClick={() => handleApplyTemplate(template.key, true)}
+                          disabled={applyingTemplate === template.key}
+                          className="px-2 py-1.5 border rounded-lg text-xs hover:bg-gray-50 disabled:opacity-50"
+                          title="Merge with existing menu"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="grid grid-cols-12 gap-6">
