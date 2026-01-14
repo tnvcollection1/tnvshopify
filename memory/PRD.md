@@ -84,29 +84,30 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
     │   └── ThemeContext.js   # Dark mode state management
     ├── theme/
     │   └── index.js          # Light/Dark colors, gradients
+    ├── services/
+    │   ├── haptics.js        # NEW: Haptic feedback patterns
+    │   ├── pushNotifications.js
+    │   └── offlineService.js
     ├── components/
-    │   ├── AnimatedButton.js # Theme-aware buttons
+    │   ├── AnimatedButton.js # Theme + Haptics
     │   ├── SkeletonLoader.js # Theme-aware loaders
-    │   ├── ProductCard.js    # Theme-aware cards
+    │   ├── ProductCard.js    # Theme + Haptics
     │   ├── PromoBanner.js    # Theme-aware banners
     │   ├── CategoryCircle.js # Theme-aware circles
     │   └── Header.js         # Theme-aware header
     ├── screens/
     │   ├── HomeScreen.js
-    │   ├── ProductDetailScreen.js
-    │   ├── CartScreen.js
+    │   ├── ProductDetailScreen.js  # Haptics for selections
+    │   ├── CartScreen.js           # Haptics for cart actions
     │   ├── WishlistScreen.js
     │   ├── BrowseScreen.js
     │   ├── CheckoutScreen.js
     │   ├── SearchScreen.js
     │   ├── AccountScreen.js
     │   ├── OrderTrackingScreen.js
-    │   ├── SettingsScreen.js   # Theme toggle UI
+    │   ├── SettingsScreen.js   # Theme toggle with haptics
     │   └── auth/
     │       └── LoginScreen.js
-    ├── services/
-    │   ├── pushNotifications.js
-    │   └── offlineService.js
     └── hooks/
         └── useOffline.js
 ```
