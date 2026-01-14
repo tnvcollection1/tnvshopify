@@ -236,7 +236,7 @@ export const TNVHeader = () => {
           </button>
 
           {/* Logo */}
-          <Link to="/store" className="flex-shrink-0">
+          <Link to="/tnv" className="flex-shrink-0">
             <h1 className="text-2xl font-bold tracking-tight">
               <span className="text-black">TNV</span>
               <span className="text-gray-400 font-light ml-1">COLLECTION</span>
