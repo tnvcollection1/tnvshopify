@@ -147,7 +147,10 @@ const CartScreen = () => {
 
         <TouchableOpacity
           style={[styles.checkoutBtn, { backgroundColor: colors.primary }]}
-          onPress={() => navigation.navigate('Checkout')}
+          onPress={() => {
+            successHaptic();
+            navigation.navigate('Checkout');
+          }}
         >
           <Text style={[styles.checkoutBtnText, { color: colors.textInverse }]}>Checkout →</Text>
         </TouchableOpacity>
