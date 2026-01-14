@@ -76,6 +76,9 @@ const ProductDetailScreen = () => {
 
   const handleAddToCart = () => {
     if (product) {
+      // Trigger celebratory haptic
+      addToCartHaptic();
+      
       addToCart(product, selectedVariant, quantity);
       setAddedToCart(true);
       
@@ -97,6 +100,9 @@ const ProductDetailScreen = () => {
   };
 
   const handleWishlistPress = () => {
+    // Trigger heartbeat haptic
+    wishlistHaptic();
+    
     Animated.sequence([
       Animated.spring(wishlistAnim, {
         toValue: 1.4,
@@ -113,6 +119,21 @@ const ProductDetailScreen = () => {
     ]).start();
     
     toggleWishlist(product);
+  };
+  
+  const handleSizeSelect = (size) => {
+    selectionHaptic();
+    setSelectedSize(size);
+  };
+  
+  const handleColorSelect = (color) => {
+    selectionHaptic();
+    setSelectedColor(color);
+  };
+  
+  const handleQuantityChange = (delta) => {
+    lightHaptic();
+    setQuantity(Math.max(1, quantity + delta));
   };
 
   // Header animations
