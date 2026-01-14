@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ShoppingBag, Trash2, Plus, Minus, CreditCard, Truck, Tag,
   MapPin, Phone, Mail, User, ChevronRight, Check, Loader2,
@@ -8,6 +8,26 @@ import {
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
+
+// Store configurations
+const STORE_CONFIGS = {
+  'tnvcollection': {
+    currency: 'INR',
+    symbol: '₹',
+    country: 'India',
+    freeShippingThreshold: 2000,
+    shippingCost: 150,
+    defaultCountry: 'IN'
+  },
+  'tnvcollectionpk': {
+    currency: 'PKR',
+    symbol: 'Rs.',
+    country: 'Pakistan',
+    freeShippingThreshold: 5000,
+    shippingCost: 300,
+    defaultCountry: 'PK'
+  }
+};
 
 // Generate or get session ID
 const getSessionId = () => {
@@ -19,11 +39,22 @@ const getSessionId = () => {
   return sessionId;
 };
 
+// Detect store from URL path
+const detectStoreFromPath = (pathname) => {
+  if (pathname.includes('/tnv-pk')) return 'tnvcollectionpk';
+  return 'tnvcollection';
+};
+
 const CheckoutPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(1); // 1: Cart, 2: Shipping, 3: Payment
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  
+  // Detect current store from URL
+  const currentStore = detectStoreFromPath(location.pathname);
+  const storeConfig = STORE_CONFIGS[currentStore];
   
   // Cart state
   const [cart, setCart] = useState({ items: [], subtotal: 0, shipping: 0, discount: 0, total: 0 });
@@ -38,7 +69,7 @@ const CheckoutPage = () => {
     city: '',
     state: '',
     postal_code: '',
-    country: 'UAE'
+    country: storeConfig.defaultCountry
   });
   
   // Payment state
@@ -65,7 +96,7 @@ const CheckoutPage = () => {
 
   const fetchCart = async () => {
     try {
-      const res = await fetch(`${API}/api/checkout/cart/${sessionId}`);
+      const res = await fetch(`${API}/api/checkout/cart/${sessionId}?store=${currentStore}`);
       const data = await res.json();
       setCart(data);
     } catch (e) {
@@ -102,7 +133,7 @@ const CheckoutPage = () => {
     if (!couponCode) return;
     
     try {
-      const res = await fetch(`${API}/api/checkout/coupon/validate?code=${couponCode}&subtotal=${cart.subtotal}`, {
+      const res = await fetch(`${API}/api/checkout/coupon/validate?code=${couponCode}&subtotal=${cart.subtotal}&store=${currentStore}`, {
         method: 'POST'
       });
       
@@ -114,7 +145,7 @@ const CheckoutPage = () => {
           discount: data.discount,
           total: prev.subtotal + prev.shipping - data.discount
         }));
-        toast.success(`Coupon applied! You saved AED ${data.discount}`);
+        toast.success(`Coupon applied! You saved ${storeConfig.symbol} ${data.discount}`);
       } else {
         const error = await res.json();
         toast.error(error.detail || 'Invalid coupon');
@@ -146,7 +177,7 @@ const CheckoutPage = () => {
     setProcessing(true);
     
     try {
-      const res = await fetch(`${API}/api/checkout/order/create?session_id=${sessionId}`, {
+      const res = await fetch(`${API}/api/checkout/order/create?session_id=${sessionId}&store=${currentStore}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -183,8 +214,8 @@ const CheckoutPage = () => {
     const options = {
       key: orderData.razorpay_key,
       amount: orderData.amount,
-      currency: orderData.currency,
-      name: 'TNV Collection',
+      currency: orderData.razorpay_currency || 'INR',
+      name: currentStore === 'tnvcollectionpk' ? 'TNV Collection PK' : 'TNV Collection',
       description: `Order #${orderData.order_id}`,
       order_id: orderData.razorpay_order_id,
       handler: async (response) => {
@@ -232,7 +263,11 @@ const CheckoutPage = () => {
     rzp.open();
   };
 
-  const formatCurrency = (value) => `AED ${(value || 0).toFixed(2)}`;
+  // Format currency based on store
+  const formatCurrency = (value) => `${storeConfig.symbol} ${(value || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  
+  // Get store base URL for navigation
+  const getStoreBaseUrl = () => currentStore === 'tnvcollectionpk' ? '/tnv-pk' : '/tnv';
 
   if (loading) {
     return (
