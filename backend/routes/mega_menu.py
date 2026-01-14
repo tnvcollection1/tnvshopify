@@ -96,8 +96,91 @@ class MegaMenuConfig(BaseModel):
 
 DEFAULT_MEGA_MENU_SECTIONS = [
     {
-        "id": "women-section",
+        "id": "fashion-section",
         "categoryId": "cat-fashion",
+        "categoryName": "FASHION",
+        "enabled": True,
+        "layout": "columns",
+        "columns": [
+            {
+                "id": "col-women",
+                "title": "WOMEN",
+                "titleLink": "/women",
+                "width": 1,
+                "items": [
+                    {"id": "fw1", "name": "Dresses", "path": "/women/dresses"},
+                    {"id": "fw2", "name": "Tops & Blouses", "path": "/women/tops"},
+                    {"id": "fw3", "name": "T-Shirts", "path": "/women/tshirts"},
+                    {"id": "fw4", "name": "Jeans", "path": "/women/jeans"},
+                    {"id": "fw5", "name": "Skirts", "path": "/women/skirts"},
+                    {"id": "fw6", "name": "Activewear", "path": "/women/activewear"},
+                    {"id": "fw7", "name": "View All Women", "path": "/women", "badge": "→"}
+                ]
+            },
+            {
+                "id": "col-men",
+                "title": "MEN",
+                "titleLink": "/men",
+                "width": 1,
+                "items": [
+                    {"id": "fm1", "name": "T-Shirts", "path": "/men/tshirts"},
+                    {"id": "fm2", "name": "Shirts", "path": "/men/shirts"},
+                    {"id": "fm3", "name": "Jeans", "path": "/men/jeans"},
+                    {"id": "fm4", "name": "Pants", "path": "/men/pants"},
+                    {"id": "fm5", "name": "Jackets", "path": "/men/jackets"},
+                    {"id": "fm6", "name": "Suits", "path": "/men/suits"},
+                    {"id": "fm7", "name": "View All Men", "path": "/men", "badge": "→"}
+                ]
+            },
+            {
+                "id": "col-shoes",
+                "title": "SHOES",
+                "titleLink": "/shoes",
+                "width": 1,
+                "items": [
+                    {"id": "fs1", "name": "Women's Heels", "path": "/women/heels"},
+                    {"id": "fs2", "name": "Women's Flats", "path": "/women/flats"},
+                    {"id": "fs3", "name": "Men's Sneakers", "path": "/men/sneakers"},
+                    {"id": "fs4", "name": "Men's Formal", "path": "/men/formal"},
+                    {"id": "fs5", "name": "Sports Shoes", "path": "/shoes/sports"},
+                    {"id": "fs6", "name": "View All Shoes", "path": "/shoes", "badge": "→"}
+                ]
+            },
+            {
+                "id": "col-brands",
+                "title": "TOP BRANDS",
+                "titleLink": "/brands",
+                "width": 1,
+                "items": [
+                    {"id": "fb1", "name": "Nike", "path": "/brand/nike"},
+                    {"id": "fb2", "name": "Adidas", "path": "/brand/adidas"},
+                    {"id": "fb3", "name": "Zara", "path": "/brand/zara"},
+                    {"id": "fb4", "name": "H&M", "path": "/brand/hm"},
+                    {"id": "fb5", "name": "Tommy Hilfiger", "path": "/brand/tommy"},
+                    {"id": "fb6", "name": "View All Brands", "path": "/brands", "badge": "500+"}
+                ]
+            }
+        ],
+        "promoBanners": [
+            {
+                "id": "promo-fashion-1",
+                "image": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=500&fit=crop",
+                "title": "New Season",
+                "subtitle": "Up to 50% Off",
+                "link": "/sale",
+                "buttonText": "Shop Now",
+                "position": "right"
+            }
+        ],
+        "quickLinks": [
+            {"id": "fql1", "name": "New Arrivals", "path": "/new-arrivals", "highlight": True},
+            {"id": "fql2", "name": "Sale", "path": "/sale", "highlight": True},
+            {"id": "fql3", "name": "Best Sellers", "path": "/bestsellers"}
+        ]
+    },
+    {
+        "id": "women-section",
+        "categoryId": "cat-women",
         "categoryName": "WOMEN",
         "enabled": True,
         "layout": "columns",
