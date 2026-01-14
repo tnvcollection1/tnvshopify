@@ -1,9 +1,10 @@
 /**
  * Header Component
  * App header with logo, search, and action icons
+ * Now uses dynamic configuration from backend API
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,13 +17,38 @@ import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../context/StoreContext';
 import { useCart } from '../context/CartContext';
 
+// Default promo messages fallback
+const defaultPromoMessages = [
+  { text: 'Cash On Delivery', icon: '💵', active: true },
+  { text: 'Free Delivery', icon: '🚚', active: true },
+];
+
+// Default logo config fallback
+const defaultLogo = { text: 'TNV', badge: 'COLLECTION', badgeColor: '#FF6B9D' };
+
 const Header = ({ showSearch, title }) => {
   const navigation = useNavigation();
-  const { region, regions, changeRegion } = useStore();
+  const { region, regions, changeRegion, navConfig } = useStore();
   const { cartCount } = useCart();
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [regionModal, setRegionModal] = useState(false);
+  const [promoIndex, setPromoIndex] = useState(0);
+
+  // Get config from backend or use defaults
+  const logo = navConfig?.logo || defaultLogo;
+  const promoMessages = (navConfig?.promoMessages || defaultPromoMessages).filter(m => m.active !== false);
+  const currentPromo = promoMessages[promoIndex] || promoMessages[0] || defaultPromoMessages[0];
+
+  // Rotate promo messages
+  useEffect(() => {
+    if (promoMessages.length > 1) {
+      const interval = setInterval(() => {
+        setPromoIndex(prev => (prev + 1) % promoMessages.length);
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [promoMessages.length]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -34,9 +60,9 @@ const Header = ({ showSearch, title }) => {
 
   return (
     <>
-      {/* Promo Bar */}
+      {/* Promo Bar - Dynamic from backend */}
       <View style={styles.promoBar}>
-        <Text style={styles.promoText}>💵 Cash On Delivery</Text>
+        <Text style={styles.promoText}>{currentPromo.icon} {currentPromo.text}</Text>
         <TouchableOpacity
           style={styles.regionBtn}
           onPress={() => setRegionModal(true)}
@@ -52,10 +78,12 @@ const Header = ({ showSearch, title }) => {
           <Text style={styles.title}>{title}</Text>
         ) : (
           <View style={styles.logoContainer}>
-            <Text style={styles.logo}>TNV</Text>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>COLLECTION</Text>
-            </View>
+            <Text style={styles.logo}>{logo.text}</Text>
+            {logo.badge && (
+              <View style={[styles.badge, { backgroundColor: logo.badgeColor || '#FF6B9D' }]}>
+                <Text style={styles.badgeText}>{logo.badge}</Text>
+              </View>
+            )}
           </View>
         )}
 
