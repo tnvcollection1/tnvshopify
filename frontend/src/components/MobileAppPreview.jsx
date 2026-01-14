@@ -1,14 +1,15 @@
 /**
  * Mobile App Preview (PWA)
  * Web-based preview of the TNV Collection mobile app
+ * Fetches configuration dynamically from backend API
  */
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Home, Search, ShoppingBag, Heart, User, ChevronRight, Plus, Minus, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Home, Search, ShoppingBag, Heart, User, ChevronRight, Plus, Minus, Trash2, X, Loader2 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
-// Mock data for preview
+// Mock data fallbacks
 const mockProducts = [
   { id: 1, title: 'Premium Leather Oxford Shoes', vendor: 'TNV Collection', price: 299, compare_price: 399, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300' },
   { id: 2, title: 'Classic Canvas Sneakers', vendor: 'TNV Collection', price: 159, compare_price: 199, image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=300' },
@@ -18,14 +19,21 @@ const mockProducts = [
   { id: 6, title: 'Casual Slip-On Shoes', vendor: 'TNV Collection', price: 129, compare_price: 179, image: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=300' },
 ];
 
-const categories = [
-  { name: 'New In', emoji: '✨' },
-  { name: 'Shoes', emoji: '👟' },
-  { name: 'Bags', emoji: '👜' },
-  { name: 'Sports', emoji: '🏃' },
-  { name: 'Watches', emoji: '⌚' },
-  { name: 'Sale', emoji: '🔥' },
+const defaultCategories = [
+  { name: 'New In', icon: { value: '✨' } },
+  { name: 'Shoes', icon: { value: '👟' } },
+  { name: 'Bags', icon: { value: '👜' } },
+  { name: 'Sports', icon: { value: '🏃' } },
+  { name: 'Watches', icon: { value: '⌚' } },
+  { name: 'Sale', icon: { value: '🔥' } },
 ];
+
+const defaultPromoMessages = [
+  { text: 'Cash On Delivery', icon: '💵' },
+  { text: 'Free Delivery', icon: '🚚' },
+];
+
+const defaultLogo = { text: 'TNV', badge: 'COLLECTION', badgeColor: '#FF6B9D' };
 
 // Phone Frame Component
 const PhoneFrame = ({ children }) => (
