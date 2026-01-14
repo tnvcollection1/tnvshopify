@@ -67,7 +67,21 @@ const BrowseScreen = () => {
       console.log('Error:', e);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    pullToRefreshHaptic();
+    setRefreshing(true);
+    fetchProducts().then(() => {
+      successHaptic();
+    });
+  };
+
+  const handleSortChange = (value) => {
+    selectionHaptic();
+    setSortBy(value);
   };
 
   const sortOptions = [
