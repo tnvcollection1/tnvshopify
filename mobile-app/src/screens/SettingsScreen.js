@@ -17,12 +17,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useStore } from '../context/StoreContext';
+import { themeToggleHaptic, lightHaptic, mediumHaptic } from '../services/haptics';
 import { spacing, borderRadius, typography } from '../theme';
 
 const SettingRow = ({ icon, title, subtitle, onPress, rightElement, colors }) => (
   <TouchableOpacity
     style={[styles.settingRow, { backgroundColor: colors.card }]}
-    onPress={onPress}
+    onPress={() => {
+      lightHaptic();
+      onPress && onPress();
+    }}
     disabled={!onPress}
   >
     <Text style={styles.settingIcon}>{icon}</Text>
@@ -53,7 +57,10 @@ const ThemeOption = ({ label, icon, value, isSelected, onPress, colors }) => (
       { backgroundColor: colors.card },
       isSelected && { borderColor: colors.accent, borderWidth: 2 },
     ]}
-    onPress={onPress}
+    onPress={() => {
+      themeToggleHaptic();
+      onPress();
+    }}
   >
     <Text style={styles.themeIcon}>{icon}</Text>
     <Text style={[styles.themeLabel, { color: colors.text }]}>{label}</Text>
@@ -239,7 +246,9 @@ const SettingsScreen = () => {
         {/* Logout */}
         <TouchableOpacity 
           style={[styles.logoutBtn, { backgroundColor: colors.card }]}
-          onPress={() => {}}
+          onPress={() => {
+            mediumHaptic();
+          }}
         >
           <Text style={styles.logoutIcon}>🚪</Text>
           <Text style={[styles.logoutText, { color: colors.error }]}>Log Out</Text>
