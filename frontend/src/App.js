@@ -69,6 +69,7 @@ import StorefrontCMS from "@/components/StorefrontCMS";
 import StorefrontConfigManager from "@/components/StorefrontConfigManager";
 import HeaderConfigManager from "@/components/HeaderConfigManager";
 import BannerConfigManager from "@/components/BannerConfigManager";
+import UnifiedStoreSettings from "@/components/UnifiedStoreSettings";
 import MenuTagsManager from "@/components/MenuTagsManager";
 import StoreManagement from "@/components/StoreManagement";
 import SyncDashboard from "@/components/SyncDashboard";
