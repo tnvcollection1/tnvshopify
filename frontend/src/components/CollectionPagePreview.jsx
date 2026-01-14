@@ -386,8 +386,8 @@ const CollectionPage = () => {
           <div className={`grid ${gridClass} gap-x-6 gap-y-10`}>
             {sortedProducts.map((product, idx) => (
               <Link 
-                key={product.id || idx} 
-                to={`/${storeName}preview/product/${product.id}`}
+                key={product.shopify_product_id || product.id || idx} 
+                to={`/${storeName}preview/product/${product.shopify_product_id || product.id}`}
                 className="group"
               >
                 <div className="aspect-[3/4] bg-[#f5f5f5] overflow-hidden mb-4 relative">
