@@ -82,8 +82,13 @@ Created a complete React Native mobile app boilerplate at `/app/mobile-app/` wit
 
 ### Previous Updates (Jan 14, 2025) - SECURITY FIX + MOBILE GUIDE
 
-### P0 Security Fix: Merchant Data Isolation ✅ COMPLETED
+### P0 Security Fix: Merchant Data Isolation ✅ VERIFIED
 Fixed critical security vulnerability where merchants could access other tenants' data.
+**TESTED AND VERIFIED on Jan 14, 2025:**
+- Admin can access all stores ✅
+- Manager1 is DENIED access to tnvcollection (403 error) ✅
+- Manager1 CAN access their assigned store tnvcollectionpk ✅
+- All endpoints secured: /products, /orders, /customers, /analytics ✅
 
 **New Security Module:**
 - `/app/backend/security/store_access.py` - Store access verification
