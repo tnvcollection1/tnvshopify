@@ -727,6 +727,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/checkout" 
+        element={<CheckoutPage />}
+      />
+      <Route 
+        path="/tnv/checkout" 
+        element={<CheckoutPage />}
+      />
+      <Route 
         path="/menu-tags" 
         element={
           <ProtectedRoute>
