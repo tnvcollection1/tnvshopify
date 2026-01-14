@@ -946,6 +946,15 @@ function AppRoutes() {
         path="/store/:storeSlug/track" 
         element={<LuxuryStorefrontWrapper page="tracking" />} 
       />
+
+      {/* TNV Store Routes - Namshi-inspired Design */}
+      <Route path="/tnv" element={<TNVStoreWrapper><TNVHomePage /></TNVStoreWrapper>} />
+      <Route path="/tnv/products" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
+      <Route path="/tnv/:category" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
+      <Route path="/tnv/product/:productId" element={<TNVStoreWrapper><TNVProductDetail /></TNVStoreWrapper>} />
+      <Route path="/tnv/collection/:collectionId" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
+      <Route path="/tnv/brand/:brandName" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
+      <Route path="/tnv/category/:categoryName" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
     </Routes>
   );
 }
