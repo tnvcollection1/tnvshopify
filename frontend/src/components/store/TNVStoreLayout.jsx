@@ -186,16 +186,20 @@ export const TNVHeader = () => {
   const [regionDropdown, setRegionDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
   const [genderDropdown, setGenderDropdown] = useState(false);
   const [selectedGender, setSelectedGender] = useState('WOMEN');
   const [promoIndex, setPromoIndex] = useState(0);
+  const [megaMenuConfig, setMegaMenuConfig] = useState(null);
   const location = useLocation();
+  const hoverTimeoutRef = useRef(null);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest('.category-dropdown-container')) {
         setActiveCategory(null);
+        setHoveredCategory(null);
       }
       if (!e.target.closest('.gender-dropdown-container')) {
         setGenderDropdown(false);
@@ -204,6 +208,45 @@ export const TNVHeader = () => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
+
+  // Fetch mega menu configuration
+  useEffect(() => {
+    const fetchMegaMenu = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/mega-menu/config/${storeName}`);
+        const data = await res.json();
+        setMegaMenuConfig(data);
+      } catch (e) {
+        console.log('Using default mega menu config');
+      }
+    };
+    fetchMegaMenu();
+  }, [storeName]);
+
+  // Handle hover with delay (desktop)
+  const handleCategoryHover = (categoryName) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredCategory(categoryName);
+      setActiveCategory(categoryName);
+    }, megaMenuConfig?.globalSettings?.hoverDelay || 150);
+  };
+
+  const handleCategoryLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredCategory(null);
+      setActiveCategory(null);
+    }, 200);
+  };
+
+  // Get mega menu section for a category
+  const getMegaMenuSection = (categoryName) => {
+    if (!megaMenuConfig?.sections) return null;
+    return megaMenuConfig.sections.find(s => 
+      s.categoryName.toUpperCase() === categoryName.toUpperCase() && s.enabled
+    );
+  };
 
   // Promo messages (rotating)
   const promoMessages = navConfig?.promoMessages || [
@@ -222,8 +265,8 @@ export const TNVHeader = () => {
     const fetchLayoutConfig = async () => {
       try {
         const [tabsRes, subNavRes] = await Promise.all([
-          fetch(`${API_URL}/api/storefront/banners/category-tabs/tnvcollection`),
-          fetch(`${API_URL}/api/storefront/banners/sub-nav/tnvcollection`)
+          fetch(`${API_URL}/api/storefront/banners/category-tabs/${storeName}`),
+          fetch(`${API_URL}/api/storefront/banners/sub-nav/${storeName}`)
         ]);
         const tabsData = await tabsRes.json();
         const subNavData = await subNavRes.json();
@@ -234,7 +277,7 @@ export const TNVHeader = () => {
       }
     };
     fetchLayoutConfig();
-  }, []);
+  }, [storeName]);
   
   // Default category tabs - EXACTLY like Namshi with images
   const defaultCategoryTabs = [
