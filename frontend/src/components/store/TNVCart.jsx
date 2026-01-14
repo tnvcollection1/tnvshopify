@@ -5,9 +5,11 @@ import { useStore } from './TNVStoreLayout';
 
 const TNVCart = () => {
   const navigate = useNavigate();
-  const { cart, removeFromCart, updateCartQuantity, cartTotal, formatPrice, region } = useStore();
+  const { cart, removeFromCart, updateCartQuantity, cartTotal, formatPrice, region, storeConfig, storeName } = useStore();
 
-  const deliveryThreshold = 500;
+  // Get store-specific thresholds and base URL
+  const deliveryThreshold = storeConfig?.freeShippingThreshold || 500;
+  const baseUrl = storeConfig?.baseUrl || '/tnv';
   const freeDelivery = cartTotal >= deliveryThreshold;
   const amountForFreeDelivery = deliveryThreshold - cartTotal;
 
@@ -20,7 +22,7 @@ const TNVCart = () => {
             <h1 className="text-2xl font-bold mb-2">Your bag is empty</h1>
             <p className="text-gray-500 mb-8">Looks like you haven't added anything to your bag yet.</p>
             <Link 
-              to="/tnv"
+              to={baseUrl}
               className="inline-block bg-black text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition"
             >
               Start Shopping
