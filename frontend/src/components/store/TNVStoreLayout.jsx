@@ -417,67 +417,10 @@ export const TNVHeader = () => {
       )}
 
       {/* Mobile Menu */}
-                  {wishlist.length}
-                </span>
-              )}
-            </Link>
-            
-            {/* Cart */}
-            <Link to="/tnv/cart" className="relative p-2.5 hover:bg-gray-100 rounded-full">
-              <ShoppingBag className="w-5 h-5" />
-              {cartCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-black text-white text-[10px] rounded-full flex items-center justify-center font-bold">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* SECONDARY NAV - Sub Categories (Height: 48px) */}
-      {currentCategoryConfig?.subNav && (
-        <div className="hidden lg:block bg-white border-b h-12">
-          <div className="max-w-7xl mx-auto px-4 h-full">
-            <nav className="flex items-center space-x-8 h-full overflow-x-auto">
-              {currentCategoryConfig.subNav.map((item, idx) => (
-                <Link
-                  key={idx}
-                  to={`/tnv${currentCategoryConfig.path}/${item.toLowerCase().replace(/\s+/g, '-')}`}
-                  className={`text-[13px] font-medium uppercase whitespace-nowrap hover:text-black transition ${
-                    item === 'SALE' ? 'text-red-500' : 'text-gray-600'
-                  }`}
-                >
-                  {item}
-                </Link>
-              ))}
-            </nav>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Search Bar */}
-      {searchOpen && (
-        <div className="md:hidden px-4 py-3 bg-white border-b">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search for brands, products..."
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none"
-              autoFocus
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-b max-h-[70vh] overflow-y-auto">
           <nav className="py-2">
-            {categories.filter(c => c.active !== false).map(cat => (
+            {mainTabs.filter(c => c.active !== false).map(cat => (
               <div key={cat.name}>
                 <Link
                   to={`/tnv${cat.path}`}
@@ -490,33 +433,12 @@ export const TNVHeader = () => {
                         className="w-10 h-10 rounded-full flex items-center justify-center"
                         style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
                       >
-                        {cat.icon.value || cat.icon}
+                        {cat.icon.value || cat.icon || '📁'}
                       </span>
                     )}
                     <span className={`font-medium ${cat.highlight ? 'text-red-500' : ''}`}>{cat.name}</span>
                   </div>
-                  {cat.subNav && <ChevronRight className="w-5 h-5 text-gray-400" />}
                 </Link>
-                
-                {/* Sub nav items */}
-                {cat.subNav && (
-                  <div className="bg-gray-50 px-4 py-2">
-                    <div className="flex flex-wrap gap-2">
-                      {cat.subNav.slice(0, 6).map((item, idx) => (
-                        <Link
-                          key={idx}
-                          to={`/tnv${cat.path}/${item.toLowerCase().replace(/\s+/g, '-')}`}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={`text-xs px-3 py-1.5 rounded-full ${
-                            item === 'SALE' ? 'bg-red-100 text-red-600' : 'bg-white text-gray-600'
-                          }`}
-                        >
-                          {item}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             ))}
             
