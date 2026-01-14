@@ -77,7 +77,7 @@ const TNVProductDetail = () => {
 
   const handleBuyNow = () => {
     handleAddToCart();
-    navigate('/store/cart');
+    navigate('/tnv/cart');
   };
 
   if (loading) {
