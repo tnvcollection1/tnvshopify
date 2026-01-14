@@ -409,7 +409,7 @@ const ProductDetailScreen = () => {
               </View>
               <TouchableOpacity
                 style={[styles.qtyBtn, { borderColor: colors.border }]}
-                onPress={() => setQuantity(quantity + 1)}
+                onPress={() => handleQuantityChange(1)}
               >
                 <Text style={[styles.qtyBtnText, { color: colors.text }]}>+</Text>
               </TouchableOpacity>
