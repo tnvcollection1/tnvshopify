@@ -7226,6 +7226,7 @@ app.include_router(whatsapp_otp_router)
 app.include_router(order_notifications_router)
 app.include_router(store_management_router)
 app.include_router(image_proxy_router, prefix="/api/images", tags=["Images"])
+app.include_router(image_upload_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 # ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================
