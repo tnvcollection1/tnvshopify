@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://ecom-platform-155.preview.emergentagent.com/api'
+base_url = 'https://multistore-ecom-1.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 

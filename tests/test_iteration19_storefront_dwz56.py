@@ -18,7 +18,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ecom-platform-155.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multistore-ecom-1.preview.emergentagent.com')
 
 # Test stores for data isolation
 TEST_STORES = ['tnvcollection', 'tnvcollectionpk', 'ashmiaa']
