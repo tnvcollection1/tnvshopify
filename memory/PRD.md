@@ -9,118 +9,76 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - React Native mobile app
 - Admin panel for store management
 - Dynamic header/menu/banner configuration
-- **Multi-store support with different currencies (INR/PKR)**
-- **Mega Menu with Visual Builder** ✅
-- **Core E-Commerce Features** ✅
+- Multi-store support with different currencies (INR/PKR)
+- Mega Menu with Visual Builder
+- Core E-Commerce Features
+- **Admin Panel Currency Consistency** ✅ NEW
+- **Mobile App Push Notifications** ✅ NEW
+- **Mobile App Offline Mode** ✅ NEW
 
 ## What's Been Implemented
 
-### January 14, 2026 (Session 2 - Latest)
+### January 14, 2026 (Session 3 - Latest)
+
+**Admin Panel Currency Consistency** ✅ COMPLETED
+- Added `formatPrice`, `getCurrencySymbol`, `getCurrencyConfig` to StoreContext
+- Updated CompetitorDashboard.jsx to use store-aware currency formatting
+- Updated CompetitorPriceCatalog.jsx to use store-aware currency formatting
+- Currency configs: INR (₹) for tnvcollection, PKR (Rs.) for tnvcollectionpk
+- All admin pages now display correct currency based on selected store
+
+**Mobile App Push Notifications** ✅ COMPLETED
+- Backend API (`/api/push-notifications/*`):
+  - Device registration (iOS/Android)
+  - Send notifications to specific customers
+  - Templated notifications (order_confirmed, order_shipped, order_delivered, back_in_stock, price_drop, cart_reminder)
+  - Order status change notifications
+  - Bulk notification sending
+  - Notification statistics
+- Mobile app service (`pushNotifications.js`):
+  - Expo Push Notifications integration
+  - Permission handling
+  - Android notification channels
+  - Token registration with backend
+  - Notification settings persistence
+
+**Mobile App Offline Mode** ✅ COMPLETED
+- Offline service (`offlineService.js`):
+  - Network status monitoring with NetInfo
+  - Product caching with expiration (24h)
+  - Cart caching (persists offline)
+  - Wishlist caching (persists offline)
+  - Recently viewed products cache
+  - Pending actions queue for offline sync
+  - Cache statistics and management
+- React hooks (`useOffline.js`):
+  - `useNetworkStatus()` - Network monitoring
+  - `useOfflineData()` - Offline-first data fetching
+  - `usePushNotifications()` - Push notification management
+  - `useOfflineCart()` - Offline cart management
+  - `useOfflineWishlist()` - Offline wishlist management
+- Notification Settings Screen (`NotificationSettingsScreen.js`):
+  - Enable/disable push notifications
+  - Notification type preferences (orders, promotions, back-in-stock, price drops, new arrivals)
+  - Cache statistics display
+  - Clear offline data option
+
+### January 14, 2026 (Session 2)
 
 **Core E-Commerce Features** ✅ COMPLETED
-- **Order Tracking System**:
-  - Order tracking page with search functionality
-  - Detailed timeline view with status icons and colors
-  - Tracking number with carrier link
-  - Estimated delivery date calculation
-  - Order items, shipping address, payment info display
-  - Routes: `/tnv/track` and `/tnv-pk/track`
-
-- **Wishlist System**:
-  - Add/remove items from wishlist
-  - Store-specific wishlists (India/Pakistan)
-  - Share wishlist functionality (generates shareable URL)
-  - Move items to cart
-  - Empty state with "Start Shopping" CTA
-  - Routes: `/tnv/wishlist` and `/tnv-pk/wishlist`
-
-- **Product Reviews & Ratings**:
-  - Create reviews with rating, title, content, pros/cons
-  - Verified purchase badge
-  - Helpful/unhelpful voting
-  - Rating distribution display
-  - Sort by recent/helpful/rating
-  - Filter by rating/verified purchases
-  - Review moderation workflow (pending → approved/rejected)
-  - Component: `ProductReviews.jsx` integrated in product detail page
-
-- **Customer Account Section**:
-  - Dashboard with summary cards (orders, pending, wishlist, reviews)
-  - My Orders tab with order list
-  - Addresses tab with CRUD operations
-  - Settings tab with customer ID and store info
-  - Address form modal with validation
-  - Routes: `/tnv/account` and `/tnv-pk/account`
-
-- **Stock & Notifications**:
-  - Stock status API
-  - Back-in-stock email notifications
-  - Prevents duplicate subscriptions
-
-- **Recently Viewed Products**:
-  - Tracks last 20 viewed products
-  - Store-specific tracking
-
-**Backend API Endpoints** (`/api/ecommerce/*`):
-- Order Tracking: `GET /orders/track/{order_id}`, `PUT /orders/{order_id}/status`, `GET /orders/history`
-- Wishlist: `GET/POST/DELETE /wishlist/{customer_id}/*`, `GET/POST /wishlist/{customer_id}/share`
-- Reviews: `POST /reviews`, `GET /reviews/product/{product_id}`, `POST /reviews/{id}/helpful`, `PUT /reviews/{id}/moderate`
-- Customer: `GET/PUT /customer/{id}/profile`, `GET/POST/PUT/DELETE /customer/{id}/addresses/*`, `GET /customer/{id}/dashboard`
-- Stock: `POST /stock/notify`, `GET /products/{id}/stock`
-- Recently Viewed: `POST/GET /recently-viewed/{customer_id}`
+- Order Tracking System (routes, timeline view, carrier tracking)
+- Wishlist System (add/remove, share, move-to-cart)
+- Product Reviews & Ratings (create, moderate, vote, filter)
+- Customer Account Section (dashboard, orders, addresses, settings)
+- Stock & Notifications (back-in-stock alerts)
+- Recently Viewed Products
 
 ### January 14, 2026 (Session 1)
 
 **Mega Menu with Visual Builder** ✅ COMPLETED
-- Full mega menu dropdowns on storefront header (Namshi-style)
-- 4 default sections: FASHION, WOMEN, MEN, BEAUTY
-- Each section has: columns, items, promo banners, quick links
-- Hover to open (desktop, 150ms delay), click on mobile
-- Visual Builder admin page (`/mega-menu-builder`):
-  - Drag-and-drop reordering with @dnd-kit
-  - Live preview panel
-  - Store selector (India/Pakistan)
-  - Add/Edit/Delete columns, items, banners
-  - Clone menu between stores
-  - Global settings (hover delay, animation, max width)
-- **Quick Start Templates** ✅:
-  - Fashion Store, Electronics Store, Beauty & Cosmetics, Home & Living, Grocery & Food
-  - One-click apply with preview images
-  - Merge option to add to existing menu
-- Store-specific configurations (different menus per store)
-- Backend API: `/api/mega-menu/*` (full CRUD + templates)
-
 **Multi-Store/Multi-Currency Support** ✅ COMPLETED
-- Two stores: `tnvcollection` (India/INR/₹) and `tnvcollectionpk` (Pakistan/PKR/Rs.)
-- Store-specific routes: `/tnv` (India) and `/tnv-pk` (Pakistan)
-- Backend APIs accept `store` query parameter
-- Frontend detects store from URL path
-- Store-specific configurations:
-  - INR: Free shipping at ₹2,000, shipping cost ₹150
-  - PKR: Free shipping at Rs.5,000, shipping cost Rs.300
-- Sales Dashboard with store selector dropdown
-- Header shows "TNV" for India, "TNV PK" for Pakistan
-- Region flags: 🇮🇳 for India, 🇵🇰 for Pakistan
-
-**Sales Dashboard** (`/sales-dashboard`)
-- Revenue overview cards with growth percentages
-- Revenue chart (Area + Line for orders)
-- Sales by category pie chart
-- Top selling products list
-- Orders by status bar chart
-- Recent orders table
-- Customer locations breakdown
-- Period selector (7d, 30d, 90d, 1y)
-- **Store selector (INR/PKR)** ✅
-
-**Checkout + Razorpay Payment** (`/checkout`, `/tnv/checkout`, `/tnv-pk/checkout`)
-- 3-step checkout: Cart → Shipping → Payment
-- Cart management (add, update, remove items)
-- Shipping address form with validation
-- Payment methods: Razorpay (online) & COD
-- Order confirmation page
-- Coupon code support
-- **Store-aware currency display** ✅
+**Sales Dashboard** ✅ COMPLETED
+**Checkout + Razorpay Payment** ✅ COMPLETED
 
 ## Architecture
 
@@ -128,46 +86,53 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 /app/
 ├── backend/
 │   ├── routes/
-│   │   ├── ecommerce.py           # E-commerce APIs (orders, wishlist, reviews)
+│   │   ├── ecommerce.py           # E-commerce APIs
 │   │   ├── mega_menu.py           # Mega menu configuration
+│   │   ├── push_notifications.py  # NEW: Push notification APIs
 │   │   ├── analytics.py           # Dashboard analytics
 │   │   ├── checkout.py            # Cart & checkout
-│   │   ├── image_upload.py        # Image uploads
-│   │   ├── storefront_banners.py  # Banners & Menu API
-│   │   └── storefront_config.py   # Navigation + Mobile App config
-│   └── uploads/                   # Uploaded images storage
+│   │   └── ...
+│   └── uploads/
 ├── frontend/
-│   ├── src/components/
-│   │   ├── MegaMenuBuilder.jsx    # Mega menu visual builder
-│   │   ├── UnifiedStoreSettings.jsx
-│   │   ├── SalesDashboard.jsx
-│   │   └── store/
-│   │       ├── TNVStoreLayout.jsx    # Store provider & header
-│   │       ├── OrderTrackingPage.jsx # Order tracking
-│   │       ├── WishlistPage.jsx      # Wishlist
-│   │       ├── CustomerAccountPage.jsx # Customer account
-│   │       ├── ProductReviews.jsx    # Reviews component
-│   │       └── TNVProductDetail.jsx  # Product detail w/ reviews
+│   ├── src/
+│   │   ├── contexts/
+│   │   │   └── StoreContext.jsx   # UPDATED: formatPrice, getCurrencySymbol
+│   │   └── components/
+│   │       ├── CompetitorDashboard.jsx  # UPDATED: Store-aware currency
+│   │       ├── CompetitorPriceCatalog.jsx # UPDATED: Store-aware currency
+│   │       └── store/
 └── mobile-app/
+    └── src/
+        ├── services/
+        │   ├── pushNotifications.js  # NEW: Push notification service
+        │   └── offlineService.js     # NEW: Offline caching service
+        ├── hooks/
+        │   └── useOffline.js         # NEW: Offline/push hooks
+        └── screens/
+            └── NotificationSettingsScreen.js  # NEW: Settings UI
 ```
 
 ## Key API Endpoints
 
+### Push Notifications APIs (NEW)
+- `POST /api/push-notifications/register` - Register device for push
+- `DELETE /api/push-notifications/unregister/{token}` - Unregister device
+- `POST /api/push-notifications/send/{customer_id}` - Send to customer
+- `POST /api/push-notifications/send-bulk` - Send bulk notifications
+- `POST /api/push-notifications/send-template/{template}/{customer_id}` - Send templated notification
+- `POST /api/push-notifications/notify-order-status/{order_id}` - Notify on order status change
+- `GET /api/push-notifications/stats` - Get notification statistics
+- `GET /api/push-notifications/devices/{customer_id}` - Get customer devices
+
 ### E-Commerce APIs
-- `GET /api/ecommerce/orders/track/{order_id}` - Order tracking details
-- `GET /api/ecommerce/orders/history` - Customer order history
-- `GET/POST/DELETE /api/ecommerce/wishlist/{customer_id}/*` - Wishlist CRUD
-- `GET/POST /api/ecommerce/reviews/*` - Product reviews
-- `GET/PUT /api/ecommerce/customer/{customer_id}/*` - Customer profile & addresses
-- `GET /api/ecommerce/customer/{customer_id}/dashboard` - Dashboard summary
-- `POST /api/ecommerce/stock/notify` - Stock notifications
+- Order Tracking: `GET /api/ecommerce/orders/track/{order_id}`
+- Wishlist: `GET/POST/DELETE /api/ecommerce/wishlist/{customer_id}/*`
+- Reviews: `GET/POST /api/ecommerce/reviews/*`
+- Customer: `GET/PUT /api/ecommerce/customer/{customer_id}/*`
 
 ### Store & Menu APIs
 - `GET/POST /api/mega-menu/config/{store}` - Mega menu configuration
-- `GET /api/mega-menu/templates` - Template list
-- `POST /api/mega-menu/templates/{key}/apply/{store}` - Apply template
 - `GET /api/analytics/overview?store={store}` - Dashboard metrics
-- `GET /api/checkout/cart/{session_id}?store={store}` - Cart
 
 ## Access URLs
 - **India Store**: `/tnv` (INR currency ₹)
@@ -175,19 +140,19 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - **Order Tracking**: `/tnv/track` or `/tnv-pk/track`
 - **Wishlist**: `/tnv/wishlist` or `/tnv-pk/wishlist`
 - **Account**: `/tnv/account` or `/tnv-pk/account`
-- **Mega Menu Builder**: `/mega-menu-builder`
-- **Sales Dashboard**: `/sales-dashboard`
-- **Store Settings**: `/store-settings`
-- **Mobile Preview**: `/mobile-app-preview`
+- **Admin Pages**: `/competitor-dashboard`, `/sales-dashboard`, `/store-settings`
 - **Login**: admin / admin
 
 ## Prioritized Backlog
 
-### P0 (Critical) - COMPLETED ✅
-- [x] Header matches Namshi.com ✅
-- [x] Multi-store/Multi-currency (INR/PKR) ✅
-- [x] Mega Menu with visual builder ✅
-- [x] Core E-commerce features (orders, wishlist, reviews, account) ✅
+### P0 (Critical) - ALL COMPLETED ✅
+- [x] Header matches Namshi.com
+- [x] Multi-store/Multi-currency (INR/PKR)
+- [x] Mega Menu with visual builder
+- [x] Core E-commerce features
+- [x] Admin panel currency consistency
+- [x] Mobile app push notifications
+- [x] Mobile app offline mode
 
 ### P1 (High Priority)
 - [ ] Deploy storefront to VPS (`tnvcollection.com`)
@@ -195,17 +160,24 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 
 ### P2 (Medium Priority)
 - [ ] Sooxie.com API integration
+- [ ] Mobile app store submission preparation
 
 ### P3 (Low Priority)
 - [ ] Backend file refactoring (split server.py, alibaba_1688.py)
-- [ ] Consistent currency display in admin panel
-- [ ] Mobile app enhancements (push notifications, offline mode)
+- [ ] Automated security testing
 
 ## Test Reports
-- `/app/test_reports/iteration_36.json` - E-commerce features (32/32 tests passed)
-- `/app/tests/test_iteration36_ecommerce_features.py` - Test file
+- `/app/test_reports/iteration_37.json` - Push notifications & currency (21/21 passed)
+- `/app/test_reports/iteration_36.json` - E-commerce features (32/32 passed)
 
 ## Credentials
 - Admin: `admin` / `admin`
 - VPS IP: `159.198.36.164`
 - MongoDB Atlas: `mongodb+srv://wamerce:Wamerce2026!@cluster0.uggtqki.mongodb.net/`
+
+## Mobile App Dependencies (Updated)
+- expo-notifications
+- expo-device
+- expo-constants
+- @react-native-community/netinfo
+- @react-native-async-storage/async-storage
