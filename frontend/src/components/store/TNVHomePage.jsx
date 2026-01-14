@@ -38,7 +38,7 @@ const TNVHomePage = () => {
   const fetchData = async () => {
     try {
       const [bannersRes, productsRes] = await Promise.all([
-        fetch(`${API_URL}/api/storefront/banners?store=${storeName}`),
+        fetch(`${API_URL}/api/storefront/banners/hero/${storeName}`),
         fetch(`${API_URL}/api/storefront/products?store=${storeName}&limit=24`)
       ]);
       
