@@ -836,14 +836,14 @@ const AnalysisResultsCard = ({ analysis, onRefresh }) => {
 
 // ==================== Main Dashboard ====================
 const CompetitorDashboard = () => {
-  const { selectedStore } = useStore();
+  const { selectedStore, stores: contextStores, formatPrice, getCurrencySymbol, getCurrencyConfig } = useStore();
   const [showDialog, setShowDialog] = useState(false);
   const [analyses, setAnalyses] = useState([]);
   const [currentAnalysis, setCurrentAnalysis] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stores, setStores] = useState([]);
-  const [analysisStore, setAnalysisStore] = useState('ashmiaa');
+  const [analysisStore, setAnalysisStore] = useState(selectedStore || 'tnvcollection');
 
   const loadStores = useCallback(async () => {
     try {
