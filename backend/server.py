@@ -56,6 +56,7 @@ from routes.shopify_products import router as shopify_products_router
 from routes.storefront import router as storefront_router, set_database as set_storefront_db
 from routes.storefront_cms import router as storefront_cms_router, set_database as set_storefront_cms_db
 from routes.storefront_config import router as storefront_config_router, set_database as set_storefront_config_db
+from routes.storefront_banners import router as storefront_banners_router, set_database as set_storefront_banners_db
 from routes.warehouse import router as warehouse_router, set_database as set_warehouse_db
 from security.store_access import set_database as set_security_db, verify_store_access, require_admin, require_merchant_or_admin
 from routes.secure_admin import router as secure_admin_router, set_database as set_secure_admin_db
@@ -114,6 +115,7 @@ set_super_admin_db(db)
 set_storefront_db(db)
 set_storefront_cms_db(db)
 set_storefront_config_db(db)
+set_storefront_banners_db(db)
 set_security_db(db)
 set_secure_admin_db(db)
 set_warehouse_db(db)
@@ -7209,6 +7211,7 @@ app.include_router(email_notification_router)
 app.include_router(storefront_router)
 app.include_router(storefront_cms_router)
 app.include_router(storefront_config_router)
+app.include_router(storefront_banners_router)
 app.include_router(secure_admin_router)
 app.include_router(warehouse_router)
 app.include_router(sync_service_router)
