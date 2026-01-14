@@ -28,8 +28,12 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   - Add/Edit/Delete columns, items, banners
   - Clone menu between stores
   - Global settings (hover delay, animation, max width)
+- **Quick Start Templates** ✅:
+  - Fashion Store, Electronics Store, Beauty & Cosmetics, Home & Living, Grocery & Food
+  - One-click apply with preview images
+  - Merge option to add to existing menu
 - Store-specific configurations (different menus per store)
-- Backend API: `/api/mega-menu/*` (full CRUD)
+- Backend API: `/api/mega-menu/*` (full CRUD + templates)
 
 **Multi-Store/Multi-Currency Support** ✅ COMPLETED
 - Two stores: `tnvcollection` (India/INR/₹) and `tnvcollectionpk` (Pakistan/PKR/Rs.)
