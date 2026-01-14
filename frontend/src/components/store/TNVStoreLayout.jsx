@@ -99,8 +99,19 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
   };
 
   useEffect(() => {
-    fetchNavConfig();
-  }, [storeName]); // eslint-disable-line
+    let mounted = true;
+    const loadNavConfig = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/storefront/config/navigation/${storeName}`);
+        const data = await res.json();
+        if (mounted) setNavConfig(data);
+      } catch (e) {
+        console.log('Using default nav config');
+      }
+    };
+    loadNavConfig();
+    return () => { mounted = false; };
+  }, [storeName]);
 
   useEffect(() => { localStorage.setItem(`tnv_region_${storeName}`, JSON.stringify(region)); }, [region, storeName]);
   useEffect(() => { localStorage.setItem(`tnv_cart_${storeName}`, JSON.stringify(cart)); }, [cart, storeName]);
