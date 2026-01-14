@@ -220,7 +220,7 @@ const TNVHomePage = () => {
             ].map((cat, idx) => (
               <Link 
                 key={idx}
-                to={`/store/category/${cat.name.toLowerCase()}`}
+                to={`/tnv/category/${cat.name.toLowerCase()}`}
                 className="relative aspect-square rounded-xl overflow-hidden group"
               >
                 <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
