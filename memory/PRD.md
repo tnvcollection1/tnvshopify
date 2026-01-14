@@ -80,6 +80,21 @@ Created a complete React Native mobile app boilerplate at `/app/mobile-app/` wit
 - `/app/frontend/src/components/MobileAppPreview.jsx` - Interactive PWA preview
 - Route: `/mobile-app-preview` - View the mobile app design in browser
 
+### P1 Header Config Admin UI ✅ COMPLETED (Jan 14, 2025)
+Fixed and verified the Header Configuration admin page at `/header-config`.
+
+**Bug Fixed:**
+- API was returning incomplete data when partial config existed in DB
+- Fixed `storefront_config.py` to merge saved config with defaults
+
+**Features Working:**
+- Logo Editor: text, badge text, badge color, image URL ✅
+- Promo Messages: add, edit, reorder, toggle visibility, delete ✅
+- Navigation Menu: all 5 categories displayed, reorder, edit, delete, add ✅
+- Mega Menu: column editor, items, featured image ✅
+- Live Preview: rotates through promo messages ✅
+- Store Selector: TNV Collection / TNV Collection PK ✅
+
 ### Previous Updates (Jan 14, 2025) - SECURITY FIX + MOBILE GUIDE
 
 ### P0 Security Fix: Merchant Data Isolation ✅ VERIFIED
