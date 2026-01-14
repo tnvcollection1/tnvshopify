@@ -75,7 +75,7 @@ async def get_overview_stats(
                 "avg_order_value": round(stats.get("avg_order_value", 0), 2),
                 "revenue_growth": round(revenue_growth, 1),
                 "orders_growth": round(orders_growth, 1),
-                "total_customers": await _db.customers.count_documents({"store": store}) if _db else 0,
+                "total_customers": await _db.customers.count_documents({"store": store}) if _db is not None else 0,
                 "period": period
             }
     
