@@ -12,11 +12,20 @@ import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
 
+// Store configurations
+const STORE_CONFIGS = {
+  'tnvcollection': { currency: 'INR', symbol: '₹', name: 'TNV Collection (IN)' },
+  'tnvcollectionpk': { currency: 'PKR', symbol: 'Rs.', name: 'TNV Collection (PK)' }
+};
+
 const SalesDashboard = () => {
   const [store, setStore] = useState('tnvcollection');
   const [period, setPeriod] = useState('30d');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Get current store config
+  const storeConfig = STORE_CONFIGS[store] || STORE_CONFIGS['tnvcollection'];
   
   // Data states
   const [overview, setOverview] = useState(null);
@@ -39,9 +48,9 @@ const SalesDashboard = () => {
         fetch(`${API}/api/analytics/revenue-chart?period=${period}&store=${store}`),
         fetch(`${API}/api/analytics/top-products?limit=8&store=${store}`),
         fetch(`${API}/api/analytics/orders-by-status?store=${store}`),
-        fetch(`${API}/api/analytics/customer-stats`),
-        fetch(`${API}/api/analytics/sales-by-category`),
-        fetch(`${API}/api/analytics/recent-orders?limit=8`)
+        fetch(`${API}/api/analytics/customer-stats?store=${store}`),
+        fetch(`${API}/api/analytics/sales-by-category?store=${store}`),
+        fetch(`${API}/api/analytics/recent-orders?limit=8&store=${store}`)
       ]);
 
       const [overviewData, chartData, productsData, statusData, customersData, categoryData, ordersData] = await Promise.all([
