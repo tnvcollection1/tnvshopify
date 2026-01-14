@@ -214,8 +214,11 @@ async def clear_cart(session_id: str):
 # ======================
 
 @router.post("/order/create")
-async def create_order(request: CreateOrderRequest, session_id: str):
+async def create_order(request: CreateOrderRequest, session_id: str, store: str = Query("tnvcollection")):
     """Create order and initiate payment"""
+    
+    # Get store configuration
+    store_config = get_store_config(store)
     
     # Validate cart
     cart = await _db.carts.find_one({"session_id": session_id})
@@ -226,7 +229,11 @@ async def create_order(request: CreateOrderRequest, session_id: str):
     
     # Calculate totals
     subtotal = sum(item.price * item.quantity for item in items) if request.items else sum(item["price"] * item["quantity"] for item in items)
-    shipping = 0 if subtotal > 200 else 25
+    
+    # Use store-specific shipping
+    free_threshold = store_config.get("free_shipping_threshold", 2000)
+    shipping_cost = store_config.get("shipping_cost", 150)
+    shipping = 0 if subtotal >= free_threshold else shipping_cost
     discount = 0
     
     # Apply coupon if provided
@@ -241,11 +248,13 @@ async def create_order(request: CreateOrderRequest, session_id: str):
     total = subtotal + shipping - discount
     
     # Generate order ID
-    order_id = f"ORD-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+    store_prefix = "PK" if store == "tnvcollectionpk" else "IN"
+    order_id = f"ORD-{store_prefix}-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
     
     # Create order document
     order_doc = {
         "order_id": order_id,
+        "store": store,
         "session_id": session_id,
         "items": [item.dict() if hasattr(item, 'dict') else item for item in items],
         "shipping_address": request.shipping_address.dict(),
@@ -253,7 +262,7 @@ async def create_order(request: CreateOrderRequest, session_id: str):
         "shipping": shipping,
         "discount": round(discount, 2),
         "total": round(total, 2),
-        "currency": "AED",
+        "currency": store_config["currency"],
         "payment_method": request.payment_method,
         "payment_status": "pending",
         "order_status": "pending",
