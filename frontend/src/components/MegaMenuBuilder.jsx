@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Plus, Trash2, GripVertical, Save, Eye, ChevronDown, ChevronRight,
   Image, Link2, Type, Columns, Layout, Settings, Copy, RefreshCw,
-  ArrowLeft, AlertCircle, Check, X, Upload, Edit2, Move
+  ArrowLeft, AlertCircle, Check, X, Upload, Edit2, Move, Sparkles,
+  Store, ShoppingBag, Home, Utensils, Laptop, Package
 } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy, horizontalListSortingStrategy } from '@dnd-kit/sortable';
@@ -10,6 +11,15 @@ import { CSS } from '@dnd-kit/utilities';
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
+
+// Template icons mapping
+const TEMPLATE_ICONS = {
+  'fashion_store': ShoppingBag,
+  'electronics': Laptop,
+  'beauty': Sparkles,
+  'home_living': Home,
+  'grocery': Utensils
+};
 
 // Sortable Item Component
 const SortableItem = ({ id, children }) => {
