@@ -165,89 +165,96 @@ const TabBar = ({ activeTab, onTabChange }) => (
   </div>
 );
 
-// Home Screen
-const HomeScreen = ({ products, onProductPress, onWishlist, wishlist }) => (
-  <div className="overflow-y-auto h-full pb-16">
-    {/* Gender Cards */}
-    <div className="flex gap-3 p-4">
-      <div className="flex-1 aspect-[0.8] bg-pink-50 rounded-xl flex items-center justify-center">
-        <span className="text-2xl font-bold tracking-widest">WOMEN</span>
-      </div>
-      <div className="flex-1 aspect-[0.8] bg-blue-50 rounded-xl flex items-center justify-center">
-        <span className="text-2xl font-bold tracking-widest">MEN</span>
-      </div>
-    </div>
-
-    {/* Promo Banner */}
-    <div className="mx-4 my-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-xl p-5 flex justify-between items-center">
-      <div>
-        <h3 className="text-white text-2xl font-black">30% CASHBACK</h3>
-        <p className="text-white/80 text-sm">On Sports Apparel & Footwear</p>
-      </div>
-      <div className="bg-white/20 rounded-xl px-3 py-2 text-center">
-        <p className="text-white/70 text-xs">USE CODE:</p>
-        <p className="text-white font-black text-lg">SPORTS30</p>
-      </div>
-    </div>
-
-    {/* Categories */}
-    <div className="flex gap-4 px-4 py-4 overflow-x-auto">
-      {categories.map((cat) => (
-        <div key={cat.name} className="flex flex-col items-center min-w-[70px]">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-2xl">
-            {cat.emoji}
-          </div>
-          <span className="text-xs mt-1 text-center">{cat.name}</span>
+// Home Screen - Now uses dynamic categories from backend
+const HomeScreen = ({ products, onProductPress, onWishlist, wishlist, categories }) => {
+  const displayCategories = categories || defaultCategories;
+  
+  return (
+    <div className="overflow-y-auto h-full pb-16">
+      {/* Gender Cards */}
+      <div className="flex gap-3 p-4">
+        <div className="flex-1 aspect-[0.8] bg-pink-50 rounded-xl flex items-center justify-center">
+          <span className="text-2xl font-bold tracking-widest">WOMEN</span>
         </div>
-      ))}
-    </div>
-
-    {/* Today's Picks */}
-    <div className="px-4">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="font-bold text-lg">Today&apos;s Picks</h2>
-        <span className="text-sm text-gray-500">View All →</span>
+        <div className="flex-1 aspect-[0.8] bg-blue-50 rounded-xl flex items-center justify-center">
+          <span className="text-2xl font-bold tracking-widest">MEN</span>
+        </div>
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-2">
-        {products.slice(0, 4).map((product) => (
-          <div key={product.id} className="min-w-[140px]">
+
+      {/* Promo Banner */}
+      <div className="mx-4 my-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-xl p-5 flex justify-between items-center">
+        <div>
+          <h3 className="text-white text-2xl font-black">30% CASHBACK</h3>
+          <p className="text-white/80 text-sm">On Sports Apparel &amp; Footwear</p>
+        </div>
+        <div className="bg-white/20 rounded-xl px-3 py-2 text-center">
+          <p className="text-white/70 text-xs">USE CODE:</p>
+          <p className="text-white font-black text-lg">SPORTS30</p>
+        </div>
+      </div>
+
+      {/* Categories - Dynamic from backend */}
+      <div className="flex gap-4 px-4 py-4 overflow-x-auto">
+        {displayCategories.filter(c => c.active !== false).slice(0, 6).map((cat, idx) => (
+          <div key={cat.name || idx} className="flex flex-col items-center min-w-[70px]">
+            <div 
+              className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
+              style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
+            >
+              {cat.icon?.value || cat.icon || cat.emoji || '📁'}
+            </div>
+            <span className="text-xs mt-1 text-center">{cat.name}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Today's Picks */}
+      <div className="px-4">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="font-bold text-lg">Today&apos;s Picks</h2>
+          <span className="text-sm text-gray-500">View All →</span>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {products.slice(0, 4).map((product) => (
+            <div key={product.id} className="min-w-[140px]">
+              <ProductCard 
+                product={product} 
+                onPress={() => onProductPress(product)}
+                onWishlist={onWishlist}
+                isWishlisted={wishlist.some(w => w.id === product.id)}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Mega Sale Banner */}
+      <div className="mx-4 my-4 bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 rounded-xl p-5">
+        <h3 className="text-white text-3xl font-black">MEGA SALE</h3>
+        <p className="text-white/80 text-sm">Up to 70% OFF</p>
+      </div>
+
+      {/* New Arrivals Grid */}
+      <div className="px-4 pb-20">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="font-bold text-lg">New Arrivals</h2>
+          <span className="text-sm text-gray-500">View All →</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {products.slice(0, 6).map((product) => (
             <ProductCard 
+              key={product.id}
               product={product} 
               onPress={() => onProductPress(product)}
               onWishlist={onWishlist}
               isWishlisted={wishlist.some(w => w.id === product.id)}
             />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
-
-    {/* Mega Sale Banner */}
-    <div className="mx-4 my-4 bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 rounded-xl p-5">
-      <h3 className="text-white text-3xl font-black">MEGA SALE</h3>
-      <p className="text-white/80 text-sm">Up to 70% OFF</p>
-    </div>
-
-    {/* New Arrivals Grid */}
-    <div className="px-4 pb-20">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="font-bold text-lg">New Arrivals</h2>
-        <span className="text-sm text-gray-500">View All →</span>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {products.slice(0, 6).map((product) => (
-          <ProductCard 
-            key={product.id}
-            product={product} 
-            onPress={() => onProductPress(product)}
-            onWishlist={onWishlist}
-            isWishlisted={wishlist.some(w => w.id === product.id)}
-          />
-        ))}
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 // Browse Screen
 const BrowseScreen = ({ products, onProductPress, onWishlist, wishlist }) => (
