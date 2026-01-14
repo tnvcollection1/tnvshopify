@@ -93,11 +93,14 @@ async def get_overview_stats(
                 "revenue_growth": round(revenue_growth, 1),
                 "orders_growth": round(orders_growth, 1),
                 "total_customers": await _db.customers.count_documents({"store": store}) if _db is not None else 0,
-                "period": period
+                "period": period,
+                "currency": store_config["currency"],
+                "currency_symbol": store_config["currency_symbol"]
             }
     
     # Demo data if no real data
-    base_revenue = 125000 + random.randint(-5000, 15000)
+    store_config = get_store_config(store)
+    base_revenue = store_config["base_revenue"] + random.randint(-5000, 15000)
     base_orders = 342 + random.randint(-20, 50)
     
     return {
@@ -108,7 +111,10 @@ async def get_overview_stats(
         "orders_growth": round(random.uniform(5, 20), 1),
         "total_customers": 1247 + random.randint(-50, 100),
         "conversion_rate": round(random.uniform(2.5, 4.5), 2),
-        "period": period
+        "period": period,
+        "currency": store_config["currency"],
+        "currency_symbol": store_config["currency_symbol"],
+        "store": store
     }
 
 
