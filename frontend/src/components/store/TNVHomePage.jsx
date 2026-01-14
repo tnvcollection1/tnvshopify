@@ -70,7 +70,7 @@ const TNVHomePage = () => {
         ].map((cat, idx) => (
           <Link 
             key={cat.name}
-            to={`/store${cat.path}`}
+            to={`/tnv${cat.path}`}
             className="relative aspect-[3/4] sm:aspect-[4/5] overflow-hidden group"
           >
             <img 
