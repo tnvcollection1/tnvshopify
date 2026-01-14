@@ -194,7 +194,7 @@ const AnimatedButton = ({
 
   return (
     <AnimatedTouchable
-      onPress={onPress}
+      onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={disabled || loading}
