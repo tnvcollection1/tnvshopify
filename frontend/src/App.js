@@ -68,6 +68,7 @@ import StorefrontOrders from "@/components/StorefrontOrders";
 import StorefrontCMS from "@/components/StorefrontCMS";
 import StorefrontConfigManager from "@/components/StorefrontConfigManager";
 import HeaderConfigManager from "@/components/HeaderConfigManager";
+import BannerConfigManager from "@/components/BannerConfigManager";
 import MenuTagsManager from "@/components/MenuTagsManager";
 import StoreManagement from "@/components/StoreManagement";
 import SyncDashboard from "@/components/SyncDashboard";
@@ -695,6 +696,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <HeaderConfigManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/banner-config" 
+        element={
+          <ProtectedRoute>
+            <BannerConfigManager />
           </ProtectedRoute>
         } 
       />
