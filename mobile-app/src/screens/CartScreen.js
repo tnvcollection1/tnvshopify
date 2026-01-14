@@ -86,18 +86,20 @@ const CartScreen = () => {
                 <View style={[styles.quantityContainer, { borderColor: colors.border }]}>
                   <TouchableOpacity
                     style={styles.qtyBtn}
-                    onPress={() =>
-                      updateQuantity(item.productId, item.variantId, item.quantity - 1)
-                    }
+                    onPress={() => {
+                      lightHaptic();
+                      updateQuantity(item.productId, item.variantId, item.quantity - 1);
+                    }}
                   >
                     <Text style={[styles.qtyBtnText, { color: colors.text }]}>−</Text>
                   </TouchableOpacity>
                   <Text style={[styles.quantity, { color: colors.text }]}>{item.quantity}</Text>
                   <TouchableOpacity
                     style={styles.qtyBtn}
-                    onPress={() =>
-                      updateQuantity(item.productId, item.variantId, item.quantity + 1)
-                    }
+                    onPress={() => {
+                      lightHaptic();
+                      updateQuantity(item.productId, item.variantId, item.quantity + 1);
+                    }}
                   >
                     <Text style={[styles.qtyBtnText, { color: colors.text }]}>+</Text>
                   </TouchableOpacity>
@@ -109,7 +111,10 @@ const CartScreen = () => {
             </View>
             <TouchableOpacity
               style={styles.removeBtn}
-              onPress={() => removeFromCart(item.productId, item.variantId)}
+              onPress={() => {
+                errorHaptic();
+                removeFromCart(item.productId, item.variantId);
+              }}
             >
               <Text style={styles.removeIcon}>🗑️</Text>
             </TouchableOpacity>
