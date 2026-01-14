@@ -8,7 +8,7 @@ import httpx
 import os
 
 # Get API URL from environment or use default
-API_URL = os.environ.get('API_URL', 'https://merchant-platform-12.preview.emergentagent.com')
+API_URL = os.environ.get('API_URL', 'https://custom-storefront-2.preview.emergentagent.com')
 
 # Test data
 TEST_PHONE = "+919876543210"

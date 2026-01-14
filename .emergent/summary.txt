@@ -1,168 +1,199 @@
-<analysis>**original_problem_statement**: The user wants to build and deploy a multi-tenant e-commerce platform named . The platform should allow merchants to have their own stores with unique subdomains (e.g., ) and connect custom domains. A central admin panel is required for management. The immediate goal is to deploy the entire platform to a Namecheap VPS.
+<analysis>**original_problem_statement**: The user wants to build a multi-tenant e-commerce platform, , allowing merchants to have their own stores with custom domains. The project's current focus is a complete redesign of the storefront and the development of a mobile app, both inspired by .
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application is deployed on the user's Namecheap VPS. The backend (FastAPI) is running via PM2, and the database is on MongoDB Atlas. Nginx is configured as a reverse proxy.
+A full-stack application (FastAPI backend, React frontend, MongoDB) is deployed on a Namecheap VPS. The admin panel at  is functional.
 
--    now correctly serves the React admin panel.
--    now serves a Coming Soon page as requested by the user.
--    subdomains are configured to serve the storefront application.
--   The backend API is running, and login is confirmed to work via  for both  and the alias .
+In the local environment, a new -inspired storefront (TNV Store) has been substantially built. This includes a dynamic, configurable header, homepage, product listing/detail pages, and a functional navigation flow that matches user feedback (e.g., category-specific hero banners, dropdowns).
 
-However, the user is still unable to log in through the admin panel frontend.
+A backend API () and a corresponding admin UI () have been created to manage the storefront's header. However, the backend currently serves hardcoded data, and the admin UI is not wired up to save changes.
+
+A critical security fix for merchant data isolation (P0 vulnerability) has been implemented via new secure endpoints but has not been thoroughly tested. A boilerplate for a React Native mobile app has also been created in the  directory.
 
 **Last working item**:
--   **Last item agent was working**: Diagnosing the root cause of the persistent admin login failure. After verifying the backend and Nginx were correct, the agent inspected the frontend's compiled JavaScript files.
--   **Diagnosis**: The agent discovered that the admin panel frontend has a **hardcoded API URL** pointing to an old development environment () instead of the live API (). This is the definitive cause of the login failure, as the frontend is not communicating with the correct backend.
+-   **Last item agent was working**: The user requested a mobile app. The agent began creating a React Native boilerplate project, setting up the file structure, navigation, context providers, screens, and basic components. The work is mid-flight.
 -   **Status**: IN PROGRESS
--   **Agent Testing Done**: Y (Backend API tested successfully with ).
--   **Which testing method agent to use?**: Blocked on user action. The next agent needs to interact with the user to get the frontend rebuilt or apply a risky patch.
--   **User Testing Done**: Y (User confirmed login still fails).
+-   **Agent Testing Done**: N
+-   **Which testing method agent to use?**: Manual testing. The agent needs to run the Expo app on a simulator or device to verify the boilerplate.
+-   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Admin panel login fails due to hardcoded API URL in the frontend (P0).
--   **Issue 2**: Make the platform independent of Shopify (P1).
--   **Issue 3**: Finalize and verify custom domain mapping for other domains (P2).
+-   **Issue 1**: Merchant Data Isolation Security Fix requires verification (P0)
+-   **Issue 2**: DNS for  is not pointing to the VPS (P1)
+-   **Issue 3**: Admin UI for Header Config is not functional (P1)
+-   **Issue 4**: Platform API responses link to Shopify CDN instead of local images (P2)
+-   **Issue 5**: Large monolithic backend files require refactoring (P3)
 
 **Issues Detail**:
--   **Issue 1: Admin panel login fails due to hardcoded API URL in the frontend**
-    -   **Attempted fixes**:
-        -   Fixed Nginx routing to serve the correct admin panel on .
-        -   Resolved authentication logic, ensuring the  collection is used for login and the admin password is a valid bcrypt hash.
-        -   Created an alias endpoint  in the backend to match the frontend's likely call, and confirmed it works via .
-        -   Extensive debugging of the frontend's compiled JavaScript () revealed it is hardcoded to call .
+-   **Issue 1: Merchant Data Isolation Security Fix requires verification**
+    -   **Attempted fixes**: Created a FastAPI dependency and new secure routes (). Basic  tests were performed.
     -   **Next debug checklist**:
-        1.  Explain to the user that the frontend was built with the wrong API URL and needs to be rebuilt.
-        2.  Ask the user if they have the source code for the admin panel.
-        3.  **If user has source code:** Guide them to set the  environment variable to , rebuild the project, and upload the new build files to .
-        4.  **If user does NOT have source code:** Propose a high-risk, temporary patch by replacing the URL directly in the minified JS file using . Explain that this is not a proper solution and can break the application.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the final blocker preventing the user from accessing and managing their platform.
-    -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Frontend (manual user login).
-    -   **Blocked on other issue**: None.
+        1.  Create two distinct merchants in the database, each assigned to a different store.
+        2.  Write a test script (or use curl) to log in as Merchant A.
+        3.  Using Merchant A's token, attempt to access data (products, orders) for Merchant B's store via the secure endpoints.
+        4.  Verify that the API returns a  error.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical P0 security vulnerability in a multi-tenant application. A fix will ensure merchants can only access their own data.
+    -   **Status**: USER VERIFICATION PENDING
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Backend
+    -   **Blocked on other issue**: None
 
--   **Issue 2: Make the platform independent of Shopify**
-    -   **Attempted fixes**: None in this session.
-    -   **Next debug checklist**: Once admin access is restored, check the status of the image download script () and modify the backend to serve local images.
-    -   **Why fix this issue and what will be achieved with the fix?**: To create a self-contained platform.
+-   **Issue 2: DNS for  not pointing to VPS**
+    -   **Attempted fixes**: The agent successfully guided the user to update DNS for . The user has not yet updated .
+    -   **Next debug checklist**: Guide the user to update the A records for  to point to the VPS IP .
+    -   **Why fix this issue and what will be achieved with the fix?**: To make the Pakistan storefront live on the user's self-hosted platform.
+    -   **Status**: BLOCKED (User Action Pending)
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Blocked on other issue**: None
+
+-   **Issue 3: Admin UI for Header Config is not functional**
+    -   **Attempted fixes**: The agent created the frontend component () and a backend route ().
+    -   **Next debug checklist**:
+        1.  Modify  to store/retrieve configuration from the MongoDB database instead of a hardcoded variable.
+        2.  Implement / methods in the backend route to handle updates.
+        3.  Wire up the  component to fetch data on load and save changes to the backend API.
+    -   **Why fix this issue and what will be achieved with the fix?**: To allow the user to dynamically manage their storefront's appearance without code changes, which was the original intent.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both.
-    -   **Blocked on other issue**: Admin panel login fails due to hardcoded API URL in the frontend.
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on other issue**: None
 
--   **Issue 3: Finalize and verify custom domain mapping**
-    -   **Attempted fixes**: Nginx was configured for .
-    -   **Next debug checklist**: After platform access is restored, guide the user to obtain SSL certificates for any other custom domains using .
-    -   **Why fix this issue and what will be achieved with the fix?**: Enables merchants to use their own branded domains.
-    -   **Status**: BLOCKED
+-   **Issue 4: Platform not fully independent of Shopify**
+    -   **Attempted fixes**: Downloaded ~39,000 images and configured a static file server.
+    -   **Next debug checklist**: Modify backend API endpoints (e.g., in ) to return URLs for the locally served images instead of Shopify CDN URLs.
+    -   **Why fix this issue and what will be achieved with the fix?**: To achieve full data independence and create a self-contained platform.
+    -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend.
-    -   **Blocked on other issue**: Admin panel login fails due to hardcoded API URL in the frontend.
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on other issue**: None
+
+-   **Issue 5: Refactor large backend files**
+    -   **Attempted fixes**: None.
+    -   **Next debug checklist**: Systematically extract functionality from  and  into smaller, dedicated route files.
+    -   **Why fix this issue and what will be achieved with the fix?**: To improve code maintainability, readability, and scalability.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Backend
+    -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   None.
+-   **Task 1: Complete the Mobile App deliverables**
+    -   **Where to resume**: The agent has created the basic file structure for a React Native boilerplate in . The next steps are to flesh out the components and screens, create detailed Figma-style mockups for each screen, and build a web-based mobile preview (PWA).
+    -   **What will be achieved with this?**: A complete set of initial assets for the user's mobile app development.
+    -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: Both (the RN app and the PWA)
+    -   **Blocked on something**: None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P1) **Complete Shopify Data Independence**: After images are downloaded, modify code to use local images. Sync final orders and banners.
-    -   (P1) **Merchant Onboarding Flow**: Develop a UI in the admin panel for new merchants to sign up.
-    -   (P2) **Sooxie.com Integration**: Plan and implement an integration with the Sooxie.com API.
+    -   (P1) **Deploy Namshi Storefront to VPS**: Deploy the newly built TNV storefront to .
 -   **Future Tasks**:
-    -   (P2) **Isolate Merchant Admins**: Implement role-based access control for merchants.
-    -   (P2) **Refactor Monolithic Files**: Break down  and .
-    -   (P3) **Address Inconsistent Currency Display**: Fix currency formatting.
-    -   (P3) **CSV Export**: Add CSV export functionality.
-    -   (P3) **Push Notifications**: Implement push notifications for the Chrome Extension.
+    -   (P2) **Sooxie.com Integration**: Plan and implement an integration with the Sooxie.com API.
+    -   (P3) **Refactor Monolithic Files**: Break down  and .
 
 **Completed work in this session**
--   Fixed Nginx configuration to correctly serve the admin panel on .
--   Diagnosed and corrected a  vs  collection mismatch for authentication logic.
--   Successfully added an alias route () to the backend to ensure frontend compatibility.
--   Verified via  that both  and  work correctly and return a success response.
--   Implemented a Coming Soon page for  per a mid-task user request.
--   **Identified the root cause of the login failure: a hardcoded API URL in the frontend's compiled JavaScript.**
+-   **Namshi.com Storefront Redesign**: Built a new React storefront that visually and functionally matches the  design, including a dynamic header, mega menus, category-specific landing pages, and complex navigation flows.
+-   **Backend for Storefront Config**: Created a new FastAPI endpoint () and a corresponding admin UI component () for header management.
+-   **P0 Security Fix (Merchant Data Isolation)**: Implemented a FastAPI dependency and secure API routes to prevent merchants from accessing other tenants' data.
+-   **Mobile App Guidance & Boilerplate**: Created a detailed guide document () and a React Native boilerplate project ().
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1**: Inconsistent currency display in the competitor analysis history.
--   **Issue 2**: The large backend files  and  need refactoring.
+-   **Issue 1**: Inconsistent currency display in the competitor analysis history feature of the admin panel.
 
 **Known issue recurrence from previous fork**
--   None.
+-   **Issue 1**: User repeatedly correcting the UI to match .
+    -   **Recurrence count**: 4+ times.
+    -   **Status**: RESOLVED (for now). The latest implementation matches the user's feedback, but the agent should be vigilant.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
 -   Multi-Tenant SaaS Architecture
--   VPS Deployment (AlmaLinux, Nginx, PM2)
--   MongoDB Atlas
--   Dynamic Frontend Configuration (problem area)
+-   VPS Deployment (Nginx, PM2)
+-   Headless E-commerce (React Frontend, FastAPI Backend)
+-   Role-Based Access Control (RBAC)
+-   Mobile App Development (React Native, Expo)
 
 **key DB schema**
--   **agents**: Used for admin panel authentication. The  user's password has been correctly set here.
--   **users**: Separate user collection, not used for admin login.
--   **stores**: Holds configuration for each merchant store.
-
-**changes in tech stack**
--   None.
+-   **agents**: Contains users for the admin panel. Schema includes  and . (No changes this session).
 
 **All files of reference**
--   **/etc/nginx/conf.d/wamerce.conf**: Nginx configuration. Corrected to serve admin panel and Coming Soon page.
--   **/var/www/wamerce/backend/server.py**: Backend code. Modified to add the  alias.
--   **/var/www/wamerce/admin-panel/static/js/main.*.js**: Compiled frontend code. **This is where the hardcoded, incorrect API URL was found.**
--   **/var/www/wamerce/coming-soon/index.html**: New file created for the Coming Soon page.
+-   : New backend route to provide header configuration. (Currently returns hardcoded data).
+-   : New FastAPI dependency for checking merchant store access.
+-   : New secure endpoints that use the access dependency.
+-   : New admin UI to manage header settings. (Currently a mock, not connected to the backend).
+-   : Heavily modified to match Namshi's header, mega menu, and dropdown logic.
+-   : Modified to include category-specific hero banners.
+-   : New detailed document outlining the mobile app plan.
+-   : New directory containing the React Native boilerplate.
+-   : Updated with routes for the new admin page and storefront sub-categories.
+-   : Updated to include the new  and  routers.
 
 **Areas that need refactoring**:
--   The frontend  needs to be rebuilt from source with a configurable API URL instead of a hardcoded one.
--   The  file has temporary download endpoints that should be removed.
+-   The new  endpoint must be connected to a database instead of using hardcoded JSON.
+-   The  component needs to be connected to the backend API to become functional.
+-   Monolithic backend files (, ) still require breaking down into smaller modules.
 
 **key api endpoints**
--    (Correct login endpoint)
--    (Alias added for compatibility)
+-   : (New) Fetches header configuration for a specific store.
+-   : (New) Gets products, filtered by the authenticated merchant's assigned stores.
+-   : (New) Gets orders, filtered by the authenticated merchant's assigned stores.
+-   : (New) Gets customers, filtered by the authenticated merchant's assigned stores.
+-   : (New) Gets the stores assigned to the authenticated merchant.
 
 **Critical Info for New Agent**
--   **DO NOT debug the backend or Nginx for the login issue.** They have been verified and are working correctly.
--   The problem is **100% in the frontend**. The admin panel is making API calls to .
--   Your primary task is to communicate this finding to the user and guide them on how to fix the frontend. The solution is to rebuild the admin panel from its source code with the correct API URL ().
--   If the user does not have the source code, the only alternative is a risky direct modification of the compiled JavaScript file, which should be presented as a last resort.
+-   **The user is highly detail-oriented about the UI matching .** Always refer to the latest screenshots provided by the user before making UI changes. The navigation flow is complex and has been revised multiple times.
+-   **The P0 security fix is implemented but not properly tested.** It is critical to verify this fix with real merchant accounts to ensure data isolation before any deployment.
+-   **The Header Configuration admin page is currently a mock.** It looks functional, but it is not connected to the backend API, and the API itself returns hardcoded data. This needs to be fully implemented.
+-   The immediate next step is to continue building the mobile app assets as requested by the user.
 
 **documents and test reports created in this job**
--   None.
+-   
+-   
+-    (updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**:  - User was trying to paste logs which the agent was failing to parse from the RTF file.
-2.  **User**:  (uploads an artifact of logs).
-3.  **User**:  - User is asking for direct SSH access.
-4.  **User**:  - User is frustrated that their provided logs are not being used.
-5.  **User**:  - User confirming login is still failing after backend fixes.
-6.  **User**:  - User confirming login is still failing.
-7.  **User**:  - User reporting login failure after the Coming Soon page was implemented.
-8.  **User**:  - An abrupt change in priority, which was completed.
-9.  **User**:  - User confirming a file overwrite on the VPS.
-10. **User**: Provides terminal output showing failed login, and then provides a huge log dump from previous steps.
+10. User confirms the category page layout with hero banners is now correct.
+9.  User provides a screenshot and points out that clicking a main category (e.g., WOMEN) should open a dropdown with selection cards, not navigate directly. (FIXED)
+8.  User receives the summary for the new Header Config admin UI.
+7.  User confirms the product listing page with hero banners is correct, but the sub-category page is a black screen. (FIXED)
+6.  User provides a screenshot showing a large banner that should appear when a category like WOMEN is clicked. (FIXED)
+5.  User confirms the mobile app guide and security fix summary.
+4.  User provides a screenshot showing missing header elements (promo bar items, dropdown menu). (FIXED)
+3.  User confirms the new Namshi-like design looks good but points out the header and layout are still not an exact match. (FIXED)
+2.  User receives the initial summary for the completed Namshi-style storefront.
+1.  **Mobile app** - The user's latest request, which is currently in progress.
 
 **Project Health Check:**
--   **Broken**: Admin panel login is non-functional due to a hardcoded API URL in the frontend.
--   **Mocked**: The  domain now displays a Coming Soon page.
+-   **Broken**:
+    -    domain is not live.
+    -   The P0 security fix for merchant data isolation has not been properly verified.
+    -   The  admin UI is non-functional (a mock).
+-   **Mocked**:
+    -    still displays a Coming Soon page. The new storefront is only available in the local preview.
+    -   The  is a boilerplate and not a running application.
 
 **3rd Party Integrations**
--   Shopify (data source)
+-   Shopify (as a data source)
 -   Namecheap (DNS, VPS)
--   MongoDB Atlas (Cloud Database)
+-   MongoDB Atlas (Database)
+-   React Native / Expo (for mobile app)
 
 **Testing status**
--   **Testing agent used after significant changes**: NO
+-   **Testing agent used after significant changes**: YES (for the initial storefront build)
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None
--   **Known regressions**: None.
+-   **Known regressions**: None
 
 **Credentials to test flow:**
--   **Admin Login**:  /  (will work once frontend is fixed)
+-   **Admin Login**:  / 
 -   **VPS IP**: 
 -   **VPS Root Password**: 
 -   **MongoDB Atlas URI**: 
 
 **What agent forgot to execute**
--   The agent correctly diagnosed the frontend issue but has not yet guided the user through the solution (rebuilding the frontend), as it requires confirming if the user has the source code. This is the correct next step.</analysis>
+-   The agent created a complete UI for the  and a backend endpoint that returns hardcoded data, but **forgot to connect them**. The admin UI does not save any data, and the backend doesn't retrieve data from the database, making the entire feature non-functional.
+-   The agent did not perform adequate testing for the critical P0 security fix. Testing with a static  command and a hardcoded  header does not simulate a real-world scenario or validate the end-to-end security flow.</analysis>

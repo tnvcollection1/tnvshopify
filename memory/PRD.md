@@ -175,7 +175,7 @@ Built a complete Namshi.com-inspired e-commerce storefront accessible at `/tnv` 
 
 ### Admin Panel & Storefront Deployment Fix ✅ COMPLETED
 - **Problem**: Admin panel login was failing due to hardcoded API URL pointing to old preview environment
-- **Root Cause**: Frontend `.env` files had `REACT_APP_BACKEND_URL` and `VITE_API_URL` pointing to `https://merchant-platform-12.preview.emergentagent.com` instead of `https://api.wamerce.com`
+- **Root Cause**: Frontend `.env` files had `REACT_APP_BACKEND_URL` and `VITE_API_URL` pointing to `https://custom-storefront-2.preview.emergentagent.com` instead of `https://api.wamerce.com`
 - **Fixes Applied**:
   1. Updated `/app/frontend/.env` with correct API URL
   2. Updated `/app/storefront-standalone/.env` with correct API URL
