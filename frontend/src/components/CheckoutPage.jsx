@@ -232,7 +232,7 @@ const CheckoutPage = () => {
     rzp.open();
   };
 
-  const formatCurrency = (value) => `AED ${value.toFixed(2)}`;
+  const formatCurrency = (value) => `AED ${(value || 0).toFixed(2)}`;
 
   if (loading) {
     return (
