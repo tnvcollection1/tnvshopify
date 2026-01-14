@@ -147,7 +147,8 @@ async def get_storefront_products(
     page: int = 1,
     category: Optional[str] = None,
     collection: Optional[str] = None,
-    search: Optional[str] = None
+    search: Optional[str] = None,
+    localize_images: bool = True  # Transform Shopify CDN URLs to local proxy
 ):
     """
     Get products for the public storefront
@@ -189,6 +190,11 @@ async def get_storefront_products(
     ).skip(skip).limit(limit).sort("updated_at", -1)
     
     products = await cursor.to_list(length=limit)
+    
+    # Transform Shopify CDN URLs to local proxy URLs
+    if localize_images:
+        from routes.image_proxy import transform_product_images
+        products = [transform_product_images(p) for p in products]
     
     # Get total count
     total = await db.shopify_products.count_documents(query)
