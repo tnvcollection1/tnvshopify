@@ -261,7 +261,7 @@ const SalesDashboard = () => {
               <YAxis tick={{ fontSize: 12 }} stroke="#9CA3AF" />
               <Tooltip 
                 contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }}
-                formatter={(value, name) => [name === 'revenue' ? formatCurrency(value) : value, name === 'revenue' ? 'Revenue' : 'Orders']}
+                formatter={(value, name) => [name === 'revenue' ? formatWithSymbol(value) : value, name === 'revenue' ? 'Revenue' : 'Orders']}
               />
               <Area type="monotone" dataKey="revenue" stroke="#3B82F6" fillOpacity={1} fill="url(#colorRevenue)" />
               <Line type="monotone" dataKey="orders" stroke="#10B981" strokeWidth={2} dot={false} />
@@ -297,7 +297,7 @@ const SalesDashboard = () => {
                   <span className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color || COLORS[index] }}></span>
                   <span className="text-gray-600">{cat.name}</span>
                 </div>
-                <span className="font-medium">{formatCurrency(cat.sales)}</span>
+                <span className="font-medium">{formatWithSymbol(cat.sales)}</span>
               </div>
             ))}
           </div>
