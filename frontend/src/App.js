@@ -954,6 +954,7 @@ function AppRoutes() {
       <Route path="/tnv" element={<TNVStoreWrapper><TNVHomePage /></TNVStoreWrapper>} />
       <Route path="/tnv/products" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
       <Route path="/tnv/:category" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
+      <Route path="/tnv/:category/:subcategory" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
       <Route path="/tnv/product/:productId" element={<TNVStoreWrapper><TNVProductDetail /></TNVStoreWrapper>} />
       <Route path="/tnv/collection/:collectionId" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
       <Route path="/tnv/brand/:brandName" element={<TNVStoreWrapper><TNVProductListing /></TNVStoreWrapper>} />
