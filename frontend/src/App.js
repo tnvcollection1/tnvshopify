@@ -67,6 +67,7 @@ import WhatsAppCaseStudy from "@/components/WhatsAppCaseStudy";
 import StorefrontOrders from "@/components/StorefrontOrders";
 import StorefrontCMS from "@/components/StorefrontCMS";
 import StorefrontConfigManager from "@/components/StorefrontConfigManager";
+import HeaderConfigManager from "@/components/HeaderConfigManager";
 import MenuTagsManager from "@/components/MenuTagsManager";
 import StoreManagement from "@/components/StoreManagement";
 import SyncDashboard from "@/components/SyncDashboard";
