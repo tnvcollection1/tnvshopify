@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, Truck, RotateCcw, Shield, ChevronLeft, ChevronRight, Minus, Plus, Check, Share2 } from 'lucide-react';
 import { useStore } from './TNVStoreLayout';
 import { ProductCard } from './TNVHomePage';
+import ProductReviews from './ProductReviews';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
