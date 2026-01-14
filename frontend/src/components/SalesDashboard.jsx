@@ -321,7 +321,7 @@ const SalesDashboard = () => {
                   <p className="text-sm text-gray-500">{product.sales} sold</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">{formatCurrency(product.revenue)}</p>
+                  <p className="font-semibold">{formatWithSymbol(product.revenue)}</p>
                   <p className={`text-sm flex items-center justify-end gap-1 ${product.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {product.growth >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                     {Math.abs(product.growth)}%
