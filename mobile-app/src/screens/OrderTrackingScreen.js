@@ -57,8 +57,18 @@ const OrderTrackingScreen = () => {
   };
 
   const onRefresh = () => {
+    pullToRefreshHaptic();
     setRefreshing(true);
-    fetchTracking();
+    fetchTracking().then(() => {
+      successHaptic();
+    });
+  };
+
+  const handleWhatsAppSupport = () => {
+    mediumHaptic();
+    const message = `Hi! I need help with my order ${orderId}`;
+    const phone = '971501234567';
+    Linking.openURL(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`);
   };
 
   const getStatusSteps = () => {
