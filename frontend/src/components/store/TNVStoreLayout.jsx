@@ -28,23 +28,6 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [navConfig, setNavConfig] = useState(null);
 
-  useEffect(() => {
-    const savedRegion = localStorage.getItem('tnv_region');
-    const savedCart = localStorage.getItem('tnv_cart');
-    const savedWishlist = localStorage.getItem('tnv_wishlist');
-    
-    if (savedRegion) setRegion(JSON.parse(savedRegion));
-    if (savedCart) setCart(JSON.parse(savedCart));
-    if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
-
-    if (!savedRegion) detectRegion();
-    fetchNavConfig();
-  }, []);
-
-  useEffect(() => { localStorage.setItem('tnv_region', JSON.stringify(region)); }, [region]);
-  useEffect(() => { localStorage.setItem('tnv_cart', JSON.stringify(cart)); }, [cart]);
-  useEffect(() => { localStorage.setItem('tnv_wishlist', JSON.stringify(wishlist)); }, [wishlist]);
-
   const detectRegion = async () => {
     try {
       const res = await fetch('https://ipapi.co/json/');
@@ -63,6 +46,23 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
       console.log('Using default nav config');
     }
   };
+
+  useEffect(() => {
+    const savedRegion = localStorage.getItem('tnv_region');
+    const savedCart = localStorage.getItem('tnv_cart');
+    const savedWishlist = localStorage.getItem('tnv_wishlist');
+    
+    if (savedRegion) setRegion(JSON.parse(savedRegion));
+    if (savedCart) setCart(JSON.parse(savedCart));
+    if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
+
+    if (!savedRegion) detectRegion();
+    fetchNavConfig();
+  }, []);
+
+  useEffect(() => { localStorage.setItem('tnv_region', JSON.stringify(region)); }, [region]);
+  useEffect(() => { localStorage.setItem('tnv_cart', JSON.stringify(cart)); }, [cart]);
+  useEffect(() => { localStorage.setItem('tnv_wishlist', JSON.stringify(wishlist)); }, [wishlist]);
 
   const addToCart = (product, variant, quantity = 1) => {
     setCart(prev => {
