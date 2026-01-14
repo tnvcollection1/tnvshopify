@@ -381,8 +381,10 @@ export const TNVHeader = () => {
           </button>
 
           {/* Logo - BLACK italic like NAMSHI */}
-          <Link to="/tnv" className="shrink-0 mr-4">
-            <span className="text-black text-2xl font-black italic tracking-wide">NAMSHI</span>
+          <Link to={baseUrl} className="shrink-0 mr-4">
+            <span className="text-black text-2xl font-black italic tracking-wide">
+              {storeName === 'tnvcollectionpk' ? 'TNV PK' : 'TNV'}
+            </span>
           </Link>
 
           {/* Category Tabs with Images - EXACTLY like Namshi */}
