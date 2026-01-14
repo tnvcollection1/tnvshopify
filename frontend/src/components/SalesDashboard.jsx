@@ -126,6 +126,18 @@ const SalesDashboard = () => {
           <p className="text-gray-500">Track your store performance and analytics</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Store Selector */}
+          <div className="flex bg-white rounded-lg border p-1">
+            <select
+              value={store}
+              onChange={(e) => setStore(e.target.value)}
+              className="px-3 py-2 text-sm font-medium bg-transparent border-none outline-none cursor-pointer"
+              data-testid="store-selector"
+            >
+              <option value="tnvcollection">🇮🇳 TNV Collection (INR)</option>
+              <option value="tnvcollectionpk">🇵🇰 TNV Collection (PKR)</option>
+            </select>
+          </div>
           {/* Period Selector */}
           <div className="flex bg-white rounded-lg border p-1">
             {['7d', '30d', '90d', '1y'].map(p => (
