@@ -709,6 +709,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/store-settings" 
+        element={
+          <ProtectedRoute>
+            <UnifiedStoreSettings />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/menu-tags" 
         element={
           <ProtectedRoute>
