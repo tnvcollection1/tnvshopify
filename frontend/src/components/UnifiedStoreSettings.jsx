@@ -971,8 +971,12 @@ const UnifiedStoreSettings = () => {
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
+                        )}
+                      </SortableItem>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             </div>
           )}
 
@@ -982,7 +986,7 @@ const UnifiedStoreSettings = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold">Sub Navigation</h2>
-                  <p className="text-gray-500">Secondary navigation items (CLOTHING, SHOES, SALE, etc.)</p>
+                  <p className="text-gray-500">Secondary navigation - <span className="text-blue-500 font-medium">Drag to reorder</span></p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -1008,17 +1012,27 @@ const UnifiedStoreSettings = () => {
                 </div>
               </div>
 
-              <div className="bg-white border rounded-xl divide-y">
-                {config.subNavItems.map((item, index) => (
-                  <div key={item.id || index} className={`flex items-center gap-4 p-4 ${!item.active ? 'opacity-60' : ''}`}>
-                    <div className="flex flex-col gap-1">
-                      <button onClick={() => moveArrayItem('subNavItems', index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-200 rounded disabled:opacity-30">
-                        <ChevronUp className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => moveArrayItem('subNavItems', index, 1)} disabled={index === config.subNavItems.length - 1} className="p-1 hover:bg-gray-200 rounded disabled:opacity-30">
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                    </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(event) => handleDragEnd(event, 'subNavItems')}
+              >
+                <SortableContext
+                  items={config.subNavItems.map(i => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="bg-white border rounded-xl divide-y">
+                    {config.subNavItems.map((item, index) => (
+                      <SortableItem key={item.id} id={item.id}>
+                        {({ listeners, isDragging }) => (
+                          <div className={`flex items-center gap-4 p-4 ${!item.active ? 'opacity-60' : ''} ${isDragging ? 'bg-blue-50' : ''}`}>
+                            <div 
+                              {...listeners}
+                              className="cursor-grab active:cursor-grabbing p-2 hover:bg-gray-200 rounded"
+                              title="Drag to reorder"
+                            >
+                              <GripVertical className="w-5 h-5 text-gray-400" />
+                            </div>
                     
                     {editingItem === `sub-${index}` ? (
                       <div className="flex-1 flex items-center gap-4">
