@@ -97,6 +97,10 @@ import TNVProductDetail from "@/components/store/TNVProductDetail";
 import TNVCart from "@/components/store/TNVCart";
 import TNVCheckout from "@/components/store/TNVCheckout";
 import TNVOrderConfirmation from "@/components/store/TNVOrderConfirmation";
+// E-commerce Feature Components
+import OrderTrackingPage from "@/components/store/OrderTrackingPage";
+import WishlistPage from "@/components/store/WishlistPage";
+import CustomerAccountPage from "@/components/store/CustomerAccountPage";
 // Storefront Components
 import { StorefrontLayout, CartProvider } from "@/components/storefront/StorefrontLayout";
 import StorefrontHome from "@/components/storefront/StorefrontHome";
