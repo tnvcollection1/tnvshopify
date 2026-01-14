@@ -86,12 +86,18 @@ const SalesDashboard = () => {
   };
 
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-AE', {
-      style: 'currency',
-      currency: 'AED',
+    // Use the currency symbol from the API response if available, else fallback to store config
+    const symbol = overview?.currency_symbol || storeConfig.symbol;
+    return new Intl.NumberFormat('en-IN', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(value);
+  };
+  
+  // Formatted currency with symbol
+  const formatWithSymbol = (value) => {
+    const symbol = overview?.currency_symbol || storeConfig.symbol;
+    return `${symbol} ${formatCurrency(value)}`;
   };
 
   const formatNumber = (value) => {
