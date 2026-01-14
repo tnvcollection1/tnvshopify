@@ -23,7 +23,7 @@ const PromoBanner = ({
   title,
   subtitle,
   code,
-  colors: gradientColors = colors.gradientAccent,
+  colors: gradientColors,
   onPress,
   style,
   size = 'md', // sm, md, lg
@@ -31,6 +31,10 @@ const PromoBanner = ({
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const { colors, shadows, gradients } = useTheme();
+  
+  // Use provided colors or default accent gradient
+  const bannerColors = gradientColors || gradients.accent;
 
   useEffect(() => {
     if (animated) {
@@ -103,7 +107,7 @@ const PromoBanner = ({
         disabled={!onPress}
       >
         <LinearGradient
-          colors={gradientColors}
+          colors={bannerColors}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.container, sizeStyles.container, shadows.lg]}
@@ -152,19 +156,23 @@ const PromoBanner = ({
 };
 
 // Compact banner variant
-export const CompactBanner = ({ title, icon, color, onPress }) => (
-  <TouchableOpacity
-    style={[styles.compactBanner, { backgroundColor: color + '15' }]}
-    onPress={onPress}
-  >
-    <Text style={styles.compactIcon}>{icon}</Text>
-    <Text style={[styles.compactTitle, { color }]}>{title}</Text>
-    <Text style={[styles.compactArrow, { color }]}>→</Text>
-  </TouchableOpacity>
-);
+export const CompactBanner = ({ title, icon, color, onPress }) => {
+  const { colors } = useTheme();
+  return (
+    <TouchableOpacity
+      style={[styles.compactBanner, { backgroundColor: color + '15' }]}
+      onPress={onPress}
+    >
+      <Text style={styles.compactIcon}>{icon}</Text>
+      <Text style={[styles.compactTitle, { color }]}>{title}</Text>
+      <Text style={[styles.compactArrow, { color }]}>→</Text>
+    </TouchableOpacity>
+  );
+};
 
 // Flash sale banner
 export const FlashSaleBanner = ({ endTime, onPress }) => {
+  const { shadows } = useTheme();
   const [timeLeft, setTimeLeft] = React.useState('');
 
   React.useEffect(() => {
@@ -189,7 +197,7 @@ export const FlashSaleBanner = ({ endTime, onPress }) => {
   }, [endTime]);
 
   return (
-    <TouchableOpacity style={styles.flashBanner} onPress={onPress}>
+    <TouchableOpacity style={[styles.flashBanner, shadows.md]} onPress={onPress}>
       <LinearGradient
         colors={['#FF416C', '#FF4B2B']}
         start={{ x: 0, y: 0 }}
@@ -253,7 +261,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   title: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontWeight: typography.extrabold,
     letterSpacing: 1,
     marginBottom: spacing.xs,
@@ -281,7 +289,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   codeText: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontWeight: typography.bold,
     fontSize: typography.caption,
     letterSpacing: 1,
@@ -299,7 +307,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   arrowText: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: typography.bold,
   },
@@ -330,7 +338,6 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     borderRadius: borderRadius.lg,
     overflow: 'hidden',
-    ...shadows.md,
   },
   flashGradient: {
     flexDirection: 'row',
@@ -348,7 +355,7 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   flashTitle: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: typography.bodySmall,
     fontWeight: typography.bold,
     letterSpacing: 1,
@@ -358,7 +365,7 @@ const styles = StyleSheet.create({
     fontSize: typography.caption,
   },
   flashArrow: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: typography.caption,
     fontWeight: typography.bold,
   },
