@@ -531,12 +531,15 @@ const CheckoutPage = () => {
                       onChange={handleShippingChange}
                       className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                     >
-                      <option value="UAE">United Arab Emirates</option>
-                      <option value="SA">Saudi Arabia</option>
-                      <option value="KW">Kuwait</option>
-                      <option value="QA">Qatar</option>
-                      <option value="BH">Bahrain</option>
-                      <option value="OM">Oman</option>
+                      {currentStore === 'tnvcollectionpk' ? (
+                        <>
+                          <option value="PK">Pakistan</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="IN">India</option>
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>
