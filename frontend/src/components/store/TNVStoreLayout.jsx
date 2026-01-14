@@ -273,78 +273,149 @@ export const TNVHeader = () => {
 
           {/* Main Category Tabs - Desktop */}
           <nav className="hidden lg:flex items-center space-x-1">
-            {categories.filter(c => c.active !== false).map(cat => (
-              <div 
-                key={cat.name}
-                className="relative"
-                onMouseEnter={() => setActiveCategory(cat.name)}
-                onMouseLeave={() => setActiveCategory(null)}
-              >
-                <Link
-                  to={`/tnv${cat.path}`}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-full hover:bg-gray-100 transition ${currentCategory === cat.name ? 'bg-gray-100' : ''}`}
+            {categories.filter(c => c.active !== false).map(cat => {
+              // Fashion categories (WOMEN, MEN) show gender selection dropdown on click
+              const isFashionCategory = ['WOMEN', 'MEN', 'FASHION'].includes(cat.name.toUpperCase());
+              
+              return (
+                <div 
+                  key={cat.name}
+                  className="relative"
+                  onMouseEnter={() => !isFashionCategory && setActiveCategory(cat.name)}
+                  onMouseLeave={() => setActiveCategory(null)}
                 >
-                  {cat.icon && (
-                    <span 
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
-                      style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
+                  {isFashionCategory ? (
+                    // Fashion category - shows dropdown on click
+                    <button
+                      onClick={() => setActiveCategory(activeCategory === cat.name ? null : cat.name)}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-full hover:bg-gray-100 transition ${activeCategory === cat.name ? 'bg-gray-100' : ''}`}
                     >
-                      {cat.icon.value || cat.icon}
-                    </span>
+                      {cat.icon && (
+                        <span 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                          style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
+                        >
+                          {cat.icon.value || cat.icon}
+                        </span>
+                      )}
+                      <span className={`text-[13px] font-medium ${cat.highlight ? 'text-red-500' : 'text-gray-700'}`}>
+                        {cat.name}
+                      </span>
+                      <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${activeCategory === cat.name ? 'rotate-180' : ''}`} />
+                    </button>
+                  ) : (
+                    // Non-fashion category - direct link
+                    <Link
+                      to={`/tnv${cat.path}`}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-full hover:bg-gray-100 transition ${currentCategory === cat.name ? 'bg-gray-100' : ''}`}
+                    >
+                      {cat.icon && (
+                        <span 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                          style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
+                        >
+                          {cat.icon.value || cat.icon}
+                        </span>
+                      )}
+                      <span className={`text-[13px] font-medium ${cat.highlight ? 'text-red-500' : 'text-gray-700'}`}>
+                        {cat.name}
+                      </span>
+                    </Link>
                   )}
-                  <span className={`text-[13px] font-medium ${cat.highlight ? 'text-red-500' : 'text-gray-700'}`}>
-                    {cat.name}
-                  </span>
-                  {cat.subNav && <ChevronDown className="w-3 h-3 text-gray-400" />}
-                </Link>
 
-                {/* Mega Menu Dropdown */}
-                {activeCategory === cat.name && megaMenu[cat.name] && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl border p-8 min-w-[800px]">
-                      <div className="flex gap-12">
-                        {/* Menu Columns */}
-                        {megaMenu[cat.name].columns?.map((column, idx) => (
-                          <div key={idx} className="min-w-[160px]">
-                            <h4 className="text-sm font-bold text-gray-900 mb-4 uppercase">
-                              {column.title}
-                            </h4>
-                            <ul className="space-y-2">
-                              {column.items?.map((item, i) => (
-                                <li key={i}>
-                                  <Link 
-                                    to={`/tnv${item.path}`}
-                                    className="text-sm text-gray-600 hover:text-black hover:underline"
-                                  >
-                                    {item.name}
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                        
-                        {/* Featured Image */}
-                        {megaMenu[cat.name].featuredImage && (
-                          <div className="min-w-[200px]">
-                            <Link to={megaMenu[cat.name].featuredLink || '#'}>
+                  {/* Gender Selection Dropdown (for WOMEN/MEN/FASHION) */}
+                  {isFashionCategory && activeCategory === cat.name && (
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50">
+                      <div className="bg-white rounded-2xl shadow-2xl border p-6 min-w-[500px]">
+                        <div className="grid grid-cols-2 gap-4">
+                          {/* WOMEN Card */}
+                          <Link 
+                            to="/tnv/women/clothing"
+                            onClick={() => setActiveCategory(null)}
+                            className="group block"
+                          >
+                            <div className="relative overflow-hidden rounded-xl bg-[#faf6f3] aspect-[3/4]">
                               <img 
-                                src={megaMenu[cat.name].featuredImage} 
-                                alt={megaMenu[cat.name].featuredTitle}
-                                className="w-full h-64 object-cover rounded-lg"
+                                src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=500&fit=crop"
+                                alt="Women"
+                                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                               />
-                              <p className="text-sm font-medium mt-2 text-center">
-                                {megaMenu[cat.name].featuredTitle}
-                              </p>
-                            </Link>
-                          </div>
-                        )}
+                              <div className="absolute inset-0 flex items-start justify-center pt-4">
+                                <h3 className="text-2xl font-bold tracking-wide">WOMEN</h3>
+                              </div>
+                            </div>
+                          </Link>
+                          
+                          {/* MEN Card */}
+                          <Link 
+                            to="/tnv/men/clothing"
+                            onClick={() => setActiveCategory(null)}
+                            className="group block"
+                          >
+                            <div className="relative overflow-hidden rounded-xl bg-[#f3f6fa] aspect-[3/4]">
+                              <img 
+                                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop"
+                                alt="Men"
+                                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                              />
+                              <div className="absolute inset-0 flex items-start justify-center pt-4">
+                                <h3 className="text-2xl font-bold tracking-wide">MEN</h3>
+                              </div>
+                            </div>
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+
+                  {/* Mega Menu Dropdown (for non-fashion categories with mega menu) */}
+                  {!isFashionCategory && activeCategory === cat.name && megaMenu[cat.name] && (
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50">
+                      <div className="bg-white rounded-xl shadow-2xl border p-8 min-w-[800px]">
+                        <div className="flex gap-12">
+                          {/* Menu Columns */}
+                          {megaMenu[cat.name].columns?.map((column, idx) => (
+                            <div key={idx} className="min-w-[160px]">
+                              <h4 className="text-sm font-bold text-gray-900 mb-4 uppercase">
+                                {column.title}
+                              </h4>
+                              <ul className="space-y-2">
+                                {column.items?.map((item, i) => (
+                                  <li key={i}>
+                                    <Link 
+                                      to={`/tnv${item.path}`}
+                                      className="text-sm text-gray-600 hover:text-black hover:underline"
+                                    >
+                                      {item.name}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                          
+                          {/* Featured Image */}
+                          {megaMenu[cat.name].featuredImage && (
+                            <div className="min-w-[200px]">
+                              <Link to={megaMenu[cat.name].featuredLink || '#'}>
+                                <img 
+                                  src={megaMenu[cat.name].featuredImage} 
+                                  alt={megaMenu[cat.name].featuredTitle}
+                                  className="w-full h-64 object-cover rounded-lg"
+                                />
+                                <p className="text-sm font-medium mt-2 text-center">
+                                  {megaMenu[cat.name].featuredTitle}
+                                </p>
+                              </Link>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
 
           {/* Search + Icons */}
