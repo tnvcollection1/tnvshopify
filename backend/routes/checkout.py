@@ -6,7 +6,7 @@ Checkout & Razorpay Payment Integration
 - Order status management
 """
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Query
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime, timezone
@@ -23,6 +23,30 @@ _db: AsyncIOMotorDatabase = None
 
 # Razorpay client - initialized with env variables
 _razorpay_client = None
+
+# Store configurations with currency
+STORE_CONFIG = {
+    "tnvcollection": {
+        "currency": "INR",
+        "currency_symbol": "₹",
+        "country": "India",
+        "razorpay_currency": "INR",
+        "free_shipping_threshold": 2000,
+        "shipping_cost": 150,
+    },
+    "tnvcollectionpk": {
+        "currency": "PKR",
+        "currency_symbol": "Rs.",
+        "country": "Pakistan",
+        "razorpay_currency": "INR",  # Razorpay uses INR, we convert
+        "pkr_to_inr_rate": 0.32,  # 1 PKR = 0.32 INR (approx)
+        "free_shipping_threshold": 5000,
+        "shipping_cost": 300,
+    }
+}
+
+def get_store_config(store: str):
+    return STORE_CONFIG.get(store, STORE_CONFIG["tnvcollection"])
 
 def set_database(db: AsyncIOMotorDatabase):
     global _db
