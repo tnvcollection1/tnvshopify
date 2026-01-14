@@ -145,7 +145,7 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
           {/* Wishlist Button */}
           <Animated.View style={{ transform: [{ scale: wishlistAnim }] }}>
             <TouchableOpacity
-              style={[styles.wishlistBtn, inWishlist && styles.wishlistBtnActive]}
+              style={[styles.wishlistBtn, { backgroundColor: colors.card }, shadows.md, inWishlist && { backgroundColor: '#FFF0F3' }]}
               onPress={handleWishlistPress}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
@@ -157,8 +157,8 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
 
           {/* Quick Add Button */}
           {showQuickAdd && (
-            <TouchableOpacity style={styles.quickAddBtn}>
-              <Text style={styles.quickAddText}>+ ADD</Text>
+            <TouchableOpacity style={[styles.quickAddBtn, { backgroundColor: colors.primary }]}>
+              <Text style={[styles.quickAddText, { color: colors.textInverse }]}>+ ADD</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -166,20 +166,20 @@ const ProductCard = ({ product, horizontal, style, showQuickAdd = false }) => {
         {/* Info Section */}
         <View style={styles.info}>
           {/* Brand */}
-          <Text style={styles.brand} numberOfLines={1}>
+          <Text style={[styles.brand, { color: colors.textSecondary }]} numberOfLines={1}>
             {product.vendor || 'TNV Collection'}
           </Text>
           
           {/* Title */}
-          <Text style={styles.title} numberOfLines={2}>
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
             {product.title}
           </Text>
 
           {/* Price Row */}
           <View style={styles.priceRow}>
-            <Text style={styles.price}>{formatPrice(price)}</Text>
+            <Text style={[styles.price, { color: colors.text }]}>{formatPrice(price)}</Text>
             {comparePrice && (
-              <Text style={styles.comparePrice}>{formatPrice(comparePrice)}</Text>
+              <Text style={[styles.comparePrice, { color: colors.textTertiary }]}>{formatPrice(comparePrice)}</Text>
             )}
             {discount > 0 && (
               <View style={styles.discountPill}>
