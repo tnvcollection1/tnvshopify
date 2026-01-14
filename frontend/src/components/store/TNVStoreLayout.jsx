@@ -182,7 +182,8 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
 
 // Namshi-style Header - EXACT COPY
 export const TNVHeader = () => {
-  const { region, setRegion, regions, cartCount, wishlist, searchQuery, setSearchQuery, navConfig } = useStore();
+  const { region, setRegion, regions, cartCount, wishlist, searchQuery, setSearchQuery, navConfig, storeConfig, storeName } = useStore();
+  const baseUrl = storeConfig?.baseUrl || '/tnv';
   const [regionDropdown, setRegionDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
