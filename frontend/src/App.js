@@ -110,6 +110,7 @@ import LuxuryShoppingCart from "@/components/storefront/LuxuryShoppingCart";
 import LuxuryCheckout from "@/components/storefront/LuxuryCheckout";
 import LuxuryOrderConfirmation from "@/components/storefront/LuxuryOrderConfirmation";
 import LuxuryOrderTracking from "@/components/storefront/LuxuryOrderTracking";
+import MobileAppPreview from "@/components/MobileAppPreview";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
