@@ -257,7 +257,7 @@ const TNVHomePage = () => {
             <h2 className="text-2xl sm:text-4xl font-bold mb-2">MEGA SALE</h2>
             <p className="text-lg sm:text-xl mb-4">Up to 70% OFF on selected items</p>
             <Link 
-              to="/store/sale"
+              to="/tnv/sale"
               className="inline-block bg-white text-red-500 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition"
             >
               Shop Sale
