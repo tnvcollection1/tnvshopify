@@ -99,7 +99,10 @@ const BrowseScreen = () => {
       <View style={[styles.filterBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity
           style={[styles.filterBtn, { backgroundColor: colors.background }]}
-          onPress={() => setFilterVisible(true)}
+          onPress={() => {
+            lightHaptic();
+            setFilterVisible(true);
+          }}
         >
           <Text>🔧</Text>
           <Text style={[styles.filterBtnText, { color: colors.text }]}>Filter</Text>
@@ -114,7 +117,7 @@ const BrowseScreen = () => {
                 { backgroundColor: colors.background },
                 sortBy === option.value && { backgroundColor: colors.primary },
               ]}
-              onPress={() => setSortBy(option.value)}
+              onPress={() => handleSortChange(option.value)}
             >
               <Text
                 style={[
@@ -137,6 +140,13 @@ const BrowseScreen = () => {
         keyExtractor={(item) => item.shopify_product_id?.toString()}
         contentContainerStyle={styles.productsContainer}
         columnWrapperStyle={styles.row}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
         renderItem={({ item }) => (
           <ProductCard product={item} style={{ width: PRODUCT_WIDTH }} />
         )}
