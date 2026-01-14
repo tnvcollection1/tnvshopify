@@ -512,14 +512,21 @@ const StorefrontPreview = () => {
           <div className="relative">
             <div className="flex space-x-6 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {products.slice(0, 8).map((product, idx) => (
-                <div key={product.id || idx} className="flex-shrink-0 w-[280px] group cursor-pointer">
+                <Link 
+                  key={product.shopify_product_id || product.id || idx} 
+                  to={`/${storeName}preview/product/${product.shopify_product_id || product.id}`}
+                  className="flex-shrink-0 w-[280px] group cursor-pointer"
+                >
                   <div className="aspect-[3/4] bg-[#f5f5f5] overflow-hidden mb-4 relative">
                     <img
                       src={product.images?.[0]?.src || product.image || 'https://via.placeholder.com/400x500'}
                       alt={product.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
-                    <button className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => e.preventDefault()}
+                    >
                       <Heart className="w-5 h-5 text-gray-600 hover:text-black" strokeWidth={1.5} />
                     </button>
                   </div>
@@ -528,7 +535,7 @@ const StorefrontPreview = () => {
                   <p className="text-sm font-medium">
                     {formatPrice(product.variants?.[0]?.price || product.price || 0)}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
