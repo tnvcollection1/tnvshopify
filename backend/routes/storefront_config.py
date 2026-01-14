@@ -241,24 +241,36 @@ DEFAULT_MEGA_MENU = {
 @router.get("/navigation/{store}")
 async def get_navigation_config(store: str):
     """Get full navigation configuration for a store"""
+    # Default config
+    default_config = {
+        "store": store,
+        "logo": {
+            "text": "TNV",
+            "badge": "COLLECTION",
+            "badgeColor": "#FF6B9D"
+        },
+        "promoMessages": DEFAULT_PROMO_MESSAGES,
+        "categories": DEFAULT_CATEGORIES,
+        "megaMenu": DEFAULT_MEGA_MENU
+    }
+    
     # Try to find existing config
     config = await _db.storefront_nav_config.find_one({"store": store}, {"_id": 0})
     
     if not config:
-        # Return default config
-        config = {
-            "store": store,
-            "logo": {
-                "text": "TNV",
-                "badge": "COLLECTION",
-                "badgeColor": "#FF6B9D"
-            },
-            "promoMessages": DEFAULT_PROMO_MESSAGES,
-            "categories": DEFAULT_CATEGORIES,
-            "megaMenu": DEFAULT_MEGA_MENU
-        }
+        return default_config
     
-    return config
+    # Merge with defaults - use saved values if present, otherwise defaults
+    merged = {
+        "store": store,
+        "logo": config.get("logo") or default_config["logo"],
+        "promoMessages": config.get("promoMessages") if config.get("promoMessages") else default_config["promoMessages"],
+        "categories": config.get("categories") if config.get("categories") else default_config["categories"],
+        "megaMenu": config.get("megaMenu") if config.get("megaMenu") else default_config["megaMenu"],
+        "updated_at": config.get("updated_at")
+    }
+    
+    return merged
 
 
 @router.post("/navigation/{store}")
