@@ -113,6 +113,21 @@ export const TNVStoreProvider = ({ children, storeName = 'tnvcollection' }) => {
     return () => { mounted = false; };
   }, [storeName]);
 
+  // Listen for live preview header updates from Website Editor
+  useEffect(() => {
+    const handlePreviewUpdate = (event) => {
+      if (event.detail) {
+        setNavConfig(prev => ({
+          ...prev,
+          ...event.detail
+        }));
+      }
+    };
+    
+    window.addEventListener('preview-header-update', handlePreviewUpdate);
+    return () => window.removeEventListener('preview-header-update', handlePreviewUpdate);
+  }, []);
+
   useEffect(() => { localStorage.setItem(`tnv_region_${storeName}`, JSON.stringify(region)); }, [region, storeName]);
   useEffect(() => { localStorage.setItem(`tnv_cart_${storeName}`, JSON.stringify(cart)); }, [cart, storeName]);
   useEffect(() => { localStorage.setItem(`tnv_wishlist_${storeName}`, JSON.stringify(wishlist)); }, [wishlist, storeName]);
