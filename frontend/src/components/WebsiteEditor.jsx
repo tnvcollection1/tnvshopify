@@ -647,21 +647,310 @@ const WebsiteEditor = () => {
         </div>
 
         {/* Right Panel - Editor */}
-        <div className="w-80 bg-white border-l overflow-auto flex-shrink-0">
+        <div className="w-96 bg-white border-l overflow-auto flex-shrink-0">
           <div className="p-4 border-b">
             <h2 className="font-semibold flex items-center gap-2">
               <Settings className="w-4 h-4" />
-              {editingBanner ? 'Edit Banner' : 'Section Settings'}
+              {selectedSection === 'announcement' ? 'Announcement Bar' :
+               selectedSection === 'logo' ? 'Logo & Branding' :
+               selectedSection === 'mega_menu' ? 'Navigation Menu' :
+               editingBanner ? 'Edit Banner' : 'Section Settings'}
             </h2>
           </div>
           
-          {!editingBanner ? (
-            <div className="p-4 text-center text-gray-500">
-              <BoxSelect className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p className="font-medium">Select a banner to edit</p>
-              <p className="text-sm">Click on a banner from the left panel</p>
+          {/* Announcement Bar Editor */}
+          {selectedSection === 'announcement' && (
+            <div className="p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">
+                  Rotating messages in the top bar
+                </p>
+                <Button variant="outline" size="sm" onClick={addPromoMessage}>
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+
+              {/* Live Preview */}
+              <div className="bg-[#1a1a1a] text-white text-sm py-2 px-3 rounded-lg flex items-center justify-center gap-2">
+                <span>{headerConfig.promoMessages[0]?.icon || '💵'}</span>
+                <span>{headerConfig.promoMessages[0]?.text || 'No messages'}</span>
+              </div>
+
+              <div className="space-y-2 max-h-[400px] overflow-auto">
+                {headerConfig.promoMessages.map((msg, idx) => (
+                  <div key={idx} className="p-3 bg-gray-50 rounded-lg space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex flex-col gap-0.5">
+                        <button 
+                          onClick={() => movePromoMessage(idx, 'up')}
+                          disabled={idx === 0}
+                          className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
+                        >
+                          <ChevronUp className="w-3 h-3" />
+                        </button>
+                        <button 
+                          onClick={() => movePromoMessage(idx, 'down')}
+                          disabled={idx === headerConfig.promoMessages.length - 1}
+                          className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
+                        >
+                          <ChevronDown className="w-3 h-3" />
+                        </button>
+                      </div>
+                      
+                      <select
+                        value={msg.icon || '💵'}
+                        onChange={(e) => updatePromoMessage(idx, 'icon', e.target.value)}
+                        className="w-14 text-center text-xl bg-white border rounded p-1"
+                      >
+                        {EMOJI_OPTIONS.map(emoji => (
+                          <option key={emoji} value={emoji}>{emoji}</option>
+                        ))}
+                      </select>
+                      
+                      <Input 
+                        value={msg.text}
+                        onChange={(e) => updatePromoMessage(idx, 'text', e.target.value)}
+                        className="flex-1"
+                        placeholder="Message text"
+                      />
+                      
+                      <button
+                        onClick={() => updatePromoMessage(idx, 'active', !msg.active)}
+                        className={`p-2 rounded ${msg.active !== false ? 'text-green-500' : 'text-gray-400'}`}
+                      >
+                        {msg.active !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </button>
+                      
+                      <button
+                        onClick={() => removePromoMessage(idx)}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Button 
+                onClick={savePromoMessages}
+                disabled={saving || !hasChanges}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                {saving ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                Save Announcement Bar
+              </Button>
             </div>
-          ) : (
+          )}
+
+          {/* Logo Editor */}
+          {selectedSection === 'logo' && (
+            <div className="p-4 space-y-4">
+              {/* Logo Preview */}
+              <div className="p-4 bg-gray-100 rounded-lg flex items-center justify-center gap-2">
+                {headerConfig.logo?.image ? (
+                  <img 
+                    src={headerConfig.logo.image} 
+                    alt="Logo" 
+                    style={{ height: headerConfig.logo.height || 32 }}
+                  />
+                ) : (
+                  <>
+                    <span className="text-2xl font-black">{headerConfig.logo?.text || 'TNV'}</span>
+                    {headerConfig.logo?.badge && (
+                      <span 
+                        className="text-white px-3 py-1 rounded-full text-xs font-bold"
+                        style={{ backgroundColor: headerConfig.logo?.badgeColor || '#FF6B9D' }}
+                      >
+                        {headerConfig.logo?.badge}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <Label>Logo Text</Label>
+                  <Input 
+                    value={headerConfig.logo?.text || ''}
+                    onChange={(e) => updateLogo('text', e.target.value)}
+                    className="mt-1"
+                    placeholder="TNV"
+                  />
+                </div>
+                <div>
+                  <Label>Badge Text</Label>
+                  <Input 
+                    value={headerConfig.logo?.badge || ''}
+                    onChange={(e) => updateLogo('badge', e.target.value)}
+                    className="mt-1"
+                    placeholder="COLLECTION"
+                  />
+                </div>
+                <div>
+                  <Label>Badge Color</Label>
+                  <div className="flex gap-2 mt-1">
+                    <input 
+                      type="color"
+                      value={headerConfig.logo?.badgeColor || '#FF6B9D'}
+                      onChange={(e) => updateLogo('badgeColor', e.target.value)}
+                      className="w-10 h-10 rounded cursor-pointer border"
+                    />
+                    <Input 
+                      value={headerConfig.logo?.badgeColor || '#FF6B9D'}
+                      onChange={(e) => updateLogo('badgeColor', e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Logo Image URL (optional)</Label>
+                  <Input 
+                    value={headerConfig.logo?.image || ''}
+                    onChange={(e) => updateLogo('image', e.target.value)}
+                    className="mt-1"
+                    placeholder="https://example.com/logo.png"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    If provided, this overrides the text logo
+                  </p>
+                </div>
+              </div>
+
+              <Button 
+                onClick={saveLogo}
+                disabled={saving || !hasChanges}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                {saving ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                Save Logo
+              </Button>
+            </div>
+          )}
+
+          {/* Navigation Menu Editor */}
+          {selectedSection === 'mega_menu' && (
+            <div className="p-4 space-y-4">
+              <p className="text-sm text-gray-600">
+                Main navigation categories with icons
+              </p>
+
+              <div className="space-y-2 max-h-[450px] overflow-auto">
+                {headerConfig.categories.map((cat, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`p-3 rounded-lg border transition-all ${
+                      editingCategory === idx ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50'
+                    }`}
+                  >
+                    <div 
+                      className="flex items-center gap-3 cursor-pointer"
+                      onClick={() => setEditingCategory(editingCategory === idx ? null : idx)}
+                    >
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-lg"
+                        style={{ backgroundColor: cat.bgColor || '#f5f5f5' }}
+                      >
+                        {cat.icon?.value || cat.icon || '📁'}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">{cat.name}</p>
+                        <p className="text-xs text-gray-400">{cat.path}</p>
+                      </div>
+                      <button
+                        onClick={(e) => { 
+                          e.stopPropagation();
+                          updateCategory(idx, 'active', cat.active === false ? true : false);
+                        }}
+                        className={`p-1 ${cat.active !== false ? 'text-green-500' : 'text-gray-400'}`}
+                      >
+                        {cat.active !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </button>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${editingCategory === idx ? 'rotate-180' : ''}`} />
+                    </div>
+
+                    {/* Expanded Edit */}
+                    {editingCategory === idx && (
+                      <div className="mt-3 pt-3 border-t space-y-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label className="text-xs">Name</Label>
+                            <Input 
+                              value={cat.name}
+                              onChange={(e) => updateCategory(idx, 'name', e.target.value)}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Path</Label>
+                            <Input 
+                              value={cat.path}
+                              onChange={(e) => updateCategory(idx, 'path', e.target.value)}
+                              className="mt-1"
+                              placeholder="/women"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label className="text-xs">Icon</Label>
+                            <select
+                              value={cat.icon?.value || cat.icon || '👩'}
+                              onChange={(e) => updateCategory(idx, 'icon', { type: 'emoji', value: e.target.value })}
+                              className="w-full mt-1 px-3 py-2 border rounded-lg text-xl"
+                            >
+                              {['👩', '👨', '👶', '💄', '🏠', '👗', '👟', '👜', '⚽', '✨', '💎', '🏷️'].map(emoji => (
+                                <option key={emoji} value={emoji}>{emoji}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <Label className="text-xs">Icon BG</Label>
+                            <div className="flex gap-1 mt-1">
+                              <input 
+                                type="color"
+                                value={cat.bgColor || '#f5f5f5'}
+                                onChange={(e) => updateCategory(idx, 'bgColor', e.target.value)}
+                                className="w-10 h-10 rounded cursor-pointer border"
+                              />
+                              <Input 
+                                value={cat.bgColor || '#f5f5f5'}
+                                onChange={(e) => updateCategory(idx, 'bgColor', e.target.value)}
+                                className="flex-1"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <Button 
+                onClick={saveMenuCategories}
+                disabled={saving || !hasChanges}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                {saving ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                Save Navigation Menu
+              </Button>
+
+              <Button 
+                variant="outline"
+                className="w-full"
+                onClick={() => window.location.href = '/header-config'}
+              >
+                <LayoutGrid className="w-4 h-4 mr-2" />
+                Advanced Mega Menu Editor
+              </Button>
+            </div>
+          )}
+
+          {/* Banner Editor (existing) */}
+          {editingBanner && selectedSection === 'hero' && (
             <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Banner Details</h3>
@@ -788,11 +1077,28 @@ const WebsiteEditor = () => {
               </div>
             </div>
           )}
+
+          {/* Default state - no section selected or non-header section */}
+          {!selectedSection || (!['announcement', 'logo', 'mega_menu'].includes(selectedSection) && !editingBanner) ? (
+            <div className="p-4 text-center text-gray-500">
+              <BoxSelect className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p className="font-medium">Select a section to edit</p>
+              <p className="text-sm">Click on a section from the left panel</p>
+            </div>
+          ) : null}
           
           {/* Quick Links */}
-          <div className="p-4 border-t">
+          <div className="p-4 border-t mt-auto">
             <h3 className="font-semibold text-sm mb-3">Quick Actions</h3>
             <div className="space-y-2">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => window.location.href = '/header-config'}
+              >
+                <Menu className="w-4 h-4 mr-2" />
+                Full Header Editor
+              </Button>
               <Button 
                 variant="outline" 
                 className="w-full justify-start"
@@ -808,14 +1114,6 @@ const WebsiteEditor = () => {
               >
                 <Layers className="w-4 h-4 mr-2" />
                 Storefront CMS
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => window.location.href = '/menu-tags'}
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Menu & Tags
               </Button>
             </div>
           </div>
