@@ -140,6 +140,7 @@ const ShopifySidebar = () => {
       label: 'Shipping',
       icon: Truck,
       children: [
+        { label: 'DTDC Shipping', path: '/dtdc-shipping', icon: Truck },
         { label: 'DWZ56 Tracking', path: '/dwz56-tracking', icon: MapPin },
         { label: 'DWZ56 Purchase', path: '/dwz56-purchase', icon: Activity },
         { label: 'DWZ56 Shipping', path: '/dwz56-shipping', icon: Send },
