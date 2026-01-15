@@ -38,6 +38,7 @@ import InventoryHealthDashboard from "@/components/InventoryHealthDashboard";
 import FinanceReconciliation from "@/components/FinanceReconciliation";
 import DTDCReconciliation from "@/components/DTDCReconciliation";
 import DWZ56Shipping from "@/components/DWZ56Shipping";
+import DTDCShipping from "@/components/DTDCShipping";
 import DWZ56Purchase from "@/components/DWZ56Purchase";
 import Products1688 from "@/components/Products1688";
 import FulfillmentDashboard from "@/components/FulfillmentDashboard";
