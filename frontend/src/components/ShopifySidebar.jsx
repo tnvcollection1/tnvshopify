@@ -222,7 +222,7 @@ const ShopifySidebar = () => {
       icon: Smartphone,
       badge: 'New',
       children: [
-        { label: 'App Preview', path: '/mobile-app-preview', icon: Eye },
+        { label: 'Visual Editor', path: '/mobile-app-editor', icon: Eye },
         { label: 'App Settings', path: '/mobile-app-settings', icon: Settings },
         { label: 'Theme & Colors', path: '/mobile-app-theme', icon: Palette },
         { label: 'Push Notifications', path: '/mobile-push-notifications', icon: Bell },
