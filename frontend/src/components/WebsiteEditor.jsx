@@ -462,27 +462,18 @@ const WebsiteEditor = () => {
                   />
                 </div>
                 <div>
-                  <Label>Description</Label>
-                  <textarea 
-                    value={editingBanner.description || ''}
-                    onChange={(e) => updateBanner('description', e.target.value)}
-                    className="mt-1 w-full px-3 py-2 border rounded-md text-sm"
-                    rows={3}
-                  />
-                </div>
-                <div>
                   <Label>Button Text</Label>
                   <DebouncedInput 
-                    value={editingBanner.cta || ''}
-                    onChange={(v) => updateBanner('cta', v)}
+                    value={editingBanner.buttonText || ''}
+                    onChange={(v) => updateBanner('buttonText', v)}
                     className="mt-1"
                   />
                 </div>
                 <div>
                   <Label>Button Link</Label>
                   <DebouncedInput 
-                    value={editingBanner.link || ''}
-                    onChange={(v) => updateBanner('link', v)}
+                    value={editingBanner.buttonLink || ''}
+                    onChange={(v) => updateBanner('buttonLink', v)}
                     className="mt-1"
                   />
                 </div>
@@ -495,14 +486,30 @@ const WebsiteEditor = () => {
                   />
                 </div>
                 <div>
+                  <Label>Text Color</Label>
+                  <div className="flex gap-2 mt-1">
+                    <input 
+                      type="color"
+                      value={editingBanner.textColor || '#FFFFFF'}
+                      onChange={(e) => updateBanner('textColor', e.target.value)}
+                      className="w-10 h-10 rounded cursor-pointer"
+                    />
+                    <Input 
+                      value={editingBanner.textColor || '#FFFFFF'}
+                      onChange={(e) => updateBanner('textColor', e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+                <div>
                   <Label>Text Position</Label>
                   <div className="flex gap-2 mt-1">
                     {['left', 'center', 'right'].map(pos => (
                       <Button
                         key={pos}
-                        variant={editingBanner.text_position === pos ? 'default' : 'outline'}
+                        variant={editingBanner.textPosition === pos ? 'default' : 'outline'}
                         size="sm"
-                        onClick={() => updateBanner('text_position', pos)}
+                        onClick={() => updateBanner('textPosition', pos)}
                         className="capitalize flex-1"
                       >
                         {pos}
