@@ -123,10 +123,10 @@ const WebsiteEditor = () => {
     setSaving(true);
     try {
       const storeName = selectedStore || 'tnvcollection';
-      const response = await fetch(`${API_URL}/api/storefront/banners/${banner.id}`, {
+      const response = await fetch(`${API_URL}/api/storefront/banners/hero/${storeName}/${banner.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...banner, store_name: storeName })
+        body: JSON.stringify(banner)
       });
       
       if (response.ok) {
