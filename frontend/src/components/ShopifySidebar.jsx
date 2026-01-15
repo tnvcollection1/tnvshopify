@@ -246,7 +246,14 @@ const ShopifySidebar = () => {
               ${isExpanded ? 'bg-[#2a2a2a] text-white' : 'text-gray-400 hover:bg-[#2a2a2a] hover:text-white'}`}
           >
             <Icon className="w-5 h-5" />
-            <span className="flex-1 text-left">{item.label}</span>
+            <span className="flex-1 text-left flex items-center gap-2">
+              {item.label}
+              {item.badge && (
+                <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-green-500 text-white rounded">
+                  {item.badge}
+                </span>
+              )}
+            </span>
             <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
           </button>
           {isExpanded && (
