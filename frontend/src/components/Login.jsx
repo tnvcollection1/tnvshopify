@@ -225,6 +225,22 @@ const Login = ({ onLoginSuccess }) => {
               </span>
             </button>
           </div>
+          
+          {/* Merchant CTA */}
+          <div className="mt-6 pt-6 border-t border-gray-100">
+            <div className="text-center">
+              <p className="text-xs text-gray-500 mb-3">Want to sell on Wamerce?</p>
+              <Link 
+                to="/create-store"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Create Your Store
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
