@@ -159,6 +159,8 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 ### P0 (Critical) - ALL COMPLETED ✅
 - [x] Mobile app UI optimization
 - [x] Mobile app dark mode implementation
+- [x] Mobile app haptic feedback
+- [x] Admin panel mobile app settings
 
 ### P1 (High Priority)
 - [ ] Deploy storefront to VPS (`tnvcollection.com`)
