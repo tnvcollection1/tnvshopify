@@ -148,7 +148,7 @@ async def book_shipment(request: ShipmentBookingRequest):
         
         # Get store origin details
         store_config = None
-        if _db:
+        if _db is not None:
             store_config = await _db.shipping_config.find_one(
                 {"store": request.store}, {"_id": 0}
             )
@@ -253,7 +253,7 @@ async def book_shipment(request: ShipmentBookingRequest):
             error_msg = result.get("message", "Unknown error from DTDC")
             
             # Fallback: Create local record with pending status
-            if _db:
+            if _db is not None:
                 shipment_record = {
                     "order_id": request.order_id,
                     "store": request.store,
@@ -290,7 +290,7 @@ async def track_shipment(awb_number: str, store: str = "tnvcollection"):
     try:
         # First check local database
         local_shipment = None
-        if _db:
+        if _db is not None:
             local_shipment = await _db.shipments.find_one(
                 {"awb_number": awb_number, "store": store},
                 {"_id": 0}
@@ -444,7 +444,7 @@ async def schedule_pickup(request: PickupRequest):
     try:
         # Get store config
         store_config = None
-        if _db:
+        if _db is not None:
             store_config = await _db.shipping_config.find_one(
                 {"store": request.store}, {"_id": 0}
             )
@@ -465,7 +465,7 @@ async def schedule_pickup(request: PickupRequest):
         }
         
         # Save to database
-        if _db:
+        if _db is not None:
             result = await _db.pickup_requests.insert_one(pickup_data)
             pickup_id = str(result.inserted_id)
         else:
@@ -583,7 +583,7 @@ async def dtdc_status_webhook(payload: Dict[str, Any]):
         if not awb_number or not new_status:
             raise HTTPException(status_code=400, detail="Missing awb_number or status")
         
-        if _db:
+        if _db is not None:
             await _db.shipments.update_one(
                 {"awb_number": awb_number},
                 {
