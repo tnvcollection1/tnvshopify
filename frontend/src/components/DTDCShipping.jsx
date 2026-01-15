@@ -157,6 +157,30 @@ const DTDCShipping = () => {
     }
   };
 
+  const handleSyncFromDTDC = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/shipping/sync-from-dtdc/${storeName}`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success(data.message);
+        if (data.address) {
+          setConfigForm(data.address);
+        }
+        fetchData();
+      } else {
+        throw new Error(data.detail || 'Sync failed');
+      }
+    } catch (e) {
+      toast.error('Failed to sync from DTDC: ' + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const cfg = STATUS_CONFIG[status] || STATUS_CONFIG['UNKNOWN'];
     const Icon = cfg.icon;
