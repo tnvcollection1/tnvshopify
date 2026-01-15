@@ -229,7 +229,7 @@ const MerchantOnboarding = () => {
         }
         // Check subdomain availability (with error handling)
         try {
-          const checkResponse = await fetch(`${API}/stores/check-subdomain?subdomain=${storeInfo.subdomain}`);
+          const checkResponse = await fetch(`${API}/merchants/check-subdomain?subdomain=${storeInfo.subdomain}`);
           const checkData = await checkResponse.json();
           if (checkData.available === false) {
             toast.error(checkData.reason || 'This subdomain is already taken. Please choose another.');
