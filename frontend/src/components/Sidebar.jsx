@@ -269,7 +269,7 @@ const Sidebar = () => {
       ]
     },
     { 
-      icon: Activity, 
+      icon: Smartphone, 
       label: 'Mobile App', 
       section: 'mobile',
       badge: 'New',
