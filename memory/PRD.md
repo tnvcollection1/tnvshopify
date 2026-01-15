@@ -215,6 +215,7 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - [x] Mobile app haptic feedback
 - [x] Admin panel mobile app settings
 - [x] Admin session persistence bug fix (Jan 15, 2026)
+- [x] Merchant Onboarding & Store Creation (Jan 15, 2026)
 
 ### P1 (High Priority)
 - [ ] Prepare Mobile App for Store Submission (configure app.json, icons, splash screens, bundle IDs)
@@ -225,6 +226,7 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 ### P2 (Medium Priority)
 - [ ] Sooxie.com integration
 - [ ] Connect Mobile App Settings to dynamically update mobile app
+- [ ] Multi-tenant store isolation and routing
 
 ### P3 (Low Priority)
 - [ ] Backend refactoring (server.py → modular routes)
@@ -241,10 +243,15 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   
 - **Mobile App Sidebar Menu** - FIXED
   - Issue: Mobile App section missing from active sidebar (`ShopifySidebar.jsx`)
-  - Solution: Added Mobile App section with all submenu items to `ShopifySidebar.jsx`
-  - Added icons: Smartphone, Eye, Palette, Bell, Zap
-  - Section now shows "New" badge and is auto-expanded by default
-  - Submenu items: App Preview, App Settings, Theme & Colors, Push Notifications, Features
+  - Added Mobile App section with "New" badge to sidebar
+
+**Merchant Onboarding & Store Creation** ✅ COMPLETED
+- Built 7-step onboarding wizard for new merchants
+- 5 pre-configured themes with visual previews
+- Integration setup for WhatsApp, Facebook, Shopify, Razorpay
+- Web storefront + Mobile app platform selection
+- "Create Your Store" CTA on login page
+- "Create New Store" button in admin sidebar
 
 ## Pending Issues
 1. **DNS for tnvcollection.pk** (P1) - Blocked on user action
