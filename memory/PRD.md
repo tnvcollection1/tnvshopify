@@ -27,6 +27,11 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   - `BrowseScreen` - Refresh + sort selection haptics
   - `WishlistScreen` - Refresh haptic
   - `OrderTrackingScreen` - Refresh + WhatsApp support button haptic
+
+- **Tab Bar Haptics** (`MainTabNavigator.js`):
+  - Selection haptic when switching tabs (only triggers when switching to new tab)
+  - Animated tab icons with scale effect on selection
+  - Theme-aware styling (dark mode support)
   
 - **New Dependency**: `expo-haptics@^15.0.8`
 
