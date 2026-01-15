@@ -267,6 +267,17 @@ const Sidebar = () => {
         { icon: ShoppingBag, label: 'Orders', path: '/storefront-orders' },
       ]
     },
+    { 
+      icon: Activity, 
+      label: 'Mobile App', 
+      section: 'mobile',
+      badge: 'New',
+      children: [
+        { icon: Settings, label: 'App Settings', path: '/mobile-app-settings' },
+        { icon: Bell, label: 'Push Notifications', path: '/mobile-push-notifications' },
+        { icon: LayoutTemplate, label: 'Preview', path: '/mobile-app-preview' },
+      ]
+    },
     { icon: Users, label: 'User Management', path: '/users' },
     { icon: Shield, label: 'Super Admin', path: '/super-admin' },
     { icon: CreditCard, label: 'Subscription', path: '/pricing' },
