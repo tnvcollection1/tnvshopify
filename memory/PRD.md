@@ -5,7 +5,36 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 
 ## What's Been Implemented
 
-### January 15, 2026 (Session 7 - Latest)
+### January 15, 2026 (Session 8 - Latest)
+
+**Website Editor Header Integration** ✅ COMPLETED
+- **Announcement Bar Editor**: Edit rotating promo messages with emoji icons, reorder, toggle visibility
+- **Logo & Branding Editor**: Edit logo text, badge text, badge color with color picker, optional logo image URL
+- **Mega Menu/Navigation Editor**: Edit all navigation categories - name, path, icon, background color
+- **Left Panel Reorganized**: Header sections grouped separately with icons and metadata counts
+- **Live Preview Toggle**: Real-time preview updates to storefront iframe without saving
+- **Save Changes Button**: Context-aware save for each section type
+
+**DTDC Shipping Integration** ✅ COMPLETED
+- **Backend API** (`/routes/shipping.py`):
+  - `POST /api/shipping/book` - Book new shipment with DTDC
+  - `GET /api/shipping/track/{awb}` - Track shipment by AWB number
+  - `POST /api/shipping/calculate-rate` - Calculate shipping rates (origin, destination, weight, COD)
+  - `POST /api/shipping/schedule-pickup` - Schedule pickup
+  - `GET /api/shipping/shipments` - List all shipments
+  - `GET /api/shipping/config/{store}` - Get shipping config
+  - `POST /api/shipping/config/{store}` - Save shipping config
+  - `POST /api/shipping/webhook/status-update` - DTDC status webhook
+
+- **Admin UI** (`DTDCShipping.jsx`):
+  - Shipments tab: View all shipments with status badges
+  - Track tab: Track packages by AWB number
+  - Rate Calculator: Calculate shipping costs with GST and COD charges
+  - Settings: Configure pickup/origin address for store
+
+- **DTDC Credentials**: Customer Code GL6029 configured
+
+### January 15, 2026 (Session 7)
 
 **Admin Panel Bug Fixes** ✅ COMPLETED
 - **Admin Session Persistence Bug** - FIXED
