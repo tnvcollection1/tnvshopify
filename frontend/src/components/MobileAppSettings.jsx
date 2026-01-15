@@ -34,6 +34,10 @@ const MobileAppSettings = () => {
   const { selectedStore } = useStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [collections, setCollections] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [banners, setBanners] = useState([]);
+  
   const [settings, setSettings] = useState({
     // General
     appName: 'TNV Collection',
@@ -47,6 +51,31 @@ const MobileAppSettings = () => {
     backgroundColor: '#FAFAFA',
     darkModeEnabled: true,
     defaultTheme: 'system', // light, dark, system
+    
+    // Content - Home Screen
+    homeScreenSections: [
+      { id: 'hero_banner', title: 'Hero Banner', enabled: true, type: 'banner' },
+      { id: 'categories', title: 'Categories', enabled: true, type: 'categories' },
+      { id: 'featured_products', title: 'Featured Products', enabled: true, type: 'products' },
+      { id: 'new_arrivals', title: 'New Arrivals', enabled: true, type: 'products' },
+      { id: 'sale_banner', title: 'Sale Banner', enabled: true, type: 'banner' },
+      { id: 'best_sellers', title: 'Best Sellers', enabled: true, type: 'products' },
+    ],
+    
+    // Content - Collections
+    featuredCollections: [],
+    showCollectionImages: true,
+    collectionsDisplayStyle: 'grid', // grid, list, carousel
+    
+    // Content - Products
+    productsPerRow: 2,
+    showProductRatings: true,
+    showQuickAddToCart: true,
+    productCardStyle: 'modern', // modern, classic, minimal
+    
+    // Content - Banners
+    heroBanners: [],
+    promoBanners: [],
     
     // Features
     enablePushNotifications: true,
@@ -71,6 +100,9 @@ const MobileAppSettings = () => {
 
   useEffect(() => {
     fetchSettings();
+    fetchCollections();
+    fetchProducts();
+    fetchBanners();
   }, [selectedStore]);
 
   const fetchSettings = async () => {
