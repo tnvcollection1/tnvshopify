@@ -32,6 +32,15 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   - Selection haptic when switching tabs (only triggers when switching to new tab)
   - Animated tab icons with scale effect on selection
   - Theme-aware styling (dark mode support)
+
+- **Admin Panel - Mobile App Settings** ✅ NEW:
+  - Created `/mobile-app-settings` admin page with 4 tabs:
+    - **General**: App name, tagline, version, bundle ID, icon & splash screen
+    - **Theme**: Primary/accent/background colors, dark mode settings, live preview
+    - **Features**: Toggle push notifications, haptics, offline mode, biometric auth
+    - **Store Info**: Support contacts, App Store / Play Store URLs
+  - Backend API: `/api/mobile-app/settings` (GET/POST) and `/api/mobile-app/config`
+  - Sidebar menu added with "Mobile App" section (📱 icon with "New" badge)
   
 - **New Dependency**: `expo-haptics@^15.0.8`
 
