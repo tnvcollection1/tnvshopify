@@ -779,6 +779,30 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/mobile-app-preview" 
+        element={
+          <ProtectedRoute>
+            <MobileAppPreview />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/mobile-app-theme" 
+        element={
+          <ProtectedRoute>
+            <MobileAppSettings />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/mobile-app-features" 
+        element={
+          <ProtectedRoute>
+            <MobileAppSettings />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/checkout" 
         element={<CheckoutPage />}
       />
