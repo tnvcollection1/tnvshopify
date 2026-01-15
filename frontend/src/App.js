@@ -542,7 +542,7 @@ function AppRoutes() {
         path="/dtdc-shipping" 
         element={
           <ProtectedRoute>
-            <DTDCShipping />
+            <DTDCDashboard />
           </ProtectedRoute>
         } 
       />
