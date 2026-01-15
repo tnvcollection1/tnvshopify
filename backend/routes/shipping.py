@@ -494,7 +494,7 @@ async def list_shipments(
     """
     List all shipments for a store
     """
-    if not _db:
+    if _db is None:
         return {"shipments": [], "total": 0}
     
     query = {"store": store}
