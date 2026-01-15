@@ -522,7 +522,7 @@ async def get_shipping_config(store: str):
     """
     Get shipping configuration for a store
     """
-    if not _db:
+    if _db is None:
         return {
             "store": store,
             "carrier": "DTDC",
