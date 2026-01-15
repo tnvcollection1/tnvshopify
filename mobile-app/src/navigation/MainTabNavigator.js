@@ -1,10 +1,11 @@
 /**
  * Main Tab Navigator
  * Bottom tab navigation for main app screens
+ * With haptic feedback on tab switches
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -17,11 +18,40 @@ import AccountScreen from '../screens/AccountScreen';
 
 // Context
 import { useCart } from '../context/CartContext';
+import { useTheme } from '../context/ThemeContext';
+
+// Haptics
+import { tabSwitchHaptic } from '../services/haptics';
 
 const Tab = createBottomTabNavigator();
 
-// Simple icon components (replace with actual icons in production)
-const TabIcon = ({ name, focused, badge }) => {
+// Animated Tab Icon with haptic feedback
+const TabIcon = ({ name, focused, badge, colors }) => {
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  
+  React.useEffect(() => {
+    if (focused) {
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.2,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1.1,
+          friction: 4,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [focused]);
+
   const icons = {
     Home: '🏠',
     Browse: '🔍',
@@ -32,11 +62,16 @@ const TabIcon = ({ name, focused, badge }) => {
 
   return (
     <View style={styles.iconContainer}>
-      <Text style={[styles.icon, focused && styles.iconFocused]}>
+      <Animated.Text 
+        style={[
+          styles.icon, 
+          { transform: [{ scale: scaleAnim }] },
+        ]}
+      >
         {icons[name]}
-      </Text>
+      </Animated.Text>
       {badge > 0 && (
-        <View style={styles.badge}>
+        <View style={[styles.badge, { backgroundColor: colors.accent }]}>
           <Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text>
         </View>
       )}
@@ -44,33 +79,65 @@ const TabIcon = ({ name, focused, badge }) => {
   );
 };
 
+// Custom Tab Bar Button with haptic feedback
+const HapticTabButton = ({ children, onPress, accessibilityState }) => {
+  const handlePress = () => {
+    // Only trigger haptic if not already selected
+    if (!accessibilityState.selected) {
+      tabSwitchHaptic();
+    }
+    onPress();
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={handlePress}
+      style={styles.tabButton}
+      activeOpacity={0.7}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
+
 const MainTabNavigator = () => {
   const insets = useSafeAreaInsets();
   const { cartCount } = useCart();
+  const { colors, isDark } = useTheme();
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarButton: (props) => <HapticTabButton {...props} />,
         tabBarIcon: ({ focused }) => (
           <TabIcon 
             name={route.name} 
             focused={focused} 
             badge={route.name === 'Cart' ? cartCount : 0}
+            colors={colors}
           />
         ),
-        tabBarActiveTintColor: '#000',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: colors.text,
+        tabBarInactiveTintColor: colors.textTertiary,
         tabBarStyle: {
           height: 60 + insets.bottom,
           paddingTop: 8,
           paddingBottom: insets.bottom + 8,
           borderTopWidth: 1,
-          borderTopColor: '#eee',
+          borderTopColor: colors.border,
+          backgroundColor: colors.surface,
+          // Add subtle shadow for depth
+          shadowColor: isDark ? '#000' : '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: isDark ? 0.3 : 0.08,
+          shadowRadius: 8,
+          elevation: 8,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '500',
+          fontWeight: '600',
+          marginTop: 2,
         },
       })}
     >
@@ -104,24 +171,25 @@ const MainTabNavigator = () => {
 };
 
 const styles = StyleSheet.create({
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   iconContainer: {
     position: 'relative',
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
   icon: {
-    fontSize: 22,
-  },
-  iconFocused: {
-    transform: [{ scale: 1.1 }],
+    fontSize: 24,
   },
   badge: {
     position: 'absolute',
     top: -4,
-    right: -8,
-    backgroundColor: '#000',
+    right: -10,
     borderRadius: 10,
     minWidth: 18,
     height: 18,
