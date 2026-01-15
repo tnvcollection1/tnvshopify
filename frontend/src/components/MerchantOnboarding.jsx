@@ -227,13 +227,18 @@ const MerchantOnboarding = () => {
           setLoading(false);
           return;
         }
-        // Check subdomain availability
-        const checkResponse = await fetch(`${API}/stores/check-subdomain?subdomain=${storeInfo.subdomain}`);
-        const checkData = await checkResponse.json();
-        if (!checkData.available) {
-          toast.error('This subdomain is already taken. Please choose another.');
-          setLoading(false);
-          return;
+        // Check subdomain availability (with error handling)
+        try {
+          const checkResponse = await fetch(`${API}/stores/check-subdomain?subdomain=${storeInfo.subdomain}`);
+          const checkData = await checkResponse.json();
+          if (checkData.available === false) {
+            toast.error(checkData.reason || 'This subdomain is already taken. Please choose another.');
+            setLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.warn('Subdomain check failed, continuing anyway:', error);
+          // Continue anyway if check fails
         }
       }
       
