@@ -666,6 +666,7 @@ const WebsiteEditor = () => {
             style={{ maxWidth: previewWidth, minHeight: '100%' }}
           >
             <iframe 
+              ref={iframeRef}
               key={iframeKey}
               src={storefrontUrl}
               className="w-full border-0"
