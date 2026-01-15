@@ -219,7 +219,7 @@ async def book_shipment(request: ShipmentBookingRequest):
             awb_number = result["data"][0].get("reference_number", reference_number)
             
             # Save shipment to database
-            if _db:
+            if _db is not None:
                 shipment_record = {
                     "order_id": request.order_id,
                     "store": request.store,
