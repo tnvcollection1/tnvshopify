@@ -216,6 +216,19 @@ const ShopifySidebar = () => {
         { label: 'Settings', path: '/settings', icon: Settings },
       ]
     },
+    {
+      id: 'mobile',
+      label: 'Mobile App',
+      icon: Smartphone,
+      badge: 'New',
+      children: [
+        { label: 'App Preview', path: '/mobile-app-preview', icon: Eye },
+        { label: 'App Settings', path: '/mobile-app-settings', icon: Settings },
+        { label: 'Theme & Colors', path: '/mobile-app-theme', icon: Palette },
+        { label: 'Push Notifications', path: '/mobile-push-notifications', icon: Bell },
+        { label: 'Features', path: '/mobile-app-features', icon: Zap },
+      ]
+    },
   ];
 
   const NavItem = ({ item, depth = 0 }) => {
