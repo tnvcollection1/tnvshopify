@@ -259,6 +259,8 @@ function AppRoutes() {
       <Route path="/login" element={<LoginRoute />} />
       <Route path="/mobile-app-preview" element={<MobileAppPreview />} />
       <Route path="/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
+      <Route path="/create-store" element={<MerchantOnboarding />} />
+      <Route path="/merchant-onboarding" element={<MerchantOnboarding />} />
       <Route 
         path="/dashboard" 
         element={
