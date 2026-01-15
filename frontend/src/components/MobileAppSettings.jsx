@@ -28,7 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { toast } from 'sonner';
 import { useStore } from '../contexts/StoreContext';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 const MobileAppSettings = () => {
   const { selectedStore } = useStore();
