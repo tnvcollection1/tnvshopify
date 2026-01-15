@@ -170,19 +170,37 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - [x] Mobile app dark mode implementation
 - [x] Mobile app haptic feedback
 - [x] Admin panel mobile app settings
+- [x] Admin session persistence bug fix (Jan 15, 2026)
 
 ### P1 (High Priority)
+- [ ] Prepare Mobile App for Store Submission (configure app.json, icons, splash screens, bundle IDs)
 - [ ] Deploy storefront to VPS (`tnvcollection.com`)
 - [ ] Configure WhatsApp Business API
 - [ ] DNS setup for `tnvcollection.pk` → VPS IP `159.198.36.164`
 
 ### P2 (Medium Priority)
 - [ ] Sooxie.com integration
-- [ ] Mobile app store submission preparation
+- [ ] Connect Mobile App Settings to dynamically update mobile app
 
 ### P3 (Low Priority)
 - [ ] Backend refactoring (server.py → modular routes)
 - [ ] Automated security testing
+
+## Session Updates
+
+### January 15, 2026 (Session 7 - Latest)
+**Admin Panel Bug Fixes** ✅ COMPLETED
+- **Admin Session Persistence Bug** - FIXED
+  - Root cause: Admin password hash in database didn't match expected SHA256 hash
+  - Solution: Corrected the admin password hash in MongoDB `users` collection
+  - Session validation now works correctly via `/api/users/me` endpoint
+  
+- **Mobile App Sidebar Menu** - FIXED
+  - Issue: Mobile App section missing from active sidebar (`ShopifySidebar.jsx`)
+  - Solution: Added Mobile App section with all submenu items to `ShopifySidebar.jsx`
+  - Added icons: Smartphone, Eye, Palette, Bell, Zap
+  - Section now shows "New" badge and is auto-expanded by default
+  - Submenu items: App Preview, App Settings, Theme & Colors, Push Notifications, Features
 
 ## Pending Issues
 1. **DNS for tnvcollection.pk** (P1) - Blocked on user action
