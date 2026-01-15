@@ -143,8 +143,77 @@ const MobileAppSettings = () => {
     }
   };
 
+  const fetchCollections = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/storefront/collections?store=${selectedStore || 'tnvcollection'}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCollections(data.collections || []);
+      }
+    } catch (error) {
+      console.error('Error fetching collections:', error);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/storefront/products?store=${selectedStore || 'tnvcollection'}&limit=50`);
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data.products || []);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
+  const fetchBanners = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/storefront-banners?store=${selectedStore || 'tnvcollection'}`);
+      if (response.ok) {
+        const data = await response.json();
+        setBanners(data.banners || []);
+      }
+    } catch (error) {
+      console.error('Error fetching banners:', error);
+    }
+  };
+
   const updateSetting = (key, value) => {
     setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const toggleHomeSection = (sectionId) => {
+    setSettings(prev => ({
+      ...prev,
+      homeScreenSections: prev.homeScreenSections.map(section =>
+        section.id === sectionId ? { ...section, enabled: !section.enabled } : section
+      )
+    }));
+  };
+
+  const reorderHomeSection = (sectionId, direction) => {
+    setSettings(prev => {
+      const sections = [...prev.homeScreenSections];
+      const index = sections.findIndex(s => s.id === sectionId);
+      if (direction === 'up' && index > 0) {
+        [sections[index - 1], sections[index]] = [sections[index], sections[index - 1]];
+      } else if (direction === 'down' && index < sections.length - 1) {
+        [sections[index], sections[index + 1]] = [sections[index + 1], sections[index]];
+      }
+      return { ...prev, homeScreenSections: sections };
+    });
+  };
+
+  const toggleFeaturedCollection = (collectionId) => {
+    setSettings(prev => {
+      const featured = prev.featuredCollections || [];
+      if (featured.includes(collectionId)) {
+        return { ...prev, featuredCollections: featured.filter(id => id !== collectionId) };
+      } else {
+        return { ...prev, featuredCollections: [...featured, collectionId] };
+      }
+    });
   };
 
   if (loading) {
