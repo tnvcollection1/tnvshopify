@@ -5,7 +5,51 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 
 ## What's Been Implemented
 
-### January 14, 2026 (Session 6 - Latest)
+### January 15, 2026 (Session 7 - Latest)
+
+**Admin Panel Bug Fixes** ✅ COMPLETED
+- **Admin Session Persistence Bug** - FIXED
+  - Root cause: Admin password hash in database didn't match expected SHA256 hash
+  - Solution: Corrected the admin password hash in MongoDB `users` collection
+  - Session validation now works correctly via `/api/users/me` endpoint
+  
+- **Mobile App Sidebar Menu** - FIXED
+  - Issue: Mobile App section missing from active sidebar (`ShopifySidebar.jsx`)
+  - Solution: Added Mobile App section with all submenu items to `ShopifySidebar.jsx`
+  - Added icons: Smartphone, Eye, Palette, Bell, Zap
+  - Section now shows "New" badge and is auto-expanded by default
+  - Submenu items: App Preview, App Settings, Theme & Colors, Push Notifications, Features
+
+**Merchant Onboarding & Store Creation** ✅ COMPLETED
+- **7-Step Onboarding Wizard** (`MerchantOnboarding.jsx`):
+  1. Business Info: Name, category (10 categories with icons), email, phone
+  2. Store Setup: Store name, subdomain URL, currency (7 currencies), custom domain
+  3. Platform Selection: Web Storefront & Mobile App with feature descriptions
+  4. Theme Selection: 5 pre-configured themes with visual previews
+     - Modern Minimal (black/green)
+     - Fashion Forward (pink - Namshi-style)
+     - Luxury (gold/dark - premium brands)
+     - Vibrant (purple/pink - lifestyle brands)
+     - Classic E-commerce (blue - traditional)
+  5. Brand Customization: Logo upload, color pickers, dark mode toggle, live preview
+  6. Integrations: WhatsApp, Facebook/Meta, Shopify, Razorpay with credential inputs
+  7. Review & Launch: Summary of all configurations before store creation
+
+- **Backend API** (`/routes/merchants.py`):
+  - `GET /api/merchants/check-subdomain` - Check subdomain availability
+  - `POST /api/merchants/create-store` - Create new merchant store with full config
+  - `GET /api/merchants/stores` - List all stores
+  - `GET /api/merchants/stores/{id}` - Get specific store
+  - `GET /api/merchants/themes` - Get available themes
+  - `PUT /api/merchants/stores/{id}/theme` - Update store theme
+  - `PUT /api/merchants/stores/{id}/integrations` - Update integrations
+
+- **Access Points**:
+  - Login page: "Create Your Store" button with green gradient CTA
+  - Admin sidebar: "Create New Store" button with highlight styling
+  - Direct URL: `/create-store` or `/merchant-onboarding`
+
+### January 14, 2026 (Session 6)
 
 **Haptic Feedback Implementation** ✅ COMPLETED
 - **Haptic Service** (`/services/haptics.js`):
