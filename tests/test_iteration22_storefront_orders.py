@@ -8,7 +8,7 @@ import requests
 import os
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multi-tenant-7.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multi-shop-24.preview.emergentagent.com')
 
 class TestStorefrontOrdersAPI:
     """Test Storefront Orders API endpoints"""

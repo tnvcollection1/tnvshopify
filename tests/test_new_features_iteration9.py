@@ -14,7 +14,7 @@ import os
 from datetime import datetime
 
 # Get BASE_URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multi-tenant-7.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multi-shop-24.preview.emergentagent.com').rstrip('/')
 
 
 class TestStoresAPI:

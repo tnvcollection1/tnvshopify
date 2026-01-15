@@ -14,7 +14,7 @@ WaMerce 1688 Importer (v5.0.0) - Manifest V3 compatible Chrome extension for imp
 1. **Download the Extension**
    ```
    Option A: Download from app
-   - Navigate to: https://multi-tenant-7.preview.emergentagent.com/settings
+   - Navigate to: https://multi-shop-24.preview.emergentagent.com/settings
    - Click "Download Chrome Extension"
    
    Option B: Direct API download

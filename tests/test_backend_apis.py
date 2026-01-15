@@ -13,7 +13,7 @@ import os
 import time
 
 # Get backend URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multi-tenant-7.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multi-shop-24.preview.emergentagent.com')
 
 @pytest.fixture
 def api_client():

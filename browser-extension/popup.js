@@ -3,7 +3,7 @@
 
 // DEPLOYMENT URL - Can be updated for different environments
 // For production: Replace with your deployed URL
-const SERVER_URL = 'https://multi-tenant-7.preview.emergentagent.com';
+const SERVER_URL = 'https://multi-shop-24.preview.emergentagent.com';
 
 let products = [];
 let pageInfo = { type: 'unknown', title: '', url: '' };
