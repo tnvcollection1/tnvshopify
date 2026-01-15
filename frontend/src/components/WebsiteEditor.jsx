@@ -74,6 +74,8 @@ const WebsiteEditor = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [viewMode, setViewMode] = useState('desktop');
   const [iframeKey, setIframeKey] = useState(0);
+  const [livePreviewEnabled, setLivePreviewEnabled] = useState(true);
+  const iframeRef = React.useRef(null);
   
   // Data from API
   const [banners, setBanners] = useState([]);
