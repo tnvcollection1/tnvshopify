@@ -141,6 +141,16 @@ const WebsiteEditor = () => {
         const data = await productsRes.json();
         setProducts(data.products || []);
       }
+      // Process navigation/header config
+      if (navConfigRes.ok) {
+        const navData = await navConfigRes.json();
+        setHeaderConfig({
+          logo: navData.logo || { text: 'TNV', badge: 'COLLECTION', badgeColor: '#FF6B9D' },
+          promoMessages: navData.promoMessages || [],
+          categories: navData.categories || [],
+          megaMenu: navData.megaMenu || {}
+        });
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
