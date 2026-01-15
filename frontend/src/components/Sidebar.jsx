@@ -42,7 +42,9 @@ import {
   Upload,
   Key,
   Activity,
-  Smartphone
+  Smartphone,
+  Eye,
+  Palette
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
