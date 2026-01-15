@@ -5,6 +5,7 @@ import {
   ChevronRight,
   ChevronLeft,
   ChevronDown,
+  ChevronUp,
   Settings,
   Image,
   Eye,
@@ -18,7 +19,13 @@ import {
   Tablet,
   Smartphone as Phone,
   ExternalLink,
-  Edit3
+  Edit3,
+  Megaphone,
+  Type,
+  Menu,
+  LayoutGrid,
+  Trash2,
+  GripVertical
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -26,6 +33,9 @@ import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { toast } from 'sonner';
 import { useStore } from '../contexts/StoreContext';
+
+// Emoji options for promo messages
+const EMOJI_OPTIONS = ['💵', '🚚', '✓', '↩️', '🌟', '🔥', '💎', '🏷️', '👗', '👟', '👜', '⚽', '✨', '🎁', '💳', '📦'];
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
