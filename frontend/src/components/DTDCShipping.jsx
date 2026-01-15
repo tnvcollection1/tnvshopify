@@ -509,13 +509,26 @@ const DTDCShipping = () => {
       {/* Settings Tab */}
       {activeTab === 'settings' && (
         <div className="bg-white rounded-xl border p-6 max-w-2xl">
-          <h2 className="font-semibold mb-4 flex items-center gap-2">
-            <Building className="w-5 h-5" />
-            Pickup/Origin Address
-          </h2>
-          <p className="text-sm text-gray-500 mb-6">
-            This address will be used as the origin for all shipments
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="font-semibold flex items-center gap-2">
+                <Building className="w-5 h-5" />
+                Pickup/Origin Address
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                This address will be used as the origin for all shipments
+              </p>
+            </div>
+            <Button 
+              onClick={handleSyncFromDTDC} 
+              variant="outline"
+              disabled={loading}
+              className="text-blue-600 border-blue-200 hover:bg-blue-50"
+            >
+              {loading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+              Sync from DTDC
+            </Button>
+          </div>
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
