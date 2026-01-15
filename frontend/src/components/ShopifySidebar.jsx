@@ -48,7 +48,7 @@ const ShopifySidebar = () => {
   const { logout, agent, isAdmin } = useAuth();
   const { stores, selectedStore, switchStore, syncStoreData, syncing, getStoreName } = useStore();
   const [showStoreDropdown, setShowStoreDropdown] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(['sales', 'products']);
+  const [expandedSections, setExpandedSections] = useState(['sales', 'products', 'mobile']);
   const [syncStatus, setSyncStatus] = useState(null);
 
   const handleSync = async () => {
