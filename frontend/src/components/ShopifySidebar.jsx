@@ -279,13 +279,22 @@ const ShopifySidebar = () => {
       <button
         onClick={() => navigate(item.path)}
         className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all
-          ${active 
-            ? 'bg-[#008060] text-white' 
-            : 'text-gray-400 hover:bg-[#2a2a2a] hover:text-white'}`}
+          ${item.highlight
+            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
+            : active 
+              ? 'bg-[#008060] text-white' 
+              : 'text-gray-400 hover:bg-[#2a2a2a] hover:text-white'}`}
       >
         {Icon && <Icon className="w-5 h-5" />}
-        <span className="flex-1 text-left">{item.label}</span>
-        {active && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+        <span className="flex-1 text-left flex items-center gap-2">
+          {item.label}
+          {item.badge && (
+            <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-green-500 text-white rounded">
+              {item.badge}
+            </span>
+          )}
+        </span>
+        {active && !item.highlight && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
       </button>
     );
   };
