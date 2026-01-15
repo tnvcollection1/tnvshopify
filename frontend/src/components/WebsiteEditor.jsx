@@ -170,7 +170,7 @@ const WebsiteEditor = () => {
 
   const previewWidth = viewMode === 'desktop' ? '100%' : viewMode === 'tablet' ? '768px' : '375px';
   const storeName = selectedStore || 'tnvcollection';
-  const storefrontUrl = `${window.location.origin}/store/${storeName}`;
+  const storefrontUrl = `${window.location.origin}/tnv`; // Namshi-style storefront
 
   if (loading) {
     return (
