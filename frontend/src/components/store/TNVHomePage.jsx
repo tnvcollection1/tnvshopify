@@ -22,6 +22,31 @@ const TNVHomePage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
+  
+  // Live preview state from Website Editor
+  const [previewBanner, setPreviewBanner] = useState(null);
+  const [previewHeaderConfig, setPreviewHeaderConfig] = useState(null);
+
+  // Listen for live preview messages from Website Editor
+  useEffect(() => {
+    const handlePreviewMessage = (event) => {
+      if (event.data?.type === 'PREVIEW_UPDATE') {
+        const { section, data } = event.data;
+        
+        if (section === 'banner' && data) {
+          setPreviewBanner(data);
+        }
+        if (section === 'headerConfig' && data) {
+          setPreviewHeaderConfig(data);
+          // Dispatch to TNVStoreLayout for header updates
+          window.dispatchEvent(new CustomEvent('preview-header-update', { detail: data }));
+        }
+      }
+    };
+    
+    window.addEventListener('message', handlePreviewMessage);
+    return () => window.removeEventListener('message', handlePreviewMessage);
+  }, []);
 
   useEffect(() => {
     fetchData();
