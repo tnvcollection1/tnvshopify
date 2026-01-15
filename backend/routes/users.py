@@ -383,9 +383,11 @@ async def login_user(username: str, password: str):
     """User login - returns user data with permissions"""
     try:
         hashed = hash_password(password)
+        logger.info(f"Login attempt: username={username}, hash={hashed[:20]}...")
         
         # Try users collection first
         user = await db.users.find_one({"username": username, "password": hashed})
+        logger.info(f"User found in users collection: {user is not None}")
         
         # Fall back to agents collection for backward compatibility
         if not user:
