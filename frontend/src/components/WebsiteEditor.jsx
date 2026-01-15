@@ -518,10 +518,17 @@ const WebsiteEditor = () => {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
+                  <Label>Show Overlay</Label>
+                  <Switch 
+                    checked={editingBanner.overlay}
+                    onCheckedChange={(v) => updateBanner('overlay', v)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
                   <Label>Active</Label>
                   <Switch 
-                    checked={editingBanner.is_active}
-                    onCheckedChange={(v) => updateBanner('is_active', v)}
+                    checked={editingBanner.active}
+                    onCheckedChange={(v) => updateBanner('active', v)}
                   />
                 </div>
               </div>
