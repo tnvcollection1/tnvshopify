@@ -92,14 +92,16 @@ const WebsiteEditor = () => {
     setLoading(true);
     try {
       const storeName = selectedStore || 'tnvcollection';
-      const [bannersRes, collectionsRes, productsRes] = await Promise.all([
-        fetch(`${API_URL}/api/storefront/banners?store=${storeName}`),
+      // Fetch from correct endpoints for Namshi storefront
+      const [heroBannersRes, collectionsRes, productsRes, menuRes] = await Promise.all([
+        fetch(`${API_URL}/api/storefront/banners/hero/${storeName}`),
         fetch(`${API_URL}/api/storefront/collections?store=${storeName}`),
-        fetch(`${API_URL}/api/storefront/products?store=${storeName}&limit=20`)
+        fetch(`${API_URL}/api/storefront/products?store=${storeName}&limit=20`),
+        fetch(`${API_URL}/api/storefront/banners/menu/${storeName}`)
       ]);
 
-      if (bannersRes.ok) {
-        const data = await bannersRes.json();
+      if (heroBannersRes.ok) {
+        const data = await heroBannersRes.json();
         setBanners(data.banners || []);
       }
       if (collectionsRes.ok) {
