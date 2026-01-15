@@ -121,6 +121,7 @@ import LuxuryCheckout from "@/components/storefront/LuxuryCheckout";
 import LuxuryOrderConfirmation from "@/components/storefront/LuxuryOrderConfirmation";
 import LuxuryOrderTracking from "@/components/storefront/LuxuryOrderTracking";
 import MobileAppPreview from "@/components/MobileAppPreview";
+import MobileAppSettings from "@/components/MobileAppSettings";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
