@@ -148,7 +148,7 @@ const MobileAppSettings = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="bg-gray-100 p-1">
+        <TabsList className="bg-gray-100 p-1 flex-wrap">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             General
@@ -156,6 +156,10 @@ const MobileAppSettings = () => {
           <TabsTrigger value="theme" className="flex items-center gap-2">
             <Palette className="w-4 h-4" />
             Theme
+          </TabsTrigger>
+          <TabsTrigger value="content" className="flex items-center gap-2">
+            <Image className="w-4 h-4" />
+            Content
           </TabsTrigger>
           <TabsTrigger value="features" className="flex items-center gap-2">
             <Zap className="w-4 h-4" />
