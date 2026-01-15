@@ -535,6 +535,267 @@ const MobileAppSettings = () => {
           </Card>
         </TabsContent>
 
+        {/* Content Tab */}
+        <TabsContent value="content" className="space-y-6">
+          {/* Home Screen Sections */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Smartphone className="w-5 h-5" />
+                Home Screen Sections
+              </CardTitle>
+              <CardDescription>Configure the order and visibility of home screen sections</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {settings.homeScreenSections.map((section, index) => (
+                  <div 
+                    key={section.id}
+                    className={`flex items-center justify-between p-3 border rounded-lg ${
+                      section.enabled ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col gap-1">
+                        <button 
+                          onClick={() => reorderHomeSection(section.id, 'up')}
+                          disabled={index === 0}
+                          className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        >
+                          <ChevronRight className="w-4 h-4 -rotate-90" />
+                        </button>
+                        <button 
+                          onClick={() => reorderHomeSection(section.id, 'down')}
+                          disabled={index === settings.homeScreenSections.length - 1}
+                          className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        >
+                          <ChevronRight className="w-4 h-4 rotate-90" />
+                        </button>
+                      </div>
+                      <div>
+                        <p className={`font-medium ${section.enabled ? 'text-gray-900' : 'text-gray-500'}`}>
+                          {section.title}
+                        </p>
+                        <p className="text-xs text-gray-400 capitalize">{section.type}</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={section.enabled}
+                      onCheckedChange={() => toggleHomeSection(section.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Featured Collections */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Image className="w-5 h-5" />
+                Featured Collections
+              </CardTitle>
+              <CardDescription>Select which collections to feature in the app</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {collections.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Image className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No collections found</p>
+                  <p className="text-sm">Create collections in your store first</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {collections.map(collection => (
+                    <button
+                      key={collection.id || collection.handle}
+                      onClick={() => toggleFeaturedCollection(collection.id || collection.handle)}
+                      className={`relative p-4 border-2 rounded-xl text-left transition-all ${
+                        (settings.featuredCollections || []).includes(collection.id || collection.handle)
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {collection.image && (
+                        <img 
+                          src={collection.image} 
+                          alt={collection.title}
+                          className="w-full h-24 object-cover rounded-lg mb-2"
+                        />
+                      )}
+                      <p className="font-medium text-sm truncate">{collection.title}</p>
+                      <p className="text-xs text-gray-500">{collection.products_count || 0} products</p>
+                      {(settings.featuredCollections || []).includes(collection.id || collection.handle) && (
+                        <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              <div className="mt-4 pt-4 border-t space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Show Collection Images</Label>
+                  <Switch
+                    checked={settings.showCollectionImages}
+                    onCheckedChange={(v) => updateSetting('showCollectionImages', v)}
+                  />
+                </div>
+                <div>
+                  <Label>Display Style</Label>
+                  <div className="flex gap-2 mt-2">
+                    {['grid', 'list', 'carousel'].map(style => (
+                      <Button
+                        key={style}
+                        variant={settings.collectionsDisplayStyle === style ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => updateSetting('collectionsDisplayStyle', style)}
+                        className="capitalize"
+                      >
+                        {style}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Product Display Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                Product Display
+              </CardTitle>
+              <CardDescription>Configure how products appear in the app</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Products Per Row</Label>
+                  <div className="flex gap-2 mt-2">
+                    {[1, 2, 3].map(num => (
+                      <Button
+                        key={num}
+                        variant={settings.productsPerRow === num ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => updateSetting('productsPerRow', num)}
+                      >
+                        {num}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label>Card Style</Label>
+                  <div className="flex gap-2 mt-2">
+                    {['modern', 'classic', 'minimal'].map(style => (
+                      <Button
+                        key={style}
+                        variant={settings.productCardStyle === style ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => updateSetting('productCardStyle', style)}
+                        className="capitalize"
+                      >
+                        {style}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Show Product Ratings</Label>
+                    <p className="text-xs text-gray-500">Display star ratings on product cards</p>
+                  </div>
+                  <Switch
+                    checked={settings.showProductRatings}
+                    onCheckedChange={(v) => updateSetting('showProductRatings', v)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Quick Add to Cart</Label>
+                    <p className="text-xs text-gray-500">Show add to cart button on product cards</p>
+                  </div>
+                  <Switch
+                    checked={settings.showQuickAddToCart}
+                    onCheckedChange={(v) => updateSetting('showQuickAddToCart', v)}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Banners */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Image className="w-5 h-5" />
+                Banners
+              </CardTitle>
+              <CardDescription>Manage promotional banners in the app</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {banners.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Image className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No banners configured</p>
+                  <p className="text-sm">Add banners in the Banner & Collections section</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => window.location.href = '/storefront-banners'}
+                  >
+                    Go to Banner Manager
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {banners.slice(0, 5).map(banner => (
+                    <div key={banner.id || banner.title} className="flex items-center gap-4 p-3 border rounded-lg">
+                      {banner.image_url && (
+                        <img 
+                          src={banner.image_url} 
+                          alt={banner.title}
+                          className="w-20 h-12 object-cover rounded"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{banner.title}</p>
+                        <p className="text-xs text-gray-500">{banner.position || 'No position set'}</p>
+                      </div>
+                      <div className={`px-2 py-1 rounded text-xs ${
+                        banner.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {banner.is_active ? 'Active' : 'Inactive'}
+                      </div>
+                    </div>
+                  ))}
+                  {banners.length > 5 && (
+                    <p className="text-sm text-gray-500 text-center">
+                      +{banners.length - 5} more banners
+                    </p>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-2"
+                    onClick={() => window.location.href = '/storefront-banners'}
+                  >
+                    Manage All Banners
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Features Tab */}
         <TabsContent value="features" className="space-y-6">
           <Card>
