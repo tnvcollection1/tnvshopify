@@ -690,6 +690,180 @@ async def sync_address_from_dtdc(store: str):
         }
 
 
+@router.post("/sync-shipments/{store}")
+async def sync_shipments_from_dtdc(store: str):
+    """
+    Sync shipments from DTDC customer portal
+    Fetches all consignments and updates local database
+    """
+    try:
+        synced_count = 0
+        
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            # Try to authenticate with DTDC
+            auth_url = f"{DTDC_CONFIG['base_url']}/api/auth/login"
+            
+            try:
+                auth_response = await client.post(auth_url, json={
+                    "username": DTDC_CONFIG["username"],
+                    "password": DTDC_CONFIG["password"]
+                }, timeout=30, headers={"Content-Type": "application/json"})
+                
+                if auth_response.status_code == 200:
+                    auth_data = auth_response.json()
+                    token = auth_data.get("token", "")
+                    
+                    if token:
+                        headers = {"Authorization": f"Bearer {token}"}
+                        
+                        # Fetch consignments
+                        consignments_url = f"{DTDC_CONFIG['base_url']}/api/consignments"
+                        consignments_response = await client.get(
+                            consignments_url,
+                            headers=headers,
+                            timeout=60
+                        )
+                        
+                        if consignments_response.status_code == 200:
+                            data = consignments_response.json()
+                            consignments = data.get("consignments", []) or data.get("data", [])
+                            
+                            for cn in consignments:
+                                # Transform DTDC format to our format
+                                shipment = {
+                                    "store": store,
+                                    "awb_number": cn.get("consignmentNumber") or cn.get("cn_number"),
+                                    "order_id": cn.get("customerReferenceNumber") or cn.get("reference_number", ""),
+                                    "carrier": "DTDC",
+                                    "status": cn.get("status", "BOOKED").upper().replace(" ", "_"),
+                                    "service_type": cn.get("productType", "STANDARD"),
+                                    "cod_amount": float(cn.get("amountToBePaid", 0) or 0),
+                                    "destination": {
+                                        "name": cn.get("customerName", ""),
+                                        "phone": cn.get("destinationPhone", ""),
+                                        "address_line_1": cn.get("destinationAddressLine", ""),
+                                        "city": cn.get("destinationCity", ""),
+                                        "state": cn.get("destinationState", ""),
+                                        "pincode": cn.get("destinationPincode", "")
+                                    },
+                                    "package": {
+                                        "num_pieces": int(cn.get("numberOfPieces", 1) or 1),
+                                        "weight": float(cn.get("weight", 0) or 0)
+                                    },
+                                    "created_at": cn.get("createdAt") or cn.get("bookingDate"),
+                                    "synced_from_dtdc": True,
+                                    "synced_at": datetime.now(timezone.utc).isoformat()
+                                }
+                                
+                                if _db is not None and shipment["awb_number"]:
+                                    await _db.shipments.update_one(
+                                        {"awb_number": shipment["awb_number"], "store": store},
+                                        {"$set": shipment},
+                                        upsert=True
+                                    )
+                                    synced_count += 1
+                            
+                            return {
+                                "success": True,
+                                "synced_count": synced_count,
+                                "message": f"Successfully synced {synced_count} shipments from DTDC"
+                            }
+            except Exception as e:
+                print(f"DTDC sync error: {e}")
+        
+        # If API doesn't work, return message
+        return {
+            "success": True,
+            "synced_count": 0,
+            "message": "DTDC API sync not available. Shipments will be tracked as they are booked through the system."
+        }
+            
+    except Exception as e:
+        return {
+            "success": False,
+            "synced_count": 0,
+            "message": f"Sync failed: {str(e)}"
+        }
+
+
+@router.get("/stats/{store}")
+async def get_shipping_stats(store: str):
+    """
+    Get shipping statistics for dashboard
+    """
+    if _db is None:
+        return {
+            "stats": {
+                "booked": 0, "delivered": 0, "deliveredWithinEDD": 0,
+                "rto": 0, "prepaid": 0, "cod": 0, "fatPercent": 0, "fadPercent": 0
+            },
+            "bookingTrends": [],
+            "statusDistribution": [],
+            "laneDistribution": []
+        }
+    
+    # Get all shipments for the store
+    shipments = await _db.shipments.find(
+        {"store": store}, {"_id": 0}
+    ).to_list(length=1000)
+    
+    # Calculate stats
+    stats = {
+        "booked": len(shipments),
+        "delivered": len([s for s in shipments if s.get("status") == "DELIVERED"]),
+        "deliveredWithinEDD": len([s for s in shipments if s.get("status") == "DELIVERED" and s.get("delivered_within_edd")]),
+        "rto": len([s for s in shipments if s.get("status") == "RTO"]),
+        "prepaid": len([s for s in shipments if not s.get("cod_amount") or s.get("cod_amount") == 0]),
+        "cod": len([s for s in shipments if s.get("cod_amount") and s.get("cod_amount") > 0]),
+        "inTransit": len([s for s in shipments if s.get("status") in ["IN_TRANSIT", "CD_OUT", "PICKED_UP"]]),
+        "outForDelivery": len([s for s in shipments if s.get("status") == "OUT_FOR_DELIVERY"])
+    }
+    
+    if stats["booked"] > 0:
+        stats["fatPercent"] = round((stats["delivered"] / stats["booked"]) * 100)
+        stats["fadPercent"] = round((stats["deliveredWithinEDD"] / stats["booked"]) * 100)
+    else:
+        stats["fatPercent"] = 0
+        stats["fadPercent"] = 0
+    
+    # Status distribution
+    status_counts = {}
+    for s in shipments:
+        status = s.get("status", "BOOKED")
+        status_counts[status] = status_counts.get(status, 0) + 1
+    
+    status_distribution = [{"name": k, "value": v} for k, v in status_counts.items()]
+    
+    # Lane distribution (by city)
+    lane_counts = {}
+    for s in shipments:
+        city = s.get("destination", {}).get("city", "Unknown")
+        lane_counts[city] = lane_counts.get(city, 0) + 1
+    
+    lane_distribution = [{"name": k, "value": v} for k, v in lane_counts.items()]
+    
+    # Booking trends (last 7 days)
+    booking_trends = []
+    for i in range(6, -1, -1):
+        date = datetime.now(timezone.utc)
+        date = date.replace(hour=0, minute=0, second=0, microsecond=0)
+        date = date - timedelta(days=i)
+        date_str = date.strftime("%Y-%m-%d")
+        
+        count = len([s for s in shipments if s.get("created_at", "").startswith(date_str)])
+        booking_trends.append({
+            "date": date.strftime("%b %d"),
+            "bookings": count
+        })
+    
+    return {
+        "stats": stats,
+        "statusDistribution": status_distribution,
+        "laneDistribution": lane_distribution,
+        "bookingTrends": booking_trends
+    }
+
+
 # ======================
 # STATUS WEBHOOK (for DTDC callbacks)
 # ======================
