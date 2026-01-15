@@ -123,6 +123,7 @@ import LuxuryOrderTracking from "@/components/storefront/LuxuryOrderTracking";
 import MobileAppPreview from "@/components/MobileAppPreview";
 import MobileAppSettings from "@/components/MobileAppSettings";
 import MobileAppEditor from "@/components/MobileAppEditor";
+import WebsiteEditor from "@/components/WebsiteEditor";
 import MerchantOnboarding from "@/components/MerchantOnboarding";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
