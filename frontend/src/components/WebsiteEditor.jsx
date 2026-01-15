@@ -88,6 +88,11 @@ const WebsiteEditor = () => {
     megaMenu: {}
   });
   
+  // Editing states for header sections
+  const [editingPromo, setEditingPromo] = useState(null);
+  const [editingLogo, setEditingLogo] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null);
+  
   // Editable sections - with separate header subsections
   const [sections, setSections] = useState([
     { id: 'announcement', type: 'announcement_bar', title: 'Announcement Bar', enabled: true, parent: 'header' },
