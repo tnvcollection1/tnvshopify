@@ -110,8 +110,6 @@ const WebsiteEditor = () => {
   
   // Selected banner for editing
   const [editingBanner, setEditingBanner] = useState(null);
-  // Selected promo message for editing
-  const [editingPromo, setEditingPromo] = useState(null);
 
   useEffect(() => {
     fetchData();
