@@ -75,6 +75,7 @@ from routes.image_proxy import router as image_proxy_router
 from routes.image_upload import router as image_upload_router
 from routes.push_notifications import router as push_notifications_router
 from routes.mobile_app import router as mobile_app_router
+from routes.merchants import merchants_router, set_dependencies as set_merchants_deps
 from services.fulfillment_webhooks import router as fulfillment_webhooks_router
 from services.whatsapp_notifications import router as whatsapp_notifications_router
 from services.cart_recovery_service import router as cart_recovery_router
