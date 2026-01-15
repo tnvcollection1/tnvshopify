@@ -188,6 +188,140 @@ const WebsiteEditor = () => {
     setHasChanges(true);
   }, []);
 
+  // Save Logo Configuration
+  const saveLogo = async () => {
+    setSaving(true);
+    try {
+      const storeName = selectedStore || 'tnvcollection';
+      const response = await fetch(`${API_URL}/api/storefront/config/logo/${storeName}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(headerConfig.logo)
+      });
+      
+      if (response.ok) {
+        toast.success('Logo saved!');
+        setHasChanges(false);
+        setIframeKey(prev => prev + 1);
+      } else {
+        throw new Error('Failed to save');
+      }
+    } catch (error) {
+      toast.error('Failed to save logo');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Save Promo Messages
+  const savePromoMessages = async () => {
+    setSaving(true);
+    try {
+      const storeName = selectedStore || 'tnvcollection';
+      const response = await fetch(`${API_URL}/api/storefront/config/promo-messages/${storeName}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(headerConfig.promoMessages)
+      });
+      
+      if (response.ok) {
+        toast.success('Announcement bar saved!');
+        setHasChanges(false);
+        setIframeKey(prev => prev + 1);
+      } else {
+        throw new Error('Failed to save');
+      }
+    } catch (error) {
+      toast.error('Failed to save announcement bar');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Save Menu Categories
+  const saveMenuCategories = async () => {
+    setSaving(true);
+    try {
+      const storeName = selectedStore || 'tnvcollection';
+      const response = await fetch(`${API_URL}/api/storefront/config/menu/${storeName}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(headerConfig.categories)
+      });
+      
+      if (response.ok) {
+        toast.success('Navigation menu saved!');
+        setHasChanges(false);
+        setIframeKey(prev => prev + 1);
+      } else {
+        throw new Error('Failed to save');
+      }
+    } catch (error) {
+      toast.error('Failed to save menu');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Update header config helpers
+  const updateLogo = useCallback((key, value) => {
+    setHeaderConfig(prev => ({
+      ...prev,
+      logo: { ...prev.logo, [key]: value }
+    }));
+    setHasChanges(true);
+  }, []);
+
+  const updatePromoMessage = useCallback((index, key, value) => {
+    setHeaderConfig(prev => {
+      const newMessages = [...prev.promoMessages];
+      newMessages[index] = { ...newMessages[index], [key]: value };
+      return { ...prev, promoMessages: newMessages };
+    });
+    setHasChanges(true);
+  }, []);
+
+  const addPromoMessage = useCallback(() => {
+    setHeaderConfig(prev => ({
+      ...prev,
+      promoMessages: [...prev.promoMessages, { 
+        text: 'New Message', 
+        icon: '🌟', 
+        active: true, 
+        order: prev.promoMessages.length 
+      }]
+    }));
+    setHasChanges(true);
+  }, []);
+
+  const removePromoMessage = useCallback((index) => {
+    setHeaderConfig(prev => ({
+      ...prev,
+      promoMessages: prev.promoMessages.filter((_, i) => i !== index)
+    }));
+    setHasChanges(true);
+  }, []);
+
+  const movePromoMessage = useCallback((index, direction) => {
+    setHeaderConfig(prev => {
+      const newMessages = [...prev.promoMessages];
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= newMessages.length) return prev;
+      [newMessages[index], newMessages[newIndex]] = [newMessages[newIndex], newMessages[index]];
+      return { ...prev, promoMessages: newMessages };
+    });
+    setHasChanges(true);
+  }, []);
+
+  const updateCategory = useCallback((index, key, value) => {
+    setHeaderConfig(prev => {
+      const newCategories = [...prev.categories];
+      newCategories[index] = { ...newCategories[index], [key]: value };
+      return { ...prev, categories: newCategories };
+    });
+    setHasChanges(true);
+  }, []);
+
   const toggleSection = useCallback((sectionId) => {
     setSections(prev => prev.map(s => 
       s.id === sectionId ? { ...s, enabled: !s.enabled } : s
