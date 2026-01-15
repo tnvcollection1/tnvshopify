@@ -763,6 +763,22 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/mobile-app-settings" 
+        element={
+          <ProtectedRoute>
+            <MobileAppSettings />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/mobile-push-notifications" 
+        element={
+          <ProtectedRoute>
+            <MobileAppSettings />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/checkout" 
         element={<CheckoutPage />}
       />
