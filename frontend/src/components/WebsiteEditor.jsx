@@ -422,6 +422,17 @@ const WebsiteEditor = () => {
             </button>
           </div>
           
+          {/* Live Preview Toggle */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
+            <span className={`text-sm ${livePreviewEnabled ? 'text-green-600' : 'text-gray-500'}`}>
+              Live Preview
+            </span>
+            <Switch 
+              checked={livePreviewEnabled}
+              onCheckedChange={setLivePreviewEnabled}
+            />
+          </div>
+          
           <Button 
             variant="outline"
             onClick={() => window.open(storefrontUrl, '_blank')}
@@ -430,14 +441,19 @@ const WebsiteEditor = () => {
             View Live
           </Button>
           
-          {hasChanges && editingBanner && (
+          {hasChanges && (
             <Button 
-              onClick={() => saveBanner(editingBanner)}
+              onClick={() => {
+                if (editingBanner) saveBanner(editingBanner);
+                else if (selectedSection === 'announcement') savePromoMessages();
+                else if (selectedSection === 'logo') saveLogo();
+                else if (selectedSection === 'mega_menu') saveMenuCategories();
+              }}
               disabled={saving}
               className="bg-green-600 hover:bg-green-700"
             >
               {saving ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-              Save
+              Save Changes
             </Button>
           )}
         </div>
