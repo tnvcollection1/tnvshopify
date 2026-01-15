@@ -538,6 +538,14 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/dtdc-shipping" 
+        element={
+          <ProtectedRoute>
+            <DTDCShipping />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/dwz56-shipping" 
         element={
           <ProtectedRoute>
