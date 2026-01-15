@@ -15,7 +15,7 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - **Live Preview Toggle**: Real-time preview updates to storefront iframe without saving
 - **Save Changes Button**: Context-aware save for each section type
 
-**DTDC Shipping Integration** ✅ COMPLETED
+**DTDC Shipping Dashboard** ✅ COMPLETED (Full Customer Portal Style)
 - **Backend API** (`/routes/shipping.py`):
   - `POST /api/shipping/book` - Book new shipment with DTDC
   - `GET /api/shipping/track/{awb}` - Track shipment by AWB number
@@ -25,14 +25,22 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   - `GET /api/shipping/config/{store}` - Get shipping config
   - `POST /api/shipping/config/{store}` - Save shipping config
   - `POST /api/shipping/webhook/status-update` - DTDC status webhook
+  - `POST /api/shipping/sync-shipments/{store}` - Sync shipments from DTDC
+  - `GET /api/shipping/stats/{store}` - Get dashboard statistics
+  - `POST /api/shipping/sync-from-dtdc/{store}` - Sync address from DTDC
 
-- **Admin UI** (`DTDCShipping.jsx`):
-  - Shipments tab: View all shipments with status badges
-  - Track tab: Track packages by AWB number
-  - Rate Calculator: Calculate shipping costs with GST and COD charges
-  - Settings: Configure pickup/origin address for store
+- **Admin UI** (`DTDCDashboard.jsx`) - Matches DTDC Customer Portal:
+  - **Dashboard Tab**: KPI cards (# Booked, # Delivered, # RTO, # Prepaid, # COD, FAT%, FAD%), Charts (Booking Trends, Lane-wise Distribution, Shipment Status, Product Distribution, Non-Delivery Reasons)
+  - **Consignments Tab**: Full table with CN#, Customer Reference, Status, COD, Pieces, Customer Name, Booking Date, Destination Address, Actions (Download, Print)
+  - **Track Tab**: Track packages by AWB number with history
+  - **Settings Tab**: Configure pickup/origin address with "Sync from DTDC" button
 
-- **DTDC Credentials**: Customer Code GL6029 configured
+- **DTDC Credentials**: Customer Code GL6029 connected
+
+**Coming Soon Page** ✅ CREATED
+- Created `/frontend/public/coming-soon.html` for tnvcollection.com VPS deployment
+- Features: Animated background, countdown timer, email notification signup, social links
+- Dark theme matching TNV Collection branding
 
 ### January 15, 2026 (Session 7)
 
