@@ -56,6 +56,28 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - **Product Display Settings**: Products per row (1/2/3), Card style (Modern/Classic/Minimal), Show ratings, Quick add to cart
 - **Banners Management**: View and manage promotional banners, link to Banner Manager
 
+**Visual Editors (Shopify-like)** ✅ COMPLETED
+- **Mobile App Editor** (`/mobile-app-editor`):
+  - 3-panel layout: Sections list | Live phone preview | Section editor
+  - Click on sections to edit inline
+  - Header, Hero Banner, Categories, Product Grid, Promo Banner sections
+  - Reorder sections with up/down arrows
+  - Toggle visibility with eye icon
+  - Light/Dark mode preview toggle
+  - Theme color customization
+  - Real-time preview updates
+  
+- **Website Editor** (`/website-editor`):
+  - 3-panel layout: Sections list | Live website preview | Section editor
+  - Hero Banner, Category Grid, Product Carousel, Promo Banner, Product Grid, Newsletter sections
+  - Responsive preview: Desktop, Tablet, Mobile viewports
+  - Click-to-edit any section
+  - Announcement bar configuration
+  - Header with navigation preview
+  - Footer preview
+  - Theme color customization
+  - "Unsaved changes" indicator
+
 ### January 14, 2026 (Session 6)
 
 **Haptic Feedback Implementation** ✅ COMPLETED
