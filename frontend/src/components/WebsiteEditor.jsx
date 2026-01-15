@@ -322,6 +322,35 @@ const WebsiteEditor = () => {
     setHasChanges(true);
   }, []);
 
+  // Send live preview updates to iframe
+  const sendPreviewUpdate = useCallback((type, data) => {
+    if (!livePreviewEnabled || !iframeRef.current?.contentWindow) return;
+    
+    try {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'PREVIEW_UPDATE',
+        section: type,
+        data: data
+      }, '*');
+    } catch (e) {
+      console.log('Preview update not supported:', e);
+    }
+  }, [livePreviewEnabled]);
+
+  // Effect to send preview updates when header config changes
+  useEffect(() => {
+    if (livePreviewEnabled && headerConfig) {
+      sendPreviewUpdate('headerConfig', headerConfig);
+    }
+  }, [headerConfig, livePreviewEnabled, sendPreviewUpdate]);
+
+  // Effect to send preview updates when editing banner
+  useEffect(() => {
+    if (livePreviewEnabled && editingBanner) {
+      sendPreviewUpdate('banner', editingBanner);
+    }
+  }, [editingBanner, livePreviewEnabled, sendPreviewUpdate]);
+
   const toggleSection = useCallback((sectionId) => {
     setSections(prev => prev.map(s => 
       s.id === sectionId ? { ...s, enabled: !s.enabled } : s
