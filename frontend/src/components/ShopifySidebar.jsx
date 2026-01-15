@@ -229,6 +229,14 @@ const ShopifySidebar = () => {
         { label: 'Features', path: '/mobile-app-features', icon: Zap },
       ]
     },
+    {
+      id: 'create-store',
+      label: 'Create New Store',
+      icon: Store,
+      path: '/create-store',
+      badge: 'New',
+      highlight: true
+    },
   ];
 
   const NavItem = ({ item, depth = 0 }) => {
