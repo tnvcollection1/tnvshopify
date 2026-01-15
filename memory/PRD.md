@@ -49,6 +49,13 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   - Admin sidebar: "Create New Store" button with highlight styling
   - Direct URL: `/create-store` or `/merchant-onboarding`
 
+**Mobile App Settings - Content Tab** ✅ COMPLETED
+- Added new "Content" tab to Mobile App Settings page
+- **Home Screen Sections**: Configurable order and visibility (Hero Banner, Categories, Featured Products, New Arrivals, Sale Banner, Best Sellers) with drag-to-reorder
+- **Featured Collections**: Select which collections to show in app with grid display
+- **Product Display Settings**: Products per row (1/2/3), Card style (Modern/Classic/Minimal), Show ratings, Quick add to cart
+- **Banners Management**: View and manage promotional banners, link to Banner Manager
+
 ### January 14, 2026 (Session 6)
 
 **Haptic Feedback Implementation** ✅ COMPLETED
