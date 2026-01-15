@@ -552,7 +552,7 @@ async def save_shipping_config(store: str, config: Dict[str, Any]):
     """
     Save shipping configuration for a store
     """
-    if not _db:
+    if _db is None:
         raise HTTPException(status_code=500, detail="Database not available")
     
     config["store"] = store
