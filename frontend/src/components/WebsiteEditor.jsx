@@ -70,9 +70,21 @@ const WebsiteEditor = () => {
   const [collections, setCollections] = useState([]);
   const [products, setProducts] = useState([]);
   
-  // Editable sections
+  // Header/Navigation config
+  const [headerConfig, setHeaderConfig] = useState({
+    logo: { text: 'TNV', badge: 'COLLECTION', badgeColor: '#FF6B9D' },
+    promoMessages: [],
+    categories: [],
+    megaMenu: {}
+  });
+  
+  // Editable sections - with separate header subsections
   const [sections, setSections] = useState([
-    { id: 'header', type: 'header', title: 'Header', enabled: true },
+    { id: 'announcement', type: 'announcement_bar', title: 'Announcement Bar', enabled: true, parent: 'header' },
+    { id: 'logo', type: 'logo', title: 'Logo & Branding', enabled: true, parent: 'header' },
+    { id: 'mega_menu', type: 'mega_menu', title: 'Mega Menu', enabled: true, parent: 'header' },
+    { id: 'search', type: 'search_bar', title: 'Search Bar', enabled: true, parent: 'header' },
+    { id: 'secondary_nav', type: 'secondary_nav', title: 'Secondary Navigation', enabled: true, parent: 'header' },
     { id: 'hero', type: 'hero_carousel', title: 'Hero Banners', enabled: true },
     { id: 'categories', type: 'categories', title: 'Shop by Category', enabled: true },
     { id: 'trending', type: 'product_grid', title: 'Trending Products', enabled: true },
@@ -83,6 +95,8 @@ const WebsiteEditor = () => {
   
   // Selected banner for editing
   const [editingBanner, setEditingBanner] = useState(null);
+  // Selected promo message for editing
+  const [editingPromo, setEditingPromo] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -93,11 +107,11 @@ const WebsiteEditor = () => {
     try {
       const storeName = selectedStore || 'tnvcollection';
       // Fetch from correct endpoints for Namshi storefront
-      const [heroBannersRes, collectionsRes, productsRes, menuRes] = await Promise.all([
+      const [heroBannersRes, collectionsRes, productsRes, navConfigRes] = await Promise.all([
         fetch(`${API_URL}/api/storefront/banners/hero/${storeName}`),
         fetch(`${API_URL}/api/storefront/collections?store=${storeName}`),
         fetch(`${API_URL}/api/storefront/products?store=${storeName}&limit=20`),
-        fetch(`${API_URL}/api/storefront/banners/menu/${storeName}`)
+        fetch(`${API_URL}/api/storefront/config/navigation/${storeName}`)
       ]);
 
       if (heroBannersRes.ok) {
