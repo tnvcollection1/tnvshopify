@@ -111,12 +111,24 @@ const TNVHomePage = () => {
     );
   }
 
+  // Merge preview banner with existing banners if available
+  const displayBanners = previewBanner 
+    ? banners.map(b => b.id === previewBanner.id ? { ...b, ...previewBanner } : b)
+    : banners;
+
   return (
     <div className="min-h-screen bg-white">
+      {/* Live Preview Indicator */}
+      {(previewBanner || previewHeaderConfig) && (
+        <div className="fixed top-2 right-2 z-50 bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+          Live Preview
+        </div>
+      )}
+      
       {/* Hero Banner - Namshi Style */}
       <section className="relative h-[400px] md:h-[500px] overflow-hidden">
-        {banners.length > 0 ? (
-          banners.map((banner, idx) => (
+        {displayBanners.length > 0 ? (
+          displayBanners.map((banner, idx) => (
             <div
               key={banner.id || idx}
               className={`absolute inset-0 transition-opacity duration-700 ${idx === currentBanner ? 'opacity-100' : 'opacity-0'}`}
@@ -130,15 +142,23 @@ const TNVHomePage = () => {
               <div className="absolute inset-0 flex items-center">
                 <div className="max-w-7xl mx-auto px-4 w-full">
                   <div className="max-w-md">
-                    <h2 className="text-white text-4xl md:text-5xl font-bold mb-2 leading-tight">
+                    <h2 
+                      className="text-4xl md:text-5xl font-bold mb-2 leading-tight"
+                      style={{ color: banner.textColor || '#FFFFFF' }}
+                    >
                       {banner.title || 'Reset in Style'}
                     </h2>
-                    <p className="text-white/90 text-lg mb-6">{banner.subtitle || 'Fresh Fits, Fresh Start'}</p>
+                    <p 
+                      className="text-lg mb-6"
+                      style={{ color: banner.textColor ? `${banner.textColor}E6` : 'rgba(255,255,255,0.9)' }}
+                    >
+                      {banner.subtitle || 'Fresh Fits, Fresh Start'}
+                    </p>
                     <Link 
-                      to={`${baseUrl}/products`}
+                      to={banner.buttonLink || `${baseUrl}/products`}
                       className="inline-block bg-white text-black px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition shadow-lg"
                     >
-                      Shop Now
+                      {banner.buttonText || 'Shop Now'}
                     </Link>
                   </div>
                 </div>
