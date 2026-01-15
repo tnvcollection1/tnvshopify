@@ -273,10 +273,13 @@ const Sidebar = () => {
       label: 'Mobile App', 
       section: 'mobile',
       badge: 'New',
+      defaultOpen: true,
       children: [
+        { icon: Eye, label: 'App Preview', path: '/mobile-app-preview' },
         { icon: Settings, label: 'App Settings', path: '/mobile-app-settings' },
+        { icon: Palette, label: 'Theme & Colors', path: '/mobile-app-theme' },
         { icon: Bell, label: 'Push Notifications', path: '/mobile-push-notifications' },
-        { icon: LayoutTemplate, label: 'Preview', path: '/mobile-app-preview' },
+        { icon: Zap, label: 'Features', path: '/mobile-app-features' },
       ]
     },
     { icon: Users, label: 'User Management', path: '/users' },
