@@ -430,50 +430,120 @@ const WebsiteEditor = () => {
             </div>
             
             <div className="flex-1 overflow-auto">
-              {/* Sections */}
-              <div className="p-2 space-y-1">
-                {sections.map((section, index) => (
-                  <div
-                    key={section.id}
-                    onClick={() => setSelectedSection(section.id)}
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
-                      selectedSection === section.id 
-                        ? 'bg-blue-50 border-blue-200 border' 
-                        : 'hover:bg-gray-50 border border-transparent'
-                    } ${!section.enabled && 'opacity-50'}`}
-                  >
-                    <div className="flex flex-col gap-0.5">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); moveSection(section.id, 'up'); }}
-                        disabled={index === 0}
-                        className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+              {/* Header Section Group */}
+              <div className="p-3 border-b">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2 flex items-center gap-2">
+                  <Menu className="w-3 h-3" />
+                  Header
+                </h3>
+                <div className="space-y-1">
+                  {sections.filter(s => s.parent === 'header').map((section) => {
+                    // Get icon based on section type
+                    const getIcon = () => {
+                      switch(section.type) {
+                        case 'announcement_bar': return <Megaphone className="w-4 h-4" />;
+                        case 'logo': return <Type className="w-4 h-4" />;
+                        case 'mega_menu': return <LayoutGrid className="w-4 h-4" />;
+                        case 'search_bar': return <BoxSelect className="w-4 h-4" />;
+                        case 'secondary_nav': return <Menu className="w-4 h-4" />;
+                        default: return <Settings className="w-4 h-4" />;
+                      }
+                    };
+                    return (
+                      <div
+                        key={section.id}
+                        onClick={() => {
+                          setSelectedSection(section.id);
+                          setEditingBanner(null);
+                        }}
+                        className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all ${
+                          selectedSection === section.id 
+                            ? 'bg-blue-50 border-blue-200 border' 
+                            : 'hover:bg-gray-50 border border-transparent'
+                        } ${!section.enabled && 'opacity-50'}`}
                       >
-                        <ChevronDown className="w-3 h-3 rotate-180" />
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); moveSection(section.id, 'down'); }}
-                        disabled={index === sections.length - 1}
-                        className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                      >
-                        <ChevronDown className="w-3 h-3" />
-                      </button>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{section.title}</p>
-                      <p className="text-xs text-gray-500 capitalize">{section.type.replace('_', ' ')}</p>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleSection(section.id); }}
-                      className="p-1"
+                        <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
+                          {getIcon()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{section.title}</p>
+                          <p className="text-xs text-gray-400">
+                            {section.type === 'announcement_bar' && `${headerConfig.promoMessages.length} messages`}
+                            {section.type === 'logo' && (headerConfig.logo?.text || 'TNV')}
+                            {section.type === 'mega_menu' && `${headerConfig.categories.length} categories`}
+                            {section.type === 'secondary_nav' && 'Sub-navigation'}
+                            {section.type === 'search_bar' && 'Search functionality'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleSection(section.id); }}
+                          className="p-1"
+                        >
+                          {section.enabled ? (
+                            <Eye className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <EyeOff className="w-4 h-4 text-gray-400" />
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Main Content Sections */}
+              <div className="p-3 border-b">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2 flex items-center gap-2">
+                  <Layers className="w-3 h-3" />
+                  Page Content
+                </h3>
+                <div className="space-y-1">
+                  {sections.filter(s => !s.parent).map((section, index) => (
+                    <div
+                      key={section.id}
+                      onClick={() => {
+                        setSelectedSection(section.id);
+                        if (section.id !== 'hero') setEditingBanner(null);
+                      }}
+                      className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all ${
+                        selectedSection === section.id 
+                          ? 'bg-blue-50 border-blue-200 border' 
+                          : 'hover:bg-gray-50 border border-transparent'
+                      } ${!section.enabled && 'opacity-50'}`}
                     >
-                      {section.enabled ? (
-                        <Eye className="w-4 h-4 text-green-500" />
-                      ) : (
-                        <EyeOff className="w-4 h-4 text-gray-400" />
-                      )}
-                    </button>
-                  </div>
-                ))}
+                      <div className="flex flex-col gap-0.5">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); moveSection(section.id, 'up'); }}
+                          disabled={index === 0}
+                          className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        >
+                          <ChevronUp className="w-3 h-3" />
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); moveSection(section.id, 'down'); }}
+                          disabled={index === sections.filter(s => !s.parent).length - 1}
+                          className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        >
+                          <ChevronDown className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{section.title}</p>
+                        <p className="text-xs text-gray-500 capitalize">{section.type.replace('_', ' ')}</p>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleSection(section.id); }}
+                        className="p-1"
+                      >
+                        {section.enabled ? (
+                          <Eye className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <EyeOff className="w-4 h-4 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
               
               {/* Banners List */}
