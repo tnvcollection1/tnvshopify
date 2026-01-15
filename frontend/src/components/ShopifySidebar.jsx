@@ -30,7 +30,12 @@ import {
   MapPin,
   Sparkles,
   Image,
-  Menu
+  Menu,
+  Smartphone,
+  Eye,
+  Palette,
+  Bell,
+  Zap
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
