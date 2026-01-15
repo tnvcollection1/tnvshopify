@@ -269,68 +269,6 @@ async def book_shipment(request: ShipmentBookingRequest):
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to book shipment: {str(e)}")
-            
-            # Save shipment to database
-            if _db is not None:
-                shipment_record = {
-                    "order_id": request.order_id,
-                    "store": request.store,
-                    "awb_number": awb_number,
-                    "reference_number": reference_number,
-                    "carrier": "DTDC",
-                    "service_type": request.service_type,
-                    "status": "BOOKED",
-                    "destination": request.destination.dict(),
-                    "package": request.package.dict(),
-                    "cod_amount": request.cod_amount,
-                    "created_at": datetime.now(timezone.utc).isoformat(),
-                    "tracking_history": [{
-                        "status": "BOOKED",
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
-                        "description": "Shipment booked with DTDC"
-                    }]
-                }
-                await _db.shipments.insert_one(shipment_record)
-            
-            return {
-                "success": True,
-                "awb_number": awb_number,
-                "reference_number": reference_number,
-                "carrier": "DTDC",
-                "message": "Shipment booked successfully",
-                "estimated_delivery": "3-5 business days"
-            }
-        else:
-            # Store failed attempt for debugging
-            error_msg = result.get("message", "Unknown error from DTDC")
-            
-            # Fallback: Create local record with pending status
-            if _db is not None:
-                shipment_record = {
-                    "order_id": request.order_id,
-                    "store": request.store,
-                    "awb_number": reference_number,
-                    "reference_number": reference_number,
-                    "carrier": "DTDC",
-                    "service_type": request.service_type,
-                    "status": "PENDING_BOOKING",
-                    "destination": request.destination.dict(),
-                    "package": request.package.dict(),
-                    "cod_amount": request.cod_amount,
-                    "error": error_msg,
-                    "created_at": datetime.now(timezone.utc).isoformat()
-                }
-                await _db.shipments.insert_one(shipment_record)
-            
-            return {
-                "success": False,
-                "reference_number": reference_number,
-                "error": error_msg,
-                "message": "Booking failed - saved locally for retry"
-            }
-            
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to book shipment: {str(e)}")
 
 
 @router.get("/track/{awb_number}")
