@@ -11,6 +11,9 @@ import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { toast } from 'sonner';
 import { useStore } from '../contexts/StoreContext';
+// Import actual store components for live preview
+import { TNVStoreProvider, TNVHeader, TNVFooter } from './store/TNVStoreLayout';
+import TNVHomePage from './store/TNVHomePage';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
