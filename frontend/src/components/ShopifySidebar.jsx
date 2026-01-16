@@ -126,6 +126,7 @@ const ShopifySidebar = () => {
         { label: 'Inventory Clearance', path: '/inventory-clearance', icon: Box },
         { label: 'Stock Upload', path: '/stock-upload', icon: FileText },
         { label: 'AI Image Enhancer', path: '/image-enhancer', icon: Sparkles, badge: 'AI' },
+        { label: 'Stories Manager', path: '/stories-manager', icon: Image, badge: 'NEW' },
       ]
     },
     {
