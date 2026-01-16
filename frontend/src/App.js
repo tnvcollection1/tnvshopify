@@ -92,6 +92,7 @@ import Trade1688Dashboard from "@/components/Trade1688Dashboard";
 import MegaMenuBuilder from "@/components/MegaMenuBuilder";
 import CartRecoveryDashboard from "@/components/CartRecoveryDashboard";
 import ImageEnhancer from "@/components/ImageEnhancer";
+import StoriesManager from "@/components/admin/StoriesManager";
 // TNV Store Components (Namshi-inspired)
 import { TNVStoreProvider, TNVHeader, TNVFooter } from "@/components/store/TNVStoreLayout";
 import TNVHomePage from "@/components/store/TNVHomePage";
