@@ -420,6 +420,15 @@ const TNVHomePage = () => {
         </div>
       </section>
 
+      {/* === FLASH SALE COUNTDOWN === */}
+      <FlashSaleCountdown 
+        endTime={flashSaleEndTime}
+        title="FLASH SALE"
+        subtitle="Ends in"
+        discount="50%"
+        link={`${baseUrl}/sale`}
+      />
+
       {/* === QUICK CATEGORIES === */}
       <section className="py-3">
         <div className="flex overflow-x-auto scrollbar-hide gap-2 px-2">
