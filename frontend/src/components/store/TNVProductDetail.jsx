@@ -345,6 +345,17 @@ const TNVProductDetail = () => {
           </div>
         </div>
 
+        {/* Complete the Look Section */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-8">
+            <CompleteTheLook 
+              currentProduct={product} 
+              allProducts={relatedProducts}
+              baseUrl="/tnv"
+            />
+          </div>
+        )}
+
         {/* Product Details Tabs */}
         <div className="mt-12 border-t pt-8">
           <div className="flex space-x-8 border-b">
