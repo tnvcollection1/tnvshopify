@@ -88,6 +88,15 @@ const TNVHomePage = () => {
   const [searchPlaceholder, setSearchPlaceholder] = useState(SEARCH_PLACEHOLDERS[0]);
   const [activeTab, setActiveTab] = useState('home');
   
+  // Quick View state
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
+  
+  // Stories state
+  const [stories, setStories] = useState([]);
+  
+  // Flash sale end time (24 hours from now for demo)
+  const flashSaleEndTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  
   // Hero carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
