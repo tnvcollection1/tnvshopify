@@ -10,8 +10,16 @@ const COUNTRIES = [
   { code: 'QA', name: 'QATAR', nameAr: 'قطر', flag: '🇶🇦', currency: 'QAR', defaultLang: 'ar', isRTL: true },
   { code: 'BH', name: 'BAHRAIN', nameAr: 'البحرين', flag: '🇧🇭', currency: 'BHD', defaultLang: 'ar', isRTL: true },
   { code: 'OM', name: 'OMAN', nameAr: 'عمان', flag: '🇴🇲', currency: 'OMR', defaultLang: 'ar', isRTL: true },
-  { code: 'PK', name: 'PAKISTAN', nameAr: 'باكستان', flag: '🇵🇰', currency: 'PKR', defaultLang: 'en', isRTL: false },
-  { code: 'IN', name: 'INDIA', nameAr: 'الهند', flag: '🇮🇳', currency: 'INR', defaultLang: 'en', isRTL: false },
+  { code: 'PK', name: 'PAKISTAN', nameLocal: 'پاکستان', flag: '🇵🇰', currency: 'PKR', defaultLang: 'ur', isRTL: true },
+  { code: 'IN', name: 'INDIA', nameLocal: 'भारत', flag: '🇮🇳', currency: 'INR', defaultLang: 'hi', isRTL: false },
+];
+
+// Language options for the selector
+const LANGUAGES = [
+  { code: 'en', name: 'ENGLISH', nameNative: 'English', isRTL: false },
+  { code: 'ar', name: 'عربي', nameNative: 'العربية', isRTL: true },
+  { code: 'hi', name: 'हिन्दी', nameNative: 'हिन्दी', isRTL: false },
+  { code: 'ur', name: 'اردو', nameNative: 'اردو', isRTL: true },
 ];
 
 // Translations
@@ -57,6 +65,48 @@ const TRANSLATIONS = {
     women: 'نساء',
     men: 'رجال',
     kids: 'أطفال',
+  },
+  hi: {
+    language: 'भाषा',
+    selectLanguage: 'अपनी भाषा चुनें',
+    country: 'देश',
+    selectCountry: 'अपना देश चुनें',
+    confirm: 'पुष्टि करें',
+    skip: 'अभी छोड़ें',
+    continue: 'जारी रखें',
+    browseAll: 'सभी देखें',
+    // Slides
+    slide1Title: 'तेज़ डिलीवरी चाहिए?',
+    slide1Desc: 'तेज़ डिलीवरी और सही समय के लिए TNV को अपना लोकेशन एक्सेस करने दें।',
+    slide2Title: 'नए प्रोडक्ट्स और डील्स के बारे में जानना चाहते हैं?',
+    slide2Desc: 'सेल, नए प्रोडक्ट्स और पर्सनल ऑफर्स की तुरंत जानकारी के लिए नोटिफिकेशन चालू करें।',
+    slide3Title: 'आपके लिए बनाया गया शॉपिंग अनुभव चाहिए?',
+    slide3Desc: 'अपनी स्टाइल के हिसाब से सुझाव पाने के लिए ट्रैकिंग की अनुमति दें।',
+    // Categories
+    women: 'महिलाएं',
+    men: 'पुरुष',
+    kids: 'बच्चे',
+  },
+  ur: {
+    language: 'زبان',
+    selectLanguage: 'اپنی زبان منتخب کریں',
+    country: 'ملک',
+    selectCountry: 'اپنا ملک منتخب کریں',
+    confirm: 'تصدیق کریں',
+    skip: 'ابھی چھوڑیں',
+    continue: 'جاری رکھیں',
+    browseAll: 'سب دیکھیں',
+    // Slides
+    slide1Title: 'تیز ڈیلیوری چاہتے ہیں؟',
+    slide1Desc: 'تیز ڈیلیوری اور درست وقت کے لیے TNV کو اپنا مقام رسائی دیں۔',
+    slide2Title: 'نئی پروڈکٹس اور ڈیلز جاننا چاہتے ہیں؟',
+    slide2Desc: 'سیل، نئی پروڈکٹس اور خاص آفرز کی فوری اطلاع کے لیے نوٹیفیکیشن آن کریں۔',
+    slide3Title: 'آپ کے لیے بنایا گیا شاپنگ تجربہ چاہتے ہیں؟',
+    slide3Desc: 'اپنے انداز کے مطابق سفارشات حاصل کرنے کے لیے ٹریکنگ کی اجازت دیں۔',
+    // Categories
+    women: 'خواتین',
+    men: 'مرد',
+    kids: 'بچے',
   },
 };
 
