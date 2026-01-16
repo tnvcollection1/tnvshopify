@@ -4,6 +4,7 @@ import { Heart, ShoppingBag, Truck, RotateCcw, Shield, ChevronLeft, ChevronRight
 import { useStore } from './TNVStoreLayout';
 import { ProductCard } from './TNVHomePage';
 import ProductReviews from './ProductReviews';
+import CompleteTheLook from './CompleteTheLook';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
