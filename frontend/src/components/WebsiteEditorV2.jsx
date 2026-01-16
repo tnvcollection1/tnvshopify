@@ -33,7 +33,6 @@ const WebsiteEditorV2 = () => {
   const [showLeftPanel, setShowLeftPanel] = useState(true);
   const [lastSaved, setLastSaved] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
-  const [language, setLanguage] = useState('en'); // en or ar
   
   // Undo/Redo
   const [history, setHistory] = useState([]);
