@@ -307,28 +307,31 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
             <p className="text-sm text-gray-400 mb-4">{t('selectCountry')}</p>
             
             <div className="space-y-2 max-h-[300px] overflow-y-auto">
-              {COUNTRIES.map((country) => (
-                <button
-                  key={country.code}
-                  onClick={() => handleCountrySelect(country.code)}
-                  className={`w-full py-4 px-4 text-left flex items-center gap-4 border-2 transition-all ${
-                    selectedCountry === country.code 
-                      ? 'border-green-500 bg-green-50' 
-                      : 'border-gray-100 hover:border-gray-200'
-                  }`}
-                >
-                  <span className="text-2xl">{country.flag}</span>
-                  <span className="font-medium text-sm">
-                    {language === 'ar' ? country.nameAr : country.name}
-                  </span>
-                  {/* Show recommended language badge */}
-                  {country.defaultLang === 'ar' && (
-                    <span className="ml-auto text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500">
-                      {language === 'ar' ? 'عربي' : 'Arabic'}
+              {COUNTRIES.map((country) => {
+                const recommendedLang = LANGUAGES.find(l => l.code === country.defaultLang);
+                return (
+                  <button
+                    key={country.code}
+                    onClick={() => handleCountrySelect(country.code)}
+                    className={`w-full py-4 px-4 flex items-center gap-4 border-2 transition-all ${isRTL ? 'text-right' : 'text-left'} ${
+                      selectedCountry === country.code 
+                        ? 'border-green-500 bg-green-50' 
+                        : 'border-gray-100 hover:border-gray-200'
+                    }`}
+                  >
+                    <span className="text-2xl">{country.flag}</span>
+                    <span className="font-medium text-sm flex-1">
+                      {country.nameLocal || country.nameAr || country.name}
                     </span>
-                  )}
-                </button>
-              ))}
+                    {/* Show recommended language badge */}
+                    {country.defaultLang !== 'en' && recommendedLang && (
+                      <span className="text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500">
+                        {recommendedLang.name}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
