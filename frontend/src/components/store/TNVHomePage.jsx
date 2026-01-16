@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Heart, Camera, Home, Grid3X3, Sparkles, ShoppingBag, User } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronRight, Heart, Camera, Home, Sparkles, ShoppingBag, User } from 'lucide-react';
 import { useStore } from './TNVStoreLayout';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -14,7 +14,7 @@ const getImageUrl = (src) => {
 
 // Search placeholder options (rotating)
 const SEARCH_PLACEHOLDERS = [
-  'Search for Baggy Jeans',
+  'Search for Cargo Pants',
   'Search for Hoodies',
   'Search for Sneakers',
   'Search for Dresses',
@@ -58,62 +58,93 @@ const TNVHomePage = () => {
     }
   };
 
-  // Category tabs - Namshi style with colorful backgrounds
-  const categoryTabs = [
-    { name: 'FASHION', bgColor: '#c4f a0', image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=100&h=100&fit=crop', hasGreenBg: true },
-    { name: 'Beauty', bgColor: '#f0a0d0', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop' },
-    { name: 'BABY & KIDS', bgColor: '#a0f0d0', image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=100&h=100&fit=crop' },
-    { name: 'HOME & LIFESTYLE', bgColor: '#f0d0a0', image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=100&h=100&fit=crop' },
-    { name: 'PREMIUM', bgColor: '#f5f5f5', image: null, isText: true },
-  ];
-
-  // Quick category links
+  // Quick categories horizontal scroll
   const quickCategories = [
-    { name: 'New Arrivals', image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=200&h=200&fit=crop' },
-    { name: 'Pants', image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=200&h=200&fit=crop' },
-    { name: 'Sports', image: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=200&h=200&fit=crop' },
-    { name: 'Watches', image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=200&h=200&fit=crop' },
-    { name: 'Shoes', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop' },
+    { name: 'Sneakers', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=200&fit=crop' },
+    { name: 'Loafers', image: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=300&h=200&fit=crop' },
+    { name: 'T-Shirts', image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=200&fit=crop' },
+    { name: 'Jackets', image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300&h=200&fit=crop' },
+    { name: 'Watches', image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=300&h=200&fit=crop' },
   ];
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white pb-20">
-      {/* === NAMSHI-STYLE HEADER === */}
-      
-      {/* Category Tabs - Horizontal scroll */}
-      <div className="sticky top-0 z-40 bg-white border-b">
-        <div className="flex overflow-x-auto scrollbar-hide py-3 px-2 gap-2">
-          {categoryTabs.map((tab, idx) => (
-            <Link
-              key={idx}
-              to={`${baseUrl}/${tab.name.toLowerCase().replace(/\s+/g, '-')}`}
-              className="flex-shrink-0"
-            >
-              <div 
-                className="w-20 h-20 rounded-lg overflow-hidden flex flex-col items-center justify-center relative"
-                style={{ backgroundColor: tab.hasGreenBg ? '#c4fa70' : tab.bgColor }}
-              >
-                {tab.image ? (
-                  <img src={tab.image} alt={tab.name} className="w-full h-full object-cover" />
-                ) : tab.isText ? (
-                  <span className="text-xs font-bold text-center px-1">{tab.name}</span>
-                ) : null}
-                {tab.image && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-white/90 py-1">
-                    <span className="text-[10px] font-bold text-center block">{tab.name}</span>
-                  </div>
-                )}
+    <div className="min-h-screen bg-white pb-20" data-testid="tnv-home">
+      {/* === CATEGORY TABS - EXACTLY LIKE NAMSHI === */}
+      <div className="sticky top-0 z-40 bg-white">
+        {/* Category Tabs Row */}
+        <div className="flex overflow-x-auto scrollbar-hide px-2 py-3 gap-2">
+          {/* FASHION - Green with couple */}
+          <Link to={`${baseUrl}/fashion`} className="flex-shrink-0">
+            <div className="w-[72px] h-[80px] rounded-xl overflow-hidden relative" style={{ backgroundColor: '#c4ff00' }}>
+              <img 
+                src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=150&h=150&fit=crop" 
+                alt="Fashion"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-white/95 py-1">
+                <span className="text-[10px] font-bold text-center block">FASHION</span>
               </div>
-            </Link>
-          ))}
+            </div>
+          </Link>
+
+          {/* Beauty - Pink circle */}
+          <Link to={`${baseUrl}/beauty`} className="flex-shrink-0">
+            <div className="w-[72px] h-[80px] rounded-xl overflow-hidden relative flex items-center justify-center" style={{ backgroundColor: '#ff69b4' }}>
+              <div className="w-14 h-14 rounded-full overflow-hidden border-4 border-white">
+                <img 
+                  src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=150&h=150&fit=crop" 
+                  alt="Beauty"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 bg-white/95 py-1">
+                <span className="text-[10px] font-bold text-center block italic">Beauty</span>
+              </div>
+            </div>
+          </Link>
+
+          {/* BABY & KIDS - Mint */}
+          <Link to={`${baseUrl}/kids`} className="flex-shrink-0">
+            <div className="w-[72px] h-[80px] rounded-xl overflow-hidden relative" style={{ backgroundColor: '#7FFFD4' }}>
+              <img 
+                src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=150&h=150&fit=crop" 
+                alt="Baby & Kids"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-white/95 py-1">
+                <span className="text-[9px] font-bold text-center block">BABY & KIDS</span>
+              </div>
+            </div>
+          </Link>
+
+          {/* HOME & LIFESTYLE - Peach */}
+          <Link to={`${baseUrl}/home`} className="flex-shrink-0">
+            <div className="w-[72px] h-[80px] rounded-xl overflow-hidden relative" style={{ backgroundColor: '#FFDAB9' }}>
+              <img 
+                src="https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=150&h=150&fit=crop" 
+                alt="Home & Lifestyle"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-white/95 py-1">
+                <span className="text-[8px] font-bold text-center block leading-tight">HOME &<br/>LIFESTYLE</span>
+              </div>
+            </div>
+          </Link>
+
+          {/* PREMIUM - Text only */}
+          <Link to={`${baseUrl}/premium`} className="flex-shrink-0">
+            <div className="w-[72px] h-[80px] rounded-xl overflow-hidden relative flex items-center justify-center" style={{ backgroundColor: '#f5f5f5' }}>
+              <span className="text-sm font-bold text-center">PREMIUM</span>
+            </div>
+          </Link>
         </div>
 
         {/* Search Row */}
@@ -121,39 +152,34 @@ const TNVHomePage = () => {
           {/* Gender Dropdown */}
           <button 
             onClick={() => setGenderOpen(!genderOpen)}
-            className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg font-bold text-sm"
+            className="flex items-center gap-1 px-4 py-2.5 border border-gray-300 rounded-lg font-bold text-sm min-w-[90px] justify-between"
           >
-            {selectedGender}
-            {genderOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            <span>{selectedGender}</span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${genderOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {/* Search Input */}
-          <div className="flex-1 flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex-1 flex items-center gap-2 px-3 py-2.5 border border-gray-300 rounded-lg">
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input 
               type="text" 
               placeholder={searchPlaceholder}
-              className="flex-1 text-sm outline-none bg-transparent"
+              className="flex-1 text-sm outline-none bg-transparent placeholder-gray-400"
             />
-            <Camera className="w-5 h-5 text-gray-400" />
+            <Camera className="w-5 h-5 text-gray-500" />
           </div>
 
           {/* Wishlist */}
-          <Link to={`${baseUrl}/wishlist`} className="p-2 relative">
-            <Heart className="w-6 h-6" />
-            {wishlist?.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                {wishlist.length}
-              </span>
-            )}
+          <Link to={`${baseUrl}/wishlist`} className="p-2">
+            <Heart className="w-6 h-6 stroke-[1.5]" />
           </Link>
         </div>
 
         {/* Gender Dropdown Panel */}
         {genderOpen && (
-          <div className="absolute left-0 right-0 top-full bg-white border-b shadow-lg z-50">
+          <div className="absolute left-0 right-0 top-full bg-white border-t border-b shadow-lg z-50">
             <button 
               onClick={() => { setSelectedGender('Women'); setGenderOpen(false); }}
               className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
@@ -162,7 +188,7 @@ const TNVHomePage = () => {
                 <img 
                   src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=60&h=60&fit=crop" 
                   alt="Women"
-                  className="w-12 h-12 rounded object-cover"
+                  className="w-12 h-12 rounded-lg object-cover"
                 />
                 <span className="font-medium">Women</span>
               </div>
@@ -176,7 +202,7 @@ const TNVHomePage = () => {
                 <img 
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop" 
                   alt="Men"
-                  className="w-12 h-12 rounded object-cover"
+                  className="w-12 h-12 rounded-lg object-cover"
                 />
                 <span className="font-medium">Men</span>
               </div>
@@ -186,125 +212,128 @@ const TNVHomePage = () => {
         )}
       </div>
 
-      {/* === HERO BANNER - Product Collage Style === */}
+      {/* === HERO BANNER - WHITE IN FOCUS - EXACT NAMSHI STYLE === */}
       <section className="relative">
-        <div className="relative h-[450px] overflow-hidden">
-          {/* Background - Desert/warm tones */}
+        <div className="relative h-[480px] overflow-hidden">
+          {/* Desert Background */}
           <div 
             className="absolute inset-0 bg-cover bg-center"
             style={{ 
-              backgroundImage: 'url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=800&fit=crop)',
-              filter: 'brightness(1.1) saturate(0.9)'
+              backgroundImage: 'url(https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1200&h=800&fit=crop)',
             }}
           />
           
-          {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#d4b896]/80 via-transparent to-[#c9a882]/60" />
-          
-          {/* Model/Main Image */}
-          <div className="absolute left-0 bottom-0 w-1/2 h-full">
+          {/* Overlay for better text visibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/20" />
+
+          {/* Model on Left */}
+          <div className="absolute left-0 bottom-0 w-[55%] h-full">
             <img 
               src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=600&h=900&fit=crop"
-              alt="Model"
+              alt="Model in white"
               className="w-full h-full object-cover object-top"
             />
           </div>
 
-          {/* Title + Shop Now */}
-          <div className="absolute top-8 right-4 text-right">
-            <h1 className="text-4xl font-serif text-white drop-shadow-lg">
+          {/* WHITE IN FOCUS Title + Shop Now */}
+          <div className="absolute top-8 right-0 left-[45%] text-center z-10">
+            <h1 className="text-white text-4xl font-serif tracking-wide drop-shadow-lg">
               WHITE
             </h1>
-            <p className="text-lg text-white/90 font-light tracking-widest">IN FOCUS</p>
-            <button className="mt-4 bg-white/90 backdrop-blur-sm text-black px-6 py-2 rounded-full text-sm font-medium hover:bg-white transition">
+            <p className="text-white text-base font-light tracking-[0.3em] mt-1">IN FOCUS</p>
+            <button className="mt-4 bg-white text-black px-8 py-2.5 rounded-full text-sm font-medium shadow-lg hover:shadow-xl transition">
               Shop Now
             </button>
           </div>
 
-          {/* Product Collage - Right side */}
-          <div className="absolute right-4 top-1/3 flex flex-col gap-3 items-end">
-            {/* Sunglasses */}
-            <img 
-              src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=100&h=60&fit=crop"
-              alt="Sunglasses"
-              className="w-24 h-14 object-contain bg-white/80 backdrop-blur-sm rounded-lg p-2"
-            />
-            {/* Watch */}
-            <img 
-              src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=80&h=80&fit=crop"
-              alt="Watch"
-              className="w-20 h-20 object-contain bg-white/80 backdrop-blur-sm rounded-lg p-2"
-            />
-            {/* Hoodie */}
-            <img 
-              src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=100&h=100&fit=crop"
-              alt="Hoodie"
-              className="w-24 h-24 object-cover bg-white/80 backdrop-blur-sm rounded-lg"
-            />
-            {/* Sneakers */}
-            <img 
-              src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=120&h=80&fit=crop"
-              alt="Sneakers"
-              className="w-28 h-16 object-cover bg-white/80 backdrop-blur-sm rounded-lg"
-            />
+          {/* Product Collage - Right Side */}
+          <div className="absolute right-3 top-[35%] flex flex-col gap-2 items-end z-10">
+            {/* Sunglasses - Blue */}
+            <div className="bg-white rounded-lg p-2 shadow-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=120&h=60&fit=crop"
+                alt="Sunglasses"
+                className="w-24 h-10 object-contain"
+              />
+            </div>
+            
+            {/* Watch - White/Green Lacoste style */}
+            <div className="bg-white rounded-lg p-2 shadow-lg">
+              <img 
+                src="https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=100&h=100&fit=crop"
+                alt="Watch"
+                className="w-16 h-16 object-contain"
+              />
+            </div>
+            
+            {/* Hoodie - White "The Godfather" */}
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=120&h=120&fit=crop"
+                alt="Hoodie"
+                className="w-24 h-24 object-cover"
+              />
+            </div>
+            
+            {/* Sneakers - White Adidas style */}
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=140&h=80&fit=crop"
+                alt="Sneakers"
+                className="w-28 h-16 object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* === QUICK CATEGORIES === */}
-      <section className="py-4">
-        <div className="flex overflow-x-auto scrollbar-hide gap-4 px-4">
+      {/* === QUICK CATEGORIES HORIZONTAL SCROLL === */}
+      <section className="py-3">
+        <div className="flex overflow-x-auto scrollbar-hide gap-2 px-2">
           {quickCategories.map((cat, idx) => (
             <Link 
               key={idx}
-              to={`${baseUrl}/category/${cat.name.toLowerCase().replace(/\s+/g, '-')}`}
-              className="flex-shrink-0 text-center"
+              to={`${baseUrl}/category/${cat.name.toLowerCase()}`}
+              className="flex-shrink-0"
             >
-              <div className="w-24 h-24 rounded-lg overflow-hidden mb-2">
+              <div className="w-28 h-20 rounded-lg overflow-hidden">
                 <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
               </div>
-              <span className="text-xs font-medium">{cat.name}</span>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* === PROMO BANNER - 30% CASHBACK === */}
-      <section className="px-4 py-2">
-        <div className="relative rounded-2xl overflow-hidden h-28 bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400">
-          <div className="absolute inset-0 flex items-center justify-between px-6">
+      {/* === 30% CASHBACK PROMO BANNER === */}
+      <section className="px-3 py-2">
+        <div className="relative rounded-2xl overflow-hidden h-28 bg-gradient-to-r from-cyan-400 via-teal-500 to-emerald-500">
+          <div className="absolute inset-0 flex items-center justify-between px-5">
             <div>
-              <h3 className="text-white text-xl font-black">30% CASHBACK</h3>
+              <h3 className="text-white text-2xl font-black">30% CASHBACK</h3>
               <p className="text-white/90 text-sm">On Sports Apparel & Footwear</p>
             </div>
-            <div className="bg-black text-white px-4 py-2 rounded-lg">
-              <p className="text-[10px] text-gray-300">USE CODE:</p>
-              <p className="font-black">SPORTS30</p>
+            <div className="bg-black/80 text-white px-4 py-2 rounded-lg text-center">
+              <p className="text-[10px] text-gray-300 uppercase">Use Code:</p>
+              <p className="font-black text-lg">SPORTS30</p>
             </div>
           </div>
-          {/* Decorative elements */}
-          <img 
-            src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=150&h=100&fit=crop"
-            alt=""
-            className="absolute right-20 bottom-0 w-24 h-20 object-contain opacity-60"
-          />
         </div>
       </section>
 
       {/* === SPORTS EDIT SECTION === */}
-      <section className="py-4">
-        <div className="relative mx-4 rounded-2xl overflow-hidden h-64 bg-gradient-to-br from-emerald-800 to-emerald-600">
+      <section className="py-3 px-3">
+        <div className="relative rounded-2xl overflow-hidden h-56 bg-gradient-to-br from-emerald-700 to-emerald-500">
           <img 
-            src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop"
+            src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop"
             alt="Sports"
             className="absolute right-0 bottom-0 w-1/2 h-full object-cover object-left"
           />
-          <div className="absolute left-6 top-1/2 -translate-y-1/2">
+          <div className="absolute left-5 top-1/2 -translate-y-1/2">
             <h3 className="text-white text-2xl font-black mb-1">Sports Edit</h3>
             <p className="text-white/80 text-sm mb-4">
               Your Go-To<br/>Active Essentials
             </p>
-            <button className="bg-white/90 text-black px-6 py-2 rounded-full text-sm font-medium hover:bg-white transition">
+            <button className="bg-white text-black px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-100 transition">
               Shop Now
             </button>
           </div>
@@ -312,27 +341,27 @@ const TNVHomePage = () => {
       </section>
 
       {/* === PRODUCTS GRID === */}
-      <section className="py-4 px-4">
-        <div className="flex items-center justify-between mb-4">
+      <section className="py-3 px-3">
+        <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold">Today's Picks</h2>
           <Link to={`${baseUrl}/products`} className="text-sm text-gray-500">View All →</Link>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {products.slice(0, 8).map((product, idx) => (
-            <ProductCard key={product.shopify_product_id || idx} product={product} />
+        <div className="grid grid-cols-2 gap-2">
+          {products.slice(0, 6).map((product, idx) => (
+            <ProductCard key={product.shopify_product_id || idx} product={product} baseUrl={baseUrl} />
           ))}
         </div>
       </section>
 
-      {/* === MORE PROMOS === */}
-      <section className="px-4 py-2">
+      {/* === MEGA SALE BANNER === */}
+      <section className="px-3 py-2">
         <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 rounded-2xl p-6 text-center">
-          <h3 className="text-white text-2xl font-black mb-2">MEGA SALE</h3>
-          <p className="text-white/90 mb-4">Up to 70% OFF on selected items</p>
+          <h3 className="text-white text-2xl font-black mb-1">MEGA SALE</h3>
+          <p className="text-white/90 text-sm mb-3">Up to 70% OFF on selected items</p>
           <Link 
             to={`${baseUrl}/sale`}
-            className="inline-block bg-white text-pink-600 px-8 py-2 rounded-full font-bold text-sm hover:bg-gray-100 transition"
+            className="inline-block bg-white text-pink-600 px-8 py-2 rounded-full font-bold text-sm"
           >
             Shop Now
           </Link>
@@ -340,53 +369,64 @@ const TNVHomePage = () => {
       </section>
 
       {/* === MORE PRODUCTS === */}
-      <section className="py-4 px-4">
-        <div className="flex items-center justify-between mb-4">
+      <section className="py-3 px-3">
+        <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold">Trending Now</h2>
           <Link to={`${baseUrl}/products`} className="text-sm text-gray-500">View All →</Link>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {products.slice(8, 16).map((product, idx) => (
-            <ProductCard key={product.shopify_product_id || idx} product={product} />
+        <div className="grid grid-cols-2 gap-2">
+          {products.slice(6, 12).map((product, idx) => (
+            <ProductCard key={product.shopify_product_id || idx} product={product} baseUrl={baseUrl} />
           ))}
         </div>
       </section>
 
-      {/* === BOTTOM NAVIGATION BAR === */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t z-50">
-        <div className="flex items-center justify-around py-2">
+      {/* === BOTTOM NAVIGATION BAR - EXACT NAMSHI STYLE === */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t z-50 safe-area-pb">
+        <div className="flex items-center justify-around py-2 max-w-lg mx-auto">
+          {/* Home - Filled with lime background */}
           <button 
             onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center py-1 px-4 ${activeTab === 'home' ? 'text-black' : 'text-gray-400'}`}
+            className="flex flex-col items-center py-1 px-3"
           >
-            <Home className={`w-6 h-6 ${activeTab === 'home' ? 'fill-lime-400 stroke-black' : ''}`} />
-            <span className="text-[10px] font-medium mt-1">Home</span>
+            <div className={`p-1 rounded ${activeTab === 'home' ? 'text-black' : 'text-gray-400'}`}>
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill={activeTab === 'home' ? '#c4ff00' : 'none'} stroke="currentColor" strokeWidth={activeTab === 'home' ? 2 : 1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </div>
+            <span className={`text-[10px] font-medium ${activeTab === 'home' ? 'text-black' : 'text-gray-400'}`}>Home</span>
           </button>
           
-          <Link to={`${baseUrl}/categories`} className="flex flex-col items-center py-1 px-4 text-gray-400">
-            <Grid3X3 className="w-6 h-6" />
-            <span className="text-[10px] font-medium mt-1">Categories</span>
+          {/* Categories - Grid icon */}
+          <Link to={`${baseUrl}/categories`} className="flex flex-col items-center py-1 px-3 text-gray-400">
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+            </svg>
+            <span className="text-[10px] font-medium">Categories</span>
           </Link>
           
-          <Link to={`${baseUrl}/new-arrivals`} className="flex flex-col items-center py-1 px-4 text-gray-400">
-            <Sparkles className="w-6 h-6" />
-            <span className="text-[10px] font-medium mt-1">2026 Reset</span>
+          {/* 2026 Reset - Sparkles */}
+          <Link to={`${baseUrl}/new-arrivals`} className="flex flex-col items-center py-1 px-3 text-gray-400">
+            <Sparkles className="w-6 h-6" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">2026 Reset</span>
           </Link>
           
-          <Link to={`${baseUrl}/cart`} className="flex flex-col items-center py-1 px-4 text-gray-400 relative">
-            <ShoppingBag className="w-6 h-6" />
+          {/* Bag */}
+          <Link to={`${baseUrl}/cart`} className="flex flex-col items-center py-1 px-3 text-gray-400 relative">
+            <ShoppingBag className="w-6 h-6" strokeWidth={1.5} />
             {cartCount > 0 && (
-              <span className="absolute top-0 right-2 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              <span className="absolute top-0 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {cartCount}
               </span>
             )}
-            <span className="text-[10px] font-medium mt-1">Bag</span>
+            <span className="text-[10px] font-medium">Bag</span>
           </Link>
           
-          <Link to={`${baseUrl}/account`} className="flex flex-col items-center py-1 px-4 text-gray-400">
-            <User className="w-6 h-6" />
-            <span className="text-[10px] font-medium mt-1">Account</span>
+          {/* Account */}
+          <Link to={`${baseUrl}/account`} className="flex flex-col items-center py-1 px-3 text-gray-400">
+            <User className="w-6 h-6" strokeWidth={1.5} />
+            <span className="text-[10px] font-medium">Account</span>
           </Link>
         </div>
       </nav>
@@ -395,7 +435,7 @@ const TNVHomePage = () => {
 };
 
 // Product Card Component
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, baseUrl }) => {
   const { formatPrice, toggleWishlist, isInWishlist } = useStore();
   const [imageError, setImageError] = useState(false);
   
@@ -406,37 +446,37 @@ const ProductCard = ({ product }) => {
 
   return (
     <div className="group relative bg-white rounded-lg overflow-hidden">
-      <Link to={`/tnv/product/${product.shopify_product_id}`}>
+      <Link to={`${baseUrl}/product/${product.shopify_product_id}`}>
         <div className="aspect-[3/4] overflow-hidden bg-gray-100">
           <img
             src={imageError ? 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=500&fit=crop' : image}
             alt={product.title}
             onError={() => setImageError(true)}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
       </Link>
       
       <button
         onClick={() => toggleWishlist(product)}
-        className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition"
+        className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow hover:scale-110 transition"
       >
         <Heart className={`w-4 h-4 ${isInWishlist(product.shopify_product_id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
       </button>
       
       {discount > 0 && (
-        <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+        <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
           -{discount}%
         </span>
       )}
       
       <div className="p-2">
-        <p className="text-xs text-gray-500 mb-1 truncate">{product.vendor || 'TNV Collection'}</p>
-        <h3 className="text-sm font-medium line-clamp-2 mb-1 min-h-[2.5rem]">{product.title}</h3>
-        <div className="flex items-center gap-2">
+        <p className="text-[10px] text-gray-500 mb-0.5 truncate">{product.vendor || 'TNV Collection'}</p>
+        <h3 className="text-xs font-medium line-clamp-2 mb-1 min-h-[2rem]">{product.title}</h3>
+        <div className="flex items-center gap-1.5">
           <span className="font-bold text-sm">{formatPrice(price)}</span>
           {comparePrice && (
-            <span className="text-xs text-gray-400 line-through">{formatPrice(comparePrice)}</span>
+            <span className="text-[10px] text-gray-400 line-through">{formatPrice(comparePrice)}</span>
           )}
         </div>
       </div>
