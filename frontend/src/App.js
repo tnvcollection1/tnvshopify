@@ -263,8 +263,8 @@ function AppRoutes() {
       <Route path="/" element={<LandingRoute />} />
       <Route path="/login" element={<LoginRoute />} />
       <Route path="/mobile-app-preview" element={<MobileAppPreview />} />
-      <Route path="/mobile-app-editor" element={<MobileAppEditorV2 />} />
-      <Route path="/website-editor" element={<WebsiteEditorV2 />} />
+      <Route path="/mobile-app-editor" element={<ProtectedRoute><MobileAppEditorV2 /></ProtectedRoute>} />
+      <Route path="/website-editor" element={<ProtectedRoute><WebsiteEditorV2 /></ProtectedRoute>} />
       <Route path="/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
       <Route path="/create-store" element={<MerchantOnboarding />} />
       <Route path="/merchant-onboarding" element={<MerchantOnboarding />} />
