@@ -144,6 +144,7 @@ set_notification_prefs_db(db)
 set_order_notifications_db(db)
 set_merchants_deps(db)
 set_shipping_db(db)
+set_image_ai_db(db)
 
 # Set WhatsApp API dependencies
 try:
