@@ -160,7 +160,8 @@ export const LocaleProvider = ({ children, storeName = 'tnvcollection' }) => {
   });
 
   const countryData = COUNTRIES.find(c => c.code === country) || COUNTRIES[1];
-  const isRTL = countryData.isRTL && language === 'ar';
+  const langData = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
+  const isRTL = langData.isRTL;
 
   // Apply RTL to document
   useEffect(() => {
