@@ -144,14 +144,20 @@ export const AuthProvider = ({ children }) => {
       if (!response.ok) {
         // Increment retry counter
         validationRetriesRef.current += 1;
-        console.warn(`Session validation failed (attempt ${validationRetriesRef.current}/${MAX_VALIDATION_RETRIES})`);
+        console.warn(`Session validation failed with status ${response.status} (attempt ${validationRetriesRef.current}/${MAX_VALIDATION_RETRIES})`);
         
-        // Only log out after MAX_VALIDATION_RETRIES consecutive failures
-        if (validationRetriesRef.current >= MAX_VALIDATION_RETRIES) {
-          console.warn('Max validation retries reached - logging out');
+        // Only log out on explicit 401 (unauthorized) after multiple failures
+        // For other errors (500, network, etc.), keep session and retry later
+        if (response.status === 401 && validationRetriesRef.current >= MAX_VALIDATION_RETRIES) {
+          console.warn('Session explicitly invalidated by server - logging out');
           localStorage.removeItem('agent');
           setAgent(null);
           validationRetriesRef.current = 0;
+        } else if (response.status !== 401) {
+          // For non-401 errors (server errors), don't count toward logout
+          // Just log and keep session
+          console.warn('Server error during validation - keeping session');
+          validationRetriesRef.current = Math.max(0, validationRetriesRef.current - 1);
         }
         // Otherwise keep the session alive
       } else {
