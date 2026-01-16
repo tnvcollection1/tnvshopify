@@ -780,38 +780,46 @@ const WebsiteEditorV2 = () => {
               )}
 
               {/* Category Editor */}
-              {selectedElement.type === 'category' && (
-                <div>
-                  <Label className="text-sm">Category Name</Label>
-                  <Input 
-                    value={headerConfig.categories[selectedElement.id] || ''}
-                    onChange={(e) => {
-                      setHeaderConfig(prev => ({
-                        ...prev,
-                        categories: prev.categories.map((c, i) => i === selectedElement.id ? e.target.value : c)
-                      }));
-                      setHasChanges(true);
-                    }}
-                    className="mt-1"
-                  />
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    className="mt-3 w-full"
-                    onClick={() => {
-                      setHeaderConfig(prev => ({
-                        ...prev,
-                        categories: prev.categories.filter((_, i) => i !== selectedElement.id)
-                      }));
-                      setSelectedElement(null);
-                      setHasChanges(true);
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Remove Category
-                  </Button>
-                </div>
-              )}
+              {selectedElement.type === 'category' && (() => {
+                const cat = headerConfig.categories[selectedElement.id];
+                const catName = typeof cat === 'string' ? cat : cat?.name || '';
+                return (
+                  <div>
+                    <Label className="text-sm">Category Name</Label>
+                    <Input 
+                      value={catName}
+                      onChange={(e) => {
+                        setHeaderConfig(prev => ({
+                          ...prev,
+                          categories: prev.categories.map((c, i) => {
+                            if (i !== selectedElement.id) return c;
+                            if (typeof c === 'string') return e.target.value;
+                            return { ...c, name: e.target.value };
+                          })
+                        }));
+                        setHasChanges(true);
+                      }}
+                      className="mt-1"
+                    />
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="mt-3 w-full"
+                      onClick={() => {
+                        setHeaderConfig(prev => ({
+                          ...prev,
+                          categories: prev.categories.filter((_, i) => i !== selectedElement.id)
+                        }));
+                        setSelectedElement(null);
+                        setHasChanges(true);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Remove Category
+                    </Button>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Apply Changes */}
