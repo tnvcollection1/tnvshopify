@@ -471,13 +471,13 @@ const TNVHomePage = () => {
       </section>
 
       {/* === PRODUCTS WITH INFINITE SCROLL === */}
-      <section className="py-3 px-3">
+      <section className="py-3 px-3 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold">All Products</h2>
           <span className="text-sm text-gray-500">{products.length} items</span>
         </div>
         
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
           {products.map((product, idx) => (
             <ProductCard 
               key={`${product.shopify_product_id}-${idx}`} 
