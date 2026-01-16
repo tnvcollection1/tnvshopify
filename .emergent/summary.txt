@@ -7,6 +7,9 @@ Recent user requests expanded this scope to include:
 4.  Real-time preview updates in the website editor.
 5.  A comprehensive shipping integration with DTDC, including a dashboard mirroring the DTDC customer portal for booking, tracking, and analytics.
 6.  Deployment of a Coming Soon page for  and fixing its SSL certificate.
+7.  Click-to-edit and advanced Pro features (drag & drop, undo/redo, templates) for the visual editors.
+8.  An AI-powered feature to automatically remove backgrounds and enhance product images.
+9.  A User Data Deletion URL for a Facebook App integration.
 
 **PRODUCT REQUIREMENTS**:
 1.  Replicate the  header and storefront UI.
@@ -19,186 +22,211 @@ Recent user requests expanded this scope to include:
 8.  Implement abandoned cart recovery via WhatsApp.
 9.  Perform a complete UI/UX overhaul of the mobile app and add dark mode.
 10. **(NEW)** Build a multi-step merchant onboarding wizard.
-11. **(NEW)** Build Shopify-like visual editors for the mobile app and web storefront with real-time preview.
+11. **(NEW)** Build Shopify-like visual Pro editors for the mobile app and web storefront with real-time preview, drag-and-drop, undo/redo, and templates.
 12. **(NEW)** Build a comprehensive DTDC shipping integration with a full-featured dashboard.
+13. **(NEW)** Build an AI Image Enhancer to automatically process product photos.
 
 **User's preferred language**: English
 
 **what currently exists?**
-- A full-stack application (FastAPI, React, MongoDB).
-- A 7-step merchant onboarding wizard is complete.
-- Visual editors for both the mobile app () and the web storefront () are complete. The website editor now includes header/menu editing and a real-time preview feature that updates the view without saving.
-- A comprehensive DTDC shipping dashboard has been created at . It mimics the user's screenshots, featuring KPI cards, charts, and a detailed consignments table. **This entire feature is currently mocked** with test data, as live API integration is blocked.
-- The admin sidebar has been reorganized with a prominent Online Store section for better access to the editors.
-- A Coming Soon page has been created and successfully deployed to the VPS for . The associated SSL certificate issue on the live domain has been fixed.
+- A full-stack application (FastAPI, React, MongoDB) deployed on the user's VPS.
+- An admin session instability issue was partially addressed with a Remember Me feature, but may still persist.
+- Pro visual editors for the web () and mobile app () have been created and deployed. They include features like click-to-edit, drag-and-drop, undo/redo, and templates.
+- An AI-powered Image Enhancer page () has been created. It connects to the live product catalog and uses an external AI service to remove backgrounds and enhance images.
+- The application is deployed and accessible on the user's custom domain () after fixing DNS issues. The backend runs on PM2 on the VPS.
+- A comprehensive DTDC shipping dashboard exists but remains **mocked**, as the live API integration is blocked.
 
 **Last working item**:
--   **Last item agent was working**: The agent was attempting to integrate the live DTDC shipping API using various tokens provided by the user (Shopify JWTs, Google session cookies). The agent concluded that none of these tokens are suitable for a server-to-server integration because they are either short-lived (60 seconds) or restricted to a browser context.
--   **Status**: BLOCKED
--   **Agent Testing Done**: Y
--   **Which testing method agent to use?**: N/A. The task is blocked pending a valid API key from the user. Once a key is provided, the agent should use  to test the backend endpoints.
+-   **Last item agent was working**: The agent was addressing a user complaint that the Website Editor's preview shows a simple mockup and does not match the actual live Namshi-style storefront (). The agent began investigating the live store's components (, ) to understand their structure and replicate the live view within the editor's preview iframe.
+-   **Status**: IN PROGRESS
+-   **Agent Testing Done**: N
+-   **Which testing method agent to use?**: Frontend testing agent or screenshot tool. The goal is to verify that the editor's preview pane is visually identical to the live  storefront.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: DTDC Live API Integration is Blocked (P0)
--   Issue 2: Admin session expires too quickly (P1)
--   Issue 3: DNS for  not pointing to VPS (P2)
--   Issue 4: DNS for  is not pointing to the VPS (P2)
--   Issue 5: Large monolithic backend files require refactoring (P3)
+-   Issue 1: Website Editor preview does not match live storefront (P0)
+-   Issue 2: DTDC Live API Integration is Blocked (P1)
+-   Issue 3: Admin session expires too quickly (P2)
+-   Issue 4: DNS for  not pointing to VPS (P3)
+-   Issue 5: DNS for  is not pointing to the VPS (P3)
+-   Issue 6: Large monolithic backend files require refactoring (P4)
 
 **Issues Detail**:
--   **Issue 1: DTDC Live API Integration is Blocked (P0)**
-    -   **Attempted fixes**: The agent tried using Google session cookies (SAPISIDHASH) and short-lived (60-second) Shopify JWTs provided by the user. All attempts failed with authentication errors () or gateway timeouts, confirming these tokens cannot be used for a direct backend integration.
+-   **Issue 1: Website Editor preview does not match live storefront (P0)**
+    -   **Attempted fixes**: The agent identified the cause of the discrepancy and viewed the source code for the live storefront components (, ).
     -   **Next debug checklist**:
-        1.  Clearly explain to the user why the provided tokens are not working (short lifespan, browser-only context).
-        2.  Instruct the user to contact their DTDC account manager or DTDC's IT support to request a **permanent, static API key** for server-to-server integration.
-        3.  Once a valid key is obtained, update the credentials in  and test the live booking/syncing endpoints.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the final step to make the DTDC shipping dashboard fully functional with live data, enabling shipment booking and tracking directly from the platform.
-    -   **Status**: BLOCKED
+        1.  Modify .
+        2.  Update the  or preview component within the editor to render the actual  and  components.
+        3.  Ensure the preview correctly displays the Namshi-style black header, category images, and overall layout that is present on the live site.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will resolve user confusion and provide a true What You See Is What You Get (WYSIWYG) experience, making the editor intuitive and useful.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Blocked on other issue**: None
+
+-   **Issue 2: DTDC Live API Integration is Blocked (P1)**
+    -   **Attempted fixes**: The previous agent confirmed that user-provided browser tokens (JWTs, cookies) are unsuitable for server-to-server integration.
+    -   **Next debug checklist**:
+        1.  Clearly re-explain to the user why a **permanent, static API key** is required.
+        2.  Instruct the user to contact DTDC support to obtain this key.
+        3.  Once the key is provided, update  and remove the mocked logic.
+    -   **Why fix this issue and what will be achieved with the fix?**: Unblocks the DTDC shipping feature, enabling live shipment booking and tracking.
+    -   **Status**: BLOCKED (User Action Pending)
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
 
--   **Issue 2: Admin session expires too quickly (P1)**
-    -   **Attempted fixes**: The agent fixed a password hash mismatch in a previous session, but screenshots show the session is still expiring very rapidly, forcing repeated logins to test UI changes.
+-   **Issue 3: Admin session expires too quickly (P2)**
+    -   **Attempted fixes**: The agent implemented a Remember me feature to extend the frontend session to 30 days. However, the agent was still logged out unexpectedly during testing (message 322), suggesting the backend JWT's lifetime is still too short.
     -   **Next debug checklist**:
-        1.  Investigate the session management logic in  and frontend .
-        2.  Check the session token's expiration time configuration on the backend.
-        3.  Verify that the frontend is correctly storing and sending the authentication token with each API request.
-    -   **Why fix this issue and what will be achieved with the fix?**: A stable session is critical for usability and efficient development. Fixing this will improve the user experience and prevent the agent from getting blocked during testing.
-    -   **Status**: NOT STARTED
+        1.  Examine  where the JWT is created.
+        2.  Increase the  value to a longer duration (e.g., 24 hours or more).
+        3.  Verify the Remember Me functionality correctly uses a much longer-lived token or refresh token mechanism.
+    -   **Why fix this issue and what will be achieved with the fix?**: Provides a stable and usable admin environment, preventing interruptions during development and testing.
+    -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on other issue**: None
 
--   **Issue 3: DNS for  not pointing to VPS (P2)**
-    -   **Attempted fixes**: The agent attempted to issue an SSL certificate for the  subdomain, but it failed because its A record points to an incorrect IP ().
-    -   **Next debug checklist**: Guide the user to update the A record for  to point to the correct VPS IP: .
-    -   **Why fix this issue and what will be achieved with the fix?**: Ensures the  version of the domain works correctly and is secured with SSL.
-    -   **Status**: BLOCKED (User Action Pending)
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: None
-
--   **Issue 4: DNS for  not pointing to VPS (P2)**
-    -   **Attempted fixes**: None. This is a recurring issue pending user action.
-    -   **Next debug checklist**: Guide the user to update the A records for  to point to the VPS IP .
-    -   **Why fix this issue and what will be achieved with the fix?**: To make the Pakistan storefront live on its custom domain.
+-   **Issue 4 & 5: DNS for  &  not pointing to VPS (P3)**
+    -   **Attempted fixes**: None in this session. The issue is pending user action from a previous session.
+    -   **Next debug checklist**: Guide the user to update the A records for these domains to point to the VPS IP: .
+    -   **Why fix this issue and what will be achieved with the fix?**: Makes the  subdomain and the Pakistan storefront live.
     -   **Status**: BLOCKED (User Action Pending)
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
--   **Issue 5: Refactor large backend files (P3)**
-    -   **Attempted fixes**: None.
+-   **Issue 6: Refactor large backend files (P4)**
+    -   **Attempted fixes**: None. The agent added new routes as separate files but did not refactor the main .
     -   **Next debug checklist**: Systematically extract functionality from  into smaller, dedicated route files under .
-    -   **Why fix this issue and what will be achieved with the fix?**: To improve code maintainability, readability, and scalability.
+    -   **Why fix this issue and what will be achieved with the fix?**: Improves code maintainability, readability, and scalability.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
 
-**In progress Task List**: None. The last active task (DTDC integration) is now blocked.
+**In progress Task List**: None other than the P0 issue above.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P1) **Enter TNV Collection pickup address**: The user needs to manually input their pickup address in the DTDC Settings UI, as auto-syncing from the DTDC portal is not possible without a proper API.
-    -   (P1) **Prepare Mobile App for Store Submission**: Configure  with icons, splash screens, bundle IDs, etc., for app store submission.
-    -   (P2) **Deploy Namshi Storefront to VPS**: Replace the Coming Soon page with the fully functional TNV storefront application on .
+    -   (P1) **Create Facebook Data Deletion URL**: Implement a backend endpoint (e.g., ) to comply with Meta's app requirements.
+    -   (P2) **Deploy Namshi Storefront to VPS**: Replace the Coming Soon page on  with the functional storefront.
+    -   (P2) **Enter TNV Collection pickup address**: The user needs to manually input their pickup address in the DTDC Settings UI.
+    -   (P3) **Prepare Mobile App for Store Submission**: Configure  with icons, splash screens, bundle IDs, etc.
 -   **Future Tasks**:
     -   (P2) **Sooxie.com Integration**: Plan and implement an integration with the Sooxie.com API.
     -   (P2) **Dynamic Mobile App Updates**: Connect the admin panel settings to dynamically update the mobile app in real-time.
     -   (P3) **Automated Security Testing**: Set up automated tests for security endpoints.
 
 **Completed work in this session**
--   **Website Editor Header Integration (FINISHED)**: Added UI in  to manage the announcement bar, logo, and mega menu.
--   **Website Editor Real-Time Preview (FINISHED)**: Implemented live preview in  using  to communicate with the storefront iframe in  and .
--   **DTDC Dashboard & UI (FINISHED)**: Created a new  component that provides a comprehensive overview of shipments with KPIs, charts, and a filterable consignment list, populated with test data.
--   **DTDC Integration Backend (MOCKED & FINISHED)**: Created a new  router with endpoints for booking, rate calculation, and syncing. The external booking calls are mocked to allow the UI to be fully functional with local data.
--   **VPS Coming Soon Page (DEPLOYED)**: Created  and deployed it to the VPS for .
--   **VPS SSL Certificate (FIXED)**: Issued a new Let's Encrypt SSL certificate for  and updated the Nginx configuration, resolving the browser security warning.
--   **Admin Sidebar Reorganization (FINISHED)**: Reworked  to add a prominent Online Store section, making the visual editors easier to find.
+-   **Remember Me Feature**: Added a 30-day session persistence option to the login page (, ).
+-   **VPS Deployment & Troubleshooting**: Successfully deployed the full-stack application to the user's VPS, fixing Python module errors, PM2 configuration issues, and DNS problems for the  domain.
+-   **Pro Visual Editors**: Created and deployed new, feature-rich  and  with click-to-edit, drag & drop, undo/redo, templates, and a component library.
+-   **AI Image Enhancer**: Implemented a new feature with a backend route () and frontend UI () to remove backgrounds and enhance product images using an AI service. Connected it to the live product catalog.
+-   **Mobile App Deployment Fix**: Parameterized the hardcoded API URL in the mobile app's source code.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1: Facebook User Data Deletion URL needed**
+    -   **Debug checklist**:
+        1. Create a new route in the backend (e.g., in a new  router).
+        2. The endpoint should handle POST requests from Facebook, log the deletion request, and return a tracking code and a status URL.
+        3. The status URL should show the status of the data deletion request.
+    -   **Why to solve this issue and what will be achieved with this?**: It is a compliance requirement for the user's Facebook/Meta application.
+    -   **Should Test frontend/backend/both after fix?**: Backend
+    -   **Is recurring issue?**: N
+
+**Known issue recurrence from previous fork**
+-   **Issue recurrence in previous fork**: Admin session instability.
+-   **Recurrence count**: 2+
+-   **Status**: IN PROGRESS. An initial fix was implemented, but the issue appears to persist. The backend JWT lifetime is the likely culprit.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   Real-time UI updates using  for  communication.
--   Building complex data dashboards with  for charts and graphs.
--   Mocking external API responses to enable frontend development when a backend is not ready.
--   Debugging third-party API authentication flows (JWT, session cookies, API keys).
--   Deploying static files to a remote VPS using  and .
--   Managing Nginx server blocks and SSL certificates (Let's Encrypt/Certbot) on a Linux server.
+-   **VPS Deployment**: Managing a full-stack application on a remote Linux VPS using , , , and .
+-   **Advanced React**: Implementing complex state management with , , and  for features like undo/redo, and drag-and-drop using .
+-   **AI Integration**: Calling external AI APIs ( library) for image processing from a FastAPI backend.
+-   **DNS Management**: Debugging and configuring  records to point a custom domain to a VPS IP address.
+-   **Backend Process Management**: Debugging and configuring  for a FastAPI application, including handling  issues.
+-   **Real-time Preview**: Using  and  for communication between an editor and a live preview pane.
 
 **key DB schema**
--   **shipping_configs**:  (new collection)
--   **shipments**:  (new collection)
+-   No new collections were added. Existing schemas for  and  are still relevant for the blocked DTDC task.
 
 **changes in tech stack**
--    was installed in the environment to facilitate scripted deployments to the VPS.
+-    installed in the environment for scripted VPS deployments.
+-    library used for image processing.
+-    and  added to the frontend for the Pro editors.
 
 **All files of reference**
--   **/app/backend/routes/shipping.py**: **(NEW)** Handles all DTDC shipping logic (currently mocked).
--   **/app/frontend/src/components/DTDCDashboard.jsx**: **(NEW)** The main UI for the DTDC shipping portal.
--   **/app/frontend/src/components/WebsiteEditor.jsx**: **(MODIFIED)** Enhanced with header editing and real-time preview.
--   **/app/frontend/src/components/ShopifySidebar.jsx**: **(MODIFIED)** Reorganized for better navigation.
--   **/app/frontend/public/coming-soon.html**: **(NEW)** Static page deployed to the VPS.
--   **/app/backend/server.py**: **(MODIFIED)** To include the new shipping router.
--   **/app/frontend/src/App.js**: **(MODIFIED)** To add the route for the new DTDC dashboard.
--   **/app/frontend/src/components/store/TNVHomePage.jsx**: **(MODIFIED)** To listen for live preview updates.
--   **/app/frontend/src/components/store/TNVStoreLayout.jsx**: **(MODIFIED)** To listen for live preview updates.
+-   **/app/frontend/src/components/WebsiteEditorV2.jsx**: (NEW) The active Pro website editor.
+-   **/app/frontend/src/components/MobileAppEditorV2.jsx**: (NEW) The active Pro mobile app editor.
+-   **/app/frontend/src/components/ImageEnhancer.jsx**: (NEW) UI for the AI image processing tool.
+-   **/app/backend/routes/image_ai.py**: (NEW) Backend logic for the AI image tool.
+-   **/app/frontend/src/contexts/AuthContext.jsx**: (MODIFIED) For session stability and Remember Me feature.
+-   **/app/frontend/src/App.js**: (MODIFIED) For routing to the new V2 editors and Image Enhancer.
+-   **/app/frontend/src/components/ShopifySidebar.jsx**: (MODIFIED) To add navigation links to new tools.
+-   **/app/frontend/src/components/store/TNVStoreLayout.jsx**: (REFERENCE) The layout that the editor preview needs to replicate.
+-   **/app/frontend/src/components/store/TNVHomePage.jsx**: (REFERENCE) The home page that the editor preview needs to replicate.
+-   **/app/backend/server.py**: (MODIFIED) To register new API routers.
 
 **Areas that need refactoring**:
--   The main backend file, , remains large and contains logic that should be broken out into more specific route files.
+-   The main backend file, , is still large and needs to be broken down into smaller, more maintainable route files.
+-   The old  and  components are now unused and should be deleted to avoid confusion.
 
 **key api endpoints**
--   : Books a new shipment (currently saves locally).
--   : Retrieves dashboard KPIs and chart data.
--   : Fetches a list of all consignments.
--   : Endpoint to sync pickup address (currently returns a prompt for manual entry).
+-   : Triggers bulk AI enhancement for all products.
+-   : Triggers AI enhancement for a single product.
+-   : Admin login endpoint.
+-   : Session validation endpoint.
 
 **Critical Info for New Agent**
--   **The #1 priority is to unblock the DTDC integration.** You must explain to the user that the tokens they've provided are browser-based and short-lived, and therefore cannot work for a server integration. Guide them to acquire a **permanent API key** from their DTDC representative. Do not attempt to use the Shopify JWTs again.
--   The DTDC dashboard is fully built but relies entirely on **mocked data and local database entries**. The  and  functions in  do not currently make live API calls.
--   Be aware of the **recurring admin session instability**. The session seems to expire very quickly, which can hinder testing. If this becomes a blocker, it should be prioritized.
+-   **The user's application is deployed on a custom VPS, not the standard preview environment.** You will need to build (yarn run v1.22.22
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.) and deploy changes using  and  to the VPS at . The credentials are in the chat history.
+-   **The highest priority task is to fix the Website Editor's preview.** It must render an accurate, live preview of the Namshi-style storefront () instead of the current simple mockup.
+-   The DTDC integration remains **BLOCKED**. Do not attempt to work on it until the user provides a permanent, static API key.
+-   The admin session instability is a **recurring issue**. Even with the Remember Me fix, the backend JWT may have a short expiration. Be prepared to investigate .
 
 **documents and test reports created in this job**
--   /app/memory/PRD.md
--   /app/frontend/public/coming-soon.html
+-   /app/memory/PRD.md (updated multiple times)
 
 **Last 10 User Messages and any pending HUMAN messages**
--   10.  - User provides another short-lived Shopify JWT. **Status: Handled**.
--   9.  - User reports the link to the website editor is missing or hard to find. **Status: RESOLVED**.
--   8.  - User provides several short-lived JWT tokens from their browser extension, asking the agent to compare them. **Status: Handled**.
--   7.  - User provides a Shopify JWT token from an OAuth extractor extension. **Status: Handled**.
--   6.  - User provides a Google session cookie, hoping it's an API key. **Status: Handled**.
--   5.  - User informs the agent they are using a tool to get tokens. **Status: Acknowledged**.
--   4.  - User asks if a token from the Shopify DTDC app is usable. **Status: Acknowledged**.
--   3.  - User questions why the previously provided token isn't working. **Status: Blocked**.
--   2.  - User requests to sync live data from DTDC and test a booking. **Status: Blocked**.
--   1.  - User reports an SSL error on their domain. **Status: RESOLVED**.
+1.  **why the stroe editor theme is different...**: User points out the critical issue that the website editor preview does not match the live storefront. **Status: In Progress**.
+2.  **deploy + [screenshot]**: User sends a screenshot of Facebook App settings, indicating a need for a User Data Deletion URL. **Status: Not Started**.
+3.  **existing product**: User requests that the new AI Image Enhancer tool should process their actual products, not sample ones. **Status: Completed**.
+4.  **yes Automatic make all products white...**: User approves the plan to build an AI Image Enhancement feature. **Status: Completed**.
+5.  **[screenshots]**: User provides screenshots showing the new Pro editors working correctly. **Status: Acknowledged**.
+6.  **deploy to vps**: User requests another deployment to the VPS. **Status: Completed**.
+7.  **yes make it more easier give me more ideas**: User approves the plan to add Pro features (drag & drop, undo/redo) to the editors. **Status: Completed**.
+8.  **please make click n edit for online store and mobile app**: User requests the initial click-to-edit feature for the visual editors. **Status: Completed**.
+9.  **i dont see updated admin panel...**: User is confused because they are on the preview environment, not the deployed VPS URL. **Status: Resolved**.
+10. **i logged in wamer.ceom admin online store mobile**: User confirms they have successfully logged into the deployed application on . **Status: Acknowledged**.
 
 **Project Health Check:**
--   **Broken**: Admin session instability is a recurring problem, frequently causing logout during testing.
--   **Mocked**: The entire DTDC shipping integration is mocked. All data shown in the  is generated test data stored in the local MongoDB. No live communication with DTDC is currently happening.
+-   **Broken**: The Website Editor's preview is incorrect, making it unusable for its intended purpose. The admin session instability remains a potential blocker.
+-   **Mocked**: The entire DTDC shipping integration is mocked in . All data shown in the shipping dashboard is test data.
 
 **3rd Party Integrations**
--   Razorpay (Payments) - Requires User API Key
+-   **Razorpay** (Payments) — requires User API Key
+-   **DTDC** (Shipping) — **BLOCKED**, requires a permanent User API Key.
+-   **Emergent Integrations (ClipDrop)** for AI Image Background Removal — uses Emergent LLM Key.
 -   Shopify (as a data source)
 -   Namecheap (DNS, VPS)
 -   MongoDB Atlas (Database)
--   DTDC (Shipping) - **Blocked, requires a permanent User API Key.**
 
 **Testing status**
 -   **Testing agent used after significant changes**: NO
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None
--   **Known regressions**: Admin session instability appears to have regressed and is causing frequent interruptions.
+-   **Known regressions**: Admin session instability.
 
 **Credentials to test flow:**
 -   **Admin Login**:  / 
 -   **VPS IP**: 
--   **DTDC Customer Portal Login**:  /  (Note: These are for the web portal, not the API).
+-   **VPS Password**:  (from chat history)
 
 **What agent forgot to execute**
--   The agent successfully addressed all user requests within the constraints of available information. No tasks were forgotten.</analysis>
+-   The agent did not implement the **User Data Deletion URL** required for the user's Facebook App, despite acknowledging the user's screenshot.
+-   The agent created  versions of the editors but did not delete the old, now-obsolete  and  files.</analysis>

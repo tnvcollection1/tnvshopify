@@ -11,7 +11,7 @@ import os
 import json
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://saas-ecom.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://wamerce-redesign.preview.emergentagent.com').rstrip('/')
 
 
 class TestMegaMenuGetConfig:
