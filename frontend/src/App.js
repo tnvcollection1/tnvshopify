@@ -176,13 +176,18 @@ function LuxuryStorefrontWrapper({ page = 'home' }) {
 }
 
 import StoreOnboarding from "@/components/store/StoreOnboarding";
+import { useLocation } from 'react-router-dom';
 
 // TNV Store Wrapper (Namshi-inspired) - Supports multi-store (tnvcollection for INR, tnvcollectionpk for PKR)
 function TNVStoreWrapper({ children, storeName = "tnvcollection" }) {
+  const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(() => {
     // Check if onboarding was completed
     return !localStorage.getItem(`${storeName}_onboarding_completed`);
   });
+  
+  // Check if we're on the homepage - it has its own header/footer
+  const isHomePage = location.pathname === '/tnv' || location.pathname === '/tnv/';
   
   if (showOnboarding) {
     return (
@@ -193,6 +198,16 @@ function TNVStoreWrapper({ children, storeName = "tnvcollection" }) {
     );
   }
   
+  // Homepage has its own layout with bottom nav
+  if (isHomePage) {
+    return (
+      <TNVStoreProvider storeName={storeName}>
+        {children}
+      </TNVStoreProvider>
+    );
+  }
+  
+  // Other pages use standard header/footer
   return (
     <TNVStoreProvider storeName={storeName}>
       <TNVHeader />
@@ -206,9 +221,12 @@ function TNVStoreWrapper({ children, storeName = "tnvcollection" }) {
 
 // Pakistan Store Wrapper (PKR currency)
 function TNVPKStoreWrapper({ children }) {
+  const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('tnvcollectionpk_onboarding_completed');
   });
+  
+  const isHomePage = location.pathname === '/tnv-pk' || location.pathname === '/tnv-pk/';
   
   if (showOnboarding) {
     return (
@@ -216,6 +234,14 @@ function TNVPKStoreWrapper({ children }) {
         storeName="tnvcollectionpk"
         onComplete={() => setShowOnboarding(false)}
       />
+    );
+  }
+  
+  if (isHomePage) {
+    return (
+      <TNVStoreProvider storeName="tnvcollectionpk">
+        {children}
+      </TNVStoreProvider>
     );
   }
   
