@@ -494,5 +494,5 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
   );
 };
 
-export { COUNTRIES, TRANSLATIONS };
+export { COUNTRIES, LANGUAGES, TRANSLATIONS };
 export default StoreOnboarding;
