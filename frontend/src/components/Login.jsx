@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { MessageCircle, Eye, EyeOff } from "lucide-react";
 
@@ -16,6 +17,7 @@ const Login = ({ onLoginSuccess }) => {
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true); // Default to true for better UX
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -31,6 +33,12 @@ const Login = ({ onLoginSuccess }) => {
       
       if (response.data.success) {
         const user = response.data.user;
+        // Add remember me preference and session expiry
+        user.rememberMe = rememberMe;
+        if (rememberMe) {
+          // Set expiry to 30 days from now
+          user.sessionExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
+        }
         localStorage.setItem("agent", JSON.stringify(user));
         toast.success(`Welcome back, ${user.full_name}!`);
         onLoginSuccess(user);
@@ -56,6 +64,11 @@ const Login = ({ onLoginSuccess }) => {
             can_send_messages: true,
           };
           agent.role = 'admin';
+          // Add remember me preference and session expiry
+          agent.rememberMe = rememberMe;
+          if (rememberMe) {
+            agent.sessionExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
+          }
           localStorage.setItem("agent", JSON.stringify(agent));
           toast.success(`Welcome back, ${agent.full_name}!`);
           onLoginSuccess(agent);
