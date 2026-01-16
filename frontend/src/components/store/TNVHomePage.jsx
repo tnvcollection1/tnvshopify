@@ -549,22 +549,48 @@ const TNVHomePage = () => {
           </Link>
         </div>
       </nav>
+      
+      {/* === PRODUCT QUICK VIEW MODAL === */}
+      <ProductQuickView 
+        product={quickViewProduct}
+        isOpen={!!quickViewProduct}
+        onClose={() => setQuickViewProduct(null)}
+      />
     </div>
   );
 };
 
 // Product Card Component
-const ProductCard = ({ product, baseUrl }) => {
+const ProductCard = ({ product, baseUrl, onQuickView }) => {
   const { formatPrice, toggleWishlist, isInWishlist } = useStore();
   const [imageError, setImageError] = useState(false);
+  const longPressTimer = useRef(null);
   
   const image = getImageUrl(product.images?.[0]?.src);
   const price = product.variants?.[0]?.price || product.price || 0;
   const comparePrice = product.variants?.[0]?.compare_at_price;
   const discount = comparePrice ? Math.round((1 - price / comparePrice) * 100) : 0;
 
+  // Long press handlers for quick view
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => {
+      onQuickView?.();
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+  };
+
   return (
-    <div className="group relative bg-white rounded-lg overflow-hidden">
+    <div 
+      className="group relative bg-white rounded-lg overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onMouseLeave={handleTouchEnd}
+    >
       <Link to={`${baseUrl}/product/${product.shopify_product_id}`}>
         <div className="aspect-[3/4] overflow-hidden bg-gray-100">
           <img
@@ -575,6 +601,14 @@ const ProductCard = ({ product, baseUrl }) => {
           />
         </div>
       </Link>
+      
+      {/* Quick View Button (visible on hover) */}
+      <button
+        onClick={(e) => { e.preventDefault(); onQuickView?.(); }}
+        className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm text-black px-4 py-2 rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+      >
+        Quick View
+      </button>
       
       <button
         onClick={() => toggleWishlist(product)}
