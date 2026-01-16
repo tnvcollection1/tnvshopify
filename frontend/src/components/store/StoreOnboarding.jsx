@@ -86,11 +86,13 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
   const handleCategorySelect = (category) => {
     localStorage.setItem(`${storeName}_preferred_category`, category);
     localStorage.setItem(`${storeName}_onboarding_completed`, 'true');
+    localStorage.removeItem(`${storeName}_onboarding_step`); // Clean up step tracking
     onComplete?.();
   };
 
   const handleSkip = () => {
     localStorage.setItem(`${storeName}_onboarding_completed`, 'true');
+    localStorage.removeItem(`${storeName}_onboarding_step`); // Clean up step tracking
     onComplete?.();
   };
 
