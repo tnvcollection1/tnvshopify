@@ -49,6 +49,7 @@
       ]
     ],
     "extra": {
+      "apiUrl": "https://wamerce.com/api",
       "eas": {
         "projectId": "your-project-id"
       }
