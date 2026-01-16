@@ -380,173 +380,75 @@ const WebsiteEditorV2 = () => {
           </div>
         )}
 
-        {/* Center - Preview (Actual Namshi-style storefront) */}
+        {/* Center - Preview (ACTUAL LIVE STOREFRONT) */}
         <div className="flex-1 flex flex-col overflow-hidden bg-gray-200">
+          {/* Preview Mode Indicator */}
+          <div className="bg-blue-600 text-white text-xs py-1 px-4 flex items-center justify-center gap-2">
+            <Eye className="w-3 h-3" />
+            <span>Live Preview - Changes sync in real-time</span>
+          </div>
+          
           <div className="flex-1 overflow-auto p-4">
             <div 
               className="mx-auto bg-white shadow-xl rounded-lg overflow-hidden transition-all"
               style={{ width: getPreviewWidth(), maxWidth: '100%' }}
             >
-              {/* === NAMSHI-STYLE HEADER === */}
-              
-              {/* Top bar - Language & Region */}
-              <div className="bg-black text-white text-xs">
-                <div className="flex justify-between items-center px-4 py-2">
-                  <div className="flex items-center gap-4">
-                    {config.region.showLanguageToggle && (
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => setLanguage('en')}
-                          className={`${language === 'en' ? 'text-white' : 'text-gray-400'}`}
-                        >
-                          English
-                        </button>
-                        <span className="text-gray-500">|</span>
-                        <button 
-                          onClick={() => setLanguage('ar')}
-                          className={`${language === 'ar' ? 'text-white' : 'text-gray-400'}`}
-                        >
-                          العربية
-                        </button>
-                      </div>
-                    )}
+              {/* Render the ACTUAL TNV Store Components */}
+              <TNVStoreProvider storeName={storeName}>
+                {/* Clickable overlay zones for editing */}
+                <div className="relative">
+                  {/* Header Section with Edit Overlay */}
+                  <div 
+                    className={`relative ${selectedElement?.type === 'header' ? 'ring-4 ring-blue-500 ring-inset' : ''}`}
+                    onClick={() => handleElementClick('header', 'main', { logo: config.logo, announcement: config.announcement })}
+                  >
+                    <TNVHeader />
+                    {/* Edit indicator on hover */}
+                    <div className="absolute inset-0 bg-blue-500/0 hover:bg-blue-500/10 transition-colors cursor-pointer flex items-start justify-end p-2 pointer-events-none group-hover:pointer-events-auto">
+                      <span className="opacity-0 group-hover:opacity-100 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                        Click to edit header
+                      </span>
+                    </div>
                   </div>
+                </div>
+                
+                {/* Main Content - Actual TNVHomePage */}
+                <div className="relative">
+                  <TNVHomePage />
                   
-                  {/* Announcement message */}
-                  {config.announcement.enabled && config.announcement.messages[0] && (
-                    <div 
-                      className={`flex-1 text-center cursor-pointer ${selectedElement?.type === 'announcement' ? 'ring-2 ring-blue-500' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); handleElementClick('announcement', 'bar', config.announcement); }}
+                  {/* Floating edit controls for sections */}
+                  <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleElementClick('heroBanner', 'main', config.heroBanner); }}
+                      className="bg-white shadow-lg rounded-full p-2 hover:bg-blue-50 transition-colors"
+                      title="Edit Hero Banner"
                     >
-                      {config.announcement.messages[0].text}
-                    </div>
-                  )}
-                  
-                  {/* Region selector */}
-                  <div className="flex items-center gap-2">
-                    <span>{config.region.flag}</span>
-                    <span>{config.region.code}</span>
-                    <ChevronDown className="w-3 h-3" />
+                      <Edit3 className="w-4 h-4 text-blue-600" />
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              {/* Logo bar */}
-              <div className="bg-white border-b">
-                <div className="flex items-center justify-between px-4 py-3">
-                  {/* Logo */}
-                  <div 
-                    className={`flex items-center gap-1 cursor-pointer rounded px-2 py-1 ${selectedElement?.type === 'logo' ? 'ring-2 ring-blue-500' : 'hover:bg-gray-50'}`}
-                    onClick={() => handleElementClick('logo', 'main', config.logo)}
-                  >
-                    <span className="text-2xl font-bold">{config.logo.text}</span>
-                    <span 
-                      className="text-xs font-semibold px-2 py-0.5 rounded text-white"
-                      style={{ backgroundColor: config.logo.badgeColor }}
-                    >
-                      {config.logo.badge}
-                    </span>
-                  </div>
-
-                  {/* Search */}
-                  <div className="flex-1 max-w-xl mx-8">
-                    <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
-                      <Search className="w-4 h-4 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-400">Search for items and brands</span>
-                    </div>
-                  </div>
-
-                  {/* Icons */}
-                  <div className="flex items-center gap-4">
-                    <User className="w-5 h-5 text-gray-600" />
-                    <Heart className="w-5 h-5 text-gray-600" />
-                    <div className="relative">
-                      <ShoppingBag className="w-5 h-5 text-gray-600" />
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">0</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Category tabs - Namshi style with images */}
-              <div 
-                className={`flex items-center justify-center gap-2 py-3 px-4 border-b bg-white cursor-pointer ${selectedElement?.type === 'categoryTabs' ? 'ring-2 ring-blue-500 ring-inset' : ''}`}
-                onClick={() => handleElementClick('categoryTabs', 'all', config.categoryTabs)}
+                
+                {/* Footer */}
+                <TNVFooter />
+              </TNVStoreProvider>
+            </div>
+          </div>
+          
+          {/* Quick Actions Bar */}
+          <div className="bg-white border-t px-4 py-2 flex items-center justify-between text-xs text-gray-500">
+            <span>Preview: {storeName}</span>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Connected to live store
+              </span>
+              <button 
+                onClick={fetchConfig}
+                className="text-blue-600 hover:underline flex items-center gap-1"
               >
-                {config.categoryTabs.filter(t => t.enabled).map((tab, idx) => (
-                  <div 
-                    key={tab.id || idx}
-                    className="flex flex-col items-center px-3 py-2 rounded-xl transition-all hover:bg-gray-50"
-                    style={{ backgroundColor: tab.bgColor || '#f5f5f5' }}
-                  >
-                    {tab.image ? (
-                      <img src={tab.image} alt={tab.name} className="w-12 h-12 rounded-full object-cover mb-1" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-200 mb-1 flex items-center justify-center text-xs font-bold">
-                        {tab.name.charAt(0)}
-                      </div>
-                    )}
-                    <span className="text-xs font-medium">{tab.name}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Sub navigation */}
-              <div 
-                className={`flex items-center justify-center gap-6 py-2 px-4 text-sm font-medium border-b cursor-pointer ${selectedElement?.type === 'subNav' ? 'ring-2 ring-blue-500 ring-inset' : ''}`}
-                onClick={() => handleElementClick('subNav', 'all', config.subNav)}
-              >
-                {config.subNav.filter(item => item.enabled).map((item, idx) => (
-                  <span 
-                    key={item.id || idx}
-                    className={`hover:text-black cursor-pointer ${item.isRed ? 'text-red-500' : item.highlight ? 'text-green-600' : 'text-gray-600'}`}
-                  >
-                    {item.name}
-                  </span>
-                ))}
-              </div>
-
-              {/* Hero Banner */}
-              {config.heroBanner.enabled && (
-                <div 
-                  className={`relative cursor-pointer ${selectedElement?.type === 'heroBanner' ? 'ring-4 ring-blue-500 ring-inset' : ''}`}
-                  onClick={() => handleElementClick('heroBanner', 'main', config.heroBanner)}
-                >
-                  <div 
-                    className="h-80 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${config.heroBanner.image})` }}
-                  >
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                      <div className="text-center text-white">
-                        <h2 className="text-4xl font-bold mb-2">{config.heroBanner.title}</h2>
-                        <p className="text-xl opacity-90">{config.heroBanner.subtitle}</p>
-                        <button className="mt-4 bg-white text-black px-6 py-2 rounded-full font-semibold">
-                          Shop Now
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  {selectedElement?.type === 'heroBanner' && (
-                    <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm">
-                      <Edit3 className="w-4 h-4 inline mr-1" />Click to edit
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Products placeholder */}
-              <div className="p-6">
-                <h3 className="text-lg font-bold mb-4">Trending Now</h3>
-                <div className="grid grid-cols-4 gap-4">
-                  {[1,2,3,4].map(i => (
-                    <div key={i} className="bg-gray-100 rounded-lg p-3">
-                      <div className="aspect-square bg-gray-200 rounded mb-2" />
-                      <p className="text-sm font-medium">Product Name</p>
-                      <p className="text-sm text-gray-500">AED 199</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                <RefreshCw className="w-3 h-3" />
+                Refresh
+              </button>
             </div>
           </div>
         </div>
