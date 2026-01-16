@@ -1,11 +1,10 @@
 /**
- * Main Tab Navigator
- * Bottom tab navigation for main app screens
- * With haptic feedback on tab switches
+ * Main Tab Navigator - Namshi Style
+ * Bottom tab navigation with matching icons
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -25,174 +24,131 @@ import { tabSwitchHaptic } from '../services/haptics';
 
 const Tab = createBottomTabNavigator();
 
-// Animated Tab Icon with haptic feedback
-const TabIcon = ({ name, focused, badge, colors }) => {
-  const scaleAnim = React.useRef(new Animated.Value(1)).current;
-  
-  React.useEffect(() => {
-    if (focused) {
-      Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 1.2,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scaleAnim, {
-          toValue: 1.1,
-          friction: 4,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [focused]);
+// Custom Tab Bar Component - Namshi Style
+const NamshiTabBar = ({ state, descriptors, navigation }) => {
+  const insets = useSafeAreaInsets();
+  const { cartCount } = useCart();
 
-  const icons = {
-    Home: '🏠',
-    Browse: '🔍',
-    Cart: '🛒',
-    Wishlist: '❤️',
-    Account: '👤',
-  };
+  const tabs = [
+    { name: 'Home', icon: '🏠', label: 'Home' },
+    { name: 'Browse', icon: '☰', label: 'Categories' },
+    { name: 'NewArrivals', icon: '✨', label: '2026 Reset' },
+    { name: 'Cart', icon: '🛍', label: 'Bag', badge: cartCount },
+    { name: 'Account', icon: '👤', label: 'Account' },
+  ];
 
   return (
-    <View style={styles.iconContainer}>
-      <Animated.Text 
-        style={[
-          styles.icon, 
-          { transform: [{ scale: scaleAnim }] },
-        ]}
-      >
-        {icons[name]}
-      </Animated.Text>
-      {badge > 0 && (
-        <View style={[styles.badge, { backgroundColor: colors.accent }]}>
-          <Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text>
-        </View>
-      )}
+    <View style={[styles.tabBar, { paddingBottom: insets.bottom || 10 }]}>
+      {state.routes.map((route, index) => {
+        const tab = tabs[index];
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            tabSwitchHaptic();
+            navigation.navigate(route.name);
+          }
+        };
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            onPress={onPress}
+            style={styles.tabItem}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.iconContainer, isFocused && styles.iconContainerActive]}>
+              <Text style={styles.tabIcon}>{tab.icon}</Text>
+              {tab.badge > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{tab.badge > 9 ? '9+' : tab.badge}</Text>
+                </View>
+              )}
+            </View>
+            <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };
 
-// Custom Tab Bar Button with haptic feedback
-const HapticTabButton = ({ children, onPress, accessibilityState }) => {
-  const handlePress = () => {
-    // Only trigger haptic if not already selected
-    if (!accessibilityState.selected) {
-      tabSwitchHaptic();
-    }
-    onPress();
-  };
-
+// Placeholder for New Arrivals / 2026 Reset
+const NewArrivalsScreen = () => {
+  const { colors } = useTheme();
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      style={styles.tabButton}
-      activeOpacity={0.7}
-    >
-      {children}
-    </TouchableOpacity>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+      <Text style={{ fontSize: 48, marginBottom: 16 }}>✨</Text>
+      <Text style={{ fontSize: 24, fontWeight: '700', color: colors.text }}>2026 Reset</Text>
+      <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 8 }}>Coming Soon</Text>
+    </View>
   );
 };
 
 const MainTabNavigator = () => {
-  const insets = useSafeAreaInsets();
-  const { cartCount } = useCart();
-  const { colors, isDark } = useTheme();
-
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarButton: (props) => <HapticTabButton {...props} />,
-        tabBarIcon: ({ focused }) => (
-          <TabIcon 
-            name={route.name} 
-            focused={focused} 
-            badge={route.name === 'Cart' ? cartCount : 0}
-            colors={colors}
-          />
-        ),
-        tabBarActiveTintColor: colors.text,
-        tabBarInactiveTintColor: colors.textTertiary,
-        tabBarStyle: {
-          height: 60 + insets.bottom,
-          paddingTop: 8,
-          paddingBottom: insets.bottom + 8,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-          backgroundColor: colors.surface,
-          // Add subtle shadow for depth
-          shadowColor: isDark ? '#000' : '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: isDark ? 0.3 : 0.08,
-          shadowRadius: 8,
-          elevation: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          marginTop: 2,
-        },
-      })}
+      tabBar={(props) => <NamshiTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
-      <Tab.Screen 
-        name="Home" 
-        component={HomeScreen}
-        options={{ tabBarLabel: 'Home' }}
-      />
-      <Tab.Screen 
-        name="Browse" 
-        component={BrowseScreen}
-        options={{ tabBarLabel: 'Browse' }}
-      />
-      <Tab.Screen 
-        name="Cart" 
-        component={CartScreen}
-        options={{ tabBarLabel: 'Bag' }}
-      />
-      <Tab.Screen 
-        name="Wishlist" 
-        component={WishlistScreen}
-        options={{ tabBarLabel: 'Wishlist' }}
-      />
-      <Tab.Screen 
-        name="Account" 
-        component={AccountScreen}
-        options={{ tabBarLabel: 'Account' }}
-      />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Browse" component={BrowseScreen} />
+      <Tab.Screen name="NewArrivals" component={NewArrivalsScreen} />
+      <Tab.Screen name="Cart" component={CartScreen} />
+      <Tab.Screen name="Account" component={AccountScreen} />
     </Tab.Navigator>
   );
 };
 
 const styles = StyleSheet.create({
-  tabButton: {
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingTop: 8,
+  },
+  tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconContainer: {
     position: 'relative',
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 4,
+    borderRadius: 20,
   },
-  icon: {
-    fontSize: 24,
+  iconContainerActive: {
+    backgroundColor: '#c4ff00',
+  },
+  tabIcon: {
+    fontSize: 22,
+  },
+  tabLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#999',
+    marginTop: 2,
+  },
+  tabLabelActive: {
+    color: '#000',
   },
   badge: {
     position: 'absolute',
     top: -4,
-    right: -10,
+    right: -8,
+    backgroundColor: '#e11d48',
     borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+    minWidth: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
@@ -200,7 +156,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#fff',
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
 });
 
