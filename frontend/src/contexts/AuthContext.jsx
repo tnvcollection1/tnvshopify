@@ -3,8 +3,10 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 const AuthContext = createContext(null);
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Session validation interval (only validate once every 5 minutes)
+// Session validation interval (only validate once every 5 minutes for regular sessions)
 const SESSION_VALIDATION_INTERVAL = 5 * 60 * 1000; // 5 minutes
+// For "Remember me" sessions, validate less frequently (every 24 hours)
+const REMEMBER_ME_VALIDATION_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 // Max retry attempts before giving up
 const MAX_VALIDATION_RETRIES = 3;
 
@@ -61,6 +63,14 @@ export const AuthProvider = ({ children }) => {
       const storedAgent = localStorage.getItem('agent');
       if (storedAgent) {
         const parsed = JSON.parse(storedAgent);
+        
+        // Check if session has expired (for "Remember me" sessions)
+        if (parsed.sessionExpiry && Date.now() > parsed.sessionExpiry) {
+          console.log('Session expired - clearing stored agent');
+          localStorage.removeItem('agent');
+          return null;
+        }
+        
         // Ensure permissions exist (for backward compatibility)
         if (!parsed.permissions) {
           parsed.permissions = getPermissionsForRole(parsed.role);
@@ -96,10 +106,25 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
+      // Check if session has expired
+      if (parsed.sessionExpiry && Date.now() > parsed.sessionExpiry) {
+        console.log('Session expired - logging out');
+        localStorage.removeItem('agent');
+        setAgent(null);
+        setLoading(false);
+        setSessionValidated(true);
+        return;
+      }
+
+      // Determine validation interval based on "Remember me" setting
+      const validationInterval = parsed.rememberMe 
+        ? REMEMBER_ME_VALIDATION_INTERVAL 
+        : SESSION_VALIDATION_INTERVAL;
+
       // Skip validation if we validated recently (unless forced)
       const now = Date.now();
       if (!forceValidation && lastValidationRef.current > 0 && 
-          (now - lastValidationRef.current) < SESSION_VALIDATION_INTERVAL) {
+          (now - lastValidationRef.current) < validationInterval) {
         console.log('Skipping session validation - validated recently');
         setLoading(false);
         setSessionValidated(true);
@@ -132,8 +157,12 @@ export const AuthProvider = ({ children }) => {
       } else {
         const data = await response.json();
         if (data.success && data.user) {
-          // Update local storage with fresh data from server
-          const updatedAgent = data.user;
+          // Update local storage with fresh data from server, preserving session settings
+          const updatedAgent = {
+            ...data.user,
+            rememberMe: parsed.rememberMe,
+            sessionExpiry: parsed.sessionExpiry
+          };
           localStorage.setItem('agent', JSON.stringify(updatedAgent));
           setAgent(updatedAgent);
           // Reset retry counter on success
