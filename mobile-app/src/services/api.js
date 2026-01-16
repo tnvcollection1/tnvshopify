@@ -5,10 +5,10 @@
 
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
-// Backend API URL - Update this for production
-const API_URL = 'https://wamerce.com/api';
-// For development, use: 'https://saas-ecom.preview.emergentagent.com/api'
+// Backend API URL - Uses environment variable for deployment flexibility
+const API_URL = Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL || 'https://wamerce.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
