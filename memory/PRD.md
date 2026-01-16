@@ -5,7 +5,39 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 
 ## What's Been Implemented
 
-### January 16, 2026 (Session 9 - Latest)
+### January 16, 2026 (Session 10 - Latest)
+
+**P0: Website Editor Preview Fixed** ✅ COMPLETED
+- **Problem**: Website Editor showed a simple mockup instead of the actual live storefront
+- **Root Cause**: The editor's preview section was rendering hardcoded JSX instead of the actual `TNVHomePage` and `TNVStoreLayout` components
+- **Solution**: Replaced the mockup with the actual TNV store components:
+  - Now renders `TNVStoreProvider`, `TNVHeader`, `TNVHomePage`, and `TNVFooter`
+  - Preview shows exact Namshi-style layout with category tabs, navigation, and real products
+  - Added "Live Preview - Changes sync in real-time" indicator
+  - Added "Connected to live store" status at bottom
+- **Files Modified**: `/app/frontend/src/components/WebsiteEditorV2.jsx`
+
+**P1: Facebook Data Deletion URL** ✅ COMPLETED
+- **Requirement**: Meta/Facebook App compliance requires a data deletion callback endpoint
+- **Implementation**: Added 3 new endpoints to `/app/backend/routes/facebook.py`:
+  - `POST /api/facebook/data-deletion` - Main callback endpoint that Facebook calls
+    - Parses and verifies `signed_request` from Facebook
+    - Returns confirmation code and status URL
+  - `GET /api/facebook/deletion-status/{confirmation_code}` - Status check URL
+  - `GET /api/facebook/data-deletion-info` - Public info page about deletion process
+- **Usage**: Set the Data Deletion URL in Facebook App settings to:
+  `https://wamerce.com/api/facebook/data-deletion`
+
+**P2: Admin Session Stability Improved** ✅ COMPLETED
+- **Problem**: Admin sessions were expiring too quickly even with "Remember Me"
+- **Changes to `/app/frontend/src/contexts/AuthContext.jsx`:
+  - Increased SESSION_VALIDATION_INTERVAL from 5 min to 15 min
+  - Increased REMEMBER_ME_VALIDATION_INTERVAL from 24 hours to 48 hours
+  - Increased MAX_VALIDATION_RETRIES from 3 to 5
+  - **New Logic**: Only logout on explicit 401 responses, not on network errors or 500s
+  - Server errors now don't count toward logout threshold
+
+### January 16, 2026 (Session 9)
 
 **Admin Session Expiry Fix** ✅ COMPLETED
 - **Problem**: Admin session was expiring too quickly, causing frequent logouts during testing
