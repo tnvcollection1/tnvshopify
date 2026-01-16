@@ -219,6 +219,26 @@ function ProtectedRoute({ children }) {
   return <Layout>{children}</Layout>;
 }
 
+// Protected Editor Route - Full screen without Layout sidebar for editors
+function ProtectedEditorRoute({ children }) {
+  const { agent, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <LoadingSpinner text="Loading editor..." size="large" />
+      </div>
+    );
+  }
+  
+  if (!agent) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Return children directly without Layout wrapper for full-screen editors
+  return children;
+}
+
 // Login Route wrapper
 function LoginRoute() {
   const { agent, login } = useAuth();
