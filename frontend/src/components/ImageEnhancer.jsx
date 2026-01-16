@@ -68,20 +68,42 @@ const ImageEnhancer = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/image-ai/products/${storeName}?limit=100`);
+      // Fetch from Shopify products endpoint
+      const response = await fetch(`${API_URL}/api/shopify/products?limit=100`);
       const data = await response.json();
-      if (data.success) {
-        setProducts(data.products || []);
+      
+      // Handle different response formats
+      let productList = [];
+      if (Array.isArray(data)) {
+        productList = data;
+      } else if (data.products) {
+        productList = data.products;
+      } else if (data.data) {
+        productList = data.data;
       }
+      
+      // Map products to our format
+      const mappedProducts = productList.map(p => {
+        // Get first image from images array or image field
+        let imageUrl = p.image;
+        if (!imageUrl && p.images && p.images.length > 0) {
+          imageUrl = p.images[0].src || p.images[0];
+        }
+        
+        return {
+          _id: p.id || p._id,
+          title: p.title || 'Untitled Product',
+          image: imageUrl || '',
+          enhanced_image: p.enhanced_image || null,
+          image_enhanced_at: p.image_enhanced_at || null
+        };
+      }).filter(p => p.image); // Only products with images
+      
+      setProducts(mappedProducts);
+      
     } catch (error) {
       console.error('Error fetching products:', error);
-      // Mock data for demo
-      setProducts([
-        { _id: '1', title: 'Summer Dress', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200', enhanced_image: null },
-        { _id: '2', title: 'Casual Shoes', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200', enhanced_image: null },
-        { _id: '3', title: 'Designer Bag', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=200', enhanced_image: null },
-        { _id: '4', title: 'Watch Collection', image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=200', enhanced_image: null },
-      ]);
+      toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
