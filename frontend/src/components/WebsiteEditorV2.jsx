@@ -3,7 +3,8 @@ import {
   Monitor, RefreshCw, ChevronRight, ChevronLeft, ChevronDown, ChevronUp,
   Settings, Image, Eye, EyeOff, Plus, Save, X, Palette, Layers, BoxSelect,
   Tablet, Smartphone as Phone, ExternalLink, Edit3, Megaphone, Type, Menu,
-  LayoutGrid, Trash2, GripVertical, MousePointer, Move, Check, Link2
+  LayoutGrid, Trash2, GripVertical, MousePointer, Move, Check, Link2,
+  Undo2, Redo2, Copy, Sparkles, Layout, Zap, Clock, ImagePlus, FileText
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -15,14 +16,69 @@ import { useStore } from '../contexts/StoreContext';
 const EMOJI_OPTIONS = ['💵', '🚚', '✓', '↩️', '🌟', '🔥', '💎', '🏷️', '👗', '👟', '👜', '⚽', '✨', '🎁', '💳', '📦'];
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
+// Template presets
+const TEMPLATES = {
+  minimal: {
+    name: 'Minimal',
+    icon: '○',
+    description: 'Clean and simple',
+    sections: ['announcement', 'header', 'hero', 'trending', 'footer'],
+    theme: { primaryColor: '#000000', accentColor: '#000000' }
+  },
+  bold: {
+    name: 'Bold',
+    icon: '◆',
+    description: 'Eye-catching colors',
+    sections: ['announcement', 'header', 'hero', 'categories', 'promo', 'trending', 'footer'],
+    theme: { primaryColor: '#FF3366', accentColor: '#FF3366' }
+  },
+  classic: {
+    name: 'Classic',
+    icon: '□',
+    description: 'Traditional layout',
+    sections: ['header', 'hero', 'categories', 'trending', 'footer'],
+    theme: { primaryColor: '#1a1a1a', accentColor: '#D4AF37' }
+  },
+  modern: {
+    name: 'Modern',
+    icon: '◇',
+    description: 'Contemporary style',
+    sections: ['announcement', 'header', 'hero', 'categories', 'trending', 'promo', 'footer'],
+    theme: { primaryColor: '#6366F1', accentColor: '#EC4899' }
+  }
+};
+
+// Available components to add
+const COMPONENT_LIBRARY = [
+  { id: 'hero_carousel', name: 'Hero Banner', icon: Image, description: 'Full-width promotional banner' },
+  { id: 'product_grid', name: 'Product Grid', icon: LayoutGrid, description: 'Display products in a grid' },
+  { id: 'categories', name: 'Categories', icon: Menu, description: 'Category showcase' },
+  { id: 'promo_banner', name: 'Promo Banner', icon: Megaphone, description: 'Promotional message' },
+  { id: 'text_block', name: 'Text Block', icon: Type, description: 'Custom text content' },
+  { id: 'image_gallery', name: 'Image Gallery', icon: ImagePlus, description: 'Multiple images display' },
+  { id: 'testimonials', name: 'Testimonials', icon: FileText, description: 'Customer reviews' },
+];
+
 const WebsiteEditorV2 = () => {
   const { selectedStore } = useStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [viewMode, setViewMode] = useState('desktop');
-  const [editMode, setEditMode] = useState('click'); // 'click' or 'drag'
   const [showLeftPanel, setShowLeftPanel] = useState(true);
+  const [showComponentLibrary, setShowComponentLibrary] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [autoSaveTimer, setAutoSaveTimer] = useState(null);
+  const [lastSaved, setLastSaved] = useState(null);
+  
+  // Drag and drop state
+  const [draggedSection, setDraggedSection] = useState(null);
+  const [dragOverSection, setDragOverSection] = useState(null);
+  
+  // Undo/Redo state
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const isUndoRedo = useRef(false);
   
   // Currently selected/editing element
   const [selectedElement, setSelectedElement] = useState(null);
@@ -54,9 +110,86 @@ const WebsiteEditorV2 = () => {
   const storeName = selectedStore || 'tnvcollection';
   const storefrontUrl = `https://stores.wamerce.com/${storeName}`;
 
+  // Save state to history for undo/redo
+  const saveToHistory = useCallback(() => {
+    if (isUndoRedo.current) {
+      isUndoRedo.current = false;
+      return;
+    }
+    const state = { sections: [...sections], headerConfig: { ...headerConfig }, banners: [...banners] };
+    setHistory(prev => {
+      const newHistory = prev.slice(0, historyIndex + 1);
+      newHistory.push(JSON.stringify(state));
+      if (newHistory.length > 50) newHistory.shift(); // Keep max 50 states
+      return newHistory;
+    });
+    setHistoryIndex(prev => Math.min(prev + 1, 49));
+  }, [sections, headerConfig, banners, historyIndex]);
+
+  // Undo
+  const undo = useCallback(() => {
+    if (historyIndex <= 0) return;
+    isUndoRedo.current = true;
+    const prevState = JSON.parse(history[historyIndex - 1]);
+    setSections(prevState.sections);
+    setHeaderConfig(prevState.headerConfig);
+    setBanners(prevState.banners);
+    setHistoryIndex(prev => prev - 1);
+    setHasChanges(true);
+    toast.info('Undo');
+  }, [history, historyIndex]);
+
+  // Redo
+  const redo = useCallback(() => {
+    if (historyIndex >= history.length - 1) return;
+    isUndoRedo.current = true;
+    const nextState = JSON.parse(history[historyIndex + 1]);
+    setSections(nextState.sections);
+    setHeaderConfig(nextState.headerConfig);
+    setBanners(nextState.banners);
+    setHistoryIndex(prev => prev + 1);
+    setHasChanges(true);
+    toast.info('Redo');
+  }, [history, historyIndex]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        redo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveAll();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
+
+  // Auto-save effect
+  useEffect(() => {
+    if (hasChanges) {
+      if (autoSaveTimer) clearTimeout(autoSaveTimer);
+      const timer = setTimeout(() => {
+        saveAll(true); // silent save
+      }, 30000); // Auto-save after 30 seconds of inactivity
+      setAutoSaveTimer(timer);
+    }
+    return () => autoSaveTimer && clearTimeout(autoSaveTimer);
+  }, [hasChanges, sections, headerConfig, banners]);
+
   useEffect(() => {
     fetchData();
   }, [selectedStore]);
+
+  // Save to history when state changes
+  useEffect(() => {
+    if (!loading) saveToHistory();
+  }, [sections, headerConfig, banners, loading]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -70,7 +203,6 @@ const WebsiteEditorV2 = () => {
         const data = await bannersRes.json();
         setBanners(data.banners || [
           { id: 1, title: 'Summer Collection', subtitle: 'Up to 50% OFF', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8', link: '/collection/summer' },
-          { id: 2, title: 'New Arrivals', subtitle: 'Shop the latest trends', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64', link: '/new-arrivals' },
         ]);
       }
       if (navRes.ok) {
@@ -84,6 +216,47 @@ const WebsiteEditorV2 = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Drag and Drop handlers
+  const handleDragStart = (e, sectionId) => {
+    setDraggedSection(sectionId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, sectionId) => {
+    e.preventDefault();
+    if (draggedSection !== sectionId) {
+      setDragOverSection(sectionId);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverSection(null);
+  };
+
+  const handleDrop = (e, targetId) => {
+    e.preventDefault();
+    if (!draggedSection || draggedSection === targetId) return;
+
+    setSections(prev => {
+      const newSections = [...prev];
+      const dragIndex = newSections.findIndex(s => s.id === draggedSection);
+      const dropIndex = newSections.findIndex(s => s.id === targetId);
+      const [removed] = newSections.splice(dragIndex, 1);
+      newSections.splice(dropIndex, 0, removed);
+      return newSections;
+    });
+
+    setDraggedSection(null);
+    setDragOverSection(null);
+    setHasChanges(true);
+    toast.success('Section moved!');
+  };
+
+  const handleDragEnd = () => {
+    setDraggedSection(null);
+    setDragOverSection(null);
   };
 
   // Handle element click in preview
@@ -123,7 +296,6 @@ const WebsiteEditorV2 = () => {
         ...prev,
         categories: prev.categories.map((c, i) => {
           if (i !== id) return c;
-          // Handle both string and object categories
           if (typeof c === 'string') return inlineEditValue;
           return { ...c, name: inlineEditValue };
         })
@@ -135,34 +307,81 @@ const WebsiteEditorV2 = () => {
     setInlineEditValue('');
   };
 
-  // Update element from right panel
-  const updateElement = (field, value) => {
-    if (!selectedElement) return;
-    
-    const { type, id } = selectedElement;
-    
-    if (type.startsWith('logo')) {
-      setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, [field]: value } }));
-    } else if (type === 'promo_message') {
-      setHeaderConfig(prev => ({
-        ...prev,
-        promoMessages: prev.promoMessages.map((p, i) => i === id ? { ...p, [field]: value } : p)
-      }));
-    } else if (type.startsWith('banner')) {
-      setBanners(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b));
-    }
-    
-    setHasChanges(true);
-  };
-
   // Toggle section visibility
   const toggleSection = (sectionId) => {
     setSections(prev => prev.map(s => s.id === sectionId ? { ...s, enabled: !s.enabled } : s));
     setHasChanges(true);
   };
 
+  // Duplicate section
+  const duplicateSection = (sectionId) => {
+    const section = sections.find(s => s.id === sectionId);
+    if (!section) return;
+    
+    const newSection = {
+      ...section,
+      id: `${section.id}_copy_${Date.now()}`,
+      title: `${section.title} (Copy)`
+    };
+    
+    setSections(prev => {
+      const idx = prev.findIndex(s => s.id === sectionId);
+      const newSections = [...prev];
+      newSections.splice(idx + 1, 0, newSection);
+      return newSections;
+    });
+    
+    setHasChanges(true);
+    toast.success('Section duplicated!');
+  };
+
+  // Delete section
+  const deleteSection = (sectionId) => {
+    setSections(prev => prev.filter(s => s.id !== sectionId));
+    setSelectedElement(null);
+    setHasChanges(true);
+    toast.success('Section deleted');
+  };
+
+  // Add new section from library
+  const addSection = (componentType) => {
+    const component = COMPONENT_LIBRARY.find(c => c.id === componentType);
+    const newSection = {
+      id: `${componentType}_${Date.now()}`,
+      type: componentType,
+      title: component?.name || 'New Section',
+      enabled: true,
+      settings: {}
+    };
+    
+    setSections(prev => [...prev.slice(0, -1), newSection, prev[prev.length - 1]]); // Add before footer
+    setShowComponentLibrary(false);
+    setHasChanges(true);
+    toast.success(`${component?.name || 'Section'} added!`);
+  };
+
+  // Apply template
+  const applyTemplate = (templateKey) => {
+    const template = TEMPLATES[templateKey];
+    if (!template) return;
+
+    setSections(prev => prev.map(s => ({
+      ...s,
+      enabled: template.sections.includes(s.id)
+    })));
+
+    setHeaderConfig(prev => ({
+      ...prev,
+      logo: { ...prev.logo, badgeColor: template.theme.accentColor }
+    }));
+
+    setShowTemplates(false);
+    setHasChanges(true);
+    toast.success(`Applied "${template.name}" template!`);
+  };
+
   // Save all changes
-  const saveAll = async () => {
+  const saveAll = async (silent = false) => {
     setSaving(true);
     try {
       await Promise.all([
@@ -176,16 +395,12 @@ const WebsiteEditorV2 = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(headerConfig.promoMessages)
         }),
-        fetch(`${API_URL}/api/storefront/config/menu/${storeName}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(headerConfig.categories)
-        }),
       ]);
-      toast.success('All changes saved!');
+      setLastSaved(new Date());
+      if (!silent) toast.success('All changes saved!');
       setHasChanges(false);
     } catch (error) {
-      toast.error('Failed to save changes');
+      if (!silent) toast.error('Failed to save changes');
     } finally {
       setSaving(false);
     }
@@ -217,6 +432,30 @@ const WebsiteEditorV2 = () => {
     />
   );
 
+  // Quick Actions Toolbar - Appears near selected element
+  const QuickActionsToolbar = () => {
+    if (!selectedElement) return null;
+    
+    return (
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-full shadow-2xl flex items-center gap-3 z-50 animate-in slide-in-from-bottom-4">
+        <span className="text-sm opacity-70">Quick Actions:</span>
+        <button onClick={() => duplicateSection(selectedElement.id)} className="p-2 hover:bg-white/20 rounded-full" title="Duplicate">
+          <Copy className="w-4 h-4" />
+        </button>
+        <button onClick={() => toggleSection(selectedElement.id)} className="p-2 hover:bg-white/20 rounded-full" title="Toggle Visibility">
+          <Eye className="w-4 h-4" />
+        </button>
+        <button onClick={() => deleteSection(selectedElement.id)} className="p-2 hover:bg-red-500/50 rounded-full" title="Delete">
+          <Trash2 className="w-4 h-4" />
+        </button>
+        <div className="w-px h-6 bg-white/30" />
+        <button onClick={() => setSelectedElement(null)} className="p-2 hover:bg-white/20 rounded-full" title="Deselect">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-100">
@@ -236,27 +475,59 @@ const WebsiteEditorV2 = () => {
           <div className="flex items-center gap-2">
             <Monitor className="w-5 h-5" />
             <span className="font-semibold">Website Editor</span>
-            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Click to Edit</span>
+            <span className="text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full">Pro</span>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
-          {/* Edit Mode Toggle */}
-          <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-lg">
+        <div className="flex items-center gap-2">
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-1 mr-2">
             <button 
-              onClick={() => setEditMode('click')}
-              className={`p-1.5 rounded flex items-center gap-1 text-xs ${editMode === 'click' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}
-              title="Click to Edit"
+              onClick={undo} 
+              disabled={historyIndex <= 0}
+              className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Undo (Ctrl+Z)"
             >
-              <MousePointer className="w-4 h-4" />
+              <Undo2 className="w-4 h-4" />
             </button>
             <button 
-              onClick={() => setEditMode('drag')}
-              className={`p-1.5 rounded flex items-center gap-1 text-xs ${editMode === 'drag' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}
-              title="Drag to Reorder"
+              onClick={redo}
+              disabled={historyIndex >= history.length - 1}
+              className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Redo (Ctrl+Y)"
             >
-              <Move className="w-4 h-4" />
+              <Redo2 className="w-4 h-4" />
             </button>
+          </div>
+
+          {/* Templates */}
+          <div className="relative">
+            <Button variant="outline" size="sm" onClick={() => setShowTemplates(!showTemplates)}>
+              <Sparkles className="w-4 h-4 mr-2" />
+              Templates
+            </Button>
+            {showTemplates && (
+              <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border p-3 w-64 z-50">
+                <h3 className="font-semibold text-sm mb-2">Quick Start Templates</h3>
+                <div className="space-y-2">
+                  {Object.entries(TEMPLATES).map(([key, template]) => (
+                    <button
+                      key={key}
+                      onClick={() => applyTemplate(key)}
+                      className="w-full text-left p-3 rounded-lg hover:bg-gray-50 border transition-all hover:border-blue-300"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{template.icon}</span>
+                        <div>
+                          <p className="font-medium text-sm">{template.name}</p>
+                          <p className="text-xs text-gray-500">{template.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* View Mode */}
@@ -281,17 +552,27 @@ const WebsiteEditorV2 = () => {
             </button>
           </div>
           
-          <Button variant="outline" onClick={() => window.open(storefrontUrl, '_blank')}>
+          <Button variant="outline" size="sm" onClick={() => window.open(storefrontUrl, '_blank')}>
             <ExternalLink className="w-4 h-4 mr-2" />
-            View Live
+            Preview
           </Button>
           
-          {hasChanges && (
-            <Button onClick={saveAll} disabled={saving} className="bg-green-600 hover:bg-green-700">
+          {/* Save Status */}
+          <div className="flex items-center gap-2">
+            {lastSaved && (
+              <span className="text-xs text-gray-400 flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {lastSaved.toLocaleTimeString()}
+              </span>
+            )}
+            {hasChanges && (
+              <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" title="Unsaved changes" />
+            )}
+            <Button onClick={() => saveAll()} disabled={saving || !hasChanges} className="bg-green-600 hover:bg-green-700">
               {saving ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-              Save All
+              Save
             </Button>
-          )}
+          </div>
         </div>
       </div>
 
@@ -299,51 +580,84 @@ const WebsiteEditorV2 = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Sections */}
         {showLeftPanel && (
-          <div className="w-64 bg-white border-r flex flex-col flex-shrink-0">
+          <div className="w-72 bg-white border-r flex flex-col flex-shrink-0">
             <div className="p-4 border-b flex items-center justify-between">
               <h2 className="font-semibold flex items-center gap-2">
                 <Layers className="w-4 h-4" />
                 Sections
               </h2>
-              <Button variant="ghost" size="sm" onClick={() => setShowLeftPanel(false)}>
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => setShowComponentLibrary(true)}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg"
+                  title="Add Section"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+                <Button variant="ghost" size="sm" onClick={() => setShowLeftPanel(false)}>
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
             
             <div className="flex-1 overflow-auto p-3 space-y-1">
               {sections.map((section) => (
                 <div
                   key={section.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, section.id)}
+                  onDragOver={(e) => handleDragOver(e, section.id)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, section.id)}
+                  onDragEnd={handleDragEnd}
                   onClick={() => handleElementClick('section', section.id, section)}
                   className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all ${
+                    dragOverSection === section.id ? 'border-2 border-blue-500 border-dashed bg-blue-50' :
+                    draggedSection === section.id ? 'opacity-50' :
                     selectedElement?.id === section.id && selectedElement?.type === 'section'
                       ? 'bg-blue-50 border-blue-200 border' 
                       : 'hover:bg-gray-50 border border-transparent'
                   } ${!section.enabled && 'opacity-50'}`}
                 >
-                  <GripVertical className="w-4 h-4 text-gray-400 cursor-grab" />
+                  <div className="cursor-grab active:cursor-grabbing">
+                    <GripVertical className="w-4 h-4 text-gray-400" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{section.title}</p>
+                    <p className="text-xs text-gray-400 truncate">{section.type}</p>
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toggleSection(section.id); }}
-                    className="p-1"
-                  >
-                    {section.enabled ? (
-                      <Eye className="w-4 h-4 text-green-500" />
-                    ) : (
-                      <EyeOff className="w-4 h-4 text-gray-400" />
-                    )}
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); duplicateSection(section.id); }}
+                      className="p-1 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Duplicate"
+                    >
+                      <Copy className="w-3 h-3 text-gray-400" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleSection(section.id); }}
+                      className="p-1"
+                    >
+                      {section.enabled ? (
+                        <Eye className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Quick Tip */}
-            <div className="p-3 border-t bg-blue-50">
-              <p className="text-xs text-blue-700">
-                <strong>💡 Tip:</strong> Click any element in the preview to edit it. Double-click text for inline editing.
-              </p>
+            {/* Keyboard Shortcuts */}
+            <div className="p-3 border-t bg-gray-50">
+              <p className="text-xs text-gray-500 mb-2 font-medium">Keyboard Shortcuts</p>
+              <div className="grid grid-cols-2 gap-1 text-xs text-gray-400">
+                <span>⌘Z Undo</span>
+                <span>⌘Y Redo</span>
+                <span>⌘S Save</span>
+                <span>Drag to reorder</span>
+              </div>
             </div>
           </div>
         )}
@@ -376,12 +690,7 @@ const WebsiteEditorV2 = () => {
                   <div className="flex items-center justify-center gap-2">
                     {headerConfig.promoMessages.length > 0 && (
                       <>
-                        <span
-                          onClick={(e) => { e.stopPropagation(); handleElementClick('promo_emoji', 0, headerConfig.promoMessages[0]); }}
-                          className="cursor-pointer hover:scale-125 transition-transform"
-                        >
-                          {headerConfig.promoMessages[0]?.emoji || '🚚'}
-                        </span>
+                        <span>{headerConfig.promoMessages[0]?.emoji || '🚚'}</span>
                         {editingInline && selectedElement?.type === 'promo_message' && selectedElement?.id === 0 ? (
                           <InlineInput
                             value={inlineEditValue}
@@ -406,7 +715,6 @@ const WebsiteEditorV2 = () => {
               {/* PREVIEW: Header */}
               {sections.find(s => s.id === 'header')?.enabled && (
                 <div className="bg-white border-b">
-                  {/* Logo Bar */}
                   <div className="flex items-center justify-between px-6 py-4">
                     <div 
                       className={`flex items-center gap-1 cursor-pointer transition-all rounded px-2 py-1 ${
@@ -415,40 +723,16 @@ const WebsiteEditorV2 = () => {
                       onClick={() => handleElementClick('logo', 'main', headerConfig.logo)}
                     >
                       {editingInline && selectedElement?.type === 'logo_text' ? (
-                        <InlineInput
-                          value={inlineEditValue}
-                          onSave={saveInlineEdit}
-                          onCancel={() => setEditingInline(false)}
-                          className="text-2xl font-bold"
-                        />
+                        <InlineInput value={inlineEditValue} onSave={saveInlineEdit} onCancel={() => setEditingInline(false)} className="text-2xl font-bold" />
                       ) : (
-                        <span 
-                          className="text-2xl font-bold hover:bg-gray-100 px-1 rounded cursor-text"
-                          onDoubleClick={() => handleElementDoubleClick('logo_text', 'main', headerConfig.logo.text)}
-                        >
+                        <span className="text-2xl font-bold hover:bg-gray-100 px-1 rounded cursor-text" onDoubleClick={() => handleElementDoubleClick('logo_text', 'main', headerConfig.logo.text)}>
                           {headerConfig.logo.text}
                         </span>
                       )}
-                      {editingInline && selectedElement?.type === 'logo_badge' ? (
-                        <InlineInput
-                          value={inlineEditValue}
-                          onSave={saveInlineEdit}
-                          onCancel={() => setEditingInline(false)}
-                          className="text-xs font-semibold px-2 py-0.5 rounded"
-                          style={{ backgroundColor: headerConfig.logo.badgeColor, color: 'white' }}
-                        />
-                      ) : (
-                        <span 
-                          className="text-xs font-semibold px-2 py-0.5 rounded hover:opacity-80 cursor-text"
-                          style={{ backgroundColor: headerConfig.logo.badgeColor, color: 'white' }}
-                          onDoubleClick={() => handleElementDoubleClick('logo_badge', 'main', headerConfig.logo.badge)}
-                        >
-                          {headerConfig.logo.badge}
-                        </span>
-                      )}
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: headerConfig.logo.badgeColor, color: 'white' }}>
+                        {headerConfig.logo.badge}
+                      </span>
                     </div>
-
-                    {/* Search & Icons */}
                     <div className="flex items-center gap-4">
                       <div className="w-64 h-10 bg-gray-100 rounded-full flex items-center px-4 text-gray-400 text-sm">
                         <BoxSelect className="w-4 h-4 mr-2" />
@@ -456,11 +740,8 @@ const WebsiteEditorV2 = () => {
                       </div>
                     </div>
                   </div>
-
-                  {/* Navigation */}
                   <div className="flex items-center justify-center gap-8 py-3 border-t text-sm font-medium">
                     {headerConfig.categories.map((cat, idx) => {
-                      // Handle both string and object categories
                       const catName = typeof cat === 'string' ? cat : cat?.name || 'Category';
                       return (
                         <span 
@@ -474,26 +755,11 @@ const WebsiteEditorV2 = () => {
                           }`}
                         >
                           {editingInline && selectedElement?.type === 'category' && selectedElement?.id === idx ? (
-                            <InlineInput
-                              value={inlineEditValue}
-                              onSave={saveInlineEdit}
-                              onCancel={() => setEditingInline(false)}
-                            />
-                          ) : (
-                            catName
-                          )}
+                            <InlineInput value={inlineEditValue} onSave={saveInlineEdit} onCancel={() => setEditingInline(false)} />
+                          ) : catName}
                         </span>
                       );
                     })}
-                    <button 
-                      onClick={() => {
-                        setHeaderConfig(prev => ({ ...prev, categories: [...prev.categories, 'NEW'] }));
-                        setHasChanges(true);
-                      }}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
               )}
@@ -505,7 +771,7 @@ const WebsiteEditorV2 = () => {
                     <div 
                       key={banner.id}
                       onClick={() => handleElementClick('banner', banner.id, banner)}
-                      className={`relative h-96 bg-cover bg-center cursor-pointer transition-all ${
+                      className={`relative h-80 bg-cover bg-center cursor-pointer transition-all ${
                         selectedElement?.type === 'banner' && selectedElement?.id === banner.id 
                           ? 'ring-4 ring-blue-500 ring-inset' 
                           : 'hover:ring-4 hover:ring-blue-300 hover:ring-inset'
@@ -515,47 +781,22 @@ const WebsiteEditorV2 = () => {
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                         <div className="text-center text-white">
                           {editingInline && selectedElement?.type === 'banner_title' && selectedElement?.id === banner.id ? (
-                            <InlineInput
-                              value={inlineEditValue}
-                              onSave={saveInlineEdit}
-                              onCancel={() => setEditingInline(false)}
-                              className="text-4xl font-bold text-white bg-transparent"
-                            />
+                            <InlineInput value={inlineEditValue} onSave={saveInlineEdit} onCancel={() => setEditingInline(false)} className="text-4xl font-bold text-white bg-transparent" />
                           ) : (
-                            <h2 
-                              className="text-4xl font-bold mb-2 hover:bg-white/20 px-4 py-2 rounded cursor-text"
-                              onDoubleClick={(e) => { e.stopPropagation(); handleElementDoubleClick('banner_title', banner.id, banner.title); }}
-                            >
+                            <h2 className="text-4xl font-bold mb-2 hover:bg-white/20 px-4 py-2 rounded cursor-text" onDoubleClick={(e) => { e.stopPropagation(); handleElementDoubleClick('banner_title', banner.id, banner.title); }}>
                               {banner.title}
                             </h2>
                           )}
                           {editingInline && selectedElement?.type === 'banner_subtitle' && selectedElement?.id === banner.id ? (
-                            <InlineInput
-                              value={inlineEditValue}
-                              onSave={saveInlineEdit}
-                              onCancel={() => setEditingInline(false)}
-                              className="text-xl text-white bg-transparent"
-                            />
+                            <InlineInput value={inlineEditValue} onSave={saveInlineEdit} onCancel={() => setEditingInline(false)} className="text-xl text-white bg-transparent" />
                           ) : (
-                            <p 
-                              className="text-xl hover:bg-white/20 px-4 py-1 rounded cursor-text"
-                              onDoubleClick={(e) => { e.stopPropagation(); handleElementDoubleClick('banner_subtitle', banner.id, banner.subtitle); }}
-                            >
+                            <p className="text-xl hover:bg-white/20 px-4 py-1 rounded cursor-text" onDoubleClick={(e) => { e.stopPropagation(); handleElementDoubleClick('banner_subtitle', banner.id, banner.subtitle); }}>
                               {banner.subtitle}
                             </p>
                           )}
-                          <button className="mt-4 bg-white text-black px-6 py-2 rounded-full font-semibold hover:bg-gray-100">
-                            Shop Now
-                          </button>
+                          <button className="mt-4 bg-white text-black px-6 py-2 rounded-full font-semibold hover:bg-gray-100">Shop Now</button>
                         </div>
                       </div>
-                      {/* Edit indicator */}
-                      {selectedElement?.type === 'banner' && selectedElement?.id === banner.id && (
-                        <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                          <Edit3 className="w-4 h-4" />
-                          Click text to edit
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -593,15 +834,10 @@ const WebsiteEditorV2 = () => {
 
               {/* PREVIEW: Promo Banner */}
               {sections.find(s => s.id === 'promo')?.enabled && (
-                <div 
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 text-white py-12 text-center cursor-pointer hover:ring-4 hover:ring-blue-300 hover:ring-inset"
-                  onClick={() => handleElementClick('promo_banner', 'main', {})}
-                >
+                <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white py-12 text-center cursor-pointer hover:ring-4 hover:ring-blue-300 hover:ring-inset" onClick={() => handleElementClick('promo_banner', 'main', {})}>
                   <h3 className="text-2xl font-bold mb-2">Flash Sale</h3>
                   <p className="text-lg opacity-90">Up to 70% OFF - Limited Time Only!</p>
-                  <button className="mt-4 bg-white text-purple-600 px-6 py-2 rounded-full font-semibold">
-                    Shop Sale
-                  </button>
+                  <button className="mt-4 bg-white text-purple-600 px-6 py-2 rounded-full font-semibold">Shop Sale</button>
                 </div>
               )}
 
@@ -615,15 +851,11 @@ const WebsiteEditorV2 = () => {
                     </div>
                     <div>
                       <h4 className="font-bold mb-4">Shop</h4>
-                      <ul className="space-y-2 text-sm text-gray-400">
-                        <li>Men</li><li>Women</li><li>Kids</li><li>Sale</li>
-                      </ul>
+                      <ul className="space-y-2 text-sm text-gray-400"><li>Men</li><li>Women</li><li>Kids</li><li>Sale</li></ul>
                     </div>
                     <div>
                       <h4 className="font-bold mb-4">Help</h4>
-                      <ul className="space-y-2 text-sm text-gray-400">
-                        <li>Contact</li><li>Shipping</li><li>Returns</li><li>FAQ</li>
-                      </ul>
+                      <ul className="space-y-2 text-sm text-gray-400"><li>Contact</li><li>Shipping</li><li>Returns</li><li>FAQ</li></ul>
                     </div>
                     <div>
                       <h4 className="font-bold mb-4">Follow Us</h4>
@@ -646,7 +878,7 @@ const WebsiteEditorV2 = () => {
             <div className="p-4 border-b flex items-center justify-between">
               <h2 className="font-semibold flex items-center gap-2">
                 <Edit3 className="w-4 h-4" />
-                Edit {selectedElement.type.replace('_', ' ')}
+                Edit Element
               </h2>
               <Button variant="ghost" size="sm" onClick={() => setSelectedElement(null)}>
                 <X className="w-4 h-4" />
@@ -659,103 +891,48 @@ const WebsiteEditorV2 = () => {
                 <>
                   <div>
                     <Label className="text-sm">Logo Text</Label>
-                    <Input 
-                      value={headerConfig.logo.text}
-                      onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, text: e.target.value } })); setHasChanges(true); }}
-                      className="mt-1"
-                    />
+                    <Input value={headerConfig.logo.text} onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, text: e.target.value } })); setHasChanges(true); }} className="mt-1" />
                   </div>
                   <div>
                     <Label className="text-sm">Badge Text</Label>
-                    <Input 
-                      value={headerConfig.logo.badge}
-                      onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, badge: e.target.value } })); setHasChanges(true); }}
-                      className="mt-1"
-                    />
+                    <Input value={headerConfig.logo.badge} onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, badge: e.target.value } })); setHasChanges(true); }} className="mt-1" />
                   </div>
                   <div>
                     <Label className="text-sm">Badge Color</Label>
                     <div className="flex gap-2 mt-1">
-                      <Input 
-                        type="color"
-                        value={headerConfig.logo.badgeColor}
-                        onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, badgeColor: e.target.value } })); setHasChanges(true); }}
-                        className="w-12 h-10 p-1"
-                      />
-                      <Input 
-                        value={headerConfig.logo.badgeColor}
-                        onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, badgeColor: e.target.value } })); setHasChanges(true); }}
-                        className="flex-1"
-                      />
+                      <Input type="color" value={headerConfig.logo.badgeColor} onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, badgeColor: e.target.value } })); setHasChanges(true); }} className="w-12 h-10 p-1" />
+                      <Input value={headerConfig.logo.badgeColor} onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, badgeColor: e.target.value } })); setHasChanges(true); }} className="flex-1" />
                     </div>
                   </div>
                 </>
               )}
 
               {/* Banner Editor */}
-              {selectedElement.type === 'banner' && (
-                <>
-                  {banners.filter(b => b.id === selectedElement.id).map(banner => (
-                    <div key={banner.id} className="space-y-4">
-                      <div>
-                        <Label className="text-sm">Title</Label>
-                        <Input 
-                          value={banner.title}
-                          onChange={(e) => { setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, title: e.target.value } : b)); setHasChanges(true); }}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Subtitle</Label>
-                        <Input 
-                          value={banner.subtitle}
-                          onChange={(e) => { setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, subtitle: e.target.value } : b)); setHasChanges(true); }}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Image URL</Label>
-                        <Input 
-                          value={banner.image}
-                          onChange={(e) => { setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, image: e.target.value } : b)); setHasChanges(true); }}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm">Link</Label>
-                        <Input 
-                          value={banner.link}
-                          onChange={(e) => { setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, link: e.target.value } : b)); setHasChanges(true); }}
-                          className="mt-1"
-                          placeholder="/collection/summer"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
+              {selectedElement.type === 'banner' && banners.filter(b => b.id === selectedElement.id).map(banner => (
+                <div key={banner.id} className="space-y-4">
+                  <div>
+                    <Label className="text-sm">Title</Label>
+                    <Input value={banner.title} onChange={(e) => { setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, title: e.target.value } : b)); setHasChanges(true); }} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Subtitle</Label>
+                    <Input value={banner.subtitle} onChange={(e) => { setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, subtitle: e.target.value } : b)); setHasChanges(true); }} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Image URL</Label>
+                    <Input value={banner.image} onChange={(e) => { setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, image: e.target.value } : b)); setHasChanges(true); }} className="mt-1" />
+                  </div>
+                </div>
+              ))}
 
               {/* Promo Message Editor */}
-              {(selectedElement.type === 'promo_message' || selectedElement.type === 'announcement' || selectedElement.type === 'promo_emoji') && (
+              {(selectedElement.type === 'promo_message' || selectedElement.type === 'announcement') && (
                 <>
                   <div>
                     <Label className="text-sm">Emoji</Label>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {EMOJI_OPTIONS.map(emoji => (
-                        <button
-                          key={emoji}
-                          onClick={() => {
-                            const idx = selectedElement.id || 0;
-                            setHeaderConfig(prev => ({
-                              ...prev,
-                              promoMessages: prev.promoMessages.map((p, i) => i === idx ? { ...p, emoji } : p)
-                            }));
-                            setHasChanges(true);
-                          }}
-                          className={`w-8 h-8 rounded flex items-center justify-center hover:bg-gray-100 ${
-                            headerConfig.promoMessages[selectedElement.id || 0]?.emoji === emoji ? 'bg-blue-100 ring-2 ring-blue-500' : ''
-                          }`}
-                        >
+                        <button key={emoji} onClick={() => { const idx = selectedElement.id || 0; setHeaderConfig(prev => ({ ...prev, promoMessages: prev.promoMessages.map((p, i) => i === idx ? { ...p, emoji } : p) })); setHasChanges(true); }} className={`w-8 h-8 rounded flex items-center justify-center hover:bg-gray-100 ${headerConfig.promoMessages[selectedElement.id || 0]?.emoji === emoji ? 'bg-blue-100 ring-2 ring-blue-500' : ''}`}>
                           {emoji}
                         </button>
                       ))}
@@ -763,18 +940,7 @@ const WebsiteEditorV2 = () => {
                   </div>
                   <div>
                     <Label className="text-sm">Message Text</Label>
-                    <Input 
-                      value={headerConfig.promoMessages[selectedElement.id || 0]?.text || ''}
-                      onChange={(e) => {
-                        const idx = selectedElement.id || 0;
-                        setHeaderConfig(prev => ({
-                          ...prev,
-                          promoMessages: prev.promoMessages.map((p, i) => i === idx ? { ...p, text: e.target.value } : p)
-                        }));
-                        setHasChanges(true);
-                      }}
-                      className="mt-1"
-                    />
+                    <Input value={headerConfig.promoMessages[selectedElement.id || 0]?.text || ''} onChange={(e) => { const idx = selectedElement.id || 0; setHeaderConfig(prev => ({ ...prev, promoMessages: prev.promoMessages.map((p, i) => i === idx ? { ...p, text: e.target.value } : p) })); setHasChanges(true); }} className="mt-1" />
                   </div>
                 </>
               )}
@@ -786,54 +952,54 @@ const WebsiteEditorV2 = () => {
                 return (
                   <div>
                     <Label className="text-sm">Category Name</Label>
-                    <Input 
-                      value={catName}
-                      onChange={(e) => {
-                        setHeaderConfig(prev => ({
-                          ...prev,
-                          categories: prev.categories.map((c, i) => {
-                            if (i !== selectedElement.id) return c;
-                            if (typeof c === 'string') return e.target.value;
-                            return { ...c, name: e.target.value };
-                          })
-                        }));
-                        setHasChanges(true);
-                      }}
-                      className="mt-1"
-                    />
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      className="mt-3 w-full"
-                      onClick={() => {
-                        setHeaderConfig(prev => ({
-                          ...prev,
-                          categories: prev.categories.filter((_, i) => i !== selectedElement.id)
-                        }));
-                        setSelectedElement(null);
-                        setHasChanges(true);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Remove Category
+                    <Input value={catName} onChange={(e) => { setHeaderConfig(prev => ({ ...prev, categories: prev.categories.map((c, i) => { if (i !== selectedElement.id) return c; if (typeof c === 'string') return e.target.value; return { ...c, name: e.target.value }; }) })); setHasChanges(true); }} className="mt-1" />
+                    <Button variant="destructive" size="sm" className="mt-3 w-full" onClick={() => { setHeaderConfig(prev => ({ ...prev, categories: prev.categories.filter((_, i) => i !== selectedElement.id) })); setSelectedElement(null); setHasChanges(true); }}>
+                      <Trash2 className="w-4 h-4 mr-2" />Remove Category
                     </Button>
                   </div>
                 );
               })()}
             </div>
 
-            {/* Apply Changes */}
             {hasChanges && (
               <div className="p-4 border-t bg-gray-50">
-                <Button onClick={saveAll} className="w-full bg-green-600 hover:bg-green-700">
-                  <Check className="w-4 h-4 mr-2" />
-                  Apply Changes
+                <Button onClick={() => saveAll()} className="w-full bg-green-600 hover:bg-green-700">
+                  <Check className="w-4 h-4 mr-2" />Apply Changes
                 </Button>
               </div>
             )}
           </div>
         )}
       </div>
+
+      {/* Component Library Modal */}
+      {showComponentLibrary && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowComponentLibrary(false)}>
+          <div className="bg-white rounded-xl p-6 w-[500px] max-h-[80vh] overflow-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Plus className="w-5 h-5" />
+                Add Section
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowComponentLibrary(false)}>
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {COMPONENT_LIBRARY.map(component => (
+                <button key={component.id} onClick={() => addSection(component.id)} className="p-4 border rounded-xl hover:border-blue-500 hover:bg-blue-50 text-left transition-all">
+                  <component.icon className="w-8 h-8 text-blue-500 mb-2" />
+                  <p className="font-medium">{component.name}</p>
+                  <p className="text-xs text-gray-500">{component.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Actions Toolbar */}
+      <QuickActionsToolbar />
     </div>
   );
 };
