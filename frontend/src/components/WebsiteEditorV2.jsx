@@ -454,28 +454,32 @@ const WebsiteEditorV2 = () => {
 
                   {/* Navigation */}
                   <div className="flex items-center justify-center gap-8 py-3 border-t text-sm font-medium">
-                    {headerConfig.categories.map((cat, idx) => (
-                      <span 
-                        key={idx}
-                        onClick={() => handleElementClick('category', idx, cat)}
-                        onDoubleClick={() => handleElementDoubleClick('category', idx, cat)}
-                        className={`cursor-pointer transition-all px-2 py-1 rounded ${
-                          selectedElement?.type === 'category' && selectedElement?.id === idx 
-                            ? 'ring-2 ring-blue-500 bg-blue-50' 
-                            : 'hover:ring-2 hover:ring-blue-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        {editingInline && selectedElement?.type === 'category' && selectedElement?.id === idx ? (
-                          <InlineInput
-                            value={inlineEditValue}
-                            onSave={saveInlineEdit}
-                            onCancel={() => setEditingInline(false)}
-                          />
-                        ) : (
-                          cat
-                        )}
-                      </span>
-                    ))}
+                    {headerConfig.categories.map((cat, idx) => {
+                      // Handle both string and object categories
+                      const catName = typeof cat === 'string' ? cat : cat?.name || 'Category';
+                      return (
+                        <span 
+                          key={idx}
+                          onClick={() => handleElementClick('category', idx, cat)}
+                          onDoubleClick={() => handleElementDoubleClick('category', idx, catName)}
+                          className={`cursor-pointer transition-all px-2 py-1 rounded ${
+                            selectedElement?.type === 'category' && selectedElement?.id === idx 
+                              ? 'ring-2 ring-blue-500 bg-blue-50' 
+                              : 'hover:ring-2 hover:ring-blue-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {editingInline && selectedElement?.type === 'category' && selectedElement?.id === idx ? (
+                            <InlineInput
+                              value={inlineEditValue}
+                              onSave={saveInlineEdit}
+                              onCancel={() => setEditingInline(false)}
+                            />
+                          ) : (
+                            catName
+                          )}
+                        </span>
+                      );
+                    })}
                     <button 
                       onClick={() => {
                         setHeaderConfig(prev => ({ ...prev, categories: [...prev.categories, 'NEW'] }));
