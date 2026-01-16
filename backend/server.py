@@ -7252,6 +7252,7 @@ app.include_router(image_upload_router)
 app.include_router(push_notifications_router)
 app.include_router(mobile_app_router)
 app.include_router(shipping_router)
+app.include_router(image_ai_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 # ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================
