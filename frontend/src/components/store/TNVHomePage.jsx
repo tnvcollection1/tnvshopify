@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Heart, Camera, Home, Sparkles, ShoppingBag, User, Loader2 } from 'lucide-react';
 import { useStore } from './TNVStoreLayout';
+import ProductQuickView from './ProductQuickView';
+import FlashSaleCountdown from './FlashSaleCountdown';
+import StoriesSection from './StoriesSection';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
