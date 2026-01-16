@@ -1,177 +1,204 @@
 <analysis>**original_problem_statement**: The user wants to build a multi-tenant e-commerce platform, , allowing merchants to have their own stores with custom domains. The project's current focus is a complete redesign of the storefront and the development of a mobile app, both inspired by .
 
+Recent user requests expanded this scope to include:
+1.  A comprehensive merchant onboarding flow.
+2.  The ability to choose from pre-configured themes during onboarding.
+3.  Shopify-like visual editors for both the mobile app and the web storefront.
+4.  Real-time preview updates in the website editor.
+5.  A comprehensive shipping integration with DTDC, including a dashboard mirroring the DTDC customer portal for booking, tracking, and analytics.
+6.  Deployment of a Coming Soon page for  and fixing its SSL certificate.
+
+**PRODUCT REQUIREMENTS**:
+1.  Replicate the  header and storefront UI.
+2.  Create a backend system to manage dynamic menus and banners.
+3.  Implement a unified settings page to configure both the web and mobile apps.
+4.  Implement a full-featured Mega Menu with a visual builder.
+5.  Build a Sales Dashboard, Order Tracking, Wishlist, and Reviews.
+6.  Build a complete checkout flow with Razorpay integration.
+7.  Support multiple stores with different currencies.
+8.  Implement abandoned cart recovery via WhatsApp.
+9.  Perform a complete UI/UX overhaul of the mobile app and add dark mode.
+10. **(NEW)** Build a multi-step merchant onboarding wizard.
+11. **(NEW)** Build Shopify-like visual editors for the mobile app and web storefront with real-time preview.
+12. **(NEW)** Build a comprehensive DTDC shipping integration with a full-featured dashboard.
+
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (FastAPI backend, React frontend, MongoDB) is in place. The main focus of this session was to build out a mobile app and address critical pending issues.
-
-The following has been accomplished:
--   A comprehensive React Native mobile app boilerplate was created in . It includes navigation, screens, context providers, and a service layer.
--   A web-based preview for the mobile app was created and is accessible at .
--   Both the React Native app and the web preview are now dynamic, fetching their header configuration (logo, promo messages, categories) from the backend API.
--   A critical P0 security vulnerability (Merchant Data Isolation) was thoroughly tested and verified as fixed.
--   The P1 issue of the non-functional Admin UI for Header Configuration () was resolved. The UI is now fully connected to the backend, and a bug in the backend's config-merging logic was fixed.
--   A P2 issue regarding Shopify CDN image dependency was resolved by implementing an on-demand image proxy service () that caches images locally. Frontend components have been updated to use this new service.
--   The storefront header has undergone multiple redesigns to match user feedback inspired by .
+- A full-stack application (FastAPI, React, MongoDB).
+- A 7-step merchant onboarding wizard is complete.
+- Visual editors for both the mobile app () and the web storefront () are complete. The website editor now includes header/menu editing and a real-time preview feature that updates the view without saving.
+- A comprehensive DTDC shipping dashboard has been created at . It mimics the user's screenshots, featuring KPI cards, charts, and a detailed consignments table. **This entire feature is currently mocked** with test data, as live API integration is blocked.
+- The admin sidebar has been reorganized with a prominent Online Store section for better access to the editors.
+- A Coming Soon page has been created and successfully deployed to the VPS for . The associated SSL certificate issue on the live domain has been fixed.
 
 **Last working item**:
--   **Last item agent was working**: The user provided a screenshot and requested an exact replica of the  header. The agent's last action was to modify the header in  to have a **white background** and a **WOMEN/MEN selector dropdown**, as per the user's latest, specific instructions. The agent was about to take a screenshot to verify this final change.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: screenshot tool
+-   **Last item agent was working**: The agent was attempting to integrate the live DTDC shipping API using various tokens provided by the user (Shopify JWTs, Google session cookies). The agent concluded that none of these tokens are suitable for a server-to-server integration because they are either short-lived (60 seconds) or restricted to a browser context.
+-   **Status**: BLOCKED
+-   **Agent Testing Done**: Y
+-   **Which testing method agent to use?**: N/A. The task is blocked pending a valid API key from the user. Once a key is provided, the agent should use  to test the backend endpoints.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Replicate Namshi.com header exactly (P0)
--   Issue 2: DNS for  is not pointing to the VPS (P1)
--   Issue 3: Large monolithic backend files require refactoring (P3)
--   Issue 4: Inconsistent currency display in admin panel (P3)
+-   Issue 1: DTDC Live API Integration is Blocked (P0)
+-   Issue 2: Admin session expires too quickly (P1)
+-   Issue 3: DNS for  not pointing to VPS (P2)
+-   Issue 4: DNS for  is not pointing to the VPS (P2)
+-   Issue 5: Large monolithic backend files require refactoring (P3)
 
 **Issues Detail**:
--   **Issue 1: Replicate Namshi.com header exactly (P0)**
-    -   **Attempted fixes**: The header in  has been through multiple iterations. The latest change was to implement a white background and a WOMEN/MEN selector dropdown. Code has been changed, but visual verification is pending.
+-   **Issue 1: DTDC Live API Integration is Blocked (P0)**
+    -   **Attempted fixes**: The agent tried using Google session cookies (SAPISIDHASH) and short-lived (60-second) Shopify JWTs provided by the user. All attempts failed with authentication errors () or gateway timeouts, confirming these tokens cannot be used for a direct backend integration.
     -   **Next debug checklist**:
-        1.  Take a screenshot of the  route.
-        2.  Meticulously compare the screenshot against the user's latest  screenshot, focusing on the white background, black logo text, and the WOMEN/MEN selector dropdown.
-        3.  Address any remaining discrepancies.
-    -   **Why fix this issue and what will be achieved with the fix?**: The user has repeatedly emphasized that a pixel-perfect match with the  UI is a top priority.
-    -   **Status**: IN PROGRESS
+        1.  Clearly explain to the user why the provided tokens are not working (short lifespan, browser-only context).
+        2.  Instruct the user to contact their DTDC account manager or DTDC's IT support to request a **permanent, static API key** for server-to-server integration.
+        3.  Once a valid key is obtained, update the credentials in  and test the live booking/syncing endpoints.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is the final step to make the DTDC shipping dashboard fully functional with live data, enabling shipment booking and tracking directly from the platform.
+    -   **Status**: BLOCKED
     -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Backend
+    -   **Blocked on other issue**: None
+
+-   **Issue 2: Admin session expires too quickly (P1)**
+    -   **Attempted fixes**: The agent fixed a password hash mismatch in a previous session, but screenshots show the session is still expiring very rapidly, forcing repeated logins to test UI changes.
+    -   **Next debug checklist**:
+        1.  Investigate the session management logic in  and frontend .
+        2.  Check the session token's expiration time configuration on the backend.
+        3.  Verify that the frontend is correctly storing and sending the authentication token with each API request.
+    -   **Why fix this issue and what will be achieved with the fix?**: A stable session is critical for usability and efficient development. Fixing this will improve the user experience and prevent the agent from getting blocked during testing.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on other issue**: None
+
+-   **Issue 3: DNS for  not pointing to VPS (P2)**
+    -   **Attempted fixes**: The agent attempted to issue an SSL certificate for the  subdomain, but it failed because its A record points to an incorrect IP ().
+    -   **Next debug checklist**: Guide the user to update the A record for  to point to the correct VPS IP: .
+    -   **Why fix this issue and what will be achieved with the fix?**: Ensures the  version of the domain works correctly and is secured with SSL.
+    -   **Status**: BLOCKED (User Action Pending)
+    -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
--   **Issue 2: DNS for  not pointing to VPS (P1)**
-    -   **Attempted fixes**: None this session.
+-   **Issue 4: DNS for  not pointing to VPS (P2)**
+    -   **Attempted fixes**: None. This is a recurring issue pending user action.
     -   **Next debug checklist**: Guide the user to update the A records for  to point to the VPS IP .
-    -   **Why fix this issue and what will be achieved with the fix?**: To make the Pakistan storefront live.
+    -   **Why fix this issue and what will be achieved with the fix?**: To make the Pakistan storefront live on its custom domain.
     -   **Status**: BLOCKED (User Action Pending)
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
--   **Issue 3: Refactor large backend files (P3)**
+-   **Issue 5: Refactor large backend files (P3)**
     -   **Attempted fixes**: None.
-    -   **Next debug checklist**: Systematically extract functionality from  and  into smaller, dedicated route files.
+    -   **Next debug checklist**: Systematically extract functionality from  into smaller, dedicated route files under .
     -   **Why fix this issue and what will be achieved with the fix?**: To improve code maintainability, readability, and scalability.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
 
--   **Issue 4: Inconsistent currency display in admin panel (P3)**
-    -   **Attempted fixes**: None.
-    -   **Next debug checklist**:
-        1.  Navigate to the competitor analysis history feature in the admin panel.
-        2.  Identify where currency is displayed inconsistently.
-        3.  Trace the data source and formatting logic in the relevant backend and frontend files.
-    -   **Why fix this issue and what will be achieved with the fix?**: To improve usability and data consistency in the admin panel.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: None
-
-**In progress Task List**:
--   None.
+**In progress Task List**: None. The last active task (DTDC integration) is now blocked.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P1) **Deploy Namshi Storefront to VPS**: Deploy the newly built TNV storefront to .
-    -   (P2) **Mega Menu Implementation**: Build out the full mega menu dropdowns with product categories, as seen on .
+    -   (P1) **Enter TNV Collection pickup address**: The user needs to manually input their pickup address in the DTDC Settings UI, as auto-syncing from the DTDC portal is not possible without a proper API.
+    -   (P1) **Prepare Mobile App for Store Submission**: Configure  with icons, splash screens, bundle IDs, etc., for app store submission.
+    -   (P2) **Deploy Namshi Storefront to VPS**: Replace the Coming Soon page with the fully functional TNV storefront application on .
 -   **Future Tasks**:
     -   (P2) **Sooxie.com Integration**: Plan and implement an integration with the Sooxie.com API.
-    -   (P3) **Automated Security Testing**: Set up automated tests for the security endpoints to prevent regressions.
+    -   (P2) **Dynamic Mobile App Updates**: Connect the admin panel settings to dynamically update the mobile app in real-time.
+    -   (P3) **Automated Security Testing**: Set up automated tests for security endpoints.
 
 **Completed work in this session**
--   **Mobile App Boilerplate & Dynamic Config (FINISHED)**: Created a comprehensive React Native boilerplate, a web preview, and connected both to the backend for dynamic header configuration.
--   **P0 Security Fix Verification (FINISHED)**: Thoroughly tested and confirmed the merchant data isolation fix is working correctly.
--   **P1 Header Config Admin UI (FINISHED)**: Fixed and verified the admin UI for managing the storefront header, including a backend bug fix for config merging.
--   **P2 Shopify Image Independence (FINISHED)**: Implemented an on-demand image proxy to cache Shopify images locally and updated the frontend to use it, making the platform independent of Shopify's CDN.
-
-**Earlier issues found/mentioned but not fixed**
--   **Issue 1**: Inconsistent currency display in the competitor analysis history feature of the admin panel. This was noted in the previous handoff and remains unaddressed.
-
-**Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: User repeatedly correcting the UI to match .
--   **Recurrence count**: 5+ (This was the primary driver of the work in the latter half of the session).
--   **Status**: IN PROGRESS
+-   **Website Editor Header Integration (FINISHED)**: Added UI in  to manage the announcement bar, logo, and mega menu.
+-   **Website Editor Real-Time Preview (FINISHED)**: Implemented live preview in  using  to communicate with the storefront iframe in  and .
+-   **DTDC Dashboard & UI (FINISHED)**: Created a new  component that provides a comprehensive overview of shipments with KPIs, charts, and a filterable consignment list, populated with test data.
+-   **DTDC Integration Backend (MOCKED & FINISHED)**: Created a new  router with endpoints for booking, rate calculation, and syncing. The external booking calls are mocked to allow the UI to be fully functional with local data.
+-   **VPS Coming Soon Page (DEPLOYED)**: Created  and deployed it to the VPS for .
+-   **VPS SSL Certificate (FIXED)**: Issued a new Let's Encrypt SSL certificate for  and updated the Nginx configuration, resolving the browser security warning.
+-   **Admin Sidebar Reorganization (FINISHED)**: Reworked  to add a prominent Online Store section, making the visual editors easier to find.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   On-demand Image Proxy & Caching
--   Middleware-style API response transformation
--   Dynamic configuration for Mobile & Web UIs
--   React Native boilerplate structure
--   Multi-tenant security testing
+-   Real-time UI updates using  for  communication.
+-   Building complex data dashboards with  for charts and graphs.
+-   Mocking external API responses to enable frontend development when a backend is not ready.
+-   Debugging third-party API authentication flows (JWT, session cookies, API keys).
+-   Deploying static files to a remote VPS using  and .
+-   Managing Nginx server blocks and SSL certificates (Let's Encrypt/Certbot) on a Linux server.
 
 **key DB schema**
--   No schema changes. The  collection in MongoDB is now actively used for header management.
+-   **shipping_configs**:  (new collection)
+-   **shipments**:  (new collection)
+
+**changes in tech stack**
+-    was installed in the environment to facilitate scripted deployments to the VPS.
 
 **All files of reference**
--   **/app/frontend/src/components/store/TNVStoreLayout.jsx**: Heavily modified for the Namshi-style header redesign. This is the primary file for the current task.
--   **/app/backend/routes/image_proxy.py**: New file containing the on-demand image proxy service.
--   **/app/frontend/src/components/MobileAppPreview.jsx**: New file for the web-based preview of the mobile app.
--   **/app/mobile-app/**: Directory containing the new, comprehensive React Native boilerplate.
--   **/app/backend/routes/storefront_config.py**: Modified to fix a config-merging bug.
--   **/app/backend/routes/storefront.py**: Modified to transform product image URLs.
--   **/app/frontend/src/components/store/TNVHomePage.jsx**: Modified to use an image URL helper for proxied images.
--   **/app/frontend/src/components/store/TNVProductListing.jsx**: Modified to use an image URL helper for proxied images.
+-   **/app/backend/routes/shipping.py**: **(NEW)** Handles all DTDC shipping logic (currently mocked).
+-   **/app/frontend/src/components/DTDCDashboard.jsx**: **(NEW)** The main UI for the DTDC shipping portal.
+-   **/app/frontend/src/components/WebsiteEditor.jsx**: **(MODIFIED)** Enhanced with header editing and real-time preview.
+-   **/app/frontend/src/components/ShopifySidebar.jsx**: **(MODIFIED)** Reorganized for better navigation.
+-   **/app/frontend/public/coming-soon.html**: **(NEW)** Static page deployed to the VPS.
+-   **/app/backend/server.py**: **(MODIFIED)** To include the new shipping router.
+-   **/app/frontend/src/App.js**: **(MODIFIED)** To add the route for the new DTDC dashboard.
+-   **/app/frontend/src/components/store/TNVHomePage.jsx**: **(MODIFIED)** To listen for live preview updates.
+-   **/app/frontend/src/components/store/TNVStoreLayout.jsx**: **(MODIFIED)** To listen for live preview updates.
 
 **Areas that need refactoring**:
--   Monolithic backend files (, ) still need to be broken down into smaller modules.
+-   The main backend file, , remains large and contains logic that should be broken out into more specific route files.
 
 **key api endpoints**
--   : (New) Fetches and caches an image from Shopify.
--   : Fetches header configuration.
--   : Saves header configuration.
--   : All secure endpoints for merchant data were verified.
--   : Now returns proxied image URLs.
+-   : Books a new shipment (currently saves locally).
+-   : Retrieves dashboard KPIs and chart data.
+-   : Fetches a list of all consignments.
+-   : Endpoint to sync pickup address (currently returns a prompt for manual entry).
 
 **Critical Info for New Agent**
--   **The user's top priority is a pixel-perfect copy of the  UI.** The immediate task is to verify your last change to the header (white background, WOMEN/MEN selector) by taking a screenshot of the  route and comparing it meticulously to the user's reference image. Be prepared for further minor adjustments.
--   The image proxy system is working. When adding new components with product images, ensure you use the full backend URL () plus the relative proxy path () to avoid broken images in the development environment. A helper function  was added in  as a pattern.
--   The P0 security fix and P1 Header Config Admin UI are **complete and verified**. Do not revisit them unless a new bug is reported.
+-   **The #1 priority is to unblock the DTDC integration.** You must explain to the user that the tokens they've provided are browser-based and short-lived, and therefore cannot work for a server integration. Guide them to acquire a **permanent API key** from their DTDC representative. Do not attempt to use the Shopify JWTs again.
+-   The DTDC dashboard is fully built but relies entirely on **mocked data and local database entries**. The  and  functions in  do not currently make live API calls.
+-   Be aware of the **recurring admin session instability**. The session seems to expire very quickly, which can hinder testing. If this becomes a blocker, it should be prioritized.
 
 **documents and test reports created in this job**
--   
--   
--    (updated)
+-   /app/memory/PRD.md
+-   /app/frontend/public/coming-soon.html
 
 **Last 10 User Messages and any pending HUMAN messages**
--   10.  - **Status: IN PROGRESS**. This is the current task. The agent has made the code change and needs to verify it.
--   9.  - **Status: IN PROGRESS**. User provided a new screenshot and re-emphasized the need for an exact match.
--   8.  - **Status: ADDRESSED**. The agent explained how to view the app via the web preview.
--   7.  - **Status: ADDRESSED**. The agent had just finished the P0/P1 fixes and the user was redirecting focus back to the mobile app.
--   6.  - **Status: Information provided by user**.
--   5.  (to making both the RN app and web preview dynamic) - **Status: COMPLETED**. The agent implemented this.
--   4.  - **Status: ADDRESSED**.
--   3.  - **Status: ADDRESSED**.
--   2.  (User chose Option A to continue mobile app work initially) - **Status: ADDRESSED**. The agent completed the mobile app work before moving to the P0/P1 issues.
--   1.  - **Status: COMPLETED**. The initial request to build the mobile app boilerplate is done.
+-   10.  - User provides another short-lived Shopify JWT. **Status: Handled**.
+-   9.  - User reports the link to the website editor is missing or hard to find. **Status: RESOLVED**.
+-   8.  - User provides several short-lived JWT tokens from their browser extension, asking the agent to compare them. **Status: Handled**.
+-   7.  - User provides a Shopify JWT token from an OAuth extractor extension. **Status: Handled**.
+-   6.  - User provides a Google session cookie, hoping it's an API key. **Status: Handled**.
+-   5.  - User informs the agent they are using a tool to get tokens. **Status: Acknowledged**.
+-   4.  - User asks if a token from the Shopify DTDC app is usable. **Status: Acknowledged**.
+-   3.  - User questions why the previously provided token isn't working. **Status: Blocked**.
+-   2.  - User requests to sync live data from DTDC and test a booking. **Status: Blocked**.
+-   1.  - User reports an SSL error on their domain. **Status: RESOLVED**.
 
 **Project Health Check:**
--   **Broken**: The storefront header UI does not yet match the user's latest, very specific request.
--   **Mocked**:  on the VPS still displays a Coming Soon page. The new storefront is only available in the local preview.
+-   **Broken**: Admin session instability is a recurring problem, frequently causing logout during testing.
+-   **Mocked**: The entire DTDC shipping integration is mocked. All data shown in the  is generated test data stored in the local MongoDB. No live communication with DTDC is currently happening.
 
 **3rd Party Integrations**
+-   Razorpay (Payments) - Requires User API Key
 -   Shopify (as a data source)
 -   Namecheap (DNS, VPS)
 -   MongoDB Atlas (Database)
--   React Native / Expo (for mobile app)
+-   DTDC (Shipping) - **Blocked, requires a permanent User API Key.**
 
 **Testing status**
 -   **Testing agent used after significant changes**: NO
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None
--   **Known regressions**: None
+-   **Known regressions**: Admin session instability appears to have regressed and is causing frequent interruptions.
 
 **Credentials to test flow:**
 -   **Admin Login**:  / 
 -   **VPS IP**: 
--   **VPS Root Password**: 
--   **MongoDB Atlas URI**: 
+-   **DTDC Customer Portal Login**:  /  (Note: These are for the web portal, not the API).
 
 **What agent forgot to execute**
--   The agent initially missed the extreme level of detail the user required for the  UI match, leading to several rounds of rework on the header.
--   The agent did not initially use absolute URLs for the image proxy in the React dev environment, causing broken images that needed a subsequent fix.</analysis>
+-   The agent successfully addressed all user requests within the constraints of available information. No tasks were forgotten.</analysis>

@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://shop-creator-101.preview.emergentagent.com/api'
+base_url = 'https://saas-ecom.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 

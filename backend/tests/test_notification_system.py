@@ -8,7 +8,7 @@ import httpx
 import os
 
 # Get API URL from environment or use default
-API_URL = os.environ.get('API_URL', 'https://shop-creator-101.preview.emergentagent.com')
+API_URL = os.environ.get('API_URL', 'https://saas-ecom.preview.emergentagent.com')
 
 # Test data
 TEST_PHONE = "+919876543210"
