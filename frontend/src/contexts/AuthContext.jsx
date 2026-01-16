@@ -3,12 +3,12 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 const AuthContext = createContext(null);
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Session validation interval (only validate once every 5 minutes for regular sessions)
-const SESSION_VALIDATION_INTERVAL = 5 * 60 * 1000; // 5 minutes
-// For "Remember me" sessions, validate less frequently (every 24 hours)
-const REMEMBER_ME_VALIDATION_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
-// Max retry attempts before giving up
-const MAX_VALIDATION_RETRIES = 3;
+// Session validation interval (only validate once every 15 minutes for regular sessions)
+const SESSION_VALIDATION_INTERVAL = 15 * 60 * 1000; // 15 minutes
+// For "Remember me" sessions, validate less frequently (every 48 hours)
+const REMEMBER_ME_VALIDATION_INTERVAL = 48 * 60 * 60 * 1000; // 48 hours
+// Max retry attempts before giving up (increased for better resilience)
+const MAX_VALIDATION_RETRIES = 5;
 
 // Default permissions for viewer role
 const DEFAULT_PERMISSIONS = {
