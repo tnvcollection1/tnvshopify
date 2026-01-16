@@ -425,16 +425,18 @@ const TNVHomePage = () => {
       </section>
 
       {/* === FLASH SALE COUNTDOWN === */}
-      <FlashSaleCountdown 
-        endTime={flashSaleEndTime}
-        title="FLASH SALE"
-        subtitle="Ends in"
-        discount="50%"
-        link={`${baseUrl}/sale`}
-      />
+      <div className="max-w-7xl mx-auto">
+        <FlashSaleCountdown 
+          endTime={flashSaleEndTime}
+          title="FLASH SALE"
+          subtitle="Ends in"
+          discount="50%"
+          link={`${baseUrl}/sale`}
+        />
+      </div>
 
       {/* === QUICK CATEGORIES === */}
-      <section className="py-3">
+      <section className="py-3 max-w-7xl mx-auto">
         <div className="flex overflow-x-auto scrollbar-hide gap-2 px-2">
           {QUICK_CATEGORIES.map((cat, idx) => (
             <Link key={idx} to={`${baseUrl}/category/${cat.name.toLowerCase()}`} className="flex-shrink-0">
@@ -447,7 +449,7 @@ const TNVHomePage = () => {
       </section>
 
       {/* === 30% CASHBACK PROMO === */}
-      <section className="px-3 py-2">
+      <section className="px-3 py-2 max-w-7xl mx-auto">
         <div className="relative rounded-2xl overflow-hidden h-28 bg-gradient-to-r from-cyan-400 via-teal-500 to-emerald-500">
           <div className="absolute inset-0 flex items-center justify-between px-5">
             <div>
@@ -463,7 +465,7 @@ const TNVHomePage = () => {
       </section>
 
       {/* === SPORTS EDIT SECTION === */}
-      <section className="py-3 px-3">
+      <section className="py-3 px-3 max-w-7xl mx-auto">
         <div className="relative rounded-2xl overflow-hidden h-56 bg-gradient-to-br from-emerald-700 to-emerald-500">
           <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop" alt="Sports" className="absolute right-0 bottom-0 w-1/2 h-full object-cover object-left" />
           <div className="absolute left-5 top-1/2 -translate-y-1/2">
