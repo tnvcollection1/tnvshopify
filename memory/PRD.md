@@ -17,6 +17,19 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   - **Network Error Handling**: Network errors/timeouts no longer trigger immediate logout
 - **Files Modified**: `/app/frontend/src/contexts/AuthContext.jsx`
 
+**"Remember Me" Feature** ✅ COMPLETED
+- **New Feature**: Added "Remember me for 30 days" checkbox on login page
+- **Behavior**:
+  - When checked (default): Session persists for 30 days, validates only once every 24 hours
+  - When unchecked: Session validates every 5 minutes, expires on browser close
+- **Implementation**:
+  - Added checkbox to `Login.jsx` with `data-testid="remember-me-checkbox"`
+  - Session expiry timestamp stored in localStorage
+  - AuthContext checks expiry on app load and during validation
+- **Files Modified**: 
+  - `/app/frontend/src/components/Login.jsx`
+  - `/app/frontend/src/contexts/AuthContext.jsx`
+
 ### January 15, 2026 (Session 8)
 
 **Website Editor Header Integration** ✅ COMPLETED
