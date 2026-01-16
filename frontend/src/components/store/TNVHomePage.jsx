@@ -322,7 +322,7 @@ const TNVHomePage = () => {
             <ChevronDown className={`w-4 h-4 transition-transform ${genderOpen ? 'rotate-180' : ''}`} />
           </button>
 
-          <div className="flex-1 flex items-center gap-2 px-3 py-2.5 border border-gray-300 rounded-lg">
+          <div className="flex-1 flex items-center gap-2 px-3 py-2.5 border border-gray-300 rounded-lg max-w-md">
             <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -354,11 +354,12 @@ const TNVHomePage = () => {
             </button>
           </div>
         )}
+        </div>
       </div>
 
       {/* === SWIPEABLE HERO BANNER CAROUSEL === */}
-      <section className="relative" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        <div className="relative h-[480px] overflow-hidden">
+      <section className="relative max-w-7xl mx-auto" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+        <div className="relative h-[400px] md:h-[480px] overflow-hidden">
           {/* Slide Content */}
           <div 
             className="absolute inset-0 transition-transform duration-500 ease-out"
