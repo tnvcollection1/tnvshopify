@@ -207,7 +207,8 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
   });
   
   const t = (key) => TRANSLATIONS[language]?.[key] || TRANSLATIONS.en[key] || key;
-  const isRTL = language === 'ar';
+  const langData = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
+  const isRTL = langData.isRTL;
   const SLIDES = getSlides(language);
   
   // Auto-select language based on country
