@@ -285,26 +285,19 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
             <p className="text-sm text-gray-400 mb-4">{t('selectLanguage')}</p>
             
             <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setLanguage('en')}
-                className={`py-4 px-6 text-center font-bold text-sm border-2 transition-all ${
-                  language === 'en' 
-                    ? 'border-green-500 bg-green-50 text-black' 
-                    : 'border-gray-200 text-gray-600'
-                }`}
-              >
-                ENGLISH
-              </button>
-              <button
-                onClick={() => setLanguage('ar')}
-                className={`py-4 px-6 text-center font-bold text-sm border-2 transition-all ${
-                  language === 'ar' 
-                    ? 'border-green-500 bg-green-50 text-black' 
-                    : 'border-gray-200 text-gray-600'
-                }`}
-              >
-                عربي
-              </button>
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code)}
+                  className={`py-4 px-4 text-center font-bold text-sm border-2 transition-all ${
+                    language === lang.code 
+                      ? 'border-green-500 bg-green-50 text-black' 
+                      : 'border-gray-200 text-gray-600'
+                  }`}
+                >
+                  {lang.name}
+                </button>
+              ))}
             </div>
           </div>
 
