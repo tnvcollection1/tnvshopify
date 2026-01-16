@@ -184,24 +184,30 @@ export const AuthProvider = ({ children }) => {
   const login = (agentData) => {
     // Ensure permissions are set
     if (!agentData.permissions) {
-      agentData.permissions = DEFAULT_PERMISSIONS;
+      agentData.permissions = getPermissionsForRole(agentData.role);
     }
     setAgent(agentData);
     localStorage.setItem('agent', JSON.stringify(agentData));
     setSessionValidated(true);
+    // Reset validation tracking on login
+    lastValidationRef.current = Date.now();
+    validationRetriesRef.current = 0;
   };
 
   const logout = () => {
     setAgent(null);
     localStorage.removeItem('agent');
     setSessionValidated(true);
+    // Reset validation tracking on logout
+    lastValidationRef.current = 0;
+    validationRetriesRef.current = 0;
   };
 
   // Force re-validate session (useful for components that detect auth issues)
   const refreshSession = () => {
     setSessionValidated(false);
     setLoading(true);
-    validateSession();
+    validateSession(true); // Force validation
   };
 
   // Helper function to check permissions
