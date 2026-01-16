@@ -175,8 +175,24 @@ function LuxuryStorefrontWrapper({ page = 'home' }) {
   );
 }
 
+import StoreOnboarding from "@/components/store/StoreOnboarding";
+
 // TNV Store Wrapper (Namshi-inspired) - Supports multi-store (tnvcollection for INR, tnvcollectionpk for PKR)
 function TNVStoreWrapper({ children, storeName = "tnvcollection" }) {
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    // Check if onboarding was completed
+    return !localStorage.getItem(`${storeName}_onboarding_completed`);
+  });
+  
+  if (showOnboarding) {
+    return (
+      <StoreOnboarding 
+        storeName={storeName}
+        onComplete={() => setShowOnboarding(false)}
+      />
+    );
+  }
+  
   return (
     <TNVStoreProvider storeName={storeName}>
       <TNVHeader />
@@ -190,6 +206,19 @@ function TNVStoreWrapper({ children, storeName = "tnvcollection" }) {
 
 // Pakistan Store Wrapper (PKR currency)
 function TNVPKStoreWrapper({ children }) {
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('tnvcollectionpk_onboarding_completed');
+  });
+  
+  if (showOnboarding) {
+    return (
+      <StoreOnboarding 
+        storeName="tnvcollectionpk"
+        onComplete={() => setShowOnboarding(false)}
+      />
+    );
+  }
+  
   return (
     <TNVStoreProvider storeName="tnvcollectionpk">
       <TNVHeader />
