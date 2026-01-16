@@ -255,6 +255,9 @@ const TNVHomePage = () => {
 
   return (
     <div className="min-h-screen bg-white pb-20" data-testid="tnv-home">
+      {/* === STORIES SECTION === */}
+      <StoriesSection stories={stories} />
+      
       {/* === CATEGORY TABS === */}
       <div className="sticky top-0 z-40 bg-white">
         {/* Category Tabs Row */}
