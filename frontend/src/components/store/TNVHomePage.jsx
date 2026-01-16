@@ -256,12 +256,15 @@ const TNVHomePage = () => {
   return (
     <div className="min-h-screen bg-white pb-20" data-testid="tnv-home">
       {/* === STORIES SECTION === */}
-      <StoriesSection stories={stories} />
+      <div className="max-w-7xl mx-auto">
+        <StoriesSection stories={stories} />
+      </div>
       
       {/* === CATEGORY TABS === */}
       <div className="sticky top-0 z-40 bg-white">
-        {/* Category Tabs Row */}
-        <div className="flex overflow-x-auto scrollbar-hide px-2 py-3 gap-2">
+        <div className="max-w-7xl mx-auto">
+          {/* Category Tabs Row */}
+          <div className="flex overflow-x-auto scrollbar-hide px-2 py-3 gap-2">
           {/* FASHION */}
           <Link to={`${baseUrl}/fashion`} className="flex-shrink-0">
             <div className="w-[72px] h-[80px] rounded-xl overflow-hidden relative" style={{ backgroundColor: '#c4ff00' }}>
