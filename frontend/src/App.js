@@ -286,6 +286,7 @@ function AppRoutes() {
       <Route path="/mobile-app-preview" element={<MobileAppPreview />} />
       <Route path="/mobile-app-editor" element={<ProtectedEditorRoute><MobileAppEditorV2 /></ProtectedEditorRoute>} />
       <Route path="/website-editor" element={<ProtectedEditorRoute><WebsiteEditorV2 /></ProtectedEditorRoute>} />
+      <Route path="/image-enhancer" element={<ProtectedRoute><ImageEnhancer /></ProtectedRoute>} />
       <Route path="/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
       <Route path="/create-store" element={<MerchantOnboarding />} />
       <Route path="/merchant-onboarding" element={<MerchantOnboarding />} />
