@@ -121,7 +121,12 @@ const WebsiteEditorV2 = () => {
     } else if (type === 'category') {
       setHeaderConfig(prev => ({
         ...prev,
-        categories: prev.categories.map((c, i) => i === id ? inlineEditValue : c)
+        categories: prev.categories.map((c, i) => {
+          if (i !== id) return c;
+          // Handle both string and object categories
+          if (typeof c === 'string') return inlineEditValue;
+          return { ...c, name: inlineEditValue };
+        })
       }));
     }
     
