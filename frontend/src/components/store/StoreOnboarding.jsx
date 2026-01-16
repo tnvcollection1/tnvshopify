@@ -1,60 +1,173 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, MapPin, Bell, Sparkles } from 'lucide-react';
+import { ChevronRight, MapPin, Bell, Sparkles, Globe } from 'lucide-react';
 
-// Country data with flags
+// Country data with flags and language defaults
 const COUNTRIES = [
-  { code: 'SA', name: 'SAUDI ARABIA', flag: '🇸🇦', currency: 'SAR' },
-  { code: 'AE', name: 'UNITED ARAB EMIRATES', flag: '🇦🇪', currency: 'AED' },
-  { code: 'KW', name: 'KUWAIT', flag: '🇰🇼', currency: 'KWD' },
-  { code: 'QA', name: 'QATAR', flag: '🇶🇦', currency: 'QAR' },
-  { code: 'BH', name: 'BAHRAIN', flag: '🇧🇭', currency: 'BHD' },
-  { code: 'OM', name: 'OMAN', flag: '🇴🇲', currency: 'OMR' },
-  { code: 'PK', name: 'PAKISTAN', flag: '🇵🇰', currency: 'PKR' },
-  { code: 'IN', name: 'INDIA', flag: '🇮🇳', currency: 'INR' },
+  { code: 'SA', name: 'SAUDI ARABIA', nameAr: 'المملكة العربية السعودية', flag: '🇸🇦', currency: 'SAR', defaultLang: 'ar', isRTL: true },
+  { code: 'AE', name: 'UNITED ARAB EMIRATES', nameAr: 'الإمارات العربية المتحدة', flag: '🇦🇪', currency: 'AED', defaultLang: 'ar', isRTL: true },
+  { code: 'KW', name: 'KUWAIT', nameAr: 'الكويت', flag: '🇰🇼', currency: 'KWD', defaultLang: 'ar', isRTL: true },
+  { code: 'QA', name: 'QATAR', nameAr: 'قطر', flag: '🇶🇦', currency: 'QAR', defaultLang: 'ar', isRTL: true },
+  { code: 'BH', name: 'BAHRAIN', nameAr: 'البحرين', flag: '🇧🇭', currency: 'BHD', defaultLang: 'ar', isRTL: true },
+  { code: 'OM', name: 'OMAN', nameAr: 'عمان', flag: '🇴🇲', currency: 'OMR', defaultLang: 'ar', isRTL: true },
+  { code: 'PK', name: 'PAKISTAN', nameAr: 'باكستان', flag: '🇵🇰', currency: 'PKR', defaultLang: 'en', isRTL: false },
+  { code: 'IN', name: 'INDIA', nameAr: 'الهند', flag: '🇮🇳', currency: 'INR', defaultLang: 'en', isRTL: false },
 ];
 
+// Translations
+const TRANSLATIONS = {
+  en: {
+    language: 'LANGUAGE',
+    selectLanguage: 'Select your language',
+    country: 'COUNTRY',
+    selectCountry: 'Select your country',
+    confirm: 'CONFIRM',
+    skip: 'Skip for now',
+    continue: 'CONTINUE',
+    browseAll: 'BROWSE ALL',
+    // Slides
+    slide1Title: 'Want Faster Deliveries?',
+    slide1Desc: 'Allow TNV to access your location for quicker deliveries and accurate timings.',
+    slide2Title: 'Curious about the latest drops and deals?',
+    slide2Desc: 'Turn on notifications to get instant alerts about sales, fresh drops, and personalized offers.',
+    slide3Title: 'Want a Shopping Experience Built for You?',
+    slide3Desc: 'Allow tracking to get style recommendations that match your vibe.',
+    // Categories
+    women: 'WOMEN',
+    men: 'MEN',
+    kids: 'KIDS',
+  },
+  ar: {
+    language: 'اللغة',
+    selectLanguage: 'اختر لغتك',
+    country: 'البلد',
+    selectCountry: 'اختر بلدك',
+    confirm: 'تأكيد',
+    skip: 'تخطي الآن',
+    continue: 'متابعة',
+    browseAll: 'تصفح الكل',
+    // Slides
+    slide1Title: 'هل تريد توصيل أسرع؟',
+    slide1Desc: 'اسمح لـ TNV بالوصول إلى موقعك للحصول على توصيل أسرع ومواعيد دقيقة.',
+    slide2Title: 'هل أنت فضولي بشأن أحدث المنتجات والعروض؟',
+    slide2Desc: 'قم بتشغيل الإشعارات للحصول على تنبيهات فورية حول التخفيضات والمنتجات الجديدة.',
+    slide3Title: 'هل تريد تجربة تسوق مصممة لك؟',
+    slide3Desc: 'اسمح بالتتبع للحصول على توصيات أزياء تناسب ذوقك.',
+    // Categories
+    women: 'نساء',
+    men: 'رجال',
+    kids: 'أطفال',
+  },
+};
+
 // Onboarding slides configuration
-const SLIDES = [
+const getSlides = (lang) => [
   {
     id: 'location',
-    title: 'Want Faster Deliveries?',
-    description: 'Allow TNV to access your location for quicker deliveries and accurate timings.',
+    title: TRANSLATIONS[lang].slide1Title,
+    description: TRANSLATIONS[lang].slide1Desc,
     bgImage: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&h=1200&fit=crop',
     bgColor: '#f5f5f5',
     icon: MapPin,
   },
   {
     id: 'notifications',
-    title: 'Curious about the latest drops and deals?',
-    description: 'Turn on notifications to get instant alerts about sales, fresh drops, and personalized offers.',
+    title: TRANSLATIONS[lang].slide2Title,
+    description: TRANSLATIONS[lang].slide2Desc,
     bgImage: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&h=1200&fit=crop',
     bgColor: '#e53935',
     icon: Bell,
   },
   {
     id: 'personalization',
-    title: 'Want a Shopping Experience Built for You?',
-    description: 'Allow tracking to get style recommendations that match your vibe. Let TNV personalize your journey by tracking your activity to offer recommendations that match your style.',
+    title: TRANSLATIONS[lang].slide3Title,
+    description: TRANSLATIONS[lang].slide3Desc,
     bgImage: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&h=1200&fit=crop',
     bgColor: '#c6ff00',
     icon: Sparkles,
   },
 ];
 
+// Locale Context for sharing language/RTL across app
+export const LocaleContext = createContext({
+  language: 'en',
+  isRTL: false,
+  country: 'AE',
+  currency: 'AED',
+  t: (key) => key,
+  setLocale: () => {},
+});
+
+export const useLocale = () => useContext(LocaleContext);
+
+// Locale Provider Component
+export const LocaleProvider = ({ children, storeName = 'tnvcollection' }) => {
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem(`${storeName}_language`) || 'en';
+  });
+  const [country, setCountry] = useState(() => {
+    return localStorage.getItem(`${storeName}_country`) || 'AE';
+  });
+
+  const countryData = COUNTRIES.find(c => c.code === country) || COUNTRIES[1];
+  const isRTL = countryData.isRTL && language === 'ar';
+
+  // Apply RTL to document
+  useEffect(() => {
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
+  }, [isRTL, language]);
+
+  const t = (key) => TRANSLATIONS[language]?.[key] || TRANSLATIONS.en[key] || key;
+
+  const setLocale = (lang, countryCode) => {
+    setLanguage(lang);
+    setCountry(countryCode);
+    localStorage.setItem(`${storeName}_language`, lang);
+    localStorage.setItem(`${storeName}_country`, countryCode);
+  };
+
+  return (
+    <LocaleContext.Provider value={{
+      language,
+      isRTL,
+      country,
+      currency: countryData.currency,
+      t,
+      setLocale,
+      countryData,
+    }}>
+      {children}
+    </LocaleContext.Provider>
+  );
+};
+
 const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
   const navigate = useNavigate();
   const [step, setStep] = useState(() => {
-    // Restore step from localStorage if available
     const savedStep = localStorage.getItem(`${storeName}_onboarding_step`);
     return savedStep ? parseInt(savedStep, 10) : 0;
-  }); // 0: language/country, 1-3: slides, 4: category
+  });
   const [language, setLanguage] = useState(() => {
     return localStorage.getItem(`${storeName}_language`) || 'en';
   });
   const [selectedCountry, setSelectedCountry] = useState(() => {
     return localStorage.getItem(`${storeName}_country`) || 'AE';
   });
+  
+  const t = (key) => TRANSLATIONS[language]?.[key] || TRANSLATIONS.en[key] || key;
+  const isRTL = language === 'ar';
+  const SLIDES = getSlides(language);
+  
+  // Auto-select language based on country
+  const handleCountrySelect = (countryCode) => {
+    setSelectedCountry(countryCode);
+    const country = COUNTRIES.find(c => c.code === countryCode);
+    if (country) {
+      // Auto-switch to country's default language
+      setLanguage(country.defaultLang);
+    }
+  };
   
   // Save step to localStorage whenever it changes
   useEffect(() => {
@@ -72,6 +185,9 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
   const handleCountryConfirm = () => {
     localStorage.setItem(`${storeName}_language`, language);
     localStorage.setItem(`${storeName}_country`, selectedCountry);
+    // Apply RTL if Arabic
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
     setStep(1);
   };
 
@@ -79,27 +195,27 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
     if (step < SLIDES.length) {
       setStep(step + 1);
     } else {
-      setStep(4); // Go to category selection
+      setStep(4);
     }
   };
 
   const handleCategorySelect = (category) => {
     localStorage.setItem(`${storeName}_preferred_category`, category);
     localStorage.setItem(`${storeName}_onboarding_completed`, 'true');
-    localStorage.removeItem(`${storeName}_onboarding_step`); // Clean up step tracking
+    localStorage.removeItem(`${storeName}_onboarding_step`);
     onComplete?.();
   };
 
   const handleSkip = () => {
     localStorage.setItem(`${storeName}_onboarding_completed`, 'true');
-    localStorage.removeItem(`${storeName}_onboarding_step`); // Clean up step tracking
+    localStorage.removeItem(`${storeName}_onboarding_step`);
     onComplete?.();
   };
 
   // Step 0: Language & Country Selection
   if (step === 0) {
     return (
-      <div className="min-h-screen bg-black flex flex-col" data-testid="store-onboarding">
+      <div className={`min-h-screen bg-black flex flex-col ${isRTL ? 'rtl' : 'ltr'}`} data-testid="store-onboarding" dir={isRTL ? 'rtl' : 'ltr'}>
         {/* Logo Header */}
         <div className="py-8 text-center">
           <h1 className="text-white text-3xl font-black italic">
@@ -113,8 +229,8 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
         <div className="flex-1 bg-white rounded-t-3xl px-6 py-8">
           {/* Language Selection */}
           <div className="mb-8">
-            <p className="text-sm font-bold text-gray-500 mb-1">LANGUAGE</p>
-            <p className="text-sm text-gray-400 mb-4">Select your language</p>
+            <p className="text-sm font-bold text-gray-500 mb-1">{t('language')}</p>
+            <p className="text-sm text-gray-400 mb-4">{t('selectLanguage')}</p>
             
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -142,14 +258,14 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
 
           {/* Country Selection */}
           <div className="mb-8">
-            <p className="text-sm font-bold text-gray-500 mb-1">COUNTRY</p>
-            <p className="text-sm text-gray-400 mb-4">Select your country</p>
+            <p className="text-sm font-bold text-gray-500 mb-1">{t('country')}</p>
+            <p className="text-sm text-gray-400 mb-4">{t('selectCountry')}</p>
             
             <div className="space-y-2 max-h-[300px] overflow-y-auto">
               {COUNTRIES.map((country) => (
                 <button
                   key={country.code}
-                  onClick={() => setSelectedCountry(country.code)}
+                  onClick={() => handleCountrySelect(country.code)}
                   className={`w-full py-4 px-4 text-left flex items-center gap-4 border-2 transition-all ${
                     selectedCountry === country.code 
                       ? 'border-green-500 bg-green-50' 
@@ -157,7 +273,15 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
                   }`}
                 >
                   <span className="text-2xl">{country.flag}</span>
-                  <span className="font-medium text-sm">{country.name}</span>
+                  <span className="font-medium text-sm">
+                    {language === 'ar' ? country.nameAr : country.name}
+                  </span>
+                  {/* Show recommended language badge */}
+                  {country.defaultLang === 'ar' && (
+                    <span className="ml-auto text-[10px] bg-gray-100 px-2 py-1 rounded text-gray-500">
+                      {language === 'ar' ? 'عربي' : 'Arabic'}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -168,15 +292,14 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
             onClick={handleCountryConfirm}
             className="w-full bg-black text-white py-4 font-bold text-sm hover:bg-gray-800 transition-colors"
           >
-            CONFIRM
+            {t('confirm')}
           </button>
           
-          {/* Skip option */}
           <button
             onClick={handleSkip}
             className="w-full mt-3 text-gray-400 text-sm hover:text-gray-600 transition-colors"
           >
-            Skip for now
+            {t('skip')}
           </button>
         </div>
       </div>
@@ -187,13 +310,13 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
   if (step >= 1 && step <= 3) {
     const slideIndex = step - 1;
     const slide = SLIDES[slideIndex];
-    const Icon = slide.icon;
     
     return (
       <div 
-        className="min-h-screen flex flex-col"
+        className={`min-h-screen flex flex-col ${isRTL ? 'rtl' : 'ltr'}`}
         style={{ backgroundColor: slide.bgColor }}
         data-testid={`onboarding-slide-${slide.id}`}
+        dir={isRTL ? 'rtl' : 'ltr'}
       >
         {/* Image Section */}
         <div className="flex-1 relative overflow-hidden">
@@ -224,10 +347,10 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
             ))}
           </div>
 
-          <h2 className="text-2xl font-bold mb-3 leading-tight">
+          <h2 className={`text-2xl font-bold mb-3 leading-tight ${isRTL ? 'text-right' : 'text-left'}`}>
             {slide.title}
           </h2>
-          <p className="text-gray-300 text-sm mb-8 leading-relaxed">
+          <p className={`text-gray-300 text-sm mb-8 leading-relaxed ${isRTL ? 'text-right' : 'text-left'}`}>
             {slide.description}
           </p>
 
@@ -235,14 +358,14 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
             onClick={handleSlideNext}
             className="w-full bg-white text-black py-4 font-bold text-sm hover:bg-gray-100 transition-colors border-2 border-white"
           >
-            CONTINUE
+            {t('continue')}
           </button>
           
           <button
             onClick={handleSkip}
             className="w-full mt-3 text-gray-400 text-sm hover:text-gray-300 transition-colors"
           >
-            Skip
+            {t('skip')}
           </button>
         </div>
       </div>
@@ -251,7 +374,7 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
 
   // Step 4: Category Selection
   return (
-    <div className="min-h-screen bg-white flex flex-col" data-testid="onboarding-category">
+    <div className={`min-h-screen bg-white flex flex-col ${isRTL ? 'rtl' : 'ltr'}`} data-testid="onboarding-category" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Logo Header */}
       <div className="py-6 text-center border-b">
         <h1 className="text-2xl font-black italic">
@@ -273,8 +396,8 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
             alt="Women"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-center">
-            <h3 className="text-white text-3xl font-black ml-6">WOMEN</h3>
+          <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-black/50 to-transparent flex items-center`}>
+            <h3 className={`text-white text-3xl font-black ${isRTL ? 'mr-6' : 'ml-6'}`}>{t('women')}</h3>
           </div>
         </button>
 
@@ -288,8 +411,8 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
             alt="Men"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-center">
-            <h3 className="text-white text-3xl font-black ml-6">MEN</h3>
+          <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-black/50 to-transparent flex items-center`}>
+            <h3 className={`text-white text-3xl font-black ${isRTL ? 'mr-6' : 'ml-6'}`}>{t('men')}</h3>
           </div>
         </button>
 
@@ -303,8 +426,8 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
             alt="Kids"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-center">
-            <h3 className="text-white text-3xl font-black ml-6">KIDS</h3>
+          <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-black/50 to-transparent flex items-center`}>
+            <h3 className={`text-white text-3xl font-black ${isRTL ? 'mr-6' : 'ml-6'}`}>{t('kids')}</h3>
           </div>
         </button>
       </div>
@@ -315,12 +438,13 @@ const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
           onClick={() => handleCategorySelect('all')}
           className="w-full bg-black text-white py-4 font-bold text-sm hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
         >
-          BROWSE ALL
-          <ChevronRight className="w-4 h-4" />
+          {t('browseAll')}
+          <ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
         </button>
       </div>
     </div>
   );
 };
 
+export { COUNTRIES, TRANSLATIONS };
 export default StoreOnboarding;
