@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
-  Monitor, RefreshCw, ChevronRight, ChevronLeft, ChevronDown, ChevronUp,
-  Settings, Image, Eye, EyeOff, Plus, Save, X, Palette, Layers, BoxSelect,
-  Tablet, Smartphone as Phone, ExternalLink, Edit3, Megaphone, Type, Menu,
-  LayoutGrid, Trash2, GripVertical, MousePointer, Move, Check, Link2,
-  Undo2, Redo2, Copy, Sparkles, Layout, Zap, Clock, ImagePlus, FileText
+  Monitor, RefreshCw, ChevronRight, ChevronLeft, ChevronDown,
+  Settings, Image, Eye, EyeOff, Plus, Save, X, Palette, Layers,
+  Tablet, Smartphone as Phone, ExternalLink, Edit3, Trash2, GripVertical,
+  Undo2, Redo2, Copy, Sparkles, Clock, Search, User, Heart, ShoppingBag, Globe
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -13,51 +12,14 @@ import { Switch } from './ui/switch';
 import { toast } from 'sonner';
 import { useStore } from '../contexts/StoreContext';
 
-const EMOJI_OPTIONS = ['💵', '🚚', '✓', '↩️', '🌟', '🔥', '💎', '🏷️', '👗', '👟', '👜', '⚽', '✨', '🎁', '💳', '📦'];
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 // Template presets
 const TEMPLATES = {
-  minimal: {
-    name: 'Minimal',
-    icon: '○',
-    description: 'Clean and simple',
-    sections: ['announcement', 'header', 'hero', 'trending', 'footer'],
-    theme: { primaryColor: '#000000', accentColor: '#000000' }
-  },
-  bold: {
-    name: 'Bold',
-    icon: '◆',
-    description: 'Eye-catching colors',
-    sections: ['announcement', 'header', 'hero', 'categories', 'promo', 'trending', 'footer'],
-    theme: { primaryColor: '#FF3366', accentColor: '#FF3366' }
-  },
-  classic: {
-    name: 'Classic',
-    icon: '□',
-    description: 'Traditional layout',
-    sections: ['header', 'hero', 'categories', 'trending', 'footer'],
-    theme: { primaryColor: '#1a1a1a', accentColor: '#D4AF37' }
-  },
-  modern: {
-    name: 'Modern',
-    icon: '◇',
-    description: 'Contemporary style',
-    sections: ['announcement', 'header', 'hero', 'categories', 'trending', 'promo', 'footer'],
-    theme: { primaryColor: '#6366F1', accentColor: '#EC4899' }
-  }
+  namshi: { name: 'Namshi Style', icon: '🛍️', description: 'Middle East fashion' },
+  minimal: { name: 'Minimal', icon: '○', description: 'Clean & simple' },
+  bold: { name: 'Bold', icon: '◆', description: 'Eye-catching' },
 };
-
-// Available components to add
-const COMPONENT_LIBRARY = [
-  { id: 'hero_carousel', name: 'Hero Banner', icon: Image, description: 'Full-width promotional banner' },
-  { id: 'product_grid', name: 'Product Grid', icon: LayoutGrid, description: 'Display products in a grid' },
-  { id: 'categories', name: 'Categories', icon: Menu, description: 'Category showcase' },
-  { id: 'promo_banner', name: 'Promo Banner', icon: Megaphone, description: 'Promotional message' },
-  { id: 'text_block', name: 'Text Block', icon: Type, description: 'Custom text content' },
-  { id: 'image_gallery', name: 'Image Gallery', icon: ImagePlus, description: 'Multiple images display' },
-  { id: 'testimonials', name: 'Testimonials', icon: FileText, description: 'Customer reviews' },
-];
 
 const WebsiteEditorV2 = () => {
   const { selectedStore } = useStore();
@@ -66,87 +28,145 @@ const WebsiteEditorV2 = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [viewMode, setViewMode] = useState('desktop');
   const [showLeftPanel, setShowLeftPanel] = useState(true);
-  const [showComponentLibrary, setShowComponentLibrary] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
-  const [autoSaveTimer, setAutoSaveTimer] = useState(null);
   const [lastSaved, setLastSaved] = useState(null);
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [language, setLanguage] = useState('en'); // en or ar
   
-  // Drag and drop state
-  const [draggedSection, setDraggedSection] = useState(null);
-  const [dragOverSection, setDragOverSection] = useState(null);
-  
-  // Undo/Redo state
+  // Undo/Redo
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const isUndoRedo = useRef(false);
-  
-  // Currently selected/editing element
-  const [selectedElement, setSelectedElement] = useState(null);
-  const [editingInline, setEditingInline] = useState(false);
-  const [inlineEditValue, setInlineEditValue] = useState('');
-  
-  // Data
-  const [banners, setBanners] = useState([]);
-  const [headerConfig, setHeaderConfig] = useState({
-    logo: { text: 'TNV', badge: 'COLLECTION', badgeColor: '#FF6B9D' },
-    promoMessages: [
-      { emoji: '🚚', text: 'Free shipping on orders over ₹999', enabled: true },
-      { emoji: '💵', text: 'Cash on delivery available', enabled: true },
+
+  // Store configuration - matches actual TNV store
+  const [config, setConfig] = useState({
+    // Announcement bar
+    announcement: {
+      enabled: true,
+      messages: [
+        { text: 'Cash On Delivery', enabled: true },
+        { text: 'Free Delivery and Exchange', enabled: true },
+        { text: '100% Genuine Products', enabled: true },
+      ],
+      bgColor: '#000000',
+      textColor: '#ffffff'
+    },
+    // Logo
+    logo: {
+      text: 'TNV',
+      badge: 'COLLECTION',
+      badgeColor: '#FF6B9D'
+    },
+    // Category tabs (like Namshi)
+    categoryTabs: [
+      { id: 1, name: 'TNV', path: '/', image: '', bgColor: '#c8e6c9', enabled: true },
+      { id: 2, name: 'FASHION', path: '/fashion', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=100', bgColor: '#f8e5e5', enabled: true },
+      { id: 3, name: 'Beauty', path: '/beauty', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100', bgColor: '#f5f5f5', enabled: true },
+      { id: 4, name: 'BAGS & KIDS', path: '/bags', image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=100', bgColor: '#ffe0b2', enabled: true },
+      { id: 5, name: 'HOME & MORE', path: '/home', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=100', bgColor: '#b2dfdb', enabled: true },
+      { id: 6, name: 'PREMIUM', path: '/premium', image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=100', bgColor: '#f5f5f5', enabled: true },
     ],
-    categories: ['MEN', 'WOMEN', 'KIDS', 'SHOES', 'ACCESSORIES'],
+    // Sub navigation
+    subNav: [
+      { id: 1, name: 'WOMEN', path: '/women', enabled: true },
+      { id: 2, name: 'CLOTHING', path: '/clothing', enabled: true },
+      { id: 3, name: 'SHOES', path: '/shoes', enabled: true },
+      { id: 4, name: 'ACCESSORIES', path: '/accessories', enabled: true },
+      { id: 5, name: 'BAGS', path: '/bags', enabled: true },
+      { id: 6, name: 'SPORTS', path: '/sports', enabled: true },
+      { id: 7, name: 'NEW ARRIVALS', path: '/new', enabled: true, highlight: true },
+      { id: 8, name: 'PREMIUM', path: '/premium', enabled: true },
+      { id: 9, name: 'SALE', path: '/sale', enabled: true, isRed: true },
+      { id: 10, name: 'BRANDS', path: '/brands', enabled: true },
+    ],
+    // Hero banner
+    heroBanner: {
+      title: 'Test Banner',
+      subtitle: 'This is a test',
+      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200',
+      link: '/shop',
+      enabled: true
+    },
+    // Region settings
+    region: {
+      flag: '🇦🇪',
+      code: 'AE',
+      name: 'UAE',
+      showLanguageToggle: true
+    }
   });
 
-  // Sections config
-  const [sections, setSections] = useState([
-    { id: 'announcement', type: 'announcement_bar', title: 'Announcement Bar', enabled: true },
-    { id: 'header', type: 'header', title: 'Header & Logo', enabled: true },
-    { id: 'hero', type: 'hero_carousel', title: 'Hero Banners', enabled: true },
-    { id: 'categories', type: 'categories', title: 'Categories', enabled: true },
-    { id: 'trending', type: 'product_grid', title: 'Trending Products', enabled: true },
-    { id: 'promo', type: 'promo_banner', title: 'Promo Banner', enabled: true },
-    { id: 'footer', type: 'footer', title: 'Footer', enabled: true },
-  ]);
-
   const storeName = selectedStore || 'tnvcollection';
-  const storefrontUrl = `https://stores.wamerce.com/${storeName}`;
+  const storefrontUrl = `/tnv`;
 
-  // Save state to history for undo/redo
-  const saveToHistory = useCallback(() => {
-    if (isUndoRedo.current) {
-      isUndoRedo.current = false;
-      return;
+  // Fetch existing config
+  useEffect(() => {
+    fetchConfig();
+  }, [selectedStore]);
+
+  const fetchConfig = async () => {
+    setLoading(true);
+    try {
+      const [navRes, bannersRes, tabsRes] = await Promise.all([
+        fetch(`${API_URL}/api/storefront/config/navigation/${storeName}`),
+        fetch(`${API_URL}/api/storefront/banners/hero/${storeName}`),
+        fetch(`${API_URL}/api/storefront/banners/category-tabs/${storeName}`)
+      ]);
+
+      if (navRes.ok) {
+        const data = await navRes.json();
+        if (data.logo) setConfig(prev => ({ ...prev, logo: data.logo }));
+        if (data.promoMessages) setConfig(prev => ({ 
+          ...prev, 
+          announcement: { ...prev.announcement, messages: data.promoMessages }
+        }));
+      }
+      
+      if (bannersRes.ok) {
+        const data = await bannersRes.json();
+        if (data.banners?.[0]) {
+          setConfig(prev => ({ 
+            ...prev, 
+            heroBanner: { ...prev.heroBanner, ...data.banners[0] }
+          }));
+        }
+      }
+      
+      if (tabsRes.ok) {
+        const data = await tabsRes.json();
+        if (data.categoryTabs) setConfig(prev => ({ ...prev, categoryTabs: data.categoryTabs }));
+      }
+    } catch (error) {
+      console.error('Error fetching config:', error);
+    } finally {
+      setLoading(false);
     }
-    const state = { sections: [...sections], headerConfig: { ...headerConfig }, banners: [...banners] };
+  };
+
+  // Save to history
+  const saveToHistory = useCallback(() => {
+    if (isUndoRedo.current) { isUndoRedo.current = false; return; }
     setHistory(prev => {
       const newHistory = prev.slice(0, historyIndex + 1);
-      newHistory.push(JSON.stringify(state));
-      if (newHistory.length > 50) newHistory.shift(); // Keep max 50 states
+      newHistory.push(JSON.stringify(config));
+      if (newHistory.length > 50) newHistory.shift();
       return newHistory;
     });
     setHistoryIndex(prev => Math.min(prev + 1, 49));
-  }, [sections, headerConfig, banners, historyIndex]);
+  }, [config, historyIndex]);
 
-  // Undo
   const undo = useCallback(() => {
     if (historyIndex <= 0) return;
     isUndoRedo.current = true;
-    const prevState = JSON.parse(history[historyIndex - 1]);
-    setSections(prevState.sections);
-    setHeaderConfig(prevState.headerConfig);
-    setBanners(prevState.banners);
+    setConfig(JSON.parse(history[historyIndex - 1]));
     setHistoryIndex(prev => prev - 1);
     setHasChanges(true);
     toast.info('Undo');
   }, [history, historyIndex]);
 
-  // Redo
   const redo = useCallback(() => {
     if (historyIndex >= history.length - 1) return;
     isUndoRedo.current = true;
-    const nextState = JSON.parse(history[historyIndex + 1]);
-    setSections(nextState.sections);
-    setHeaderConfig(nextState.headerConfig);
-    setBanners(nextState.banners);
+    setConfig(JSON.parse(history[historyIndex + 1]));
     setHistoryIndex(prev => prev + 1);
     setHasChanges(true);
     toast.info('Redo');
@@ -155,305 +175,73 @@ const WebsiteEditorV2 = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-        e.preventDefault();
-        undo();
-      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
-        e.preventDefault();
-        redo();
-      } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        saveAll();
-      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+      else if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveAll(); }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo, redo]);
 
-  // Auto-save effect
-  useEffect(() => {
-    if (hasChanges) {
-      if (autoSaveTimer) clearTimeout(autoSaveTimer);
-      const timer = setTimeout(() => {
-        saveAll(true); // silent save
-      }, 30000); // Auto-save after 30 seconds of inactivity
-      setAutoSaveTimer(timer);
-    }
-    return () => autoSaveTimer && clearTimeout(autoSaveTimer);
-  }, [hasChanges, sections, headerConfig, banners]);
+  useEffect(() => { if (!loading) saveToHistory(); }, [config, loading]);
 
-  useEffect(() => {
-    fetchData();
-  }, [selectedStore]);
+  // Handle element selection
+  const handleElementClick = (type, id, data) => {
+    setSelectedElement({ type, id, data });
+  };
 
-  // Save to history when state changes
-  useEffect(() => {
-    if (!loading) saveToHistory();
-  }, [sections, headerConfig, banners, loading]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [bannersRes, navRes] = await Promise.all([
-        fetch(`${API_URL}/api/storefront/banners/hero/${storeName}`),
-        fetch(`${API_URL}/api/storefront/config/navigation/${storeName}`)
-      ]);
-
-      if (bannersRes.ok) {
-        const data = await bannersRes.json();
-        setBanners(data.banners || [
-          { id: 1, title: 'Summer Collection', subtitle: 'Up to 50% OFF', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8', link: '/collection/summer' },
-        ]);
+  // Update config
+  const updateConfig = (path, value) => {
+    setConfig(prev => {
+      const newConfig = { ...prev };
+      const keys = path.split('.');
+      let obj = newConfig;
+      for (let i = 0; i < keys.length - 1; i++) {
+        obj = obj[keys[i]];
       }
-      if (navRes.ok) {
-        const data = await navRes.json();
-        if (data.logo) setHeaderConfig(prev => ({ ...prev, logo: data.logo }));
-        if (data.promoMessages) setHeaderConfig(prev => ({ ...prev, promoMessages: data.promoMessages }));
-        if (data.categories) setHeaderConfig(prev => ({ ...prev, categories: data.categories }));
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Drag and Drop handlers
-  const handleDragStart = (e, sectionId) => {
-    setDraggedSection(sectionId);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e, sectionId) => {
-    e.preventDefault();
-    if (draggedSection !== sectionId) {
-      setDragOverSection(sectionId);
-    }
-  };
-
-  const handleDragLeave = () => {
-    setDragOverSection(null);
-  };
-
-  const handleDrop = (e, targetId) => {
-    e.preventDefault();
-    if (!draggedSection || draggedSection === targetId) return;
-
-    setSections(prev => {
-      const newSections = [...prev];
-      const dragIndex = newSections.findIndex(s => s.id === draggedSection);
-      const dropIndex = newSections.findIndex(s => s.id === targetId);
-      const [removed] = newSections.splice(dragIndex, 1);
-      newSections.splice(dropIndex, 0, removed);
-      return newSections;
+      obj[keys[keys.length - 1]] = value;
+      return newConfig;
     });
-
-    setDraggedSection(null);
-    setDragOverSection(null);
     setHasChanges(true);
-    toast.success('Section moved!');
-  };
-
-  const handleDragEnd = () => {
-    setDraggedSection(null);
-    setDragOverSection(null);
-  };
-
-  // Handle element click in preview
-  const handleElementClick = (elementType, elementId, elementData) => {
-    setSelectedElement({ type: elementType, id: elementId, data: elementData });
-    setEditingInline(false);
-  };
-
-  // Handle double-click for inline editing
-  const handleElementDoubleClick = (elementType, elementId, currentValue) => {
-    setSelectedElement({ type: elementType, id: elementId });
-    setEditingInline(true);
-    setInlineEditValue(currentValue);
-  };
-
-  // Save inline edit
-  const saveInlineEdit = () => {
-    if (!selectedElement) return;
-    
-    const { type, id } = selectedElement;
-    
-    if (type === 'logo_text') {
-      setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, text: inlineEditValue } }));
-    } else if (type === 'logo_badge') {
-      setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, badge: inlineEditValue } }));
-    } else if (type === 'promo_message') {
-      setHeaderConfig(prev => ({
-        ...prev,
-        promoMessages: prev.promoMessages.map((p, i) => i === id ? { ...p, text: inlineEditValue } : p)
-      }));
-    } else if (type === 'banner_title') {
-      setBanners(prev => prev.map(b => b.id === id ? { ...b, title: inlineEditValue } : b));
-    } else if (type === 'banner_subtitle') {
-      setBanners(prev => prev.map(b => b.id === id ? { ...b, subtitle: inlineEditValue } : b));
-    } else if (type === 'category') {
-      setHeaderConfig(prev => ({
-        ...prev,
-        categories: prev.categories.map((c, i) => {
-          if (i !== id) return c;
-          if (typeof c === 'string') return inlineEditValue;
-          return { ...c, name: inlineEditValue };
-        })
-      }));
-    }
-    
-    setHasChanges(true);
-    setEditingInline(false);
-    setInlineEditValue('');
-  };
-
-  // Toggle section visibility
-  const toggleSection = (sectionId) => {
-    setSections(prev => prev.map(s => s.id === sectionId ? { ...s, enabled: !s.enabled } : s));
-    setHasChanges(true);
-  };
-
-  // Duplicate section
-  const duplicateSection = (sectionId) => {
-    const section = sections.find(s => s.id === sectionId);
-    if (!section) return;
-    
-    const newSection = {
-      ...section,
-      id: `${section.id}_copy_${Date.now()}`,
-      title: `${section.title} (Copy)`
-    };
-    
-    setSections(prev => {
-      const idx = prev.findIndex(s => s.id === sectionId);
-      const newSections = [...prev];
-      newSections.splice(idx + 1, 0, newSection);
-      return newSections;
-    });
-    
-    setHasChanges(true);
-    toast.success('Section duplicated!');
-  };
-
-  // Delete section
-  const deleteSection = (sectionId) => {
-    setSections(prev => prev.filter(s => s.id !== sectionId));
-    setSelectedElement(null);
-    setHasChanges(true);
-    toast.success('Section deleted');
-  };
-
-  // Add new section from library
-  const addSection = (componentType) => {
-    const component = COMPONENT_LIBRARY.find(c => c.id === componentType);
-    const newSection = {
-      id: `${componentType}_${Date.now()}`,
-      type: componentType,
-      title: component?.name || 'New Section',
-      enabled: true,
-      settings: {}
-    };
-    
-    setSections(prev => [...prev.slice(0, -1), newSection, prev[prev.length - 1]]); // Add before footer
-    setShowComponentLibrary(false);
-    setHasChanges(true);
-    toast.success(`${component?.name || 'Section'} added!`);
-  };
-
-  // Apply template
-  const applyTemplate = (templateKey) => {
-    const template = TEMPLATES[templateKey];
-    if (!template) return;
-
-    setSections(prev => prev.map(s => ({
-      ...s,
-      enabled: template.sections.includes(s.id)
-    })));
-
-    setHeaderConfig(prev => ({
-      ...prev,
-      logo: { ...prev.logo, badgeColor: template.theme.accentColor }
-    }));
-
-    setShowTemplates(false);
-    setHasChanges(true);
-    toast.success(`Applied "${template.name}" template!`);
   };
 
   // Save all changes
-  const saveAll = async (silent = false) => {
+  const saveAll = async () => {
     setSaving(true);
     try {
       await Promise.all([
         fetch(`${API_URL}/api/storefront/config/logo/${storeName}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(headerConfig.logo)
+          body: JSON.stringify(config.logo)
         }),
         fetch(`${API_URL}/api/storefront/config/promo-messages/${storeName}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(headerConfig.promoMessages)
+          body: JSON.stringify(config.announcement.messages)
+        }),
+        fetch(`${API_URL}/api/storefront/banners/category-tabs/${storeName}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ categoryTabs: config.categoryTabs })
         }),
       ]);
       setLastSaved(new Date());
-      if (!silent) toast.success('All changes saved!');
+      toast.success('Saved!');
       setHasChanges(false);
     } catch (error) {
-      if (!silent) toast.error('Failed to save changes');
+      toast.error('Failed to save');
     } finally {
       setSaving(false);
     }
   };
 
-  // Get preview width based on view mode
   const getPreviewWidth = () => {
     switch (viewMode) {
       case 'tablet': return '768px';
       case 'mobile': return '375px';
       default: return '100%';
     }
-  };
-
-  // Inline edit input component
-  const InlineInput = ({ value, onSave, onCancel, className = '' }) => (
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => setInlineEditValue(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') onSave();
-        if (e.key === 'Escape') onCancel();
-      }}
-      onBlur={onSave}
-      autoFocus
-      className={`bg-transparent border-b-2 border-blue-500 outline-none ${className}`}
-      style={{ minWidth: '50px', width: `${value.length + 2}ch` }}
-    />
-  );
-
-  // Quick Actions Toolbar - Appears near selected element
-  const QuickActionsToolbar = () => {
-    if (!selectedElement) return null;
-    
-    return (
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-full shadow-2xl flex items-center gap-3 z-50 animate-in slide-in-from-bottom-4">
-        <span className="text-sm opacity-70">Quick Actions:</span>
-        <button onClick={() => duplicateSection(selectedElement.id)} className="p-2 hover:bg-white/20 rounded-full" title="Duplicate">
-          <Copy className="w-4 h-4" />
-        </button>
-        <button onClick={() => toggleSection(selectedElement.id)} className="p-2 hover:bg-white/20 rounded-full" title="Toggle Visibility">
-          <Eye className="w-4 h-4" />
-        </button>
-        <button onClick={() => deleteSection(selectedElement.id)} className="p-2 hover:bg-red-500/50 rounded-full" title="Delete">
-          <Trash2 className="w-4 h-4" />
-        </button>
-        <div className="w-px h-6 bg-white/30" />
-        <button onClick={() => setSelectedElement(null)} className="p-2 hover:bg-white/20 rounded-full" title="Deselect">
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-    );
   };
 
   if (loading) {
@@ -474,532 +262,483 @@ const WebsiteEditorV2 = () => {
           </Button>
           <div className="flex items-center gap-2">
             <Monitor className="w-5 h-5" />
-            <span className="font-semibold">Website Editor</span>
+            <span className="font-semibold">Storefront Editor</span>
             <span className="text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full">Pro</span>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Undo/Redo */}
           <div className="flex items-center gap-1 mr-2">
-            <button 
-              onClick={undo} 
-              disabled={historyIndex <= 0}
-              className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Undo (Ctrl+Z)"
-            >
+            <button onClick={undo} disabled={historyIndex <= 0} className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-30" title="Undo">
               <Undo2 className="w-4 h-4" />
             </button>
-            <button 
-              onClick={redo}
-              disabled={historyIndex >= history.length - 1}
-              className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Redo (Ctrl+Y)"
-            >
+            <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-30" title="Redo">
               <Redo2 className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Templates */}
-          <div className="relative">
-            <Button variant="outline" size="sm" onClick={() => setShowTemplates(!showTemplates)}>
-              <Sparkles className="w-4 h-4 mr-2" />
-              Templates
-            </Button>
-            {showTemplates && (
-              <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border p-3 w-64 z-50">
-                <h3 className="font-semibold text-sm mb-2">Quick Start Templates</h3>
-                <div className="space-y-2">
-                  {Object.entries(TEMPLATES).map(([key, template]) => (
-                    <button
-                      key={key}
-                      onClick={() => applyTemplate(key)}
-                      className="w-full text-left p-3 rounded-lg hover:bg-gray-50 border transition-all hover:border-blue-300"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{template.icon}</span>
-                        <div>
-                          <p className="font-medium text-sm">{template.name}</p>
-                          <p className="text-xs text-gray-500">{template.description}</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* View Mode */}
           <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-lg">
-            <button 
-              onClick={() => setViewMode('desktop')}
-              className={`p-1.5 rounded ${viewMode === 'desktop' ? 'bg-white shadow' : ''}`}
-            >
+            <button onClick={() => setViewMode('desktop')} className={`p-1.5 rounded ${viewMode === 'desktop' ? 'bg-white shadow' : ''}`}>
               <Monitor className="w-4 h-4" />
             </button>
-            <button 
-              onClick={() => setViewMode('tablet')}
-              className={`p-1.5 rounded ${viewMode === 'tablet' ? 'bg-white shadow' : ''}`}
-            >
+            <button onClick={() => setViewMode('tablet')} className={`p-1.5 rounded ${viewMode === 'tablet' ? 'bg-white shadow' : ''}`}>
               <Tablet className="w-4 h-4" />
             </button>
-            <button 
-              onClick={() => setViewMode('mobile')}
-              className={`p-1.5 rounded ${viewMode === 'mobile' ? 'bg-white shadow' : ''}`}
-            >
+            <button onClick={() => setViewMode('mobile')} className={`p-1.5 rounded ${viewMode === 'mobile' ? 'bg-white shadow' : ''}`}>
               <Phone className="w-4 h-4" />
             </button>
           </div>
           
           <Button variant="outline" size="sm" onClick={() => window.open(storefrontUrl, '_blank')}>
-            <ExternalLink className="w-4 h-4 mr-2" />
-            Preview
+            <ExternalLink className="w-4 h-4 mr-2" />View Live
           </Button>
           
-          {/* Save Status */}
-          <div className="flex items-center gap-2">
-            {lastSaved && (
-              <span className="text-xs text-gray-400 flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {lastSaved.toLocaleTimeString()}
-              </span>
-            )}
-            {hasChanges && (
-              <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" title="Unsaved changes" />
-            )}
-            <Button onClick={() => saveAll()} disabled={saving || !hasChanges} className="bg-green-600 hover:bg-green-700">
-              {saving ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-              Save
-            </Button>
-          </div>
+          {lastSaved && <span className="text-xs text-gray-400"><Clock className="w-3 h-3 inline mr-1" />{lastSaved.toLocaleTimeString()}</span>}
+          {hasChanges && <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />}
+          
+          <Button onClick={saveAll} disabled={saving || !hasChanges} className="bg-green-600 hover:bg-green-700">
+            {saving ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}Save
+          </Button>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Sections */}
         {showLeftPanel && (
           <div className="w-72 bg-white border-r flex flex-col flex-shrink-0">
-            <div className="p-4 border-b flex items-center justify-between">
+            <div className="p-4 border-b">
               <h2 className="font-semibold flex items-center gap-2">
-                <Layers className="w-4 h-4" />
-                Sections
+                <Layers className="w-4 h-4" />Sections
               </h2>
-              <div className="flex items-center gap-1">
-                <button 
-                  onClick={() => setShowComponentLibrary(true)}
-                  className="p-1.5 hover:bg-gray-100 rounded-lg"
-                  title="Add Section"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-                <Button variant="ghost" size="sm" onClick={() => setShowLeftPanel(false)}>
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-              </div>
             </div>
             
-            <div className="flex-1 overflow-auto p-3 space-y-1">
-              {sections.map((section) => (
-                <div
-                  key={section.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, section.id)}
-                  onDragOver={(e) => handleDragOver(e, section.id)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, section.id)}
-                  onDragEnd={handleDragEnd}
-                  onClick={() => handleElementClick('section', section.id, section)}
-                  className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all ${
-                    dragOverSection === section.id ? 'border-2 border-blue-500 border-dashed bg-blue-50' :
-                    draggedSection === section.id ? 'opacity-50' :
-                    selectedElement?.id === section.id && selectedElement?.type === 'section'
-                      ? 'bg-blue-50 border-blue-200 border' 
-                      : 'hover:bg-gray-50 border border-transparent'
-                  } ${!section.enabled && 'opacity-50'}`}
-                >
-                  <div className="cursor-grab active:cursor-grabbing">
-                    <GripVertical className="w-4 h-4 text-gray-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{section.title}</p>
-                    <p className="text-xs text-gray-400 truncate">{section.type}</p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); duplicateSection(section.id); }}
-                      className="p-1 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Duplicate"
-                    >
-                      <Copy className="w-3 h-3 text-gray-400" />
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleSection(section.id); }}
-                      className="p-1"
-                    >
-                      {section.enabled ? (
-                        <Eye className="w-4 h-4 text-green-500" />
-                      ) : (
-                        <EyeOff className="w-4 h-4 text-gray-400" />
-                      )}
-                    </button>
-                  </div>
+            <div className="flex-1 overflow-auto p-3 space-y-2">
+              {/* Announcement Bar */}
+              <div 
+                onClick={() => handleElementClick('announcement', 'bar', config.announcement)}
+                className={`p-3 rounded-lg cursor-pointer border transition-all ${selectedElement?.type === 'announcement' ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:bg-gray-50'}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-sm">Announcement Bar</span>
+                  <Switch checked={config.announcement.enabled} onCheckedChange={(v) => updateConfig('announcement.enabled', v)} />
                 </div>
-              ))}
+              </div>
+
+              {/* Header/Logo */}
+              <div 
+                onClick={() => handleElementClick('logo', 'main', config.logo)}
+                className={`p-3 rounded-lg cursor-pointer border transition-all ${selectedElement?.type === 'logo' ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:bg-gray-50'}`}
+              >
+                <span className="font-medium text-sm">Header & Logo</span>
+              </div>
+
+              {/* Category Tabs */}
+              <div 
+                onClick={() => handleElementClick('categoryTabs', 'all', config.categoryTabs)}
+                className={`p-3 rounded-lg cursor-pointer border transition-all ${selectedElement?.type === 'categoryTabs' ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:bg-gray-50'}`}
+              >
+                <span className="font-medium text-sm">Category Tabs</span>
+                <p className="text-xs text-gray-500">{config.categoryTabs.length} tabs</p>
+              </div>
+
+              {/* Sub Navigation */}
+              <div 
+                onClick={() => handleElementClick('subNav', 'all', config.subNav)}
+                className={`p-3 rounded-lg cursor-pointer border transition-all ${selectedElement?.type === 'subNav' ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:bg-gray-50'}`}
+              >
+                <span className="font-medium text-sm">Sub Navigation</span>
+                <p className="text-xs text-gray-500">{config.subNav.length} items</p>
+              </div>
+
+              {/* Hero Banner */}
+              <div 
+                onClick={() => handleElementClick('heroBanner', 'main', config.heroBanner)}
+                className={`p-3 rounded-lg cursor-pointer border transition-all ${selectedElement?.type === 'heroBanner' ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:bg-gray-50'}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-sm">Hero Banner</span>
+                  <Switch checked={config.heroBanner.enabled} onCheckedChange={(v) => updateConfig('heroBanner.enabled', v)} />
+                </div>
+              </div>
+
+              {/* Region Settings */}
+              <div 
+                onClick={() => handleElementClick('region', 'settings', config.region)}
+                className={`p-3 rounded-lg cursor-pointer border transition-all ${selectedElement?.type === 'region' ? 'border-blue-500 bg-blue-50' : 'border-transparent hover:bg-gray-50'}`}
+              >
+                <span className="font-medium text-sm">Region & Language</span>
+                <p className="text-xs text-gray-500">{config.region.flag} {config.region.name}</p>
+              </div>
             </div>
 
-            {/* Keyboard Shortcuts */}
-            <div className="p-3 border-t bg-gray-50">
-              <p className="text-xs text-gray-500 mb-2 font-medium">Keyboard Shortcuts</p>
-              <div className="grid grid-cols-2 gap-1 text-xs text-gray-400">
-                <span>⌘Z Undo</span>
-                <span>⌘Y Redo</span>
-                <span>⌘S Save</span>
-                <span>Drag to reorder</span>
-              </div>
+            <div className="p-3 border-t bg-gray-50 text-xs text-gray-500">
+              <p>⌘Z Undo · ⌘Y Redo · ⌘S Save</p>
             </div>
           </div>
         )}
 
-        {/* Center - Live Preview */}
+        {/* Center - Preview (Actual Namshi-style storefront) */}
         <div className="flex-1 flex flex-col overflow-hidden bg-gray-200">
-          {!showLeftPanel && (
-            <Button 
-              variant="ghost" 
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white shadow z-10"
-              onClick={() => setShowLeftPanel(true)}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </Button>
-          )}
-
           <div className="flex-1 overflow-auto p-4">
             <div 
               className="mx-auto bg-white shadow-xl rounded-lg overflow-hidden transition-all"
               style={{ width: getPreviewWidth(), maxWidth: '100%' }}
             >
-              {/* PREVIEW: Announcement Bar */}
-              {sections.find(s => s.id === 'announcement')?.enabled && (
-                <div 
-                  className={`bg-black text-white text-center py-2 px-4 text-sm cursor-pointer transition-all ${
-                    selectedElement?.type === 'announcement' ? 'ring-2 ring-blue-500 ring-inset' : 'hover:ring-2 hover:ring-blue-300 hover:ring-inset'
-                  }`}
-                  onClick={() => handleElementClick('announcement', 0, headerConfig.promoMessages[0])}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    {headerConfig.promoMessages.length > 0 && (
-                      <>
-                        <span>{headerConfig.promoMessages[0]?.emoji || '🚚'}</span>
-                        {editingInline && selectedElement?.type === 'promo_message' && selectedElement?.id === 0 ? (
-                          <InlineInput
-                            value={inlineEditValue}
-                            onSave={saveInlineEdit}
-                            onCancel={() => setEditingInline(false)}
-                            className="text-white"
-                          />
-                        ) : (
-                          <span 
-                            onDoubleClick={() => handleElementDoubleClick('promo_message', 0, headerConfig.promoMessages[0]?.text)}
-                            className="hover:bg-white/10 px-1 rounded cursor-text"
-                          >
-                            {headerConfig.promoMessages[0]?.text || 'Free shipping on orders over ₹999'}
-                          </span>
-                        )}
-                      </>
+              {/* === NAMSHI-STYLE HEADER === */}
+              
+              {/* Top bar - Language & Region */}
+              <div className="bg-black text-white text-xs">
+                <div className="flex justify-between items-center px-4 py-2">
+                  <div className="flex items-center gap-4">
+                    {config.region.showLanguageToggle && (
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => setLanguage('en')}
+                          className={`${language === 'en' ? 'text-white' : 'text-gray-400'}`}
+                        >
+                          English
+                        </button>
+                        <span className="text-gray-500">|</span>
+                        <button 
+                          onClick={() => setLanguage('ar')}
+                          className={`${language === 'ar' ? 'text-white' : 'text-gray-400'}`}
+                        >
+                          العربية
+                        </button>
+                      </div>
                     )}
                   </div>
-                </div>
-              )}
-
-              {/* PREVIEW: Header */}
-              {sections.find(s => s.id === 'header')?.enabled && (
-                <div className="bg-white border-b">
-                  <div className="flex items-center justify-between px-6 py-4">
+                  
+                  {/* Announcement message */}
+                  {config.announcement.enabled && config.announcement.messages[0] && (
                     <div 
-                      className={`flex items-center gap-1 cursor-pointer transition-all rounded px-2 py-1 ${
-                        selectedElement?.type?.startsWith('logo') ? 'ring-2 ring-blue-500' : 'hover:ring-2 hover:ring-blue-300'
-                      }`}
-                      onClick={() => handleElementClick('logo', 'main', headerConfig.logo)}
+                      className={`flex-1 text-center cursor-pointer ${selectedElement?.type === 'announcement' ? 'ring-2 ring-blue-500' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); handleElementClick('announcement', 'bar', config.announcement); }}
                     >
-                      {editingInline && selectedElement?.type === 'logo_text' ? (
-                        <InlineInput value={inlineEditValue} onSave={saveInlineEdit} onCancel={() => setEditingInline(false)} className="text-2xl font-bold" />
-                      ) : (
-                        <span className="text-2xl font-bold hover:bg-gray-100 px-1 rounded cursor-text" onDoubleClick={() => handleElementDoubleClick('logo_text', 'main', headerConfig.logo.text)}>
-                          {headerConfig.logo.text}
-                        </span>
-                      )}
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded" style={{ backgroundColor: headerConfig.logo.badgeColor, color: 'white' }}>
-                        {headerConfig.logo.badge}
-                      </span>
+                      {config.announcement.messages[0].text}
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="w-64 h-10 bg-gray-100 rounded-full flex items-center px-4 text-gray-400 text-sm">
-                        <BoxSelect className="w-4 h-4 mr-2" />
-                        Search products...
+                  )}
+                  
+                  {/* Region selector */}
+                  <div className="flex items-center gap-2">
+                    <span>{config.region.flag}</span>
+                    <span>{config.region.code}</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Logo bar */}
+              <div className="bg-white border-b">
+                <div className="flex items-center justify-between px-4 py-3">
+                  {/* Logo */}
+                  <div 
+                    className={`flex items-center gap-1 cursor-pointer rounded px-2 py-1 ${selectedElement?.type === 'logo' ? 'ring-2 ring-blue-500' : 'hover:bg-gray-50'}`}
+                    onClick={() => handleElementClick('logo', 'main', config.logo)}
+                  >
+                    <span className="text-2xl font-bold">{config.logo.text}</span>
+                    <span 
+                      className="text-xs font-semibold px-2 py-0.5 rounded text-white"
+                      style={{ backgroundColor: config.logo.badgeColor }}
+                    >
+                      {config.logo.badge}
+                    </span>
+                  </div>
+
+                  {/* Search */}
+                  <div className="flex-1 max-w-xl mx-8">
+                    <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
+                      <Search className="w-4 h-4 text-gray-400 mr-2" />
+                      <span className="text-sm text-gray-400">Search for items and brands</span>
+                    </div>
+                  </div>
+
+                  {/* Icons */}
+                  <div className="flex items-center gap-4">
+                    <User className="w-5 h-5 text-gray-600" />
+                    <Heart className="w-5 h-5 text-gray-600" />
+                    <div className="relative">
+                      <ShoppingBag className="w-5 h-5 text-gray-600" />
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Category tabs - Namshi style with images */}
+              <div 
+                className={`flex items-center justify-center gap-2 py-3 px-4 border-b bg-white cursor-pointer ${selectedElement?.type === 'categoryTabs' ? 'ring-2 ring-blue-500 ring-inset' : ''}`}
+                onClick={() => handleElementClick('categoryTabs', 'all', config.categoryTabs)}
+              >
+                {config.categoryTabs.filter(t => t.enabled).map((tab, idx) => (
+                  <div 
+                    key={tab.id || idx}
+                    className="flex flex-col items-center px-3 py-2 rounded-xl transition-all hover:bg-gray-50"
+                    style={{ backgroundColor: tab.bgColor || '#f5f5f5' }}
+                  >
+                    {tab.image ? (
+                      <img src={tab.image} alt={tab.name} className="w-12 h-12 rounded-full object-cover mb-1" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gray-200 mb-1 flex items-center justify-center text-xs font-bold">
+                        {tab.name.charAt(0)}
+                      </div>
+                    )}
+                    <span className="text-xs font-medium">{tab.name}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Sub navigation */}
+              <div 
+                className={`flex items-center justify-center gap-6 py-2 px-4 text-sm font-medium border-b cursor-pointer ${selectedElement?.type === 'subNav' ? 'ring-2 ring-blue-500 ring-inset' : ''}`}
+                onClick={() => handleElementClick('subNav', 'all', config.subNav)}
+              >
+                {config.subNav.filter(item => item.enabled).map((item, idx) => (
+                  <span 
+                    key={item.id || idx}
+                    className={`hover:text-black cursor-pointer ${item.isRed ? 'text-red-500' : item.highlight ? 'text-green-600' : 'text-gray-600'}`}
+                  >
+                    {item.name}
+                  </span>
+                ))}
+              </div>
+
+              {/* Hero Banner */}
+              {config.heroBanner.enabled && (
+                <div 
+                  className={`relative cursor-pointer ${selectedElement?.type === 'heroBanner' ? 'ring-4 ring-blue-500 ring-inset' : ''}`}
+                  onClick={() => handleElementClick('heroBanner', 'main', config.heroBanner)}
+                >
+                  <div 
+                    className="h-80 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${config.heroBanner.image})` }}
+                  >
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <h2 className="text-4xl font-bold mb-2">{config.heroBanner.title}</h2>
+                        <p className="text-xl opacity-90">{config.heroBanner.subtitle}</p>
+                        <button className="mt-4 bg-white text-black px-6 py-2 rounded-full font-semibold">
+                          Shop Now
+                        </button>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-center gap-8 py-3 border-t text-sm font-medium">
-                    {headerConfig.categories.map((cat, idx) => {
-                      const catName = typeof cat === 'string' ? cat : cat?.name || 'Category';
-                      return (
-                        <span 
-                          key={idx}
-                          onClick={() => handleElementClick('category', idx, cat)}
-                          onDoubleClick={() => handleElementDoubleClick('category', idx, catName)}
-                          className={`cursor-pointer transition-all px-2 py-1 rounded ${
-                            selectedElement?.type === 'category' && selectedElement?.id === idx 
-                              ? 'ring-2 ring-blue-500 bg-blue-50' 
-                              : 'hover:ring-2 hover:ring-blue-300 hover:bg-gray-50'
-                          }`}
-                        >
-                          {editingInline && selectedElement?.type === 'category' && selectedElement?.id === idx ? (
-                            <InlineInput value={inlineEditValue} onSave={saveInlineEdit} onCancel={() => setEditingInline(false)} />
-                          ) : catName}
-                        </span>
-                      );
-                    })}
-                  </div>
+                  {selectedElement?.type === 'heroBanner' && (
+                    <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm">
+                      <Edit3 className="w-4 h-4 inline mr-1" />Click to edit
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* PREVIEW: Hero Banners */}
-              {sections.find(s => s.id === 'hero')?.enabled && banners.length > 0 && (
-                <div className="relative">
-                  {banners.slice(0, 1).map((banner) => (
-                    <div 
-                      key={banner.id}
-                      onClick={() => handleElementClick('banner', banner.id, banner)}
-                      className={`relative h-80 bg-cover bg-center cursor-pointer transition-all ${
-                        selectedElement?.type === 'banner' && selectedElement?.id === banner.id 
-                          ? 'ring-4 ring-blue-500 ring-inset' 
-                          : 'hover:ring-4 hover:ring-blue-300 hover:ring-inset'
-                      }`}
-                      style={{ backgroundImage: `url(${banner.image})` }}
-                    >
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <div className="text-center text-white">
-                          {editingInline && selectedElement?.type === 'banner_title' && selectedElement?.id === banner.id ? (
-                            <InlineInput value={inlineEditValue} onSave={saveInlineEdit} onCancel={() => setEditingInline(false)} className="text-4xl font-bold text-white bg-transparent" />
-                          ) : (
-                            <h2 className="text-4xl font-bold mb-2 hover:bg-white/20 px-4 py-2 rounded cursor-text" onDoubleClick={(e) => { e.stopPropagation(); handleElementDoubleClick('banner_title', banner.id, banner.title); }}>
-                              {banner.title}
-                            </h2>
-                          )}
-                          {editingInline && selectedElement?.type === 'banner_subtitle' && selectedElement?.id === banner.id ? (
-                            <InlineInput value={inlineEditValue} onSave={saveInlineEdit} onCancel={() => setEditingInline(false)} className="text-xl text-white bg-transparent" />
-                          ) : (
-                            <p className="text-xl hover:bg-white/20 px-4 py-1 rounded cursor-text" onDoubleClick={(e) => { e.stopPropagation(); handleElementDoubleClick('banner_subtitle', banner.id, banner.subtitle); }}>
-                              {banner.subtitle}
-                            </p>
-                          )}
-                          <button className="mt-4 bg-white text-black px-6 py-2 rounded-full font-semibold hover:bg-gray-100">Shop Now</button>
-                        </div>
-                      </div>
+              {/* Products placeholder */}
+              <div className="p-6">
+                <h3 className="text-lg font-bold mb-4">Trending Now</h3>
+                <div className="grid grid-cols-4 gap-4">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="bg-gray-100 rounded-lg p-3">
+                      <div className="aspect-square bg-gray-200 rounded mb-2" />
+                      <p className="text-sm font-medium">Product Name</p>
+                      <p className="text-sm text-gray-500">AED 199</p>
                     </div>
                   ))}
                 </div>
-              )}
-
-              {/* PREVIEW: Categories */}
-              {sections.find(s => s.id === 'categories')?.enabled && (
-                <div className="py-8 px-6">
-                  <h3 className="text-xl font-bold mb-6 text-center">Shop by Category</h3>
-                  <div className="grid grid-cols-4 gap-4">
-                    {['Men', 'Women', 'Kids', 'Accessories'].map((cat, idx) => (
-                      <div key={idx} className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center text-gray-600 font-medium hover:bg-gray-300 cursor-pointer">
-                        {cat}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* PREVIEW: Trending */}
-              {sections.find(s => s.id === 'trending')?.enabled && (
-                <div className="py-8 px-6 bg-gray-50">
-                  <h3 className="text-xl font-bold mb-6">Trending Now</h3>
-                  <div className="grid grid-cols-4 gap-4">
-                    {[1,2,3,4].map((i) => (
-                      <div key={i} className="bg-white rounded-lg p-3 shadow-sm">
-                        <div className="aspect-square bg-gray-200 rounded-lg mb-3" />
-                        <p className="font-medium text-sm">Product Name</p>
-                        <p className="text-gray-500 text-sm">₹1,299</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* PREVIEW: Promo Banner */}
-              {sections.find(s => s.id === 'promo')?.enabled && (
-                <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white py-12 text-center cursor-pointer hover:ring-4 hover:ring-blue-300 hover:ring-inset" onClick={() => handleElementClick('promo_banner', 'main', {})}>
-                  <h3 className="text-2xl font-bold mb-2">Flash Sale</h3>
-                  <p className="text-lg opacity-90">Up to 70% OFF - Limited Time Only!</p>
-                  <button className="mt-4 bg-white text-purple-600 px-6 py-2 rounded-full font-semibold">Shop Sale</button>
-                </div>
-              )}
-
-              {/* PREVIEW: Footer */}
-              {sections.find(s => s.id === 'footer')?.enabled && (
-                <div className="bg-gray-900 text-white py-12 px-6">
-                  <div className="grid grid-cols-4 gap-8">
-                    <div>
-                      <h4 className="font-bold mb-4">{headerConfig.logo.text}</h4>
-                      <p className="text-sm text-gray-400">Your one-stop fashion destination</p>
-                    </div>
-                    <div>
-                      <h4 className="font-bold mb-4">Shop</h4>
-                      <ul className="space-y-2 text-sm text-gray-400"><li>Men</li><li>Women</li><li>Kids</li><li>Sale</li></ul>
-                    </div>
-                    <div>
-                      <h4 className="font-bold mb-4">Help</h4>
-                      <ul className="space-y-2 text-sm text-gray-400"><li>Contact</li><li>Shipping</li><li>Returns</li><li>FAQ</li></ul>
-                    </div>
-                    <div>
-                      <h4 className="font-bold mb-4">Follow Us</h4>
-                      <div className="flex gap-3 text-gray-400">
-                        <span className="hover:text-white cursor-pointer">📘</span>
-                        <span className="hover:text-white cursor-pointer">📸</span>
-                        <span className="hover:text-white cursor-pointer">🐦</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Right Panel - Element Editor */}
+        {/* Right Panel - Editor */}
         {selectedElement && (
           <div className="w-80 bg-white border-l flex flex-col flex-shrink-0">
             <div className="p-4 border-b flex items-center justify-between">
-              <h2 className="font-semibold flex items-center gap-2">
-                <Edit3 className="w-4 h-4" />
-                Edit Element
-              </h2>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedElement(null)}>
-                <X className="w-4 h-4" />
-              </Button>
+              <h2 className="font-semibold"><Edit3 className="w-4 h-4 inline mr-2" />Edit {selectedElement.type}</h2>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedElement(null)}><X className="w-4 h-4" /></Button>
             </div>
             
             <div className="flex-1 overflow-auto p-4 space-y-4">
-              {/* Logo Editor */}
-              {selectedElement.type?.startsWith('logo') && (
+              {/* Announcement Editor */}
+              {selectedElement.type === 'announcement' && (
                 <>
-                  <div>
-                    <Label className="text-sm">Logo Text</Label>
-                    <Input value={headerConfig.logo.text} onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, text: e.target.value } })); setHasChanges(true); }} className="mt-1" />
+                  <div className="flex items-center justify-between">
+                    <Label>Enabled</Label>
+                    <Switch checked={config.announcement.enabled} onCheckedChange={(v) => updateConfig('announcement.enabled', v)} />
                   </div>
                   <div>
-                    <Label className="text-sm">Badge Text</Label>
-                    <Input value={headerConfig.logo.badge} onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, badge: e.target.value } })); setHasChanges(true); }} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-sm">Badge Color</Label>
-                    <div className="flex gap-2 mt-1">
-                      <Input type="color" value={headerConfig.logo.badgeColor} onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, badgeColor: e.target.value } })); setHasChanges(true); }} className="w-12 h-10 p-1" />
-                      <Input value={headerConfig.logo.badgeColor} onChange={(e) => { setHeaderConfig(prev => ({ ...prev, logo: { ...prev.logo, badgeColor: e.target.value } })); setHasChanges(true); }} className="flex-1" />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Banner Editor */}
-              {selectedElement.type === 'banner' && banners.filter(b => b.id === selectedElement.id).map(banner => (
-                <div key={banner.id} className="space-y-4">
-                  <div>
-                    <Label className="text-sm">Title</Label>
-                    <Input value={banner.title} onChange={(e) => { setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, title: e.target.value } : b)); setHasChanges(true); }} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-sm">Subtitle</Label>
-                    <Input value={banner.subtitle} onChange={(e) => { setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, subtitle: e.target.value } : b)); setHasChanges(true); }} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-sm">Image URL</Label>
-                    <Input value={banner.image} onChange={(e) => { setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, image: e.target.value } : b)); setHasChanges(true); }} className="mt-1" />
-                  </div>
-                </div>
-              ))}
-
-              {/* Promo Message Editor */}
-              {(selectedElement.type === 'promo_message' || selectedElement.type === 'announcement') && (
-                <>
-                  <div>
-                    <Label className="text-sm">Emoji</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {EMOJI_OPTIONS.map(emoji => (
-                        <button key={emoji} onClick={() => { const idx = selectedElement.id || 0; setHeaderConfig(prev => ({ ...prev, promoMessages: prev.promoMessages.map((p, i) => i === idx ? { ...p, emoji } : p) })); setHasChanges(true); }} className={`w-8 h-8 rounded flex items-center justify-center hover:bg-gray-100 ${headerConfig.promoMessages[selectedElement.id || 0]?.emoji === emoji ? 'bg-blue-100 ring-2 ring-blue-500' : ''}`}>
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-sm">Message Text</Label>
-                    <Input value={headerConfig.promoMessages[selectedElement.id || 0]?.text || ''} onChange={(e) => { const idx = selectedElement.id || 0; setHeaderConfig(prev => ({ ...prev, promoMessages: prev.promoMessages.map((p, i) => i === idx ? { ...p, text: e.target.value } : p) })); setHasChanges(true); }} className="mt-1" />
-                  </div>
-                </>
-              )}
-
-              {/* Category Editor */}
-              {selectedElement.type === 'category' && (() => {
-                const cat = headerConfig.categories[selectedElement.id];
-                const catName = typeof cat === 'string' ? cat : cat?.name || '';
-                return (
-                  <div>
-                    <Label className="text-sm">Category Name</Label>
-                    <Input value={catName} onChange={(e) => { setHeaderConfig(prev => ({ ...prev, categories: prev.categories.map((c, i) => { if (i !== selectedElement.id) return c; if (typeof c === 'string') return e.target.value; return { ...c, name: e.target.value }; }) })); setHasChanges(true); }} className="mt-1" />
-                    <Button variant="destructive" size="sm" className="mt-3 w-full" onClick={() => { setHeaderConfig(prev => ({ ...prev, categories: prev.categories.filter((_, i) => i !== selectedElement.id) })); setSelectedElement(null); setHasChanges(true); }}>
-                      <Trash2 className="w-4 h-4 mr-2" />Remove Category
+                    <Label>Messages</Label>
+                    {config.announcement.messages.map((msg, idx) => (
+                      <div key={idx} className="flex gap-2 mt-2">
+                        <Input 
+                          value={msg.text} 
+                          onChange={(e) => {
+                            const newMsgs = [...config.announcement.messages];
+                            newMsgs[idx].text = e.target.value;
+                            updateConfig('announcement.messages', newMsgs);
+                          }}
+                        />
+                        <Button variant="ghost" size="sm" onClick={() => {
+                          const newMsgs = config.announcement.messages.filter((_, i) => i !== idx);
+                          updateConfig('announcement.messages', newMsgs);
+                        }}>
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button variant="outline" size="sm" className="mt-2 w-full" onClick={() => {
+                      updateConfig('announcement.messages', [...config.announcement.messages, { text: 'New message', enabled: true }]);
+                    }}>
+                      <Plus className="w-4 h-4 mr-2" />Add Message
                     </Button>
                   </div>
-                );
-              })()}
+                </>
+              )}
+
+              {/* Logo Editor */}
+              {selectedElement.type === 'logo' && (
+                <>
+                  <div>
+                    <Label>Logo Text</Label>
+                    <Input value={config.logo.text} onChange={(e) => updateConfig('logo.text', e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Badge Text</Label>
+                    <Input value={config.logo.badge} onChange={(e) => updateConfig('logo.badge', e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Badge Color</Label>
+                    <div className="flex gap-2 mt-1">
+                      <input type="color" value={config.logo.badgeColor} onChange={(e) => updateConfig('logo.badgeColor', e.target.value)} className="w-12 h-10" />
+                      <Input value={config.logo.badgeColor} onChange={(e) => updateConfig('logo.badgeColor', e.target.value)} />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Category Tabs Editor */}
+              {selectedElement.type === 'categoryTabs' && (
+                <>
+                  <p className="text-sm text-gray-500">Edit category tabs displayed in the header</p>
+                  {config.categoryTabs.map((tab, idx) => (
+                    <div key={tab.id || idx} className="p-3 border rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Input value={tab.name} onChange={(e) => {
+                          const newTabs = [...config.categoryTabs];
+                          newTabs[idx].name = e.target.value;
+                          updateConfig('categoryTabs', newTabs);
+                        }} className="font-medium" />
+                        <Switch checked={tab.enabled} onCheckedChange={(v) => {
+                          const newTabs = [...config.categoryTabs];
+                          newTabs[idx].enabled = v;
+                          updateConfig('categoryTabs', newTabs);
+                        }} />
+                      </div>
+                      <Input placeholder="Image URL" value={tab.image || ''} onChange={(e) => {
+                        const newTabs = [...config.categoryTabs];
+                        newTabs[idx].image = e.target.value;
+                        updateConfig('categoryTabs', newTabs);
+                      }} />
+                      <div className="flex gap-2">
+                        <input type="color" value={tab.bgColor || '#f5f5f5'} onChange={(e) => {
+                          const newTabs = [...config.categoryTabs];
+                          newTabs[idx].bgColor = e.target.value;
+                          updateConfig('categoryTabs', newTabs);
+                        }} className="w-10 h-8" />
+                        <Input value={tab.path} onChange={(e) => {
+                          const newTabs = [...config.categoryTabs];
+                          newTabs[idx].path = e.target.value;
+                          updateConfig('categoryTabs', newTabs);
+                        }} placeholder="/path" />
+                      </div>
+                    </div>
+                  ))}
+                  <Button variant="outline" className="w-full" onClick={() => {
+                    updateConfig('categoryTabs', [...config.categoryTabs, { id: Date.now(), name: 'NEW', path: '/new', bgColor: '#f5f5f5', enabled: true }]);
+                  }}>
+                    <Plus className="w-4 h-4 mr-2" />Add Tab
+                  </Button>
+                </>
+              )}
+
+              {/* Sub Nav Editor */}
+              {selectedElement.type === 'subNav' && (
+                <>
+                  <p className="text-sm text-gray-500">Edit secondary navigation items</p>
+                  {config.subNav.map((item, idx) => (
+                    <div key={item.id || idx} className="flex items-center gap-2">
+                      <Input value={item.name} onChange={(e) => {
+                        const newNav = [...config.subNav];
+                        newNav[idx].name = e.target.value;
+                        updateConfig('subNav', newNav);
+                      }} />
+                      <Switch checked={item.enabled} onCheckedChange={(v) => {
+                        const newNav = [...config.subNav];
+                        newNav[idx].enabled = v;
+                        updateConfig('subNav', newNav);
+                      }} />
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {/* Hero Banner Editor */}
+              {selectedElement.type === 'heroBanner' && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <Label>Enabled</Label>
+                    <Switch checked={config.heroBanner.enabled} onCheckedChange={(v) => updateConfig('heroBanner.enabled', v)} />
+                  </div>
+                  <div>
+                    <Label>Title</Label>
+                    <Input value={config.heroBanner.title} onChange={(e) => updateConfig('heroBanner.title', e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Subtitle</Label>
+                    <Input value={config.heroBanner.subtitle} onChange={(e) => updateConfig('heroBanner.subtitle', e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Image URL</Label>
+                    <Input value={config.heroBanner.image} onChange={(e) => updateConfig('heroBanner.image', e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Link</Label>
+                    <Input value={config.heroBanner.link} onChange={(e) => updateConfig('heroBanner.link', e.target.value)} className="mt-1" placeholder="/shop" />
+                  </div>
+                </>
+              )}
+
+              {/* Region Editor */}
+              {selectedElement.type === 'region' && (
+                <>
+                  <div>
+                    <Label>Country Flag (emoji)</Label>
+                    <Input value={config.region.flag} onChange={(e) => updateConfig('region.flag', e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Country Code</Label>
+                    <Input value={config.region.code} onChange={(e) => updateConfig('region.code', e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Country Name</Label>
+                    <Input value={config.region.name} onChange={(e) => updateConfig('region.name', e.target.value)} className="mt-1" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Show Language Toggle</Label>
+                    <Switch checked={config.region.showLanguageToggle} onCheckedChange={(v) => updateConfig('region.showLanguageToggle', v)} />
+                  </div>
+                </>
+              )}
             </div>
 
             {hasChanges && (
               <div className="p-4 border-t bg-gray-50">
-                <Button onClick={() => saveAll()} className="w-full bg-green-600 hover:bg-green-700">
-                  <Check className="w-4 h-4 mr-2" />Apply Changes
+                <Button onClick={saveAll} className="w-full bg-green-600 hover:bg-green-700">
+                  <Save className="w-4 h-4 mr-2" />Apply Changes
                 </Button>
               </div>
             )}
           </div>
         )}
       </div>
-
-      {/* Component Library Modal */}
-      {showComponentLibrary && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowComponentLibrary(false)}>
-          <div className="bg-white rounded-xl p-6 w-[500px] max-h-[80vh] overflow-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Plus className="w-5 h-5" />
-                Add Section
-              </h2>
-              <Button variant="ghost" size="sm" onClick={() => setShowComponentLibrary(false)}>
-                <X className="w-5 h-5" />
-              </Button>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {COMPONENT_LIBRARY.map(component => (
-                <button key={component.id} onClick={() => addSection(component.id)} className="p-4 border rounded-xl hover:border-blue-500 hover:bg-blue-50 text-left transition-all">
-                  <component.icon className="w-8 h-8 text-blue-500 mb-2" />
-                  <p className="font-medium">{component.name}</p>
-                  <p className="text-xs text-gray-500">{component.description}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Actions Toolbar */}
-      <QuickActionsToolbar />
     </div>
   );
 };
