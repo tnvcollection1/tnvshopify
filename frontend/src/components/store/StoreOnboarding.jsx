@@ -44,9 +44,22 @@ const SLIDES = [
 
 const StoreOnboarding = ({ storeName = 'tnvcollection', onComplete }) => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(0); // 0: language/country, 1-3: slides, 4: category
-  const [language, setLanguage] = useState('en');
-  const [selectedCountry, setSelectedCountry] = useState('AE');
+  const [step, setStep] = useState(() => {
+    // Restore step from localStorage if available
+    const savedStep = localStorage.getItem(`${storeName}_onboarding_step`);
+    return savedStep ? parseInt(savedStep, 10) : 0;
+  }); // 0: language/country, 1-3: slides, 4: category
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem(`${storeName}_language`) || 'en';
+  });
+  const [selectedCountry, setSelectedCountry] = useState(() => {
+    return localStorage.getItem(`${storeName}_country`) || 'AE';
+  });
+  
+  // Save step to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(`${storeName}_onboarding_step`, step.toString());
+  }, [step, storeName]);
   
   // Check if onboarding was already completed
   useEffect(() => {
