@@ -8,10 +8,15 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 ### January 16, 2026 (Session 11 - Latest)
 
 **P0: Language-by-Country Auto-Configuration** ✅ COMPLETED
-- **Feature**: When users select a Middle Eastern country (UAE, Saudi Arabia, Kuwait, Qatar, Bahrain, Oman) during onboarding, the language automatically switches to Arabic with RTL layout
-- **Implementation**: `handleCountrySelect` function in `StoreOnboarding.jsx` (lines 163-170) detects country selection and auto-sets language to the country's default
+- **Feature**: When users select a country during onboarding, the language automatically switches to the country's default language with appropriate layout (RTL/LTR)
+- **Supported Languages**:
+  - English (LTR)
+  - العربية/Arabic (RTL) - Default for UAE, Saudi Arabia, Kuwait, Qatar, Bahrain, Oman
+  - हिन्दी/Hindi (LTR) - Default for India
+  - اردو/Urdu (RTL) - Default for Pakistan
+- **Implementation**: `handleCountrySelect` function in `StoreOnboarding.jsx` detects country selection and auto-sets language
 - **Files Modified**: `/app/frontend/src/components/store/StoreOnboarding.jsx`
-- **Testing**: All RTL layouts, translations verified working
+- **Testing**: All 4 languages verified working with proper RTL/LTR layouts and full translations
 
 **P1: "Complete the Look" AI Suggestions** ✅ COMPLETED
 - **Feature**: Product detail pages now show an AI-suggested "Complete the Look" section with related products
