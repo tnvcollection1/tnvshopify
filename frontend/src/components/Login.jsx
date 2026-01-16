@@ -206,6 +206,24 @@ const Login = ({ onLoginSuccess }) => {
               </div>
             </div>
             
+            {/* Remember Me Checkbox - Only show on login, not signup */}
+            {!isSignup && (
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="remember-me"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked)}
+                  data-testid="remember-me-checkbox"
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="text-sm text-gray-600 cursor-pointer select-none"
+                >
+                  Remember me for 30 days
+                </label>
+              </div>
+            )}
+            
             <Button
               type="submit"
               disabled={loading}
