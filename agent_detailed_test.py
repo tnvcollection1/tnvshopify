@@ -1,7 +1,7 @@
 import requests
 import json
 
-base_url = 'https://wamerce-redesign.preview.emergentagent.com/api'
+base_url = 'https://multi-store-7.preview.emergentagent.com/api'
 
 print('🔍 Testing Agent System in Detail...')
 

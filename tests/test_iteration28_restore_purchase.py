@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://wamerce-redesign.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multi-store-7.preview.emergentagent.com')
 
 class TestRestorePurchaseEndpoint:
     """Tests for POST /api/fulfillment/pipeline/orders/{order_id}/restore-purchase"""
