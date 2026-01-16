@@ -509,7 +509,7 @@ const TNVHomePage = () => {
       </section>
 
       {/* === MEGA SALE BANNER === */}
-      <section className="px-3 py-2">
+      <section className="px-3 py-2 max-w-7xl mx-auto">
         <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 rounded-2xl p-6 text-center">
           <h3 className="text-white text-2xl font-black mb-1">MEGA SALE</h3>
           <p className="text-white/90 text-sm mb-3">Up to 70% OFF on selected items</p>
