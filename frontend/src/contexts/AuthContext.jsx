@@ -1,7 +1,12 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
 const AuthContext = createContext(null);
 const API = process.env.REACT_APP_BACKEND_URL;
+
+// Session validation interval (only validate once every 5 minutes)
+const SESSION_VALIDATION_INTERVAL = 5 * 60 * 1000; // 5 minutes
+// Max retry attempts before giving up
+const MAX_VALIDATION_RETRIES = 3;
 
 // Default permissions for viewer role
 const DEFAULT_PERMISSIONS = {
@@ -16,7 +21,40 @@ const DEFAULT_PERMISSIONS = {
   can_send_messages: false,
 };
 
+// Get permissions based on role
+const getPermissionsForRole = (role) => {
+  if (role === 'admin') {
+    return {
+      can_view: true,
+      can_edit: true,
+      can_delete: true,
+      can_sync_shopify: true,
+      can_manage_users: true,
+      can_view_revenue: true,
+      can_view_phone: true,
+      can_export: true,
+      can_send_messages: true,
+    };
+  } else if (role === 'manager') {
+    return {
+      can_view: true,
+      can_edit: true,
+      can_delete: false,
+      can_sync_shopify: false,
+      can_manage_users: false,
+      can_view_revenue: true,
+      can_view_phone: true,
+      can_export: true,
+      can_send_messages: true,
+    };
+  }
+  return DEFAULT_PERMISSIONS;
+};
+
 export const AuthProvider = ({ children }) => {
+  const lastValidationRef = useRef(0);
+  const validationRetriesRef = useRef(0);
+  
   const [agent, setAgent] = useState(() => {
     // Initialize from localStorage synchronously to prevent flash
     try {
@@ -25,32 +63,7 @@ export const AuthProvider = ({ children }) => {
         const parsed = JSON.parse(storedAgent);
         // Ensure permissions exist (for backward compatibility)
         if (!parsed.permissions) {
-          parsed.permissions = DEFAULT_PERMISSIONS;
-          if (parsed.role === 'admin') {
-            parsed.permissions = {
-              can_view: true,
-              can_edit: true,
-              can_delete: true,
-              can_sync_shopify: true,
-              can_manage_users: true,
-              can_view_revenue: true,
-              can_view_phone: true,
-              can_export: true,
-              can_send_messages: true,
-            };
-          } else if (parsed.role === 'manager') {
-            parsed.permissions = {
-              can_view: true,
-              can_edit: true,
-              can_delete: false,
-              can_sync_shopify: false,
-              can_manage_users: false,
-              can_view_revenue: true,
-              can_view_phone: true,
-              can_export: true,
-              can_send_messages: true,
-            };
-          }
+          parsed.permissions = getPermissionsForRole(parsed.role);
         }
         return parsed;
       }
@@ -64,7 +77,7 @@ export const AuthProvider = ({ children }) => {
   const [sessionValidated, setSessionValidated] = useState(false);
 
   // Validate session against backend on app load
-  const validateSession = useCallback(async () => {
+  const validateSession = useCallback(async (forceValidation = false) => {
     const storedAgent = localStorage.getItem('agent');
     if (!storedAgent) {
       setLoading(false);
@@ -83,14 +96,39 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // Validate session with backend
-      const response = await fetch(`${API}/api/users/me?user_id=${encodeURIComponent(parsed.id)}`);
+      // Skip validation if we validated recently (unless forced)
+      const now = Date.now();
+      if (!forceValidation && lastValidationRef.current > 0 && 
+          (now - lastValidationRef.current) < SESSION_VALIDATION_INTERVAL) {
+        console.log('Skipping session validation - validated recently');
+        setLoading(false);
+        setSessionValidated(true);
+        return;
+      }
+
+      // Validate session with backend (with timeout)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(
+        `${API}/api/users/me?user_id=${encodeURIComponent(parsed.id)}`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
-        // Session invalid - clear localStorage and set agent to null
-        console.warn('Session validation failed - logging out');
-        localStorage.removeItem('agent');
-        setAgent(null);
+        // Increment retry counter
+        validationRetriesRef.current += 1;
+        console.warn(`Session validation failed (attempt ${validationRetriesRef.current}/${MAX_VALIDATION_RETRIES})`);
+        
+        // Only log out after MAX_VALIDATION_RETRIES consecutive failures
+        if (validationRetriesRef.current >= MAX_VALIDATION_RETRIES) {
+          console.warn('Max validation retries reached - logging out');
+          localStorage.removeItem('agent');
+          setAgent(null);
+          validationRetriesRef.current = 0;
+        }
+        // Otherwise keep the session alive
       } else {
         const data = await response.json();
         if (data.success && data.user) {
@@ -98,11 +136,18 @@ export const AuthProvider = ({ children }) => {
           const updatedAgent = data.user;
           localStorage.setItem('agent', JSON.stringify(updatedAgent));
           setAgent(updatedAgent);
+          // Reset retry counter on success
+          validationRetriesRef.current = 0;
+          lastValidationRef.current = now;
         }
       }
     } catch (error) {
-      console.error('Session validation error:', error);
-      // On network error, don't log out - keep existing session
+      if (error.name === 'AbortError') {
+        console.warn('Session validation timed out - keeping session');
+      } else {
+        console.error('Session validation error:', error);
+      }
+      // On network error/timeout, don't log out - keep existing session
       // This prevents logout due to temporary network issues
     } finally {
       setLoading(false);
