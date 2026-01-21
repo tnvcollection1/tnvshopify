@@ -439,7 +439,8 @@ const SECTION_LIBRARY = {
     blocks: [
       { type: 'nav_item', name: 'Nav Item', settings: [
         { type: 'text', id: 'name', label: 'Name', default: 'CLOTHING' },
-        { type: 'url', id: 'path', label: 'Link', default: '/clothing' },
+        { type: 'collection_picker', id: 'collection', label: 'Link to Collection' },
+        { type: 'url', id: 'path', label: 'Or Custom Link', default: '' },
         { type: 'checkbox', id: 'highlight', label: 'Highlight (sale/new)', default: false },
         { type: 'text', id: 'badge', label: 'Badge text (optional)', default: '' },
         { type: 'checkbox', id: 'active', label: 'Active', default: true },
