@@ -300,16 +300,37 @@ const SECTION_LIBRARY = {
     icon: Link2,
     category: 'Navigation',
     limit: 1,
-    settings: [],
+    settings: [
+      { type: 'checkbox', id: 'show_nav', label: 'Show sub navigation', default: true },
+      { type: 'select', id: 'style', label: 'Style', options: [
+        { value: 'pills', label: 'Pills' },
+        { value: 'underline', label: 'Underline' },
+        { value: 'plain', label: 'Plain' }
+      ], default: 'pills' },
+      { type: 'color', id: 'highlight_color', label: 'Highlight color', default: '#FF3366' },
+    ],
     blocks: [
       { type: 'nav_item', name: 'Nav Item', settings: [
         { type: 'text', id: 'name', label: 'Name', default: 'CLOTHING' },
         { type: 'url', id: 'path', label: 'Link', default: '/clothing' },
-        { type: 'checkbox', id: 'highlight', label: 'Highlight (red)', default: false },
+        { type: 'checkbox', id: 'highlight', label: 'Highlight (sale/new)', default: false },
+        { type: 'text', id: 'badge', label: 'Badge text (optional)', default: '' },
         { type: 'checkbox', id: 'active', label: 'Active', default: true },
       ]}
     ],
-    max_blocks: 15
+    max_blocks: 10,
+    default_blocks: [
+      { name: 'CLOTHING', path: '/clothing', highlight: false },
+      { name: 'SHOES', path: '/shoes', highlight: false },
+      { name: 'BAGS', path: '/bags', highlight: false },
+      { name: 'ACCESSORIES', path: '/accessories', highlight: false },
+      { name: 'SPORTS', path: '/sports', highlight: false },
+      { name: 'SALE', path: '/sale', highlight: true },
+      { name: 'NEW ARRIVALS', path: '/new', highlight: false },
+      { name: 'DESIGNERS', path: '/designers', highlight: false },
+      { name: 'COLLECTIONS', path: '/collections', highlight: false },
+      { name: 'BRANDS', path: '/brands', highlight: false },
+    ]
   },
   'hero-banner': {
     name: 'Hero Banner',
