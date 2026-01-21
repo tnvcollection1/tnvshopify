@@ -728,6 +728,29 @@ const ShopifyStyleEditor = () => {
 
   const storeName = selectedStore || 'tnvcollection';
 
+  // Listen for messages from iframe (click-to-edit)
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data?.type === 'EDITOR_SELECT_SECTION') {
+        const sectionType = event.data.sectionType;
+        // Find the matching section and expand it
+        const matchingSection = sections.find(s => s.type === sectionType);
+        if (matchingSection) {
+          setExpandedSection(matchingSection.id);
+          // Scroll to section in sidebar
+          setTimeout(() => {
+            const element = document.querySelector(`[data-section-id="${matchingSection.id}"]`);
+            element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+          toast.success(`Editing: ${SECTION_LIBRARY[sectionType]?.name || sectionType}`);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [sections]);
+
   // Load data from backend
   useEffect(() => {
     loadConfig();
