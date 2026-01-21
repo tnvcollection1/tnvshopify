@@ -125,9 +125,7 @@ import LuxuryOrderConfirmation from "@/components/storefront/LuxuryOrderConfirma
 import LuxuryOrderTracking from "@/components/storefront/LuxuryOrderTracking";
 import MobileAppPreview from "@/components/MobileAppPreview";
 import MobileAppSettings from "@/components/MobileAppSettings";
-import MobileAppEditor from "@/components/MobileAppEditor";
 import MobileAppEditorV2 from "@/components/MobileAppEditorV2";
-import WebsiteEditor from "@/components/WebsiteEditor";
 import WebsiteEditorV2 from "@/components/WebsiteEditorV2";
 import ShopifyStyleEditor from "@/components/ShopifyStyleEditor";
 import MerchantOnboarding from "@/components/MerchantOnboarding";
