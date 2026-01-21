@@ -229,13 +229,17 @@ function TNVStoreWrapper({ children, storeName = "tnvcollection" }) {
 // Pakistan Store Wrapper (PKR currency)
 function TNVPKStoreWrapper({ children }) {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const isEditorMode = searchParams.get('editor') === 'true';
+  
   const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (isEditorMode) return false;
     return !localStorage.getItem('tnvcollectionpk_onboarding_completed');
   });
   
   const isHomePage = location.pathname === '/tnv-pk' || location.pathname === '/tnv-pk/';
   
-  if (showOnboarding) {
+  if (showOnboarding && !isEditorMode) {
     return (
       <StoreOnboarding 
         storeName="tnvcollectionpk"
