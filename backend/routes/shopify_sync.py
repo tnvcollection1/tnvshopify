@@ -413,6 +413,58 @@ async def get_products_sync_status(store_name: str = None):
     }
 
 
+@router.get("/products/list")
+async def get_products_list(store_name: Optional[str] = None, limit: int = 100):
+    """Get simple list of products for pickers (title and handle only)"""
+    db = get_db()
+    
+    query = {}
+    if store_name and store_name != 'all':
+        query["store_name"] = store_name
+    
+    products = await db.shopify_products.find(
+        query, 
+        {"_id": 0, "title": 1, "handle": 1, "product_id": 1}
+    ).sort("title", 1).limit(limit).to_list(limit)
+    
+    return {
+        "success": True,
+        "products": products
+    }
+
+
+@router.get("/tags")
+async def get_tags(store_name: Optional[str] = None):
+    """Get unique product tags for tag picker"""
+    db = get_db()
+    
+    query = {}
+    if store_name and store_name != 'all':
+        query["store_name"] = store_name
+    
+    # Aggregate unique tags from products
+    pipeline = [
+        {"$match": query} if query else {"$match": {}},
+        {"$project": {"tags_array": {"$split": ["$tags", ", "]}}},
+        {"$unwind": "$tags_array"},
+        {"$group": {"_id": {"$trim": {"input": "$tags_array"}}}},
+        {"$match": {"_id": {"$ne": ""}}},
+        {"$sort": {"_id": 1}},
+        {"$limit": 200}
+    ]
+    
+    if not query:
+        pipeline = pipeline[1:]  # Remove empty match
+    
+    tags_cursor = await db.shopify_products.aggregate(pipeline).to_list(200)
+    tags = [t["_id"] for t in tags_cursor if t["_id"]]
+    
+    return {
+        "success": True,
+        "tags": tags
+    }
+
+
 @router.post("/products/{product_id}/link-1688")
 async def link_product(product_id: str, data: dict = Body(...)):
     """Link a Shopify product to a 1688 product"""
