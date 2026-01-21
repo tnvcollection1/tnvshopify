@@ -731,25 +731,17 @@ const ShopifyStyleEditor = () => {
   // Listen for messages from iframe (click-to-edit)
   useEffect(() => {
     const handleMessage = (event) => {
-      console.log('Received message:', event.data);
       if (event.data?.type === 'EDITOR_SELECT_SECTION') {
         const sectionType = event.data.sectionType;
-        console.log('Looking for section type:', sectionType);
-        console.log('Available sections:', sections.map(s => s.type));
-        
-        // Find the matching section and expand it
         const matchingSection = sections.find(s => s.type === sectionType);
         if (matchingSection) {
-          console.log('Found matching section:', matchingSection.id);
           setExpandedSection(matchingSection.id);
-          // Scroll to section in sidebar
           setTimeout(() => {
             const element = document.querySelector(`[data-section-id="${matchingSection.id}"]`);
             element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }, 100);
           toast.success(`Editing: ${SECTION_LIBRARY[sectionType]?.name || sectionType}`);
         } else {
-          console.log('No matching section found');
           toast.info(`Section "${sectionType}" not found in current layout`);
         }
       }
