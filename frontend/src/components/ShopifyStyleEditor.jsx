@@ -1595,10 +1595,14 @@ const ShopifyStyleEditor = () => {
             </DndContext>
           </div>
 
-          <div className="p-3 border-t bg-gray-50">
+          <div className="p-3 border-t bg-gray-50 space-y-2">
             <Button onClick={() => setShowAddSection(true)} variant="outline" className="w-full">
               <Plus className="w-4 h-4 mr-2" />
               Add section
+            </Button>
+            <Button onClick={() => setShowTemplates(true)} variant="ghost" className="w-full text-gray-600 hover:text-blue-600">
+              <Layers className="w-4 h-4 mr-2" />
+              Use template
             </Button>
           </div>
         </aside>
