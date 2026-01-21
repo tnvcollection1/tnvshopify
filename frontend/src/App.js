@@ -129,6 +129,7 @@ import MobileAppEditor from "@/components/MobileAppEditor";
 import MobileAppEditorV2 from "@/components/MobileAppEditorV2";
 import WebsiteEditor from "@/components/WebsiteEditor";
 import WebsiteEditorV2 from "@/components/WebsiteEditorV2";
+import ShopifyStyleEditor from "@/components/ShopifyStyleEditor";
 import MerchantOnboarding from "@/components/MerchantOnboarding";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
