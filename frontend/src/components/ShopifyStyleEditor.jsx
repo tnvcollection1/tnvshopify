@@ -380,7 +380,11 @@ const SECTION_LIBRARY = {
     blocks: [
       { type: 'menu_category', name: 'Menu Category', settings: [
         { type: 'text', id: 'name', label: 'Name', default: 'WOMEN' },
-        { type: 'url', id: 'path', label: 'Link', default: '/women' },
+        { type: 'link_type', id: 'link_type', label: 'Link Type', default: 'custom' },
+        { type: 'collection_picker', id: 'collection', label: 'Select Collection', showWhen: { link_type: 'collection' } },
+        { type: 'product_picker', id: 'product', label: 'Select Product', showWhen: { link_type: 'product' } },
+        { type: 'tag_picker', id: 'tag', label: 'Select Tag', showWhen: { link_type: 'tag' } },
+        { type: 'url', id: 'path', label: 'Custom URL', default: '/women', showWhen: { link_type: 'custom' } },
         { type: 'text', id: 'icon', label: 'Icon (emoji)', default: '👩' },
         { type: 'color', id: 'color', label: 'Text color', default: '#FF6B9D' },
         { type: 'color', id: 'bg_color', label: 'Background color', default: '#FFE8F0' },
@@ -406,8 +410,11 @@ const SECTION_LIBRARY = {
     blocks: [
       { type: 'category_tab', name: 'Category Tab', settings: [
         { type: 'text', id: 'name', label: 'Name', default: 'FASHION' },
-        { type: 'collection_picker', id: 'collection', label: 'Link to Collection' },
-        { type: 'url', id: 'path', label: 'Or Custom Link', default: '' },
+        { type: 'link_type', id: 'link_type', label: 'Link Type', default: 'custom' },
+        { type: 'collection_picker', id: 'collection', label: 'Select Collection', showWhen: { link_type: 'collection' } },
+        { type: 'product_picker', id: 'product', label: 'Select Product', showWhen: { link_type: 'product' } },
+        { type: 'tag_picker', id: 'tag', label: 'Select Tag', showWhen: { link_type: 'tag' } },
+        { type: 'url', id: 'path', label: 'Custom URL', default: '', showWhen: { link_type: 'custom' } },
         { type: 'image_picker', id: 'image', label: 'Tab Image/Icon' },
         { type: 'color', id: 'bg_color', label: 'Background color', default: '#c8e6c9' },
         { type: 'checkbox', id: 'active', label: 'Active', default: true },
@@ -415,11 +422,11 @@ const SECTION_LIBRARY = {
     ],
     max_blocks: 5,
     default_blocks: [
-      { name: 'Fashion', path: '/fashion', bg_color: '#c8e6c9' },
-      { name: 'Beauty', path: '/beauty', bg_color: '#f8bbd9' },
-      { name: 'Baby & Kids', path: '/kids', bg_color: '#b3e5fc' },
-      { name: 'Home & Lifestyle', path: '/home', bg_color: '#ffe0b2' },
-      { name: 'Premium', path: '/premium', bg_color: '#e1bee7' },
+      { name: 'Fashion', link_type: 'custom', path: '/fashion', bg_color: '#c8e6c9' },
+      { name: 'Beauty', link_type: 'custom', path: '/beauty', bg_color: '#f8bbd9' },
+      { name: 'Baby & Kids', link_type: 'custom', path: '/kids', bg_color: '#b3e5fc' },
+      { name: 'Home & Lifestyle', link_type: 'custom', path: '/home', bg_color: '#ffe0b2' },
+      { name: 'Premium', link_type: 'custom', path: '/premium', bg_color: '#e1bee7' },
     ]
   },
   'sub-navigation': {
