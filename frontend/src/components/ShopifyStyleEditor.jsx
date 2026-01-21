@@ -846,7 +846,7 @@ const SettingInput = ({ setting, value, onChange }) => {
 // ============================================
 // SORTABLE SECTION ITEM
 // ============================================
-const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpdate, onDelete, onDuplicate, onSelect }) => {
+const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpdate, onDelete, onDuplicate, onSelect, collections = [] }) => {
   const {
     attributes,
     listeners,
