@@ -1436,7 +1436,7 @@ const ShopifyStyleEditor = () => {
         fetch(`${API_URL}/api/storefront/banners/category-tabs/${storeName}`),
         fetch(`${API_URL}/api/storefront/banners/sub-nav/${storeName}`),
         fetch(`${API_URL}/api/shopify/collections?store_name=${storeName}`),
-        fetch(`${API_URL}/api/shopify/products/list?store_name=${storeName}&limit=100`),
+        fetch(`${API_URL}/api/shopify/product-list?store_name=${storeName}&limit=100`),
         fetch(`${API_URL}/api/shopify/tags?store_name=${storeName}`),
       ]);
 
