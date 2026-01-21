@@ -767,11 +767,19 @@ export const TNVHeader = () => {
       )}
     </header>
   );
+
+  // Wrap with EditableSection if in editor mode
+  return (
+    <EditableSection sectionType="header">
+      {headerContent}
+    </EditableSection>
+  );
 };
 
 // Footer Component
 export const TNVFooter = () => {
   const { regions } = useStore();
+  const isEditorMode = useEditorMode();
 
   const footerLinks = [
     { title: 'About Us', links: ['About Us', 'Privacy Policy', 'Consumer Rights'] },
