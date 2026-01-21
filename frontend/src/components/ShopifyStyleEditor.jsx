@@ -849,6 +849,79 @@ const AddSectionModal = ({ onAdd, onClose, existingSections }) => {
 };
 
 // ============================================
+// TEMPLATE SELECTOR MODAL
+// ============================================
+const TemplateModal = ({ onSelect, onClose, currentSections }) => {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-2xl w-[700px] max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="px-4 py-3 border-b flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Choose a Template</h2>
+            <p className="text-xs text-gray-500">Select a pre-configured layout for your storefront</p>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="grid grid-cols-2 gap-4">
+            {TEMPLATE_PRESETS.map(template => (
+              <button
+                key={template.id}
+                onClick={() => onSelect(template)}
+                className="text-left border rounded-xl overflow-hidden hover:border-blue-500 hover:shadow-lg transition group"
+              >
+                <div className="h-32 bg-gray-100 relative overflow-hidden">
+                  <img 
+                    src={template.thumbnail} 
+                    alt={template.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <span className="absolute bottom-2 left-3 text-white text-sm font-bold">{template.name}</span>
+                </div>
+                <div className="p-3">
+                  <p className="text-xs text-gray-600">{template.description}</p>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {template.sections.slice(0, 4).map(sec => (
+                      <span key={sec} className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                        {SECTION_LIBRARY[sec]?.name || sec}
+                      </span>
+                    ))}
+                    {template.sections.length > 4 && (
+                      <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                        +{template.sections.length - 4} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+          
+          {/* Warning if sections exist */}
+          {currentSections.length > 0 && (
+            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-xs text-yellow-800">
+                <strong>Note:</strong> Applying a template will replace your current layout. Your existing configuration will be lost.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="px-4 py-3 border-t bg-gray-50 flex justify-end">
+          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
 // MAIN EDITOR COMPONENT
 // ============================================
 const ShopifyStyleEditor = () => {
