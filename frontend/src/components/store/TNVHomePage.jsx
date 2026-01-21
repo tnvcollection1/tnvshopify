@@ -519,7 +519,7 @@ const TNVHomePage = () => {
             </div>
           )}
           {!hasMore && products.length > 0 && (
-            <p className="text-sm text-gray-400">You've seen all products!</p>
+            <p className="text-sm text-gray-400">You&apos;ve seen all products!</p>
           )}
         </div>
       </section>
