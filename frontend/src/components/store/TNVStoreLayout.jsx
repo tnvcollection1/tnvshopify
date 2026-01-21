@@ -777,7 +777,7 @@ export const TNVHeader = () => {
                     {idx > 0 && <span className="text-gray-300">|</span>}
                     <button 
                       onClick={() => setCurrentLanguage(lang.code)}
-                      className={`${currentLanguage === lang.code ? 'text-red-500 border-b-2 border-red-500' : 'text-gray-600 hover:text-black'} pb-0.5 font-medium ${lang.code === 'ar' || lang.code === 'ur' ? 'font-arabic' : ''}`}
+                      className={`${effectiveLanguage === lang.code ? 'text-red-500 border-b-2 border-red-500' : 'text-gray-600 hover:text-black'} pb-0.5 font-medium ${lang.code === 'ar' || lang.code === 'ur' ? 'font-arabic' : ''}`}
                     >
                       {lang.nativeName}
                     </button>
@@ -803,7 +803,7 @@ export const TNVHeader = () => {
                     <button
                       key={lang.code}
                       onClick={() => { setCurrentLanguage(lang.code); setLanguageDropdown(false); }}
-                      className={`w-full px-4 py-2.5 text-left hover:bg-gray-100 flex items-center gap-2 text-sm ${currentLanguage === lang.code ? 'bg-gray-50 font-medium text-red-500' : ''}`}
+                      className={`w-full px-4 py-2.5 text-left hover:bg-gray-100 flex items-center gap-2 text-sm ${effectiveLanguage === lang.code ? 'bg-gray-50 font-medium text-red-500' : ''}`}
                     >
                       <span className={lang.code === 'ar' || lang.code === 'ur' ? 'font-arabic' : ''}>{lang.nativeName}</span>
                       <span className="text-gray-400 text-xs">({lang.name})</span>
