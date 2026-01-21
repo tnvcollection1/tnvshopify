@@ -79,6 +79,7 @@ from routes.merchants import merchants_router, set_dependencies as set_merchants
 from routes.shipping import router as shipping_router, set_database as set_shipping_db
 from routes.image_ai import image_ai_router, set_database as set_image_ai_db
 from routes.stories import router as stories_router
+from routes.facebook_data_deletion import router as facebook_data_deletion_router
 from services.fulfillment_webhooks import router as fulfillment_webhooks_router
 from services.whatsapp_notifications import router as whatsapp_notifications_router
 from services.cart_recovery_service import router as cart_recovery_router
