@@ -90,36 +90,84 @@ const LANGUAGES = [
   { code: 'ru', name: 'Русский (Russian)', rtl: false, countries: ['RU'] },
 ];
 
-// Country to Language/Currency mapping
+// Country to Language/Currency mapping - Comprehensive list
 const COUNTRY_CONFIG = {
-  'AE': { language: 'ar', currency: 'AED', name: 'UAE' },
-  'SA': { language: 'ar', currency: 'SAR', name: 'Saudi Arabia' },
-  'KW': { language: 'ar', currency: 'KWD', name: 'Kuwait' },
-  'QA': { language: 'ar', currency: 'QAR', name: 'Qatar' },
-  'BH': { language: 'ar', currency: 'BHD', name: 'Bahrain' },
-  'OM': { language: 'ar', currency: 'OMR', name: 'Oman' },
-  'EG': { language: 'ar', currency: 'EGP', name: 'Egypt' },
-  'IN': { language: 'hi', currency: 'INR', name: 'India' },
-  'PK': { language: 'ur', currency: 'PKR', name: 'Pakistan' },
-  'BD': { language: 'bn', currency: 'BDT', name: 'Bangladesh' },
-  'LK': { language: 'si', currency: 'LKR', name: 'Sri Lanka' },
-  'NP': { language: 'ne', currency: 'NPR', name: 'Nepal' },
-  'TR': { language: 'tr', currency: 'TRY', name: 'Turkey' },
-  'MY': { language: 'ms', currency: 'MYR', name: 'Malaysia' },
-  'SG': { language: 'en', currency: 'SGD', name: 'Singapore' },
-  'ID': { language: 'id', currency: 'IDR', name: 'Indonesia' },
-  'CN': { language: 'zh', currency: 'CNY', name: 'China' },
-  'JP': { language: 'ja', currency: 'JPY', name: 'Japan' },
-  'KR': { language: 'ko', currency: 'KRW', name: 'South Korea' },
-  'US': { language: 'en', currency: 'USD', name: 'United States' },
-  'GB': { language: 'en', currency: 'GBP', name: 'United Kingdom' },
-  'AU': { language: 'en', currency: 'AUD', name: 'Australia' },
-  'CA': { language: 'en', currency: 'CAD', name: 'Canada' },
-  'DE': { language: 'de', currency: 'EUR', name: 'Germany' },
-  'FR': { language: 'fr', currency: 'EUR', name: 'France' },
-  'IT': { language: 'it', currency: 'EUR', name: 'Italy' },
-  'ES': { language: 'es', currency: 'EUR', name: 'Spain' },
-  'RU': { language: 'ru', currency: 'RUB', name: 'Russia' },
+  // Middle East & GCC
+  'AE': { language: 'ar', currency: 'AED', name: 'UAE', flag: '🇦🇪' },
+  'SA': { language: 'ar', currency: 'SAR', name: 'Saudi Arabia', flag: '🇸🇦' },
+  'KW': { language: 'ar', currency: 'KWD', name: 'Kuwait', flag: '🇰🇼' },
+  'QA': { language: 'ar', currency: 'QAR', name: 'Qatar', flag: '🇶🇦' },
+  'BH': { language: 'ar', currency: 'BHD', name: 'Bahrain', flag: '🇧🇭' },
+  'OM': { language: 'ar', currency: 'OMR', name: 'Oman', flag: '🇴🇲' },
+  'EG': { language: 'ar', currency: 'EGP', name: 'Egypt', flag: '🇪🇬' },
+  'JO': { language: 'ar', currency: 'JOD', name: 'Jordan', flag: '🇯🇴' },
+  'LB': { language: 'ar', currency: 'LBP', name: 'Lebanon', flag: '🇱🇧' },
+  'IQ': { language: 'ar', currency: 'IQD', name: 'Iraq', flag: '🇮🇶' },
+  'IR': { language: 'fa', currency: 'IRR', name: 'Iran', flag: '🇮🇷' },
+  
+  // South Asia
+  'IN': { language: 'hi', currency: 'INR', name: 'India', flag: '🇮🇳' },
+  'PK': { language: 'ur', currency: 'PKR', name: 'Pakistan', flag: '🇵🇰' },
+  'BD': { language: 'bn', currency: 'BDT', name: 'Bangladesh', flag: '🇧🇩' },
+  'LK': { language: 'si', currency: 'LKR', name: 'Sri Lanka', flag: '🇱🇰' },
+  'NP': { language: 'ne', currency: 'NPR', name: 'Nepal', flag: '🇳🇵' },
+  'AF': { language: 'fa', currency: 'AFN', name: 'Afghanistan', flag: '🇦🇫' },
+  'MV': { language: 'dv', currency: 'MVR', name: 'Maldives', flag: '🇲🇻' },
+  
+  // Southeast Asia
+  'MY': { language: 'ms', currency: 'MYR', name: 'Malaysia', flag: '🇲🇾' },
+  'SG': { language: 'en', currency: 'SGD', name: 'Singapore', flag: '🇸🇬' },
+  'ID': { language: 'id', currency: 'IDR', name: 'Indonesia', flag: '🇮🇩' },
+  'TH': { language: 'th', currency: 'THB', name: 'Thailand', flag: '🇹🇭' },
+  'VN': { language: 'vi', currency: 'VND', name: 'Vietnam', flag: '🇻🇳' },
+  'PH': { language: 'tl', currency: 'PHP', name: 'Philippines', flag: '🇵🇭' },
+  'MM': { language: 'my', currency: 'MMK', name: 'Myanmar', flag: '🇲🇲' },
+  
+  // East Asia
+  'CN': { language: 'zh', currency: 'CNY', name: 'China', flag: '🇨🇳' },
+  'JP': { language: 'ja', currency: 'JPY', name: 'Japan', flag: '🇯🇵' },
+  'KR': { language: 'ko', currency: 'KRW', name: 'South Korea', flag: '🇰🇷' },
+  'HK': { language: 'zh', currency: 'HKD', name: 'Hong Kong', flag: '🇭🇰' },
+  'TW': { language: 'zh', currency: 'TWD', name: 'Taiwan', flag: '🇹🇼' },
+  
+  // Europe
+  'GB': { language: 'en', currency: 'GBP', name: 'United Kingdom', flag: '🇬🇧' },
+  'DE': { language: 'de', currency: 'EUR', name: 'Germany', flag: '🇩🇪' },
+  'FR': { language: 'fr', currency: 'EUR', name: 'France', flag: '🇫🇷' },
+  'IT': { language: 'it', currency: 'EUR', name: 'Italy', flag: '🇮🇹' },
+  'ES': { language: 'es', currency: 'EUR', name: 'Spain', flag: '🇪🇸' },
+  'NL': { language: 'nl', currency: 'EUR', name: 'Netherlands', flag: '🇳🇱' },
+  'BE': { language: 'nl', currency: 'EUR', name: 'Belgium', flag: '🇧🇪' },
+  'PT': { language: 'pt', currency: 'EUR', name: 'Portugal', flag: '🇵🇹' },
+  'RU': { language: 'ru', currency: 'RUB', name: 'Russia', flag: '🇷🇺' },
+  'TR': { language: 'tr', currency: 'TRY', name: 'Turkey', flag: '🇹🇷' },
+  'PL': { language: 'pl', currency: 'PLN', name: 'Poland', flag: '🇵🇱' },
+  'SE': { language: 'sv', currency: 'SEK', name: 'Sweden', flag: '🇸🇪' },
+  'NO': { language: 'no', currency: 'NOK', name: 'Norway', flag: '🇳🇴' },
+  'DK': { language: 'da', currency: 'DKK', name: 'Denmark', flag: '🇩🇰' },
+  'CH': { language: 'de', currency: 'CHF', name: 'Switzerland', flag: '🇨🇭' },
+  'AT': { language: 'de', currency: 'EUR', name: 'Austria', flag: '🇦🇹' },
+  'GR': { language: 'el', currency: 'EUR', name: 'Greece', flag: '🇬🇷' },
+  
+  // Americas
+  'US': { language: 'en', currency: 'USD', name: 'United States', flag: '🇺🇸' },
+  'CA': { language: 'en', currency: 'CAD', name: 'Canada', flag: '🇨🇦' },
+  'MX': { language: 'es', currency: 'MXN', name: 'Mexico', flag: '🇲🇽' },
+  'BR': { language: 'pt', currency: 'BRL', name: 'Brazil', flag: '🇧🇷' },
+  'AR': { language: 'es', currency: 'ARS', name: 'Argentina', flag: '🇦🇷' },
+  'CO': { language: 'es', currency: 'COP', name: 'Colombia', flag: '🇨🇴' },
+  'CL': { language: 'es', currency: 'CLP', name: 'Chile', flag: '🇨🇱' },
+  'PE': { language: 'es', currency: 'PEN', name: 'Peru', flag: '🇵🇪' },
+  
+  // Oceania
+  'AU': { language: 'en', currency: 'AUD', name: 'Australia', flag: '🇦🇺' },
+  'NZ': { language: 'en', currency: 'NZD', name: 'New Zealand', flag: '🇳🇿' },
+  
+  // Africa
+  'ZA': { language: 'en', currency: 'ZAR', name: 'South Africa', flag: '🇿🇦' },
+  'NG': { language: 'en', currency: 'NGN', name: 'Nigeria', flag: '🇳🇬' },
+  'KE': { language: 'sw', currency: 'KES', name: 'Kenya', flag: '🇰🇪' },
+  'MA': { language: 'ar', currency: 'MAD', name: 'Morocco', flag: '🇲🇦' },
 };
 
 // ============================================
