@@ -1590,9 +1590,16 @@ const ShopifyStyleEditor = () => {
           const countryCode = updatedSection.settings.country;
           const config = COUNTRY_CONFIG[countryCode];
           if (config) {
-            updatedSection.settings.default_currency = config.currency;
-            updatedSection.settings.default_language = config.language;
-            toast.success(`Auto-configured: ${config.name} → ${config.currency} / ${LANGUAGES.find(l => l.code === config.language)?.name || config.language}`);
+            // Create a fresh copy of the settings with updated values
+            updatedSection = {
+              ...updatedSection,
+              settings: {
+                ...updatedSection.settings,
+                default_currency: config.currency,
+                default_language: config.language
+              }
+            };
+            toast.success(`Auto-configured: ${config.flag || ''} ${config.name} → ${config.currency} / ${LANGUAGES.find(l => l.code === config.language)?.name || config.language}`);
           }
         }
       }
