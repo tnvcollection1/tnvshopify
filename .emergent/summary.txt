@@ -10,6 +10,7 @@ Recent user requests expanded this scope to include:
 7.  Click-to-edit and advanced Pro features (drag & drop, undo/redo, templates) for the visual editors.
 8.  An AI-powered feature to automatically remove backgrounds and enhance product images.
 9.  A User Data Deletion URL for a Facebook App integration.
+10. A complete UI/UX overhaul of the web storefront and mobile app to match  exactly, including an onboarding flow, stories, flash sales, quick view, and complete the look features.
 
 **PRODUCT REQUIREMENTS**:
 1.  Replicate the  header and storefront UI.
@@ -21,212 +22,211 @@ Recent user requests expanded this scope to include:
 7.  Support multiple stores with different currencies.
 8.  Implement abandoned cart recovery via WhatsApp.
 9.  Perform a complete UI/UX overhaul of the mobile app and add dark mode.
-10. **(NEW)** Build a multi-step merchant onboarding wizard.
-11. **(NEW)** Build Shopify-like visual Pro editors for the mobile app and web storefront with real-time preview, drag-and-drop, undo/redo, and templates.
-12. **(NEW)** Build a comprehensive DTDC shipping integration with a full-featured dashboard.
-13. **(NEW)** Build an AI Image Enhancer to automatically process product photos.
+10. Build a multi-step merchant onboarding wizard.
+11. Build Shopify-like visual Pro editors for the mobile app and web storefront with real-time preview, drag-and-drop, undo/redo, and templates.
+12. Build a comprehensive DTDC shipping integration with a full-featured dashboard.
+13. Build an AI Image Enhancer to automatically process product photos.
+14. Implement an Instagram-style Stories section with an admin management dashboard.
+15. Add a Product Quick View modal on product grids.
+16. Add a Complete the Look feature to suggest related products.
+17. Implement a Flash Sale countdown banner.
+18. Automatically configure language/currency based on country selection.
 
 **User's preferred language**: English
 
 **what currently exists?**
-- A full-stack application (FastAPI, React, MongoDB) deployed on the user's VPS.
-- An admin session instability issue was partially addressed with a Remember Me feature, but may still persist.
-- Pro visual editors for the web () and mobile app () have been created and deployed. They include features like click-to-edit, drag-and-drop, undo/redo, and templates.
-- An AI-powered Image Enhancer page () has been created. It connects to the live product catalog and uses an external AI service to remove backgrounds and enhance images.
-- The application is deployed and accessible on the user's custom domain () after fixing DNS issues. The backend runs on PM2 on the VPS.
-- A comprehensive DTDC shipping dashboard exists but remains **mocked**, as the live API integration is blocked.
+- A full-stack application with a FastAPI backend, React frontend, and MongoDB database.
+- A new Shopify-style theme editor () has been created at the  route.
+- The editor features a left sidebar with a draggable list of sections (e.g., Header, Hero Banner), a live iframe preview on the right, and a top toolbar.
+- The editor is connected to backend APIs to fetch and save storefront configurations (menus, banners, categories).
+- **Click-to-edit**: Implemented via . Hovering over sections in the preview highlights them, and clicking is intended to open the corresponding section settings in the sidebar.
+- **Section Settings**: The editor supports section-specific settings like text inputs, toggles, sliders, and a new image picker with upload/size/radius controls.
+- **Undo/Redo**: Buttons have been added to the editor's toolbar, with basic history tracking for state changes.
+- **Clickable Header/Footer**: The main layout file () has been modified to wrap the Header and Footer components, making them editable sections.
+- **Multi-language Support**: The onboarding flow now supports English, Arabic, Hindi, and Urdu, with auto-selection based on the chosen country.
+- **Product Grid Fix**: The homepage product grid was updated with responsive classes () to display correctly on desktop screens.
+- **Feature Integration**: The Complete the Look component has been integrated into the product detail page.
 
 **Last working item**:
--   **Last item agent was working**: The agent was addressing a user complaint that the Website Editor's preview shows a simple mockup and does not match the actual live Namshi-style storefront (). The agent began investigating the live store's components (, ) to understand their structure and replicate the live view within the editor's preview iframe.
+-   **Last item agent was working**: The user reported that click n edit is not working and that the editor's sections are missing or incorrect compared to their original layout vision (Announcement Bar, Header & Logo, Category Tabs, Sub Navigation, Hero Banner). The agent was analyzing the user's feedback and screenshot to fix the section layout and click-to-edit functionality in the new .
 -   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: Frontend testing agent or screenshot tool. The goal is to verify that the editor's preview pane is visually identical to the live  storefront.
--   **User Testing Done**: N
+-   **Agent Testing Done**: Y (Agent confirmed click-to-edit was working from a technical perspective, but it doesn't meet the user's expectations).
+-   **Which testing method agent to use?**: Frontend testing agent. The test should verify that the editor sidebar displays the correct sections as per the user's request and that clicking each of these sections in the live preview opens the correct settings panel.
+-   **User Testing Done**: N (User found the issue and reported it).
 
 **All Pending/In progress Issue list**:
--   Issue 1: Website Editor preview does not match live storefront (P0)
--   Issue 2: DTDC Live API Integration is Blocked (P1)
--   Issue 3: Admin session expires too quickly (P2)
--   Issue 4: DNS for  not pointing to VPS (P3)
--   Issue 5: DNS for  is not pointing to the VPS (P3)
--   Issue 6: Large monolithic backend files require refactoring (P4)
+-   Issue 1: Click-to-edit and editor section layout are not aligned with user's expectation (P0)
+-   Issue 2: Mobile App is in an untested, high-risk state (P0)
+-   Issue 3: Currency is not configured based on country selection (P1)
+-   Issue 4: DTDC Live API Integration is Blocked (P1)
+-   Issue 5: Admin session expires too quickly, disrupting editor workflow (P2)
+-   Issue 6: Obsolete Editor Components need deletion (P3)
+-   Issue 7: Large monolithic backend files require refactoring (P4)
 
 **Issues Detail**:
--   **Issue 1: Website Editor preview does not match live storefront (P0)**
-    -   **Attempted fixes**: The agent identified the cause of the discrepancy and viewed the source code for the live storefront components (, ).
+-   **Issue 1: Click-to-edit and editor section layout are not aligned with user's expectation (P0)**
+    -   **Attempted fixes**: The agent implemented a click-to-edit feature using  and confirmed it worked by logging messages and seeing the sidebar update. However, the user's feedback and screenshot indicate the wrong sections are editable or the functionality is not intuitive.
     -   **Next debug checklist**:
-        1.  Modify .
-        2.  Update the  or preview component within the editor to render the actual  and  components.
-        3.  Ensure the preview correctly displays the Namshi-style black header, category images, and overall layout that is present on the live site.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will resolve user confusion and provide a true What You See Is What You Get (WYSIWYG) experience, making the editor intuitive and useful.
+        1.  Carefully review the user's last message and screenshot ().
+        2.  Modify the  in  to match the user's desired structure: , , , , .
+        3.  Ensure the  wrappers in  and  use the correct  props corresponding to the updated definitions.
+        4.  Verify that clicking each of these five specific sections in the preview reliably opens its settings panel in the editor.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is the core functionality of the visual editor and a primary user requirement.
     -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: None
-
--   **Issue 2: DTDC Live API Integration is Blocked (P1)**
-    -   **Attempted fixes**: The previous agent confirmed that user-provided browser tokens (JWTs, cookies) are unsuitable for server-to-server integration.
-    -   **Next debug checklist**:
-        1.  Clearly re-explain to the user why a **permanent, static API key** is required.
-        2.  Instruct the user to contact DTDC support to obtain this key.
-        3.  Once the key is provided, update  and remove the mocked logic.
-    -   **Why fix this issue and what will be achieved with the fix?**: Unblocks the DTDC shipping feature, enabling live shipment booking and tracking.
-    -   **Status**: BLOCKED (User Action Pending)
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: None
-
--   **Issue 3: Admin session expires too quickly (P2)**
-    -   **Attempted fixes**: The agent implemented a Remember me feature to extend the frontend session to 30 days. However, the agent was still logged out unexpectedly during testing (message 322), suggesting the backend JWT's lifetime is still too short.
-    -   **Next debug checklist**:
-        1.  Examine  where the JWT is created.
-        2.  Increase the  value to a longer duration (e.g., 24 hours or more).
-        3.  Verify the Remember Me functionality correctly uses a much longer-lived token or refresh token mechanism.
-    -   **Why fix this issue and what will be achieved with the fix?**: Provides a stable and usable admin environment, preventing interruptions during development and testing.
-    -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: None
-
--   **Issue 4 & 5: DNS for  &  not pointing to VPS (P3)**
-    -   **Attempted fixes**: None in this session. The issue is pending user action from a previous session.
-    -   **Next debug checklist**: Guide the user to update the A records for these domains to point to the VPS IP: .
-    -   **Why fix this issue and what will be achieved with the fix?**: Makes the  subdomain and the Pakistan storefront live.
-    -   **Status**: BLOCKED (User Action Pending)
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
--   **Issue 6: Refactor large backend files (P4)**
-    -   **Attempted fixes**: None. The agent added new routes as separate files but did not refactor the main .
-    -   **Next debug checklist**: Systematically extract functionality from  into smaller, dedicated route files under .
-    -   **Why fix this issue and what will be achieved with the fix?**: Improves code maintainability, readability, and scalability.
+-   **Issue 2: Mobile App is in an untested, high-risk state (P0)**
+    -   **Attempted fixes**: Core files were overwritten in a previous session to match the web UI. The agent performed basic syntax checks in this session, which passed, but no functional testing was done.
+    -   **Next debug checklist**:
+        1.  Navigate to .
+        2.  Run  to launch the Metro bundler.
+        3.  Scan the QR code with an Expo Go app on a device or run in a simulator.
+        4.  Systematically debug build errors and runtime crashes until the app is stable.
+    -   **Why fix this issue and what will be achieved with the fix?**: To deliver the mobile app with UI parity, a key project goal.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend (Mobile App)
+    -   **Blocked on other issue**: None
+
+-   **Issue 3: Currency is not configured based on country selection (P1)**
+    -   **Attempted fixes**: None. The agent implemented language switching but not currency.
+    -   **Next debug checklist**:
+        1.  Enhance the  constant in  to include a  property (e.g., 'INR', 'PKR', 'AED').
+        2.  Create a  to manage the application's currency state.
+        3.  Update 's  to set the currency in the context.
+        4.  Update UI components that display prices to use the currency from the context.
+    -   **Why fix this issue and what will be achieved with the fix?**: Fulfills a direct user request for localization and is essential for an e-commerce platform.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend
+    -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
-**In progress Task List**: None other than the P0 issue above.
+-   **Issue 4: DTDC Live API Integration is Blocked (P1)**
+    -   **Status**: BLOCKED (Awaiting permanent API key from user).
+
+-   **Issue 5: Admin session expires too quickly, disrupting editor workflow (P2)**
+    -   **Attempted fixes**: A frontend resilience fix was applied in a previous session. The issue persists, as seen by the multiple session expirations while using the theme editor.
+    -   **Next debug checklist**: Investigate  to increase the backend JWT's expiration time.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: Y
+
+-   **Issue 6 & 7**: Unchanged from previous summary (Obsolete editor files need deletion, backend refactoring is pending).
+
+**In progress Task List**:
+-   **Task 1: Fix Shopify Editor Click-to-Edit and Layout (P0)**
+    -   **Where to resume**:  and related store components.
+    -   **What will be achieved with this?**: A fully functional visual editor that meets the user's explicit requirements for layout and interactivity.
+    -   **Status**: IN PROGRESS
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P1) **Create Facebook Data Deletion URL**: Implement a backend endpoint (e.g., ) to comply with Meta's app requirements.
-    -   (P2) **Deploy Namshi Storefront to VPS**: Replace the Coming Soon page on  with the functional storefront.
-    -   (P2) **Enter TNV Collection pickup address**: The user needs to manually input their pickup address in the DTDC Settings UI.
-    -   (P3) **Prepare Mobile App for Store Submission**: Configure  with icons, splash screens, bundle IDs, etc.
+    -   (P0) Test and stabilize the mobile app in an Expo environment.
+    -   (P1) Implement currency switching based on country selection.
+    -   (P2) Deploy the functional storefront to the user's VPS ().
 -   **Future Tasks**:
-    -   (P2) **Sooxie.com Integration**: Plan and implement an integration with the Sooxie.com API.
-    -   (P2) **Dynamic Mobile App Updates**: Connect the admin panel settings to dynamically update the mobile app in real-time.
-    -   (P3) **Automated Security Testing**: Set up automated tests for security endpoints.
+    -   Add more section types and template presets to the theme editor.
+    -   Integrate with Sooxie.com API.
+    -   Allow customers to upload their own looks (User-Generated Stories).
+    -   Prepare the mobile app for store submission ( configuration).
 
 **Completed work in this session**
--   **Remember Me Feature**: Added a 30-day session persistence option to the login page (, ).
--   **VPS Deployment & Troubleshooting**: Successfully deployed the full-stack application to the user's VPS, fixing Python module errors, PM2 configuration issues, and DNS problems for the  domain.
--   **Pro Visual Editors**: Created and deployed new, feature-rich  and  with click-to-edit, drag & drop, undo/redo, templates, and a component library.
--   **AI Image Enhancer**: Implemented a new feature with a backend route () and frontend UI () to remove backgrounds and enhance product images using an AI service. Connected it to the live product catalog.
--   **Mobile App Deployment Fix**: Parameterized the hardcoded API URL in the mobile app's source code.
+-   **Shopify-Style Theme Editor**: Created a new editor at  with a section-based sidebar, live preview, drag-and-drop, and backend persistence.
+-   **Click-to-Edit Implemented**: A technical solution using  was built to link the preview to the editor sidebar.
+-   **Undo/Redo Functionality**: Added history management and undo/redo buttons to the editor.
+-   **Enhanced Image Uploader**: The Category Icons section now has controls for image upload, size, and border radius.
+-   **Clickable Header/Footer**: The main store layout was updated to make the header and footer editable sections.
+-   **Multi-Language Expansion**: Added Hindi and Urdu to the onboarding flow with auto-selection and RTL support for Urdu.
+-   **Complete the Look Integrated**: The component was successfully added to the product detail page.
+-   **Responsive Product Grid**: Fixed the homepage product grid to display correctly across mobile and desktop devices.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Facebook User Data Deletion URL needed**
-    -   **Debug checklist**:
-        1. Create a new route in the backend (e.g., in a new  router).
-        2. The endpoint should handle POST requests from Facebook, log the deletion request, and return a tracking code and a status URL.
-        3. The status URL should show the status of the data deletion request.
-    -   **Why to solve this issue and what will be achieved with this?**: It is a compliance requirement for the user's Facebook/Meta application.
-    -   **Should Test frontend/backend/both after fix?**: Backend
+-   **Issue 1: Obsolete Editor Components**
+    -   **Debug checklist**: Delete the old, unused V1 editor files:  and .
+    -   **Why to solve this issue and what will be achieved with this?**: Reduces code clutter and prevents confusion.
+    -   **Should Test frontend/backend/both after fix**: Frontend (regression check)
     -   **Is recurring issue?**: N
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**: Admin session instability.
--   **Recurrence count**: 2+
--   **Status**: IN PROGRESS. An initial fix was implemented, but the issue appears to persist. The backend JWT lifetime is the likely culprit.
+-   **Recurrence count**: 3+
+-   **Status**: IN PROGRESS. The issue repeatedly occurred during this session, making editor development difficult. A backend fix (increasing JWT lifetime) is likely required.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **VPS Deployment**: Managing a full-stack application on a remote Linux VPS using , , , and .
--   **Advanced React**: Implementing complex state management with , , and  for features like undo/redo, and drag-and-drop using .
--   **AI Integration**: Calling external AI APIs ( library) for image processing from a FastAPI backend.
--   **DNS Management**: Debugging and configuring  records to point a custom domain to a VPS IP address.
--   **Backend Process Management**: Debugging and configuring  for a FastAPI application, including handling  issues.
--   **Real-time Preview**: Using  and  for communication between an editor and a live preview pane.
+-   **Visual Editor Development**: Building a complex, interactive UI with a component-based architecture.
+-   **Drag and Drop**: Using  for reordering sections in the editor sidebar.
+-   **Iframe Communication**: Using  to enable click-to-edit functionality between the editor and the live preview iframe.
+-   **State Management with History**: Implementing undo/redo by managing a history of state snapshots.
+-   **Responsive Design**: Using Tailwind CSS breakpoints (, , etc.) to create adaptive layouts.
 
 **key DB schema**
--   No new collections were added. Existing schemas for  and  are still relevant for the blocked DTDC task.
-
-**changes in tech stack**
--    installed in the environment for scripted VPS deployments.
--    library used for image processing.
--    and  added to the frontend for the Pro editors.
+-   No new DB schema changes in this session. The  collection remains relevant. Configuration data is likely stored in a general-purpose  collection.
 
 **All files of reference**
--   **/app/frontend/src/components/WebsiteEditorV2.jsx**: (NEW) The active Pro website editor.
--   **/app/frontend/src/components/MobileAppEditorV2.jsx**: (NEW) The active Pro mobile app editor.
--   **/app/frontend/src/components/ImageEnhancer.jsx**: (NEW) UI for the AI image processing tool.
--   **/app/backend/routes/image_ai.py**: (NEW) Backend logic for the AI image tool.
--   **/app/frontend/src/contexts/AuthContext.jsx**: (MODIFIED) For session stability and Remember Me feature.
--   **/app/frontend/src/App.js**: (MODIFIED) For routing to the new V2 editors and Image Enhancer.
--   **/app/frontend/src/components/ShopifySidebar.jsx**: (MODIFIED) To add navigation links to new tools.
--   **/app/frontend/src/components/store/TNVStoreLayout.jsx**: (REFERENCE) The layout that the editor preview needs to replicate.
--   **/app/frontend/src/components/store/TNVHomePage.jsx**: (REFERENCE) The home page that the editor preview needs to replicate.
--   **/app/backend/server.py**: (MODIFIED) To register new API routers.
+-   **/app/frontend/src/components/ShopifyStyleEditor.jsx**: The new, primary visual editor component.
+-   **/app/frontend/src/components/store/TNVHomePage.jsx**: Modified extensively for click-to-edit and responsive fixes.
+-   **/app/frontend/src/components/store/TNVStoreLayout.jsx**: Modified to make the header and footer editable.
+-   **/app/frontend/src/components/store/EditorWrapper.jsx**: A crucial helper component for implementing click-to-edit.
+-   **/app/frontend/src/components/store/StoreOnboarding.jsx**: Updated with new languages.
+-   **/app/backend/routes/storefront_config.py**: Backend API for managing navigation and menus.
+-   **/app/backend/routes/storefront_banners.py**: Backend API for managing banners and category tabs.
 
 **Areas that need refactoring**:
--   The main backend file, , is still large and needs to be broken down into smaller, more maintainable route files.
--   The old  and  components are now unused and should be deleted to avoid confusion.
+-   The obsolete  and  components must be deleted to avoid confusion.
+-   The backend  file is still a large monolith and should be broken down into smaller, more manageable modules.
 
 **key api endpoints**
--   : Triggers bulk AI enhancement for all products.
--   : Triggers AI enhancement for a single product.
--   : Admin login endpoint.
--   : Session validation endpoint.
+-   : Saves the main menu configuration.
+-   : Saves the sub-navigation items.
+-   : Saves the category icon tabs.
+-   : Saves the hero banner slides.
 
 **Critical Info for New Agent**
--   **The user's application is deployed on a custom VPS, not the standard preview environment.** You will need to build (yarn run v1.22.22
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.) and deploy changes using  and  to the VPS at . The credentials are in the chat history.
--   **The highest priority task is to fix the Website Editor's preview.** It must render an accurate, live preview of the Namshi-style storefront () instead of the current simple mockup.
--   The DTDC integration remains **BLOCKED**. Do not attempt to work on it until the user provides a permanent, static API key.
--   The admin session instability is a **recurring issue**. Even with the Remember Me fix, the backend JWT may have a short expiration. Be prepared to investigate .
+-   **User's Editor Vision is Key**: The top priority is fixing the . The user wants a specific set of editable sections (, , , , ) and for the click-to-edit to work reliably for them. Refer to the user's latest feedback and screenshot, not the agent's previous assumptions.
+-   **Admin Session Instability is a Blocker**: The frequent session timeouts are severely hampering development and testing of the theme editor. This might need to be prioritized to make progress on the editor itself. Investigating the backend JWT expiration time is the next step.
+-   **Mobile App is HIGH-RISK**: Do not assume any part of the mobile app works. It requires a full, from-the-ground-up testing and debugging session starting with .
+-   **Focus on the New Editor**: Ignore the old . All new work should be on .
 
 **documents and test reports created in this job**
 -   /app/memory/PRD.md (updated multiple times)
+-   /app/test_reports/iteration_39.json (confirms web features working before multi-language changes)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **why the stroe editor theme is different...**: User points out the critical issue that the website editor preview does not match the live storefront. **Status: In Progress**.
-2.  **deploy + [screenshot]**: User sends a screenshot of Facebook App settings, indicating a need for a User Data Deletion URL. **Status: Not Started**.
-3.  **existing product**: User requests that the new AI Image Enhancer tool should process their actual products, not sample ones. **Status: Completed**.
-4.  **yes Automatic make all products white...**: User approves the plan to build an AI Image Enhancement feature. **Status: Completed**.
-5.  **[screenshots]**: User provides screenshots showing the new Pro editors working correctly. **Status: Acknowledged**.
-6.  **deploy to vps**: User requests another deployment to the VPS. **Status: Completed**.
-7.  **yes make it more easier give me more ideas**: User approves the plan to add Pro features (drag & drop, undo/redo) to the editors. **Status: Completed**.
-8.  **please make click n edit for online store and mobile app**: User requests the initial click-to-edit feature for the visual editors. **Status: Completed**.
-9.  **i dont see updated admin panel...**: User is confused because they are on the preview environment, not the deployed VPS URL. **Status: Resolved**.
-10. **i logged in wamer.ceom admin online store mobile**: User confirms they have successfully logged into the deployed application on . **Status: Acknowledged**.
+1.  **our original lay out was this...**: User provides a screenshot and reports that the click-to-edit is not working and the editor layout is wrong, listing the sections they expect to see. **Status: In Progress**.
+2.  **i am not able to update icons...**: User requests multiple features: icon upload options, currency setting based on country, more clickable sections (header/footer), and undo/redo. **Status: Partially Completed** (agent implemented all, but click-to-edit is still not right).
+3.  **click n edit is not working**: User reiterates the main problem with the theme editor. **Status: In Progress**.
+4.  **store editor should be like this...**: User provides a Shopify documentation link, initiating the theme editor rewrite. **Status: Completed**.
+5.  **User sends multiple Shopify architecture links**: Providing detailed requirements for the new editor. **Status: Completed**.
+6.  **i will create a new app**: User's response regarding a question about WhatsApp integration. **Status: Acknowledged**.
+7.  **the product display is not good**: User reports the homepage product grid layout is broken on desktop. **Status: Completed**.
+8.  **add india pakistan with all local language**: User requests language support for India and Pakistan. **Status: Completed**.
+9.  **whats the url for preview**: User asks for the preview link. **Status: Completed**.
+10. **yes**: User confirms the agent's plan to start work. **Status: Completed**.
 
 **Project Health Check:**
--   **Broken**: The Website Editor's preview is incorrect, making it unusable for its intended purpose. The admin session instability remains a potential blocker.
--   **Mocked**: The entire DTDC shipping integration is mocked in . All data shown in the shipping dashboard is test data.
+-   **Broken**: The React Native mobile app is presumed broken due to major, untested file overwrites. The admin session stability is also critically flawed.
+-   **Mocked**: The DTDC shipping integration is still using mock data, blocked on a user-provided API key.
 
 **3rd Party Integrations**
 -   **Razorpay** (Payments) — requires User API Key
 -   **DTDC** (Shipping) — **BLOCKED**, requires a permanent User API Key.
 -   **Emergent Integrations (ClipDrop)** for AI Image Background Removal — uses Emergent LLM Key.
--   Shopify (as a data source)
--   Namecheap (DNS, VPS)
--   MongoDB Atlas (Database)
+-   **@dnd-kit/core, @dnd-kit/sortable** (Frontend UI Library) - For drag-and-drop in the editor.
+-   **react-slick, slick-carousel** (Frontend UI Library) - For carousels.
 
 **Testing status**
--   **Testing agent used after significant changes**: NO
+-   **Testing agent used after significant changes**: YES, but only for the initial feature set. The latest editor changes have not been tested by the subagent.
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None
--   **Known regressions**: Admin session instability.
+-   **Known regressions**: The admin session seems to have regressed and is expiring much faster, severely impacting editor usability.
 
 **Credentials to test flow:**
 -   **Admin Login**:  / 
--   **VPS IP**: 
--   **VPS Password**:  (from chat history)
 
 **What agent forgot to execute**
--   The agent did not implement the **User Data Deletion URL** required for the user's Facebook App, despite acknowledging the user's screenshot.
--   The agent created  versions of the editors but did not delete the old, now-obsolete  and  files.</analysis>
+-   The agent did not delete the old, obsolete  and  files, despite it being a known cleanup task.
+-   The agent did not perform any functional testing on the mobile app after overwriting its core files.</analysis>

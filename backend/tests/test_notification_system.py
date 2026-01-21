@@ -8,7 +8,7 @@ import httpx
 import os
 
 # Get API URL from environment or use default
-API_URL = os.environ.get('API_URL', 'https://multi-store-7.preview.emergentagent.com')
+API_URL = os.environ.get('API_URL', 'https://multi-tenant-shop-3.preview.emergentagent.com')
 
 # Test data
 TEST_PHONE = "+919876543210"
