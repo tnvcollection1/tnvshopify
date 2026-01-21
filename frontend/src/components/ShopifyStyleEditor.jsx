@@ -398,33 +398,79 @@ const SettingInput = ({ setting, value, onChange }) => {
       );
     
     case 'image_picker':
+      const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('File size must be less than 5MB');
+          return;
+        }
+        
+        // Convert to base64 for preview (in production, upload to server/CDN)
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          onChange(reader.result);
+        };
+        reader.readAsDataURL(file);
+      };
+
       return (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-xs text-gray-600">{setting.label}</Label>
-          <div className="border-2 border-dashed rounded-lg p-3 text-center hover:border-gray-400 transition cursor-pointer">
+          
+          {/* Image Preview */}
+          <div className="border-2 border-dashed rounded-lg p-3 text-center hover:border-blue-400 transition cursor-pointer relative overflow-hidden">
             {value ? (
               <div className="relative">
-                <img src={value} alt="" className="w-full h-20 object-cover rounded" />
+                <img src={value} alt="" className="w-full h-24 object-contain rounded bg-gray-50" />
                 <button 
-                  onClick={() => onChange('')}
-                  className="absolute top-1 right-1 bg-white rounded-full p-1 shadow"
+                  onClick={(e) => { e.stopPropagation(); onChange(''); }}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600"
                 >
                   <X className="w-3 h-3" />
                 </button>
               </div>
             ) : (
-              <div className="text-gray-400 py-2">
-                <ImageIcon className="w-6 h-6 mx-auto mb-1" />
-                <p className="text-xs">Select image</p>
-              </div>
+              <label className="text-gray-400 py-4 cursor-pointer block">
+                <ImageIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                <p className="text-xs font-medium">Click to upload image</p>
+                <p className="text-[10px] text-gray-400 mt-1">PNG, JPG, WEBP up to 5MB</p>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
             )}
           </div>
-          <Input 
-            value={value || ''} 
-            onChange={(e) => onChange(e.target.value)}
-            placeholder="Paste image URL"
-            className="h-8 text-xs"
-          />
+
+          {/* Upload button when image exists */}
+          {value && (
+            <label className="w-full py-2 text-xs text-center border rounded-lg cursor-pointer hover:bg-gray-50 flex items-center justify-center gap-2">
+              <ImageIcon className="w-3 h-3" />
+              Change image
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
+          )}
+          
+          {/* URL input */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">or</span>
+            <Input 
+              value={typeof value === 'string' && !value.startsWith('data:') ? value : ''} 
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="Paste image URL"
+              className="h-8 text-xs flex-1"
+            />
+          </div>
         </div>
       );
     
