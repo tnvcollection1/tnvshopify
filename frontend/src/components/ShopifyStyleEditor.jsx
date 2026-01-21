@@ -2020,6 +2020,7 @@ const ShopifyStyleEditor = () => {
                     onUpdate={(updated) => handleUpdateSection(section.id, updated)}
                     onDelete={() => handleDeleteSection(section.id)}
                     onDuplicate={() => handleDuplicateSection(section.id)}
+                    collections={collections}
                   />
                 ))}
               </SortableContext>
