@@ -2031,23 +2031,44 @@ const ShopifyStyleEditor = () => {
           )}
 
           <div className="flex-1 overflow-y-auto">
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
-                {sections.map((section) => (
+            {/* Show only expanded section when one is selected, otherwise show all sections */}
+            {expandedSection ? (
+              // Expanded Section View
+              <div className="p-3">
+                {sections.filter(s => s.id === expandedSection).map((section) => (
                   <SortableSectionItem
                     key={section.id}
                     section={section}
                     sectionDef={SECTION_LIBRARY[section.type]}
-                    isExpanded={expandedSection === section.id}
-                    onToggle={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
+                    isExpanded={true}
+                    onToggle={() => setExpandedSection(null)}
                     onUpdate={(updated) => handleUpdateSection(section.id, updated)}
                     onDelete={() => handleDeleteSection(section.id)}
                     onDuplicate={() => handleDuplicateSection(section.id)}
                     collections={collections}
                   />
                 ))}
-              </SortableContext>
-            </DndContext>
+              </div>
+            ) : (
+              // All Sections List View
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                  {sections.map((section) => (
+                    <SortableSectionItem
+                      key={section.id}
+                      section={section}
+                      sectionDef={SECTION_LIBRARY[section.type]}
+                      isExpanded={false}
+                      onToggle={() => setExpandedSection(section.id)}
+                      onUpdate={(updated) => handleUpdateSection(section.id, updated)}
+                      onDelete={() => handleDeleteSection(section.id)}
+                      onDuplicate={() => handleDuplicateSection(section.id)}
+                      collections={collections}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            )}
           </div>
 
           <div className="p-3 border-t bg-gray-50 space-y-2">
