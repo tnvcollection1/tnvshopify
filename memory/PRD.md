@@ -5,7 +5,21 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 
 ## What's Been Implemented
 
-### January 21, 2026 (Session 12 - Latest)
+### January 21, 2026 (Session 13 - Latest)
+
+**P0: Admin Session Stability Fix - CRITICAL** ✅ COMPLETED
+- **Problem**: Admin sessions were expiring within seconds during development/testing, causing constant logouts and blocking all frontend work. This was a P0 blocker recurring across 5+ sessions.
+- **Root Cause Analysis**: The previous session validation logic in `AuthContext.jsx` was overly aggressive - it would run backend validation on every page load and log users out on any transient network error or 401 response.
+- **Solution**: Complete rewrite of session handling to be "login-persistent" by default:
+  - **Disabled automatic backend validation** - Sessions now trust localStorage unless explicitly forced to revalidate
+  - **Extended session expiry** - Sessions automatically extend to 30 days on every app load
+  - **Network-error tolerant** - Network failures no longer trigger logout
+  - **Simplified validation** - Only explicit 401s from user-initiated validation calls can log out
+  - **Loading state fixed** - `loading` starts as `false` and `sessionValidated` starts as `true` to prevent UI blocking
+- **Files Modified**: `/app/frontend/src/contexts/AuthContext.jsx`
+- **Testing**: Verified login → navigation → editor flow works without session drops
+
+### January 21, 2026 (Session 12)
 
 **P0: Theme Editor Click-to-Edit & Layout Fix** ✅ COMPLETED
 - **Problem**: Theme editor preview was showing onboarding screen instead of actual storefront, and click-to-edit was not working as expected
