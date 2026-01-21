@@ -1356,13 +1356,15 @@ const ShopifyStyleEditor = () => {
   const loadConfig = async () => {
     setLoading(true);
     try {
-      // Fetch navigation config and collections
-      const [navRes, bannersRes, tabsRes, subNavRes, collectionsRes] = await Promise.all([
+      // Fetch navigation config, collections, products, and tags
+      const [navRes, bannersRes, tabsRes, subNavRes, collectionsRes, productsRes, tagsRes] = await Promise.all([
         fetch(`${API_URL}/api/storefront/config/navigation/${storeName}`),
         fetch(`${API_URL}/api/storefront/banners/hero/${storeName}`),
         fetch(`${API_URL}/api/storefront/banners/category-tabs/${storeName}`),
         fetch(`${API_URL}/api/storefront/banners/sub-nav/${storeName}`),
         fetch(`${API_URL}/api/shopify/collections?store_name=${storeName}`),
+        fetch(`${API_URL}/api/shopify/products/list?store_name=${storeName}&limit=100`),
+        fetch(`${API_URL}/api/shopify/tags?store_name=${storeName}`),
       ]);
 
       // Load collections for linking
@@ -1370,6 +1372,22 @@ const ShopifyStyleEditor = () => {
         const collectionsData = await collectionsRes.json();
         if (collectionsData.success && collectionsData.collections) {
           setCollections(collectionsData.collections);
+        }
+      }
+
+      // Load products for linking
+      if (productsRes.ok) {
+        const productsData = await productsRes.json();
+        if (productsData.success && productsData.products) {
+          setProducts(productsData.products);
+        }
+      }
+
+      // Load tags for linking
+      if (tagsRes.ok) {
+        const tagsData = await tagsRes.json();
+        if (tagsData.success && tagsData.tags) {
+          setTags(tagsData.tags);
         }
       }
 
