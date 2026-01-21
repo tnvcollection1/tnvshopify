@@ -203,7 +203,17 @@ function TNVStoreWrapper({ children, storeName = "tnvcollection" }) {
     );
   }
   
-  // Homepage has its own layout with bottom nav
+  // Homepage in editor mode should show full layout with header
+  if (isHomePage && isEditorMode) {
+    return (
+      <TNVStoreProvider storeName={storeName}>
+        <TNVHeader />
+        {children}
+      </TNVStoreProvider>
+    );
+  }
+  
+  // Homepage has its own layout with bottom nav (no header)
   if (isHomePage) {
     return (
       <TNVStoreProvider storeName={storeName}>
