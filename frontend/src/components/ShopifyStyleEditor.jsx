@@ -1078,7 +1078,7 @@ const ShopifyStyleEditor = () => {
           fetch(`${API_URL}/api/storefront/banners/hero/${storeName}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ banners })
+            body: JSON.stringify(banners)
           })
         );
       }
