@@ -55,9 +55,66 @@ const LANGUAGES = [
 ];
 
 // ============================================
+// TEMPLATE PRESETS
+// ============================================
+const TEMPLATE_PRESETS = [
+  {
+    id: 'namshi-default',
+    name: 'Namshi Style',
+    description: 'Clean, modern fashion e-commerce layout inspired by Namshi.com',
+    thumbnail: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=200&h=150&fit=crop',
+    sections: ['announcement-bar', 'header', 'stories', 'category-tabs', 'sub-navigation', 'hero-banner', 'featured-collection', 'promo-banner', 'countdown', 'newsletter', 'footer']
+  },
+  {
+    id: 'minimal-luxury',
+    name: 'Minimal Luxury',
+    description: 'Elegant, minimalist design for premium brands',
+    thumbnail: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=200&h=150&fit=crop',
+    sections: ['announcement-bar', 'header', 'hero-banner', 'featured-collection', 'testimonials', 'newsletter', 'footer']
+  },
+  {
+    id: 'flash-sale-focus',
+    name: 'Flash Sale Focus',
+    description: 'Optimized for promotions and sales events',
+    thumbnail: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=200&h=150&fit=crop',
+    sections: ['announcement-bar', 'header', 'countdown', 'hero-banner', 'category-tabs', 'featured-collection', 'promo-banner', 'footer']
+  },
+  {
+    id: 'mobile-first',
+    name: 'Mobile First',
+    description: 'Optimized for mobile shopping experience',
+    thumbnail: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=200&h=150&fit=crop',
+    sections: ['stories', 'category-tabs', 'hero-banner', 'featured-collection', 'promo-banner', 'footer']
+  }
+];
+
+// ============================================
 // SECTION DEFINITIONS (Like Shopify Schema)
 // ============================================
 const SECTION_LIBRARY = {
+  'stories': {
+    name: 'Stories',
+    icon: Users,
+    category: 'Engagement',
+    limit: 1,
+    settings: [
+      { type: 'checkbox', id: 'show_stories', label: 'Show Stories', default: true },
+      { type: 'range', id: 'avatar_size', label: 'Avatar Size', min: 48, max: 100, step: 4, default: 68, unit: 'px' },
+      { type: 'checkbox', id: 'show_labels', label: 'Show Labels', default: true },
+      { type: 'checkbox', id: 'auto_play', label: 'Auto-play stories', default: false },
+    ],
+    blocks: [
+      { type: 'story', name: 'Story', settings: [
+        { type: 'text', id: 'title', label: 'Title', default: 'Story Title' },
+        { type: 'image_picker', id: 'thumbnail', label: 'Thumbnail Image' },
+        { type: 'image_picker', id: 'content_image', label: 'Full Story Image' },
+        { type: 'url', id: 'link', label: 'Link (optional)', default: '' },
+        { type: 'checkbox', id: 'is_official', label: 'Official Badge', default: false },
+        { type: 'checkbox', id: 'active', label: 'Active', default: true },
+      ]}
+    ],
+    max_blocks: 10
+  },
   'store-settings': {
     name: 'Store Settings',
     icon: Settings,
