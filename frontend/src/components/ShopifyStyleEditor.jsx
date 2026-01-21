@@ -857,7 +857,15 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
           <GripVertical className="w-4 h-4 text-gray-300 hover:text-gray-500" />
         </div>
         <Icon className="w-4 h-4 text-gray-500" />
-        <span className="flex-1 text-sm font-medium truncate">{sectionDef?.name || section.type}</span>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-medium truncate block">{sectionDef?.name || section.type}</span>
+          {/* Show country/currency/language info for store-settings */}
+          {section.type === 'store-settings' && section.settings?.country && (
+            <span className="text-[10px] text-gray-500 block truncate">
+              {COUNTRY_CONFIG[section.settings.country]?.flag} {COUNTRY_CONFIG[section.settings.country]?.name} • {section.settings.default_currency} • {LANGUAGES.find(l => l.code === section.settings.default_language)?.name?.split(' ')[0] || section.settings.default_language}
+            </span>
+          )}
+        </div>
         <button 
           onClick={(e) => { e.stopPropagation(); onUpdate({ ...section, disabled: !section.disabled }); }}
           className="p-1 hover:bg-gray-200 rounded"
