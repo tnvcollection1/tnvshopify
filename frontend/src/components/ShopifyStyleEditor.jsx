@@ -31,10 +31,53 @@ import { CSS } from '@dnd-kit/utilities';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
+// Currency options
+const CURRENCIES = [
+  { code: 'USD', symbol: '$', name: 'US Dollar' },
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'GBP', symbol: '£', name: 'British Pound' },
+  { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' },
+  { code: 'SAR', symbol: '﷼', name: 'Saudi Riyal' },
+  { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+  { code: 'KWD', symbol: 'د.ك', name: 'Kuwaiti Dinar' },
+  { code: 'QAR', symbol: '﷼', name: 'Qatari Riyal' },
+  { code: 'BHD', symbol: '.د.ب', name: 'Bahraini Dinar' },
+  { code: 'OMR', symbol: '﷼', name: 'Omani Rial' },
+];
+
+// Language options
+const LANGUAGES = [
+  { code: 'en', name: 'English', rtl: false },
+  { code: 'ar', name: 'العربية (Arabic)', rtl: true },
+  { code: 'hi', name: 'हिन्दी (Hindi)', rtl: false },
+  { code: 'ur', name: 'اردو (Urdu)', rtl: true },
+];
+
 // ============================================
 // SECTION DEFINITIONS (Like Shopify Schema)
 // ============================================
 const SECTION_LIBRARY = {
+  'store-settings': {
+    name: 'Store Settings',
+    icon: Settings,
+    category: 'Settings',
+    limit: 1,
+    settings: [
+      { type: 'select', id: 'default_currency', label: 'Default Currency', options: CURRENCIES.map(c => ({ value: c.code, label: `${c.symbol} ${c.name}` })), default: 'PKR' },
+      { type: 'select', id: 'default_language', label: 'Default Language', options: LANGUAGES.map(l => ({ value: l.code, label: l.name })), default: 'en' },
+      { type: 'checkbox', id: 'show_currency_selector', label: 'Show currency selector', default: true },
+      { type: 'checkbox', id: 'show_language_selector', label: 'Show language selector', default: true },
+      { type: 'checkbox', id: 'auto_detect_location', label: 'Auto-detect user location', default: true },
+    ],
+    blocks: [
+      { type: 'supported_currency', name: 'Supported Currency', settings: [
+        { type: 'select', id: 'currency', label: 'Currency', options: CURRENCIES.map(c => ({ value: c.code, label: `${c.symbol} ${c.name}` })), default: 'USD' },
+        { type: 'checkbox', id: 'active', label: 'Active', default: true },
+      ]}
+    ],
+    max_blocks: 10
+  },
   'announcement-bar': {
     name: 'Announcement bar',
     icon: Megaphone,
@@ -97,6 +140,8 @@ const SECTION_LIBRARY = {
     limit: 1,
     settings: [
       { type: 'checkbox', id: 'show_tabs', label: 'Show category tabs', default: true },
+      { type: 'range', id: 'icon_size', label: 'Icon size', min: 40, max: 100, step: 5, default: 72, unit: 'px' },
+      { type: 'range', id: 'icon_radius', label: 'Border radius', min: 0, max: 24, step: 2, default: 12, unit: 'px' },
     ],
     blocks: [
       { type: 'category_tab', name: 'Category Tab', settings: [
