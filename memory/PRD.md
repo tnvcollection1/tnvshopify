@@ -19,6 +19,26 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - **Files Modified**: `/app/frontend/src/contexts/AuthContext.jsx`
 - **Testing**: Verified login → navigation → editor flow works without session drops
 
+**Feature: Collection/Product/Tag Linking in Theme Editor** ✅ COMPLETED
+- **User Request**: Add ability to link menu items and UI elements to Collections, Products, or Tags
+- **Implementation**:
+  - Added new "Link Type" selector with options: Custom URL, Collection, Product, Tag
+  - Added conditional pickers that show based on Link Type selection:
+    - `collection_picker` - Shows all product collections
+    - `product_picker` - Shows all products (title, handle)
+    - `tag_picker` - Shows all unique product tags
+  - Updated sections to support Link Type:
+    - Main Menu (Men/Women)
+    - Category Tabs
+    - Sub Navigation
+  - Added new backend APIs:
+    - `GET /api/shopify/product-list` - Returns simplified product list
+    - `GET /api/shopify/tags` - Returns unique product tags
+- **Files Modified**:
+  - `/app/frontend/src/components/ShopifyStyleEditor.jsx` - Added Link Type settings and pickers
+  - `/app/backend/routes/shopify_sync.py` - Added product-list and tags APIs
+- **Testing**: APIs verified working via curl
+
 ### January 21, 2026 (Session 12)
 
 **P0: Theme Editor Click-to-Edit & Layout Fix** ✅ COMPLETED
