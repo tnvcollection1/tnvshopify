@@ -35,9 +35,11 @@ const Login = ({ onLoginSuccess }) => {
         const user = response.data.user;
         // Add remember me preference and session expiry
         user.rememberMe = rememberMe;
+        // Always set session expiry - 30 days for remember me, 24 hours for regular sessions
         if (rememberMe) {
-          // Set expiry to 30 days from now
-          user.sessionExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
+          user.sessionExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days
+        } else {
+          user.sessionExpiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
         }
         localStorage.setItem("agent", JSON.stringify(user));
         toast.success(`Welcome back, ${user.full_name}!`);
@@ -66,8 +68,11 @@ const Login = ({ onLoginSuccess }) => {
           agent.role = 'admin';
           // Add remember me preference and session expiry
           agent.rememberMe = rememberMe;
+          // Always set session expiry - 30 days for remember me, 24 hours for regular sessions
           if (rememberMe) {
-            agent.sessionExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
+            agent.sessionExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days
+          } else {
+            agent.sessionExpiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
           }
           localStorage.setItem("agent", JSON.stringify(agent));
           toast.success(`Welcome back, ${agent.full_name}!`);
