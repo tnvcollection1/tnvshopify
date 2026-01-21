@@ -499,7 +499,7 @@ const SECTION_LIBRARY = {
     category: 'Products',
     settings: [
       { type: 'text', id: 'title', label: 'Heading', default: 'Featured Products' },
-      { type: 'collection', id: 'collection', label: 'Collection' },
+      { type: 'collection_picker', id: 'collection', label: 'Select Collection' },
       { type: 'range', id: 'products_to_show', label: 'Products to show', min: 2, max: 12, step: 1, default: 8 },
       { type: 'range', id: 'columns_desktop', label: 'Columns (desktop)', min: 2, max: 6, step: 1, default: 4 },
       { type: 'checkbox', id: 'show_view_all', label: 'Show "View all" button', default: true },
