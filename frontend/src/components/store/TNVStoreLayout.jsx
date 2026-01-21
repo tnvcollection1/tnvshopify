@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Search, User, Heart, ShoppingBag, ChevronDown, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import { EditableSection, useEditorMode } from './EditorWrapper';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
