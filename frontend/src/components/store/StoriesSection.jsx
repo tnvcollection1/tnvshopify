@@ -297,7 +297,7 @@ const StoriesSection = ({ stories = [], onAddStory }) => {
       )}
 
       {/* CSS for story progress animation */}
-      <style jsx global>{`
+      <style>{`
         @keyframes story-progress {
           from { width: 0%; }
           to { width: 100%; }
