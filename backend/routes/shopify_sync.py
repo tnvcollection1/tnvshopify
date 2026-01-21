@@ -413,7 +413,7 @@ async def get_products_sync_status(store_name: str = None):
     }
 
 
-@router.get("/products/list")
+@router.get("/product-list")
 async def get_products_list(store_name: Optional[str] = None, limit: int = 100):
     """Get simple list of products for pickers (title and handle only)"""
     db = get_db()
