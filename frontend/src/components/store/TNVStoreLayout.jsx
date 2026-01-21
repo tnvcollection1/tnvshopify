@@ -859,6 +859,12 @@ export const TNVFooter = () => {
       </div>
     </footer>
   );
+
+  return (
+    <EditableSection sectionType="footer">
+      {footerContent}
+    </EditableSection>
+  );
 };
 
 export default TNVStoreProvider;
