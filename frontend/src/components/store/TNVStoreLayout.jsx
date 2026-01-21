@@ -363,6 +363,9 @@ export const TNVHeader = () => {
   ];
   
   const subNavList = subNavItems.length > 0 ? subNavItems : defaultSubNavItems;
+  
+  // Check editor mode
+  const isEditorMode = useEditorMode();
 
   // Auto-rotate promo messages
   useEffect(() => {
@@ -377,7 +380,7 @@ export const TNVHeader = () => {
     setGenderDropdown(false);
   };
 
-  return (
+  const headerContent = (
     <header className="sticky top-0 z-50 bg-white">
       {/* TOP BAR - EXACTLY like Namshi */}
       <div className="bg-white border-b h-10">
