@@ -87,8 +87,9 @@ const ShopifySidebar = () => {
       label: 'Online Store',
       icon: Globe,
       children: [
-        { label: 'Website Editor', path: '/website-editor', icon: Layout, badge: 'New' },
-        { label: 'Mobile App Editor', path: '/mobile-app-editor', icon: Smartphone, badge: 'New' },
+        { label: 'Theme Editor', path: '/theme-editor', icon: Palette, badge: 'Pro' },
+        { label: 'Website Editor', path: '/website-editor', icon: Layout },
+        { label: 'Mobile App Editor', path: '/mobile-app-editor', icon: Smartphone },
         { label: 'Header & Menu', path: '/header-config', icon: Menu },
         { label: 'Banners', path: '/storefront-config', icon: Image },
         { label: 'Storefront CMS', path: '/storefront-cms', icon: Layout },
