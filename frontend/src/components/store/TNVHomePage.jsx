@@ -521,6 +521,7 @@ const TNVHomePage = () => {
           )}
         </div>
       </section>
+      </EditableSection>
 
       {/* === MEGA SALE BANNER === */}
       <section className="px-3 py-2 max-w-7xl mx-auto">
