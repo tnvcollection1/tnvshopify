@@ -244,6 +244,9 @@ const TNVHomePage = () => {
     };
   }, [loadMoreProducts, hasMore, loadingMore]);
 
+  // Editor mode hook - must be called before any conditional returns
+  const isEditorMode = useEditorMode();
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -253,7 +256,6 @@ const TNVHomePage = () => {
   }
 
   const currentHeroSlide = HERO_SLIDES[currentSlide];
-  const isEditorMode = useEditorMode();
 
   return (
     <div className="min-h-screen bg-white pb-20" data-testid="tnv-home">
