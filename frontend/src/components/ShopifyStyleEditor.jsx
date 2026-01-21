@@ -1236,15 +1236,11 @@ const ShopifyStyleEditor = () => {
         }
       }
 
-      // Category tabs
+      // Category tabs (5 tabs)
       if (tabsRes.ok) {
         const tabsData = await tabsRes.json();
-        if (tabsData.categoryTabs?.length > 0) {
-          loadedSections.push({
-            id: 'section-category-tabs',
-            type: 'category-tabs',
-            settings: { show_tabs: true },
-            blocks: tabsData.categoryTabs.map((tab, i) => ({
+        const categoryBlocks = tabsData.categoryTabs?.length > 0 
+          ? tabsData.categoryTabs.map((tab, i) => ({
               id: `tab-${i}`,
               type: 'category_tab',
               settings: {
@@ -1255,30 +1251,56 @@ const ShopifyStyleEditor = () => {
                 active: tab.active !== false
               }
             }))
-          });
-        }
+          : [
+              { id: 'tab-0', type: 'category_tab', settings: { name: 'Fashion', path: '/fashion', bg_color: '#c8e6c9', active: true } },
+              { id: 'tab-1', type: 'category_tab', settings: { name: 'Beauty', path: '/beauty', bg_color: '#f8bbd9', active: true } },
+              { id: 'tab-2', type: 'category_tab', settings: { name: 'Baby & Kids', path: '/kids', bg_color: '#b3e5fc', active: true } },
+              { id: 'tab-3', type: 'category_tab', settings: { name: 'Home & Lifestyle', path: '/home', bg_color: '#ffe0b2', active: true } },
+              { id: 'tab-4', type: 'category_tab', settings: { name: 'Premium', path: '/premium', bg_color: '#e1bee7', active: true } },
+            ];
+        
+        loadedSections.push({
+          id: 'section-category-tabs',
+          type: 'category-tabs',
+          settings: { show_tabs: true, icon_size: 72, icon_radius: 12, layout: 'horizontal' },
+          blocks: categoryBlocks
+        });
       }
 
-      // Sub navigation
+      // Sub navigation (10 items)
       if (subNavRes.ok) {
         const subNavData = await subNavRes.json();
-        if (subNavData.subNavItems?.length > 0) {
-          loadedSections.push({
-            id: 'section-sub-nav',
-            type: 'sub-navigation',
-            settings: {},
-            blocks: subNavData.subNavItems.map((item, i) => ({
+        const navBlocks = subNavData.subNavItems?.length > 0
+          ? subNavData.subNavItems.map((item, i) => ({
               id: `subnav-${i}`,
               type: 'nav_item',
               settings: {
                 name: item.name,
                 path: item.path,
                 highlight: item.highlight || false,
+                badge: item.badge || '',
                 active: item.active !== false
               }
             }))
-          });
-        }
+          : [
+              { id: 'subnav-0', type: 'nav_item', settings: { name: 'CLOTHING', path: '/clothing', highlight: false, active: true } },
+              { id: 'subnav-1', type: 'nav_item', settings: { name: 'SHOES', path: '/shoes', highlight: false, active: true } },
+              { id: 'subnav-2', type: 'nav_item', settings: { name: 'BAGS', path: '/bags', highlight: false, active: true } },
+              { id: 'subnav-3', type: 'nav_item', settings: { name: 'ACCESSORIES', path: '/accessories', highlight: false, active: true } },
+              { id: 'subnav-4', type: 'nav_item', settings: { name: 'SPORTS', path: '/sports', highlight: false, active: true } },
+              { id: 'subnav-5', type: 'nav_item', settings: { name: 'SALE', path: '/sale', highlight: true, badge: 'HOT', active: true } },
+              { id: 'subnav-6', type: 'nav_item', settings: { name: 'NEW ARRIVALS', path: '/new', highlight: false, badge: 'NEW', active: true } },
+              { id: 'subnav-7', type: 'nav_item', settings: { name: 'DESIGNERS', path: '/designers', highlight: false, active: true } },
+              { id: 'subnav-8', type: 'nav_item', settings: { name: 'COLLECTIONS', path: '/collections', highlight: false, active: true } },
+              { id: 'subnav-9', type: 'nav_item', settings: { name: 'BRANDS', path: '/brands', highlight: false, active: true } },
+            ];
+        
+        loadedSections.push({
+          id: 'section-sub-nav',
+          type: 'sub-navigation',
+          settings: { show_nav: true, style: 'pills', highlight_color: '#FF3366' },
+          blocks: navBlocks
+        });
       }
 
       // Hero banners
