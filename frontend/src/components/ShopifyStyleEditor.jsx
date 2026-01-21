@@ -1229,6 +1229,27 @@ const ShopifyStyleEditor = () => {
     toast.success(`Added ${sectionDef.name}`);
   };
 
+  // Apply template preset
+  const handleApplyTemplate = (template) => {
+    const newSections = template.sections.map((sectionType, idx) => {
+      const sectionDef = SECTION_LIBRARY[sectionType];
+      if (!sectionDef) return null;
+      
+      return {
+        id: `section-${Date.now()}-${idx}`,
+        type: sectionType,
+        settings: sectionDef.settings.reduce((acc, s) => ({ ...acc, [s.id]: s.default }), {}),
+        blocks: []
+      };
+    }).filter(Boolean);
+
+    setSections(newSections);
+    saveToHistory(newSections);
+    setShowTemplates(false);
+    setHasChanges(true);
+    toast.success(`Template "${template.name}" applied!`);
+  };
+
   // Update section
   const handleUpdateSection = (sectionId, updatedSection) => {
     const newSections = sections.map(s => s.id === sectionId ? updatedSection : s);
