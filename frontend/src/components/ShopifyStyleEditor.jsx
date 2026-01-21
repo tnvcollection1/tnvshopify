@@ -406,7 +406,8 @@ const SECTION_LIBRARY = {
     blocks: [
       { type: 'category_tab', name: 'Category Tab', settings: [
         { type: 'text', id: 'name', label: 'Name', default: 'FASHION' },
-        { type: 'url', id: 'path', label: 'Link', default: '/fashion' },
+        { type: 'collection_picker', id: 'collection', label: 'Link to Collection' },
+        { type: 'url', id: 'path', label: 'Or Custom Link', default: '' },
         { type: 'image_picker', id: 'image', label: 'Tab Image/Icon' },
         { type: 'color', id: 'bg_color', label: 'Background color', default: '#c8e6c9' },
         { type: 'checkbox', id: 'active', label: 'Active', default: true },
