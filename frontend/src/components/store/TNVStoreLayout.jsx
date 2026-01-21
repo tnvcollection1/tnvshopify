@@ -767,10 +767,47 @@ export const TNVHeader = () => {
         <div className="bg-white border-b h-10">
           <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-full">
             {/* Language Toggle - Left */}
-            <div className="flex items-center gap-2 text-sm">
-              <button className="text-red-500 border-b-2 border-red-500 pb-0.5 font-medium">English</button>
-              <span className="text-gray-300">|</span>
-              <button className="text-gray-600 hover:text-black font-arabic">العربية</button>
+            <div className="relative">
+              <div className="flex items-center gap-2 text-sm">
+                {availableLanguages.slice(0, 2).map((lang, idx) => (
+                  <React.Fragment key={lang.code}>
+                    {idx > 0 && <span className="text-gray-300">|</span>}
+                    <button 
+                      onClick={() => setCurrentLanguage(lang.code)}
+                      className={`${currentLanguage === lang.code ? 'text-red-500 border-b-2 border-red-500' : 'text-gray-600 hover:text-black'} pb-0.5 font-medium ${lang.code === 'ar' || lang.code === 'ur' ? 'font-arabic' : ''}`}
+                    >
+                      {lang.nativeName}
+                    </button>
+                  </React.Fragment>
+                ))}
+                {availableLanguages.length > 2 && (
+                  <>
+                    <span className="text-gray-300">|</span>
+                    <button 
+                      onClick={() => setLanguageDropdown(!languageDropdown)}
+                      className="text-gray-600 hover:text-black flex items-center gap-1"
+                    >
+                      More <ChevronDown className="w-3 h-3" />
+                    </button>
+                  </>
+                )}
+              </div>
+              
+              {/* Language Dropdown */}
+              {languageDropdown && (
+                <div className="absolute top-full left-0 mt-2 bg-white shadow-xl rounded-lg overflow-hidden min-w-[150px] z-50 border">
+                  {availableLanguages.map(lang => (
+                    <button
+                      key={lang.code}
+                      onClick={() => { setCurrentLanguage(lang.code); setLanguageDropdown(false); }}
+                      className={`w-full px-4 py-2.5 text-left hover:bg-gray-100 flex items-center gap-2 text-sm ${currentLanguage === lang.code ? 'bg-gray-50 font-medium text-red-500' : ''}`}
+                    >
+                      <span className={lang.code === 'ar' || lang.code === 'ur' ? 'font-arabic' : ''}>{lang.nativeName}</span>
+                      <span className="text-gray-400 text-xs">({lang.name})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
             {/* Promo Carousel - Center */}
