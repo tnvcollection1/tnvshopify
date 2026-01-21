@@ -480,7 +480,8 @@ const SECTION_LIBRARY = {
         { type: 'text', id: 'title', label: 'Title', default: 'DESIGNER COLLECTION' },
         { type: 'text', id: 'subtitle', label: 'Subtitle', default: 'Premium Shoes' },
         { type: 'text', id: 'button_text', label: 'Button text', default: 'Shop Now' },
-        { type: 'url', id: 'button_link', label: 'Button link', default: '/shop' },
+        { type: 'collection_picker', id: 'collection', label: 'Link to Collection' },
+        { type: 'url', id: 'button_link', label: 'Or Custom Link', default: '' },
         { type: 'select', id: 'text_position', label: 'Text position', options: [
           { value: 'left', label: 'Left' },
           { value: 'center', label: 'Center' },
