@@ -988,18 +988,30 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
         <div className="px-3 pb-4 bg-gray-50/50 border-l-2 border-l-blue-500">
           {/* Settings */}
           <div className="space-y-3 mt-2">
-            {sectionDef?.settings?.map(setting => (
-              <SettingInput
-                key={setting.id}
-                setting={{
-                  ...setting,
-                  // Pass collections for collection_picker type
-                  options: setting.type === 'collection_picker' ? collections : setting.options
-                }}
-                value={section.settings?.[setting.id]}
-                onChange={(value) => updateSetting(setting.id, value)}
-              />
-            ))}
+            {sectionDef?.settings?.map(setting => {
+              // Handle showWhen conditional rendering
+              if (setting.showWhen) {
+                const [conditionKey, conditionValue] = Object.entries(setting.showWhen)[0];
+                if (section.settings?.[conditionKey] !== conditionValue) {
+                  return null;
+                }
+              }
+              return (
+                <SettingInput
+                  key={setting.id}
+                  setting={{
+                    ...setting,
+                    // Pass appropriate options based on picker type
+                    options: setting.type === 'collection_picker' ? collections 
+                           : setting.type === 'product_picker' ? products 
+                           : setting.type === 'tag_picker' ? tags 
+                           : setting.options
+                  }}
+                  value={section.settings?.[setting.id]}
+                  onChange={(value) => updateSetting(setting.id, value)}
+                />
+              );
+            })}
           </div>
 
           {/* Blocks */}
@@ -1052,20 +1064,32 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
 
                       {blockExpanded && blockDef && (
                         <div className="px-3 pb-3 pt-2 space-y-3 border-t bg-gray-50/50">
-                          {blockDef.settings.map(setting => (
-                            <SettingInput
-                              key={setting.id}
-                              setting={{
-                                ...setting,
-                                options: setting.type === 'collection_picker' ? collections : setting.options
-                              }}
-                              value={block.settings?.[setting.id]}
-                              onChange={(value) => updateBlock(blockIndex, {
-                                ...block,
-                                settings: { ...block.settings, [setting.id]: value }
-                              })}
-                            />
-                          ))}
+                          {blockDef.settings.map(setting => {
+                            // Handle showWhen conditional rendering for blocks
+                            if (setting.showWhen) {
+                              const [conditionKey, conditionValue] = Object.entries(setting.showWhen)[0];
+                              if (block.settings?.[conditionKey] !== conditionValue) {
+                                return null;
+                              }
+                            }
+                            return (
+                              <SettingInput
+                                key={setting.id}
+                                setting={{
+                                  ...setting,
+                                  options: setting.type === 'collection_picker' ? collections 
+                                         : setting.type === 'product_picker' ? products 
+                                         : setting.type === 'tag_picker' ? tags 
+                                         : setting.options
+                                }}
+                                value={block.settings?.[setting.id]}
+                                onChange={(value) => updateBlock(blockIndex, {
+                                  ...block,
+                                  settings: { ...block.settings, [setting.id]: value }
+                                })}
+                              />
+                            );
+                          })}
                         </div>
                       )}
                     </div>
