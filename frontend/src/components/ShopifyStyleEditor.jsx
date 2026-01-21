@@ -2138,6 +2138,8 @@ const ShopifyStyleEditor = () => {
                     onDelete={() => handleDeleteSection(section.id)}
                     onDuplicate={() => handleDuplicateSection(section.id)}
                     collections={collections}
+                    products={products}
+                    tags={tags}
                   />
                 ))}
               </div>
@@ -2156,6 +2158,8 @@ const ShopifyStyleEditor = () => {
                       onDelete={() => handleDeleteSection(section.id)}
                       onDuplicate={() => handleDuplicateSection(section.id)}
                       collections={collections}
+                      products={products}
+                      tags={tags}
                     />
                   ))}
                 </SortableContext>
