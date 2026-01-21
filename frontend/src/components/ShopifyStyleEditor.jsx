@@ -223,7 +223,7 @@ const SECTION_LIBRARY = {
     max_blocks: 5
   },
   'header': {
-    name: 'Header',
+    name: 'Header & Logo',
     icon: Menu,
     category: 'Header',
     limit: 1,
@@ -232,8 +232,13 @@ const SECTION_LIBRARY = {
       { type: 'text', id: 'logo_text', label: 'Logo text', default: 'TNV' },
       { type: 'text', id: 'logo_badge', label: 'Badge text', default: 'COLLECTION' },
       { type: 'color', id: 'badge_color', label: 'Badge color', default: '#FF6B9D' },
+      { type: 'select', id: 'logo_position', label: 'Logo position', options: [
+        { value: 'left', label: 'Left' },
+        { value: 'center', label: 'Center' }
+      ], default: 'left' },
       { type: 'checkbox', id: 'show_search', label: 'Show search', default: true },
       { type: 'checkbox', id: 'show_cart', label: 'Show cart icon', default: true },
+      { type: 'checkbox', id: 'show_wishlist', label: 'Show wishlist icon', default: true },
       { type: 'checkbox', id: 'sticky', label: 'Enable sticky header', default: true },
     ],
     blocks: [],
