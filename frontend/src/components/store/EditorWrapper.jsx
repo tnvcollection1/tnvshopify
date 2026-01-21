@@ -10,11 +10,17 @@ export const useEditorMode = () => {
 
 // Send message to parent editor
 export const selectSection = (sectionType) => {
+  console.log('selectSection called with:', sectionType);
+  console.log('window.parent !== window:', window.parent !== window);
+  
   if (window.parent !== window) {
     window.parent.postMessage({
       type: 'EDITOR_SELECT_SECTION',
       sectionType
     }, '*');
+    console.log('postMessage sent to parent');
+  } else {
+    console.log('Not in iframe, skipping postMessage');
   }
 };
 
