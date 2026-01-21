@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Monitor, Tablet, Smartphone, ChevronRight, ChevronDown, ChevronLeft,
   Settings, Image, Eye, EyeOff, Plus, Save, X, Palette, Layers,
-  ExternalLink, Edit3, Trash2, GripVertical, Move, Copy,
-  Undo2, Redo2, Search, Type, Layout, Grid, ImageIcon, 
-  Megaphone, ShoppingBag, Star, Mail, Menu, Clock, Zap, Box
+  ExternalLink, Edit3, Trash2, GripVertical, Move, Copy, RefreshCw,
+  Undo2, Redo2, Search, Type, Layout, Grid, ImageIcon, Users,
+  Megaphone, ShoppingBag, Star, Mail, Menu, Clock, Zap, Box, Tag, Link2
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -41,12 +41,18 @@ const SECTION_LIBRARY = {
     category: 'Header',
     limit: 1,
     settings: [
-      { type: 'text', id: 'text', label: 'Announcement text', default: 'Free shipping on orders over $50!' },
+      { type: 'checkbox', id: 'enabled', label: 'Show announcement bar', default: true },
       { type: 'color', id: 'background_color', label: 'Background color', default: '#000000' },
       { type: 'color', id: 'text_color', label: 'Text color', default: '#ffffff' },
-      { type: 'checkbox', id: 'show_close', label: 'Show close button', default: false },
     ],
-    blocks: []
+    blocks: [
+      { type: 'message', name: 'Message', settings: [
+        { type: 'text', id: 'text', label: 'Message text', default: 'Free shipping on orders over $50!' },
+        { type: 'text', id: 'icon', label: 'Icon (emoji)', default: '🚚' },
+        { type: 'url', id: 'link', label: 'Link (optional)', default: '' },
+      ]}
+    ],
+    max_blocks: 5
   },
   'header': {
     name: 'Header',
@@ -56,20 +62,71 @@ const SECTION_LIBRARY = {
     settings: [
       { type: 'image_picker', id: 'logo', label: 'Logo image' },
       { type: 'text', id: 'logo_text', label: 'Logo text', default: 'TNV' },
+      { type: 'text', id: 'logo_badge', label: 'Badge text', default: 'COLLECTION' },
+      { type: 'color', id: 'badge_color', label: 'Badge color', default: '#FF6B9D' },
       { type: 'checkbox', id: 'show_search', label: 'Show search', default: true },
       { type: 'checkbox', id: 'show_cart', label: 'Show cart icon', default: true },
       { type: 'checkbox', id: 'sticky', label: 'Enable sticky header', default: true },
     ],
+    blocks: [],
+  },
+  'main-menu': {
+    name: 'Main Menu (Men/Women)',
+    icon: Users,
+    category: 'Navigation',
+    limit: 1,
+    settings: [
+      { type: 'checkbox', id: 'show_icons', label: 'Show category icons', default: true },
+    ],
     blocks: [
-      { type: 'menu_item', name: 'Menu item', settings: [
-        { type: 'text', id: 'label', label: 'Label', default: 'Shop' },
-        { type: 'url', id: 'link', label: 'Link', default: '/shop' },
+      { type: 'menu_category', name: 'Menu Category', settings: [
+        { type: 'text', id: 'name', label: 'Name', default: 'WOMEN' },
+        { type: 'url', id: 'path', label: 'Link', default: '/women' },
+        { type: 'text', id: 'icon', label: 'Icon (emoji)', default: '👩' },
+        { type: 'color', id: 'color', label: 'Text color', default: '#FF6B9D' },
+        { type: 'color', id: 'bg_color', label: 'Background color', default: '#FFE8F0' },
+        { type: 'checkbox', id: 'active', label: 'Active', default: true },
       ]}
     ],
     max_blocks: 10
   },
+  'category-tabs': {
+    name: 'Category Icons',
+    icon: Grid,
+    category: 'Navigation',
+    limit: 1,
+    settings: [
+      { type: 'checkbox', id: 'show_tabs', label: 'Show category tabs', default: true },
+    ],
+    blocks: [
+      { type: 'category_tab', name: 'Category Tab', settings: [
+        { type: 'text', id: 'name', label: 'Name', default: 'FASHION' },
+        { type: 'url', id: 'path', label: 'Link', default: '/fashion' },
+        { type: 'image_picker', id: 'image', label: 'Image' },
+        { type: 'color', id: 'bg_color', label: 'Background color', default: '#c8e6c9' },
+        { type: 'checkbox', id: 'active', label: 'Active', default: true },
+      ]}
+    ],
+    max_blocks: 8
+  },
+  'sub-navigation': {
+    name: 'Sub Navigation',
+    icon: Link2,
+    category: 'Navigation',
+    limit: 1,
+    settings: [],
+    blocks: [
+      { type: 'nav_item', name: 'Nav Item', settings: [
+        { type: 'text', id: 'name', label: 'Name', default: 'CLOTHING' },
+        { type: 'url', id: 'path', label: 'Link', default: '/clothing' },
+        { type: 'checkbox', id: 'highlight', label: 'Highlight (red)', default: false },
+        { type: 'checkbox', id: 'active', label: 'Active', default: true },
+      ]}
+    ],
+    max_blocks: 15
+  },
   'hero-banner': {
-    name: 'Hero banner',
+    name: 'Hero Banner',
     icon: ImageIcon,
     category: 'Hero',
     settings: [
@@ -78,103 +135,74 @@ const SECTION_LIBRARY = {
         { value: 'contained', label: 'Contained' }
       ], default: 'full' },
       { type: 'range', id: 'height', label: 'Height', min: 300, max: 800, step: 50, default: 500, unit: 'px' },
+      { type: 'checkbox', id: 'autoplay', label: 'Auto-rotate slides', default: true },
+      { type: 'range', id: 'autoplay_speed', label: 'Slide duration (seconds)', min: 3, max: 10, step: 1, default: 5 },
     ],
     blocks: [
       { type: 'slide', name: 'Slide', settings: [
-        { type: 'image_picker', id: 'image', label: 'Image' },
-        { type: 'text', id: 'heading', label: 'Heading', default: 'Welcome to our store' },
-        { type: 'text', id: 'subheading', label: 'Subheading', default: 'Shop the latest collection' },
-        { type: 'text', id: 'button_label', label: 'Button label', default: 'Shop now' },
+        { type: 'image_picker', id: 'image', label: 'Background image' },
+        { type: 'image_picker', id: 'mobile_image', label: 'Mobile image (optional)' },
+        { type: 'text', id: 'title', label: 'Title', default: 'DESIGNER COLLECTION' },
+        { type: 'text', id: 'subtitle', label: 'Subtitle', default: 'Premium Shoes' },
+        { type: 'text', id: 'button_text', label: 'Button text', default: 'Shop Now' },
         { type: 'url', id: 'button_link', label: 'Button link', default: '/shop' },
         { type: 'select', id: 'text_position', label: 'Text position', options: [
           { value: 'left', label: 'Left' },
           { value: 'center', label: 'Center' },
           { value: 'right', label: 'Right' }
-        ], default: 'center' },
+        ], default: 'left' },
+        { type: 'color', id: 'text_color', label: 'Text color', default: '#FFFFFF' },
+        { type: 'checkbox', id: 'overlay', label: 'Show dark overlay', default: true },
       ]}
     ],
     max_blocks: 5
   },
   'featured-collection': {
-    name: 'Featured collection',
-    icon: Grid,
-    category: 'Collection',
+    name: 'Featured Collection',
+    icon: ShoppingBag,
+    category: 'Products',
     settings: [
       { type: 'text', id: 'title', label: 'Heading', default: 'Featured Products' },
       { type: 'collection', id: 'collection', label: 'Collection' },
-      { type: 'range', id: 'products_to_show', label: 'Maximum products to show', min: 2, max: 12, step: 1, default: 4 },
-      { type: 'range', id: 'columns_desktop', label: 'Number of columns on desktop', min: 2, max: 6, step: 1, default: 4 },
-      { type: 'checkbox', id: 'show_view_all', label: 'Enable "View all" button', default: true },
+      { type: 'range', id: 'products_to_show', label: 'Products to show', min: 2, max: 12, step: 1, default: 8 },
+      { type: 'range', id: 'columns_desktop', label: 'Columns (desktop)', min: 2, max: 6, step: 1, default: 4 },
+      { type: 'checkbox', id: 'show_view_all', label: 'Show "View all" button', default: true },
     ],
     blocks: []
   },
-  'image-with-text': {
-    name: 'Image with text',
-    icon: Layout,
-    category: 'Image',
+  'promo-banner': {
+    name: 'Promo Banner',
+    icon: Tag,
+    category: 'Promotion',
     settings: [
-      { type: 'image_picker', id: 'image', label: 'Image' },
-      { type: 'select', id: 'image_position', label: 'Image position', options: [
-        { value: 'left', label: 'Image first' },
-        { value: 'right', label: 'Image second' }
-      ], default: 'left' },
-      { type: 'text', id: 'heading', label: 'Heading', default: 'Image with text' },
-      { type: 'richtext', id: 'text', label: 'Text', default: 'Pair text with an image to focus on your chosen product, collection, or blog post.' },
-      { type: 'text', id: 'button_label', label: 'Button label', default: 'Shop now' },
-      { type: 'url', id: 'button_link', label: 'Button link', default: '/shop' },
+      { type: 'image_picker', id: 'image', label: 'Background image' },
+      { type: 'text', id: 'title', label: 'Title', default: '30% CASHBACK' },
+      { type: 'text', id: 'subtitle', label: 'Subtitle', default: 'On Sports Apparel & Footwear' },
+      { type: 'text', id: 'code', label: 'Promo code (optional)', default: 'SPORTS30' },
+      { type: 'url', id: 'link', label: 'Link', default: '/sale' },
+      { type: 'color', id: 'gradient_from', label: 'Gradient from', default: '#06b6d4' },
+      { type: 'color', id: 'gradient_to', label: 'Gradient to', default: '#10b981' },
     ],
     blocks: []
   },
-  'rich-text': {
-    name: 'Rich text',
-    icon: Type,
-    category: 'Text',
+  'countdown': {
+    name: 'Countdown Timer',
+    icon: Clock,
+    category: 'Promotion',
     settings: [
-      { type: 'select', id: 'text_alignment', label: 'Text alignment', options: [
-        { value: 'left', label: 'Left' },
-        { value: 'center', label: 'Center' },
-        { value: 'right', label: 'Right' }
-      ], default: 'center' },
+      { type: 'text', id: 'heading', label: 'Heading', default: 'FLASH SALE' },
+      { type: 'text', id: 'subheading', label: 'Subheading', default: 'Ends in' },
+      { type: 'text', id: 'discount', label: 'Discount text', default: '50% OFF' },
+      { type: 'text', id: 'end_date', label: 'End date (YYYY-MM-DD HH:MM)', default: '' },
+      { type: 'color', id: 'background_color', label: 'Background color', default: '#ef4444' },
+      { type: 'url', id: 'link', label: 'Link', default: '/sale' },
     ],
-    blocks: [
-      { type: 'heading', name: 'Heading', settings: [
-        { type: 'text', id: 'heading', label: 'Heading', default: 'Talk about your brand' },
-        { type: 'select', id: 'heading_size', label: 'Heading size', options: [
-          { value: 'small', label: 'Small' },
-          { value: 'medium', label: 'Medium' },
-          { value: 'large', label: 'Large' }
-        ], default: 'medium' }
-      ]},
-      { type: 'text', name: 'Text', settings: [
-        { type: 'richtext', id: 'text', label: 'Text', default: 'Share information about your brand with your customers.' }
-      ]},
-      { type: 'button', name: 'Button', settings: [
-        { type: 'text', id: 'button_label', label: 'Button label', default: 'Learn more' },
-        { type: 'url', id: 'button_link', label: 'Button link', default: '/about' }
-      ]}
-    ],
-    max_blocks: 6
-  },
-  'collection-list': {
-    name: 'Collection list',
-    icon: Box,
-    category: 'Collection',
-    settings: [
-      { type: 'text', id: 'title', label: 'Heading', default: 'Collections' },
-      { type: 'range', id: 'columns_desktop', label: 'Number of columns on desktop', min: 2, max: 5, step: 1, default: 3 },
-    ],
-    blocks: [
-      { type: 'collection', name: 'Collection', settings: [
-        { type: 'collection', id: 'collection', label: 'Collection' },
-        { type: 'image_picker', id: 'image', label: 'Custom image (optional)' }
-      ]}
-    ],
-    max_blocks: 8
+    blocks: []
   },
   'newsletter': {
-    name: 'Email signup',
+    name: 'Email Signup',
     icon: Mail,
-    category: 'Newsletter',
+    category: 'Engagement',
     settings: [
       { type: 'text', id: 'heading', label: 'Heading', default: 'Subscribe to our emails' },
       { type: 'richtext', id: 'subheading', label: 'Subheading', default: 'Be the first to know about new collections and exclusive offers.' },
@@ -185,7 +213,7 @@ const SECTION_LIBRARY = {
   'testimonials': {
     name: 'Testimonials',
     icon: Star,
-    category: 'Social proof',
+    category: 'Social Proof',
     settings: [
       { type: 'text', id: 'heading', label: 'Heading', default: 'What our customers say' },
     ],
@@ -197,19 +225,6 @@ const SECTION_LIBRARY = {
       ]}
     ],
     max_blocks: 6
-  },
-  'countdown': {
-    name: 'Countdown timer',
-    icon: Clock,
-    category: 'Promotion',
-    settings: [
-      { type: 'text', id: 'heading', label: 'Heading', default: 'FLASH SALE' },
-      { type: 'text', id: 'subheading', label: 'Subheading', default: 'Ends in' },
-      { type: 'text', id: 'end_date', label: 'End date (YYYY-MM-DD HH:MM)', default: '' },
-      { type: 'color', id: 'background_color', label: 'Background color', default: '#ef4444' },
-      { type: 'url', id: 'link', label: 'Link', default: '/sale' },
-    ],
-    blocks: []
   },
   'footer': {
     name: 'Footer',
@@ -249,7 +264,7 @@ const SettingInput = ({ setting, value, onChange }) => {
         <div className="space-y-1.5">
           <Label className="text-xs text-gray-600">{setting.label}</Label>
           <Input 
-            value={value || setting.default || ''} 
+            value={value ?? setting.default ?? ''} 
             onChange={(e) => onChange(e.target.value)}
             placeholder={setting.default}
             className="h-9 text-sm"
@@ -263,7 +278,7 @@ const SettingInput = ({ setting, value, onChange }) => {
         <div className="space-y-1.5">
           <Label className="text-xs text-gray-600">{setting.label}</Label>
           <textarea
-            value={value || setting.default || ''}
+            value={value ?? setting.default ?? ''}
             onChange={(e) => onChange(e.target.value)}
             className="w-full min-h-[80px] p-2 text-sm border rounded-md resize-y"
             placeholder={setting.default}
@@ -278,12 +293,12 @@ const SettingInput = ({ setting, value, onChange }) => {
           <div className="flex items-center gap-2">
             <input
               type="color"
-              value={value || setting.default || '#000000'}
+              value={value ?? setting.default ?? '#000000'}
               onChange={(e) => onChange(e.target.value)}
               className="w-9 h-9 rounded border cursor-pointer"
             />
             <Input 
-              value={value || setting.default || '#000000'} 
+              value={value ?? setting.default ?? '#000000'} 
               onChange={(e) => onChange(e.target.value)}
               className="h-9 text-sm flex-1 font-mono"
             />
@@ -307,14 +322,14 @@ const SettingInput = ({ setting, value, onChange }) => {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label className="text-xs text-gray-600">{setting.label}</Label>
-            <span className="text-xs text-gray-500">{value || setting.default}{setting.unit || ''}</span>
+            <span className="text-xs text-gray-500">{value ?? setting.default}{setting.unit || ''}</span>
           </div>
           <input
             type="range"
             min={setting.min}
             max={setting.max}
             step={setting.step}
-            value={value || setting.default}
+            value={value ?? setting.default}
             onChange={(e) => onChange(parseInt(e.target.value))}
             className="w-full"
           />
@@ -326,7 +341,7 @@ const SettingInput = ({ setting, value, onChange }) => {
         <div className="space-y-1.5">
           <Label className="text-xs text-gray-600">{setting.label}</Label>
           <select
-            value={value || setting.default}
+            value={value ?? setting.default}
             onChange={(e) => onChange(e.target.value)}
             className="w-full h-9 px-3 text-sm border rounded-md bg-white"
           >
@@ -341,10 +356,10 @@ const SettingInput = ({ setting, value, onChange }) => {
       return (
         <div className="space-y-1.5">
           <Label className="text-xs text-gray-600">{setting.label}</Label>
-          <div className="border-2 border-dashed rounded-lg p-4 text-center hover:border-gray-400 transition cursor-pointer">
+          <div className="border-2 border-dashed rounded-lg p-3 text-center hover:border-gray-400 transition cursor-pointer">
             {value ? (
               <div className="relative">
-                <img src={value} alt="" className="w-full h-24 object-cover rounded" />
+                <img src={value} alt="" className="w-full h-20 object-cover rounded" />
                 <button 
                   onClick={() => onChange('')}
                   className="absolute top-1 right-1 bg-white rounded-full p-1 shadow"
@@ -353,16 +368,16 @@ const SettingInput = ({ setting, value, onChange }) => {
                 </button>
               </div>
             ) : (
-              <div className="text-gray-400">
-                <ImageIcon className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-xs">Click to upload</p>
+              <div className="text-gray-400 py-2">
+                <ImageIcon className="w-6 h-6 mx-auto mb-1" />
+                <p className="text-xs">Select image</p>
               </div>
             )}
           </div>
           <Input 
             value={value || ''} 
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Or paste image URL"
+            placeholder="Paste image URL"
             className="h-8 text-xs"
           />
         </div>
@@ -394,7 +409,7 @@ const SettingInput = ({ setting, value, onChange }) => {
 // ============================================
 // SORTABLE SECTION ITEM
 // ============================================
-const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpdate, onDelete, onDuplicate }) => {
+const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpdate, onDelete, onDuplicate, onSelect }) => {
   const {
     attributes,
     listeners,
@@ -431,6 +446,7 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
     if (!blockDef) return;
     
     const newBlock = {
+      id: `block-${Date.now()}`,
       type: blockType,
       settings: blockDef.settings.reduce((acc, s) => ({ ...acc, [s.id]: s.default }), {})
     };
@@ -443,21 +459,30 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
     onUpdate({ ...section, blocks: newBlocks });
   };
 
+  const moveBlock = (blockIndex, direction) => {
+    const newBlocks = [...(section.blocks || [])];
+    const newIndex = blockIndex + direction;
+    if (newIndex < 0 || newIndex >= newBlocks.length) return;
+    [newBlocks[blockIndex], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[blockIndex]];
+    onUpdate({ ...section, blocks: newBlocks });
+  };
+
   return (
     <div ref={setNodeRef} style={style} className="border-b border-gray-200">
       {/* Section Header */}
       <div 
-        className={`flex items-center gap-2 px-3 py-3 cursor-pointer hover:bg-gray-50 ${isExpanded ? 'bg-gray-50' : ''}`}
+        className={`flex items-center gap-2 px-3 py-3 cursor-pointer hover:bg-gray-50 ${isExpanded ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''}`}
         onClick={onToggle}
       >
-        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-          <GripVertical className="w-4 h-4 text-gray-300" />
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing" onClick={e => e.stopPropagation()}>
+          <GripVertical className="w-4 h-4 text-gray-300 hover:text-gray-500" />
         </div>
         <Icon className="w-4 h-4 text-gray-500" />
         <span className="flex-1 text-sm font-medium truncate">{sectionDef?.name || section.type}</span>
         <button 
           onClick={(e) => { e.stopPropagation(); onUpdate({ ...section, disabled: !section.disabled }); }}
           className="p-1 hover:bg-gray-200 rounded"
+          title={section.disabled ? 'Show section' : 'Hide section'}
         >
           {section.disabled ? <EyeOff className="w-4 h-4 text-gray-400" /> : <Eye className="w-4 h-4 text-gray-500" />}
         </button>
@@ -466,9 +491,9 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
 
       {/* Section Settings */}
       {isExpanded && (
-        <div className="px-3 pb-4 bg-gray-50/50">
+        <div className="px-3 pb-4 bg-gray-50/50 border-l-2 border-l-blue-500">
           {/* Settings */}
-          <div className="space-y-4 mt-2">
+          <div className="space-y-3 mt-2">
             {sectionDef?.settings?.map(setting => (
               <SettingInput
                 key={setting.id}
@@ -483,8 +508,8 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
           {sectionDef?.blocks?.length > 0 && (
             <div className="mt-4 pt-4 border-t">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-gray-500 uppercase">Blocks</span>
-                <span className="text-xs text-gray-400">{section.blocks?.length || 0}/{sectionDef.max_blocks || 50}</span>
+                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Content</span>
+                <span className="text-xs text-gray-400 bg-gray-200 px-2 py-0.5 rounded">{section.blocks?.length || 0}/{sectionDef.max_blocks || 50}</span>
               </div>
 
               {/* Block List */}
@@ -492,26 +517,43 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
                 {section.blocks?.map((block, blockIndex) => {
                   const blockDef = sectionDef.blocks.find(b => b.type === block.type);
                   const blockExpanded = expandedBlocks[blockIndex];
+                  const blockTitle = block.settings?.name || block.settings?.text || block.settings?.title || block.settings?.heading || block.settings?.label || blockDef?.name || block.type;
                   
                   return (
-                    <div key={blockIndex} className="bg-white rounded border">
+                    <div key={block.id || blockIndex} className="bg-white rounded border shadow-sm">
                       <div 
                         className="flex items-center gap-2 px-2 py-2 cursor-pointer hover:bg-gray-50"
                         onClick={() => setExpandedBlocks({ ...expandedBlocks, [blockIndex]: !blockExpanded })}
                       >
                         <GripVertical className="w-3 h-3 text-gray-300" />
-                        <span className="flex-1 text-xs truncate">{block.settings?.heading || block.settings?.label || blockDef?.name || block.type}</span>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); deleteBlock(blockIndex); }}
-                          className="p-1 hover:bg-gray-200 rounded"
-                        >
-                          <Trash2 className="w-3 h-3 text-gray-400" />
-                        </button>
+                        <span className="flex-1 text-xs font-medium truncate">{blockTitle}</span>
+                        <div className="flex items-center gap-1">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); moveBlock(blockIndex, -1); }}
+                            className="p-1 hover:bg-gray-200 rounded"
+                            disabled={blockIndex === 0}
+                          >
+                            <ChevronUp className="w-3 h-3 text-gray-400" />
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); moveBlock(blockIndex, 1); }}
+                            className="p-1 hover:bg-gray-200 rounded"
+                            disabled={blockIndex === (section.blocks?.length || 0) - 1}
+                          >
+                            <ChevronDown className="w-3 h-3 text-gray-400" />
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); deleteBlock(blockIndex); }}
+                            className="p-1 hover:bg-red-100 rounded"
+                          >
+                            <Trash2 className="w-3 h-3 text-gray-400 hover:text-red-500" />
+                          </button>
+                        </div>
                         {blockExpanded ? <ChevronDown className="w-3 h-3 text-gray-400" /> : <ChevronRight className="w-3 h-3 text-gray-400" />}
                       </div>
 
                       {blockExpanded && blockDef && (
-                        <div className="px-2 pb-2 space-y-3">
+                        <div className="px-3 pb-3 pt-2 space-y-3 border-t bg-gray-50/50">
                           {blockDef.settings.map(setting => (
                             <SettingInput
                               key={setting.id}
@@ -532,18 +574,13 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
 
               {/* Add Block Button */}
               {(!sectionDef.max_blocks || (section.blocks?.length || 0) < sectionDef.max_blocks) && (
-                <div className="mt-2">
-                  <select 
-                    className="w-full h-8 px-2 text-xs border rounded bg-white"
-                    onChange={(e) => { if (e.target.value) { addBlock(e.target.value); e.target.value = ''; } }}
-                    defaultValue=""
-                  >
-                    <option value="">+ Add block</option>
-                    {sectionDef.blocks.map(b => (
-                      <option key={b.type} value={b.type}>{b.name}</option>
-                    ))}
-                  </select>
-                </div>
+                <button
+                  onClick={() => addBlock(sectionDef.blocks[0].type)}
+                  className="w-full mt-2 py-2 border-2 border-dashed rounded-lg text-xs text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition flex items-center justify-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add {sectionDef.blocks[0].name.toLowerCase()}
+                </button>
               )}
             </div>
           )}
@@ -552,13 +589,13 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
           <div className="mt-4 pt-4 border-t flex gap-2">
             <button 
               onClick={onDuplicate}
-              className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded"
+              className="flex-1 flex items-center justify-center gap-1 py-2 text-xs text-gray-600 hover:bg-gray-100 rounded border"
             >
               <Copy className="w-3 h-3" /> Duplicate
             </button>
             <button 
               onClick={onDelete}
-              className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded"
+              className="flex-1 flex items-center justify-center gap-1 py-2 text-xs text-red-600 hover:bg-red-50 rounded border border-red-200"
             >
               <Trash2 className="w-3 h-3" /> Remove
             </button>
@@ -569,6 +606,13 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
   );
 };
 
+// ChevronUp component (not in lucide by default in our imports)
+const ChevronUp = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+);
+
 // ============================================
 // ADD SECTION MODAL
 // ============================================
@@ -578,13 +622,11 @@ const AddSectionModal = ({ onAdd, onClose, existingSections }) => {
 
   const filteredCategories = Object.entries(SECTION_CATEGORIES).reduce((acc, [category, sections]) => {
     const filtered = sections.filter(s => {
-      // Check if section is at limit
       const sectionDef = SECTION_LIBRARY[s.id];
       if (sectionDef.limit) {
         const count = existingSections.filter(es => es.type === s.id).length;
         if (count >= sectionDef.limit) return false;
       }
-      // Search filter
       if (searchQuery && !s.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       return true;
     });
@@ -593,9 +635,8 @@ const AddSectionModal = ({ onAdd, onClose, existingSections }) => {
   }, {});
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-[520px] max-h-[80vh] flex flex-col">
-        {/* Header */}
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-2xl w-[560px] max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="px-4 py-3 border-b flex items-center justify-between">
           <h2 className="text-lg font-semibold">Add section</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
@@ -603,20 +644,19 @@ const AddSectionModal = ({ onAdd, onClose, existingSections }) => {
           </button>
         </div>
 
-        {/* Search */}
         <div className="px-4 py-3 border-b">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input 
-              placeholder="Search sections"
+              placeholder="Search sections..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
+              autoFocus
             />
           </div>
         </div>
 
-        {/* Section List */}
         <div className="flex-1 overflow-y-auto">
           {Object.entries(filteredCategories).map(([category, sections]) => (
             <div key={category}>
@@ -641,7 +681,12 @@ const AddSectionModal = ({ onAdd, onClose, existingSections }) => {
                         <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-blue-100">
                           <Icon className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                         </div>
-                        <span className="text-sm font-medium">{section.name}</span>
+                        <div>
+                          <span className="text-sm font-medium block">{section.name}</span>
+                          {section.blocks?.length > 0 && (
+                            <span className="text-xs text-gray-400">Supports {section.blocks[0].name}s</span>
+                          )}
+                        </div>
                       </button>
                     );
                   })}
@@ -668,9 +713,9 @@ const ShopifyStyleEditor = () => {
   const [showAddSection, setShowAddSection] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
   const [selectedPage, setSelectedPage] = useState('home');
+  const [previewKey, setPreviewKey] = useState(0);
   const iframeRef = useRef(null);
 
-  // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -678,58 +723,179 @@ const ShopifyStyleEditor = () => {
     })
   );
 
-  // Page sections
-  const [sections, setSections] = useState([
-    {
-      id: 'section-1',
-      type: 'announcement-bar',
-      settings: { text: 'Cash On Delivery • Free Delivery and Exchange • 100% Genuine Products' },
-      blocks: []
-    },
-    {
-      id: 'section-2',
-      type: 'header',
-      settings: { logo_text: 'TNV', show_search: true, show_cart: true, sticky: true },
-      blocks: [
-        { type: 'menu_item', settings: { label: 'WOMEN', link: '/women' } },
-        { type: 'menu_item', settings: { label: 'MEN', link: '/men' } },
-        { type: 'menu_item', settings: { label: 'KIDS', link: '/kids' } },
-        { type: 'menu_item', settings: { label: 'SALE', link: '/sale' } },
-      ]
-    },
-    {
-      id: 'section-3',
-      type: 'hero-banner',
-      settings: { layout: 'full', height: 500 },
-      blocks: [
-        { type: 'slide', settings: { 
-          heading: 'WHITE IN FOCUS', 
-          subheading: 'Fresh styles for the new season',
-          button_label: 'Shop Now',
-          button_link: '/new-arrivals'
-        }}
-      ]
-    },
-    {
-      id: 'section-4',
-      type: 'featured-collection',
-      settings: { title: 'New Arrivals', products_to_show: 8, columns_desktop: 4, show_view_all: true },
-      blocks: []
-    },
-    {
-      id: 'section-5',
-      type: 'countdown',
-      settings: { heading: 'FLASH SALE', subheading: 'Ends in', background_color: '#ef4444' },
-      blocks: []
-    },
-  ]);
+  // Page sections state
+  const [sections, setSections] = useState([]);
 
   const storeName = selectedStore || 'tnvcollection';
 
-  // Initialize
+  // Load data from backend
   useEffect(() => {
-    setLoading(false);
-  }, []);
+    loadConfig();
+  }, [storeName]);
+
+  const loadConfig = async () => {
+    setLoading(true);
+    try {
+      // Fetch navigation config
+      const [navRes, bannersRes, tabsRes, subNavRes] = await Promise.all([
+        fetch(`${API_URL}/api/storefront/config/navigation/${storeName}`),
+        fetch(`${API_URL}/api/storefront/banners/hero/${storeName}`),
+        fetch(`${API_URL}/api/storefront/banners/category-tabs/${storeName}`),
+        fetch(`${API_URL}/api/storefront/banners/sub-nav/${storeName}`),
+      ]);
+
+      const loadedSections = [];
+
+      // Announcement bar
+      if (navRes.ok) {
+        const navData = await navRes.json();
+        
+        // Add announcement bar section
+        loadedSections.push({
+          id: 'section-announcement',
+          type: 'announcement-bar',
+          settings: { enabled: true, background_color: '#000000', text_color: '#ffffff' },
+          blocks: (navData.promoMessages || []).map((msg, i) => ({
+            id: `msg-${i}`,
+            type: 'message',
+            settings: { text: msg.text, icon: msg.icon || '✓', link: msg.link || '' }
+          }))
+        });
+
+        // Add header section
+        loadedSections.push({
+          id: 'section-header',
+          type: 'header',
+          settings: { 
+            logo_text: navData.logo?.text || 'TNV',
+            logo_badge: navData.logo?.badge || 'COLLECTION',
+            badge_color: navData.logo?.badgeColor || '#FF6B9D',
+            logo: navData.logo?.image || '',
+            show_search: true,
+            show_cart: true,
+            sticky: true
+          },
+          blocks: []
+        });
+
+        // Add main menu section
+        if (navData.categories) {
+          loadedSections.push({
+            id: 'section-main-menu',
+            type: 'main-menu',
+            settings: { show_icons: true },
+            blocks: navData.categories.map((cat, i) => ({
+              id: `cat-${i}`,
+              type: 'menu_category',
+              settings: {
+                name: cat.name,
+                path: cat.path,
+                icon: cat.icon?.value || '👔',
+                color: cat.color || '#000000',
+                bg_color: cat.bgColor || '#f5f5f5',
+                active: cat.active !== false
+              }
+            }))
+          });
+        }
+      }
+
+      // Category tabs
+      if (tabsRes.ok) {
+        const tabsData = await tabsRes.json();
+        if (tabsData.categoryTabs?.length > 0) {
+          loadedSections.push({
+            id: 'section-category-tabs',
+            type: 'category-tabs',
+            settings: { show_tabs: true },
+            blocks: tabsData.categoryTabs.map((tab, i) => ({
+              id: `tab-${i}`,
+              type: 'category_tab',
+              settings: {
+                name: tab.name,
+                path: tab.path,
+                image: tab.image,
+                bg_color: tab.bgColor || '#f5f5f5',
+                active: tab.active !== false
+              }
+            }))
+          });
+        }
+      }
+
+      // Sub navigation
+      if (subNavRes.ok) {
+        const subNavData = await subNavRes.json();
+        if (subNavData.subNavItems?.length > 0) {
+          loadedSections.push({
+            id: 'section-sub-nav',
+            type: 'sub-navigation',
+            settings: {},
+            blocks: subNavData.subNavItems.map((item, i) => ({
+              id: `subnav-${i}`,
+              type: 'nav_item',
+              settings: {
+                name: item.name,
+                path: item.path,
+                highlight: item.highlight || false,
+                active: item.active !== false
+              }
+            }))
+          });
+        }
+      }
+
+      // Hero banners
+      if (bannersRes.ok) {
+        const bannersData = await bannersRes.json();
+        if (bannersData.banners?.length > 0) {
+          loadedSections.push({
+            id: 'section-hero',
+            type: 'hero-banner',
+            settings: { layout: 'full', height: 500, autoplay: true, autoplay_speed: 5 },
+            blocks: bannersData.banners.map((banner, i) => ({
+              id: `banner-${i}`,
+              type: 'slide',
+              settings: {
+                image: banner.image,
+                mobile_image: banner.mobileImage || '',
+                title: banner.title,
+                subtitle: banner.subtitle || '',
+                button_text: banner.buttonText || 'Shop Now',
+                button_link: banner.buttonLink || '/',
+                text_position: banner.textPosition || 'left',
+                text_color: banner.textColor || '#FFFFFF',
+                overlay: banner.overlay !== false
+              }
+            }))
+          });
+        }
+      }
+
+      // Add featured collection
+      loadedSections.push({
+        id: 'section-featured',
+        type: 'featured-collection',
+        settings: { title: 'New Arrivals', products_to_show: 8, columns_desktop: 4, show_view_all: true },
+        blocks: []
+      });
+
+      // Add countdown
+      loadedSections.push({
+        id: 'section-countdown',
+        type: 'countdown',
+        settings: { heading: 'FLASH SALE', subheading: 'Ends in', discount: '50% OFF', background_color: '#ef4444' },
+        blocks: []
+      });
+
+      setSections(loadedSections);
+    } catch (error) {
+      console.error('Error loading config:', error);
+      toast.error('Failed to load configuration');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Add section
   const handleAddSection = (sectionType) => {
@@ -746,6 +912,7 @@ const ShopifyStyleEditor = () => {
     setSections([...sections, newSection]);
     setShowAddSection(false);
     setHasChanges(true);
+    setExpandedSection(newSection.id);
     toast.success(`Added ${sectionDef.name}`);
   };
 
@@ -771,7 +938,7 @@ const ShopifyStyleEditor = () => {
     if (sectionDef?.limit) {
       const count = sections.filter(s => s.type === section.type).length;
       if (count >= sectionDef.limit) {
-        toast.error(`Maximum ${sectionDef.limit} ${sectionDef.name} section(s) allowed`);
+        toast.error(`Maximum ${sectionDef.limit} ${sectionDef.name} allowed`);
         return;
       }
     }
@@ -788,35 +955,149 @@ const ShopifyStyleEditor = () => {
     toast.success('Section duplicated');
   };
 
-  // Drag end handler
+  // Drag end
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    
     if (active.id !== over?.id) {
       const oldIndex = sections.findIndex(s => s.id === active.id);
       const newIndex = sections.findIndex(s => s.id === over?.id);
-      
       setSections(arrayMove(sections, oldIndex, newIndex));
       setHasChanges(true);
     }
   };
 
-  // Save
+  // Save to backend
   const handleSave = async () => {
     setSaving(true);
     try {
-      // TODO: Save to backend
-      await new Promise(r => setTimeout(r, 500));
+      // Extract data from sections
+      const announcementSection = sections.find(s => s.type === 'announcement-bar');
+      const headerSection = sections.find(s => s.type === 'header');
+      const mainMenuSection = sections.find(s => s.type === 'main-menu');
+      const categoryTabsSection = sections.find(s => s.type === 'category-tabs');
+      const subNavSection = sections.find(s => s.type === 'sub-navigation');
+      const heroSection = sections.find(s => s.type === 'hero-banner');
+
+      const savePromises = [];
+
+      // Save navigation config (logo, promo messages, categories)
+      if (announcementSection || headerSection || mainMenuSection) {
+        const navConfig = {
+          logo: {
+            text: headerSection?.settings?.logo_text || 'TNV',
+            badge: headerSection?.settings?.logo_badge || 'COLLECTION',
+            badgeColor: headerSection?.settings?.badge_color || '#FF6B9D',
+            image: headerSection?.settings?.logo || ''
+          },
+          promoMessages: (announcementSection?.blocks || []).map((b, i) => ({
+            text: b.settings?.text || '',
+            icon: b.settings?.icon || '',
+            link: b.settings?.link || '',
+            order: i,
+            active: true
+          })),
+          categories: (mainMenuSection?.blocks || []).map((b, i) => ({
+            name: b.settings?.name || '',
+            path: b.settings?.path || '',
+            icon: { type: 'emoji', value: b.settings?.icon || '' },
+            color: b.settings?.color || '',
+            bgColor: b.settings?.bg_color || '',
+            order: i,
+            active: b.settings?.active !== false
+          }))
+        };
+
+        savePromises.push(
+          fetch(`${API_URL}/api/storefront/config/navigation/${storeName}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(navConfig)
+          })
+        );
+      }
+
+      // Save category tabs
+      if (categoryTabsSection) {
+        const categoryTabs = (categoryTabsSection.blocks || []).map((b, i) => ({
+          id: b.id || `cat-${i}`,
+          name: b.settings?.name || '',
+          path: b.settings?.path || '',
+          image: b.settings?.image || '',
+          bgColor: b.settings?.bg_color || '#f5f5f5',
+          active: b.settings?.active !== false,
+          order: i
+        }));
+
+        savePromises.push(
+          fetch(`${API_URL}/api/storefront/banners/category-tabs/${storeName}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ categoryTabs })
+          })
+        );
+      }
+
+      // Save sub navigation
+      if (subNavSection) {
+        const subNavItems = (subNavSection.blocks || []).map((b, i) => ({
+          id: b.id || `subnav-${i}`,
+          name: b.settings?.name || '',
+          path: b.settings?.path || '',
+          highlight: b.settings?.highlight || false,
+          active: b.settings?.active !== false,
+          order: i
+        }));
+
+        savePromises.push(
+          fetch(`${API_URL}/api/storefront/banners/sub-nav/${storeName}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subNavItems })
+          })
+        );
+      }
+
+      // Save hero banners
+      if (heroSection) {
+        const banners = (heroSection.blocks || []).map((b, i) => ({
+          id: b.id || `banner-${i}`,
+          title: b.settings?.title || '',
+          subtitle: b.settings?.subtitle || '',
+          buttonText: b.settings?.button_text || 'Shop Now',
+          buttonLink: b.settings?.button_link || '/',
+          image: b.settings?.image || '',
+          mobileImage: b.settings?.mobile_image || '',
+          textPosition: b.settings?.text_position || 'left',
+          textColor: b.settings?.text_color || '#FFFFFF',
+          overlay: b.settings?.overlay !== false,
+          active: true,
+          order: i
+        }));
+
+        savePromises.push(
+          fetch(`${API_URL}/api/storefront/banners/hero/${storeName}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ banners })
+          })
+        );
+      }
+
+      await Promise.all(savePromises);
       setHasChanges(false);
-      toast.success('Theme saved');
+      toast.success('Theme saved successfully!');
+      
+      // Refresh preview
+      setPreviewKey(prev => prev + 1);
     } catch (error) {
+      console.error('Save error:', error);
       toast.error('Failed to save');
     } finally {
       setSaving(false);
     }
   };
 
-  // Get preview width
+  // Preview width
   const getPreviewWidth = () => {
     switch (viewMode) {
       case 'tablet': return '768px';
@@ -825,21 +1106,24 @@ const ShopifyStyleEditor = () => {
     }
   };
 
-  // Pages
+  // Refresh preview
+  const refreshPreview = () => {
+    setPreviewKey(prev => prev + 1);
+  };
+
   const PAGES = [
     { id: 'home', name: 'Home page' },
     { id: 'collection', name: 'Collection pages' },
     { id: 'product', name: 'Product pages' },
     { id: 'cart', name: 'Cart' },
-    { id: 'checkout', name: 'Checkout' },
   ];
 
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-100">
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-gray-600">Loading editor...</span>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-gray-600">Loading theme editor...</span>
         </div>
       </div>
     );
@@ -850,67 +1134,72 @@ const ShopifyStyleEditor = () => {
       {/* Top Toolbar */}
       <header className="h-14 bg-gray-900 border-b border-gray-700 flex items-center justify-between px-4">
         <div className="flex items-center gap-4">
-          {/* Back button */}
           <a href="/dashboard" className="flex items-center gap-2 text-gray-300 hover:text-white">
             <ChevronLeft className="w-5 h-5" />
-            <span className="text-sm">Exit</span>
+            <span className="text-sm font-medium">Exit</span>
           </a>
 
-          {/* Page selector */}
-          <div className="flex items-center gap-2 ml-4">
-            <select 
-              value={selectedPage}
-              onChange={(e) => setSelectedPage(e.target.value)}
-              className="bg-gray-800 text-white text-sm px-3 py-1.5 rounded border border-gray-600 focus:border-blue-500 outline-none"
-            >
-              {PAGES.map(page => (
-                <option key={page.id} value={page.id}>{page.name}</option>
-              ))}
-            </select>
-          </div>
+          <div className="h-6 w-px bg-gray-700" />
+
+          <select 
+            value={selectedPage}
+            onChange={(e) => setSelectedPage(e.target.value)}
+            className="bg-gray-800 text-white text-sm px-3 py-1.5 rounded border border-gray-600 focus:border-blue-500 outline-none"
+          >
+            {PAGES.map(page => (
+              <option key={page.id} value={page.id}>{page.name}</option>
+            ))}
+          </select>
         </div>
 
-        {/* Center - Device toggles */}
+        {/* Device toggles */}
         <div className="flex items-center gap-1 bg-gray-800 rounded-lg p-1">
-          <button 
-            onClick={() => setViewMode('desktop')}
-            className={`p-2 rounded ${viewMode === 'desktop' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
-            title="Desktop"
-          >
-            <Monitor className="w-4 h-4" />
-          </button>
-          <button 
-            onClick={() => setViewMode('tablet')}
-            className={`p-2 rounded ${viewMode === 'tablet' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
-            title="Tablet"
-          >
-            <Tablet className="w-4 h-4" />
-          </button>
-          <button 
-            onClick={() => setViewMode('mobile')}
-            className={`p-2 rounded ${viewMode === 'mobile' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
-            title="Mobile"
-          >
-            <Smartphone className="w-4 h-4" />
-          </button>
+          {[
+            { mode: 'desktop', icon: Monitor },
+            { mode: 'tablet', icon: Tablet },
+            { mode: 'mobile', icon: Smartphone },
+          ].map(({ mode, icon: Icon }) => (
+            <button 
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className={`p-2 rounded transition ${viewMode === mode ? 'bg-gray-600 text-white' : 'text-gray-400 hover:text-white'}`}
+              title={mode.charAt(0).toUpperCase() + mode.slice(1)}
+            >
+              <Icon className="w-4 h-4" />
+            </button>
+          ))}
         </div>
 
-        {/* Right - Actions */}
+        {/* Right actions */}
         <div className="flex items-center gap-3">
+          <button 
+            onClick={refreshPreview}
+            className="flex items-center gap-2 text-gray-300 hover:text-white text-sm"
+            title="Refresh preview"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
           <a 
             href="/tnv" 
             target="_blank"
             className="flex items-center gap-2 text-gray-300 hover:text-white text-sm"
           >
             <ExternalLink className="w-4 h-4" />
-            View store
+            <span className="hidden sm:inline">Preview</span>
           </a>
           <Button 
             onClick={handleSave}
             disabled={saving || !hasChanges}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className={`${hasChanges ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600'} text-white min-w-[80px]`}
           >
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-1" />
+                Save
+              </>
+            )}
           </Button>
         </div>
       </header>
@@ -919,28 +1208,16 @@ const ShopifyStyleEditor = () => {
       <div className="flex-1 flex overflow-hidden relative">
         {/* Left Sidebar */}
         <aside className={`${sidebarOpen ? 'w-80' : 'w-0'} bg-white border-r transition-all duration-300 flex flex-col overflow-hidden`}>
-          {/* Sidebar Header */}
           <div className="px-4 py-3 border-b flex items-center justify-between bg-gray-50">
             <h2 className="font-semibold text-sm">Sections</h2>
-            <button 
-              onClick={() => setSidebarOpen(false)}
-              className="p-1 hover:bg-gray-200 rounded"
-            >
+            <button onClick={() => setSidebarOpen(false)} className="p-1 hover:bg-gray-200 rounded">
               <ChevronLeft className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Sections List */}
           <div className="flex-1 overflow-y-auto">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={sections.map(s => s.id)}
-                strategy={verticalListSortingStrategy}
-              >
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
                 {sections.map((section) => (
                   <SortableSectionItem
                     key={section.id}
@@ -957,36 +1234,32 @@ const ShopifyStyleEditor = () => {
             </DndContext>
           </div>
 
-          {/* Add Section Button */}
-          <div className="p-3 border-t">
-            <Button 
-              onClick={() => setShowAddSection(true)}
-              variant="outline" 
-              className="w-full"
-            >
+          <div className="p-3 border-t bg-gray-50">
+            <Button onClick={() => setShowAddSection(true)} variant="outline" className="w-full">
               <Plus className="w-4 h-4 mr-2" />
               Add section
             </Button>
           </div>
         </aside>
 
-        {/* Sidebar Toggle (when closed) */}
+        {/* Sidebar Toggle */}
         {!sidebarOpen && (
           <button 
             onClick={() => setSidebarOpen(true)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border rounded-r-lg p-2 shadow z-10"
+            className="absolute left-0 top-1/2 -translate-y-1/2 bg-white border rounded-r-lg p-2 shadow-lg z-10 hover:bg-gray-50"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         )}
 
         {/* Preview */}
-        <main className="flex-1 overflow-hidden bg-gray-200 flex justify-center">
+        <main className="flex-1 overflow-hidden bg-gray-200 flex justify-center p-4">
           <div 
-            className="bg-white shadow-lg transition-all duration-300 h-full overflow-hidden"
+            className="bg-white shadow-2xl transition-all duration-300 h-full overflow-hidden rounded-lg"
             style={{ width: getPreviewWidth(), maxWidth: '100%' }}
           >
             <iframe
+              key={previewKey}
               ref={iframeRef}
               src="/tnv"
               className="w-full h-full border-0"
