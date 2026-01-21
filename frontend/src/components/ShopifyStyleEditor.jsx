@@ -12,7 +12,22 @@ import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { toast } from 'sonner';
 import { useStore } from '../contexts/StoreContext';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
@@ -377,9 +392,24 @@ const SettingInput = ({ setting, value, onChange }) => {
 };
 
 // ============================================
-// SECTION PANEL COMPONENT
+// SORTABLE SECTION ITEM
 // ============================================
-const SectionPanel = ({ section, sectionDef, isExpanded, onToggle, onUpdate, onDelete, onDuplicate }) => {
+const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpdate, onDelete, onDuplicate }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: section.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   const [expandedBlocks, setExpandedBlocks] = useState({});
   const Icon = sectionDef?.icon || Box;
 
@@ -414,13 +444,15 @@ const SectionPanel = ({ section, sectionDef, isExpanded, onToggle, onUpdate, onD
   };
 
   return (
-    <div className="border-b border-gray-200">
+    <div ref={setNodeRef} style={style} className="border-b border-gray-200">
       {/* Section Header */}
       <div 
         className={`flex items-center gap-2 px-3 py-3 cursor-pointer hover:bg-gray-50 ${isExpanded ? 'bg-gray-50' : ''}`}
         onClick={onToggle}
       >
-        <GripVertical className="w-4 h-4 text-gray-300 cursor-grab" />
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+          <GripVertical className="w-4 h-4 text-gray-300" />
+        </div>
         <Icon className="w-4 h-4 text-gray-500" />
         <span className="flex-1 text-sm font-medium truncate">{sectionDef?.name || section.type}</span>
         <button 
@@ -468,7 +500,7 @@ const SectionPanel = ({ section, sectionDef, isExpanded, onToggle, onUpdate, onD
                         onClick={() => setExpandedBlocks({ ...expandedBlocks, [blockIndex]: !blockExpanded })}
                       >
                         <GripVertical className="w-3 h-3 text-gray-300" />
-                        <span className="flex-1 text-xs truncate">{blockDef?.name || block.type}</span>
+                        <span className="flex-1 text-xs truncate">{block.settings?.heading || block.settings?.label || blockDef?.name || block.type}</span>
                         <button 
                           onClick={(e) => { e.stopPropagation(); deleteBlock(blockIndex); }}
                           className="p-1 hover:bg-gray-200 rounded"
@@ -542,7 +574,7 @@ const SectionPanel = ({ section, sectionDef, isExpanded, onToggle, onUpdate, onD
 // ============================================
 const AddSectionModal = ({ onAdd, onClose, existingSections }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedCategory, setExpandedCategory] = useState(null);
+  const [expandedCategory, setExpandedCategory] = useState(Object.keys(SECTION_CATEGORIES)[0]);
 
   const filteredCategories = Object.entries(SECTION_CATEGORIES).reduce((acc, [category, sections]) => {
     const filtered = sections.filter(s => {
@@ -562,7 +594,7 @@ const AddSectionModal = ({ onAdd, onClose, existingSections }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-[480px] max-h-[80vh] flex flex-col">
+      <div className="bg-white rounded-xl shadow-2xl w-[520px] max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="px-4 py-3 border-b flex items-center justify-between">
           <h2 className="text-lg font-semibold">Add section</h2>
@@ -589,7 +621,7 @@ const AddSectionModal = ({ onAdd, onClose, existingSections }) => {
           {Object.entries(filteredCategories).map(([category, sections]) => (
             <div key={category}>
               <button 
-                className="w-full px-4 py-2 flex items-center justify-between text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100"
+                className="w-full px-4 py-2.5 flex items-center justify-between text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 border-b"
                 onClick={() => setExpandedCategory(expandedCategory === category ? null : category)}
               >
                 {category}
@@ -604,10 +636,10 @@ const AddSectionModal = ({ onAdd, onClose, existingSections }) => {
                       <button
                         key={section.id}
                         onClick={() => onAdd(section.id)}
-                        className="flex items-center gap-3 p-3 border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition text-left"
+                        className="flex items-center gap-3 p-3 border rounded-lg hover:border-blue-500 hover:bg-blue-50 transition text-left group"
                       >
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <Icon className="w-5 h-5 text-gray-600" />
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-blue-100">
+                          <Icon className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                         </div>
                         <span className="text-sm font-medium">{section.name}</span>
                       </button>
@@ -618,34 +650,6 @@ const AddSectionModal = ({ onAdd, onClose, existingSections }) => {
             </div>
           ))}
         </div>
-      </div>
-    </div>
-  );
-};
-
-// ============================================
-// LIVE PREVIEW COMPONENT
-// ============================================
-const LivePreview = ({ sections, viewMode }) => {
-  const getWidth = () => {
-    switch (viewMode) {
-      case 'tablet': return '768px';
-      case 'mobile': return '375px';
-      default: return '100%';
-    }
-  };
-
-  return (
-    <div className="h-full bg-gray-100 overflow-auto flex justify-center">
-      <div 
-        className="bg-white shadow-lg transition-all duration-300 min-h-full"
-        style={{ width: getWidth(), maxWidth: '100%' }}
-      >
-        <iframe
-          src="/tnv"
-          className="w-full h-full min-h-screen border-0"
-          title="Store Preview"
-        />
       </div>
     </div>
   );
@@ -664,10 +668,15 @@ const ShopifyStyleEditor = () => {
   const [showAddSection, setShowAddSection] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
   const [selectedPage, setSelectedPage] = useState('home');
+  const iframeRef = useRef(null);
 
-  // History for undo/redo
-  const [history, setHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Page sections
   const [sections, setSections] = useState([
@@ -780,13 +789,16 @@ const ShopifyStyleEditor = () => {
   };
 
   // Drag end handler
-  const handleDragEnd = (result) => {
-    if (!result.destination) return;
-    const newSections = [...sections];
-    const [removed] = newSections.splice(result.source.index, 1);
-    newSections.splice(result.destination.index, 0, removed);
-    setSections(newSections);
-    setHasChanges(true);
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    
+    if (active.id !== over?.id) {
+      const oldIndex = sections.findIndex(s => s.id === active.id);
+      const newIndex = sections.findIndex(s => s.id === over?.id);
+      
+      setSections(arrayMove(sections, oldIndex, newIndex));
+      setHasChanges(true);
+    }
   };
 
   // Save
@@ -801,6 +813,15 @@ const ShopifyStyleEditor = () => {
       toast.error('Failed to save');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Get preview width
+  const getPreviewWidth = () => {
+    switch (viewMode) {
+      case 'tablet': return '768px';
+      case 'mobile': return '375px';
+      default: return '100%';
     }
   };
 
@@ -830,17 +851,17 @@ const ShopifyStyleEditor = () => {
       <header className="h-14 bg-gray-900 border-b border-gray-700 flex items-center justify-between px-4">
         <div className="flex items-center gap-4">
           {/* Back button */}
-          <button className="flex items-center gap-2 text-gray-300 hover:text-white">
+          <a href="/dashboard" className="flex items-center gap-2 text-gray-300 hover:text-white">
             <ChevronLeft className="w-5 h-5" />
             <span className="text-sm">Exit</span>
-          </button>
+          </a>
 
           {/* Page selector */}
           <div className="flex items-center gap-2 ml-4">
             <select 
               value={selectedPage}
               onChange={(e) => setSelectedPage(e.target.value)}
-              className="bg-gray-800 text-white text-sm px-3 py-1.5 rounded border border-gray-600 focus:border-blue-500"
+              className="bg-gray-800 text-white text-sm px-3 py-1.5 rounded border border-gray-600 focus:border-blue-500 outline-none"
             >
               {PAGES.map(page => (
                 <option key={page.id} value={page.id}>{page.name}</option>
@@ -854,18 +875,21 @@ const ShopifyStyleEditor = () => {
           <button 
             onClick={() => setViewMode('desktop')}
             className={`p-2 rounded ${viewMode === 'desktop' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
+            title="Desktop"
           >
             <Monitor className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setViewMode('tablet')}
             className={`p-2 rounded ${viewMode === 'tablet' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
+            title="Tablet"
           >
             <Tablet className="w-4 h-4" />
           </button>
           <button 
             onClick={() => setViewMode('mobile')}
             className={`p-2 rounded ${viewMode === 'mobile' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
+            title="Mobile"
           >
             <Smartphone className="w-4 h-4" />
           </button>
@@ -873,10 +897,14 @@ const ShopifyStyleEditor = () => {
 
         {/* Right - Actions */}
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 text-gray-300 hover:text-white text-sm">
+          <a 
+            href="/tnv" 
+            target="_blank"
+            className="flex items-center gap-2 text-gray-300 hover:text-white text-sm"
+          >
             <ExternalLink className="w-4 h-4" />
             View store
-          </button>
+          </a>
           <Button 
             onClick={handleSave}
             disabled={saving || !hasChanges}
@@ -888,7 +916,7 @@ const ShopifyStyleEditor = () => {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Left Sidebar */}
         <aside className={`${sidebarOpen ? 'w-80' : 'w-0'} bg-white border-r transition-all duration-300 flex flex-col overflow-hidden`}>
           {/* Sidebar Header */}
@@ -904,37 +932,29 @@ const ShopifyStyleEditor = () => {
 
           {/* Sections List */}
           <div className="flex-1 overflow-y-auto">
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="sections">
-                {(provided) => (
-                  <div ref={provided.innerRef} {...provided.droppableProps}>
-                    {sections.map((section, index) => (
-                      <Draggable key={section.id} draggableId={section.id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={snapshot.isDragging ? 'shadow-lg' : ''}
-                          >
-                            <SectionPanel
-                              section={section}
-                              sectionDef={SECTION_LIBRARY[section.type]}
-                              isExpanded={expandedSection === section.id}
-                              onToggle={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
-                              onUpdate={(updated) => handleUpdateSection(section.id, updated)}
-                              onDelete={() => handleDeleteSection(section.id)}
-                              onDuplicate={() => handleDuplicateSection(section.id)}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={sections.map(s => s.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {sections.map((section) => (
+                  <SortableSectionItem
+                    key={section.id}
+                    section={section}
+                    sectionDef={SECTION_LIBRARY[section.type]}
+                    isExpanded={expandedSection === section.id}
+                    onToggle={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
+                    onUpdate={(updated) => handleUpdateSection(section.id, updated)}
+                    onDelete={() => handleDeleteSection(section.id)}
+                    onDuplicate={() => handleDuplicateSection(section.id)}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           </div>
 
           {/* Add Section Button */}
@@ -961,8 +981,18 @@ const ShopifyStyleEditor = () => {
         )}
 
         {/* Preview */}
-        <main className="flex-1 overflow-hidden">
-          <LivePreview sections={sections} viewMode={viewMode} />
+        <main className="flex-1 overflow-hidden bg-gray-200 flex justify-center">
+          <div 
+            className="bg-white shadow-lg transition-all duration-300 h-full overflow-hidden"
+            style={{ width: getPreviewWidth(), maxWidth: '100%' }}
+          >
+            <iframe
+              ref={iframeRef}
+              src="/tnv"
+              className="w-full h-full border-0"
+              title="Store Preview"
+            />
+          </div>
         </main>
       </div>
 
