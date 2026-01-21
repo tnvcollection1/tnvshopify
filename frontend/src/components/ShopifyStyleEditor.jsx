@@ -1657,6 +1657,15 @@ const ShopifyStyleEditor = () => {
           existingSections={sections}
         />
       )}
+
+      {/* Template Selector Modal */}
+      {showTemplates && (
+        <TemplateModal
+          onSelect={handleApplyTemplate}
+          onClose={() => setShowTemplates(false)}
+          currentSections={sections}
+        />
+      )}
     </div>
   );
 };
