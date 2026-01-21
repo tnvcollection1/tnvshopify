@@ -178,12 +178,17 @@ function LuxuryStorefrontWrapper({ page = 'home' }) {
 }
 
 import StoreOnboarding from "@/components/store/StoreOnboarding";
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 
 // TNV Store Wrapper (Namshi-inspired) - Supports multi-store (tnvcollection for INR, tnvcollectionpk for PKR)
 function TNVStoreWrapper({ children, storeName = "tnvcollection" }) {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const isEditorMode = searchParams.get('editor') === 'true';
+  
   const [showOnboarding, setShowOnboarding] = useState(() => {
+    // Skip onboarding in editor mode
+    if (isEditorMode) return false;
     // Check if onboarding was completed
     return !localStorage.getItem(`${storeName}_onboarding_completed`);
   });
@@ -191,7 +196,7 @@ function TNVStoreWrapper({ children, storeName = "tnvcollection" }) {
   // Check if we're on the homepage - it has its own header/footer
   const isHomePage = location.pathname === '/tnv' || location.pathname === '/tnv/';
   
-  if (showOnboarding) {
+  if (showOnboarding && !isEditorMode) {
     return (
       <StoreOnboarding 
         storeName={storeName}
