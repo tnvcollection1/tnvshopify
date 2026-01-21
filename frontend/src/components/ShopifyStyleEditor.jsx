@@ -1548,6 +1548,23 @@ const ShopifyStyleEditor = () => {
 
   // Update section
   const handleUpdateSection = (sectionId, updatedSection) => {
+    // Auto-configure language and currency when country changes in store-settings
+    if (updatedSection.type === 'store-settings') {
+      const originalSection = sections.find(s => s.id === sectionId);
+      if (originalSection && originalSection.settings.country !== updatedSection.settings.country) {
+        // Country changed - auto-configure if enabled
+        if (updatedSection.settings.auto_configure !== false) {
+          const countryCode = updatedSection.settings.country;
+          const config = COUNTRY_CONFIG[countryCode];
+          if (config) {
+            updatedSection.settings.default_currency = config.currency;
+            updatedSection.settings.default_language = config.language;
+            toast.success(`Auto-configured: ${config.name} → ${config.currency} / ${LANGUAGES.find(l => l.code === config.language)?.name || config.language}`);
+          }
+        }
+      }
+    }
+    
     const newSections = sections.map(s => s.id === sectionId ? updatedSection : s);
     setSections(newSections);
     saveToHistory(newSections);
