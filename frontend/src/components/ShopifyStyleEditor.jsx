@@ -264,7 +264,7 @@ const SECTION_LIBRARY = {
     max_blocks: 10
   },
   'category-tabs': {
-    name: 'Category Icons',
+    name: 'Category Tabs',
     icon: Grid,
     category: 'Navigation',
     limit: 1,
@@ -272,17 +272,28 @@ const SECTION_LIBRARY = {
       { type: 'checkbox', id: 'show_tabs', label: 'Show category tabs', default: true },
       { type: 'range', id: 'icon_size', label: 'Icon size', min: 40, max: 100, step: 5, default: 72, unit: 'px' },
       { type: 'range', id: 'icon_radius', label: 'Border radius', min: 0, max: 24, step: 2, default: 12, unit: 'px' },
+      { type: 'select', id: 'layout', label: 'Layout', options: [
+        { value: 'horizontal', label: 'Horizontal scroll' },
+        { value: 'grid', label: 'Grid' }
+      ], default: 'horizontal' },
     ],
     blocks: [
       { type: 'category_tab', name: 'Category Tab', settings: [
         { type: 'text', id: 'name', label: 'Name', default: 'FASHION' },
         { type: 'url', id: 'path', label: 'Link', default: '/fashion' },
-        { type: 'image_picker', id: 'image', label: 'Image' },
+        { type: 'image_picker', id: 'image', label: 'Tab Image/Icon' },
         { type: 'color', id: 'bg_color', label: 'Background color', default: '#c8e6c9' },
         { type: 'checkbox', id: 'active', label: 'Active', default: true },
       ]}
     ],
-    max_blocks: 8
+    max_blocks: 5,
+    default_blocks: [
+      { name: 'Fashion', path: '/fashion', bg_color: '#c8e6c9' },
+      { name: 'Beauty', path: '/beauty', bg_color: '#f8bbd9' },
+      { name: 'Baby & Kids', path: '/kids', bg_color: '#b3e5fc' },
+      { name: 'Home & Lifestyle', path: '/home', bg_color: '#ffe0b2' },
+      { name: 'Premium', path: '/premium', bg_color: '#e1bee7' },
+    ]
   },
   'sub-navigation': {
     name: 'Sub Navigation',
