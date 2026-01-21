@@ -16,11 +16,25 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   - Click-to-edit works via postMessage between iframe and editor
 - **Files Modified**: `/app/frontend/src/App.js`
 
+**P0: Language & Currency Auto-Configuration by Country** ✅ COMPLETED
+- **Feature**: Added comprehensive country-to-language/currency mapping
+- **Supported Languages**: 27 languages (English, Arabic, Hindi, Urdu, Bengali, Tamil, Telugu, Marathi, Gujarati, Kannada, Malayalam, Punjabi, Sinhala, Nepali, Turkish, Persian, Malay, Indonesian, Chinese, Japanese, Korean, French, German, Spanish, Italian, Portuguese, Russian)
+- **Supported Currencies**: 24 currencies (USD, EUR, GBP, AED, SAR, PKR, INR, KWD, QAR, BHD, OMR, TRY, EGP, BDT, LKR, NPR, MYR, SGD, IDR, CNY, JPY, KRW, AUD, CAD)
+- **COUNTRY_CONFIG**: 28 countries with default language and currency
+- **Files Modified**: `/app/frontend/src/components/ShopifyStyleEditor.jsx`
+
 **P1: Stories Section Added to Theme Editor** ✅ COMPLETED
 - **Feature**: Added Instagram-style Stories section to the theme editor's section library
 - **Settings**: Show stories toggle, avatar size slider, show labels, auto-play
 - **Blocks**: Story items with title, thumbnail, content image, link, official badge
 - **Files Modified**: `/app/frontend/src/components/ShopifyStyleEditor.jsx`
+
+**P2: Theme Editor Section Updates** ✅ COMPLETED
+- **Header renamed to "Header & Logo"** with additional settings (logo position, wishlist icon)
+- **Category Tabs** (renamed from "Category Icons"): Limited to 5 max blocks with default tabs (Fashion, Beauty, Baby & Kids, Home & Lifestyle, Premium)
+- **Sub Navigation**: Limited to 10 max blocks with 10 default items (CLOTHING, SHOES, BAGS, ACCESSORIES, SPORTS, SALE, NEW ARRIVALS, DESIGNERS, COLLECTIONS, BRANDS)
+- **Hero Banner**: Already has image_picker for banner uploads (Background image, Mobile image)
+- **Store Settings**: Added country selector with auto-configure language/currency toggle
 
 **P2: Template Presets Added** ✅ COMPLETED
 - **Feature**: Added 4 pre-configured template presets to quickly set up storefront layouts
@@ -31,6 +45,11 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
   4. **Mobile First** - Optimized for mobile shopping experience
 - **Access**: "Use template" button in sidebar footer
 - **Files Modified**: `/app/frontend/src/components/ShopifyStyleEditor.jsx`
+
+**P3: Session Stability Fix** ✅ COMPLETED
+- **Problem**: Admin sessions were expiring too quickly, disrupting editor workflow
+- **Solution**: Always set sessionExpiry - 24 hours for regular logins, 30 days for "Remember me"
+- **Files Modified**: `/app/frontend/src/components/Login.jsx`
 
 **P3: Obsolete Editor Files Deleted** ✅ COMPLETED
 - **Deleted Files**:
