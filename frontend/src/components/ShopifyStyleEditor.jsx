@@ -1176,6 +1176,10 @@ const ShopifyStyleEditor = () => {
   const [selectedPage, setSelectedPage] = useState('home');
   const [previewKey, setPreviewKey] = useState(0);
   const iframeRef = useRef(null);
+  
+  // Collections and products for linking
+  const [collections, setCollections] = useState([]);
+  const [products, setProducts] = useState([]);
 
   // Undo/Redo history
   const [history, setHistory] = useState([]);
