@@ -31,38 +31,91 @@ import { CSS } from '@dnd-kit/utilities';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
-// Currency options with country mapping
+// Currency options with country mapping - Comprehensive list
 const CURRENCIES = [
+  // Major currencies
   { code: 'USD', symbol: '$', name: 'US Dollar', countries: ['US'] },
-  { code: 'EUR', symbol: '€', name: 'Euro', countries: ['DE', 'FR', 'IT', 'ES'] },
+  { code: 'EUR', symbol: '€', name: 'Euro', countries: ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'PT', 'AT', 'GR'] },
   { code: 'GBP', symbol: '£', name: 'British Pound', countries: ['GB'] },
+  
+  // Middle East & GCC
   { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham', countries: ['AE'] },
   { code: 'SAR', symbol: '﷼', name: 'Saudi Riyal', countries: ['SA'] },
-  { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee', countries: ['PK'] },
-  { code: 'INR', symbol: '₹', name: 'Indian Rupee', countries: ['IN'] },
   { code: 'KWD', symbol: 'د.ك', name: 'Kuwaiti Dinar', countries: ['KW'] },
   { code: 'QAR', symbol: '﷼', name: 'Qatari Riyal', countries: ['QA'] },
   { code: 'BHD', symbol: '.د.ب', name: 'Bahraini Dinar', countries: ['BH'] },
   { code: 'OMR', symbol: '﷼', name: 'Omani Rial', countries: ['OM'] },
-  { code: 'TRY', symbol: '₺', name: 'Turkish Lira', countries: ['TR'] },
   { code: 'EGP', symbol: 'ج.م', name: 'Egyptian Pound', countries: ['EG'] },
+  { code: 'JOD', symbol: 'د.ا', name: 'Jordanian Dinar', countries: ['JO'] },
+  { code: 'LBP', symbol: 'ل.ل', name: 'Lebanese Pound', countries: ['LB'] },
+  { code: 'IQD', symbol: 'ع.د', name: 'Iraqi Dinar', countries: ['IQ'] },
+  { code: 'IRR', symbol: '﷼', name: 'Iranian Rial', countries: ['IR'] },
+  
+  // South Asia
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee', countries: ['IN'] },
+  { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee', countries: ['PK'] },
   { code: 'BDT', symbol: '৳', name: 'Bangladeshi Taka', countries: ['BD'] },
   { code: 'LKR', symbol: 'රු', name: 'Sri Lankan Rupee', countries: ['LK'] },
   { code: 'NPR', symbol: 'रू', name: 'Nepalese Rupee', countries: ['NP'] },
+  { code: 'AFN', symbol: '؋', name: 'Afghan Afghani', countries: ['AF'] },
+  { code: 'MVR', symbol: 'ރ.', name: 'Maldivian Rufiyaa', countries: ['MV'] },
+  
+  // Southeast Asia
   { code: 'MYR', symbol: 'RM', name: 'Malaysian Ringgit', countries: ['MY'] },
   { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar', countries: ['SG'] },
   { code: 'IDR', symbol: 'Rp', name: 'Indonesian Rupiah', countries: ['ID'] },
+  { code: 'THB', symbol: '฿', name: 'Thai Baht', countries: ['TH'] },
+  { code: 'VND', symbol: '₫', name: 'Vietnamese Dong', countries: ['VN'] },
+  { code: 'PHP', symbol: '₱', name: 'Philippine Peso', countries: ['PH'] },
+  { code: 'MMK', symbol: 'K', name: 'Myanmar Kyat', countries: ['MM'] },
+  
+  // East Asia
   { code: 'CNY', symbol: '¥', name: 'Chinese Yuan', countries: ['CN'] },
   { code: 'JPY', symbol: '¥', name: 'Japanese Yen', countries: ['JP'] },
   { code: 'KRW', symbol: '₩', name: 'South Korean Won', countries: ['KR'] },
-  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar', countries: ['AU'] },
+  { code: 'HKD', symbol: 'HK$', name: 'Hong Kong Dollar', countries: ['HK'] },
+  { code: 'TWD', symbol: 'NT$', name: 'Taiwan Dollar', countries: ['TW'] },
+  
+  // Europe
+  { code: 'TRY', symbol: '₺', name: 'Turkish Lira', countries: ['TR'] },
+  { code: 'RUB', symbol: '₽', name: 'Russian Ruble', countries: ['RU'] },
+  { code: 'PLN', symbol: 'zł', name: 'Polish Zloty', countries: ['PL'] },
+  { code: 'SEK', symbol: 'kr', name: 'Swedish Krona', countries: ['SE'] },
+  { code: 'NOK', symbol: 'kr', name: 'Norwegian Krone', countries: ['NO'] },
+  { code: 'DKK', symbol: 'kr', name: 'Danish Krone', countries: ['DK'] },
+  { code: 'CHF', symbol: 'Fr', name: 'Swiss Franc', countries: ['CH'] },
+  
+  // Americas
   { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar', countries: ['CA'] },
+  { code: 'MXN', symbol: '$', name: 'Mexican Peso', countries: ['MX'] },
+  { code: 'BRL', symbol: 'R$', name: 'Brazilian Real', countries: ['BR'] },
+  { code: 'ARS', symbol: '$', name: 'Argentine Peso', countries: ['AR'] },
+  { code: 'COP', symbol: '$', name: 'Colombian Peso', countries: ['CO'] },
+  { code: 'CLP', symbol: '$', name: 'Chilean Peso', countries: ['CL'] },
+  { code: 'PEN', symbol: 'S/', name: 'Peruvian Sol', countries: ['PE'] },
+  
+  // Oceania
+  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar', countries: ['AU'] },
+  { code: 'NZD', symbol: 'NZ$', name: 'New Zealand Dollar', countries: ['NZ'] },
+  
+  // Africa
+  { code: 'ZAR', symbol: 'R', name: 'South African Rand', countries: ['ZA'] },
+  { code: 'NGN', symbol: '₦', name: 'Nigerian Naira', countries: ['NG'] },
+  { code: 'KES', symbol: 'KSh', name: 'Kenyan Shilling', countries: ['KE'] },
+  { code: 'MAD', symbol: 'د.م.', name: 'Moroccan Dirham', countries: ['MA'] },
 ];
 
 // Language options with country mapping - All supported languages
 const LANGUAGES = [
-  { code: 'en', name: 'English', rtl: false, countries: ['US', 'GB', 'AU', 'CA', 'SG'] },
-  { code: 'ar', name: 'العربية (Arabic)', rtl: true, countries: ['AE', 'SA', 'KW', 'QA', 'BH', 'OM', 'EG'] },
+  // Global
+  { code: 'en', name: 'English', rtl: false, countries: ['US', 'GB', 'AU', 'CA', 'SG', 'NZ', 'ZA', 'NG', 'KE'] },
+  
+  // Arabic & Middle East
+  { code: 'ar', name: 'العربية (Arabic)', rtl: true, countries: ['AE', 'SA', 'KW', 'QA', 'BH', 'OM', 'EG', 'JO', 'LB', 'IQ', 'MA'] },
+  { code: 'fa', name: 'فارسی (Persian/Farsi)', rtl: true, countries: ['IR', 'AF'] },
+  { code: 'he', name: 'עברית (Hebrew)', rtl: true, countries: ['IL'] },
+  
+  // South Asian
   { code: 'hi', name: 'हिन्दी (Hindi)', rtl: false, countries: ['IN'] },
   { code: 'ur', name: 'اردو (Urdu)', rtl: true, countries: ['PK'] },
   { code: 'bn', name: 'বাংলা (Bengali)', rtl: false, countries: ['BD'] },
@@ -75,19 +128,38 @@ const LANGUAGES = [
   { code: 'pa', name: 'ਪੰਜਾਬੀ (Punjabi)', rtl: false, countries: ['IN', 'PK'] },
   { code: 'si', name: 'සිංහල (Sinhala)', rtl: false, countries: ['LK'] },
   { code: 'ne', name: 'नेपाली (Nepali)', rtl: false, countries: ['NP'] },
-  { code: 'tr', name: 'Türkçe (Turkish)', rtl: false, countries: ['TR'] },
-  { code: 'fa', name: 'فارسی (Persian)', rtl: true, countries: ['IR'] },
+  { code: 'dv', name: 'ދިވެހި (Dhivehi)', rtl: true, countries: ['MV'] },
+  
+  // Southeast Asian
   { code: 'ms', name: 'Bahasa Melayu (Malay)', rtl: false, countries: ['MY', 'SG'] },
   { code: 'id', name: 'Bahasa Indonesia', rtl: false, countries: ['ID'] },
-  { code: 'zh', name: '中文 (Chinese)', rtl: false, countries: ['CN', 'SG'] },
+  { code: 'th', name: 'ไทย (Thai)', rtl: false, countries: ['TH'] },
+  { code: 'vi', name: 'Tiếng Việt (Vietnamese)', rtl: false, countries: ['VN'] },
+  { code: 'tl', name: 'Filipino/Tagalog', rtl: false, countries: ['PH'] },
+  { code: 'my', name: 'မြန်မာ (Burmese)', rtl: false, countries: ['MM'] },
+  
+  // East Asian
+  { code: 'zh', name: '中文 (Chinese)', rtl: false, countries: ['CN', 'SG', 'HK', 'TW'] },
   { code: 'ja', name: '日本語 (Japanese)', rtl: false, countries: ['JP'] },
   { code: 'ko', name: '한국어 (Korean)', rtl: false, countries: ['KR'] },
-  { code: 'fr', name: 'Français (French)', rtl: false, countries: ['FR', 'CA'] },
-  { code: 'de', name: 'Deutsch (German)', rtl: false, countries: ['DE'] },
-  { code: 'es', name: 'Español (Spanish)', rtl: false, countries: ['ES'] },
-  { code: 'it', name: 'Italiano (Italian)', rtl: false, countries: ['IT'] },
+  
+  // European
+  { code: 'fr', name: 'Français (French)', rtl: false, countries: ['FR', 'CA', 'BE', 'CH'] },
+  { code: 'de', name: 'Deutsch (German)', rtl: false, countries: ['DE', 'AT', 'CH'] },
+  { code: 'es', name: 'Español (Spanish)', rtl: false, countries: ['ES', 'MX', 'AR', 'CO', 'CL', 'PE'] },
+  { code: 'it', name: 'Italiano (Italian)', rtl: false, countries: ['IT', 'CH'] },
   { code: 'pt', name: 'Português (Portuguese)', rtl: false, countries: ['PT', 'BR'] },
   { code: 'ru', name: 'Русский (Russian)', rtl: false, countries: ['RU'] },
+  { code: 'tr', name: 'Türkçe (Turkish)', rtl: false, countries: ['TR'] },
+  { code: 'nl', name: 'Nederlands (Dutch)', rtl: false, countries: ['NL', 'BE'] },
+  { code: 'pl', name: 'Polski (Polish)', rtl: false, countries: ['PL'] },
+  { code: 'sv', name: 'Svenska (Swedish)', rtl: false, countries: ['SE'] },
+  { code: 'no', name: 'Norsk (Norwegian)', rtl: false, countries: ['NO'] },
+  { code: 'da', name: 'Dansk (Danish)', rtl: false, countries: ['DK'] },
+  { code: 'el', name: 'Ελληνικά (Greek)', rtl: false, countries: ['GR'] },
+  
+  // African
+  { code: 'sw', name: 'Kiswahili (Swahili)', rtl: false, countries: ['KE'] },
 ];
 
 // Country to Language/Currency mapping - Comprehensive list
