@@ -172,9 +172,11 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Validate session on mount
+  // Validate session on mount (disabled by default)
   useEffect(() => {
-    validateSession();
+    if (ENABLE_BACKEND_VALIDATION) {
+      validateSession();
+    }
   }, [validateSession]);
 
   // Listen for storage changes (for cross-tab sync)
@@ -203,28 +205,46 @@ export const AuthProvider = ({ children }) => {
     if (!agentData.permissions) {
       agentData.permissions = getPermissionsForRole(agentData.role);
     }
+    // Always set a generous session expiry
+    if (!agentData.sessionExpiry) {
+      agentData.sessionExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days
+    }
     setAgent(agentData);
     localStorage.setItem('agent', JSON.stringify(agentData));
     setSessionValidated(true);
-    // Reset validation tracking on login
     lastValidationRef.current = Date.now();
-    validationRetriesRef.current = 0;
+    console.log('Login successful, session expiry:', new Date(agentData.sessionExpiry).toISOString());
   };
 
   const logout = () => {
     setAgent(null);
     localStorage.removeItem('agent');
     setSessionValidated(true);
-    // Reset validation tracking on logout
     lastValidationRef.current = 0;
-    validationRetriesRef.current = 0;
+    console.log('User logged out');
   };
 
   // Force re-validate session (useful for components that detect auth issues)
   const refreshSession = () => {
-    setSessionValidated(false);
-    setLoading(true);
-    validateSession(true); // Force validation
+    if (ENABLE_BACKEND_VALIDATION) {
+      setSessionValidated(false);
+      setLoading(true);
+      validateSession(true);
+    } else {
+      // Just refresh from localStorage
+      const storedAgent = localStorage.getItem('agent');
+      if (storedAgent) {
+        try {
+          const parsed = JSON.parse(storedAgent);
+          if (!parsed.permissions) {
+            parsed.permissions = getPermissionsForRole(parsed.role);
+          }
+          setAgent(parsed);
+        } catch (e) {
+          console.error('Failed to refresh session:', e);
+        }
+      }
+    }
   };
 
   // Helper function to check permissions
