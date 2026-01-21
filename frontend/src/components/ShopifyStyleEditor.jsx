@@ -1073,6 +1073,20 @@ const ShopifyStyleEditor = () => {
           }))
         });
 
+        // Add Stories section (Instagram-style)
+        loadedSections.push({
+          id: 'section-stories',
+          type: 'stories',
+          settings: { show_stories: true, avatar_size: 68, show_labels: true, auto_play: false },
+          blocks: [
+            { id: 'story-1', type: 'story', settings: { title: 'TNV Official', thumbnail: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', is_official: true, active: true } },
+            { id: 'story-2', type: 'story', settings: { title: 'Fashion Week', thumbnail: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop', is_official: false, active: true } },
+            { id: 'story-3', type: 'story', settings: { title: 'Street Style', thumbnail: 'https://images.unsplash.com/photo-1504703395950-b89145a5425b?w=100&h=100&fit=crop', is_official: false, active: true } },
+            { id: 'story-4', type: 'story', settings: { title: 'Sale Alert', thumbnail: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=100&h=100&fit=crop', is_official: false, active: true } },
+            { id: 'story-5', type: 'story', settings: { title: 'Beauty Tips', thumbnail: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=100&h=100&fit=crop', is_official: false, active: true } },
+          ]
+        });
+
         // Add header section
         loadedSections.push({
           id: 'section-header',
