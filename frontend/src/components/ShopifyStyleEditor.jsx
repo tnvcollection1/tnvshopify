@@ -780,6 +780,61 @@ const SettingInput = ({ setting, value, onChange }) => {
         </div>
       );
     
+    case 'collection_picker':
+      // This will use dynamic collections passed via setting.options
+      return (
+        <div className="space-y-1.5">
+          <Label className="text-xs text-gray-600">{setting.label}</Label>
+          <select
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full h-9 px-3 text-sm border rounded-md bg-white"
+          >
+            <option value="">Select a collection...</option>
+            <optgroup label="Default Collections">
+              <option value="/collections/all">All Products</option>
+              <option value="/collections/new-arrivals">New Arrivals</option>
+              <option value="/collections/best-sellers">Best Sellers</option>
+              <option value="/collections/sale">Sale</option>
+            </optgroup>
+            {setting.options?.length > 0 && (
+              <optgroup label="Store Collections">
+                {setting.options.map(col => (
+                  <option key={col.handle} value={`/collections/${col.handle}`}>
+                    {col.title}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+          {value && (
+            <p className="text-[10px] text-gray-400 mt-1">Link: {value}</p>
+          )}
+        </div>
+      );
+
+    case 'product_picker':
+      return (
+        <div className="space-y-1.5">
+          <Label className="text-xs text-gray-600">{setting.label}</Label>
+          <select
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full h-9 px-3 text-sm border rounded-md bg-white"
+          >
+            <option value="">Select a product...</option>
+            {setting.options?.map(prod => (
+              <option key={prod.handle} value={`/products/${prod.handle}`}>
+                {prod.title}
+              </option>
+            ))}
+          </select>
+          {value && (
+            <p className="text-[10px] text-gray-400 mt-1">Link: {value}</p>
+          )}
+        </div>
+      );
+    
     default:
       return null;
   }
