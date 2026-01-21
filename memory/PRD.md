@@ -5,7 +5,41 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 
 ## What's Been Implemented
 
-### January 16, 2026 (Session 11 - Latest)
+### January 21, 2026 (Session 12 - Latest)
+
+**P0: Theme Editor Click-to-Edit & Layout Fix** ✅ COMPLETED
+- **Problem**: Theme editor preview was showing onboarding screen instead of actual storefront, and click-to-edit was not working as expected
+- **Root Cause**: `TNVStoreWrapper` was checking localStorage for onboarding completion, but not recognizing the `editor=true` URL parameter
+- **Solution**:
+  - Modified `TNVStoreWrapper` and `TNVPKStoreWrapper` in `App.js` to check for `editor=true` URL param and bypass onboarding
+  - Preview iframe now correctly shows the actual storefront with all sections
+  - Click-to-edit works via postMessage between iframe and editor
+- **Files Modified**: `/app/frontend/src/App.js`
+
+**P1: Stories Section Added to Theme Editor** ✅ COMPLETED
+- **Feature**: Added Instagram-style Stories section to the theme editor's section library
+- **Settings**: Show stories toggle, avatar size slider, show labels, auto-play
+- **Blocks**: Story items with title, thumbnail, content image, link, official badge
+- **Files Modified**: `/app/frontend/src/components/ShopifyStyleEditor.jsx`
+
+**P2: Template Presets Added** ✅ COMPLETED
+- **Feature**: Added 4 pre-configured template presets to quickly set up storefront layouts
+- **Templates**:
+  1. **Namshi Style** - Clean, modern fashion e-commerce layout
+  2. **Minimal Luxury** - Elegant, minimalist design for premium brands
+  3. **Flash Sale Focus** - Optimized for promotions and sales events
+  4. **Mobile First** - Optimized for mobile shopping experience
+- **Access**: "Use template" button in sidebar footer
+- **Files Modified**: `/app/frontend/src/components/ShopifyStyleEditor.jsx`
+
+**P3: Obsolete Editor Files Deleted** ✅ COMPLETED
+- **Deleted Files**:
+  - `/app/frontend/src/components/WebsiteEditor.jsx` (replaced by WebsiteEditorV2.jsx)
+  - `/app/frontend/src/components/MobileAppEditor.jsx` (replaced by MobileAppEditorV2.jsx)
+- **Reason**: These V1 editors were imported but unused, causing code clutter
+- **Files Modified**: `/app/frontend/src/App.js` (removed imports)
+
+### January 16, 2026 (Session 11)
 
 **P0: Language-by-Country Auto-Configuration** ✅ COMPLETED
 - **Feature**: When users select a country during onboarding, the language automatically switches to the country's default language with appropriate layout (RTL/LTR)
