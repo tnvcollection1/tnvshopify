@@ -468,7 +468,7 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="border-b border-gray-200">
+    <div ref={setNodeRef} style={style} className="border-b border-gray-200" data-section-id={section.id}>
       {/* Section Header */}
       <div 
         className={`flex items-center gap-2 px-3 py-3 cursor-pointer hover:bg-gray-50 ${isExpanded ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''}`}
