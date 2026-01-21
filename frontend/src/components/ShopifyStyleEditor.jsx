@@ -1052,7 +1052,7 @@ const ShopifyStyleEditor = () => {
           fetch(`${API_URL}/api/storefront/banners/sub-nav/${storeName}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ subNavItems })
+            body: JSON.stringify(subNavItems)
           })
         );
       }
