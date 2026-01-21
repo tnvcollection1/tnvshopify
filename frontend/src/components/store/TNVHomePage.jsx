@@ -362,10 +362,12 @@ const TNVHomePage = () => {
         )}
         </div>
       </div>
+      </EditableSection>
 
       {/* === SWIPEABLE HERO BANNER CAROUSEL === */}
-      <section className="relative max-w-7xl mx-auto" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        <div className="relative h-[400px] md:h-[480px] overflow-hidden">
+      <EditableSection sectionType="hero-banner">
+        <section className="relative max-w-7xl mx-auto" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+          <div className="relative h-[400px] md:h-[480px] overflow-hidden">
           {/* Slide Content */}
           <div 
             className="absolute inset-0 transition-transform duration-500 ease-out"
