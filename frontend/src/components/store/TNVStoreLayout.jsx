@@ -382,65 +382,6 @@ export const TNVHeader = () => {
 
   const headerContent = (
     <header className="sticky top-0 z-50 bg-white">
-      {/* TOP BAR - EXACTLY like Namshi */}
-      <div className="bg-white border-b h-10">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-full">
-          {/* Language Toggle - Left */}
-          <div className="flex items-center gap-2 text-sm">
-            <button className="text-red-500 border-b-2 border-red-500 pb-0.5 font-medium">English</button>
-            <span className="text-gray-300">|</span>
-            <button className="text-gray-600 hover:text-black font-arabic">العربية</button>
-          </div>
-          
-          {/* Promo Carousel - Center */}
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setPromoIndex(prev => (prev - 1 + promoMessages.length) % promoMessages.length)}
-              className="p-1 hover:bg-gray-100 rounded text-gray-400"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            
-            <span className="text-sm text-black min-w-[160px] text-center">
-              {promoMessages[promoIndex]?.text}
-            </span>
-            
-            <button 
-              onClick={() => setPromoIndex(prev => (prev + 1) % promoMessages.length)}
-              className="p-1 hover:bg-gray-100 rounded text-gray-400"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-          
-          {/* Region Selector - Right */}
-          <div className="relative">
-            <button 
-              onClick={() => setRegionDropdown(!regionDropdown)}
-              className="flex items-center gap-1 text-sm hover:opacity-80"
-            >
-              <span className="text-lg">{region.flag}</span>
-              <ChevronDown className="w-3 h-3 text-gray-600" />
-            </button>
-            
-            {regionDropdown && (
-              <div className="absolute top-full right-0 mt-2 bg-white shadow-xl rounded-lg overflow-hidden min-w-[180px] z-50 border">
-                {regions.map(r => (
-                  <button
-                    key={r.code}
-                    onClick={() => { setRegion(r); setRegionDropdown(false); }}
-                    className={`w-full px-4 py-2.5 text-left hover:bg-gray-100 flex items-center gap-2 text-sm ${region.code === r.code ? 'bg-gray-50 font-medium' : ''}`}
-                  >
-                    <span>{r.flag}</span>
-                    <span>{r.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* MAIN HEADER - WHITE background like Namshi */}
       <div className="bg-white border-b h-[72px]">
         <div className="max-w-7xl mx-auto px-4 flex items-center h-full gap-3">
