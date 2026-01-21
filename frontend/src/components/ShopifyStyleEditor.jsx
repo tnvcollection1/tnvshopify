@@ -1303,15 +1303,11 @@ const ShopifyStyleEditor = () => {
         });
       }
 
-      // Hero banners
+      // Hero banners with image upload support
       if (bannersRes.ok) {
         const bannersData = await bannersRes.json();
-        if (bannersData.banners?.length > 0) {
-          loadedSections.push({
-            id: 'section-hero',
-            type: 'hero-banner',
-            settings: { layout: 'full', height: 500, autoplay: true, autoplay_speed: 5 },
-            blocks: bannersData.banners.map((banner, i) => ({
+        const bannerBlocks = bannersData.banners?.length > 0
+          ? bannersData.banners.map((banner, i) => ({
               id: `banner-${i}`,
               type: 'slide',
               settings: {
@@ -1326,8 +1322,35 @@ const ShopifyStyleEditor = () => {
                 overlay: banner.overlay !== false
               }
             }))
-          });
-        }
+          : [
+              { id: 'banner-0', type: 'slide', settings: { 
+                image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=800&fit=crop', 
+                title: 'NEW COLLECTION', 
+                subtitle: 'Discover the latest trends', 
+                button_text: 'Shop Now', 
+                button_link: '/shop',
+                text_position: 'left',
+                text_color: '#FFFFFF',
+                overlay: true 
+              }},
+              { id: 'banner-1', type: 'slide', settings: { 
+                image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600&h=800&fit=crop', 
+                title: 'SUMMER SALE', 
+                subtitle: 'Up to 50% off', 
+                button_text: 'Shop Sale', 
+                button_link: '/sale',
+                text_position: 'center',
+                text_color: '#FFFFFF',
+                overlay: true 
+              }},
+            ];
+        
+        loadedSections.push({
+          id: 'section-hero',
+          type: 'hero-banner',
+          settings: { layout: 'full', height: 500, autoplay: true, autoplay_speed: 5 },
+          blocks: bannerBlocks
+        });
       }
 
       // Add featured collection
