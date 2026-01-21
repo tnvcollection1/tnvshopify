@@ -1242,9 +1242,10 @@ const ShopifyStyleEditor = () => {
   const [previewKey, setPreviewKey] = useState(0);
   const iframeRef = useRef(null);
   
-  // Collections and products for linking
+  // Collections, products, and tags for linking
   const [collections, setCollections] = useState([]);
   const [products, setProducts] = useState([]);
+  const [tags, setTags] = useState([]);
 
   // Undo/Redo history
   const [history, setHistory] = useState([]);
