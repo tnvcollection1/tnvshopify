@@ -218,6 +218,56 @@ export const TNVHeader = () => {
   const [selectedGender, setSelectedGender] = useState('WOMEN');
   const [promoIndex, setPromoIndex] = useState(0);
   const [megaMenuConfig, setMegaMenuConfig] = useState(null);
+  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [languageDropdown, setLanguageDropdown] = useState(false);
+
+  // Supported languages based on region/country
+  const SUPPORTED_LANGUAGES = {
+    'IN': [
+      { code: 'en', name: 'English', nativeName: 'English' },
+      { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
+      { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்' },
+      { code: 'te', name: 'Telugu', nativeName: 'తెలుగు' },
+    ],
+    'PK': [
+      { code: 'en', name: 'English', nativeName: 'English' },
+      { code: 'ur', name: 'Urdu', nativeName: 'اردو' },
+    ],
+    'AE': [
+      { code: 'en', name: 'English', nativeName: 'English' },
+      { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
+    ],
+    'SA': [
+      { code: 'en', name: 'English', nativeName: 'English' },
+      { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
+    ],
+    'BD': [
+      { code: 'en', name: 'English', nativeName: 'English' },
+      { code: 'bn', name: 'Bengali', nativeName: 'বাংলা' },
+    ],
+    'DEFAULT': [
+      { code: 'en', name: 'English', nativeName: 'English' },
+      { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
+    ]
+  };
+
+  // Get languages for current region
+  const getLanguagesForRegion = () => {
+    return SUPPORTED_LANGUAGES[region?.code] || SUPPORTED_LANGUAGES['DEFAULT'];
+  };
+
+  const availableLanguages = getLanguagesForRegion();
+  const currentLang = availableLanguages.find(l => l.code === currentLanguage) || availableLanguages[0];
+
+  // Update language when region changes
+  useEffect(() => {
+    const langs = SUPPORTED_LANGUAGES[region?.code] || SUPPORTED_LANGUAGES['DEFAULT'];
+    // Set to first non-English language if available, otherwise English
+    const defaultLang = langs.find(l => l.code !== 'en') || langs[0];
+    if (defaultLang && !langs.find(l => l.code === currentLanguage)) {
+      setCurrentLanguage(defaultLang.code);
+    }
+  }, [region?.code]);
   const location = useLocation();
   const hoverTimeoutRef = useRef(null);
 
