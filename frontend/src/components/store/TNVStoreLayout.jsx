@@ -788,7 +788,7 @@ export const TNVFooter = () => {
     { title: 'Men Fashion', links: ['New In', 'Clothing', 'Shoes', 'Bags', 'Accessories', 'Sale'] }
   ];
 
-  return (
+  const footerContent = (
     <footer className="bg-white border-t mt-12">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
