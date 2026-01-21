@@ -1032,7 +1032,7 @@ const ShopifyStyleEditor = () => {
           fetch(`${API_URL}/api/storefront/banners/category-tabs/${storeName}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ categoryTabs })
+            body: JSON.stringify(categoryTabs)
           })
         );
       }
