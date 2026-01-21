@@ -253,19 +253,24 @@ const TNVHomePage = () => {
   }
 
   const currentHeroSlide = HERO_SLIDES[currentSlide];
+  const isEditorMode = useEditorMode();
 
   return (
     <div className="min-h-screen bg-white pb-20" data-testid="tnv-home">
+      {/* Editor Mode Indicator */}
+      <EditorModeIndicator />
+      
       {/* === STORIES SECTION === */}
       <div className="max-w-7xl mx-auto">
         <StoriesSection stories={stories} />
       </div>
       
       {/* === CATEGORY TABS === */}
-      <div className="sticky top-0 z-40 bg-white">
-        <div className="max-w-7xl mx-auto">
-          {/* Category Tabs Row */}
-          <div className="flex overflow-x-auto scrollbar-hide px-2 py-3 gap-2">
+      <EditableSection sectionType="category-tabs">
+        <div className="sticky top-0 z-40 bg-white">
+          <div className="max-w-7xl mx-auto">
+            {/* Category Tabs Row */}
+            <div className="flex overflow-x-auto scrollbar-hide px-2 py-3 gap-2">
           {/* FASHION */}
           <Link to={`${baseUrl}/fashion`} className="flex-shrink-0">
             <div className="w-[72px] h-[80px] rounded-xl overflow-hidden relative" style={{ backgroundColor: '#c4ff00' }}>
