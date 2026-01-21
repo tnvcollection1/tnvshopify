@@ -1360,10 +1360,30 @@ const ShopifyStyleEditor = () => {
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Undo/Redo buttons */}
+          <div className="flex items-center gap-1 bg-gray-800 rounded-lg p-1 mr-2">
+            <button 
+              onClick={handleUndo}
+              disabled={historyIndex <= 0}
+              className={`p-2 rounded transition ${historyIndex > 0 ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-gray-600 cursor-not-allowed'}`}
+              title="Undo (Ctrl+Z)"
+            >
+              <Undo2 className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={handleRedo}
+              disabled={historyIndex >= history.length - 1}
+              className={`p-2 rounded transition ${historyIndex < history.length - 1 ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-gray-600 cursor-not-allowed'}`}
+              title="Redo (Ctrl+Y)"
+            >
+              <Redo2 className="w-4 h-4" />
+            </button>
+          </div>
+
           <button 
             onClick={refreshPreview}
-            className="flex items-center gap-2 text-gray-300 hover:text-white text-sm"
+            className="flex items-center gap-2 text-gray-300 hover:text-white text-sm p-2"
             title="Refresh preview"
           >
             <RefreshCw className="w-4 h-4" />
@@ -1371,7 +1391,7 @@ const ShopifyStyleEditor = () => {
           <a 
             href="/tnv" 
             target="_blank"
-            className="flex items-center gap-2 text-gray-300 hover:text-white text-sm"
+            className="flex items-center gap-2 text-gray-300 hover:text-white text-sm p-2"
           >
             <ExternalLink className="w-4 h-4" />
             <span className="hidden sm:inline">Preview</span>
