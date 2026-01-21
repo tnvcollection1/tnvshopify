@@ -2000,12 +2000,35 @@ const ShopifyStyleEditor = () => {
       <div className="flex-1 flex overflow-hidden relative">
         {/* Left Sidebar */}
         <aside className={`${sidebarOpen ? 'w-80' : 'w-0'} bg-white border-r transition-all duration-300 flex flex-col overflow-hidden`}>
-          <div className="px-4 py-3 border-b flex items-center justify-between bg-gray-50">
-            <h2 className="font-semibold text-sm">Sections</h2>
-            <button onClick={() => setSidebarOpen(false)} className="p-1 hover:bg-gray-200 rounded">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          </div>
+          {/* Sidebar Header - Shows Back button when section is expanded */}
+          {expandedSection ? (
+            <div className="px-3 py-3 border-b flex items-center gap-2 bg-gray-50">
+              <button 
+                onClick={() => setExpandedSection(null)} 
+                className="p-1.5 hover:bg-gray-200 rounded-lg flex items-center gap-1 text-sm text-gray-600"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+              <span className="flex-1 text-sm font-semibold truncate">
+                {SECTION_LIBRARY[sections.find(s => s.id === expandedSection)?.type]?.name || 'Section'}
+              </span>
+              <button 
+                onClick={() => setExpandedSection(null)} 
+                className="p-1.5 hover:bg-gray-200 rounded-lg"
+                title="Close"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+          ) : (
+            <div className="px-4 py-3 border-b flex items-center justify-between bg-gray-50">
+              <h2 className="font-semibold text-sm">Sections</h2>
+              <button onClick={() => setSidebarOpen(false)} className="p-1 hover:bg-gray-200 rounded">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
           <div className="flex-1 overflow-y-auto">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
