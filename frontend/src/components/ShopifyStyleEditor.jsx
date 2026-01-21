@@ -932,6 +932,7 @@ const ShopifyStyleEditor = () => {
   const [viewMode, setViewMode] = useState('desktop');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showAddSection, setShowAddSection] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
   const [selectedPage, setSelectedPage] = useState('home');
   const [previewKey, setPreviewKey] = useState(0);
