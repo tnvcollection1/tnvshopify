@@ -182,7 +182,14 @@ const StoriesSection = ({ stories = [], onAddStory }) => {
 
       {/* Full Screen Story Viewer */}
       {selectedStoryIndex !== null && (
-        <div className="fixed inset-0 z-50 bg-black" data-testid="story-viewer">
+        <div 
+          className="fixed inset-0 z-[9999] bg-black" 
+          data-testid="story-viewer"
+          onClick={(e) => {
+            // Close if clicking outside content
+            if (e.target === e.currentTarget) closeStory();
+          }}
+        >
           {/* Story Content */}
           <div className="relative h-full flex items-center justify-center">
             {/* Current Slide */}
@@ -193,11 +200,11 @@ const StoriesSection = ({ stories = [], onAddStory }) => {
             />
 
             {/* Gradient Overlays */}
-            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
 
             {/* Progress Bars */}
-            <div className="absolute top-4 left-4 right-4 flex gap-1">
+            <div className="absolute top-4 left-4 right-4 flex gap-1 pointer-events-none">
               {displayStories[selectedStoryIndex].slides.map((_, idx) => (
                 <StoryProgress 
                   key={idx}
@@ -227,17 +234,25 @@ const StoriesSection = ({ stories = [], onAddStory }) => {
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setIsPaused(!isPaused)}
-                  className="text-white"
+                  className="text-white p-2 hover:bg-white/20 rounded-full transition"
                 >
                   {isPaused ? <Play className="w-6 h-6" /> : <Pause className="w-6 h-6" />}
                 </button>
                 <button 
                   onClick={() => setIsMuted(!isMuted)}
-                  className="text-white"
+                  className="text-white p-2 hover:bg-white/20 rounded-full transition"
                 >
                   {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                 </button>
-                <button onClick={closeStory} className="text-white">
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeStory();
+                  }}
+                  className="text-white p-2 hover:bg-white/20 rounded-full transition"
+                  data-testid="close-story-btn"
+                >
                   <X className="w-6 h-6" />
                 </button>
               </div>
@@ -245,7 +260,7 @@ const StoriesSection = ({ stories = [], onAddStory }) => {
 
             {/* Caption */}
             {displayStories[selectedStoryIndex].slides[currentSlideIndex].caption && (
-              <div className="absolute bottom-20 left-4 right-4">
+              <div className="absolute bottom-20 left-4 right-4 pointer-events-none">
                 <p className="text-white text-center text-lg font-medium drop-shadow-lg">
                   {displayStories[selectedStoryIndex].slides[currentSlideIndex].caption}
                 </p>
@@ -255,11 +270,13 @@ const StoriesSection = ({ stories = [], onAddStory }) => {
             {/* Navigation Areas */}
             <button 
               onClick={goToPrevStory}
-              className="absolute left-0 top-0 bottom-0 w-1/3"
+              className="absolute left-0 top-0 bottom-0 w-1/3 cursor-pointer"
+              aria-label="Previous"
             />
             <button 
               onClick={goToNextStory}
-              className="absolute right-0 top-0 bottom-0 w-1/3"
+              className="absolute right-0 top-0 bottom-0 w-1/3 cursor-pointer"
+              aria-label="Next"
             />
 
             {/* Side Navigation Arrows (Desktop) */}
