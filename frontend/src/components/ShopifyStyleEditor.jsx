@@ -1290,13 +1290,22 @@ const ShopifyStyleEditor = () => {
   const loadConfig = async () => {
     setLoading(true);
     try {
-      // Fetch navigation config
-      const [navRes, bannersRes, tabsRes, subNavRes] = await Promise.all([
+      // Fetch navigation config and collections
+      const [navRes, bannersRes, tabsRes, subNavRes, collectionsRes] = await Promise.all([
         fetch(`${API_URL}/api/storefront/config/navigation/${storeName}`),
         fetch(`${API_URL}/api/storefront/banners/hero/${storeName}`),
         fetch(`${API_URL}/api/storefront/banners/category-tabs/${storeName}`),
         fetch(`${API_URL}/api/storefront/banners/sub-nav/${storeName}`),
+        fetch(`${API_URL}/api/shopify/collections?store_name=${storeName}`),
       ]);
+
+      // Load collections for linking
+      if (collectionsRes.ok) {
+        const collectionsData = await collectionsRes.json();
+        if (collectionsData.success && collectionsData.collections) {
+          setCollections(collectionsData.collections);
+        }
+      }
 
       const loadedSections = [];
 
