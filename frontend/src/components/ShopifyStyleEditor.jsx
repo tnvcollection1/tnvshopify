@@ -1253,18 +1253,33 @@ const ShopifyStyleEditor = () => {
         )}
 
         {/* Preview */}
-        <main className="flex-1 overflow-hidden bg-gray-200 flex justify-center p-4">
+        <main className="flex-1 overflow-hidden bg-gray-200 flex justify-center p-4 relative">
           <div 
-            className="bg-white shadow-2xl transition-all duration-300 h-full overflow-hidden rounded-lg"
+            className="bg-white shadow-2xl transition-all duration-300 h-full overflow-hidden rounded-lg relative"
             style={{ width: getPreviewWidth(), maxWidth: '100%' }}
           >
             <iframe
               key={previewKey}
               ref={iframeRef}
-              src="/tnv"
+              src="/tnv?editor=true"
               className="w-full h-full border-0"
               title="Store Preview"
             />
+            
+            {/* Click-to-Edit Overlay */}
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{ display: 'none' }}
+              id="editor-overlay"
+            >
+              {/* Section highlights will be rendered here */}
+            </div>
+          </div>
+          
+          {/* Editor Mode Indicator */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+            <Edit3 className="w-3 h-3" />
+            <span>Click any section to edit</span>
           </div>
         </main>
       </div>
