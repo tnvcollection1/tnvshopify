@@ -252,22 +252,25 @@ export const TNVHeader = () => {
   };
 
   // Get languages for current region
-  const getLanguagesForRegion = () => {
-    return SUPPORTED_LANGUAGES[region?.code] || SUPPORTED_LANGUAGES['DEFAULT'];
+  const getLanguagesForRegion = (regionCode) => {
+    return SUPPORTED_LANGUAGES[regionCode] || SUPPORTED_LANGUAGES['DEFAULT'];
   };
 
-  const availableLanguages = getLanguagesForRegion();
-  const currentLang = availableLanguages.find(l => l.code === currentLanguage) || availableLanguages[0];
-
-  // Update language when region changes
-  useEffect(() => {
-    const langs = SUPPORTED_LANGUAGES[region?.code] || SUPPORTED_LANGUAGES['DEFAULT'];
-    // Set to first non-English language if available, otherwise English
-    const defaultLang = langs.find(l => l.code !== 'en') || langs[0];
-    if (defaultLang && !langs.find(l => l.code === currentLanguage)) {
-      setCurrentLanguage(defaultLang.code);
+  const availableLanguages = getLanguagesForRegion(region?.code);
+  
+  // Use default language for region if current language not available
+  const getCurrentLanguageForRegion = () => {
+    const langs = getLanguagesForRegion(region?.code);
+    if (langs.find(l => l.code === currentLanguage)) {
+      return currentLanguage;
     }
-  }, [region?.code]);
+    // Return first non-English language if available, otherwise English
+    const defaultLang = langs.find(l => l.code !== 'en') || langs[0];
+    return defaultLang?.code || 'en';
+  };
+  
+  const effectiveLanguage = getCurrentLanguageForRegion();
+  const currentLang = availableLanguages.find(l => l.code === effectiveLanguage) || availableLanguages[0];
   const location = useLocation();
   const hoverTimeoutRef = useRef(null);
 
