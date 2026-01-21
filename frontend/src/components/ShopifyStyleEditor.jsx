@@ -837,6 +837,45 @@ const SettingInput = ({ setting, value, onChange }) => {
           )}
         </div>
       );
+
+    case 'tag_picker':
+      return (
+        <div className="space-y-1.5">
+          <Label className="text-xs text-gray-600">{setting.label}</Label>
+          <select
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full h-9 px-3 text-sm border rounded-md bg-white"
+          >
+            <option value="">Select a tag...</option>
+            {setting.options?.map(tag => (
+              <option key={tag} value={`/collections/all?tag=${encodeURIComponent(tag)}`}>
+                {tag}
+              </option>
+            ))}
+          </select>
+          {value && (
+            <p className="text-[10px] text-gray-400 mt-1">Link: {value}</p>
+          )}
+        </div>
+      );
+
+    case 'link_type':
+      return (
+        <div className="space-y-1.5">
+          <Label className="text-xs text-gray-600">{setting.label}</Label>
+          <select
+            value={value || 'custom'}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full h-9 px-3 text-sm border rounded-md bg-white"
+          >
+            <option value="custom">Custom URL</option>
+            <option value="collection">Collection</option>
+            <option value="product">Product</option>
+            <option value="tag">Tag</option>
+          </select>
+        </div>
+      );
     
     default:
       return null;
