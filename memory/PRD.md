@@ -434,6 +434,7 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - [x] Merchant Onboarding & Store Creation (Jan 15, 2026)
 - [x] Language-by-Country Auto-Configuration (Jan 16, 2026)
 - [x] "Complete the Look" AI Suggestions (Jan 16, 2026)
+- [x] Theme Editor Click-to-Edit & Layout Fix (Jan 21, 2026)
 
 ### P1 (High Priority)
 - [ ] Test Mobile App in Expo environment (files synced but untested)
@@ -442,9 +443,10 @@ Build a multi-tenant e-commerce platform (`wamerce.com`) allowing merchants to h
 - [ ] Configure WhatsApp Business API
 - [ ] DNS setup for `tnvcollection.pk` → VPS IP `159.198.36.164`
 - [ ] Obtain permanent DTDC API key (currently mocked)
+- [ ] User-Generated Stories feature (allow customers to upload their own stories/looks)
 
 ### P2 (Medium Priority)
-- [ ] Delete obsolete editor files (WebsiteEditor.jsx, MobileAppEditor.jsx)
+- [x] Delete obsolete editor files (WebsiteEditor.jsx, MobileAppEditor.jsx) - COMPLETED Jan 21, 2026
 - [ ] Sooxie.com integration
 - [ ] Connect Mobile App Settings to dynamically update mobile app
 - [ ] Multi-tenant store isolation and routing
