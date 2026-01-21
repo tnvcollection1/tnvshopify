@@ -1503,6 +1503,31 @@ const ShopifyStyleEditor = () => {
         blocks: []
       });
 
+      // Add store settings (country/language/currency)
+      loadedSections.push({
+        id: 'section-store-settings',
+        type: 'store-settings',
+        settings: { 
+          country: 'PK', 
+          default_currency: 'PKR', 
+          default_language: 'ur', 
+          auto_configure: true,
+          show_currency_selector: true,
+          show_language_selector: true,
+          auto_detect_location: true
+        },
+        blocks: [
+          { id: 'currency-pkr', type: 'supported_currency', settings: { currency: 'PKR', active: true } },
+          { id: 'currency-inr', type: 'supported_currency', settings: { currency: 'INR', active: true } },
+          { id: 'currency-aed', type: 'supported_currency', settings: { currency: 'AED', active: true } },
+          { id: 'currency-usd', type: 'supported_currency', settings: { currency: 'USD', active: true } },
+          { id: 'lang-ur', type: 'supported_language', settings: { language: 'ur', active: true } },
+          { id: 'lang-en', type: 'supported_language', settings: { language: 'en', active: true } },
+          { id: 'lang-ar', type: 'supported_language', settings: { language: 'ar', active: true } },
+          { id: 'lang-hi', type: 'supported_language', settings: { language: 'hi', active: true } },
+        ]
+      });
+
       setSections(loadedSections);
     } catch (error) {
       console.error('Error loading config:', error);
