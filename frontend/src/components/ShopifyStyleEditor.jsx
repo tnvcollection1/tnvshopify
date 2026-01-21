@@ -1006,7 +1006,10 @@ const SortableSectionItem = ({ section, sectionDef, isExpanded, onToggle, onUpda
                           {blockDef.settings.map(setting => (
                             <SettingInput
                               key={setting.id}
-                              setting={setting}
+                              setting={{
+                                ...setting,
+                                options: setting.type === 'collection_picker' ? collections : setting.options
+                              }}
                               value={block.settings?.[setting.id]}
                               onChange={(value) => updateBlock(blockIndex, {
                                 ...block,
