@@ -1089,7 +1089,9 @@ const ShopifyStyleEditor = () => {
       blocks: []
     };
 
-    setSections([...sections, newSection]);
+    const newSections = [...sections, newSection];
+    setSections(newSections);
+    saveToHistory(newSections);
     setShowAddSection(false);
     setHasChanges(true);
     setExpandedSection(newSection.id);
@@ -1098,13 +1100,17 @@ const ShopifyStyleEditor = () => {
 
   // Update section
   const handleUpdateSection = (sectionId, updatedSection) => {
-    setSections(sections.map(s => s.id === sectionId ? updatedSection : s));
+    const newSections = sections.map(s => s.id === sectionId ? updatedSection : s);
+    setSections(newSections);
+    saveToHistory(newSections);
     setHasChanges(true);
   };
 
   // Delete section
   const handleDeleteSection = (sectionId) => {
-    setSections(sections.filter(s => s.id !== sectionId));
+    const newSections = sections.filter(s => s.id !== sectionId);
+    setSections(newSections);
+    saveToHistory(newSections);
     setHasChanges(true);
     toast.success('Section removed');
   };
@@ -1131,6 +1137,7 @@ const ShopifyStyleEditor = () => {
     const newSections = [...sections];
     newSections.splice(index + 1, 0, newSection);
     setSections(newSections);
+    saveToHistory(newSections);
     setHasChanges(true);
     toast.success('Section duplicated');
   };
@@ -1141,7 +1148,9 @@ const ShopifyStyleEditor = () => {
     if (active.id !== over?.id) {
       const oldIndex = sections.findIndex(s => s.id === active.id);
       const newIndex = sections.findIndex(s => s.id === over?.id);
-      setSections(arrayMove(sections, oldIndex, newIndex));
+      const newSections = arrayMove(sections, oldIndex, newIndex);
+      setSections(newSections);
+      saveToHistory(newSections);
       setHasChanges(true);
     }
   };
