@@ -263,9 +263,11 @@ const TNVHomePage = () => {
       <EditorModeIndicator />
       
       {/* === STORIES SECTION === */}
-      <div className="max-w-7xl mx-auto">
-        <StoriesSection stories={stories} />
-      </div>
+      <EditableSection sectionType="stories">
+        <div className="max-w-7xl mx-auto">
+          <StoriesSection stories={stories} />
+        </div>
+      </EditableSection>
       
       {/* === CATEGORY TABS === */}
       <EditableSection sectionType="category-tabs">
