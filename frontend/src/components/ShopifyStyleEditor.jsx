@@ -807,6 +807,11 @@ const ShopifyStyleEditor = () => {
   const [previewKey, setPreviewKey] = useState(0);
   const iframeRef = useRef(null);
 
+  // Undo/Redo history
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const maxHistoryLength = 50;
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -818,6 +823,67 @@ const ShopifyStyleEditor = () => {
   const [sections, setSections] = useState([]);
 
   const storeName = selectedStore || 'tnvcollection';
+
+  // Save to history (for undo/redo)
+  const saveToHistory = useCallback((newSections) => {
+    setHistory(prev => {
+      // Remove any future history if we're not at the end
+      const newHistory = prev.slice(0, historyIndex + 1);
+      // Add new state
+      newHistory.push(JSON.stringify(newSections));
+      // Limit history length
+      if (newHistory.length > maxHistoryLength) {
+        newHistory.shift();
+      }
+      return newHistory;
+    });
+    setHistoryIndex(prev => Math.min(prev + 1, maxHistoryLength - 1));
+  }, [historyIndex]);
+
+  // Undo function
+  const handleUndo = useCallback(() => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      const previousState = JSON.parse(history[newIndex]);
+      setSections(previousState);
+      setHistoryIndex(newIndex);
+      setHasChanges(true);
+      toast.info('Undo');
+    }
+  }, [history, historyIndex]);
+
+  // Redo function
+  const handleRedo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      const nextState = JSON.parse(history[newIndex]);
+      setSections(nextState);
+      setHistoryIndex(newIndex);
+      setHasChanges(true);
+      toast.info('Redo');
+    }
+  }, [history, historyIndex]);
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'y') {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo, handleRedo]);
 
   // Listen for messages from iframe (click-to-edit)
   useEffect(() => {
