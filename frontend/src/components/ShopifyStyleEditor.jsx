@@ -309,13 +309,13 @@ const SECTION_LIBRARY = {
     category: 'Settings',
     limit: 1,
     settings: [
-      { type: 'select', id: 'country', label: 'Store Country', options: Object.entries(COUNTRY_CONFIG).map(([code, cfg]) => ({ value: code, label: cfg.name })), default: 'PK' },
+      { type: 'select', id: 'country', label: 'Store Country', options: Object.entries(COUNTRY_CONFIG).map(([code, cfg]) => ({ value: code, label: `${cfg.flag || ''} ${cfg.name}` })), default: 'PK', autoConfigures: ['default_currency', 'default_language'] },
       { type: 'select', id: 'default_currency', label: 'Default Currency', options: CURRENCIES.map(c => ({ value: c.code, label: `${c.symbol} ${c.name}` })), default: 'PKR' },
       { type: 'select', id: 'default_language', label: 'Default Language', options: LANGUAGES.map(l => ({ value: l.code, label: l.name })), default: 'ur' },
       { type: 'checkbox', id: 'auto_configure', label: 'Auto-configure language & currency by country', default: true },
-      { type: 'checkbox', id: 'show_currency_selector', label: 'Show currency selector', default: true },
-      { type: 'checkbox', id: 'show_language_selector', label: 'Show language selector', default: true },
-      { type: 'checkbox', id: 'auto_detect_location', label: 'Auto-detect user location', default: true },
+      { type: 'checkbox', id: 'show_currency_selector', label: 'Show currency selector to customers', default: true },
+      { type: 'checkbox', id: 'show_language_selector', label: 'Show language selector to customers', default: true },
+      { type: 'checkbox', id: 'auto_detect_location', label: 'Auto-detect customer location', default: true },
     ],
     blocks: [
       { type: 'supported_currency', name: 'Supported Currency', settings: [
