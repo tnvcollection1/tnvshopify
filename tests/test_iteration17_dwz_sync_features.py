@@ -14,7 +14,7 @@ import requests
 import os
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multi-tenant-shop-3.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://merchant-hub-155.preview.emergentagent.com')
 
 class TestDWZSyncAPI:
     """Test DWZ56 Auto-Sync Service APIs"""
