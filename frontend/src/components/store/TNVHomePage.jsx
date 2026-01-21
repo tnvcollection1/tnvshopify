@@ -431,17 +431,20 @@ const TNVHomePage = () => {
           </div>
         </div>
       </section>
+      </EditableSection>
 
       {/* === FLASH SALE COUNTDOWN === */}
-      <div className="max-w-7xl mx-auto">
-        <FlashSaleCountdown 
-          endTime={flashSaleEndTime}
-          title="FLASH SALE"
-          subtitle="Ends in"
-          discount="50%"
-          link={`${baseUrl}/sale`}
-        />
-      </div>
+      <EditableSection sectionType="countdown">
+        <div className="max-w-7xl mx-auto">
+          <FlashSaleCountdown 
+            endTime={flashSaleEndTime}
+            title="FLASH SALE"
+            subtitle="Ends in"
+            discount="50%"
+            link={`${baseUrl}/sale`}
+          />
+        </div>
+      </EditableSection>
 
       {/* === QUICK CATEGORIES === */}
       <section className="py-3 max-w-7xl mx-auto">
@@ -457,20 +460,22 @@ const TNVHomePage = () => {
       </section>
 
       {/* === 30% CASHBACK PROMO === */}
-      <section className="px-3 py-2 max-w-7xl mx-auto">
-        <div className="relative rounded-2xl overflow-hidden h-28 bg-gradient-to-r from-cyan-400 via-teal-500 to-emerald-500">
-          <div className="absolute inset-0 flex items-center justify-between px-5">
-            <div>
-              <h3 className="text-white text-2xl font-black">30% CASHBACK</h3>
-              <p className="text-white/90 text-sm">On Sports Apparel & Footwear</p>
-            </div>
-            <div className="bg-black/80 text-white px-4 py-2 rounded-lg text-center">
-              <p className="text-[10px] text-gray-300 uppercase">Use Code:</p>
-              <p className="font-black text-lg">SPORTS30</p>
+      <EditableSection sectionType="promo-banner">
+        <section className="px-3 py-2 max-w-7xl mx-auto">
+          <div className="relative rounded-2xl overflow-hidden h-28 bg-gradient-to-r from-cyan-400 via-teal-500 to-emerald-500">
+            <div className="absolute inset-0 flex items-center justify-between px-5">
+              <div>
+                <h3 className="text-white text-2xl font-black">30% CASHBACK</h3>
+                <p className="text-white/90 text-sm">On Sports Apparel & Footwear</p>
+              </div>
+              <div className="bg-black/80 text-white px-4 py-2 rounded-lg text-center">
+                <p className="text-[10px] text-gray-300 uppercase">Use Code:</p>
+                <p className="font-black text-lg">SPORTS30</p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </EditableSection>
 
       {/* === SPORTS EDIT SECTION === */}
       <section className="py-3 px-3 max-w-7xl mx-auto">
@@ -485,19 +490,20 @@ const TNVHomePage = () => {
       </section>
 
       {/* === PRODUCTS WITH INFINITE SCROLL === */}
-      <section className="py-3 px-3 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold">All Products</h2>
-          <span className="text-sm text-gray-500">{products.length} items</span>
-        </div>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-          {products.map((product, idx) => (
-            <ProductCard 
-              key={`${product.shopify_product_id}-${idx}`} 
-              product={product} 
-              baseUrl={baseUrl}
-              onQuickView={() => setQuickViewProduct(product)}
+      <EditableSection sectionType="featured-collection">
+        <section className="py-3 px-3 max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold">All Products</h2>
+            <span className="text-sm text-gray-500">{products.length} items</span>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {products.map((product, idx) => (
+              <ProductCard 
+                key={`${product.shopify_product_id}-${idx}`} 
+                product={product} 
+                baseUrl={baseUrl}
+                onQuickView={() => setQuickViewProduct(product)}
             />
           ))}
         </div>
