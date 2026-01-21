@@ -1794,10 +1794,10 @@ const ShopifyStyleEditor = () => {
         )}
 
         {/* Preview */}
-        <main className="flex-1 overflow-hidden bg-gray-200 flex justify-center p-4 relative">
+        <main className="flex-1 overflow-auto bg-gray-200 flex justify-center p-4 relative">
           <div 
-            className="bg-white shadow-2xl transition-all duration-300 h-full overflow-hidden rounded-lg relative"
-            style={{ width: getPreviewWidth(), maxWidth: '100%' }}
+            className="bg-white shadow-2xl transition-all duration-300 overflow-auto rounded-lg relative"
+            style={{ width: getPreviewWidth(), maxWidth: '100%', height: 'calc(100vh - 120px)' }}
           >
             <iframe
               key={previewKey}
