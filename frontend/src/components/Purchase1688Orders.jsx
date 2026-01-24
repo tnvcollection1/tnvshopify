@@ -35,10 +35,11 @@ const Purchase1688Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const fetchOrders = useCallback(async () => {
-    if (!globalStore) return;
     setLoading(true);
     try {
-      let url = `${API}/api/1688/purchase-orders?page=${page}&page_size=${pageSize}&store_name=${globalStore}`;
+      let url = `${API}/api/1688/purchase-orders?page=${page}&page_size=${pageSize}`;
+      // Only add store_name filter if it exists and orders have store_name
+      // For now, we fetch all orders regardless of store selection
       if (statusFilter) {
         url += `&status=${statusFilter}`;
       }
@@ -68,13 +69,11 @@ const Purchase1688Orders = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, statusFilter, searchShopifyId, globalStore]);
+  }, [page, pageSize, statusFilter, searchShopifyId]);
 
   useEffect(() => {
-    if (globalStore) {
-      fetchOrders();
-    }
-  }, [fetchOrders, globalStore]);
+    fetchOrders();
+  }, [fetchOrders]);
 
   const totalPages = Math.ceil(totalOrders / pageSize);
 
