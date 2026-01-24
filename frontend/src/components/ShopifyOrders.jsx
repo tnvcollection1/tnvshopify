@@ -306,68 +306,47 @@ const OrderDetailModal = ({ order, open, onClose }) => {
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
               {loading ? (
                 <p className="text-sm text-orange-600">Loading...</p>
-              ) : alibaba1688OrderId ? (
+              ) : (
                 <div className="space-y-2">
+                  {/* Show linked count */}
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">1688 Order ID:</span>
-                    <span className="font-mono text-sm font-semibold text-orange-700">{alibaba1688OrderId}</span>
+                    <span className="text-sm text-gray-700">1688 Orders Linked:</span>
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      linkedItemsCount === lineItems.length 
+                        ? 'bg-green-100 text-green-700' 
+                        : linkedItemsCount > 0 
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      {linkedItemsCount} / {lineItems.length} items
+                    </span>
                   </div>
-                  {purchaseOrder?.status && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700">Status:</span>
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        purchaseOrder.status === 'shipped' ? 'bg-green-100 text-green-700' :
-                        purchaseOrder.status === 'paid' ? 'bg-blue-100 text-blue-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {purchaseOrder.status.toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                  {linkedProduct && (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-700">1688 Product:</span>
-                        <a 
-                          href={linkedProduct.product_url || `https://detail.1688.com/offer/${linkedProduct.product_id}.html`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:underline"
-                        >
-                          {linkedProduct.product_id}
-                        </a>
-                      </div>
-                      {linkedProduct.price && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-700">1688 Price:</span>
-                          <span className="text-sm font-medium text-gray-900">¥{linkedProduct.price}</span>
+                  
+                  {Object.keys(lineItem1688Orders).length > 0 && (
+                    <div className="text-xs text-gray-500 pt-1 border-t">
+                      {Object.values(lineItem1688Orders).map((po, idx) => (
+                        <div key={idx} className="flex items-center justify-between py-1">
+                          <span className="truncate max-w-[150px]">{po.notes?.split(' - ')[0] || 'Product'}</span>
+                          <a 
+                            href={`https://trade.1688.com/order/order_detail.htm?orderId=${po.alibaba_order_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-orange-600 hover:underline font-mono"
+                          >
+                            {po.alibaba_order_id?.slice(-8)}
+                          </a>
                         </div>
-                      )}
-                    </>
-                  )}
-                  {pipelineData?.current_stage && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700">Pipeline Stage:</span>
-                      <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">
-                        {pipelineData.current_stage?.replace(/_/g, ' ').toUpperCase()}
-                      </span>
+                      ))}
                     </div>
+                  )}
+                  
+                  {linkedItemsCount < lineItems.length && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      ⚠️ {lineItems.length - linkedItemsCount} item(s) not linked to 1688 yet
+                    </p>
                   )}
                 </div>
-              ) : linkedProduct ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Linked 1688 Product:</span>
-                    <a 
-                      href={`https://detail.1688.com/offer/${linkedProduct.product_id}.html`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      {linkedProduct.product_id}
-                    </a>
-                  </div>
-                  <p className="text-xs text-orange-600">
+              )}
                     ⚠️ Product linked but not yet ordered on 1688
                   </p>
                 </div>
