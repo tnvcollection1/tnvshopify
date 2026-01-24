@@ -365,16 +365,66 @@ const OrderDetailModal = ({ order, open, onClose }) => {
           <div className="md:col-span-2">
             <h4 className="text-sm font-semibold text-gray-900 mb-2">Items ({lineItems.length})</h4>
             <div className="border border-gray-200 rounded-lg divide-y divide-gray-200 bg-white">
-              {lineItems.map((item, idx) => (
-                <div key={idx} className="p-3 flex justify-between items-start">
-                  <div className="flex-1">
-                    <p className="font-medium text-sm text-gray-900">{item.title || item.name}</p>
-                    {item.sku && <p className="text-xs text-gray-500 mt-0.5">SKU: {item.sku}</p>}
-                    <p className="text-xs text-gray-500">Qty: {item.quantity || 1}</p>
+              {lineItems.map((item, idx) => {
+                const item1688Order = get1688OrderForItem(item);
+                
+                return (
+                  <div key={idx} className="p-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm text-gray-900">{item.title || item.name}</p>
+                        {item.sku && <p className="text-xs text-gray-500 mt-0.5">SKU: {item.sku}</p>}
+                        <p className="text-xs text-gray-500">Qty: {item.quantity || 1}</p>
+                      </div>
+                      <p className="font-semibold text-sm text-gray-900">₹{parseFloat(item.price || 0).toLocaleString()}</p>
+                    </div>
+                    
+                    {/* 1688 Order Status for this item */}
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      {item1688Order ? (
+                        <div className="flex items-center justify-between bg-green-50 rounded-lg px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <div>
+                              <span className="text-xs font-medium text-green-800">1688 Order: </span>
+                              <a 
+                                href={`https://trade.1688.com/order/order_detail.htm?orderId=${item1688Order.alibaba_order_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-green-700 hover:underline font-mono"
+                              >
+                                {item1688Order.alibaba_order_id}
+                              </a>
+                            </div>
+                          </div>
+                          <span className={`text-xs px-2 py-0.5 rounded ${
+                            item1688Order.status === 'shipped' || item1688Order.status === 'delivered' 
+                              ? 'bg-green-200 text-green-800' 
+                              : item1688Order.status === 'paid'
+                              ? 'bg-blue-200 text-blue-800'
+                              : 'bg-yellow-200 text-yellow-800'
+                          }`}>
+                            {item1688Order.status?.toUpperCase() || 'PENDING'}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                          <span className="text-xs text-gray-500">No 1688 order linked</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100"
+                            onClick={() => handleLink1688(item)}
+                          >
+                            <Package className="w-3 h-3 mr-1" />
+                            Link to 1688
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <p className="font-semibold text-sm text-gray-900">₹{parseFloat(item.price || 0).toLocaleString()}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
