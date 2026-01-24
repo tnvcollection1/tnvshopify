@@ -403,10 +403,10 @@ const Purchase1688Orders = () => {
                         )}
                       </td>
                       <td className="p-3">
-                        {order.dwz_tracking ? (
+                        {order.dwz_tracking || order.dwz_tracking_number ? (
                           <div>
                             <code className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded font-mono">
-                              {order.dwz_tracking}
+                              {order.dwz_tracking || order.dwz_tracking_number}
                             </code>
                             {order.dwz_status && (
                               <p className="text-xs text-purple-600 mt-1">
@@ -415,7 +415,22 @@ const Purchase1688Orders = () => {
                             )}
                           </div>
                         ) : (
-                          <span className="text-gray-400 text-xs">Not assigned</span>
+                          <div>
+                            {['shipped', 'delivered', 'fulfilled', 'completed'].includes(order.status?.toLowerCase()) || 
+                             ['shipped', 'delivered', 'fulfilled'].includes(order.supplier_status?.toLowerCase()) ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs border-purple-300 text-purple-600 hover:bg-purple-50"
+                                onClick={() => handlePlaceDWZOrder(order)}
+                              >
+                                <Truck className="h-3 w-3 mr-1" />
+                                Place DWZ Order
+                              </Button>
+                            ) : (
+                              <span className="text-gray-400 text-xs">Waiting for 1688</span>
+                            )}
+                          </div>
                         )}
                       </td>
                       <td className="p-3">
