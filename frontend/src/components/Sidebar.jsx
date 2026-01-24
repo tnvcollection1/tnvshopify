@@ -149,25 +149,21 @@ const Sidebar = () => {
     },
     { 
       icon: Package, 
-      label: '1688 Products', 
-      path: '/1688-products',
-      badge: 'New'
+      label: '1688 Sourcing', 
+      section: '1688-sourcing',
+      badge: 'New',
+      children: [
+        { icon: Package, label: '1688 Products', path: '/1688-products' },
+        { icon: ShoppingCart, label: 'Purchase Orders', path: '/purchase-1688' },
+        { icon: Zap, label: 'Bulk Order', path: '/bulk-order-1688' },
+        { icon: Search, label: 'Product Scraper', path: '/product-scraper' },
+        { icon: Upload, label: 'Product Collector', path: '/product-collector' },
+        { icon: Key, label: '1688 Accounts', path: '/1688-accounts' },
+      ]
     },
     { 
-      icon: Search, 
-      label: '1688 Scraper', 
-      path: '/product-scraper',
-      badge: ''
-    },
-    { 
-      icon: Upload, 
-      label: 'Product Collector', 
-      path: '/product-collector',
-      badge: 'New'
-    },
-    { 
-      icon: Key, 
-      label: '1688 Accounts', 
+      icon: Activity, 
+      label: 'Fulfillment Pipeline', 
       path: '/1688-accounts',
       badge: 'New'
     },
