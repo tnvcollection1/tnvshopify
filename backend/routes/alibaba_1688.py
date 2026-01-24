@@ -2604,6 +2604,53 @@ async def bulk_link_1688_orders(request: BulkLink1688OrdersRequest):
     }
 
 
+@router.post("/purchase-orders/{alibaba_order_id}/link-shopify")
+async def link_purchase_order_to_shopify(alibaba_order_id: str, data: dict = Body(...)):
+    """
+    Link an existing 1688 purchase order to a Shopify order number.
+    
+    Body:
+    {
+        "shopify_order_number": "29160"
+    }
+    """
+    db = get_db()
+    shopify_order_number = data.get("shopify_order_number")
+    
+    if not shopify_order_number:
+        raise HTTPException(status_code=400, detail="shopify_order_number is required")
+    
+    # Find the purchase order
+    purchase_order = await db.purchase_orders_1688.find_one(
+        {"alibaba_order_id": alibaba_order_id}
+    )
+    
+    if not purchase_order:
+        raise HTTPException(status_code=404, detail=f"1688 order {alibaba_order_id} not found")
+    
+    # Update the purchase order with Shopify order number
+    now = datetime.now(timezone.utc).isoformat()
+    update_result = await db.purchase_orders_1688.update_one(
+        {"alibaba_order_id": alibaba_order_id},
+        {"$set": {
+            "shopify_order_id": str(shopify_order_number),
+            "shopify_order_number": str(shopify_order_number),
+            "updated_at": now,
+            "linked_manually": True,
+        }}
+    )
+    
+    if update_result.modified_count == 0:
+        raise HTTPException(status_code=500, detail="Failed to update purchase order")
+    
+    return {
+        "success": True,
+        "message": f"Linked 1688 order {alibaba_order_id} to Shopify #{shopify_order_number}",
+        "alibaba_order_id": alibaba_order_id,
+        "shopify_order_number": shopify_order_number,
+    }
+
+
 # ==================== 1688 Order Fulfillment with Auto DWZ56 Shipment ====================
 
 class Mark1688ShippedRequest(BaseModel):
