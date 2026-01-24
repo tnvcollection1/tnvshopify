@@ -155,17 +155,27 @@ const OrderDetailModal = ({ order, open, onClose }) => {
         // No pipeline data - that's ok
       }
 
-      // Get 1688 purchase order data
+      // Get 1688 purchase orders for this Shopify order (all line items)
       try {
         const purchaseRes = await axios.get(`${API}/api/1688/purchase-orders`, {
           params: { 
-            store_name: order.store_name,
-            search: order.order_number,
-            page_size: 1
+            shopify_order_id: order.order_number,
+            page_size: 50
           }
         });
         if (purchaseRes.data?.orders?.length > 0) {
           setPurchaseOrder(purchaseRes.data.orders[0]);
+          
+          // Map 1688 orders to line items by SKU/product_id
+          const orderMap = {};
+          purchaseRes.data.orders.forEach(po => {
+            // Use product_id or SKU as key
+            const key = po.product_id || po.sku || po.notes;
+            if (key) {
+              orderMap[key] = po;
+            }
+          });
+          setLineItem1688Orders(orderMap);
         }
       } catch (e) {
         // No purchase order - that's ok
@@ -175,6 +185,29 @@ const OrderDetailModal = ({ order, open, onClose }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Function to link a line item to 1688
+  const handleLink1688 = async (item) => {
+    // Extract product ID from SKU (format: productId-variant-size)
+    const sku = item.sku || '';
+    const productId = sku.split('-')[0];
+    
+    if (!productId) {
+      toast.error('No product ID found in SKU');
+      return;
+    }
+    
+    // Navigate to bulk order page with pre-filled data
+    const params = new URLSearchParams({
+      shopify_order: order.order_number,
+      product_id: productId,
+      sku: sku,
+      title: item.title || item.name,
+      quantity: item.quantity || 1
+    });
+    
+    window.open(`/bulk-order-1688?${params.toString()}`, '_blank');
   };
 
   if (!order) return null;
@@ -188,6 +221,20 @@ const OrderDetailModal = ({ order, open, onClose }) => {
     order.order_1688_id || 
     pipelineData?.alibaba_order_id ||
     order.line_item_orders?.[0]?.alibaba_order_id;
+
+  // Helper to find 1688 order for a line item
+  const get1688OrderForItem = (item) => {
+    const sku = item.sku || '';
+    const productId = sku.split('-')[0];
+    
+    // Check by product_id match
+    for (const [key, po] of Object.entries(lineItem1688Orders)) {
+      if (key === productId || key.includes(productId) || (po.notes && po.notes.includes(item.title))) {
+        return po;
+      }
+    }
+    return null;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
