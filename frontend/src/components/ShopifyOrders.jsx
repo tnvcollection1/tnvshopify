@@ -101,6 +101,8 @@ const OrderDetailModal = ({ order, open, onClose }) => {
   const [linkedProduct, setLinkedProduct] = useState(null);
   const [pipelineData, setPipelineData] = useState(null);
   const [purchaseOrder, setPurchaseOrder] = useState(null);
+  const [lineItem1688Orders, setLineItem1688Orders] = useState({});
+  const [linkingItem, setLinkingItem] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Fetch linked product and pipeline data when modal opens
