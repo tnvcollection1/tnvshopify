@@ -347,17 +347,6 @@ const OrderDetailModal = ({ order, open, onClose }) => {
                   )}
                 </div>
               )}
-                    ⚠️ Product linked but not yet ordered on 1688
-                  </p>
-                </div>
-              ) : (
-                <div className="text-center py-2">
-                  <p className="text-sm text-gray-600">No 1688 order linked yet</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Link a product in the Fulfillment Pipeline to place 1688 orders
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 
