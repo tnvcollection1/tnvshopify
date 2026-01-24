@@ -453,13 +453,42 @@ const OrderDetailModal = ({ order, open, onClose }) => {
                                 size="sm"
                                 variant="outline"
                                 className="h-7 text-xs bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200"
-                                onClick={() => {
-                                  const params = new URLSearchParams({
-                                    shopify_order: order.order_number,
-                                    alibaba_order: item1688Order.alibaba_order_id,
-                                    product_id: item1688Order.product_id || '',
-                                  });
-                                  window.open(`/dwz56-shipping?${params.toString()}`, '_blank');
+                                onClick={async () => {
+                                  // Extract color/size from SKU or title
+                                  const sku = item.sku || '';
+                                  const skuParts = sku.split('-');
+                                  const color = skuParts.length >= 2 ? skuParts[skuParts.length - 2] : '';
+                                  const size = skuParts.length >= 1 ? skuParts[skuParts.length - 1] : '';
+                                  const country = address?.country_code || 'IN';
+                                  
+                                  try {
+                                    // Generate TNV tracking number
+                                    const trackingRes = await fetch(
+                                      `${API}/api/dwz56/generate-tracking?country=${country}&color=${encodeURIComponent(color)}&size=${encodeURIComponent(size)}`
+                                    );
+                                    const trackingData = await trackingRes.json();
+                                    
+                                    const params = new URLSearchParams({
+                                      tracking: trackingData.tracking_number || '',
+                                      ref_no: order.order_number,
+                                      shopify_order: order.order_number,
+                                      alibaba_order: item1688Order.alibaba_order_id,
+                                      product_id: item1688Order.product_id || '',
+                                      color: color,
+                                      size: size,
+                                      remarks: `#${order.order_number} | ${item.title || ''}`.substring(0, 100),
+                                    });
+                                    window.open(`/dwz56-shipping?${params.toString()}`, '_blank');
+                                  } catch (e) {
+                                    console.error('Error generating tracking:', e);
+                                    // Fallback without tracking
+                                    const params = new URLSearchParams({
+                                      shopify_order: order.order_number,
+                                      alibaba_order: item1688Order.alibaba_order_id,
+                                      product_id: item1688Order.product_id || '',
+                                    });
+                                    window.open(`/dwz56-shipping?${params.toString()}`, '_blank');
+                                  }
                                 }}
                               >
                                 <Truck className="w-3 h-3 mr-1" />
