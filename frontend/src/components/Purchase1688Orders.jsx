@@ -159,6 +159,47 @@ const Purchase1688Orders = () => {
     setPage(1);
   };
 
+  // Link 1688 order to Shopify order
+  const handleLinkShopify = async (order, shopifyOrderId) => {
+    try {
+      const res = await fetch(`${API}/api/1688/purchase-orders/${order.alibaba_order_id}/link-shopify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shopify_order_number: shopifyOrderId })
+      });
+      
+      if (res.ok) {
+        toast.success(`Linked to Shopify order #${shopifyOrderId}`);
+        fetchOrders(); // Refresh
+      } else {
+        const data = await res.json();
+        toast.error(data.message || 'Failed to link order');
+      }
+    } catch (error) {
+      console.error('Error linking order:', error);
+      toast.error('Failed to link order');
+    }
+  };
+
+  // Place DWZ order for fulfilled 1688 order
+  const handlePlaceDWZOrder = (order) => {
+    // DWZ tracking format: X + timestamp or order reference
+    // Remarks format: Shopify Order # + Product details
+    const shopifyOrder = order.shopify_order_number || order.shopify_order_id || '';
+    const productId = order.product_id || '';
+    const remarks = `Shopify #${shopifyOrder} | 1688: ${order.alibaba_order_id} | ${order.notes || productId}`;
+    
+    const params = new URLSearchParams({
+      ref_no: shopifyOrder, // Reference number (cRNo)
+      alibaba_order: order.alibaba_order_id,
+      product_id: productId,
+      remarks: remarks.substring(0, 100), // cMemo - limit to 100 chars
+      goods: order.notes || `Product from 1688 order ${order.alibaba_order_id}`,
+    });
+    
+    window.open(`/dwz56-shipping?${params.toString()}`, '_blank');
+  };
+
   return (
     <div className="p-6 space-y-6" data-testid="purchase-1688-orders">
       {/* Header */}
