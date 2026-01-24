@@ -182,22 +182,68 @@ const Purchase1688Orders = () => {
   };
 
   // Place DWZ order for fulfilled 1688 order
-  const handlePlaceDWZOrder = (order) => {
-    // DWZ tracking format: X + timestamp or order reference
-    // Remarks format: Shopify Order # + Product details
-    const shopifyOrder = order.shopify_order_number || order.shopify_order_id || '';
-    const productId = order.product_id || '';
-    const remarks = `Shopify #${shopifyOrder} | 1688: ${order.alibaba_order_id} | ${order.notes || productId}`;
+  const handlePlaceDWZOrder = async (order) => {
+    // Extract color and size from the order
+    const notes = order.notes || '';
+    const sku = order.sku || '';
     
-    const params = new URLSearchParams({
-      ref_no: shopifyOrder, // Reference number (cRNo)
-      alibaba_order: order.alibaba_order_id,
-      product_id: productId,
-      remarks: remarks.substring(0, 100), // cMemo - limit to 100 chars
-      goods: order.notes || `Product from 1688 order ${order.alibaba_order_id}`,
-    });
+    // Try to extract size from notes or SKU (e.g., "black / 44" or "SKU-black-44")
+    let size = '';
+    let color = '';
     
-    window.open(`/dwz56-shipping?${params.toString()}`, '_blank');
+    // Parse from notes like "black / 44" or "Red - 42"
+    const sizeMatch = notes.match(/[\/-]\s*(\d{2,3})/);
+    if (sizeMatch) {
+      size = sizeMatch[1];
+    }
+    
+    // Parse from SKU like "775062422229-black-44"
+    const skuParts = sku.split('-');
+    if (skuParts.length >= 3) {
+      color = skuParts[skuParts.length - 2] || '';
+      size = skuParts[skuParts.length - 1] || '';
+    }
+    
+    // Also try to get color from notes
+    const colorMatch = notes.match(/^([a-zA-Z]+)/);
+    if (colorMatch && !color) {
+      color = colorMatch[1];
+    }
+    
+    // Get country from Shopify order (default to IN for India)
+    const country = order.country || 'IN';
+    
+    // Generate tracking number via API
+    try {
+      const trackingRes = await fetch(
+        `${API}/api/dwz56/generate-tracking?country=${country}&color=${encodeURIComponent(color)}&size=${encodeURIComponent(size)}`
+      );
+      const trackingData = await trackingRes.json();
+      
+      if (trackingData.success) {
+        const shopifyOrder = order.shopify_order_number || order.shopify_order_id || '';
+        const productId = order.product_id || '';
+        const remarks = `#${shopifyOrder} | 1688:${order.alibaba_order_id} | ${notes || productId}`;
+        
+        const params = new URLSearchParams({
+          tracking: trackingData.tracking_number, // TNV tracking number (cNum)
+          ref_no: shopifyOrder, // Reference number (cRNo)
+          alibaba_order: order.alibaba_order_id,
+          product_id: productId,
+          remarks: remarks.substring(0, 100), // cMemo - limit to 100 chars
+          goods: notes || `Product from 1688 order`,
+          color: color,
+          size: size,
+        });
+        
+        window.open(`/dwz56-shipping?${params.toString()}`, '_blank');
+      } else {
+        toast.error('Failed to generate tracking number');
+      }
+    } catch (error) {
+      console.error('Error generating tracking:', error);
+      toast.error('Failed to generate tracking number');
+    }
   };
 
   return (
