@@ -48,6 +48,149 @@ DWZ56_API_KEY = os.environ.get("DWZ56_API_KEY", "jIrM5UNuZu905q7")
 DWZ56_PURCHASE_CLIENT_ID = int(os.environ.get("DWZ56_PURCHASE_CLIENT_ID", "1051"))
 DWZ56_PURCHASE_API_KEY = os.environ.get("DWZ56_PURCHASE_API_KEY", "5OpgrK9wFy3yfOX")
 
+# Color code mapping for tracking number
+COLOR_CODES = {
+    "red": "R", "maroon": "R", "burgundy": "R", "crimson": "R", "scarlet": "R",
+    "blue": "B", "navy": "B", "royal": "B", "cobalt": "B", "azure": "B", "indigo": "B",
+    "black": "K", "jet": "K", "onyx": "K", "ebony": "K", "charcoal": "K",
+    "white": "W", "ivory": "W", "cream": "W", "snow": "W", "pearl": "W",
+    "green": "G", "olive": "G", "emerald": "G", "forest": "G", "lime": "G", "mint": "G", "teal": "G",
+    "yellow": "Y", "gold": "Y", "amber": "Y", "lemon": "Y", "mustard": "Y",
+    "orange": "O", "tangerine": "O", "peach": "O", "coral": "O", "apricot": "O",
+    "pink": "P", "rose": "P", "magenta": "P", "fuchsia": "P", "salmon": "P", "blush": "P",
+    "purple": "V", "violet": "V", "lavender": "V", "plum": "V", "lilac": "V", "mauve": "V",
+    "brown": "N", "tan": "N", "beige": "N", "khaki": "N", "camel": "N", "chocolate": "N", "coffee": "N",
+    "grey": "E", "gray": "E", "silver": "E", "ash": "E", "slate": "E",
+    "multi": "M", "multicolor": "M", "mixed": "M", "rainbow": "M",
+}
+
+# Country codes
+COUNTRY_CODES = {
+    "india": "IN", "in": "IN", "ind": "IN",
+    "pakistan": "PK", "pk": "PK", "pak": "PK",
+    "uae": "AE", "dubai": "AE", "ae": "AE",
+    "usa": "US", "us": "US", "united states": "US",
+    "uk": "UK", "gb": "UK", "united kingdom": "UK",
+    "saudi": "SA", "ksa": "SA", "sa": "SA",
+}
+
+
+def get_color_code(color_str: str) -> str:
+    """Extract color code from color string"""
+    if not color_str:
+        return "X"  # Unknown
+    color_lower = color_str.lower().strip()
+    
+    # Check direct match
+    if color_lower in COLOR_CODES:
+        return COLOR_CODES[color_lower]
+    
+    # Check if any color keyword is in the string
+    for color, code in COLOR_CODES.items():
+        if color in color_lower:
+            return code
+    
+    # Return first letter uppercase if no match
+    return color_str[0].upper() if color_str else "X"
+
+
+def get_country_code(country_str: str) -> str:
+    """Extract 2-letter country code"""
+    if not country_str:
+        return "IN"  # Default to India
+    country_lower = country_str.lower().strip()
+    
+    if country_lower in COUNTRY_CODES:
+        return COUNTRY_CODES[country_lower]
+    
+    # Return first 2 letters uppercase
+    return country_str[:2].upper() if len(country_str) >= 2 else "IN"
+
+
+async def generate_tnv_tracking_number(
+    country: str = "IN",
+    color: str = None,
+    size: str = None,
+    db = None
+) -> str:
+    """
+    Generate TNV tracking number format:
+    TNV{COUNTRY}{DDMM}{COLOR}{SIZE}{SERIAL}
+    
+    Example: TNVIN0107R42001
+    - TNV = Company prefix
+    - IN = Country (India)
+    - 0107 = Date (01st July in DDMM)
+    - R = Color code (Red)
+    - 42 = Size
+    - 001 = Serial number (auto-increment per day)
+    """
+    if db is None:
+        db = get_db()
+    
+    # Get current date in DDMM format
+    now = datetime.now(timezone.utc)
+    date_str = now.strftime("%d%m")  # DDMM format
+    today_key = now.strftime("%Y%m%d")  # For serial tracking
+    
+    # Get country code
+    country_code = get_country_code(country)
+    
+    # Get color code
+    color_code = get_color_code(color) if color else "X"
+    
+    # Get size (pad to 2 digits)
+    size_str = str(size).zfill(2)[:2] if size else "00"
+    # Extract numeric part if size contains letters
+    size_num = ''.join(filter(str.isdigit, str(size))) if size else "00"
+    size_str = size_num.zfill(2)[-2:] if size_num else "00"
+    
+    # Get/increment daily serial counter
+    counter_key = f"tnv_tracking_{today_key}"
+    counter_doc = await db.tracking_counters.find_one_and_update(
+        {"_id": counter_key},
+        {"$inc": {"serial": 1}},
+        upsert=True,
+        return_document=True
+    )
+    serial = counter_doc.get("serial", 1)
+    serial_str = str(serial).zfill(3)[-3:]  # 3 digits, max 999 per day
+    
+    # Build tracking number: TNV + Country + DDMM + Color + Size + Serial
+    tracking_number = f"TNV{country_code}{date_str}{color_code}{size_str}{serial_str}"
+    
+    return tracking_number
+
+
+@router.get("/generate-tracking")
+async def generate_tracking_number_endpoint(
+    country: str = Query("IN", description="Country code (IN, PK, AE, etc.)"),
+    color: str = Query(None, description="Color name (red, blue, black, etc.)"),
+    size: str = Query(None, description="Size (41, 42, S, M, etc.)"),
+):
+    """
+    Generate TNV tracking number.
+    
+    Format: TNV{COUNTRY}{DDMM}{COLOR}{SIZE}{SERIAL}
+    Example: TNVIN0107R42001
+    """
+    db = get_db()
+    tracking_number = await generate_tnv_tracking_number(country, color, size, db)
+    
+    return {
+        "success": True,
+        "tracking_number": tracking_number,
+        "format": "TNV{COUNTRY}{DDMM}{COLOR}{SIZE}{SERIAL}",
+        "breakdown": {
+            "prefix": "TNV",
+            "country": get_country_code(country),
+            "date": datetime.now(timezone.utc).strftime("%d%m"),
+            "color": get_color_code(color) if color else "X",
+            "size": str(size).zfill(2)[-2:] if size else "00",
+            "serial": "auto-increment"
+        }
+    }
+
 # Tracking status mapping (nState values)
 TRACKING_STATUS = {
     0: {"code": "NOT_SENT", "label": "未发送", "label_en": "Not Sent"},
