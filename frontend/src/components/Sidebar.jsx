@@ -164,7 +164,7 @@ const Sidebar = () => {
     { 
       icon: Activity, 
       label: 'Fulfillment Pipeline', 
-      path: '/1688-accounts',
+      path: '/fulfillment-pipeline',
       badge: 'New'
     },
     { 
@@ -187,12 +187,6 @@ const Sidebar = () => {
     },
     { 
       icon: Truck, 
-      label: 'Fulfillment Pipeline', 
-      path: '/fulfillment-pipeline',
-      badge: 'New'
-    },
-    { 
-      icon: Truck, 
       label: 'Fulfillment', 
       path: '/fulfillment',
       badge: ''
@@ -201,18 +195,6 @@ const Sidebar = () => {
       icon: Box, 
       label: 'Products', 
       path: '/products',
-      badge: 'New'
-    },
-    { 
-      icon: ShoppingCart, 
-      label: '1688 Purchase', 
-      path: '/purchase-1688',
-      badge: 'New'
-    },
-    { 
-      icon: Zap, 
-      label: 'Bulk Order 1688', 
-      path: '/bulk-order-1688',
       badge: 'New'
     },
     { icon: BarChart3, label: 'Analytics', path: '/reports' },
