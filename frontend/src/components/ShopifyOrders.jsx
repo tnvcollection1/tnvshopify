@@ -367,6 +367,8 @@ const OrderDetailModal = ({ order, open, onClose }) => {
             <div className="border border-gray-200 rounded-lg divide-y divide-gray-200 bg-white">
               {lineItems.map((item, idx) => {
                 const item1688Order = get1688OrderForItem(item);
+                const is1688Fulfilled = item1688Order && ['shipped', 'delivered', 'fulfilled', 'completed'].includes(item1688Order.status?.toLowerCase());
+                const hasDwzTracking = item1688Order?.dwz_tracking_number;
                 
                 return (
                   <div key={idx} className="p-3">
@@ -379,8 +381,9 @@ const OrderDetailModal = ({ order, open, onClose }) => {
                       <p className="font-semibold text-sm text-gray-900">₹{parseFloat(item.price || 0).toLocaleString()}</p>
                     </div>
                     
-                    {/* 1688 Order Status for this item */}
-                    <div className="mt-2 pt-2 border-t border-gray-100">
+                    {/* Fulfillment Status Flow */}
+                    <div className="mt-2 pt-2 border-t border-gray-100 space-y-2">
+                      {/* Step 1: 1688 Order */}
                       {item1688Order ? (
                         <div className="flex items-center justify-between bg-green-50 rounded-lg px-3 py-2">
                           <div className="flex items-center gap-2">
@@ -398,7 +401,7 @@ const OrderDetailModal = ({ order, open, onClose }) => {
                             </div>
                           </div>
                           <span className={`text-xs px-2 py-0.5 rounded ${
-                            item1688Order.status === 'shipped' || item1688Order.status === 'delivered' 
+                            is1688Fulfilled
                               ? 'bg-green-200 text-green-800' 
                               : item1688Order.status === 'paid'
                               ? 'bg-blue-200 text-blue-800'
@@ -409,7 +412,7 @@ const OrderDetailModal = ({ order, open, onClose }) => {
                         </div>
                       ) : (
                         <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                          <span className="text-xs text-gray-500">No 1688 order linked</span>
+                          <span className="text-xs text-gray-500">① No 1688 order linked</span>
                           <Button
                             size="sm"
                             variant="outline"
@@ -419,6 +422,61 @@ const OrderDetailModal = ({ order, open, onClose }) => {
                             <Package className="w-3 h-3 mr-1" />
                             Link to 1688
                           </Button>
+                        </div>
+                      )}
+                      
+                      {/* Step 2: DWZ Warehouse */}
+                      {item1688Order && (
+                        <div className={`flex items-center justify-between rounded-lg px-3 py-2 ${
+                          hasDwzTracking ? 'bg-blue-50' : is1688Fulfilled ? 'bg-purple-50' : 'bg-gray-50'
+                        }`}>
+                          {hasDwzTracking ? (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <Truck className="w-4 h-4 text-blue-600" />
+                                <div>
+                                  <span className="text-xs font-medium text-blue-800">DWZ Tracking: </span>
+                                  <span className="text-xs text-blue-700 font-mono">{item1688Order.dwz_tracking_number}</span>
+                                </div>
+                              </div>
+                              <span className="text-xs px-2 py-0.5 rounded bg-blue-200 text-blue-800">
+                                SHIPPED
+                              </span>
+                            </>
+                          ) : is1688Fulfilled ? (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <Package className="w-4 h-4 text-purple-600" />
+                                <span className="text-xs text-purple-700">② Ready at DWZ Warehouse</span>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200"
+                                onClick={() => {
+                                  const params = new URLSearchParams({
+                                    shopify_order: order.order_number,
+                                    alibaba_order: item1688Order.alibaba_order_id,
+                                    product_id: item1688Order.product_id || '',
+                                  });
+                                  window.open(`/dwz56-shipping?${params.toString()}`, '_blank');
+                                }}
+                              >
+                                <Truck className="w-3 h-3 mr-1" />
+                                Place DWZ Order
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-gray-400" />
+                                <span className="text-xs text-gray-500">② Waiting for 1688 fulfillment</span>
+                              </div>
+                              <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-600">
+                                PENDING
+                              </span>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
