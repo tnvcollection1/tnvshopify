@@ -351,9 +351,16 @@ const Purchase1688Orders = () => {
                       <td className="p-3">
                         {order.shopify_order_id || order.shopify_order_number ? (
                           <div>
-                            <Badge variant="outline" className="text-gray-700 font-mono">
+                            <a 
+                              href={`/orders?search=${order.shopify_order_number || order.shopify_order_id}`}
+                              className="text-blue-600 hover:underline font-mono text-sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                window.location.href = `/orders?search=${order.shopify_order_number || order.shopify_order_id}`;
+                              }}
+                            >
                               #{order.shopify_order_number || order.shopify_order_id}
-                            </Badge>
+                            </a>
                             {order.shopify_fulfillment_status && (
                               <p className="text-xs text-gray-500 mt-1">
                                 {order.shopify_fulfillment_status}
@@ -361,7 +368,22 @@ const Purchase1688Orders = () => {
                             )}
                           </div>
                         ) : (
-                          <span className="text-gray-400">-</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-400 text-xs">Not linked</span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-6 text-xs border-blue-300 text-blue-600 hover:bg-blue-50"
+                              onClick={() => {
+                                const orderId = prompt('Enter Shopify Order Number to link:');
+                                if (orderId) {
+                                  handleLinkShopify(order, orderId);
+                                }
+                              }}
+                            >
+                              Link
+                            </Button>
+                          </div>
                         )}
                       </td>
                       <td className="p-3">
