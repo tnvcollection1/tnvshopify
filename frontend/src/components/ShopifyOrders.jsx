@@ -226,15 +226,36 @@ const OrderDetailModal = ({ order, open, onClose }) => {
   const get1688OrderForItem = (item) => {
     const sku = item.sku || '';
     const productId = sku.split('-')[0];
+    const itemTitle = (item.title || item.name || '').toLowerCase();
     
-    // Check by product_id match
+    // Check all 1688 orders for this Shopify order
     for (const [key, po] of Object.entries(lineItem1688Orders)) {
-      if (key === productId || key.includes(productId) || (po.notes && po.notes.includes(item.title))) {
+      // Match by product_id
+      if (po.product_id && productId && String(po.product_id) === String(productId)) {
         return po;
+      }
+      
+      // Match by SKU
+      if (po.sku && sku && po.sku.includes(productId)) {
+        return po;
+      }
+      
+      // Match by title in notes
+      if (po.notes && itemTitle) {
+        const notesLower = po.notes.toLowerCase();
+        // Check if item title words appear in notes
+        const titleWords = itemTitle.split(' ').filter(w => w.length > 3);
+        const matchCount = titleWords.filter(w => notesLower.includes(w)).length;
+        if (matchCount >= 2 || (titleWords.length <= 2 && matchCount >= 1)) {
+          return po;
+        }
       }
     }
     return null;
   };
+
+  // Count linked items
+  const linkedItemsCount = lineItems.filter(item => get1688OrderForItem(item)).length;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
