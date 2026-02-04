@@ -97,7 +97,7 @@ const StatCard = ({ title, value, icon: Icon, color, active, onClick }) => {
 };
 
 // Order Detail Modal
-const OrderDetailModal = ({ order, open, onClose }) => {
+const OrderDetailModal = ({ order, open, onClose, globalStore, onRefresh }) => {
   const [linkedProduct, setLinkedProduct] = useState(null);
   const [pipelineData, setPipelineData] = useState(null);
   const [purchaseOrder, setPurchaseOrder] = useState(null);
