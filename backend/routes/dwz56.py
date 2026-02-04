@@ -62,6 +62,18 @@ COLOR_CODES = {
     "brown": "N", "tan": "N", "beige": "N", "khaki": "N", "camel": "N", "chocolate": "N", "coffee": "N",
     "grey": "E", "gray": "E", "silver": "E", "ash": "E", "slate": "E",
     "multi": "M", "multicolor": "M", "mixed": "M", "rainbow": "M",
+    # Chinese colors
+    "红色": "R", "红": "R", "酒红": "R",
+    "蓝色": "B", "蓝": "B", "深蓝": "B", "藏蓝": "B",
+    "黑色": "K", "黑": "K",
+    "白色": "W", "白": "W", "米白": "W",
+    "绿色": "G", "绿": "G", "军绿": "G", "墨绿": "G",
+    "黄色": "Y", "黄": "Y", "金色": "Y",
+    "橙色": "O", "橙": "O",
+    "粉色": "P", "粉": "P", "粉红": "P",
+    "紫色": "V", "紫": "V",
+    "棕色": "N", "棕": "N", "咖啡": "N", "卡其": "N", "驼色": "N",
+    "灰色": "E", "灰": "E", "银色": "E",
 }
 
 # Country codes
