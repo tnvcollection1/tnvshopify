@@ -384,6 +384,14 @@ class PriceQuery(BaseModel):
     fqHeight: Optional[float] = Field(None, description="Height in cm")
 
 
+class PlaceDWZFromAlibabaRequest(BaseModel):
+    """Request to place DWZ order from 1688 purchase order"""
+    alibaba_order_id: str = Field(..., description="1688 Order ID")
+    courier_type: str = Field("YT", description="Courier type code (YT=YunTu, etc.)")
+    weight: float = Field(0.5, description="Package weight in kg")
+    goods_description: Optional[str] = Field(None, description="Goods description")
+
+
 # ============== API Endpoints ==============
 
 @router.get("/health")
