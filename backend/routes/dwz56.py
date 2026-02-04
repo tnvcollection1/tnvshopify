@@ -600,8 +600,8 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
     """
     db = get_db()
     
-    # 1. Find the 1688 purchase order
-    alibaba_order = await db.alibaba_orders.find_one(
+    # 1. Find the 1688 purchase order (collection: purchase_orders_1688)
+    alibaba_order = await db.purchase_orders_1688.find_one(
         {"alibaba_order_id": request.alibaba_order_id}
     )
     
