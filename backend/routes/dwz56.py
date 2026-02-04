@@ -586,6 +586,157 @@ async def create_shipment(shipment: ShipmentCreate):
     }
 
 
+@router.post("/place-order-from-1688")
+async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
+    """
+    Place a DWZ shipping order directly from a 1688 purchase order.
+    
+    This endpoint:
+    1. Fetches the 1688 order details
+    2. Gets shipping address from the linked Shopify order
+    3. Generates a TNV tracking number
+    4. Creates the DWZ shipment
+    5. Updates the 1688 order with tracking info
+    """
+    db = get_db()
+    
+    # 1. Find the 1688 purchase order
+    alibaba_order = await db.alibaba_orders.find_one(
+        {"alibaba_order_id": request.alibaba_order_id}
+    )
+    
+    if not alibaba_order:
+        raise HTTPException(status_code=404, detail=f"1688 order {request.alibaba_order_id} not found")
+    
+    # Check if already has DWZ tracking
+    if alibaba_order.get("dwz_tracking") or alibaba_order.get("dwz_waybill"):
+        existing_tracking = alibaba_order.get("dwz_tracking") or alibaba_order.get("dwz_waybill")
+        return {
+            "success": True,
+            "message": "Order already has DWZ tracking",
+            "dwz_tracking": existing_tracking,
+            "already_placed": True
+        }
+    
+    # 2. Get shipping address from linked Shopify order
+    shopify_order_number = alibaba_order.get("shopify_order_number") or alibaba_order.get("shopify_order_id")
+    shipping_address = alibaba_order.get("shipping_address", {})
+    
+    # If no shipping address in alibaba_order, try to fetch from Shopify order
+    if not shipping_address and shopify_order_number:
+        shopify_order = await db.shopify_orders.find_one(
+            {"$or": [
+                {"order_number": str(shopify_order_number)},
+                {"order_number": int(shopify_order_number) if str(shopify_order_number).isdigit() else None},
+                {"name": f"#{shopify_order_number}"}
+            ]}
+        )
+        if shopify_order:
+            shipping_address = shopify_order.get("shipping_address", {})
+    
+    if not shipping_address:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No shipping address found. Link order to Shopify first or add shipping address."
+        )
+    
+    # 3. Generate TNV tracking number
+    country = shipping_address.get("country_code") or shipping_address.get("country") or "IN"
+    color = alibaba_order.get("color", "")
+    size = alibaba_order.get("size", "")
+    
+    tracking_number = await generate_tnv_tracking_number(country, color, size, db)
+    
+    # 4. Build the DWZ shipment record
+    receiver_name = shipping_address.get("name") or shipping_address.get("first_name", "") + " " + shipping_address.get("last_name", "")
+    receiver_addr = shipping_address.get("address1", "")
+    if shipping_address.get("address2"):
+        receiver_addr += ", " + shipping_address.get("address2")
+    
+    goods_desc = request.goods_description or alibaba_order.get("notes") or f"Product {alibaba_order.get('product_id', '')}"
+    
+    record = {
+        "iID": 0,  # 0 = new record
+        "nItemType": 1,  # Package
+        "nLanguage": 1,  # English
+        "cEmsKind": request.courier_type,
+        "cDes": shipping_address.get("country_code") or country,
+        "fWeight": request.weight,
+        "cNum": tracking_number,  # Our TNV tracking number
+        "cRNo": str(shopify_order_number) if shopify_order_number else "",  # Reference number
+        "cReceiver": receiver_name.strip(),
+        "cRAddr": receiver_addr,
+        "cRCity": shipping_address.get("city", ""),
+        "cRProvince": shipping_address.get("province", ""),
+        "cRCountry": shipping_address.get("country_code") or shipping_address.get("country") or country,
+        "cRPostcode": shipping_address.get("zip", ""),
+        "cRPhone": shipping_address.get("phone", ""),
+        "cGoods": goods_desc[:100],
+        "iQuantity": alibaba_order.get("quantity", 1),
+        "cMemo": f"1688:{request.alibaba_order_id} | Shopify:#{shopify_order_number}",
+    }
+    
+    # 5. Create the shipment via DWZ API
+    payload = build_request_payload("PreInputSet", {"RecList": [record]})
+    response = await make_api_request(payload)
+    
+    result = parse_return_value(response.get("ReturnValue", -9))
+    
+    # 6. Update the 1688 order with tracking info
+    err_list = response.get("ErrList", [])
+    dwz_waybill = None
+    dwz_id = None
+    
+    if err_list and len(err_list) > 0:
+        err = err_list[0]
+        dwz_waybill = err.get("cNum") or err.get("cCNo") or tracking_number
+        dwz_id = err.get("iID")
+    
+    update_data = {
+        "dwz_tracking": tracking_number,
+        "dwz_waybill": dwz_waybill or tracking_number,
+        "dwz_order_placed": True,
+        "dwz_order_placed_at": datetime.now(timezone.utc).isoformat(),
+        "dwz_courier_type": request.courier_type,
+        "dwz_record_id": dwz_id,
+        "dwz_result": {
+            "success": result["success"],
+            "message": result.get("message", ""),
+            "tracking_number": tracking_number,
+            "record_ids": response.get("RecIDs", []),
+            "raw_response": response
+        }
+    }
+    
+    await db.alibaba_orders.update_one(
+        {"alibaba_order_id": request.alibaba_order_id},
+        {"$set": update_data}
+    )
+    
+    if not result["success"]:
+        return {
+            "success": False,
+            "message": f"DWZ API error: {result['message']}",
+            "dwz_tracking": tracking_number,
+            "error_details": response
+        }
+    
+    return {
+        "success": True,
+        "message": "DWZ order placed successfully",
+        "dwz_tracking": tracking_number,
+        "dwz_waybill": dwz_waybill,
+        "dwz_record_id": dwz_id,
+        "alibaba_order_id": request.alibaba_order_id,
+        "shopify_order": shopify_order_number,
+        "shipping_to": {
+            "name": receiver_name.strip(),
+            "city": shipping_address.get("city"),
+            "country": shipping_address.get("country_code") or country
+        }
+    }
+
+
 @router.get("/shipment/{record_id}")
 async def get_shipment(record_id: int):
     """
