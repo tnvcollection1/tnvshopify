@@ -189,25 +189,77 @@ const OrderDetailModal = ({ order, open, onClose }) => {
 
   // Function to link a line item to 1688
   const handleLink1688 = async (item) => {
-    // Extract product ID from SKU (format: productId-variant-size)
-    const sku = item.sku || '';
-    const productId = sku.split('-')[0];
+    // Prompt for 1688 order ID
+    const alibaba1688Id = prompt('Enter 1688 Order ID to link with this item:');
     
-    if (!productId) {
-      toast.error('No product ID found in SKU');
-      return;
+    if (!alibaba1688Id || !alibaba1688Id.trim()) {
+      return; // User cancelled
     }
     
-    // Navigate to bulk order page with pre-filled data
-    const params = new URLSearchParams({
-      shopify_order: order.order_number,
-      product_id: productId,
-      sku: sku,
-      title: item.title || item.name,
-      quantity: item.quantity || 1
-    });
+    // Get item details
+    const sku = item.sku || '';
+    const productId = sku.split('-')[0] || '';
+    const itemTitle = item.title || item.name || '';
     
-    window.open(`/bulk-order-1688?${params.toString()}`, '_blank');
+    // Extract size and color from title (e.g., "XON Edge 27 - Color / 45")
+    const titleParts = itemTitle.split(' - ');
+    let size = '';
+    let color = '';
+    if (titleParts.length > 1) {
+      const variantPart = titleParts[titleParts.length - 1];
+      const variantSplit = variantPart.split(' / ');
+      if (variantSplit.length >= 2) {
+        color = variantSplit[0].trim();
+        size = variantSplit[1].trim();
+      } else if (variantSplit.length === 1) {
+        // Try to determine if it's size or color
+        const val = variantSplit[0].trim();
+        if (/^\d+$/.test(val)) {
+          size = val;
+        } else {
+          color = val;
+        }
+      }
+    }
+    
+    try {
+      toast.loading('Linking to 1688...', { id: 'link-1688' });
+      
+      // Call API to link/create the 1688 order record
+      const response = await fetch(`${API}/api/1688/purchase-orders/link-item`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alibaba_order_id: alibaba1688Id.trim(),
+          shopify_order_number: String(order.order_number),
+          shopify_order_id: order.shopify_order_id || order.id,
+          product_id: productId,
+          sku: sku,
+          product_name: itemTitle,
+          quantity: item.quantity || 1,
+          size: size,
+          color: color,
+          notes: itemTitle,
+          customer_name: order.customer?.first_name ? `${order.customer.first_name} ${order.customer.last_name || ''}`.trim() : '',
+          store_name: globalStore || 'default'
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success || response.ok) {
+        toast.success(`Linked to 1688 order: ${alibaba1688Id}`, { id: 'link-1688' });
+        // Refresh to show the linked order
+        if (onRefresh) {
+          onRefresh();
+        }
+      } else {
+        toast.error(data.detail || data.message || 'Failed to link order', { id: 'link-1688' });
+      }
+    } catch (error) {
+      console.error('Error linking to 1688:', error);
+      toast.error('Failed to link to 1688 order', { id: 'link-1688' });
+    }
   };
 
   if (!order) return null;
