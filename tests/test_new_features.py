@@ -12,7 +12,7 @@ import requests
 import os
 
 # Get backend URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://merchant-hub-155.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://tenant-storefront.preview.emergentagent.com')
 
 
 @pytest.fixture

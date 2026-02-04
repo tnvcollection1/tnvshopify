@@ -1,0 +1,227 @@
+<analysis>**original_problem_statement**: The user wants to build a multi-tenant e-commerce platform, , allowing merchants to have their own stores with custom domains. The project's current focus is a complete redesign of the storefront and the development of a mobile app, both inspired by .
+
+Recent user requests expanded this scope to include:
+1.  A comprehensive merchant onboarding flow.
+2.  The ability to choose from pre-configured themes during onboarding.
+3.  Shopify-like visual editors for both the mobile app and the web storefront.
+4.  Real-time preview updates in the website editor.
+5.  A comprehensive shipping integration with DTDC, including a dashboard mirroring the DTDC customer portal for booking, tracking, and analytics.
+6.  Deployment of a Coming Soon page for  and fixing its SSL certificate.
+7.  Click-to-edit and advanced Pro features (drag & drop, undo/redo, templates) for the visual editors.
+8.  An AI-powered feature to automatically remove backgrounds and enhance product images.
+9.  A User Data Deletion URL for a Facebook App integration.
+10. A complete UI/UX overhaul of the web storefront and mobile app to match  exactly, including an onboarding flow, stories, flash sales, quick view, and complete the look features.
+11. Link banners and menus to specific product collections, products, and tags.
+12. A complete fulfillment workflow from linking Shopify order items to 1688 purchase orders, and then placing orders with the DWZ warehouse using a custom tracking number format.
+13. Fix various bugs related to login stability and data display on .
+
+**PRODUCT REQUIREMENTS**:
+1.  Replicate the  header and storefront UI.
+2.  Create a backend system to manage dynamic menus and banners, with links to collections, products, and tags.
+3.  Implement a unified settings page to configure both the web and mobile apps.
+4.  Implement a full-featured Mega Menu with a visual builder.
+5.  Build a Sales Dashboard, Order Tracking, Wishlist, and Reviews.
+6.  Build a complete checkout flow with Razorpay integration.
+7.  Support multiple stores with different currencies and languages based on country.
+8.  Implement abandoned cart recovery via WhatsApp.
+9.  Perform a complete UI/UX overhaul of the mobile app and add dark mode.
+10. Build a multi-step merchant onboarding wizard.
+11. Build Shopify-like visual Pro editors for the mobile app and web storefront with real-time preview, drag-and-drop, undo/redo, and templates.
+12. Build a comprehensive DTDC shipping integration with a full-featured dashboard.
+13. Build an AI Image Enhancer to automatically process product photos.
+14. Implement an Instagram-style Stories section with an admin management dashboard.
+15. Add a Product Quick View modal on product grids.
+16. Add a Complete the Look feature to suggest related products.
+17. Implement a Flash Sale countdown banner.
+18. Automatically configure language/currency based on country selection.
+19. Implement a full 1688 sourcing and DWZ fulfillment workflow.
+
+**User's preferred language**: English
+
+**what currently exists?**
+- A full-stack application (FastAPI backend, React frontend, MongoDB) deployed on the user's VPS at .
+- The critical admin session instability issue has been fixed by simplifying the frontend session logic in .
+- The theme editor now allows linking menu items to collections, products, or tags, powered by new backend endpoints.
+- A 1688 Sourcing section has been added to the admin sidebar, grouping all related functionality.
+- A fulfillment workflow has been implemented:
+    - **Shopify Orders:** Individual products in an order can be linked to 1688 purchase orders. The UI shows the linked status (e.g., 1 of 3 items linked) and provides a Link to 1688 button for each unlinked item.
+    - **DWZ Warehouse:** Once a 1688 order is fulfilled, a Place DWZ Order button appears, which opens the DWZ shipping page with pre-filled data.
+- A custom tracking number format () is auto-generated on the backend when placing a DWZ order.
+- A data deletion endpoint for Facebook App Review has been created, and the user has been provided with the necessary URLs and instructions.
+
+**Last working item**:
+-   **Last item agent was working**: The user reported that the  page is not displaying any orders and is stuck on a Loading orders... screen. The agent's investigation confirmed the backend API returns 9 orders correctly, and the frontend makes the API call, but the UI fails to update.
+-   **Status**: IN PROGRESS
+-   **Agent Testing Done**: N
+-   **Which testing method agent to use?**: Frontend testing agent. The test must navigate to the 1688 Purchase Orders page and verify that the table of 9 orders is displayed. It should check for JavaScript console errors during the API call and rendering process.
+-   **User Testing Done**: N
+
+**All Pending/In progress Issue list**:
+-   Issue 1: 1688 Purchase Orders page is not loading data (P0)
+-   Issue 2: Mobile App is in an untested, high-risk state (P0)
+-   Issue 3: Stories component close ('X') button may not work in preview (P1)
+-   Issue 4: Header menu disappears when selected in the editor (P1)
+-   Issue 5: DTDC Live API Integration is Blocked (P1)
+-   Issue 6: Obsolete V2 Editor Components need deletion (P3)
+-   Issue 7: Large monolithic backend files require refactoring (P4)
+
+**Issues Detail**:
+-   **Issue 1: 1688 Purchase Orders page is not loading data (P0)**
+    -   **Attempted fixes**: Agent verified the backend API () works and returns data. Screenshots confirmed the frontend component () calls the API but gets stuck on the Loading... state without rendering the data or showing an error.
+    -   **Next debug checklist**:
+        1.  In , add detailed  statements within the   hook, specifically inside the  block to inspect the raw API response and the data being passed to . Also, add a  block to log any potential errors during the fetch or JSON parsing.
+        2.  Verify the  call is being executed in all scenarios (success and error).
+        3.  Use the screenshot tool with  to inspect the Network tab and confirm the API response body is what's expected.
+    -   **Why fix this issue and what will be achieved with the fix?**: This page is critical for the user to manage their procurement pipeline. Fixing it will restore a core part of their workflow.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Blocked on other issue**: None
+
+-   **Issue 2: Mobile App is in an untested, high-risk state (P0)**
+    -   **Attempted fixes**: None.
+    -   **Next debug checklist**: Navigate to , run , and begin debugging build/runtime errors.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend (Mobile)
+    -   **Blocked on other issue**: None
+
+-   **Issue 3: Stories component close ('X') button may not work in preview (P1)**
+    -   **Status**: IN PROGRESS
+    -   **Blocked on other issue**: None
+
+-   **Issue 4: Header menu disappears when selected in the editor (P1)**
+    -   **Status**: TESTING PENDING
+    -   **Blocked on other issue**: None
+
+-   **Issue 5: DTDC Live API Integration is Blocked (P1)**
+    -   **Status**: BLOCKED (Awaiting permanent API key from user).
+
+-   **Issue 6: Obsolete V2 Editor Components need deletion (P3)**
+    -   **Status**: NOT STARTED
+
+-   **Issue 7: Large monolithic backend files require refactoring (P4)**
+    -   **Status**: NOT STARTED
+
+**In progress Task List**:
+-   **Task 1: Debug and Fix the 1688 Purchase Orders Page (P0)**
+    -   **Where to resume**: .
+    -   **What will be achieved with this?**: The 1688 orders dashboard will correctly display the 9 orders fetched from the API, unblocking the user's procurement workflow.
+    -   **Status**: IN PROGRESS
+    -   **Blocked on something**: No
+
+**Upcoming and Future Tasks**
+-   **Upcoming Tasks**:
+    -   (P0) Test and stabilize the mobile app in an Expo environment.
+    -   (P1) Implement User-Generated Stories feature.
+-   **Future Tasks**:
+    -   Add more section types and template presets to the theme editor.
+    -   Integrate with Sooxie.com API.
+    -   Prepare the mobile app for store submission ( configuration).
+
+**Completed work in this session**
+- **Admin Session Stability Fix**: Resolved the critical admin session expiration issue in  and deployed it to .
+- **Menu Configuration Enhancement**: Enabled linking menu items to products and tags in .
+- **Facebook Data Deletion Endpoint**: Created the  endpoint and provided the user with app review instructions.
+- ** Deployment & Fixes**: Deployed multiple updates to the user's VPS to fix login issues and data display problems.
+- **1688 Sourcing & Fulfillment Workflow**:
+    - Created a 1688 Sourcing menu in .
+    - Implemented per-item linking of Shopify order items to 1688 orders in .
+    - Added a Place DWZ Order step to the UI for fulfilled 1688 items.
+- **Custom TNV Tracking Number**: Implemented a backend tracking number generator in  and integrated it into the frontend workflow.
+- **Improved Order Linking UI**: Updated  to show a summary count (e.g., 1/3 items linked) for multi-product orders.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1: Obsolete V2 Editor Components**
+    -   **Debug checklist**:  for  and  to confirm they are not used in routes within . If not, delete  and .
+    -   **Why to solve this issue and what will be achieved with this?**: Reduces code clutter and potential for confusion.
+    -   **Should Test frontend/backend/both after fix**: Frontend (regression check)
+    -   **Is recurring issue?**: N
+
+**Known issue recurrence from previous fork**
+-   **Issue recurrence in previous fork**: Admin session instability.
+-   **Recurrence count**: 5+
+-   **Status**: RESOLVED
+-   **Issue recurrence in previous fork**: 1688 Purchase Orders not displaying.
+-   **Recurrence count**: 3+
+-   **Status**: IN PROGRESS
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Direct VPS Deployment**: Building the React app (yarn run v1.22.22
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.), creating a  archive, using  to upload it to the user's VPS, and using  to extract the archive into the  webroot and restart services.
+-   **Custom Tracking Number Generation**: A Python function creates a formatted string based on date, country, product attributes, and a daily serial number.
+-   **Complex Conditional UI**: Extensive use of React state and conditional rendering to manage a multi-step fulfillment workflow within a single component ().
+
+**key DB schema**
+-   No new DB schema changes. Existing collections for , , and  are in use.
+
+**All files of reference**
+-   **/app/frontend/src/components/Purchase1688Orders.jsx**: **(CURRENT ISSUE)** Component responsible for displaying 1688 orders, currently stuck on Loading....
+-   **/app/frontend/src/contexts/AuthContext.jsx**: Contains the successful session stability fix.
+-   **/app/frontend/src/components/ShopifyOrders.jsx**: Contains the logic for the per-item linking and DWZ fulfillment workflow.
+-   **/app/frontend/src/components/Sidebar.jsx**: Defines the main navigation menu; was updated to include the 1688 Sourcing section.
+-   **/app/backend/routes/dwz56.py**: Contains the new custom TNV tracking number generation logic.
+-   **/app/backend/routes/alibaba_1688.py**: Contains the endpoints for fetching 1688 purchase orders and linking them to Shopify orders.
+-   **/app/frontend/src/components/ShopifyStyleEditor.jsx**: The theme editor, updated with new menu linking options.
+-   **/app/backend/routes/facebook_data_deletion.py**: New file for handling Facebook data deletion requests.
+
+**Areas that need refactoring**:
+-   The obsolete  and  components should be deleted.
+-   The monolithic  file in the backend should be broken down into smaller modules.
+
+**key api endpoints**
+-   : Fetches all 1688 purchase orders. (API works, but frontend display is broken).
+-   : Links a 1688 order to a Shopify order number.
+-   : Generates a custom TNV tracking number.
+-   : Fetches a simple list of products for the theme editor.
+-   : Fetches all unique product tags for the theme editor.
+-   : Handles data deletion requests from Facebook.
+
+**Critical Info for New Agent**
+-   **Your first task is to fix the  page.** This is a P0, recurring issue. The backend API is confirmed to be working, so the problem is purely on the frontend in . Focus your debugging on the component's state management (, ) and how it handles the response from the  call.
+-   **All deployments to  must be done manually to the user's VPS.** The agent has successfully deployed both frontend (React build) and backend (individual Python files) changes. The credentials are in the message history if needed, but it's better to confirm with the user first.
+-   The custom tracking number format () and logic are critical to the user's workflow. The implementation is in .
+
+**documents and test reports created in this job**
+-   /app/memory/PRD.md (updated)
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **deploy**: User requested another deployment. **Status: Completed.**
+2.  **29442 are having multiple pproduct but order shows single 1688 number**: User reported a discrepancy where a Shopify order with multiple products only showed one linked 1688 order. **Status: Completed (Agent improved the UI to show a X of Y items linked summary).**
+3.  **what about dwz order or tracking number what will be the format?**: User asked for details on the tracking number format. **Status: Completed (Agent investigated and proposed a new custom format).**
+4.  **TNVIN0901Y41015...**: User provided the exact custom format they want for DWZ tracking numbers. **Status: Completed (Agent implemented and deployed this format).**
+5.  **can u check all purchased order 1688 are synced to shopify order number or not ?**: User asked for verification of data linkage. **Status: Completed (Agent checked the DB and confirmed all 9 orders are linked).**
+6.  **deploy ?**: User requested deployment. **Status: Completed.**
+7.  **also after 1688 order are fulfiled it should dwz warehouse we can place order there**: User requested the next step in the fulfillment workflow. **Status: Completed (Agent implemented the Place DWZ Order button and logic).**
+8.  **also all purchased order should show shopify order id and which are not linked should show on 1688 purchase dashboard give options to link and place order on dwz**: User requested more features for the 1688 dashboard. **Status: Completed.**
+9.  **3 products. 3 1688 orders should come for link and theres no option to link and 1688 fulfilement number should come**: User clarified the need for per-product linking. **Status: Completed (Agent added per-item Link to 1688 buttons).**
+10. **1688 Purchase Orders orders are missing**: User reports the current P0 issue that the orders page is not loading data. **Status: In Progress.**
+
+**Project Health Check:**
+-   **Broken**: The 1688 Purchase Orders page is critically broken (stuck on loading), blocking a core user workflow. The React Native mobile app is presumed broken and remains untested.
+-   **Mocked**: DTDC shipping integration is still blocked awaiting a user-provided API key.
+
+**3rd Party Integrations**
+-   **Razorpay** (Payments) — requires User API Key
+-   **DTDC** (Shipping) — **BLOCKED**, requires a permanent User API Key.
+-   **Emergent Integrations (ClipDrop)** for AI Image Background Removal — uses Emergent LLM Key.
+-   **@dnd-kit/core, @dnd-kit/sortable** (Frontend UI Library) - For drag-and-drop in the editor.
+-   **react-slick, slick-carousel** (Frontend UI Library) - For carousels.
+-   **1688.com**: Custom API integration for sourcing.
+-   **DWZ56**: Custom API integration for shipping.
+
+**Testing status**
+-   **Testing agent used after significant changes**: YES (for verifying UI elements and navigation flows).
+-   **Troubleshoot agent used after agent stuck in loop**: NO
+-   **Test files created**: None
+-   **Known regressions**: The 1688 Purchase Orders page was working but is now broken again, making it a regression.
+
+**Credentials to test flow:**
+-   **Admin Login**:  / 
+-   **VPS SSH**: Credentials for IP  are in the chat history if direct deployment is needed.
+
+**What agent forgot to execute**
+-   The agent has not yet deleted the obsolete V2 editor files (, ).</analysis>
