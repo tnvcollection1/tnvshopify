@@ -183,66 +183,46 @@ const Purchase1688Orders = () => {
 
   // Place DWZ order for fulfilled 1688 order
   const handlePlaceDWZOrder = async (order) => {
-    // Extract color and size from the order
-    const notes = order.notes || '';
-    const sku = order.sku || '';
+    // Show loading state
+    toast.loading('Placing DWZ order...', { id: 'dwz-order' });
     
-    // Try to extract size from notes or SKU (e.g., "black / 44" or "SKU-black-44")
-    let size = '';
-    let color = '';
-    
-    // Parse from notes like "black / 44" or "Red - 42"
-    const sizeMatch = notes.match(/[\/-]\s*(\d{2,3})/);
-    if (sizeMatch) {
-      size = sizeMatch[1];
-    }
-    
-    // Parse from SKU like "775062422229-black-44"
-    const skuParts = sku.split('-');
-    if (skuParts.length >= 3) {
-      color = skuParts[skuParts.length - 2] || '';
-      size = skuParts[skuParts.length - 1] || '';
-    }
-    
-    // Also try to get color from notes
-    const colorMatch = notes.match(/^([a-zA-Z]+)/);
-    if (colorMatch && !color) {
-      color = colorMatch[1];
-    }
-    
-    // Get country from Shopify order (default to IN for India)
-    const country = order.country || 'IN';
-    
-    // Generate tracking number via API
     try {
-      const trackingRes = await fetch(
-        `${API}/api/dwz56/generate-tracking?country=${country}&color=${encodeURIComponent(color)}&size=${encodeURIComponent(size)}`
-      );
-      const trackingData = await trackingRes.json();
+      // Call the new API endpoint to place DWZ order directly
+      const res = await fetch(`${API}/api/dwz56/place-order-from-1688`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alibaba_order_id: order.alibaba_order_id,
+          courier_type: 'YT', // YunTu as default courier
+          weight: 0.5, // Default weight
+          goods_description: order.notes || `Product ${order.product_id}`
+        })
+      });
       
-      if (trackingData.success) {
-        const shopifyOrder = order.shopify_order_number || order.shopify_order_id || '';
-        const productId = order.product_id || '';
-        const remarks = `#${shopifyOrder} | 1688:${order.alibaba_order_id} | ${notes || productId}`;
-        
-        const params = new URLSearchParams({
-          tracking: trackingData.tracking_number, // TNV tracking number (cNum)
-          ref_no: shopifyOrder, // Reference number (cRNo)
-          alibaba_order: order.alibaba_order_id,
-          product_id: productId,
-          remarks: remarks.substring(0, 100), // cMemo - limit to 100 chars
-          goods: notes || `Product from 1688 order`,
-          color: color,
-          size: size,
-        });
-        
-        window.open(`/dwz56-shipping?${params.toString()}`, '_blank');
+      const data = await res.json();
+      
+      if (data.success) {
+        if (data.already_placed) {
+          toast.success(`Order already has tracking: ${data.dwz_tracking}`, { id: 'dwz-order' });
+        } else {
+          toast.success(
+            `DWZ order placed! Tracking: ${data.dwz_tracking}`, 
+            { id: 'dwz-order', duration: 5000 }
+          );
+        }
+        // Refresh the orders list to show updated tracking
+        fetchOrders();
       } else {
-        toast.error('Failed to generate tracking number');
+        // If error is about missing shipping address, offer to link manually
+        if (data.detail?.includes('shipping address')) {
+          toast.error('No shipping address found. Please ensure order is linked to Shopify.', { id: 'dwz-order' });
+        } else {
+          toast.error(data.detail || data.message || 'Failed to place DWZ order', { id: 'dwz-order' });
+        }
       }
     } catch (error) {
-      console.error('Error generating tracking:', error);
-      toast.error('Failed to generate tracking number');
+      console.error('Error placing DWZ order:', error);
+      toast.error('Failed to place DWZ order. Please try again.', { id: 'dwz-order' });
     }
   };
 
