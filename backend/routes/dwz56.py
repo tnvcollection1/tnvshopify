@@ -622,8 +622,9 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
     shopify_order_number = alibaba_order.get("shopify_order_number") or alibaba_order.get("shopify_order_id")
     shipping_address = alibaba_order.get("shipping_address", {})
     
-    # If no shipping address in alibaba_order, try to fetch from Shopify order
+    # If no shipping address in alibaba_order, try to fetch from orders collections
     if not shipping_address and shopify_order_number:
+        # Try shopify_orders collection first
         shopify_order = await db.shopify_orders.find_one(
             {"$or": [
                 {"order_number": str(shopify_order_number)},
@@ -633,6 +634,19 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
         )
         if shopify_order:
             shipping_address = shopify_order.get("shipping_address", {})
+        
+        # If not found, try the 'orders' collection
+        if not shipping_address:
+            order_num = int(shopify_order_number) if str(shopify_order_number).isdigit() else shopify_order_number
+            shopify_order = await db.orders.find_one(
+                {"$or": [
+                    {"order_number": order_num},
+                    {"order_number": str(shopify_order_number)},
+                    {"name": f"#{shopify_order_number}"}
+                ]}
+            )
+            if shopify_order:
+                shipping_address = shopify_order.get("shipping_address", {})
     
     if not shipping_address:
         raise HTTPException(
