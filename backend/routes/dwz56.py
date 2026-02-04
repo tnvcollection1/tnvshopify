@@ -708,7 +708,7 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
         }
     }
     
-    await db.alibaba_orders.update_one(
+    await db.purchase_orders_1688.update_one(
         {"alibaba_order_id": request.alibaba_order_id},
         {"$set": update_data}
     )
