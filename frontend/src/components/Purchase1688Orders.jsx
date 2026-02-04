@@ -485,7 +485,7 @@ const Purchase1688Orders = () => {
                           <div>
                             {['shipped', 'delivered', 'fulfilled', 'completed', 'success', 'waitbuyerreceive'].includes(order.status?.toLowerCase()) || 
                              ['shipped', 'delivered', 'fulfilled', 'success', 'waitbuyerreceive'].includes(order.supplier_status?.toLowerCase()) ||
-                             order.shopify_order_number ? (
+                             (order.shopify_order_number && order.shipping_address) ? (
                               <Button
                                 size="sm"
                                 variant="outline"
