@@ -1035,7 +1035,12 @@ const ShopifyOrders = () => {
       <OrderDetailModal 
         order={selectedOrder} 
         open={!!selectedOrder} 
-        onClose={() => setSelectedOrder(null)} 
+        onClose={() => setSelectedOrder(null)}
+        globalStore={selectedStore}
+        onRefresh={() => {
+          fetchOrders();
+          setSelectedOrder(null);
+        }}
       />
     </div>
   );
