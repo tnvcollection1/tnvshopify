@@ -2651,6 +2651,96 @@ async def link_purchase_order_to_shopify(alibaba_order_id: str, data: dict = Bod
     }
 
 
+@router.post("/purchase-orders/link-item")
+async def link_item_to_1688_order(data: dict = Body(...)):
+    """
+    Link a Shopify order line item to a 1688 order.
+    Creates the 1688 order record if it doesn't exist, or updates if it does.
+    
+    Body:
+    {
+        "alibaba_order_id": "4993683410995978802",
+        "shopify_order_number": "29245",
+        "shopify_order_id": "optional",
+        "product_id": "705489288334",
+        "sku": "705489288334-black-42",
+        "product_name": "Men's leather shoes...",
+        "quantity": 1,
+        "size": "42",
+        "color": "black",
+        "notes": "Optional notes",
+        "customer_name": "Customer Name",
+        "store_name": "tnvcollection"
+    }
+    """
+    db = get_db()
+    
+    alibaba_order_id = data.get("alibaba_order_id")
+    shopify_order_number = data.get("shopify_order_number")
+    
+    if not alibaba_order_id:
+        raise HTTPException(status_code=400, detail="alibaba_order_id is required")
+    if not shopify_order_number:
+        raise HTTPException(status_code=400, detail="shopify_order_number is required")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Check if this 1688 order already exists
+    existing = await db.purchase_orders_1688.find_one(
+        {"alibaba_order_id": alibaba_order_id}
+    )
+    
+    if existing:
+        # Update existing record with Shopify link
+        update_result = await db.purchase_orders_1688.update_one(
+            {"alibaba_order_id": alibaba_order_id},
+            {"$set": {
+                "shopify_order_number": str(shopify_order_number),
+                "shopify_order_id": data.get("shopify_order_id") or str(shopify_order_number),
+                "updated_at": now,
+                "linked_manually": True,
+            }}
+        )
+        return {
+            "success": True,
+            "message": f"Updated existing 1688 order {alibaba_order_id} with Shopify link",
+            "alibaba_order_id": alibaba_order_id,
+            "shopify_order_number": shopify_order_number,
+            "updated": True
+        }
+    
+    # Create new 1688 order record
+    new_order = {
+        "alibaba_order_id": alibaba_order_id,
+        "product_id": data.get("product_id", ""),
+        "sku": data.get("sku", ""),
+        "product_name": data.get("product_name", ""),
+        "quantity": data.get("quantity", 1),
+        "size": data.get("size", ""),
+        "color": data.get("color", ""),
+        "notes": data.get("notes", ""),
+        "shopify_order_number": str(shopify_order_number),
+        "shopify_order_id": data.get("shopify_order_id") or str(shopify_order_number),
+        "customer_name": data.get("customer_name", ""),
+        "store_name": data.get("store_name", "default"),
+        "status": "created",
+        "created_at": now,
+        "updated_at": now,
+        "linked_manually": True,
+        "api_response": None,
+    }
+    
+    await db.purchase_orders_1688.insert_one(new_order)
+    
+    return {
+        "success": True,
+        "message": f"Created new 1688 order record and linked to Shopify #{shopify_order_number}",
+        "alibaba_order_id": alibaba_order_id,
+        "shopify_order_number": shopify_order_number,
+        "created": True
+    }
+
+
 # ==================== 1688 Order Fulfillment with Auto DWZ56 Shipment ====================
 
 class Mark1688ShippedRequest(BaseModel):
