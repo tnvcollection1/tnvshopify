@@ -51,8 +51,8 @@ DWZ56_PURCHASE_API_KEY = os.environ.get("DWZ56_PURCHASE_API_KEY", "5OpgrK9wFy3yf
 # Color code mapping for tracking number
 COLOR_CODES = {
     "red": "R", "maroon": "R", "burgundy": "R", "crimson": "R", "scarlet": "R",
-    "blue": "B", "navy": "B", "royal": "B", "cobalt": "B", "azure": "B", "indigo": "B",
-    "black": "K", "jet": "K", "onyx": "K", "ebony": "K", "charcoal": "K",
+    "blue": "U", "navy": "U", "royal": "U", "cobalt": "U", "azure": "U", "indigo": "U",
+    "black": "B", "jet": "B", "onyx": "B", "ebony": "B", "charcoal": "B",
     "white": "W", "ivory": "W", "cream": "W", "snow": "W", "pearl": "W",
     "green": "G", "olive": "G", "emerald": "G", "forest": "G", "lime": "G", "mint": "G", "teal": "G",
     "yellow": "Y", "gold": "Y", "amber": "Y", "lemon": "Y", "mustard": "Y",
@@ -64,8 +64,8 @@ COLOR_CODES = {
     "multi": "M", "multicolor": "M", "mixed": "M", "rainbow": "M",
     # Chinese colors
     "红色": "R", "红": "R", "酒红": "R",
-    "蓝色": "B", "蓝": "B", "深蓝": "B", "藏蓝": "B",
-    "黑色": "K", "黑": "K",
+    "蓝色": "U", "蓝": "U", "深蓝": "U", "藏蓝": "U",
+    "黑色": "B", "黑": "B",
     "白色": "W", "白": "W", "米白": "W",
     "绿色": "G", "绿": "G", "军绿": "G", "墨绿": "G",
     "黄色": "Y", "黄": "Y", "金色": "Y",
