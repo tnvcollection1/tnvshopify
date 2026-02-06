@@ -2863,6 +2863,63 @@ async def link_item_to_1688_order(data: dict = Body(...)):
     }
 
 
+@router.post("/purchase-orders/backfill-names")
+async def backfill_product_names():
+    """
+    Backfill product_name for orders that have it empty.
+    Tries to get name from:
+    1. api_response.productItems[0].name (1688 API response)
+    2. notes field
+    """
+    db = get_db()
+    
+    # Find orders with empty or missing product_name
+    cursor = db.purchase_orders_1688.find(
+        {"$or": [
+            {"product_name": {"$exists": False}},
+            {"product_name": None},
+            {"product_name": ""},
+        ]}
+    )
+    
+    updated_count = 0
+    orders_checked = 0
+    
+    async for order in cursor:
+        orders_checked += 1
+        alibaba_order_id = order.get("alibaba_order_id")
+        product_name = None
+        
+        # Try to get from api_response
+        api_response = order.get("api_response", {})
+        if api_response:
+            product_items = api_response.get("productItems", [])
+            if product_items and len(product_items) > 0:
+                product_name = product_items[0].get("name")
+        
+        # Fallback to notes
+        if not product_name and order.get("notes"):
+            product_name = order.get("notes")
+        
+        # Update if we found a name
+        if product_name:
+            await db.purchase_orders_1688.update_one(
+                {"alibaba_order_id": alibaba_order_id},
+                {"$set": {
+                    "product_name": product_name,
+                    "notes": product_name if not order.get("notes") else order.get("notes")
+                }}
+            )
+            updated_count += 1
+    
+    return {
+        "success": True,
+        "message": f"Backfilled {updated_count} orders out of {orders_checked} checked",
+        "updated_count": updated_count,
+        "orders_checked": orders_checked
+    }
+
+
 # ==================== 1688 Order Fulfillment with Auto DWZ56 Shipment ====================
 
 class Mark1688ShippedRequest(BaseModel):
