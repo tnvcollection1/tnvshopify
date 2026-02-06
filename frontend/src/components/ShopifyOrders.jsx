@@ -449,9 +449,9 @@ const OrderDetailModal = ({ order, open, onClose, globalStore, onRefresh }) => {
             <h4 className="text-sm font-semibold text-gray-900 mb-2">Items ({lineItems.length})</h4>
             <div className="border border-gray-200 rounded-lg divide-y divide-gray-200 bg-white">
               {lineItems.map((item, idx) => {
-                const item1688Order = get1688OrderForItem(item);
-                const is1688Fulfilled = item1688Order && ['shipped', 'delivered', 'fulfilled', 'completed'].includes(item1688Order.status?.toLowerCase());
-                const hasDwzTracking = item1688Order?.dwz_tracking_number;
+                const item1688Order = get1688OrderForItem(item, idx);
+                const is1688Fulfilled = item1688Order && ['shipped', 'delivered', 'fulfilled', 'completed', 'waitbuyerreceive'].includes(item1688Order.status?.toLowerCase());
+                const hasDwzTracking = item1688Order?.dwz_tracking || item1688Order?.dwz_tracking_number;
                 
                 return (
                   <div key={idx} className="p-3">
