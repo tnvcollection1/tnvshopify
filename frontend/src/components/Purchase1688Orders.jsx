@@ -494,16 +494,12 @@ const Purchase1688Orders = () => {
                       <td className="p-3">
                         {order.shopify_order_id || order.shopify_order_number ? (
                           <div>
-                            <a 
-                              href={`/orders?search=${order.shopify_order_number || order.shopify_order_id}`}
-                              className="text-blue-600 hover:underline font-mono text-sm"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                window.location.href = `/orders?search=${order.shopify_order_number || order.shopify_order_id}`;
-                              }}
+                            <button 
+                              className="text-blue-600 hover:underline font-mono text-sm cursor-pointer bg-transparent border-none"
+                              onClick={() => openShopifyOrderModal(order.shopify_order_number || order.shopify_order_id)}
                             >
                               #{order.shopify_order_number || order.shopify_order_id}
-                            </a>
+                            </button>
                             {order.shopify_fulfillment_status && (
                               <p className="text-xs text-gray-500 mt-1">
                                 {order.shopify_fulfillment_status}
