@@ -760,6 +760,138 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
     }
 
 
+class RegenerateDWZRequest(BaseModel):
+    alibaba_order_id: str
+    courier_type: str = Field(default="印度专线", description="Courier type code")
+    weight: float = Field(default=0.5, ge=0.01, le=50.0)
+    goods_description: Optional[str] = None
+
+
+@router.post("/regenerate-tracking")
+async def regenerate_dwz_tracking(request: RegenerateDWZRequest):
+    """
+    Clear existing DWZ tracking and regenerate a new one for a 1688 order.
+    Use this when the previous tracking failed or needs to be cancelled.
+    """
+    db = get_db()
+    
+    # 1. Find the 1688 purchase order
+    alibaba_order = await db.purchase_orders_1688.find_one(
+        {"alibaba_order_id": request.alibaba_order_id}
+    )
+    
+    if not alibaba_order:
+        raise HTTPException(status_code=404, detail=f"1688 order {request.alibaba_order_id} not found")
+    
+    old_tracking = alibaba_order.get("dwz_tracking") or alibaba_order.get("dwz_waybill")
+    
+    # 2. Get shipping address
+    shopify_order_number = alibaba_order.get("shopify_order_number") or alibaba_order.get("shopify_order_id")
+    shipping_address = alibaba_order.get("shipping_address", {})
+    
+    if not shipping_address and shopify_order_number:
+        order_num = int(shopify_order_number) if str(shopify_order_number).isdigit() else shopify_order_number
+        shopify_order = await db.orders.find_one(
+            {"$or": [
+                {"order_number": order_num},
+                {"order_number": str(shopify_order_number)},
+                {"name": f"#{shopify_order_number}"}
+            ]}
+        )
+        if shopify_order:
+            shipping_address = shopify_order.get("shipping_address", {})
+    
+    if not shipping_address:
+        raise HTTPException(status_code=400, detail="No shipping address found")
+    
+    # 3. Generate new TNV tracking number
+    country = shipping_address.get("country_code") or shipping_address.get("country") or "IN"
+    color = alibaba_order.get("color", "")
+    size = alibaba_order.get("size", "")
+    
+    new_tracking = await generate_tnv_tracking_number(country, color, size, db)
+    
+    # 4. Build the DWZ shipment record
+    receiver_name = shipping_address.get("name") or shipping_address.get("first_name", "") + " " + shipping_address.get("last_name", "")
+    receiver_addr = shipping_address.get("address1", "")
+    if shipping_address.get("address2"):
+        receiver_addr += ", " + shipping_address.get("address2")
+    
+    goods_desc = request.goods_description or alibaba_order.get("notes") or f"Product {alibaba_order.get('product_id', '')}"
+    
+    record = {
+        "iID": 0,
+        "nItemType": 1,
+        "nLanguage": 1,
+        "cEmsKind": request.courier_type,
+        "cDes": shipping_address.get("country_code") or country,
+        "fWeight": request.weight,
+        "cNum": new_tracking,
+        "cRNo": str(shopify_order_number) if shopify_order_number else "",
+        "cReceiver": receiver_name.strip(),
+        "cRAddr": receiver_addr,
+        "cRCity": shipping_address.get("city", ""),
+        "cRProvince": shipping_address.get("province", ""),
+        "cRCountry": shipping_address.get("country_code") or shipping_address.get("country") or country,
+        "cRPostcode": shipping_address.get("zip", ""),
+        "cRPhone": shipping_address.get("phone", ""),
+        "cGoods": goods_desc[:100],
+        "iQuantity": alibaba_order.get("quantity", 1),
+        "cMemo": f"1688:{request.alibaba_order_id} | Shopify:#{shopify_order_number} | Regenerated from {old_tracking}",
+    }
+    
+    # 5. Create shipment via DWZ API
+    payload = build_request_payload("PreInputSet", {"RecList": [record]})
+    response = await make_api_request(payload)
+    
+    result = parse_return_value(response.get("ReturnValue", -9))
+    
+    # 6. Update the database
+    err_list = response.get("ErrList", [])
+    dwz_waybill = None
+    dwz_id = None
+    
+    if err_list and len(err_list) > 0:
+        err = err_list[0]
+        dwz_waybill = err.get("cNum") or err.get("cCNo") or new_tracking
+        dwz_id = err.get("iID")
+    
+    update_data = {
+        "dwz_tracking": new_tracking,
+        "dwz_waybill": dwz_waybill or new_tracking,
+        "dwz_order_placed": True,
+        "dwz_order_placed_at": datetime.now(timezone.utc).isoformat(),
+        "dwz_courier_type": request.courier_type,
+        "dwz_record_id": dwz_id,
+        "dwz_regenerated_from": old_tracking,
+        "dwz_result": {
+            "success": result["success"],
+            "message": result.get("message", ""),
+            "tracking_number": new_tracking,
+            "record_ids": response.get("RecIDs", []),
+            "raw_response": response
+        }
+    }
+    
+    await db.purchase_orders_1688.update_one(
+        {"alibaba_order_id": request.alibaba_order_id},
+        {"$set": update_data}
+    )
+    
+    return {
+        "success": result["success"],
+        "message": "Tracking regenerated" if result["success"] else f"DWZ API error: {result['message']}",
+        "old_tracking": old_tracking,
+        "new_tracking": new_tracking,
+        "dwz_waybill": dwz_waybill,
+        "dwz_record_id": dwz_id,
+        "alibaba_order_id": request.alibaba_order_id,
+        "shopify_order": shopify_order_number,
+        "courier_type": request.courier_type,
+        "api_response": response if not result["success"] else None
+    }
+
+
 @router.get("/shipment/{record_id}")
 async def get_shipment(record_id: int):
     """
