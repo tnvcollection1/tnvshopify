@@ -88,22 +88,19 @@ COUNTRY_CODES = {
 
 
 def get_color_code(color_str: str) -> str:
-    """Extract color code from color string"""
+    """Extract color code from color string - returns first letter of color name"""
     if not color_str:
         return "X"  # Unknown
-    color_lower = color_str.lower().strip()
     
-    # Check direct match
-    if color_lower in COLOR_CODES:
-        return COLOR_CODES[color_lower]
+    # Clean the color string - remove extra spaces and get first word
+    color_clean = color_str.strip()
     
-    # Check if any color keyword is in the string
-    for color, code in COLOR_CODES.items():
-        if color in color_lower:
-            return code
+    # If color contains multiple words, take first word
+    # e.g., "Dark Blue" -> "D", "Light Green" -> "L"
+    first_word = color_clean.split()[0] if color_clean else ""
     
-    # Return first letter uppercase if no match
-    return color_str[0].upper() if color_str else "X"
+    # Return first letter uppercase
+    return first_word[0].upper() if first_word else "X"
 
 
 def get_country_code(country_str: str) -> str:
