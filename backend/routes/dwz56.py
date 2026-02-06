@@ -1009,6 +1009,70 @@ async def list_pre_input_orders(
     }
 
 
+@router.delete("/pre-input/batch")
+async def batch_delete_pre_input(record_ids: List[int] = Query(..., description="List of record IDs to delete")):
+    """
+    Delete multiple pre-input records at once
+    """
+    if not record_ids:
+        raise HTTPException(status_code=400, detail="No record IDs provided")
+    
+    payload = build_request_payload("PreInputDel", {
+        "RecList": [{"iID": rid} for rid in record_ids]
+    })
+    
+    response = await make_api_request(payload)
+    result = parse_return_value(response.get("ReturnValue", -9))
+    
+    return {
+        "success": result["success"],
+        "message": result.get("message", "Deleted"),
+        "deleted_count": len(record_ids) if result["success"] else 0,
+        "record_ids": record_ids,
+        "api_response": response
+    }
+
+
+@router.delete("/pre-input/all")
+async def delete_all_pre_input():
+    """
+    Delete ALL pre-input records
+    """
+    # First get all records
+    list_payload = build_request_payload("PreInputList", {
+        "iPage": 1,
+        "iPagePer": 1000,
+        "cqStateMask": "11"
+    })
+    
+    list_response = await make_api_request(list_payload)
+    records = list_response.get("RecList", [])
+    
+    if not records:
+        return {
+            "success": True,
+            "message": "No records to delete",
+            "deleted_count": 0
+        }
+    
+    record_ids = [r.get("iID") for r in records if r.get("iID")]
+    
+    # Delete all
+    delete_payload = build_request_payload("PreInputDel", {
+        "RecList": [{"iID": rid} for rid in record_ids]
+    })
+    
+    delete_response = await make_api_request(delete_payload)
+    result = parse_return_value(delete_response.get("ReturnValue", -9))
+    
+    return {
+        "success": result["success"],
+        "message": f"Deleted {len(record_ids)} records" if result["success"] else result.get("message", "Failed"),
+        "deleted_count": len(record_ids) if result["success"] else 0,
+        "api_response": delete_response
+    }
+
+
 @router.get("/tracking-list")
 async def list_shipped_records(
     page: int = Query(1, ge=1),
