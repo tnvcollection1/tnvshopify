@@ -18,6 +18,12 @@ import {
   Filter,
   X,
   Truck,
+  User,
+  MapPin,
+  Phone,
+  Mail,
+  CreditCard,
+  Link2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -33,6 +39,10 @@ const Purchase1688Orders = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchShopifyId, setSearchShopifyId] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [shopifyOrderModal, setShopifyOrderModal] = useState(null);
+  const [shopifyOrderLoading, setShopifyOrderLoading] = useState(false);
+  const [shopifyOrderData, setShopifyOrderData] = useState(null);
+  const [linked1688Orders, setLinked1688Orders] = useState([]);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
