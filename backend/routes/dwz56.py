@@ -1073,6 +1073,93 @@ async def delete_all_pre_input():
     }
 
 
+@router.post("/clear-local-tracking")
+async def clear_local_tracking_data(
+    order_ids: Optional[List[str]] = Query(None, description="Specific 1688 order IDs to clear. If empty, clears all."),
+    confirm: bool = Query(False, description="Set to true to confirm the operation")
+):
+    """
+    Clear DWZ tracking data from local database for 1688 purchase orders.
+    
+    This allows users to regenerate tracking numbers when the old ones were wrong.
+    NOTE: This only clears local data - the records may still exist on the DWZ platform
+    and need to be manually deleted through the DWZ web portal if needed.
+    """
+    if not confirm:
+        raise HTTPException(
+            status_code=400, 
+            detail="Please set confirm=true to confirm this operation. This will clear local DWZ tracking data."
+        )
+    
+    db = get_db()
+    
+    # Build query
+    query = {"dwz_order_placed": True}
+    if order_ids:
+        query["alibaba_order_id"] = {"$in": order_ids}
+    
+    # Get count before clearing
+    count_before = await db.purchase_orders_1688.count_documents(query)
+    
+    if count_before == 0:
+        return {
+            "success": True,
+            "message": "No orders with DWZ tracking found",
+            "cleared_count": 0
+        }
+    
+    # Clear the DWZ tracking fields
+    result = await db.purchase_orders_1688.update_many(
+        query,
+        {"$unset": {
+            "dwz_tracking": "",
+            "dwz_waybill": "",
+            "dwz_order_placed": "",
+            "dwz_order_placed_at": "",
+            "dwz_courier_type": "",
+            "dwz_record_id": "",
+            "dwz_result": "",
+            "dwz_regenerated_from": ""
+        }}
+    )
+    
+    return {
+        "success": True,
+        "message": f"Cleared DWZ tracking data for {result.modified_count} order(s)",
+        "cleared_count": result.modified_count,
+        "note": "DWZ pre-input records may still exist on the DWZ platform. They need to be manually deleted through the DWZ web portal if needed."
+    }
+
+
+@router.post("/clear-tracking-counters")
+async def clear_tracking_counters(
+    confirm: bool = Query(False, description="Set to true to confirm the operation")
+):
+    """
+    Reset the daily tracking number counters.
+    
+    This will reset the serial numbers (001, 002, etc.) for the TNV tracking format.
+    Use this when you want tracking numbers to start from 001 again.
+    """
+    if not confirm:
+        raise HTTPException(
+            status_code=400, 
+            detail="Please set confirm=true to confirm this operation."
+        )
+    
+    db = get_db()
+    
+    # Delete all tracking counters
+    result = await db.tracking_counters.delete_many({})
+    
+    return {
+        "success": True,
+        "message": f"Cleared {result.deleted_count} tracking counter(s)",
+        "deleted_count": result.deleted_count,
+        "note": "New tracking numbers will start from 001 again."
+    }
+
+
 @router.get("/tracking-list")
 async def list_shipped_records(
     page: int = Query(1, ge=1),
