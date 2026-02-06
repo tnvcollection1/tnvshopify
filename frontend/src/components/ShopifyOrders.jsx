@@ -289,39 +289,67 @@ const OrderDetailModal = ({ order, open, onClose, globalStore, onRefresh }) => {
     order.line_item_orders?.[0]?.alibaba_order_id;
 
   // Helper to find 1688 order for a line item
-  const get1688OrderForItem = (item) => {
-    const sku = item.sku || '';
-    const productId = sku.split('-')[0];
-    const itemTitle = (item.title || item.name || '').toLowerCase();
+  const get1688OrderForItem = (item, itemIndex) => {
+    // 1. Best match: by shopify_line_item_id
+    if (item.id && lineItem1688Orders[`line_${item.id}`]) {
+      return lineItem1688Orders[`line_${item.id}`];
+    }
     
-    // Check all 1688 orders for this Shopify order
-    for (const [key, po] of Object.entries(lineItem1688Orders)) {
-      // Match by product_id
-      if (po.product_id && productId && String(po.product_id) === String(productId)) {
-        return po;
+    // 2. Match by size + color (variant info)
+    const variantTitle = (item.variant_title || '').toLowerCase();
+    const itemSize = item.size || (variantTitle.match(/\b(\d{2,3})\b/)?.[1]) || '';
+    const itemColor = item.color || variantTitle.split('/')[0]?.trim() || '';
+    if (itemSize || itemColor) {
+      const sizeColor = `${itemSize}_${itemColor}`.toLowerCase();
+      if (lineItem1688Orders[`sizecolor_${sizeColor}`]) {
+        return lineItem1688Orders[`sizecolor_${sizeColor}`];
       }
-      
-      // Match by SKU
-      if (po.sku && sku && po.sku.includes(productId)) {
-        return po;
-      }
-      
-      // Match by title in notes
-      if (po.notes && itemTitle) {
-        const notesLower = po.notes.toLowerCase();
-        // Check if item title words appear in notes
-        const titleWords = itemTitle.split(' ').filter(w => w.length > 3);
-        const matchCount = titleWords.filter(w => notesLower.includes(w)).length;
-        if (matchCount >= 2 || (titleWords.length <= 2 && matchCount >= 1)) {
-          return po;
+    }
+    
+    // 3. Match by SKU patterns
+    const sku = item.sku || '';
+    if (sku) {
+      // Check if any stored SKU contains this SKU or vice versa
+      for (const [key, po] of Object.entries(lineItem1688Orders)) {
+        if (key.startsWith('sku_') && po.sku) {
+          if (po.sku.includes(sku) || sku.includes(po.sku.split('-')[0])) {
+            return po;
+          }
         }
       }
     }
+    
+    // 4. Match by title keywords in notes
+    const itemTitle = (item.title || item.name || '').toLowerCase();
+    if (itemTitle) {
+      for (const [key, po] of Object.entries(lineItem1688Orders)) {
+        if (po.notes) {
+          const notesLower = po.notes.toLowerCase();
+          const titleWords = itemTitle.split(' ').filter(w => w.length > 3);
+          const matchCount = titleWords.filter(w => notesLower.includes(w)).length;
+          if (matchCount >= 2 || (titleWords.length <= 2 && matchCount >= 1)) {
+            return po;
+          }
+        }
+      }
+    }
+    
+    // 5. Fallback: If only 1 line item AND only 1 purchase order, auto-match
+    if (lineItems.length === 1 && lineItem1688Orders[`index_0`]) {
+      return lineItem1688Orders[`index_0`];
+    }
+    
+    // 6. Match by index if order has same number of items as purchase orders
+    const purchaseOrderCount = Object.keys(lineItem1688Orders).filter(k => k.startsWith('index_')).length;
+    if (lineItems.length === purchaseOrderCount && lineItem1688Orders[`index_${itemIndex}`]) {
+      return lineItem1688Orders[`index_${itemIndex}`];
+    }
+    
     return null;
   };
 
   // Count linked items
-  const linkedItemsCount = lineItems.filter(item => get1688OrderForItem(item)).length;
+  const linkedItemsCount = lineItems.filter((item, idx) => get1688OrderForItem(item, idx)).length;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
