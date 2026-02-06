@@ -2388,7 +2388,12 @@ async def list_purchase_orders(
     if status:
         query["status"] = status
     if shopify_order_id:
-        query["shopify_order_id"] = shopify_order_id
+        # Search by both shopify_order_id AND shopify_order_number to handle both formats
+        query["$or"] = [
+            {"shopify_order_id": shopify_order_id},
+            {"shopify_order_number": shopify_order_id},
+            {"shopify_order_number": int(shopify_order_id) if shopify_order_id.isdigit() else shopify_order_id}
+        ]
     if store_name:
         query["store_name"] = store_name
     
