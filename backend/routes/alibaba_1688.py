@@ -2651,6 +2651,92 @@ async def link_purchase_order_to_shopify(alibaba_order_id: str, data: dict = Bod
     }
 
 
+@router.post("/purchase-orders/{alibaba_order_id}/sync-status")
+async def sync_purchase_order_status(alibaba_order_id: str):
+    """
+    Sync shipping/fulfillment status from 1688 API for a specific order.
+    Updates the local database with the latest status.
+    """
+    db = get_db()
+    
+    # Find the purchase order
+    purchase_order = await db.purchase_orders_1688.find_one(
+        {"alibaba_order_id": alibaba_order_id}
+    )
+    
+    if not purchase_order:
+        raise HTTPException(status_code=404, detail=f"1688 order {alibaba_order_id} not found")
+    
+    if not ALIBABA_ACCESS_TOKEN:
+        raise HTTPException(status_code=400, detail="1688 API access token not configured")
+    
+    try:
+        # Fetch order details from 1688 API
+        params = {
+            "orderId": alibaba_order_id,
+        }
+        
+        result = await make_api_request(
+            "com.alibaba.trade/alibaba.trade.get.buyerView",
+            params,
+            access_token=ALIBABA_ACCESS_TOKEN
+        )
+        
+        order_data = result.get("result") or result
+        base_info = order_data.get("baseInfo", {}) if isinstance(order_data, dict) else {}
+        
+        # Map 1688 status to readable supplier status
+        STATUS_MAP = {
+            "waitbuyerreceive": "shipped",
+            "success": "delivered", 
+            "cancel": "cancelled",
+            "waitbuyerpay": "pending_payment",
+            "waitsellersend": "processing",
+            "waitsellerconfirm": "pending_confirm"
+        }
+        
+        status = base_info.get("status", "")
+        supplier_status = STATUS_MAP.get(status, status)
+        all_delivered = base_info.get("allDeliveredTime")
+        
+        if all_delivered and supplier_status == "shipped":
+            supplier_status = "delivered"
+        
+        # Get logistics info if available
+        logistics = order_data.get("nativeLogistics", {}) if isinstance(order_data, dict) else {}
+        
+        # Update the database
+        now = datetime.now(timezone.utc).isoformat()
+        update_data = {
+            "status": status,
+            "supplier_status": supplier_status,
+            "all_delivered_time": all_delivered,
+            "modify_time": base_info.get("modifyTime"),
+            "logistics_address": logistics.get("address") if logistics else None,
+            "logistics_contact": logistics.get("contactPerson") if logistics else None,
+            "api_response": order_data,
+            "status_synced_at": now,
+            "updated_at": now,
+        }
+        
+        await db.purchase_orders_1688.update_one(
+            {"alibaba_order_id": alibaba_order_id},
+            {"$set": update_data}
+        )
+        
+        return {
+            "success": True,
+            "message": f"Status synced for order {alibaba_order_id}",
+            "alibaba_order_id": alibaba_order_id,
+            "status": status,
+            "supplier_status": supplier_status,
+            "is_shipped": supplier_status in ["shipped", "delivered"],
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to sync status: {str(e)}")
+
+
 @router.post("/purchase-orders/link-item")
 async def link_item_to_1688_order(data: dict = Body(...)):
     """
