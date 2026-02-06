@@ -36,7 +36,7 @@ def get_db():
     if _db is None:
         mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
         client = AsyncIOMotorClient(mongo_url)
-        _db = client['shopify_customers_db']
+        _db = client[os.environ.get('DB_NAME', 'wamerce')]
     return _db
 
 # Configuration - Shipping Account
