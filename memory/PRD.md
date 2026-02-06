@@ -46,6 +46,12 @@ Build a multi-tenant e-commerce platform allowing merchants to have their own st
 
 ## What's Implemented ✅
 
+### Session: June 2, 2025
+- **P0 RESOLVED**: Fixed UI not updating after DWZ order placement
+  - Root cause: GET `/api/1688/purchase-orders` was not reading `dwz_tracking` from the order document itself
+  - Fix: Modified `alibaba_1688.py` to prioritize `dwz_tracking`/`dwz_waybill` fields from `purchase_orders_1688` collection
+  - Now correctly displays tracking numbers in UI immediately after placing orders
+
 ### Session: Feb 4, 2026
 - **P0 RESOLVED**: 1688 Purchase Orders page confirmed working at `/purchase-1688`
 - Verified: 42 orders displaying with all columns (1688 Order ID, Product, Shopify #, Supplier Status, DWZ Tracking, Size/Color, Order Status, Created, Actions)
