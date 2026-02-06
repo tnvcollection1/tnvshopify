@@ -629,10 +629,10 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
     
     # 2. Get shipping address from linked Shopify order
     shopify_order_number = alibaba_order.get("shopify_order_number") or alibaba_order.get("shopify_order_id")
-    shipping_address = alibaba_order.get("shipping_address", {})
+    shipping_address = alibaba_order.get("shipping_address") or {}
     
     # If no shipping address in alibaba_order, try to fetch from orders collections
-    if not shipping_address and shopify_order_number:
+    if not shipping_address or not shipping_address.get("address1"):
         # Try shopify_orders collection first
         shopify_order = await db.shopify_orders.find_one(
             {"$or": [
