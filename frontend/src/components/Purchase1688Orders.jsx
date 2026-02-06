@@ -450,14 +450,12 @@ const Purchase1688Orders = () => {
               <table className="w-full" data-testid="orders-table">
                 <thead>
                   <tr className="border-b bg-gray-50">
-                    <th className="text-left p-3 font-semibold text-gray-700">1688 Order ID</th>
-                    <th className="text-left p-3 font-semibold text-gray-700">Product</th>
                     <th className="text-left p-3 font-semibold text-gray-700">Shopify #</th>
+                    <th className="text-left p-3 font-semibold text-gray-700 min-w-[250px]">Product Name</th>
+                    <th className="text-left p-3 font-semibold text-gray-700">1688 Order ID</th>
+                    <th className="text-left p-3 font-semibold text-gray-700">Size/Color</th>
                     <th className="text-left p-3 font-semibold text-gray-700">Supplier Status</th>
                     <th className="text-left p-3 font-semibold text-gray-700">DWZ Tracking</th>
-                    <th className="text-left p-3 font-semibold text-gray-700">Size/Color</th>
-                    <th className="text-left p-3 font-semibold text-gray-700">Order Status</th>
-                    <th className="text-left p-3 font-semibold text-gray-700">Created</th>
                     <th className="text-right p-3 font-semibold text-gray-700">Actions</th>
                   </tr>
                 </thead>
@@ -468,36 +466,135 @@ const Purchase1688Orders = () => {
                       className="border-b hover:bg-gray-50 transition-colors"
                       data-testid={`order-row-${index}`}
                     >
-                      <td className="p-3">
-                        <div className="flex items-center gap-1">
-                          <code className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded font-mono">
-                            {order.alibaba_order_id || '-'}
-                          </code>
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <div>
-                          <p
-                            className="font-medium text-sm text-blue-600 hover:underline cursor-pointer truncate max-w-[150px]"
-                            onClick={() => order.product_id && open1688Product(order.product_id)}
-                            title={order.product_id}
-                          >
-                            {order.product_id || 'N/A'}
-                          </p>
-                          {order.notes && (
-                            <p className="text-xs text-gray-500 truncate max-w-[150px]" title={order.notes}>
-                              {order.notes}
-                            </p>
-                          )}
-                        </div>
-                      </td>
+                      {/* Shopify Order # */}
                       <td className="p-3">
                         {order.shopify_order_id || order.shopify_order_number ? (
+                          <button 
+                            className="text-blue-600 hover:underline font-mono text-sm font-bold cursor-pointer bg-transparent border-none"
+                            onClick={() => openShopifyOrderModal(order.shopify_order_number || order.shopify_order_id)}
+                          >
+                            #{order.shopify_order_number || order.shopify_order_id}
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 text-xs">Not linked</span>
+                        )}
+                      </td>
+                      
+                      {/* Product Name */}
+                      <td className="p-3">
+                        <div>
+                          <p className="font-medium text-sm text-gray-900 line-clamp-2" title={order.product_name || order.notes}>
+                            {order.product_name || order.notes || 'N/A'}
+                          </p>
+                          <div className="flex gap-2 mt-1">
+                            {order.product_id && (
+                              <span 
+                                className="text-xs text-blue-600 hover:underline cursor-pointer"
+                                onClick={() => open1688Product(order.product_id)}
+                              >
+                                ID: {order.product_id}
+                              </span>
+                            )}
+                            {order.sku && (
+                              <span className="text-xs text-gray-400">
+                                SKU: {order.sku}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      
+                      {/* 1688 Order ID */}
+                      <td className="p-3">
+                        <code className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded font-mono">
+                          {order.alibaba_order_id || '-'}
+                        </code>
+                      </td>
+                      
+                      {/* Size/Color */}
+                      <td className="p-3">
+                        <div className="text-sm">
+                          {order.size && <span className="block text-xs font-medium">Size: {order.size}</span>}
+                          {order.color && <span className="block text-xs text-gray-600">Color: {order.color}</span>}
+                          {!order.size && !order.color && <span className="text-gray-400">-</span>}
+                        </div>
+                      </td>
+                      
+                      {/* Supplier Status */}
+                      <td className="p-3">
+                        <div className="space-y-1">
+                          {order.supplier_status ? (
+                            <Badge className={`${getSupplierStatusColor(order.supplier_status)} border text-xs`}>
+                              {formatSupplierStatus(order.supplier_status)}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-gray-400 text-xs">Pending</Badge>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2"
+                            onClick={() => handleSyncStatus(order)}
+                          >
+                            <RefreshCw className="h-3 w-3 mr-1" />
+                            Sync
+                          </Button>
+                        </div>
+                      </td>
+                      
+                      {/* DWZ Tracking */}
+                      <td className="p-3">
+                        {order.dwz_tracking || order.dwz_tracking_number ? (
+                          <code className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded font-mono">
+                            {order.dwz_tracking || order.dwz_tracking_number}
+                          </code>
+                        ) : (
                           <div>
-                            <button 
-                              className="text-blue-600 hover:underline font-mono text-sm cursor-pointer bg-transparent border-none"
-                              onClick={() => openShopifyOrderModal(order.shopify_order_number || order.shopify_order_id)}
+                            {['shipped', 'delivered', 'fulfilled', 'completed', 'success', 'waitbuyerreceive'].includes(order.status?.toLowerCase()) || 
+                             ['shipped', 'delivered', 'fulfilled', 'success', 'waitbuyerreceive'].includes(order.supplier_status?.toLowerCase()) ||
+                             (order.shopify_order_number && order.shipping_address) ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs border-purple-300 text-purple-600 hover:bg-purple-50"
+                                onClick={() => handlePlaceDWZOrder(order)}
+                              >
+                                <Truck className="h-3 w-3 mr-1" />
+                                Place DWZ
+                              </Button>
+                            ) : (
+                              <span className="text-gray-400 text-xs">Waiting</span>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                      
+                      {/* Actions */}
+                      <td className="p-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {order.alibaba_order_id && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => open1688Order(order.alibaba_order_id)}
+                              className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                              title="View on 1688"
                             >
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setSelectedOrder(order)}
+                            title="View Details"
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                               #{order.shopify_order_number || order.shopify_order_id}
                             </button>
                             {order.shopify_fulfillment_status && (
