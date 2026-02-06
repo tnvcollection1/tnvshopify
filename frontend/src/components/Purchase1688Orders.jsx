@@ -853,6 +853,303 @@ const Purchase1688Orders = () => {
           </div>
         </div>
       )}
+
+      {/* Shopify Order Modal */}
+      {shopifyOrderModal && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setShopifyOrderModal(null)}
+        >
+          <div
+            className="bg-white rounded-xl p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-blue-500" />
+                Shopify Order #{shopifyOrderModal}
+              </h3>
+              <button
+                onClick={() => setShopifyOrderModal(null)}
+                className="p-2 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {shopifyOrderLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                <span className="ml-3 text-gray-600">Loading order details...</span>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Customer & Shipping Info */}
+                {shopifyOrderData && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        Customer
+                      </h4>
+                      <p className="font-medium">{shopifyOrderData.customer_name || shopifyOrderData.name || 'N/A'}</p>
+                      {shopifyOrderData.email && (
+                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                          <Mail className="w-3 h-3" />
+                          {shopifyOrderData.email}
+                        </p>
+                      )}
+                      {shopifyOrderData.phone && (
+                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                          <Phone className="w-3 h-3" />
+                          {shopifyOrderData.phone}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        Shipping Address
+                      </h4>
+                      {shopifyOrderData.shipping_address ? (
+                        <div className="text-sm text-gray-600">
+                          <p className="font-medium">{shopifyOrderData.shipping_address.name}</p>
+                          <p>{shopifyOrderData.shipping_address.address1}</p>
+                          {shopifyOrderData.shipping_address.address2 && <p>{shopifyOrderData.shipping_address.address2}</p>}
+                          <p>{shopifyOrderData.shipping_address.city}, {shopifyOrderData.shipping_address.province} {shopifyOrderData.shipping_address.zip}</p>
+                          <p>{shopifyOrderData.shipping_address.country}</p>
+                        </div>
+                      ) : (
+                        <p className="text-gray-400 text-sm">No shipping address</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Order Summary */}
+                {shopifyOrderData && (
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm text-gray-600">Order Total</p>
+                        <p className="text-2xl font-bold text-blue-700">₹{parseFloat(shopifyOrderData.total_price || 0).toLocaleString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <Badge className={`${
+                          shopifyOrderData.fulfillment_status === 'fulfilled' ? 'bg-green-100 text-green-700' :
+                          shopifyOrderData.fulfillment_status === 'partial' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {shopifyOrderData.fulfillment_status || 'Unfulfilled'}
+                        </Badge>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {shopifyOrderData.financial_status || 'Pending'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Line Items with 1688 Orders */}
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <Package className="w-4 h-4" />
+                    Line Items & 1688 Orders ({linked1688Orders.length} linked)
+                  </h4>
+                  
+                  {shopifyOrderData?.line_items?.length > 0 ? (
+                    <div className="space-y-3">
+                      {shopifyOrderData.line_items.map((item, idx) => {
+                        // Find linked 1688 order for this item
+                        const linked1688 = linked1688Orders.find(po => {
+                          // Match by size/color
+                          const itemVariant = (item.variant_title || '').toLowerCase();
+                          const poSize = (po.size || '').toLowerCase();
+                          const poColor = (po.color || '').toLowerCase();
+                          
+                          if (poSize && itemVariant.includes(poSize)) return true;
+                          if (poColor && itemVariant.includes(poColor)) return true;
+                          
+                          // Match by notes containing item title
+                          if (po.notes && item.title) {
+                            const notesLower = po.notes.toLowerCase();
+                            const titleWords = item.title.toLowerCase().split(' ').filter(w => w.length > 3);
+                            const matchCount = titleWords.filter(w => notesLower.includes(w)).length;
+                            if (matchCount >= 2) return true;
+                          }
+                          
+                          // Single item order - auto match
+                          if (shopifyOrderData.line_items.length === 1 && linked1688Orders.length === 1) {
+                            return true;
+                          }
+                          
+                          return false;
+                        }) || (linked1688Orders.length === 1 && shopifyOrderData.line_items.length === 1 ? linked1688Orders[0] : null);
+
+                        return (
+                          <div key={idx} className="border rounded-lg p-3 bg-white">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <p className="font-medium text-gray-900">{item.title || item.name}</p>
+                                <div className="flex gap-3 mt-1">
+                                  {item.variant_title && (
+                                    <span className="text-xs text-gray-500">Variant: {item.variant_title}</span>
+                                  )}
+                                  {item.sku && (
+                                    <span className="text-xs text-gray-500">SKU: {item.sku}</span>
+                                  )}
+                                  <span className="text-xs text-gray-500">Qty: {item.quantity || 1}</span>
+                                </div>
+                              </div>
+                              <p className="font-semibold text-gray-900">₹{parseFloat(item.price || 0).toLocaleString()}</p>
+                            </div>
+                            
+                            {/* 1688 Order Link */}
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              {linked1688 ? (
+                                <div className="bg-green-50 rounded-lg p-3">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Link2 className="w-4 h-4 text-green-600" />
+                                      <span className="text-sm font-medium text-green-800">Linked to 1688</span>
+                                    </div>
+                                    <a 
+                                      href={`https://trade.1688.com/order/order_detail.htm?orderId=${linked1688.alibaba_order_id}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-green-700 hover:underline font-mono flex items-center gap-1"
+                                    >
+                                      {linked1688.alibaba_order_id}
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  </div>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-xs">
+                                    <div>
+                                      <span className="text-gray-500">Product:</span>
+                                      <p className="font-medium text-gray-700 truncate" title={linked1688.product_name || linked1688.notes}>
+                                        {linked1688.product_name || linked1688.notes?.substring(0, 30) || linked1688.product_id}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Size/Color:</span>
+                                      <p className="font-medium text-gray-700">{linked1688.size || '-'} / {linked1688.color || '-'}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Status:</span>
+                                      <Badge className={`${getSupplierStatusColor(linked1688.supplier_status || linked1688.status)} text-xs mt-0.5`}>
+                                        {formatSupplierStatus(linked1688.supplier_status || linked1688.status)}
+                                      </Badge>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">DWZ Tracking:</span>
+                                      {linked1688.dwz_tracking ? (
+                                        <p className="font-mono text-purple-700 font-medium">{linked1688.dwz_tracking}</p>
+                                      ) : (
+                                        <p className="text-gray-400">Not placed</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="bg-yellow-50 rounded-lg p-3 flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-yellow-700 text-sm">Not linked to 1688</span>
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 text-xs border-yellow-400 text-yellow-700 hover:bg-yellow-100"
+                                    onClick={() => {
+                                      const alibaba1688Id = prompt('Enter 1688 Order ID to link:');
+                                      if (alibaba1688Id) {
+                                        // TODO: Implement linking
+                                        toast.info('Link functionality coming soon');
+                                      }
+                                    }}
+                                  >
+                                    <Link2 className="w-3 h-3 mr-1" />
+                                    Link to 1688
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : linked1688Orders.length > 0 ? (
+                    // Show 1688 orders even if no line items from Shopify
+                    <div className="space-y-3">
+                      {linked1688Orders.map((po, idx) => (
+                        <div key={idx} className="border rounded-lg p-3 bg-green-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Link2 className="w-4 h-4 text-green-600" />
+                              <span className="text-sm font-medium text-green-800">1688 Order</span>
+                            </div>
+                            <a 
+                              href={`https://trade.1688.com/order/order_detail.htm?orderId=${po.alibaba_order_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-green-700 hover:underline font-mono flex items-center gap-1"
+                            >
+                              {po.alibaba_order_id}
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                            <div>
+                              <span className="text-gray-500">Product:</span>
+                              <p className="font-medium text-gray-700 truncate" title={po.product_name || po.notes}>
+                                {po.product_name || po.notes?.substring(0, 50) || po.product_id}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Size/Color:</span>
+                              <p className="font-medium text-gray-700">{po.size || '-'} / {po.color || '-'}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Status:</span>
+                              <Badge className={`${getSupplierStatusColor(po.supplier_status || po.status)} text-xs mt-0.5`}>
+                                {formatSupplierStatus(po.supplier_status || po.status)}
+                              </Badge>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">DWZ Tracking:</span>
+                              {po.dwz_tracking ? (
+                                <p className="font-mono text-purple-700 font-medium">{po.dwz_tracking}</p>
+                              ) : (
+                                <p className="text-gray-400">Not placed</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm text-center py-4">No line items or 1688 orders found</p>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 justify-end pt-4 border-t">
+                  <Button variant="outline" onClick={() => setShopifyOrderModal(null)}>
+                    Close
+                  </Button>
+                  <Button
+                    onClick={() => window.open(`/orders?search=${shopifyOrderModal}`, '_blank')}
+                    className="bg-blue-500 hover:bg-blue-600"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Full Order
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
