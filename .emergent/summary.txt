@@ -40,96 +40,88 @@ Recent user requests expanded this scope to include:
 
 **what currently exists?**
 - A full-stack application (FastAPI backend, React frontend, MongoDB) deployed on the user's VPS at .
-- The critical admin session instability issue has been fixed by simplifying the frontend session logic in .
-- The theme editor now allows linking menu items to collections, products, or tags, powered by new backend endpoints.
-- A 1688 Sourcing section has been added to the admin sidebar, grouping all related functionality.
-- A fulfillment workflow has been implemented:
-    - **Shopify Orders:** Individual products in an order can be linked to 1688 purchase orders. The UI shows the linked status (e.g., 1 of 3 items linked) and provides a Link to 1688 button for each unlinked item.
-    - **DWZ Warehouse:** Once a 1688 order is fulfilled, a Place DWZ Order button appears, which opens the DWZ shipping page with pre-filled data.
-- A custom tracking number format () is auto-generated on the backend when placing a DWZ order.
-- A data deletion endpoint for Facebook App Review has been created, and the user has been provided with the necessary URLs and instructions.
+- The frontend now correctly points to the production backend, resolving a critical stuck on loading bug.
+- The fulfillment workflow has been significantly enhanced:
+    - **1688 Purchase Orders**: A dedicated page () displays 1688 orders.
+    - **Status Sync**: A Sync button on each order fetches the latest fulfillment status from the 1688 API (, , ).
+    - **Direct DWZ Placement**: A Place DWZ Order button appears when an order is fulfilled. It directly calls a backend API to create the DWZ shipment, using the shipping address from the linked Shopify order.
+    - **Tracking Number Saved**: The backend saves the generated DWZ tracking number back to the 1688 purchase order record.
+    - **Data Integrity**: The system now correctly handles store separation, preventing orders from the Pakistan store () from being mixed with the India store ().
+- A robust data sync mechanism is in place for fetching orders from 1688, and shipping addresses and order details from Shopify.
+- User-requested data cleanup, including unlinking and deleting all purchase orders for a fresh start, has been completed.
 
 **Last working item**:
--   **Last item agent was working**: The user reported that the  page is not displaying any orders and is stuck on a Loading orders... screen. The agent's investigation confirmed the backend API returns 9 orders correctly, and the frontend makes the API call, but the UI fails to update.
+-   **Last item agent was working**: The user reported that after successfully placing a DWZ order, the UI still shows the Place DWZ Order button instead of displaying the newly generated tracking number. The agent confirmed the backend saves the tracking number but was about to fix the frontend UI to reflect this change.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: Frontend testing agent. The test must navigate to the 1688 Purchase Orders page and verify that the table of 9 orders is displayed. It should check for JavaScript console errors during the API call and rendering process.
+-   **Which testing method agent to use?**: Frontend testing agent. The test must navigate to the  page, click Place DWZ Order on a valid order, and verify that the button is immediately replaced by the new DWZ tracking number in the table without a page reload.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: 1688 Purchase Orders page is not loading data (P0)
--   Issue 2: Mobile App is in an untested, high-risk state (P0)
--   Issue 3: Stories component close ('X') button may not work in preview (P1)
+-   Issue 1: UI on Purchase Orders page doesn't update after placing DWZ order (P0)
+-   Issue 2: Shopify & 1688 API tokens are unreliable and expire (P1)
+-   Issue 3: Mobile App is in an untested, high-risk state (P1)
 -   Issue 4: Header menu disappears when selected in the editor (P1)
 -   Issue 5: DTDC Live API Integration is Blocked (P1)
 -   Issue 6: Obsolete V2 Editor Components need deletion (P3)
 -   Issue 7: Large monolithic backend files require refactoring (P4)
 
 **Issues Detail**:
--   **Issue 1: 1688 Purchase Orders page is not loading data (P0)**
-    -   **Attempted fixes**: Agent verified the backend API () works and returns data. Screenshots confirmed the frontend component () calls the API but gets stuck on the Loading... state without rendering the data or showing an error.
+-   **Issue 1: UI on Purchase Orders page doesn't update after placing DWZ order (P0)**
+    -   **Attempted fixes**: The backend logic was confirmed to be working correctly. The issue is isolated to the frontend.
     -   **Next debug checklist**:
-        1.  In , add detailed  statements within the   hook, specifically inside the  block to inspect the raw API response and the data being passed to . Also, add a  block to log any potential errors during the fetch or JSON parsing.
-        2.  Verify the  call is being executed in all scenarios (success and error).
-        3.  Use the screenshot tool with  to inspect the Network tab and confirm the API response body is what's expected.
-    -   **Why fix this issue and what will be achieved with the fix?**: This page is critical for the user to manage their procurement pipeline. Fixing it will restore a core part of their workflow.
+        1.  In , locate the  function.
+        2.  Inside the  block, after the  call and the  message, add a call to the  function to refresh the list of orders from the backend.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will provide immediate visual confirmation to the user that the order has been placed and display the tracking number, preventing confusion and duplicate order placements.
     -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: Y
+    -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
--   **Issue 2: Mobile App is in an untested, high-risk state (P0)**
-    -   **Attempted fixes**: None.
-    -   **Next debug checklist**: Navigate to , run , and begin debugging build/runtime errors.
+-   **Issue 2: Shopify & 1688 API tokens are unreliable and expire (P1)**
+    -   **Attempted fixes**: The agent manually updated the expired tokens after the user provided new ones. This is a temporary workaround.
+    -   **Next debug checklist**:
+        1.  Review the  and  files.
+        2.  Implement a proper OAuth2 refresh token flow for both Shopify and 1688 integrations.
+        3.  The logic should automatically try to refresh the access token when a  error is received, before failing the request.
+    -   **Why fix this issue and what will be achieved with the fix?**: It will create a stable and reliable data sync process, removing the need for frequent manual intervention from the user.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Frontend (Mobile)
+    -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
-
--   **Issue 3: Stories component close ('X') button may not work in preview (P1)**
-    -   **Status**: IN PROGRESS
-    -   **Blocked on other issue**: None
-
--   **Issue 4: Header menu disappears when selected in the editor (P1)**
-    -   **Status**: TESTING PENDING
-    -   **Blocked on other issue**: None
-
--   **Issue 5: DTDC Live API Integration is Blocked (P1)**
-    -   **Status**: BLOCKED (Awaiting permanent API key from user).
-
--   **Issue 6: Obsolete V2 Editor Components need deletion (P3)**
-    -   **Status**: NOT STARTED
-
--   **Issue 7: Large monolithic backend files require refactoring (P4)**
-    -   **Status**: NOT STARTED
 
 **In progress Task List**:
--   **Task 1: Debug and Fix the 1688 Purchase Orders Page (P0)**
+-   **Task 1: Fix UI update after DWZ Order Placement (P0)**
     -   **Where to resume**: .
-    -   **What will be achieved with this?**: The 1688 orders dashboard will correctly display the 9 orders fetched from the API, unblocking the user's procurement workflow.
+    -   **What will be achieved with this?**: The UI will correctly display the DWZ tracking number immediately after an order is placed, replacing the Place DWZ Order button.
     -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on something**: No
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P0) Test and stabilize the mobile app in an Expo environment.
+    -   (P1) Stabilize and test the React Native mobile app.
     -   (P1) Implement User-Generated Stories feature.
 -   **Future Tasks**:
     -   Add more section types and template presets to the theme editor.
     -   Integrate with Sooxie.com API.
     -   Prepare the mobile app for store submission ( configuration).
+    -   Delete obsolete V2 Editor components.
+    -   Refactor monolithic backend files.
 
 **Completed work in this session**
-- **Admin Session Stability Fix**: Resolved the critical admin session expiration issue in  and deployed it to .
-- **Menu Configuration Enhancement**: Enabled linking menu items to products and tags in .
-- **Facebook Data Deletion Endpoint**: Created the  endpoint and provided the user with app review instructions.
-- ** Deployment & Fixes**: Deployed multiple updates to the user's VPS to fix login issues and data display problems.
-- **1688 Sourcing & Fulfillment Workflow**:
-    - Created a 1688 Sourcing menu in .
-    - Implemented per-item linking of Shopify order items to 1688 orders in .
-    - Added a Place DWZ Order step to the UI for fulfilled 1688 items.
-- **Custom TNV Tracking Number**: Implemented a backend tracking number generator in  and integrated it into the frontend workflow.
-- **Improved Order Linking UI**: Updated  to show a summary count (e.g., 1/3 items linked) for multi-product orders.
+- **Resolved Critical Loading/Login Bug**: Fixed a site-wide issue where all pages were stuck on loading due to the frontend pointing to an incorrect backend URL.
+- **Implemented Full 1688 & DWZ Workflow**:
+  - Created a Sync Status button on the 1688 Purchase Orders page to fetch the latest fulfillment status from the 1688 API.
+  - Implemented a Place DWZ Order button that directly places a shipment with the DWZ API and saves the tracking number back to the database.
+- **Implemented Full 1688 Order Sync**: Added functionality to authorize with the 1688 API via OAuth2 and sync all 37 purchase orders into the local database.
+- **Data Sync & Integrity Overhaul**:
+  - Fixed numerous data sync issues by fetching missing Shopify shipping addresses for linked 1688 orders.
+  - Synced existing DWZ shipments from the DWZ API to correctly hide Place DWZ Order buttons.
+  - Identified and removed 1688 orders from the wrong store () that were incorrectly linked.
+- **Item-level Linking**: Implemented a prompt on the Shopify Orders page to allow users to link individual products to a 1688 order ID.
+- **User-Requested Data Reset**: Unlinked and deleted all purchase orders to allow the user to start fresh.
+- **Resolved 1688 Purchase Orders not loading issue**: Diagnosed the initial problem as a user error (accessing an incorrect URL).
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: Obsolete V2 Editor Components**
@@ -139,69 +131,63 @@ Recent user requests expanded this scope to include:
     -   **Is recurring issue?**: N
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: Admin session instability.
--   **Recurrence count**: 5+
--   **Status**: RESOLVED
--   **Issue recurrence in previous fork**: 1688 Purchase Orders not displaying.
+-   **Issue recurrence in previous fork**: Shopify/1688 API token invalidity. This issue occurred multiple times in the current session.
 -   **Recurrence count**: 3+
--   **Status**: IN PROGRESS
+-   **Status**: IN PROGRESS (manual workarounds applied, but a permanent fix is needed).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Direct VPS Deployment**: Building the React app (yarn run v1.22.22
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.), creating a  archive, using  to upload it to the user's VPS, and using  to extract the archive into the  webroot and restart services.
--   **Custom Tracking Number Generation**: A Python function creates a formatted string based on date, country, product attributes, and a daily serial number.
--   **Complex Conditional UI**: Extensive use of React state and conditional rendering to manage a multi-step fulfillment workflow within a single component ().
+-   **Multi-API Fulfillment Workflow**: Orchestrating calls between Shopify (shipping address), 1688 (order/fulfillment status), and DWZ (placing shipment) to automate the e-commerce pipeline.
+-   **OAuth2 Token Management**: Manually handling OAuth2 authorization codes and access/refresh tokens for the 1688 API. The need for a robust, automated refresh flow has been identified.
+-   **State-driven UI**: The Place DWZ Order button's visibility is driven by multiple data points from the backend (, , ). The current bug is a failure to update this state post-action.
 
 **key DB schema**
--   No new DB schema changes. Existing collections for , , and  are in use.
+-   **purchase_orders_1688**: This collection is central. It now includes , , , and .
+-   **orders**: This collection is the source of truth for Shopify order details, including the shipping address.
+-   **api_keys**: Used to store the Shopify API token.
+-   **system_config**: Used to store the 1688 API access token.
 
 **All files of reference**
--   **/app/frontend/src/components/Purchase1688Orders.jsx**: **(CURRENT ISSUE)** Component responsible for displaying 1688 orders, currently stuck on Loading....
--   **/app/frontend/src/contexts/AuthContext.jsx**: Contains the successful session stability fix.
--   **/app/frontend/src/components/ShopifyOrders.jsx**: Contains the logic for the per-item linking and DWZ fulfillment workflow.
--   **/app/frontend/src/components/Sidebar.jsx**: Defines the main navigation menu; was updated to include the 1688 Sourcing section.
--   **/app/backend/routes/dwz56.py**: Contains the new custom TNV tracking number generation logic.
--   **/app/backend/routes/alibaba_1688.py**: Contains the endpoints for fetching 1688 purchase orders and linking them to Shopify orders.
--   **/app/frontend/src/components/ShopifyStyleEditor.jsx**: The theme editor, updated with new menu linking options.
--   **/app/backend/routes/facebook_data_deletion.py**: New file for handling Facebook data deletion requests.
+-   **/app/frontend/src/components/Purchase1688Orders.jsx**: **(CURRENT ISSUE)** Contains the UI for placing DWZ orders and syncing status. Needs state refresh logic after placing an order.
+-   **/app/backend/routes/dwz56.py**: Contains the  endpoint which places the DWZ order and saves the tracking number.
+-   **/app/backend/routes/alibaba_1688.py**: Contains endpoints for linking items, syncing 1688 status, and syncing all 1688 orders.
+-   **/app/frontend/src/components/ShopifyOrders.jsx**: Contains the Link to 1688 prompt logic.
 
 **Areas that need refactoring**:
--   The obsolete  and  components should be deleted.
--   The monolithic  file in the backend should be broken down into smaller modules.
+-   Implement a robust OAuth2 refresh token mechanism for the Shopify & 1688 integrations to avoid manual token updates.
+-   The monolithic  and  files should be broken down into smaller modules for better maintainability (e.g., separating API interaction logic from routing).
 
 **key api endpoints**
--   : Fetches all 1688 purchase orders. (API works, but frontend display is broken).
--   : Links a 1688 order to a Shopify order number.
--   : Generates a custom TNV tracking number.
--   : Fetches a simple list of products for the theme editor.
--   : Fetches all unique product tags for the theme editor.
--   : Handles data deletion requests from Facebook.
+-   : Places a DWZ order using data from a 1688 order and saves the tracking number back.
+-   : Links a Shopify order line item to a new or existing 1688 order.
+-   : Fetches the latest fulfillment status from the 1688 API for a specific order.
+-   : Fetches a list of all orders from the 1688 API.
 
 **Critical Info for New Agent**
--   **Your first task is to fix the  page.** This is a P0, recurring issue. The backend API is confirmed to be working, so the problem is purely on the frontend in . Focus your debugging on the component's state management (, ) and how it handles the response from the  call.
--   **All deployments to  must be done manually to the user's VPS.** The agent has successfully deployed both frontend (React build) and backend (individual Python files) changes. The credentials are in the message history if needed, but it's better to confirm with the user first.
--   The custom tracking number format () and logic are critical to the user's workflow. The implementation is in .
+-   **Your immediate task (P0) is to fix the UI on the Purchase Orders page.** After a user clicks Place DWZ Order and it succeeds, the button should be replaced by the DWZ tracking number. The backend is correctly saving the tracking number, but the frontend state is not being refreshed. You need to call the  function again after the successful API call in  in .
+-   **API Token Instability**: Be aware that both Shopify and 1688 API tokens have proven to be unstable. If you encounter  errors, you will likely need to ask the user for a new token or guide them through the re-authorization process. A long-term fix (implementing a refresh token flow) is a pending P1 issue.
+-   **Data Integrity is Critical**: The user's workflow is very sensitive to data consistency across Shopify, 1688, and DWZ. Many problems in this session were caused by incorrect data links or missing data. When debugging, always verify the data in the  and  collections in the database.
 
 **documents and test reports created in this job**
 -   /app/memory/PRD.md (updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **deploy**: User requested another deployment. **Status: Completed.**
-2.  **29442 are having multiple pproduct but order shows single 1688 number**: User reported a discrepancy where a Shopify order with multiple products only showed one linked 1688 order. **Status: Completed (Agent improved the UI to show a X of Y items linked summary).**
-3.  **what about dwz order or tracking number what will be the format?**: User asked for details on the tracking number format. **Status: Completed (Agent investigated and proposed a new custom format).**
-4.  **TNVIN0901Y41015...**: User provided the exact custom format they want for DWZ tracking numbers. **Status: Completed (Agent implemented and deployed this format).**
-5.  **can u check all purchased order 1688 are synced to shopify order number or not ?**: User asked for verification of data linkage. **Status: Completed (Agent checked the DB and confirmed all 9 orders are linked).**
-6.  **deploy ?**: User requested deployment. **Status: Completed.**
-7.  **also after 1688 order are fulfiled it should dwz warehouse we can place order there**: User requested the next step in the fulfillment workflow. **Status: Completed (Agent implemented the Place DWZ Order button and logic).**
-8.  **also all purchased order should show shopify order id and which are not linked should show on 1688 purchase dashboard give options to link and place order on dwz**: User requested more features for the 1688 dashboard. **Status: Completed.**
-9.  **3 products. 3 1688 orders should come for link and theres no option to link and 1688 fulfilement number should come**: User clarified the need for per-product linking. **Status: Completed (Agent added per-item Link to 1688 buttons).**
-10. **1688 Purchase Orders orders are missing**: User reports the current P0 issue that the orders page is not loading data. **Status: In Progress.**
+1.  **After placing order and is sucesful it should show tracking number instead of button...**: User reports the current P0 issue. **Status: In Progress.**
+2.  **orders which are link to 1688 pleae sync there shipping address from shopify**: User requested to sync shipping addresses for newly linked orders. **Status: Completed.**
+3.  **Failed to sync status: 400...**: User reports that the 1688 status sync is failing. **Status: Completed (Agent fixed the API call format).**
+4.  **Failed to sync status: 401...**: User reports that the 1688 token is expired. **Status: Completed (Agent updated the token).**
+5.  **please add option to sync shipping status on each order...**: User requested a Sync Status button. **Status: Completed.**
+6.  **Unlink all 1688 orders from shopify i will link again then we will place also remove all orders from 1688 purchase orders**: User requested a fresh start. **Status: Completed.**
+7.  **ur syncing orders tnvcollectionpk and syncing them to dwz tracking...**: User reports that orders from the wrong store (Pakistan) are being synced. **Status: Completed.**
+8.  **1688 order number linked to shopify should come in purchase order...**: User clarifies the required data flow. **Status: Completed.**
+9.  **please sync DWZ Tracking which are already placed as button is showing for placing order?**: User asks to sync existing DWZ tracking numbers to hide buttons. **Status: Completed.**
+10. **why is supplier order fulfilement status not updated from 1688 ?**: User asks why fulfillment status isn't being synced. **Status: Completed.**
 
 **Project Health Check:**
--   **Broken**: The 1688 Purchase Orders page is critically broken (stuck on loading), blocking a core user workflow. The React Native mobile app is presumed broken and remains untested.
+-   **Broken**: The core fulfillment UI in  is functionally broken as it doesn't provide correct user feedback after placing an order, risking duplicate orders. The React Native mobile app is presumed broken and remains untested.
+-   **At Risk**: Shopify and 1688 integrations are at risk due to an unreliable manual API token management process.
 -   **Mocked**: DTDC shipping integration is still blocked awaiting a user-provided API key.
 
 **3rd Party Integrations**
@@ -210,18 +196,20 @@ info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this comm
 -   **Emergent Integrations (ClipDrop)** for AI Image Background Removal — uses Emergent LLM Key.
 -   **@dnd-kit/core, @dnd-kit/sortable** (Frontend UI Library) - For drag-and-drop in the editor.
 -   **react-slick, slick-carousel** (Frontend UI Library) - For carousels.
--   **1688.com**: Custom API integration for sourcing.
+-   **1688.com**: Custom API integration for sourcing and order management. **(Token is unstable)**
 -   **DWZ56**: Custom API integration for shipping.
+-   **Shopify**: API integration for orders and products. **(Token is unstable)**
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (for verifying UI elements and navigation flows).
+-   **Testing agent used after significant changes**: NO (Agent performed manual testing and deployment).
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: None
--   **Known regressions**: The 1688 Purchase Orders page was working but is now broken again, making it a regression.
+-   **Known regressions**: The UI not updating after DWZ placement can be considered a regression from a user experience standpoint, as the underlying data is correct but the feedback loop is broken.
 
 **Credentials to test flow:**
 -   **Admin Login**:  / 
--   **VPS SSH**: Credentials for IP  are in the chat history if direct deployment is needed.
+-   **VPS SSH**: Credentials for IP  are available if direct deployment is needed, including the password .
 
 **What agent forgot to execute**
--   The agent has not yet deleted the obsolete V2 editor files (, ).</analysis>
+-   The agent has not yet deleted the obsolete V2 editor files (, ) as noted in previous summaries.
+-   A permanent fix for the recurring API token expiry issue for Shopify and 1688 has not been implemented.</analysis>

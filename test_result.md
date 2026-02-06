@@ -83,7 +83,7 @@ The following backend endpoints are expected to be available:
 
 ## Test Environment
 
-- **Frontend URL**: https://tenant-storefront.preview.emergentagent.com
+- **Frontend URL**: https://shopfront-editor.preview.emergentagent.com
 - **Login Credentials**: admin / admin
 - **Browser**: Playwright (Desktop viewport 1920x1080)
 - **Test Date**: January 8, 2025

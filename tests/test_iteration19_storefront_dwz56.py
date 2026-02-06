@@ -18,7 +18,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://tenant-storefront.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://shopfront-editor.preview.emergentagent.com')
 
 # Test stores for data isolation
 TEST_STORES = ['tnvcollection', 'tnvcollectionpk', 'ashmiaa']
