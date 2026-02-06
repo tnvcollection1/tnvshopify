@@ -85,6 +85,44 @@ const Purchase1688Orders = () => {
     fetchOrders();
   }, [fetchOrders]);
 
+  // Fetch Shopify order details when modal opens
+  const openShopifyOrderModal = async (shopifyOrderNumber) => {
+    setShopifyOrderModal(shopifyOrderNumber);
+    setShopifyOrderLoading(true);
+    setShopifyOrderData(null);
+    setLinked1688Orders([]);
+    
+    try {
+      // Fetch order details from orders collection
+      const orderRes = await fetch(`${API}/api/customers?search=${shopifyOrderNumber}&page_size=50`);
+      const orderData = await orderRes.json();
+      
+      if (orderData.customers?.length > 0) {
+        // Find exact match
+        const exactOrder = orderData.customers.find(c => 
+          String(c.order_number) === String(shopifyOrderNumber) || 
+          c.name === `#${shopifyOrderNumber}`
+        );
+        if (exactOrder) {
+          setShopifyOrderData(exactOrder);
+        }
+      }
+      
+      // Fetch all 1688 orders linked to this Shopify order
+      const purchaseRes = await fetch(`${API}/api/1688/purchase-orders?shopify_order_id=${shopifyOrderNumber}&page_size=50`);
+      const purchaseData = await purchaseRes.json();
+      
+      if (purchaseData.orders?.length > 0) {
+        setLinked1688Orders(purchaseData.orders);
+      }
+    } catch (error) {
+      console.error('Error fetching Shopify order:', error);
+      toast.error('Failed to fetch order details');
+    } finally {
+      setShopifyOrderLoading(false);
+    }
+  };
+
   const totalPages = Math.ceil(totalOrders / pageSize);
 
   const getStatusColor = (status) => {
