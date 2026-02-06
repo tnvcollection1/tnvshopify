@@ -2404,6 +2404,10 @@ async def list_purchase_orders(
     for order in orders:
         enriched = dict(order)
         
+        # FIRST: Use dwz_tracking directly from the order document if it exists
+        # This field is set by the /place-order-from-1688 endpoint
+        dwz_tracking_from_order = order.get("dwz_tracking") or order.get("dwz_waybill")
+        
         # Try to find fulfillment pipeline data
         pipeline_data = await db.fulfillment_pipeline.find_one(
             {"$or": [
@@ -2419,14 +2423,16 @@ async def list_purchase_orders(
             enriched["supplier_status"] = pipeline_data.get("alibaba_status") or pipeline_data.get("status")
             enriched["supplier_tracking"] = pipeline_data.get("alibaba_tracking")
             enriched["supplier_carrier"] = pipeline_data.get("alibaba_carrier")
-            enriched["dwz_tracking"] = pipeline_data.get("dwz56_tracking")
+            # Use order's dwz_tracking first, fallback to pipeline data
+            enriched["dwz_tracking"] = dwz_tracking_from_order or pipeline_data.get("dwz56_tracking")
             enriched["dwz_status"] = pipeline_data.get("dwz_status")
             enriched["stages"] = pipeline_data.get("stages", {})
         else:
-            enriched["supplier_status"] = None
-            enriched["supplier_tracking"] = None
-            enriched["dwz_tracking"] = None
-            enriched["dwz_status"] = None
+            # Use order's own fields first
+            enriched["supplier_status"] = order.get("supplier_status")
+            enriched["supplier_tracking"] = order.get("supplier_tracking")
+            enriched["dwz_tracking"] = dwz_tracking_from_order
+            enriched["dwz_status"] = order.get("dwz_status")
             enriched["stages"] = {}
         
         # Also check customers collection for additional order info
