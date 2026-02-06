@@ -657,7 +657,7 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
             if shopify_order:
                 shipping_address = shopify_order.get("shipping_address", {})
     
-    if not shipping_address:
+    if not shipping_address or not shipping_address.get("address1"):
         raise HTTPException(
             status_code=400, 
             detail=f"No shipping address found. Link order to Shopify first or add shipping address."
