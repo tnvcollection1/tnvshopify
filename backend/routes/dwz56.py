@@ -1093,10 +1093,17 @@ async def clear_local_tracking_data(
     
     db = get_db()
     
-    # Build query
-    query = {"dwz_order_placed": True}
+    # Build query to find ALL orders with any DWZ tracking fields
+    base_query = {"$or": [
+        {"dwz_tracking": {"$exists": True, "$ne": None, "$ne": ""}},
+        {"dwz_waybill": {"$exists": True, "$ne": None, "$ne": ""}},
+        {"dwz_order_placed": True}
+    ]}
+    
     if order_ids:
-        query["alibaba_order_id"] = {"$in": order_ids}
+        query = {"$and": [base_query, {"alibaba_order_id": {"$in": order_ids}}]}
+    else:
+        query = base_query
     
     # Get count before clearing
     count_before = await db.purchase_orders_1688.count_documents(query)
