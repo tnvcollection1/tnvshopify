@@ -2377,23 +2377,39 @@ async def list_purchase_orders(
     status: Optional[str] = Query(None),
     shopify_order_id: Optional[str] = Query(None),
     store_name: Optional[str] = Query(None),
+    linked_only: bool = Query(True, description="Only show orders linked to Shopify"),
 ):
     """
     List purchase orders created on 1688 with fulfillment data
     Includes: supplier fulfillment status, DWZ tracking number
+    By default, only shows orders linked to a Shopify order
     """
     db = get_db()
     
     query = {}
+    
+    # By default, only show linked orders (orders with shopify_order_number)
+    if linked_only:
+        query["$and"] = [
+            {"$or": [
+                {"shopify_order_number": {"$exists": True, "$ne": None, "$ne": ""}},
+                {"shopify_order_id": {"$exists": True, "$ne": None, "$ne": ""}}
+            ]}
+        ]
+    
     if status:
         query["status"] = status
     if shopify_order_id:
         # Search by both shopify_order_id AND shopify_order_number to handle both formats
-        query["$or"] = [
+        shopify_query = [
             {"shopify_order_id": shopify_order_id},
             {"shopify_order_number": shopify_order_id},
             {"shopify_order_number": int(shopify_order_id) if shopify_order_id.isdigit() else shopify_order_id}
         ]
+        if "$and" in query:
+            query["$and"].append({"$or": shopify_query})
+        else:
+            query["$or"] = shopify_query
     if store_name:
         query["store_name"] = store_name
     
