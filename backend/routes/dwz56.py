@@ -633,29 +633,30 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
     
     # If no shipping address in alibaba_order, try to fetch from orders collections
     if not shipping_address or not shipping_address.get("address1"):
-        # Try shopify_orders collection first
-        shopify_order = await db.shopify_orders.find_one(
-            {"$or": [
-                {"order_number": str(shopify_order_number)},
-                {"order_number": int(shopify_order_number) if str(shopify_order_number).isdigit() else None},
-                {"name": f"#{shopify_order_number}"}
-            ]}
-        )
-        if shopify_order:
-            shipping_address = shopify_order.get("shipping_address", {})
-        
-        # If not found, try the 'orders' collection
-        if not shipping_address:
-            order_num = int(shopify_order_number) if str(shopify_order_number).isdigit() else shopify_order_number
-            shopify_order = await db.orders.find_one(
+        if shopify_order_number:
+            # Try shopify_orders collection first
+            shopify_order = await db.shopify_orders.find_one(
                 {"$or": [
-                    {"order_number": order_num},
                     {"order_number": str(shopify_order_number)},
+                    {"order_number": int(shopify_order_number) if str(shopify_order_number).isdigit() else None},
                     {"name": f"#{shopify_order_number}"}
                 ]}
             )
-            if shopify_order:
+            if shopify_order and shopify_order.get("shipping_address"):
                 shipping_address = shopify_order.get("shipping_address", {})
+            
+            # If still not found, try the 'orders' collection
+            if not shipping_address or not shipping_address.get("address1"):
+                order_num = int(shopify_order_number) if str(shopify_order_number).isdigit() else shopify_order_number
+                shopify_order = await db.orders.find_one(
+                    {"$or": [
+                        {"order_number": order_num},
+                        {"order_number": str(shopify_order_number)},
+                        {"name": f"#{shopify_order_number}"}
+                    ]}
+                )
+                if shopify_order and shopify_order.get("shipping_address"):
+                    shipping_address = shopify_order.get("shipping_address", {})
     
     if not shipping_address or not shipping_address.get("address1"):
         raise HTTPException(
