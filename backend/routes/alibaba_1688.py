@@ -2671,19 +2671,44 @@ async def sync_purchase_order_status(alibaba_order_id: str):
         raise HTTPException(status_code=400, detail="1688 API access token not configured")
     
     try:
-        # Fetch order details from 1688 API
+        # Fetch order list from 1688 API and find our order
         params = {
-            "orderId": alibaba_order_id,
+            "pageNo": "1",
+            "pageSize": "50",
         }
         
         result = await make_api_request(
-            "com.alibaba.trade/alibaba.trade.get.buyerView",
+            "com.alibaba.trade/alibaba.trade.getBuyerOrderList",
             params,
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
-        order_data = result.get("result") or result
-        base_info = order_data.get("baseInfo", {}) if isinstance(order_data, dict) else {}
+        orders = result.get("result", [])
+        if isinstance(orders, dict):
+            orders = orders.get("result", []) or []
+        
+        # Find our specific order
+        order_data = None
+        for order in orders:
+            base_info = order.get("baseInfo", {})
+            order_id = base_info.get("idOfStr") or str(base_info.get("id", ""))
+            if order_id == alibaba_order_id:
+                order_data = order
+                break
+        
+        if not order_data:
+            # Order not found in recent orders, might be older
+            # Just update status from what we know
+            return {
+                "success": True,
+                "message": f"Order {alibaba_order_id} not found in recent orders. Status unchanged.",
+                "alibaba_order_id": alibaba_order_id,
+                "status": purchase_order.get("status"),
+                "supplier_status": purchase_order.get("supplier_status"),
+                "is_shipped": purchase_order.get("supplier_status") in ["shipped", "delivered"],
+            }
+        
+        base_info = order_data.get("baseInfo", {})
         
         # Map 1688 status to readable supplier status
         STATUS_MAP = {
@@ -2703,7 +2728,7 @@ async def sync_purchase_order_status(alibaba_order_id: str):
             supplier_status = "delivered"
         
         # Get logistics info if available
-        logistics = order_data.get("nativeLogistics", {}) if isinstance(order_data, dict) else {}
+        logistics = order_data.get("nativeLogistics", {})
         
         # Update the database
         now = datetime.now(timezone.utc).isoformat()
