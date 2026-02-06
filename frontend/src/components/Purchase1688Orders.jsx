@@ -226,6 +226,34 @@ const Purchase1688Orders = () => {
     }
   };
 
+  // Sync shipping status from 1688 API
+  const handleSyncStatus = async (order) => {
+    toast.loading('Syncing status from 1688...', { id: `sync-${order.alibaba_order_id}` });
+    
+    try {
+      const res = await fetch(`${API}/api/1688/purchase-orders/${order.alibaba_order_id}/sync-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        const statusText = data.supplier_status || data.status;
+        toast.success(`Status: ${statusText}${data.is_shipped ? ' ✓ Ready for DWZ' : ''}`, { 
+          id: `sync-${order.alibaba_order_id}`,
+          duration: 3000 
+        });
+        fetchOrders(); // Refresh to show updated status
+      } else {
+        toast.error(data.detail || 'Failed to sync status', { id: `sync-${order.alibaba_order_id}` });
+      }
+    } catch (error) {
+      console.error('Error syncing status:', error);
+      toast.error('Failed to sync status from 1688', { id: `sync-${order.alibaba_order_id}` });
+    }
+  };
+
   return (
     <div className="p-6 space-y-6" data-testid="purchase-1688-orders">
       {/* Header */}
