@@ -166,13 +166,27 @@ const OrderDetailModal = ({ order, open, onClose, globalStore, onRefresh }) => {
         if (purchaseRes.data?.orders?.length > 0) {
           setPurchaseOrder(purchaseRes.data.orders[0]);
           
-          // Map 1688 orders to line items by SKU/product_id
+          // Map 1688 orders to line items - use multiple keys for matching
           const orderMap = {};
-          purchaseRes.data.orders.forEach(po => {
-            // Use product_id or SKU as key
-            const key = po.product_id || po.sku || po.notes;
-            if (key) {
-              orderMap[key] = po;
+          purchaseRes.data.orders.forEach((po, index) => {
+            // Store by shopify_line_item_id if available (best match)
+            if (po.shopify_line_item_id) {
+              orderMap[`line_${po.shopify_line_item_id}`] = po;
+            }
+            // Store by index for single-item orders
+            orderMap[`index_${index}`] = po;
+            // Store by product_id
+            if (po.product_id) {
+              orderMap[`product_${po.product_id}`] = po;
+            }
+            // Store by SKU
+            if (po.sku) {
+              orderMap[`sku_${po.sku}`] = po;
+            }
+            // Store by size+color combination
+            if (po.size || po.color) {
+              const sizeColor = `${po.size || ''}_${po.color || ''}`.toLowerCase();
+              orderMap[`sizecolor_${sizeColor}`] = po;
             }
           });
           setLineItem1688Orders(orderMap);
