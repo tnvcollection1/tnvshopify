@@ -246,21 +246,9 @@ ERROR_CODES = {
 }
 
 
-# VPS time offset correction: VPS is 1 year ahead (2026 instead of 2025)
-# This constant represents the difference in seconds (approximately 365 days)
-VPS_TIME_OFFSET_SECONDS = 365 * 24 * 60 * 60  # ~31,536,000 seconds = 1 year
-
 def generate_timestamp() -> int:
-    """
-    Generate timestamp in milliseconds since 1970-01-01 UTC.
-    
-    IMPORTANT: The VPS system time is set to 2026, but the DWZ API expects
-    timestamps based on real-world time (2025). We subtract the 1-year offset
-    to ensure the API accepts our requests.
-    """
-    vps_timestamp = datetime.now(timezone.utc).timestamp()
-    corrected_timestamp = vps_timestamp - VPS_TIME_OFFSET_SECONDS
-    return int(corrected_timestamp * 1000)
+    """Generate timestamp in milliseconds since 1970-01-01 UTC"""
+    return int(datetime.now(timezone.utc).timestamp() * 1000)
 
 
 def generate_md5_signature(client_id: int, timestamp: int, api_key: str) -> str:
