@@ -482,20 +482,31 @@ const Purchase1688Orders = () => {
                         )}
                       </td>
                       <td className="p-3">
-                        {order.supplier_status ? (
-                          <div>
-                            <Badge className={`${getSupplierStatusColor(order.supplier_status)} border text-xs`}>
-                              {formatSupplierStatus(order.supplier_status)}
-                            </Badge>
-                            {order.supplier_tracking && (
-                              <p className="text-xs text-gray-500 mt-1 font-mono truncate max-w-[100px]" title={order.supplier_tracking}>
-                                {order.supplier_tracking}
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <Badge variant="outline" className="text-gray-400 text-xs">Pending</Badge>
-                        )}
+                        <div className="space-y-1">
+                          {order.supplier_status ? (
+                            <div>
+                              <Badge className={`${getSupplierStatusColor(order.supplier_status)} border text-xs`}>
+                                {formatSupplierStatus(order.supplier_status)}
+                              </Badge>
+                              {order.supplier_tracking && (
+                                <p className="text-xs text-gray-500 mt-1 font-mono truncate max-w-[100px]" title={order.supplier_tracking}>
+                                  {order.supplier_tracking}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <Badge variant="outline" className="text-gray-400 text-xs">Pending</Badge>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2"
+                            onClick={() => handleSyncStatus(order)}
+                          >
+                            <RefreshCw className="h-3 w-3 mr-1" />
+                            Sync
+                          </Button>
+                        </div>
                       </td>
                       <td className="p-3">
                         {order.dwz_tracking || order.dwz_tracking_number ? (
