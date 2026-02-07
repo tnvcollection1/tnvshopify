@@ -3832,7 +3832,7 @@ async def sync_shipping_address_from_shopify(store_name: str, order_number: str)
         "phone": shipping_addr.get("phone", ""),
     }
     
-    # Update the order in database
+    # Update the order in customers database
     result = await db.customers.update_one(
         {"store_name": store_name, "order_number": order_number},
         {
@@ -3844,11 +3844,32 @@ async def sync_shipping_address_from_shopify(store_name: str, order_number: str)
         }
     )
     
+    # CRITICAL: Also update purchase_orders_1688 collection so DWZ fulfillment has the address
+    # This fixes the data sync issue where shipping addresses weren't propagating to purchase orders
+    po_result = await db.purchase_orders_1688.update_many(
+        {
+            "$or": [
+                {"shopify_order_number": order_number},
+                {"shopify_order_number": int(order_number) if order_number.isdigit() else order_number},
+                {"shopify_order_id": order_number},
+                {"shopify_order_id": str(shopify_order_id)},
+            ],
+            "store_name": store_name
+        },
+        {
+            "$set": {
+                "shipping_address": shipping_address,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+        }
+    )
+    
     return {
         "success": True,
         "message": f"Shipping address updated for order {order_number}",
         "shipping_address": shipping_address,
-        "modified_count": result.modified_count,
+        "customers_modified": result.modified_count,
+        "purchase_orders_modified": po_result.modified_count,
     }
 
 
