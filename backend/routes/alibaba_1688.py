@@ -2466,7 +2466,11 @@ async def list_purchase_orders(
         )
         
         if customer_data:
-            enriched["shopify_order_number"] = customer_data.get("order_number")
+            # IMPORTANT: Do NOT overwrite shopify_order_number from purchase order with customer data
+            # The purchase order's shopify_order_number is the authoritative source
+            # Only use customer data to fill in missing values
+            if not enriched.get("shopify_order_number"):
+                enriched["shopify_order_number"] = customer_data.get("order_number")
             enriched["shopify_fulfillment_status"] = customer_data.get("fulfillment_status")
             if not enriched.get("dwz_tracking"):
                 enriched["dwz_tracking"] = customer_data.get("tracking_number")
