@@ -3952,9 +3952,24 @@ async def sync_shipping_addresses_bulk(store_name: str, limit: int = 50):
                     "phone": shipping_addr.get("phone", ""),
                 }
                 
+                # Update customers collection
                 await db.customers.update_one(
                     {"store_name": store_name, "order_number": order_number},
                     {"$set": {"shipping_address": shipping_address, "country_code": shipping_addr.get("country_code", "")}}
+                )
+                
+                # CRITICAL: Also update purchase_orders_1688 for DWZ fulfillment
+                await db.purchase_orders_1688.update_many(
+                    {
+                        "$or": [
+                            {"shopify_order_number": order_number},
+                            {"shopify_order_number": int(order_number) if order_number.isdigit() else order_number},
+                            {"shopify_order_id": order_number},
+                            {"shopify_order_id": str(shopify_order_id)},
+                        ],
+                        "store_name": store_name
+                    },
+                    {"$set": {"shipping_address": shipping_address, "updated_at": datetime.now(timezone.utc).isoformat()}}
                 )
                 
                 results.append({
