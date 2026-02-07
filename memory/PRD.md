@@ -84,6 +84,8 @@ Build a multi-tenant e-commerce platform allowing merchants to have their own st
 ### P0 (Critical)
 - [x] DWZ API timestamp issue - RESOLVED (no offset needed)
 - [x] Cannot clear local tracking data - RESOLVED (new endpoints created)
+- [x] **shopify_order_number overwrite bug** - FIXED (Feb 2026) - Customer data no longer overwrites purchase order's shopify_order_number
+- [x] **Shipping address not syncing to purchase orders** - FIXED (Feb 2026) - sync-shipping-address now updates both customers AND purchase_orders_1688
 - [ ] DWZ PreInputDel API not working - BLOCKED (API limitation, manual deletion required)
 
 ### P1 (Important)
