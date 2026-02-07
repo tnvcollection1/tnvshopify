@@ -14,7 +14,7 @@ WaMerce 1688 Importer (v5.0.0) - Manifest V3 compatible Chrome extension for imp
 1. **Download the Extension**
    ```
    Option A: Download from app
-   - Navigate to: https://ecom-editor-1.preview.emergentagent.com/settings
+   - Navigate to: https://ecom-platform-192.preview.emergentagent.com/settings
    - Click "Download Chrome Extension"
    
    Option B: Direct API download

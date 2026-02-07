@@ -6,7 +6,7 @@ A powerful browser extension for importing products from 1688.com to WaMerce wit
 
 ### Prerequisites
 1. **Chrome/Chromium Browser** (or Brave, Edge with Chromium)
-2. **WaMerce Backend Running** - The extension connects to `https://ecom-editor-1.preview.emergentagent.com`
+2. **WaMerce Backend Running** - The extension connects to `https://ecom-platform-192.preview.emergentagent.com`
 3. **1688.com Account** (optional, but recommended for full product details)
 
 ### Installation Steps
@@ -122,7 +122,7 @@ A powerful browser extension for importing products from 1688.com to WaMerce wit
 After importing, verify products in WaMerce:
 
 1. Click "Open WaMerce Dashboard →" in extension
-2. Or navigate to: `https://ecom-editor-1.preview.emergentagent.com/product-collector`
+2. Or navigate to: `https://ecom-platform-192.preview.emergentagent.com/product-collector`
 3. Verify:
    - Imported products appear in the list
    - Product images are displayed
