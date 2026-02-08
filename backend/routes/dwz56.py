@@ -738,6 +738,80 @@ async def update_dwz_record_memo(request: UpdateMemoRequest):
     }
 
 
+class TestFieldsUpdateRequest(BaseModel):
+    iID: int = Field(..., description="Record ID to update")
+    cMemo: Optional[str] = Field(None, description="Remarks field (254 chars)")
+    cMark: Optional[str] = Field(None, description="Label/Tag field (15 chars)")
+    cBy5: Optional[str] = Field(None, description="Backup field 5 (254 chars)")
+    cReserve: Optional[str] = Field(None, description="Reserved string (30 chars)")
+    cTransNote: Optional[str] = Field(None, description="Transport note (63 chars)")
+    cRNo: Optional[str] = Field(None, description="Reference number (30 chars)")
+
+
+@router.post("/test-update-fields")
+async def test_update_multiple_fields(request: TestFieldsUpdateRequest):
+    """
+    Test updating multiple fields on a DWZ record to find which ones persist.
+    Use this to determine which fields can actually be modified via API.
+    """
+    # Build record with only provided fields
+    record = {"iID": request.iID}
+    
+    fields_to_test = []
+    if request.cMemo is not None:
+        record["cMemo"] = request.cMemo
+        fields_to_test.append("cMemo")
+    if request.cMark is not None:
+        record["cMark"] = request.cMark
+        fields_to_test.append("cMark")
+    if request.cBy5 is not None:
+        record["cBy5"] = request.cBy5
+        fields_to_test.append("cBy5")
+    if request.cReserve is not None:
+        record["cReserve"] = request.cReserve
+        fields_to_test.append("cReserve")
+    if request.cTransNote is not None:
+        record["cTransNote"] = request.cTransNote
+        fields_to_test.append("cTransNote")
+    if request.cRNo is not None:
+        record["cRNo"] = request.cRNo
+        fields_to_test.append("cRNo")
+    
+    if len(fields_to_test) == 0:
+        raise HTTPException(status_code=400, detail="No fields provided to update")
+    
+    # Send update request
+    payload = build_request_payload("PreInputSet", {"RecList": [record]})
+    update_response = await make_api_request(payload)
+    
+    result = parse_return_value(update_response.get("ReturnValue", -9))
+    
+    # Fetch record to verify which fields actually updated
+    verify_payload = build_request_payload("PreInputData", {"iID": request.iID})
+    verify_response = await make_api_request(verify_payload)
+    
+    # Compare what we sent vs what's in the record now
+    verification_results = {}
+    for field in fields_to_test:
+        sent_value = record.get(field, "")
+        actual_value = verify_response.get(field, "")
+        verification_results[field] = {
+            "sent": sent_value,
+            "actual": actual_value,
+            "updated": sent_value == actual_value and sent_value != ""
+        }
+    
+    return {
+        "success": result["success"],
+        "api_return_value": update_response.get("ReturnValue"),
+        "api_message": result.get("message", "OK" if result["success"] else "Failed"),
+        "fields_tested": fields_to_test,
+        "verification": verification_results,
+        "record_irID": verify_response.get("irID", "unknown"),
+        "conclusion": "Fields marked 'updated: true' can be modified via API"
+    }
+
+
 @router.post("/update-all-remarks-with-tracking")
 async def update_all_remarks_with_tracking():
     """
