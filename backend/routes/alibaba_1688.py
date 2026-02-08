@@ -2686,7 +2686,7 @@ async def link_purchase_order_to_shopify(alibaba_order_id: str, data: dict = Bod
 async def sync_purchase_order_status(alibaba_order_id: str):
     """
     Sync shipping/fulfillment status from 1688 API for a specific order.
-    Updates the local database with the latest status.
+    Uses the logistics API to get tracking info and status.
     """
     db = get_db()
     
@@ -2702,49 +2702,72 @@ async def sync_purchase_order_status(alibaba_order_id: str):
         raise HTTPException(status_code=400, detail="1688 API access token not configured")
     
     try:
-        # Use single order API instead of list API
+        # Use logistics API to get shipping info
         params = {
             "orderId": alibaba_order_id,
             "webSite": "1688",
         }
         
         result = await make_api_request(
-            "com.alibaba.trade/alibaba.trade.get.buyerView",
+            "com.alibaba.logistics/alibaba.trade.getLogisticsInfos.buyerView",
             params,
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
-        order_data = result.get("result") or result
+        logistics_list = result.get("result") or []
         
-        if not order_data or not order_data.get("baseInfo"):
-            # Fallback: try to get status from logistics API
-            return {
-                "success": True,
-                "message": f"Order {alibaba_order_id} details not available. Status unchanged.",
-                "alibaba_order_id": alibaba_order_id,
-                "status": purchase_order.get("status"),
-                "supplier_status": purchase_order.get("supplier_status"),
-                "is_shipped": purchase_order.get("supplier_status") in ["shipped", "delivered"],
-            }
+        # Determine status from logistics
+        seller_tracking_number = None
+        seller_courier_name = None
+        supplier_status = purchase_order.get("supplier_status", "created")
         
-        base_info = order_data.get("baseInfo", {})
+        if logistics_list:
+            first_logistics = logistics_list[0]
+            seller_tracking_number = first_logistics.get("logisticsBillNo")
+            seller_courier_name = first_logistics.get("logisticsCompanyName")
+            logistics_status = first_logistics.get("status", "")
+            
+            # Map logistics status to supplier status
+            if logistics_status == "SIGN":
+                supplier_status = "delivered"
+            elif logistics_status in ["SEND", "TRANSPORT", "DELIVERING"]:
+                supplier_status = "shipped"
+            elif seller_tracking_number:
+                supplier_status = "shipped"
         
-        # Map 1688 status to readable supplier status
-        STATUS_MAP = {
-            "waitbuyerreceive": "shipped",
-            "success": "delivered", 
-            "cancel": "cancelled",
-            "waitbuyerpay": "pending_payment",
-            "waitsellersend": "processing",
-            "waitsellerconfirm": "pending_confirm"
+        # Update the database
+        now = datetime.now(timezone.utc).isoformat()
+        update_data = {
+            "supplier_status": supplier_status,
+            "status_synced_at": now,
+            "updated_at": now,
         }
         
-        status = base_info.get("status", "")
-        supplier_status = STATUS_MAP.get(status, status)
-        all_delivered = base_info.get("allDeliveredTime")
+        if supplier_status in ["shipped", "delivered"]:
+            update_data["status"] = "shipped"
         
-        if all_delivered and supplier_status == "shipped":
-            supplier_status = "delivered"
+        if seller_tracking_number:
+            update_data["seller_tracking_number"] = seller_tracking_number
+            update_data["seller_courier_name"] = seller_courier_name
+        
+        await db.purchase_orders_1688.update_one(
+            {"alibaba_order_id": alibaba_order_id},
+            {"$set": update_data}
+        )
+        
+        return {
+            "success": True,
+            "message": f"Status synced for order {alibaba_order_id}",
+            "alibaba_order_id": alibaba_order_id,
+            "status": update_data.get("status", purchase_order.get("status")),
+            "supplier_status": supplier_status,
+            "is_shipped": supplier_status in ["shipped", "delivered"],
+            "seller_tracking_number": seller_tracking_number,
+            "seller_courier_name": seller_courier_name,
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to sync status: {str(e)}")
         
         # Get logistics info if available
         logistics = order_data.get("nativeLogistics", {})
