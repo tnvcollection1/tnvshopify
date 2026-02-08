@@ -424,7 +424,7 @@ async def health_check():
 async def download_dwz_report():
     """
     Download the DWZ orders PDF report.
-    Generates a fresh report with all current orders.
+    Generates a fresh report with all current orders including 1688 seller tracking.
     """
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4, landscape
@@ -446,6 +446,22 @@ async def download_dwz_report():
     # Filter out cancelled
     active = [r for r in records if (r.get("cMemo") or "") != "CANCELLED"]
     
+    # Get seller tracking from database
+    db = get_db()
+    orders_with_tracking = await db.purchase_orders_1688.find({
+        "seller_tracking_number": {"$exists": True, "$ne": None, "$ne": ""}
+    }).to_list(200)
+    
+    # Create lookup by shopify order number
+    tracking_lookup = {}
+    for o in orders_with_tracking:
+        shopify_num = o.get("shopify_order_number")
+        if shopify_num:
+            tracking_lookup[str(shopify_num)] = {
+                "tracking": o.get("seller_tracking_number"),
+                "courier": o.get("seller_courier_name", "")
+            }
+    
     # Generate PDF
     output_path = Path(__file__).parent.parent / "static" / "dwz_orders_report.pdf"
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -463,13 +479,18 @@ async def download_dwz_report():
     elements.append(title)
     elements.append(Spacer(1, 10))
     
-    # Table
-    table_data = [['#', 'TNV Tracking', 'DWZ No', 'Receiver', 'City', 'Province', 'Phone', '1688 Order ID', 'Shopify', 'Color/Size']]
+    # Table with 1688 Seller Tracking column
+    table_data = [['#', 'TNV Tracking', 'DWZ No', 'Receiver', 'City', 'Phone', '1688 Seller Tracking', 'Shopify', 'Color/Size']]
     
     for idx, r in enumerate(active, 1):
-        cRNo = r.get("cRNo", "") or ""
-        alibaba_id = cRNo.replace("1688:", "") if cRNo.startswith("1688:") else cRNo
-        shopify = (r.get("cBy1", "") or "").replace("Shopify#", "#")
+        cBy1 = r.get("cBy1", "") or ""
+        shopify_num = cBy1.replace("Shopify#", "") if cBy1.startswith("Shopify#") else ""
+        shopify_display = f"#{shopify_num}" if shopify_num else ""
+        
+        # Get seller tracking from lookup
+        seller_tracking = ""
+        if shopify_num and shopify_num in tracking_lookup:
+            seller_tracking = tracking_lookup[shopify_num]["tracking"]
         
         table_data.append([
             str(idx),
@@ -477,14 +498,13 @@ async def download_dwz_report():
             r.get("cNo", "") or "",
             (r.get("cReceiver", "") or "")[:18],
             (r.get("cRCity", "") or "")[:12],
-            (r.get("cRProvince", "") or "")[:12],
             (r.get("cRPhone", "") or "")[:14],
-            alibaba_id,
-            shopify,
+            seller_tracking,  # 1688 Seller Tracking
+            shopify_display,
             (r.get("cBy2", "") or "")[:12],
         ])
     
-    col_widths = [0.25*inch, 1.2*inch, 1.4*inch, 1.0*inch, 0.7*inch, 0.7*inch, 0.9*inch, 1.4*inch, 0.5*inch, 0.7*inch]
+    col_widths = [0.25*inch, 1.2*inch, 1.3*inch, 1.0*inch, 0.7*inch, 0.85*inch, 1.1*inch, 0.5*inch, 0.7*inch]
     table = Table(table_data, colWidths=col_widths, repeatRows=1)
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
