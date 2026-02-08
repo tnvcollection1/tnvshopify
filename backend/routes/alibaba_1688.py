@@ -2761,6 +2761,42 @@ async def sync_purchase_order_status(alibaba_order_id: str):
         # Get logistics info if available
         logistics = order_data.get("nativeLogistics", {})
         
+        # Try to fetch detailed logistics/tracking info from 1688 API
+        seller_tracking_number = None
+        seller_courier_name = None
+        logistics_details = []
+        
+        try:
+            logistics_params = {
+                "orderId": alibaba_order_id,
+                "webSite": "1688",
+            }
+            logistics_result = await make_api_request(
+                "com.alibaba.logistics/alibaba.trade.getLogisticsInfos.buyerView",
+                logistics_params,
+                access_token=ALIBABA_ACCESS_TOKEN
+            )
+            
+            logistics_list = logistics_result.get("result") or []
+            if logistics_list:
+                # Get the first (primary) logistics entry
+                first_logistics = logistics_list[0]
+                seller_tracking_number = first_logistics.get("logisticsBillNo")
+                seller_courier_name = first_logistics.get("logisticsCompanyName")
+                
+                # Store all logistics entries
+                for item in logistics_list:
+                    logistics_details.append({
+                        "logistics_id": item.get("logisticsId"),
+                        "tracking_number": item.get("logisticsBillNo"),
+                        "courier_name": item.get("logisticsCompanyName"),
+                        "courier_code": item.get("logisticsCompanyNo"),
+                        "status": item.get("status"),
+                    })
+        except Exception as logistics_error:
+            # Log but don't fail - logistics API might not be available
+            print(f"Could not fetch logistics for {alibaba_order_id}: {str(logistics_error)}")
+        
         # Update the database
         now = datetime.now(timezone.utc).isoformat()
         update_data = {
@@ -2775,6 +2811,12 @@ async def sync_purchase_order_status(alibaba_order_id: str):
             "updated_at": now,
         }
         
+        # Add seller tracking if fetched
+        if seller_tracking_number:
+            update_data["seller_tracking_number"] = seller_tracking_number
+            update_data["seller_courier_name"] = seller_courier_name
+            update_data["logistics_details"] = logistics_details
+        
         await db.purchase_orders_1688.update_one(
             {"alibaba_order_id": alibaba_order_id},
             {"$set": update_data}
@@ -2787,6 +2829,8 @@ async def sync_purchase_order_status(alibaba_order_id: str):
             "status": status,
             "supplier_status": supplier_status,
             "is_shipped": supplier_status in ["shipped", "delivered"],
+            "seller_tracking_number": seller_tracking_number,
+            "seller_courier_name": seller_courier_name,
         }
         
     except Exception as e:
