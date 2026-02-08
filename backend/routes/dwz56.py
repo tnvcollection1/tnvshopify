@@ -1323,6 +1323,317 @@ async def regenerate_dwz_tracking(request: RegenerateDWZRequest):
     }
 
 
+class RecreateDWZWithTrackingRequest(BaseModel):
+    """Request to delete existing DWZ order and create new one with 1688 seller tracking in cMemo"""
+    dwz_record_id: int = Field(..., description="DWZ record iID to delete and recreate")
+    seller_tracking_number: Optional[str] = Field(None, description="1688 seller tracking number (if not provided, will fetch from DB)")
+
+
+@router.post("/recreate-with-seller-tracking")
+async def recreate_dwz_with_seller_tracking(request: RecreateDWZWithTrackingRequest):
+    """
+    Delete an existing DWZ order and recreate it with 1688 seller tracking in cMemo.
+    
+    Since DWZ API doesn't allow updating cMemo after creation, this endpoint:
+    1. Fetches the existing DWZ record details
+    2. Gets the 1688 seller tracking number from database
+    3. Deletes the old DWZ record
+    4. Creates a new record with cMemo containing the seller tracking
+    
+    The new record will have the same tracking number (cNum) as the old one.
+    """
+    import asyncio
+    
+    db = get_db()
+    
+    # 1. Fetch existing DWZ record
+    fetch_payload = build_request_payload("PreInputData", {"iID": request.dwz_record_id})
+    existing_record = await make_api_request(fetch_payload)
+    
+    if existing_record.get("ReturnValue", -9) <= 0:
+        raise HTTPException(status_code=404, detail=f"DWZ record {request.dwz_record_id} not found")
+    
+    # Check if already processed (irID > 0)
+    irID = existing_record.get("irID", 0)
+    if irID > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Record already processed by courier (irID={irID}). Cannot delete processed records."
+        )
+    
+    # Extract key fields from existing record
+    old_cNum = existing_record.get("cNum", "")
+    old_cNo = existing_record.get("cNo", "")
+    cBy1 = existing_record.get("cBy1", "") or ""
+    cRNo = existing_record.get("cRNo", "") or ""
+    
+    # Get shopify order number from cBy1 (format: "Shopify#29206")
+    shopify_order_number = ""
+    if cBy1.startswith("Shopify#"):
+        shopify_order_number = cBy1.replace("Shopify#", "")
+    
+    # Get 1688 order ID from cRNo (format: "1688:4993884181108978802")
+    alibaba_order_id = ""
+    if cRNo.startswith("1688:"):
+        alibaba_order_id = cRNo.replace("1688:", "")
+    
+    # 2. Get seller tracking number
+    seller_tracking = request.seller_tracking_number
+    
+    if not seller_tracking and shopify_order_number:
+        # Fetch from database
+        purchase_order = await db.purchase_orders_1688.find_one({
+            "shopify_order_number": {"$in": [shopify_order_number, int(shopify_order_number) if shopify_order_number.isdigit() else shopify_order_number]}
+        })
+        if purchase_order:
+            seller_tracking = purchase_order.get("seller_tracking_number", "")
+    
+    if not seller_tracking and alibaba_order_id:
+        # Try by alibaba order ID
+        purchase_order = await db.purchase_orders_1688.find_one({
+            "alibaba_order_id": alibaba_order_id
+        })
+        if purchase_order:
+            seller_tracking = purchase_order.get("seller_tracking_number", "")
+    
+    if not seller_tracking:
+        raise HTTPException(
+            status_code=400,
+            detail="No seller tracking number found. Please provide it manually or sync from 1688 first."
+        )
+    
+    # 3. Delete the old record
+    delete_payload = build_request_payload("PreInputDel", {"iIDs": [request.dwz_record_id]})
+    delete_response = await make_api_request(delete_payload)
+    
+    delete_result = parse_return_value(delete_response.get("ReturnValue", -9))
+    if not delete_result["success"] and delete_response.get("ReturnValue", 0) < 0:
+        # Check ErrList for specific error
+        err_list = delete_response.get("ErrList", [])
+        if err_list:
+            err_msg = err_list[0].get("cMess", "Unknown error")
+            raise HTTPException(status_code=400, detail=f"Failed to delete record: {err_msg}")
+        raise HTTPException(status_code=400, detail=f"Failed to delete record: {delete_result.get('message', 'Unknown error')}")
+    
+    await asyncio.sleep(0.5)  # Small delay
+    
+    # 4. Create new record with seller tracking in cMemo
+    # Build cMemo with seller tracking number prominently displayed
+    new_memo = f"1688发货单号: {seller_tracking}"
+    
+    new_record = {
+        "iID": 0,  # 0 = new record
+        "nItemType": existing_record.get("nItemType", 1),
+        "nLanguage": existing_record.get("nLanguage", 2),
+        "cEmsKind": existing_record.get("cEmsKind", ""),
+        "cDes": existing_record.get("cDes", ""),
+        "fWeight": existing_record.get("fWeight", 0.5),
+        "cNum": old_cNum,  # Keep same tracking number
+        "cNo": old_cNo,
+        "cRNo": cRNo,  # Keep reference
+        "cReceiver": existing_record.get("cReceiver", ""),
+        "cRUnit": existing_record.get("cRUnit", ""),
+        "cRAddr": existing_record.get("cRAddr", ""),
+        "cRCity": existing_record.get("cRCity", ""),
+        "cRProvince": existing_record.get("cRProvince", ""),
+        "cRCountry": existing_record.get("cRCountry", ""),
+        "cRPostcode": existing_record.get("cRPostcode", ""),
+        "cRPhone": existing_record.get("cRPhone", ""),
+        "cGoods": existing_record.get("cGoods", ""),
+        "iQuantity": existing_record.get("iQuantity", 1),
+        "fPrice": existing_record.get("fPrice", 0.01),
+        "cMemo": new_memo,  # THIS IS THE KEY - set at creation time!
+        "cBy1": cBy1,  # Keep Shopify reference
+        "cBy2": existing_record.get("cBy2", ""),  # Color/Size
+        "cOrigin": existing_record.get("cOrigin", "CN"),
+    }
+    
+    create_payload = build_request_payload("PreInputSet", {"RecList": [new_record]})
+    create_response = await make_api_request(create_payload)
+    
+    create_result = parse_return_value(create_response.get("ReturnValue", -9))
+    
+    # Get new record ID
+    new_record_id = None
+    err_list = create_response.get("ErrList", [])
+    if err_list and len(err_list) > 0:
+        new_record_id = err_list[0].get("iID")
+        new_cNum = err_list[0].get("cNum", old_cNum)
+    else:
+        new_cNum = old_cNum
+    
+    # 5. Verify the new record has cMemo set
+    if new_record_id:
+        verify_payload = build_request_payload("PreInputData", {"iID": new_record_id})
+        verify_response = await make_api_request(verify_payload)
+        verified_memo = verify_response.get("cMemo", "")
+    else:
+        verified_memo = "Could not verify - no new record ID"
+    
+    return {
+        "success": create_result["success"],
+        "message": "DWZ order recreated with seller tracking in remarks" if create_result["success"] else f"Failed: {create_result.get('message')}",
+        "old_record_id": request.dwz_record_id,
+        "new_record_id": new_record_id,
+        "tracking_number": new_cNum,
+        "seller_tracking": seller_tracking,
+        "cMemo_set": new_memo,
+        "cMemo_verified": verified_memo,
+        "memo_persisted": verified_memo == new_memo,
+        "shopify_order": shopify_order_number,
+        "alibaba_order": alibaba_order_id,
+        "delete_response": delete_response,
+        "create_response": create_response
+    }
+
+
+@router.post("/bulk-recreate-with-seller-tracking")
+async def bulk_recreate_dwz_with_seller_tracking(
+    dry_run: bool = Query(True, description="If true, only show what would be done without making changes")
+):
+    """
+    Bulk recreate ALL DWZ orders that have 1688 seller tracking, 
+    setting cMemo with the seller tracking number at creation time.
+    
+    Process:
+    1. Get all DWZ pre-input records
+    2. Match each to 1688 orders with seller tracking
+    3. Delete old record and create new one with cMemo set
+    
+    Only processes UNPROCESSED records (irID=0).
+    """
+    import asyncio
+    
+    db = get_db()
+    
+    # 1. Get all 1688 orders with seller tracking
+    orders_with_tracking = await db.purchase_orders_1688.find({
+        "seller_tracking_number": {"$exists": True, "$ne": None, "$ne": ""}
+    }).to_list(500)
+    
+    # Create lookup by shopify order number
+    tracking_by_shopify = {}
+    for o in orders_with_tracking:
+        shopify = str(o.get("shopify_order_number", ""))
+        if shopify:
+            tracking_by_shopify[shopify] = o.get("seller_tracking_number")
+    
+    # 2. Get all DWZ pre-input records (unprocessed only)
+    payload = build_request_payload("PreInputList", {
+        "iPage": 1,
+        "iPagePer": 500,
+        "cqStateMask": "10",  # Unprocessed only (irID=0)
+    })
+    
+    response = await make_api_request(payload)
+    records = response.get("RecList", [])
+    
+    results = {
+        "total_dwz_records": len(records),
+        "total_with_seller_tracking": len(tracking_by_shopify),
+        "matched": 0,
+        "already_has_memo": 0,
+        "recreated": 0,
+        "failed": 0,
+        "skipped_processed": 0,
+        "details": [],
+        "dry_run": dry_run
+    }
+    
+    for record in records:
+        iID = record.get("iID")
+        irID = record.get("irID", 0)
+        cNum = record.get("cNum", "")
+        current_memo = record.get("cMemo", "") or ""
+        cBy1 = record.get("cBy1", "") or ""
+        
+        # Skip if already processed
+        if irID > 0:
+            results["skipped_processed"] += 1
+            continue
+        
+        # Extract Shopify order number
+        shopify_order = ""
+        if cBy1.startswith("Shopify#"):
+            shopify_order = cBy1.replace("Shopify#", "")
+        
+        # Check if we have seller tracking for this order
+        seller_tracking = tracking_by_shopify.get(shopify_order)
+        
+        if not seller_tracking:
+            continue
+        
+        results["matched"] += 1
+        
+        # Skip if already has seller tracking in memo
+        if seller_tracking in current_memo:
+            results["already_has_memo"] += 1
+            results["details"].append({
+                "iID": iID,
+                "cNum": cNum,
+                "shopify": shopify_order,
+                "status": "skipped - already has tracking in memo",
+                "current_memo": current_memo
+            })
+            continue
+        
+        if dry_run:
+            results["details"].append({
+                "iID": iID,
+                "cNum": cNum,
+                "shopify": shopify_order,
+                "seller_tracking": seller_tracking,
+                "status": "would recreate",
+                "current_memo": current_memo,
+                "new_memo": f"1688发货单号: {seller_tracking}"
+            })
+            continue
+        
+        # Actually recreate the record
+        try:
+            recreate_request = RecreateDWZWithTrackingRequest(
+                dwz_record_id=iID,
+                seller_tracking_number=seller_tracking
+            )
+            recreate_result = await recreate_dwz_with_seller_tracking(recreate_request)
+            
+            if recreate_result.get("success"):
+                results["recreated"] += 1
+                results["details"].append({
+                    "iID": iID,
+                    "new_iID": recreate_result.get("new_record_id"),
+                    "cNum": cNum,
+                    "shopify": shopify_order,
+                    "seller_tracking": seller_tracking,
+                    "status": "recreated",
+                    "memo_persisted": recreate_result.get("memo_persisted")
+                })
+            else:
+                results["failed"] += 1
+                results["details"].append({
+                    "iID": iID,
+                    "cNum": cNum,
+                    "status": "failed",
+                    "error": recreate_result.get("message")
+                })
+        except Exception as e:
+            results["failed"] += 1
+            results["details"].append({
+                "iID": iID,
+                "cNum": cNum,
+                "status": "error",
+                "error": str(e)[:100]
+            })
+        
+        await asyncio.sleep(0.5)  # Rate limiting
+    
+    return {
+        "success": True,
+        "message": f"{'Dry run complete' if dry_run else 'Bulk recreate complete'}",
+        **results
+    }
+
+
 @router.get("/shipment/{record_id}")
 async def get_shipment(record_id: int):
     """
