@@ -634,24 +634,46 @@ async def bulk_update_1688_remarks():
     Update all DWZ records to add 1688 order numbers to the remarks field.
     Extracts 1688 order ID from cRNo field and adds it to cMemo.
     """
-    # First, get all records
+    import asyncio
+    
+    # First, get all records with longer timeout
     payload = build_request_payload("PreInputList", {
         "iStart": 0,
         "iCount": 100,
         "nStatus": 11,
     })
     
-    response = await make_api_request(payload)
-    records = response.get("RecList", [])
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                DWZ56_API_URL,
+                json=payload,
+                headers={"Content-Type": "application/json; charset=utf-8"}
+            )
+            data = response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch records: {str(e)}")
+    
+    records = data.get("RecList", [])
+    
+    if not records:
+        return {
+            "success": True,
+            "message": "No records found or API returned empty",
+            "total_records": 0,
+            "raw_response": data,
+        }
     
     updated = 0
     skipped = 0
     errors = []
+    update_details = []
     
     for record in records:
         iID = record.get("iID")
         cRNo = record.get("cRNo", "") or ""
         current_memo = record.get("cMemo", "") or ""
+        cNum = record.get("cNum", "")
         
         # Skip cancelled records
         if current_memo == "CANCELLED":
@@ -681,13 +703,24 @@ async def bulk_update_1688_remarks():
         })
         
         try:
-            update_response = await make_api_request(update_payload)
-            if update_response.get("ReturnValue", -9) >= 0:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                update_response = await client.post(
+                    DWZ56_API_URL,
+                    json=update_payload,
+                    headers={"Content-Type": "application/json; charset=utf-8"}
+                )
+                update_data = update_response.json()
+            
+            if update_data.get("ReturnValue", -9) >= 0:
                 updated += 1
+                update_details.append({"cNum": cNum, "new_memo": new_memo})
             else:
-                errors.append({"iID": iID, "error": f"ReturnValue: {update_response.get('ReturnValue')}"})
+                errors.append({"iID": iID, "cNum": cNum, "error": f"ReturnValue: {update_data.get('ReturnValue')}"})
         except Exception as e:
-            errors.append({"iID": iID, "error": str(e)})
+            errors.append({"iID": iID, "cNum": cNum, "error": str(e)})
+        
+        # Small delay to avoid rate limiting
+        await asyncio.sleep(0.3)
     
     return {
         "success": True,
@@ -695,6 +728,7 @@ async def bulk_update_1688_remarks():
         "updated": updated,
         "skipped": skipped,
         "errors": errors,
+        "update_details": update_details[:10],  # First 10 for brevity
     }
 
 
