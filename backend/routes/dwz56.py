@@ -738,6 +738,99 @@ async def update_dwz_record_memo(request: UpdateMemoRequest):
     }
 
 
+@router.post("/update-all-remarks-with-tracking")
+async def update_all_remarks_with_tracking():
+    """
+    Update all DWZ records with 1688 seller tracking numbers from local database.
+    """
+    import asyncio
+    
+    db = get_db()
+    
+    # Get all tracking numbers from database
+    orders = await db.purchase_orders_1688.find({
+        "seller_tracking_number": {"$exists": True, "$ne": None, "$ne": ""}
+    }).to_list(200)
+    
+    # Create lookup by shopify order
+    tracking_lookup = {}
+    for o in orders:
+        shopify = str(o.get("shopify_order_number", ""))
+        if shopify:
+            tracking_lookup[shopify] = o.get("seller_tracking_number")
+    
+    # Get DWZ records
+    payload = build_request_payload("PreInputList", {
+        "iPage": 1,
+        "iPagePer": 100,
+        "cqStateMask": "11",
+    })
+    
+    response = await make_api_request(payload)
+    records = response.get("RecList", [])
+    
+    results = {
+        "total": len(records),
+        "updated": 0,
+        "skipped": 0,
+        "failed": 0,
+        "details": []
+    }
+    
+    for record in records:
+        cBy1 = record.get("cBy1", "") or ""
+        if not cBy1.startswith("Shopify#"):
+            continue
+        
+        shopify = cBy1.replace("Shopify#", "")
+        tracking = tracking_lookup.get(shopify)
+        
+        if not tracking:
+            results["skipped"] += 1
+            continue
+        
+        iID = record.get("iID")
+        current_memo = record.get("cMemo", "") or ""
+        
+        # Skip if already updated or cancelled
+        if tracking in current_memo or current_memo == "CANCELLED":
+            results["skipped"] += 1
+            continue
+        
+        # Update memo
+        new_memo = f"1688: {tracking}"
+        update_payload = build_request_payload("PreInputSet", {
+            "RecList": [{"iID": iID, "cMemo": new_memo}]
+        })
+        
+        try:
+            update_response = await make_api_request(update_payload)
+            if update_response.get("ReturnValue", -9) >= 0:
+                results["updated"] += 1
+                results["details"].append({
+                    "tracking": record.get("cNum"),
+                    "shopify": shopify,
+                    "memo": new_memo,
+                    "status": "updated"
+                })
+            else:
+                results["failed"] += 1
+        except Exception as e:
+            results["failed"] += 1
+            results["details"].append({
+                "tracking": record.get("cNum"),
+                "error": str(e)[:50]
+            })
+        
+        await asyncio.sleep(0.5)
+    
+    return {
+        "success": True,
+        "message": f"Updated {results['updated']} records",
+        **results
+    }
+
+
 @router.post("/bulk-update-1688-remarks")
 async def bulk_update_1688_remarks():
     """
