@@ -599,6 +599,105 @@ async def create_shipment(shipment: ShipmentCreate):
     }
 
 
+class UpdateMemoRequest(BaseModel):
+    iID: int = Field(..., description="Record ID to update")
+    memo: str = Field(..., description="New memo/remarks value")
+
+
+@router.post("/update-record-memo")
+async def update_dwz_record_memo(request: UpdateMemoRequest):
+    """
+    Update the memo/remarks field of a DWZ pre-input record
+    """
+    record = {
+        "iID": request.iID,
+        "cMemo": request.memo,
+    }
+    
+    payload = build_request_payload("PreInputSet", {"RecList": [record]})
+    response = await make_api_request(payload)
+    
+    result = parse_return_value(response.get("ReturnValue", -9))
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result["message"])
+    
+    return {
+        "success": True,
+        "message": f"Updated memo for record {request.iID}",
+        "new_memo": request.memo,
+    }
+
+
+@router.post("/bulk-update-1688-remarks")
+async def bulk_update_1688_remarks():
+    """
+    Update all DWZ records to add 1688 order numbers to the remarks field.
+    Extracts 1688 order ID from cRNo field and adds it to cMemo.
+    """
+    # First, get all records
+    payload = build_request_payload("PreInputList", {
+        "iStart": 0,
+        "iCount": 100,
+        "nStatus": 11,
+    })
+    
+    response = await make_api_request(payload)
+    records = response.get("RecList", [])
+    
+    updated = 0
+    skipped = 0
+    errors = []
+    
+    for record in records:
+        iID = record.get("iID")
+        cRNo = record.get("cRNo", "") or ""
+        current_memo = record.get("cMemo", "") or ""
+        
+        # Skip cancelled records
+        if current_memo == "CANCELLED":
+            skipped += 1
+            continue
+        
+        # Extract 1688 order ID
+        alibaba_order_id = ""
+        if cRNo.startswith("1688:"):
+            alibaba_order_id = cRNo.replace("1688:", "")
+        
+        if not alibaba_order_id:
+            skipped += 1
+            continue
+        
+        # Skip if already has this 1688 number
+        if alibaba_order_id in current_memo:
+            skipped += 1
+            continue
+        
+        # Build new memo
+        new_memo = f"1688: {alibaba_order_id}"
+        
+        # Update record
+        update_payload = build_request_payload("PreInputSet", {
+            "RecList": [{"iID": iID, "cMemo": new_memo}]
+        })
+        
+        try:
+            update_response = await make_api_request(update_payload)
+            if update_response.get("ReturnValue", -9) >= 0:
+                updated += 1
+            else:
+                errors.append({"iID": iID, "error": f"ReturnValue: {update_response.get('ReturnValue')}"})
+        except Exception as e:
+            errors.append({"iID": iID, "error": str(e)})
+    
+    return {
+        "success": True,
+        "total_records": len(records),
+        "updated": updated,
+        "skipped": skipped,
+        "errors": errors,
+    }
+
+
 @router.post("/place-order-from-1688")
 async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
     """
