@@ -3064,6 +3064,147 @@ async def update_dwz_remarks_with_seller_tracking():
     }
 
 
+@router.post("/purchase-orders/update-dwz-remarks-by-shopify")
+async def update_dwz_remarks_by_shopify_order():
+    """
+    Update DWZ shipment remarks with 1688 seller tracking numbers.
+    Matches DWZ records by Shopify order number (from cBy1 field).
+    """
+    from routes.dwz56 import build_request_payload, DWZ56_API_URL
+    import httpx
+    
+    db = get_db()
+    
+    # Get orders with seller tracking
+    orders_with_tracking = await db.purchase_orders_1688.find({
+        "seller_tracking_number": {"$exists": True, "$ne": None, "$ne": ""}
+    }).to_list(100)
+    
+    # Create lookup by shopify order number
+    tracking_lookup = {}
+    for o in orders_with_tracking:
+        shopify_num = o.get("shopify_order_number")
+        if shopify_num:
+            tracking_lookup[str(shopify_num)] = {
+                "tracking": o.get("seller_tracking_number"),
+                "courier": o.get("seller_courier_name", "")
+            }
+    
+    if not tracking_lookup:
+        return {
+            "success": True,
+            "message": "No orders found with seller tracking numbers",
+            "updated": 0
+        }
+    
+    # Get all DWZ records
+    list_payload = build_request_payload("PreInputList", {
+        "iPage": 1,
+        "iPagePer": 100,
+        "cqStateMask": "11",
+    })
+    
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                DWZ56_API_URL,
+                json=list_payload,
+                headers={"Content-Type": "application/json; charset=utf-8"}
+            )
+            data = response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch DWZ records: {str(e)}")
+    
+    dwz_records = data.get("RecList", [])
+    
+    results = {
+        "tracking_in_db": len(tracking_lookup),
+        "dwz_records": len(dwz_records),
+        "updated": 0,
+        "skipped": 0,
+        "no_match": 0,
+        "details": []
+    }
+    
+    for record in dwz_records:
+        cBy1 = record.get("cBy1", "") or ""
+        if not cBy1.startswith("Shopify#"):
+            continue
+        
+        shopify_num = cBy1.replace("Shopify#", "")
+        
+        if shopify_num not in tracking_lookup:
+            results["no_match"] += 1
+            continue
+        
+        tracking_info = tracking_lookup[shopify_num]
+        seller_tracking = tracking_info["tracking"]
+        courier = tracking_info["courier"]
+        
+        iID = record.get("iID")
+        cNum = record.get("cNum", "")
+        current_memo = record.get("cMemo", "") or ""
+        
+        # Skip if already has this tracking
+        if seller_tracking in current_memo:
+            results["skipped"] += 1
+            continue
+        
+        # Skip cancelled
+        if current_memo == "CANCELLED":
+            results["skipped"] += 1
+            continue
+        
+        # Build new memo - just the tracking number for simplicity
+        new_memo = f"1688: {seller_tracking}"
+        
+        # Update DWZ record
+        update_payload = build_request_payload("PreInputSet", {
+            "RecList": [{"iID": iID, "cMemo": new_memo}]
+        })
+        
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                update_response = await client.post(
+                    DWZ56_API_URL,
+                    json=update_payload,
+                    headers={"Content-Type": "application/json; charset=utf-8"}
+                )
+                update_data = update_response.json()
+            
+            if update_data.get("ReturnValue", -9) >= 0:
+                results["updated"] += 1
+                results["details"].append({
+                    "dwz_tracking": cNum,
+                    "shopify_order": shopify_num,
+                    "seller_tracking": seller_tracking,
+                    "status": "updated"
+                })
+            else:
+                results["details"].append({
+                    "dwz_tracking": cNum,
+                    "shopify_order": shopify_num,
+                    "status": "failed",
+                    "error": f"ReturnValue: {update_data.get('ReturnValue')}"
+                })
+        except Exception as e:
+            results["details"].append({
+                "dwz_tracking": cNum,
+                "shopify_order": shopify_num,
+                "status": "error",
+                "error": str(e)
+            })
+        
+        import asyncio
+        await asyncio.sleep(0.3)
+    
+    return {
+        "success": True,
+        "message": f"Updated {results['updated']} DWZ records with 1688 seller tracking",
+        **results
+    }
+
+
 @router.post("/purchase-orders/link-item")
 async def link_item_to_1688_order(data: dict = Body(...)):
     """
