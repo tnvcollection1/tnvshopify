@@ -2837,6 +2837,233 @@ async def sync_purchase_order_status(alibaba_order_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to sync status: {str(e)}")
 
 
+@router.post("/purchase-orders/bulk-sync-tracking")
+async def bulk_sync_seller_tracking():
+    """
+    Bulk sync seller tracking numbers from 1688 for all shipped orders.
+    This fetches the logistics/tracking info from 1688 API and stores it locally.
+    """
+    if not ALIBABA_ACCESS_TOKEN:
+        raise HTTPException(status_code=400, detail="1688 API access token not configured")
+    
+    db = get_db()
+    
+    # Find all shipped orders that don't have seller tracking yet
+    orders = await db.purchase_orders_1688.find({
+        "status": "shipped",
+        "$or": [
+            {"seller_tracking_number": {"$exists": False}},
+            {"seller_tracking_number": None},
+            {"seller_tracking_number": ""},
+        ]
+    }).to_list(100)
+    
+    results = {
+        "total_orders": len(orders),
+        "synced": 0,
+        "failed": 0,
+        "details": []
+    }
+    
+    for order in orders:
+        alibaba_order_id = order.get("alibaba_order_id")
+        shopify_order = order.get("shopify_order_number")
+        
+        try:
+            # Fetch logistics from 1688
+            logistics_params = {
+                "orderId": alibaba_order_id,
+                "webSite": "1688",
+            }
+            logistics_result = await make_api_request(
+                "com.alibaba.logistics/alibaba.trade.getLogisticsInfos.buyerView",
+                logistics_params,
+                access_token=ALIBABA_ACCESS_TOKEN
+            )
+            
+            logistics_list = logistics_result.get("result") or []
+            
+            if logistics_list:
+                first_logistics = logistics_list[0]
+                seller_tracking = first_logistics.get("logisticsBillNo")
+                seller_courier = first_logistics.get("logisticsCompanyName")
+                
+                if seller_tracking:
+                    # Update the order
+                    await db.purchase_orders_1688.update_one(
+                        {"alibaba_order_id": alibaba_order_id},
+                        {"$set": {
+                            "seller_tracking_number": seller_tracking,
+                            "seller_courier_name": seller_courier,
+                            "tracking_synced_at": datetime.now(timezone.utc).isoformat(),
+                        }}
+                    )
+                    
+                    results["synced"] += 1
+                    results["details"].append({
+                        "shopify_order": shopify_order,
+                        "alibaba_order_id": alibaba_order_id,
+                        "seller_tracking": seller_tracking,
+                        "courier": seller_courier,
+                        "status": "synced"
+                    })
+                else:
+                    results["details"].append({
+                        "shopify_order": shopify_order,
+                        "alibaba_order_id": alibaba_order_id,
+                        "status": "no_tracking_found"
+                    })
+            else:
+                results["details"].append({
+                    "shopify_order": shopify_order,
+                    "alibaba_order_id": alibaba_order_id,
+                    "status": "no_logistics_data"
+                })
+                
+        except Exception as e:
+            results["failed"] += 1
+            results["details"].append({
+                "shopify_order": shopify_order,
+                "alibaba_order_id": alibaba_order_id,
+                "status": "error",
+                "error": str(e)
+            })
+        
+        # Small delay to avoid rate limiting
+        import asyncio
+        await asyncio.sleep(0.3)
+    
+    return {
+        "success": True,
+        "message": f"Synced {results['synced']} of {results['total_orders']} orders",
+        **results
+    }
+
+
+@router.post("/purchase-orders/update-dwz-with-tracking")
+async def update_dwz_remarks_with_seller_tracking():
+    """
+    Update DWZ shipment remarks with 1688 seller tracking numbers.
+    Reads seller_tracking_number from purchase orders and updates DWZ cMemo field.
+    """
+    db = get_db()
+    
+    # Find orders that have both DWZ tracking and seller tracking
+    orders = await db.purchase_orders_1688.find({
+        "seller_tracking_number": {"$exists": True, "$ne": None, "$ne": ""},
+        "dwz_tracking": {"$exists": True, "$ne": None, "$ne": ""},
+    }).to_list(100)
+    
+    if not orders:
+        return {
+            "success": True,
+            "message": "No orders found with both DWZ and seller tracking numbers",
+            "updated": 0
+        }
+    
+    # Import DWZ functions
+    from routes.dwz56 import build_request_payload, make_api_request as dwz_make_request, DWZ56_API_URL
+    import httpx
+    
+    results = {
+        "total": len(orders),
+        "updated": 0,
+        "failed": 0,
+        "details": []
+    }
+    
+    for order in orders:
+        dwz_tracking = order.get("dwz_tracking")
+        seller_tracking = order.get("seller_tracking_number")
+        seller_courier = order.get("seller_courier_name", "")
+        shopify_order = order.get("shopify_order_number")
+        
+        try:
+            # First, get the DWZ record ID by tracking number
+            from routes.dwz56 import build_request_payload
+            
+            list_payload = build_request_payload("PreInputList", {
+                "iPage": 1,
+                "iPagePer": 100,
+                "cqNum": dwz_tracking,
+                "cqStateMask": "11",
+            })
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    DWZ56_API_URL,
+                    json=list_payload,
+                    headers={"Content-Type": "application/json; charset=utf-8"}
+                )
+                data = response.json()
+            
+            records = data.get("RecList", [])
+            
+            if records:
+                record = records[0]
+                iID = record.get("iID")
+                
+                # Build new memo with seller tracking
+                new_memo = f"1688 Tracking: {seller_tracking}"
+                if seller_courier:
+                    new_memo += f" ({seller_courier})"
+                
+                # Update the DWZ record
+                update_payload = build_request_payload("PreInputSet", {
+                    "RecList": [{"iID": iID, "cMemo": new_memo}]
+                })
+                
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    update_response = await client.post(
+                        DWZ56_API_URL,
+                        json=update_payload,
+                        headers={"Content-Type": "application/json; charset=utf-8"}
+                    )
+                    update_data = update_response.json()
+                
+                if update_data.get("ReturnValue", -9) >= 0:
+                    results["updated"] += 1
+                    results["details"].append({
+                        "shopify_order": shopify_order,
+                        "dwz_tracking": dwz_tracking,
+                        "seller_tracking": seller_tracking,
+                        "memo": new_memo,
+                        "status": "updated"
+                    })
+                else:
+                    results["failed"] += 1
+                    results["details"].append({
+                        "shopify_order": shopify_order,
+                        "dwz_tracking": dwz_tracking,
+                        "status": "dwz_update_failed",
+                        "error": f"ReturnValue: {update_data.get('ReturnValue')}"
+                    })
+            else:
+                results["details"].append({
+                    "shopify_order": shopify_order,
+                    "dwz_tracking": dwz_tracking,
+                    "status": "dwz_record_not_found"
+                })
+                
+        except Exception as e:
+            results["failed"] += 1
+            results["details"].append({
+                "shopify_order": shopify_order,
+                "dwz_tracking": dwz_tracking,
+                "status": "error",
+                "error": str(e)
+            })
+        
+        import asyncio
+        await asyncio.sleep(0.3)
+    
+    return {
+        "success": True,
+        "message": f"Updated {results['updated']} of {results['total']} DWZ records with seller tracking",
+        **results
+    }
+
+
 @router.post("/purchase-orders/link-item")
 async def link_item_to_1688_order(data: dict = Body(...)):
     """
