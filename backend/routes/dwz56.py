@@ -742,6 +742,7 @@ async def update_dwz_record_memo(request: UpdateMemoRequest):
 async def update_all_remarks_with_tracking():
     """
     Update all DWZ records with 1688 seller tracking numbers from local database.
+    According to DWZ API docs, iID must be first parameter and > 0 for updates.
     """
     import asyncio
     
@@ -797,24 +798,39 @@ async def update_all_remarks_with_tracking():
             results["skipped"] += 1
             continue
         
-        # Update memo
+        # Build memo with 1688 tracking
         new_memo = f"1688: {tracking}"
+        
+        # IMPORTANT: According to DWZ docs, iID must be FIRST parameter in record object
+        # Use ordered dict or ensure iID comes first
+        update_record = {
+            "iID": iID,  # Must be first and > 0 for update
+            "cMemo": new_memo
+        }
+        
         update_payload = build_request_payload("PreInputSet", {
-            "RecList": [{"iID": iID, "cMemo": new_memo}]
+            "RecList": [update_record]
         })
         
         try:
             update_response = await make_api_request(update_payload)
-            if update_response.get("ReturnValue", -9) >= 0:
+            return_value = update_response.get("ReturnValue", -9)
+            
+            if return_value >= 0:
                 results["updated"] += 1
                 results["details"].append({
                     "tracking": record.get("cNum"),
                     "shopify": shopify,
                     "memo": new_memo,
+                    "return_value": return_value,
                     "status": "updated"
                 })
             else:
                 results["failed"] += 1
+                results["details"].append({
+                    "tracking": record.get("cNum"),
+                    "error": f"ReturnValue: {return_value}"
+                })
         except Exception as e:
             results["failed"] += 1
             results["details"].append({
