@@ -5426,6 +5426,87 @@ async def handle_1688_oauth_callback(
         return {"success": False, "error": str(e)}
 
 
+@router.post("/auth/exchange-code")
+async def exchange_auth_code_for_token(
+    code: str = Body(..., description="Authorization code from 1688"),
+    redirect_uri: str = Body("https://wamerce.com/api/1688/auth/callback", description="Same redirect_uri used in authorize URL"),
+):
+    """
+    Manually exchange an authorization code for an access token.
+    Use this if the automatic callback didn't work.
+    
+    Steps:
+    1. Go to the authorize URL
+    2. After authorizing, copy the 'code' parameter from the redirect URL
+    3. Call this endpoint with that code
+    """
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            token_url = "https://gw.open.1688.com/openapi/http/1/system.oauth2/getToken"
+            
+            response = await client.post(
+                token_url,
+                data={
+                    "grant_type": "authorization_code",
+                    "need_refresh_token": "true",
+                    "client_id": ALIBABA_APP_KEY,
+                    "client_secret": ALIBABA_APP_SECRET,
+                    "redirect_uri": redirect_uri,
+                    "code": code,
+                }
+            )
+            
+            token_data = response.json()
+        
+        if token_data.get("access_token"):
+            # Save to database
+            db = get_db()
+            import uuid
+            account_id = str(uuid.uuid4())[:8]
+            member_id = token_data.get("memberId") or token_data.get("resource_owner")
+            
+            account = {
+                "account_id": account_id,
+                "account_name": f"1688 Account ({member_id})",
+                "member_id": member_id,
+                "access_token": token_data["access_token"],
+                "refresh_token": token_data.get("refresh_token"),
+                "expires_in": token_data.get("expires_in"),
+                "expires_at": (datetime.now(timezone.utc) + timedelta(seconds=int(token_data.get("expires_in", 86400)))).isoformat() if token_data.get("expires_in") else None,
+                "authorized_at": datetime.now(timezone.utc).isoformat(),
+                "is_active": True,
+            }
+            
+            await db.alibaba_1688_accounts.update_one(
+                {"member_id": member_id},
+                {"$set": account},
+                upsert=True
+            )
+            
+            # Also update .env variable in memory (for current session)
+            global ALIBABA_ACCESS_TOKEN
+            ALIBABA_ACCESS_TOKEN = token_data["access_token"]
+            
+            return {
+                "success": True,
+                "message": "Token obtained and saved successfully",
+                "account_id": account_id,
+                "member_id": member_id,
+                "access_token": token_data["access_token"][:20] + "...",  # Show partial token
+                "refresh_token": "saved" if token_data.get("refresh_token") else None,
+                "expires_in": token_data.get("expires_in"),
+            }
+        else:
+            return {
+                "success": False,
+                "error": token_data.get("error_description") or token_data.get("error") or "Token exchange failed",
+                "raw_response": token_data,
+            }
+            
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @router.post("/accounts/add-token")
 async def add_1688_account_manually(
     account_name: str = Body(...),
