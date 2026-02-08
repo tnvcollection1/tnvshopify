@@ -420,6 +420,94 @@ async def health_check():
     }
 
 
+@router.get("/download-report")
+async def download_dwz_report():
+    """
+    Download the DWZ orders PDF report.
+    Generates a fresh report with all current orders.
+    """
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.enums import TA_CENTER
+    
+    # Fetch records
+    payload = build_request_payload("PreInputList", {
+        "iPage": 1,
+        "iPagePer": 100,
+        "cqStateMask": "11",
+    })
+    
+    response = await make_api_request(payload)
+    records = response.get("RecList", [])
+    
+    # Filter out cancelled
+    active = [r for r in records if (r.get("cMemo") or "") != "CANCELLED"]
+    
+    # Generate PDF
+    output_path = Path(__file__).parent.parent / "static" / "dwz_orders_report.pdf"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    doc = SimpleDocTemplate(str(output_path), pagesize=landscape(A4),
+                           leftMargin=0.3*inch, rightMargin=0.3*inch,
+                           topMargin=0.4*inch, bottomMargin=0.4*inch)
+    
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'],
+                                 fontSize=14, alignment=TA_CENTER, spaceAfter=15)
+    
+    elements = []
+    title = Paragraph(f"<b>DWZ Shipping Orders Report</b><br/><font size=9>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')} | Total: {len(active)}</font>", title_style)
+    elements.append(title)
+    elements.append(Spacer(1, 10))
+    
+    # Table
+    table_data = [['#', 'TNV Tracking', 'DWZ No', 'Receiver', 'City', 'Province', 'Phone', '1688 Order ID', 'Shopify', 'Color/Size']]
+    
+    for idx, r in enumerate(active, 1):
+        cRNo = r.get("cRNo", "") or ""
+        alibaba_id = cRNo.replace("1688:", "") if cRNo.startswith("1688:") else cRNo
+        shopify = (r.get("cBy1", "") or "").replace("Shopify#", "#")
+        
+        table_data.append([
+            str(idx),
+            r.get("cNum", "") or "",
+            r.get("cNo", "") or "",
+            (r.get("cReceiver", "") or "")[:18],
+            (r.get("cRCity", "") or "")[:12],
+            (r.get("cRProvince", "") or "")[:12],
+            (r.get("cRPhone", "") or "")[:14],
+            alibaba_id,
+            shopify,
+            (r.get("cBy2", "") or "")[:12],
+        ])
+    
+    col_widths = [0.25*inch, 1.2*inch, 1.4*inch, 1.0*inch, 0.7*inch, 0.7*inch, 0.9*inch, 1.4*inch, 0.5*inch, 0.7*inch]
+    table = Table(table_data, colWidths=col_widths, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 7),
+        ('FONTSIZE', (0, 1), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f1f5f9')]),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+    
+    return FileResponse(
+        path=str(output_path),
+        filename=f"dwz_orders_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+        media_type="application/pdf"
+    )
+
+
 @router.get("/client-info")
 async def get_client_info():
     """
