@@ -636,11 +636,11 @@ async def bulk_update_1688_remarks():
     """
     import asyncio
     
-    # First, get all records with longer timeout
+    # First, get all records using correct API params (iPage, iPagePer)
     payload = build_request_payload("PreInputList", {
-        "iStart": 0,
-        "iCount": 100,
-        "nStatus": 11,
+        "iPage": 1,
+        "iPagePer": 100,
+        "cqStateMask": "11",  # All statuses
     })
     
     try:
@@ -660,7 +660,7 @@ async def bulk_update_1688_remarks():
         return {
             "success": True,
             "message": "No records found or API returned empty",
-            "total_records": 0,
+            "total_records": data.get("iTotalRec", 0),
             "raw_response": data,
         }
     
