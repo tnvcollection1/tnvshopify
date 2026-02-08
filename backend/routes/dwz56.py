@@ -294,7 +294,7 @@ def build_request_payload(request_name: str, extra_params: dict = None, account:
 async def make_api_request(payload: dict) -> dict:
     """Make HTTP POST request to DWZ56 API"""
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             # The API expects JSON in POST body
             response = await client.post(
                 DWZ56_API_URL,
