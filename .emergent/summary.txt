@@ -1,14 +1,11 @@
 <analysis>**original_problem_statement**: The user wants to build a multi-tenant e-commerce platform, . The current focus is on a complete fulfillment workflow involving Shopify, 1688.com, and the DWZ shipping platform.
 
 Recent user requests during this session included:
-1.  Fixing the inability to cancel old tracking numbers on the DWZ platform.
-2.  Resolving a not able to login issue on the production site .
-3.  Manually syncing shipping addresses for a large number of individual orders.
-4.  Manually fixing data inconsistencies, including incorrect 1688 order links and duplicate purchase orders.
-5.  Updating all existing DWZ shipping records with complete customer shipping details fetched from Shopify.
-6.  Generating a PDF report of all placed DWZ orders with their full details.
-7.  Updating the data format sent to DWZ to match a specific label layout, including the Chinese seller's tracking number.
-8.  Verifying the format of newly generated tracking numbers.
+1.  Adding the  (i.e., the courier's tracking number) into the remarks field of all existing DWZ shipping records.
+2.  Generating a PDF report of all placed DWZ orders that includes this new seller tracking number.
+3.  Resolving recurring  errors from the 1688 API, which were preventing data synchronization.
+4.  Manually providing tracking numbers for orders where the API failed to retrieve them.
+5.  Fixing a  error when fetching purchase orders.
 
 **PRODUCT REQUIREMENTS**:
 1.  Replicate the  header and storefront UI.
@@ -34,57 +31,70 @@ Recent user requests during this session included:
 **User's preferred language**: English
 
 **what currently exists?**
-- A full-stack application deployed on the user's VPS at .
-- **DWZ Cancellation Workaround**: It was discovered that the DWZ API does not support deleting pre-input shipments. As a workaround, the agent created functionality to mark all old records as CANCELLED on the DWZ platform and implemented endpoints (, ) to clear tracking data from the local database, allowing new numbers to be generated.
-- **Login Fixed**: A critical production login issue was resolved. The problem was twofold: the server's  was pointing to an old frontend build file with an incorrect backend URL, and the admin user's password hash in the database was incorrect. Both were fixed.
-- **Data Integrity Issues**: The session was dominated by the agent performing dozens of manual data-fixing operations directly on the production database to sync shipping addresses, correct wrongly linked orders, and remove duplicates. This indicates a fragile data synchronization process.
-- **DWZ Label Data Updated**: All existing (27) DWZ order records have been updated via API to include full customer shipping details and the 1688 supplier tracking number to match the user's desired label format.
-- **PDF Reporting**: A Python script was created and deployed () to generate a PDF summary of all placed DWZ orders, available at .
+A full-stack application with a React frontend and FastAPI backend. The agent has just completed a major effort to sync 1688 seller tracking numbers into the local database and has attempted to push them to the DWZ shipping platform. A critical bug preventing updates on the DWZ platform was discovered and debugged.
+
+- **1688 Seller Tracking Sync**: The agent implemented and fixed logic to fetch seller courier tracking numbers from the 1688 logistics API. After numerous token expiry issues, the agent successfully synced tracking information for all 27 relevant orders into the local  collection.
+- **DWZ Remarks Update (Blocked)**: The agent discovered through extensive debugging (including analyzing new API documentation) that the DWZ platform's  API does not persist updates to the  (remarks) field after a shipping record has been processed, even though it returns a success code.
+- **PDF Report Workaround**: As a workaround to the DWZ API limitation, the agent updated the PDF generation logic to include a 1688 Seller Tracking column, pulling the data directly from the local database.
+- **1688 Token Authentication**: The session was heavily impacted by expired 1688 API tokens. The agent guided the user through refreshing tokens and secrets multiple times and implemented helper endpoints for the OAuth flow.
 
 **Last working item**:
--   **Last item agent was working**: Verifying that the existing tracking number generation logic in  correctly matches the user's specified format ().
--   **Status**: NONE (The task was a code review and confirmation, which was completed. No pending implementation.)
--   **Agent Testing Done**: N/A
--   **Which testing method agent to use?**: N/A
--   **User Testing Done**: N/A
+-   **Last item agent was working**: Investigating why the DWZ API's  function failed to update the  (remarks) field, despite returning a success message.
+-   **Status**: BLOCKED
+-   **Reasoning**: After receiving new API documentation from the user and conducting several tests, the agent confirmed a limitation in the DWZ API. Records that have been processed by the courier () cannot be modified, specifically the  field. The API incorrectly reports success () but does not save the change.
+-   **Agent Testing Done**: Y
+-   **Which testing method agent to use?**: N/A. The issue is a confirmed limitation of a third-party API. The next step is to inform the user and confirm the workaround (PDF report) is acceptable.
+-   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Brittle data synchronization logic (P0)
--   Issue 2: Shopify & 1688 API tokens are unreliable and expire (P1)
--   Issue 3: Fragile authentication system (P2)
--   Issue 4: Mobile App is in an untested, high-risk state (P2)
+-   Issue 1: Shopify & 1688 API tokens are unreliable and expire (P0)
+-   Issue 2: Brittle data synchronization logic (P1)
+-   Issue 3: DWZ  field is not updatable via API (P1)
+-   Issue 4: Fragile authentication system (P2)
 
 **Issues Detail**:
--   **Issue 1: Brittle data synchronization logic (P0)**
-    -   **Attempted fixes**: The agent spent most of the session performing manual, one-off fixes directly in the production database to sync shipping addresses and correct linking errors. This is not a scalable solution. A critical bug was identified in  (around lines 2467-2472) where data from the  collection incorrectly overwrites the  in the API response. The agent fixed the data, but not the underlying code bug.
+-   **Issue 1: Shopify & 1688 API tokens are unreliable and expire (P0)**
+    -   **Attempted fixes**: The agent repeatedly guided the user to manually refresh tokens and updated the  file. Helper endpoints for the OAuth flow were created. However, an automated refresh token mechanism is still missing.
     -   **Next debug checklist**:
-        1.  Modify  to prevent the  from being overwritten by data from the  collection. The lookup logic should be more robust, ensuring it doesn't fetch unrelated customer data.
-        2.  Create a robust, automated background job or webhook handler to sync shipping addresses from Shopify to the  collection when an order is created or linked.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the root cause of the constant need for manual data fixing. Fixing it will make the fulfillment workflow reliable and eliminate the user's need to ask for manual syncs.
+        1.  Review the  function in .
+        2.  Implement a proper OAuth2 refresh token flow for the 1688 integration.
+        3.  The logic should automatically use the refresh token to get a new access token when a  error is received and retry the request.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is the single biggest source of friction and failure in the workflow. Automating this will make the entire 1688 integration stable and eliminate constant manual intervention.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: None
 
--   **Issue 2: Shopify & 1688 API tokens are unreliable and expire (P1)**
-    -   **Attempted fixes**: None in this session. This is a recurring issue from the previous handoff.
+-   **Issue 2: Brittle data synchronization logic (P1)**
+    -   **Attempted fixes**: The agent fixed a critical bug where  was being overwritten. The logic to sync shipping addresses was also improved. The agent also added logic to fetch and store missing purchase orders from 1688.
     -   **Next debug checklist**:
-        1.  Review  and .
-        2.  Implement a proper OAuth2 refresh token flow for both Shopify and 1688 integrations.
-        3.  The logic should automatically try to refresh the access token when a  error is received.
-    -   **Why fix this issue and what will be achieved with the fix?**: It will create a stable and reliable data sync process, removing the need for frequent manual intervention.
-    -   **Status**: NOT STARTED
+        1.  Review the manual API endpoints like  and .
+        2.  Design and implement a robust, automated background job or webhook-based system to handle data synchronization between Shopify, 1688, and the local DB.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will prevent data inconsistencies and eliminate the need for manual sync button clicks and agent intervention.
+    -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: None
+    -   **Blocked on other issue**: Blocked by **Issue 1**, as unreliable tokens cause syncs to fail.
 
--   **Issue 3: Fragile authentication system (P2)**
-    -   **Attempted fixes**: The agent reset the admin password using a SHA256 hash to match the login code.
+-   **Issue 3: DWZ  field is not updatable via API (P1)**
+    -   **Attempted fixes**: Multiple attempts were made to update the  field using the  API, including reordering parameters based on new documentation. All failed to persist the data despite success responses.
     -   **Next debug checklist**:
-        1.  Refactor the login logic in .
-        2.  Consolidate user data into the  collection.
-        3.  Update the password verification to consistently use a modern, secure hashing library like  with bcrypt, and migrate existing password hashes.
-    -   **Why fix this issue and what will be achieved with the fix?**: The current system with two different user collections (, ) and two different hashing schemes (bcrypt, SHA256) is insecure and confusing. This will standardize and secure the login process.
+        1.  Confirm with the user that the workaround (adding the seller tracking number to the PDF report) is acceptable.
+        2.  If not, investigate if any other field in the DWZ record (e.g., ) is writable.
+        3.  Refactor the code to remove the non-functional  update calls to avoid future confusion.
+    -   **Why fix this issue and what will be achieved with the fix?**: Resolving this will provide clarity on the DWZ integration's capabilities and establish a reliable process for viewing seller tracking numbers.
+    -   **Status**: BLOCKED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: N/A
+    -   **Blocked on other issue**: Blocked by the external DWZ API's limitations.
+
+-   **Issue 4: Fragile authentication system (P2)**
+    -   **Attempted fixes**: None in this session.
+    -   **Next debug checklist**:
+        1.  Refactor login logic in .
+        2.  Consolidate user data into a single collection.
+        3.  Standardize on  with bcrypt for password hashing and migrate existing hashes.
+    -   **Why fix this issue and what will be achieved with the fix?**: To create a secure and maintainable authentication system.
     -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend
@@ -95,6 +105,7 @@ Recent user requests during this session included:
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
+    -   (P1) Implement an automated OAuth2 refresh token flow for the 1688 API.
     -   (P1) Stabilize and test the React Native mobile app.
     -   (P1) Implement User-Generated Stories feature.
 -   **Future Tasks**:
@@ -102,114 +113,99 @@ Recent user requests during this session included:
     -   Integrate with Sooxie.com API.
     -   Prepare the mobile app for store submission ( configuration).
     -   Delete obsolete V2 Editor components.
-    -   Refactor monolithic backend files.
+    -   Refactor monolithic backend files into a more modular structure.
 
 **Completed work in this session**
-- **Resolved DWZ Cancellation Blocker**: Investigated the DWZ API, found the  function to be non-functional, and implemented a workaround to cancel the 28 old records by updating their memo field to CANCELLED via the  API.
-- **Created DB Cleanup Endpoints**: Added  and  to allow the user to clear local data and regenerate tracking numbers.
-- **Fixed Production Login Failure**: Diagnosed and fixed a multi-part login issue by (1) correcting the production  to load the correct frontend JS bundle with the proper backend URL and (2) resetting the admin password with the correct SHA256 hash to match the legacy login logic.
-- **Performed Mass Data Synchronization**: Manually synced shipping addresses from Shopify for dozens of purchase orders by running scripts directly on the production server.
-- **Fixed Data Linking and Duplicates**: Manually corrected several purchase orders in the database that were linked to the wrong Shopify order or were duplicates.
-- **Updated DWZ Records for Labeling**: Wrote and executed a script to update all 27 existing DWZ shipments via API to include full customer shipping details and the 1688 supplier tracking number, matching the user's required label format.
-- **Created PDF Order Report**: Built and deployed a Python script () using  to create a downloadable PDF summary of all placed DWZ orders.
-- **Deployed Fixes to Production**: Manually deployed changes to  and the new PDF report script to the user's VPS.
+-   **Fixed Critical Data Bug**: Corrected an issue in  that was overwriting the  in the purchase order API response.
+-   **Enhanced 1688 Sync Logic**:
+    -   Refactored the  endpoint to use the correct, permissioned logistics API.
+    -   Implemented logic to fetch and store missing purchase orders from 1688.
+    -   Successfully fetched and stored the 1688 seller's courier tracking number for all 27 shipped orders into the local database.
+-   **Debugged DWZ API**: Investigated and confirmed a limitation in the DWZ API where the  (remarks) field cannot be updated after a record is processed. This involved analyzing new API documentation provided by the user.
+-   **Updated PDF Report**: As a workaround for the DWZ API issue, the PDF generation script was modified to include a 1688 Seller Tracking column, pulling data directly from the local database.
+-   **Resolved 1688 Auth Issues**: Guided the user to generate and provide new access tokens and app secrets multiple times, updating the  file to restore API functionality.
+-   **Created OAuth Helpers**: Implemented endpoints (, ) to facilitate the 1688 token generation process for the user.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: API bug overwrites Shopify order number**
-    -   **Debug checklist**: The API route for purchase orders in  (around lines 2467-2472) incorrectly overwrites  with data from a separate  collection lookup. This code needs to be fixed to prioritize the  from the purchase order itself.
-    -   **Why to solve this issue and what will be achieved with this?**: This bug is a direct cause of data corruption that required significant manual fixing. Fixing the code will prevent future data integrity problems.
-    -   **Should Test frontend/backend/both after fix**: Backend
-    -   **Is recurring issue?**: Y
+-   Covered in **All Pending/In progress Issue list**. The primary unfixed root causes are the lack of an automated 1688 token refresh mechanism and the lack of a robust, automated data synchronization architecture.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**: Shopify/1688 API token invalidity.
--   **Recurrence count**: 5+
--   **Status**: NOT STARTED
+-   **Recurrence count**: 10+ (This was the main blocker for progress throughout the session).
+-   **Status**: NOT STARTED (on a permanent, automated fix).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Third-Party API Debugging**: Extensive work trying to understand the undocumented DWZ API, discovering its limitations (non-functional delete), and developing workarounds ( to update memo).
--   **Production Debugging**: The agent had to debug issues live on the user's VPS, including checking nginx/backend logs, directly manipulating the MongoDB Atlas database, and fixing misconfigured frontend build files.
--   **Manual Data Patching**: A significant portion of the session involved running ad-hoc scripts to fix data integrity issues (syncing addresses, correcting links, deleting duplicates).
--   **PDF Generation**: Created a server-side script using the  library to generate a multi-page PDF document from database records.
--   **Frontend Build Issues**: Diagnosed a critical login failure caused by the web server serving an  that pointed to an old Javascript bundle with a stale, incorrect backend URL.
+-   **Third-Party API Debugging**: Extensive debugging of undocumented or poorly documented API behavior, especially with the DWZ platform where success codes were returned for failed operations. Required analyzing API documentation in a foreign language.
+-   **OAuth2 Token Management**: The session was dominated by manually managing expired 1688 API access tokens, highlighting the critical need for an automated refresh token flow.
+-   **Data Synchronization & Correction**: Performed multi-step data syncs: fetching orders, checking for tracking, fetching tracking, storing it locally, and then attempting to push it to another service.
+-   **PDF Generation ()**: Modified an existing PDF generation script to join data from two different sources (DWZ records and local purchase orders) to display the required seller tracking number.
 
 **key DB schema**
--   **purchase_orders_1688**: The main collection for fulfillment. The agent performed numerous manual updates to , , , and cleared  fields. Its link to the  collection is fragile.
--   **customers**: This collection is a source of data enrichment but also a source of bugs, as it was found to be incorrectly overwriting  in the purchase order API response.
--   **users**: Contains user credentials. The agent updated the  user's password hash in this collection to fix login.
--   **tracking_counters**: Used by  to generate serial numbers for tracking IDs. An endpoint was created to clear this collection.
+-   **purchase_orders_1688**: The central collection for this workflow. The agent added  and  fields and populated them.
 
 **All files of reference**
--   **/app/backend/routes/dwz56.py**: Core file for this session. Contains the DWZ API logic, the cancellation workaround, the new local data clearing endpoints, and the tracking number generation logic.
--   **/app/backend/routes/alibaba_1688.py**: Investigated to understand data inconsistencies. Contains the bug that overwrites the Shopify order number. Was used as a reference for manual data syncing.
--   **/var/www/wamerce/backend/generate_report.py**: New script created on the production server to generate PDF reports.
--   **/var/www/wamerce/admin-panel/index.html**: Production file that was edited to fix the critical login issue by pointing to the correct JS bundle.
+-   **/app/backend/routes/alibaba_1688.py**: Core file for 1688 integration. Contains all logic for syncing orders, status, and seller tracking, as well as OAuth helpers.
+-   **/app/backend/routes/dwz56.py**: Core file for DWZ integration. Contains PDF generation logic and the (now known to be non-functional) memo update logic.
+-   **/app/backend/.env**: Contains the frequently expiring 1688 credentials.
+-   **/app/backend/server.py**: Main FastAPI application file, modified to add the PDF download route.
 
 **Areas that need refactoring**:
--   **Data Sync Logic (CRITICAL)**: The entire process for syncing data between Shopify and the local database is broken and requires a complete architectural review. Relying on manual agent fixes is unsustainable.
--   **Purchase Order API**: The bug in  that overwrites the  must be fixed in the code.
--   **Authentication System**: The login flow should be consolidated into a single user collection and use  for password hashing consistently.
+-   **1688 Token Management (CRITICAL)**: An automated OAuth2 refresh token flow MUST be implemented in  to stop the constant manual refresh cycle.
+-   **DWZ Update Logic**: The code in  and  that attempts to update the  field should be removed or clearly commented out, explaining the API limitation, to prevent future agents from wasting time on it.
+-   **Data Sync Architecture**: The current approach of using manually triggered API endpoints for data syncing is not scalable. It should be replaced with an automated background task system (e.g., using Celery or FastAPI's ).
 
 **key api endpoints**
--   : (NEW) Clears DWZ tracking info from the local  collection.
--   : (NEW) Resets the daily serial number counters for new tracking IDs.
--   : The production login endpoint. Was heavily debugged.
--   : The endpoint to place a DWZ order.
--   : Used for manually syncing addresses.
+-   : **REFACTORED** to use the  API.
+-   : **NEW**, syncs seller tracking for all shipped orders.
+-   : **NEW**, orchestrates syncing from 1688 and updating DWZ records.
+-   : **MODIFIED** to generate a PDF containing the 1688 seller tracking number.
+-   : **NEW** helper to get the 1688 authorization URL.
+-   : **NEW** helper to exchange an auth code for a token.
 
 **Critical Info for New Agent**
--   **Data Integrity is the #1 Problem**: The application's data sync logic is extremely brittle. The previous agent spent most of its time performing manual data fixes directly on the production database. Your top priority should be to fix the root causes of this data corruption, especially the bug in  that overwrites the . Avoid getting caught in a loop of manual data patching.
--   **DWZ API Cannot Delete**: Do not waste time trying to delete pre-input records from the DWZ platform. The  function does not work. The established workaround is to update the records' memo field to CANCELLED using the  function.
--   **Production Environment**: The app is live on a user-managed VPS. Be careful when making changes. The database is a MongoDB Atlas instance, and credentials are in . SSH credentials are in the handoff if needed.
--   **Login is fragile**: The login was just fixed but relies on an inconsistent auth architecture (SHA256 vs bcrypt). If it breaks again, investigate the password hash, user collection, and frontend build file being served by Nginx.
+-   **DWZ  field CANNOT be updated**: Do not waste time trying to update the remarks field on the DWZ platform via the  API for processed orders. The API will return a success code, but the data will not change. This has been extensively verified by reading the API docs and testing. The established workaround is displaying the seller tracking number in the downloadable PDF report.
+-   **1688 API Tokens Expire CONSTANTLY**: The biggest time sink is dealing with expired 1688 API tokens. Implementing an automated OAuth2 refresh token flow is the highest priority task to stabilize the application. Expect to be blocked by this until it is fixed.
+-   **User provides credentials from screenshots**: The user will provide screenshots of the 1688 developer console. You must be able to correctly identify the AppKey, AppSecret, and the latest Access Token from these images to update the  file.
 
 **documents and test reports created in this job**
--   : Script to generate PDF reports.
--   : The generated PDF report file.
+-   The user provided , which contains the DWZ API documentation. The agent extracted and analyzed  from it.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Confirmed the tracking number format. **Status: Completed.**
-2.  **User**: Provided a new label format, requesting the 1688 supplier tracking number be included. **Status: Completed.**
-3.  **User**: Requested a PDF report of all orders. **Status: Completed.**
-4.  **User**: Pointed out an order with an empty address in the PDF. **Status: Completed.**
-5.  **User**: Provided the correct DWZ credentials and API docs, and asked for the label data to be updated. **Status: Completed.**
-6.  **User**: Requested deletion of several duplicate or incorrect purchase orders. **Status: Completed.**
-7.  **User**: Requested syncing of shipping addresses for a large batch of orders. **Status: Completed.**
-8.  **User**: Reported not being able to find newly linked orders in the UI. **Status: Completed.**
-9.  **User**: Provided 1688 order IDs to link to two Shopify orders. **Status: Completed.**
-10. **User**: Reported that two orders were missing and asked for them to be synced from Shopify. **Status: Completed.**
+1.  **User**: Confirmed the new AppSecret for the 1688 app. **Status: Completed.**
+2.  **User**: Provided a refreshed 1688 access token. **Status: Completed.**
+3.  **User**: Reported the sync button was failing again with a 400 error. **Status: Completed, agent fixed the API endpoint.**
+4.  **User**: Shared API documentation for the 1688 logistics API. **Status: Completed, agent used it to fix the sync logic.**
+5.  **User**: Provided the final tracking number for order 29455. **Status: Completed.**
+6.  **User**: Provided the tracking number for order 29373 via screenshot. **Status: Completed.**
+7.  **User**: Confirmed that order 29423 was updated, providing the tracking number from a screenshot. **Status: Completed.**
+8.  **User**: Asked for the remaining 27 orders to be synced. **Status: Completed.**
+9.  **User**: Asked if the DWZ remarks were updated. **Status: Investigated, agent confirmed they were not due to API limitation.**
+10. **User**: Stated that the DWZ remarks *should* be updated with the 1688 tracking number, rejecting the initial finding. **Status: Re-investigated, agent confirmed the API limitation again.**
 
 **Project Health Check:**
--   **Broken**: The core data synchronization workflow is broken, leading to constant data corruption that requires manual intervention.
--   **At Risk**: The authentication system is fragile due to inconsistent hashing methods and multiple user collections. Shopify/1688 integrations are at risk of failure due to lack of token refresh logic.
--   **Mocked**: DTDC shipping integration remains blocked.
+-   **Broken**: The entire 1688 integration workflow due to the lack of an automated token refresh mechanism.
+-   **Blocked**: The user's requirement to have seller tracking numbers in the DWZ  field is blocked by the external DWZ API.
 
 **3rd Party Integrations**
+-   **1688.com**: Custom API integration. **(CRITICAL: Tokens are unstable and expire within hours. No automated refresh flow exists).**
+-   **DWZ56**: Custom API integration. **(LIMITATION: The  remarks field is confirmed to be un-updatable via API for processed orders).**
+-   **Shopify**: API integration. (Token is also at risk of expiring).
 -   **Razorpay** (Payments) — requires User API Key
 -   **DTDC** (Shipping) — **BLOCKED**
 -   **Emergent Integrations (ClipDrop)** — uses Emergent LLM Key
--   **@dnd-kit/core, @dnd-kit/sortable** (Frontend UI Library)
--   **react-slick, slick-carousel** (Frontend UI Library)
--   **1688.com**: Custom API integration. **(Token is unstable)**
--   **DWZ56**: Custom API integration. **(Cancellation is broken, workaround in place)**
--   **Shopify**: API integration. **(Token is unstable)**
 
 **Testing status**
 -   **Testing agent used after significant changes**: NO
 -   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: None. A one-off PDF generation script was created at .
+-   **Test files created**: None.
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
--   **Admin Login**:  / 
--   **VPS SSH**: Credentials for IP  are available.
--   **DWZ Credentials**: user , client ID , API key .
+-   **1688 Credentials**: The access tokens in  are extremely short-lived (hours). The new agent will almost certainly need to ask the user to provide a fresh token by navigating to the 1688 developer console and clicking the 刷新 (Refresh) button.
 
 **What agent forgot to execute**
--   The agent did not fix the underlying code bug in  that causes the  to be overwritten. It only patched the resulting bad data in the database.
--   A permanent, automated fix for the recurring API token expiry issue for Shopify and 1688 has not been implemented.
--   The obsolete V2 editor files were not deleted.
--   The backend monolithic files were not refactored.</analysis>
+-   The agent did not implement a permanent, automated OAuth2 refresh token flow for the 1688 API. This was the root cause of most of the session's friction and manual work.
+-   The agent did not refactor the code to remove the non-functional attempts to update the DWZ  field, leaving potentially confusing code for the next agent.</analysis>
