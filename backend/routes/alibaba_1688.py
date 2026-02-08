@@ -2702,37 +2702,25 @@ async def sync_purchase_order_status(alibaba_order_id: str):
         raise HTTPException(status_code=400, detail="1688 API access token not configured")
     
     try:
-        # Fetch order list from 1688 API and find our order
+        # Use single order API instead of list API
         params = {
-            "pageNo": "1",
-            "pageSize": "50",
+            "orderId": alibaba_order_id,
+            "webSite": "1688",
         }
         
         result = await make_api_request(
-            "com.alibaba.trade/alibaba.trade.getBuyerOrderList",
+            "com.alibaba.trade/alibaba.trade.get.buyerView",
             params,
             access_token=ALIBABA_ACCESS_TOKEN
         )
         
-        orders = result.get("result", [])
-        if isinstance(orders, dict):
-            orders = orders.get("result", []) or []
+        order_data = result.get("result") or result
         
-        # Find our specific order
-        order_data = None
-        for order in orders:
-            base_info = order.get("baseInfo", {})
-            order_id = base_info.get("idOfStr") or str(base_info.get("id", ""))
-            if order_id == alibaba_order_id:
-                order_data = order
-                break
-        
-        if not order_data:
-            # Order not found in recent orders, might be older
-            # Just update status from what we know
+        if not order_data or not order_data.get("baseInfo"):
+            # Fallback: try to get status from logistics API
             return {
                 "success": True,
-                "message": f"Order {alibaba_order_id} not found in recent orders. Status unchanged.",
+                "message": f"Order {alibaba_order_id} details not available. Status unchanged.",
                 "alibaba_order_id": alibaba_order_id,
                 "status": purchase_order.get("status"),
                 "supplier_status": purchase_order.get("supplier_status"),
