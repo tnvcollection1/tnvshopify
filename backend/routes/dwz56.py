@@ -1696,8 +1696,23 @@ async def add_consolidated_shipment_suffixes(
                 
                 await asyncio.sleep(0.3)
                 
-                # Create new record with suffix in cMemo
+                # Get old cNum (TNV) and cRNo for swapped field mapping
+                old_cNum = record.get("cNum", "")
+                old_cRNo = record.get("cRNo", "")
+                
+                # Create new record with suffix in cNum (Internal Tracking)
+                # Field Mapping (SWAPPED):
+                # - cNum: 1688 Seller Tracking WITH SUFFIX (YT7596493840457-01)
+                # - cRNo: TNV Reference (use old cNum if it was TNV, or old cRNo)
                 new_memo = f"1688发货单号: {new_tracking}"
+                
+                # Determine TNV reference - check if old cNum looks like TNV or seller tracking
+                if old_cNum.startswith("TNV") or old_cNum.startswith("TNVIN"):
+                    tnv_reference = old_cNum
+                elif old_cRNo.startswith("TNV") or old_cRNo.startswith("TNVIN"):
+                    tnv_reference = old_cRNo
+                else:
+                    tnv_reference = old_cRNo  # Keep old reference
                 
                 new_record = {
                     "iID": 0,
@@ -1706,9 +1721,10 @@ async def add_consolidated_shipment_suffixes(
                     "cEmsKind": record.get("cEmsKind", ""),
                     "cDes": record.get("cDes", ""),
                     "fWeight": record.get("fWeight", 0.5),
-                    "cNum": record.get("cNum", ""),
+                    # SWAPPED field mappings:
+                    "cNum": new_tracking,           # Internal Tracking: 1688 Seller Tracking WITH SUFFIX
                     "cNo": record.get("cNo", ""),
-                    "cRNo": record.get("cRNo", ""),
+                    "cRNo": tnv_reference,          # Reference: TNV Reference Number
                     "cMemo": new_memo,
                     "cMark": record.get("cMark", ""),
                     "cBy1": record.get("cBy1", ""),
@@ -1740,8 +1756,9 @@ async def add_consolidated_shipment_suffixes(
                     results["details"].append({
                         "iID": iID,
                         "new_iID": new_iID,
-                        "cNum": cNum,
-                        "new_tracking": new_tracking,
+                        "old_cNum": old_cNum,
+                        "new_cNum": new_tracking,
+                        "cRNo": tnv_reference,
                         "status": "updated"
                     })
                 else:
