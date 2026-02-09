@@ -423,7 +423,7 @@ async def health_check():
 @router.get("/download-report")
 async def download_dwz_report():
     """
-    Download the DWZ orders PDF report.
+    Download the DWZ orders PDF report in Chinese.
     Generates a fresh report with all current orders including 1688 seller tracking.
     """
     from reportlab.lib import colors
@@ -432,6 +432,15 @@ async def download_dwz_report():
     from reportlab.lib.units import inch
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib.enums import TA_CENTER
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    
+    # Register Chinese font if available, otherwise use default
+    try:
+        pdfmetrics.registerFont(TTFont('SimHei', '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc'))
+        chinese_font = 'SimHei'
+    except:
+        chinese_font = 'Helvetica'  # Fallback
     
     # Fetch records
     payload = build_request_payload("PreInputList", {
@@ -444,7 +453,7 @@ async def download_dwz_report():
     records = response.get("RecList", [])
     
     # Filter out cancelled
-    active = [r for r in records if (r.get("cMemo") or "") != "CANCELLED"]
+    active = [r for r in records if "CANCELLED" not in (r.get("cMemo") or "")]
     
     # Get seller tracking from database
     db = get_db()
@@ -475,21 +484,36 @@ async def download_dwz_report():
                                  fontSize=14, alignment=TA_CENTER, spaceAfter=15)
     
     elements = []
-    title = Paragraph(f"<b>DWZ Shipping Orders Report</b><br/><font size=9>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')} | Total: {len(active)}</font>", title_style)
+    # Chinese title
+    title = Paragraph(f"<b>DWZ 物流订单报告</b><br/><font size=9>生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M')} | 总计: {len(active)} 单</font>", title_style)
     elements.append(title)
     elements.append(Spacer(1, 10))
     
-    # Table with 1688 Seller Tracking column
-    table_data = [['#', 'TNV Tracking', 'DWZ No', 'Receiver', 'City', 'Phone', '1688 Seller Tracking', 'Shopify', 'Color/Size']]
+    # Chinese headers
+    # Table with Chinese column headers
+    table_data = [[
+        '序号',           # #
+        'TNV单号',        # TNV Tracking (Internal)
+        'DWZ运单号',      # DWZ AWB/Transfer
+        '收件人',         # Receiver
+        '城市',           # City
+        '电话',           # Phone
+        '1688发货单号',   # 1688 Seller Tracking
+        'Shopify',        # Shopify Order
+        '颜色/尺码'       # Color/Size
+    ]]
     
     for idx, r in enumerate(active, 1):
         cBy1 = r.get("cBy1", "") or ""
         shopify_num = cBy1.replace("Shopify#", "") if cBy1.startswith("Shopify#") else ""
-        shopify_display = f"#{shopify_num}" if shopify_num else ""
+        shopify_display = f"#{shopify_num}" if shopify_num else r.get("cMark", "")
         
-        # Get seller tracking from lookup
+        # Get seller tracking from cMemo (now includes suffix like -01, -02)
+        cMemo = r.get("cMemo", "") or ""
         seller_tracking = ""
-        if shopify_num and shopify_num in tracking_lookup:
+        if "1688发货单号:" in cMemo:
+            seller_tracking = cMemo.replace("1688发货单号:", "").strip()
+        elif shopify_num and shopify_num in tracking_lookup:
             seller_tracking = tracking_lookup[shopify_num]["tracking"]
         
         table_data.append([
@@ -499,12 +523,12 @@ async def download_dwz_report():
             (r.get("cReceiver", "") or "")[:18],
             (r.get("cRCity", "") or "")[:12],
             (r.get("cRPhone", "") or "")[:14],
-            seller_tracking,  # 1688 Seller Tracking
+            seller_tracking,  # 1688 Seller Tracking with suffix
             shopify_display,
             (r.get("cBy2", "") or "")[:12],
         ])
     
-    col_widths = [0.25*inch, 1.2*inch, 1.3*inch, 1.0*inch, 0.7*inch, 0.85*inch, 1.1*inch, 0.5*inch, 0.7*inch]
+    col_widths = [0.3*inch, 1.2*inch, 1.3*inch, 1.0*inch, 0.7*inch, 0.85*inch, 1.2*inch, 0.5*inch, 0.7*inch]
     table = Table(table_data, colWidths=col_widths, repeatRows=1)
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
@@ -523,7 +547,7 @@ async def download_dwz_report():
     
     return FileResponse(
         path=str(output_path),
-        filename=f"dwz_orders_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+        filename=f"DWZ物流订单报告_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
         media_type="application/pdf"
     )
 
