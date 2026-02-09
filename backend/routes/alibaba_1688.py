@@ -6682,3 +6682,144 @@ async def create_dwz_order_from_1688(request: Create1688DwzOrderRequest):
     except Exception as e:
         logger.error(f"Failed to create DWZ from 1688: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create DWZ order: {str(e)}")
+
+
+# =============================================================================
+# TOKEN MANAGEMENT - Postpone/Refresh Token
+# =============================================================================
+
+@router.post("/auth/postpone-token")
+async def postpone_token():
+    """
+    Extend/Postpone the current 1688 access token to prevent expiration.
+    
+    Uses the 1688 OAuth2 API: system.oauth2/postponeToken
+    This extends the token validity period.
+    
+    Call this periodically (e.g., every few hours) to keep the token active.
+    """
+    if not ALIBABA_ACCESS_TOKEN:
+        raise HTTPException(status_code=400, detail="No access token configured")
+    
+    if not ALIBABA_APP_KEY or not ALIBABA_APP_SECRET:
+        raise HTTPException(status_code=400, detail="App key and secret not configured")
+    
+    try:
+        # Build the postpone token request
+        api_path = f"param2/1/system.oauth2/postponeToken/{ALIBABA_APP_KEY}"
+        
+        params = {
+            "access_token": ALIBABA_ACCESS_TOKEN,
+        }
+        
+        # Build full URL (HTTPS required)
+        url = f"https://gw.open.1688.com/openapi/{api_path}"
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                url,
+                data=params,
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Cache-Control": "no-cache",
+                }
+            )
+            result = response.json()
+        
+        if "error_code" in result:
+            return {
+                "success": False,
+                "error_code": result.get("error_code"),
+                "error_message": result.get("error_message"),
+                "message": "Failed to postpone token. You may need to re-authorize."
+            }
+        
+        # Token postponed successfully
+        return {
+            "success": True,
+            "message": "Token postponed successfully",
+            "result": result,
+            "current_token": ALIBABA_ACCESS_TOKEN[:20] + "..."
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to postpone token: {str(e)}")
+
+
+@router.post("/auth/refresh-token")
+async def refresh_token_endpoint(refresh_token: str = Query(..., description="The refresh token")):
+    """
+    Get a new access token using the refresh token.
+    
+    Uses the 1688 OAuth2 API: system.oauth2/getToken with grant_type=refresh_token
+    
+    After getting a new token, update the .env file with the new access_token.
+    """
+    if not ALIBABA_APP_KEY or not ALIBABA_APP_SECRET:
+        raise HTTPException(status_code=400, detail="App key and secret not configured")
+    
+    try:
+        # Build the refresh token request
+        api_path = f"param2/1/system.oauth2/getToken/{ALIBABA_APP_KEY}"
+        
+        params = {
+            "grant_type": "refresh_token",
+            "client_id": ALIBABA_APP_KEY,
+            "client_secret": ALIBABA_APP_SECRET,
+            "refresh_token": refresh_token,
+        }
+        
+        # Build full URL (HTTPS required)
+        url = f"https://gw.open.1688.com/openapi/{api_path}"
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                url,
+                data=params,
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Cache-Control": "no-cache",
+                }
+            )
+            result = response.json()
+        
+        if "error_code" in result:
+            return {
+                "success": False,
+                "error_code": result.get("error_code"),
+                "error_message": result.get("error_message"),
+                "message": "Failed to refresh token"
+            }
+        
+        # Extract new tokens
+        new_access_token = result.get("access_token")
+        new_refresh_token = result.get("refresh_token")
+        expires_in = result.get("expires_in")
+        
+        return {
+            "success": True,
+            "message": "Token refreshed successfully! Update your .env with the new access_token.",
+            "access_token": new_access_token,
+            "refresh_token": new_refresh_token,
+            "expires_in": expires_in,
+            "expires_in_hours": expires_in / 3600 if expires_in else None,
+            "note": "Copy the new access_token to ALIBABA_1688_ACCESS_TOKEN in .env and restart backend"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to refresh token: {str(e)}")
+
+
+@router.get("/auth/token-status")
+async def get_token_status():
+    """
+    Check the current token configuration status.
+    """
+    return {
+        "app_key": ALIBABA_APP_KEY[:4] + "***" if ALIBABA_APP_KEY else None,
+        "app_secret_configured": bool(ALIBABA_APP_SECRET),
+        "access_token_configured": bool(ALIBABA_ACCESS_TOKEN),
+        "access_token_preview": ALIBABA_ACCESS_TOKEN[:20] + "..." if ALIBABA_ACCESS_TOKEN else None,
+        "api_url": ALIBABA_API_URL,
+        "note": "Use /auth/postpone-token to extend token validity, or /auth/refresh-token to get a new token"
+    }
