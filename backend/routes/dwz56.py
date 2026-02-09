@@ -1949,7 +1949,7 @@ async def create_missing_dwz_records(
                 "iID": 0,
                 "nItemType": 1,
                 "nLanguage": 2,
-                "cEmsKind": "YQ",  # Default courier type
+                "cEmsKind": "印度专线",  # India dedicated line
                 "cDes": country,
                 "fWeight": 0.5,
                 # SWAPPED field mappings:
