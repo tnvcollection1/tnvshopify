@@ -1556,7 +1556,8 @@ async def recreate_dwz_with_seller_tracking(request: RecreateDWZWithTrackingRequ
 
 @router.post("/bulk-recreate-with-seller-tracking")
 async def bulk_recreate_dwz_with_seller_tracking(
-    dry_run: bool = Query(True, description="If true, only show what would be done without making changes")
+    dry_run: bool = Query(True, description="If true, only show what would be done without making changes"),
+    force_recreate: bool = Query(False, description="If true, recreate even if cMemo already has tracking (to update cMark field)")
 ):
     """
     Bulk recreate ALL DWZ orders that have 1688 seller tracking, 
@@ -1568,6 +1569,9 @@ async def bulk_recreate_dwz_with_seller_tracking(
     3. Delete old record and create new one with cMemo set
     
     Only processes UNPROCESSED records (irID=0).
+    
+    Use force_recreate=true to also update records that already have cMemo 
+    (useful for adding missing cMark field).
     """
     import asyncio
     
