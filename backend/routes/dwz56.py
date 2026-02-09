@@ -1094,14 +1094,33 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
             detail=f"No shipping address found. Link order to Shopify first or add shipping address."
         )
     
-    # 3. Generate TNV tracking number
+    # 3. Generate TNV tracking number using 1688 COLOR/SIZE data
     country = shipping_address.get("country_code") or shipping_address.get("country") or "IN"
-    color = alibaba_order.get("color", "")
-    size = alibaba_order.get("size", "")
     
-    tracking_number = await generate_tnv_tracking_number(country, color, size, db)
+    # Use 1688 data for TNV tracking number generation (color/size from 1688 order)
+    alibaba_color = alibaba_order.get("color", "")  # 1688 color (e.g., "Black", "黑色")
+    alibaba_size = alibaba_order.get("size", "")    # 1688 size (e.g., "42")
     
-    # 4. Build the DWZ shipment record
+    # Get Shopify color/size for verification display
+    shopify_color = alibaba_order.get("shopify_color", "") or alibaba_order.get("variant_color", "")
+    shopify_size = alibaba_order.get("shopify_size", "") or alibaba_order.get("variant_size", "")
+    
+    # Generate TNV tracking using 1688 data
+    tracking_number = await generate_tnv_tracking_number(country, alibaba_color, alibaba_size, db)
+    
+    # Get 1688 seller tracking number if available
+    seller_tracking = alibaba_order.get("seller_tracking_number", "")
+    
+    # 4. Build the DWZ shipment record with correct field mappings
+    # Field Mapping:
+    # - cNum (Internal Tracking): TNV Reference Number (TNVIN0901Y41015)
+    # - cRNo (Reference Number): 1688 Seller Tracking (YT7596493840457)
+    # - cNo (AWB/Transfer): DWZ generates this
+    # - cMemo (Remarks): 1688 Seller Tracking for label printing
+    # - cMark (Tag/Label): Shopify Order Number
+    # - cBy1: Shopify reference for linking
+    # - cBy2: Shopify Color/Size for verification
+    
     receiver_name = shipping_address.get("name") or shipping_address.get("first_name", "") + " " + shipping_address.get("last_name", "")
     receiver_addr = shipping_address.get("address1", "")
     if shipping_address.get("address2"):
@@ -1109,15 +1128,35 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
     
     goods_desc = request.goods_description or alibaba_order.get("notes") or f"Product {alibaba_order.get('product_id', '')}"
     
+    # Build cMemo with seller tracking (this prints on label)
+    if seller_tracking:
+        memo_value = f"1688发货单号: {seller_tracking}"
+    else:
+        memo_value = f"1688:{request.alibaba_order_id}"
+    
+    # Build verification string: Shopify Color/Size
+    shopify_verification = ""
+    if shopify_color or shopify_size:
+        shopify_verification = f"{shopify_color}/{shopify_size}".strip("/")
+    elif alibaba_color or alibaba_size:
+        # Fallback to 1688 data if no Shopify data
+        shopify_verification = f"{alibaba_color}/{alibaba_size}".strip("/")
+    
     record = {
         "iID": 0,  # 0 = new record
         "nItemType": 1,  # Package
-        "nLanguage": 1,  # English
+        "nLanguage": 2,  # Chinese (for proper character display)
         "cEmsKind": request.courier_type,
         "cDes": shipping_address.get("country_code") or country,
         "fWeight": request.weight,
-        "cNum": tracking_number,  # Our TNV tracking number
-        "cRNo": str(shopify_order_number) if shopify_order_number else "",  # Reference number
+        # Field Mappings:
+        "cNum": tracking_number,                    # Internal Tracking: TNV number (uses 1688 color/size)
+        "cRNo": f"1688:{request.alibaba_order_id}", # Reference: 1688 Order ID
+        "cMemo": memo_value,                        # Remarks: 1688 Seller Tracking (prints on label!)
+        "cMark": f"#{shopify_order_number}" if shopify_order_number else "",  # Tag/Label: Shopify Order
+        "cBy1": f"Shopify#{shopify_order_number}" if shopify_order_number else "",  # Shopify reference
+        "cBy2": shopify_verification,               # Shopify Color/Size for verification
+        # Receiver info
         "cReceiver": receiver_name.strip(),
         "cRAddr": receiver_addr,
         "cRCity": shipping_address.get("city", ""),
@@ -1127,7 +1166,8 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
         "cRPhone": shipping_address.get("phone", ""),
         "cGoods": goods_desc[:100],
         "iQuantity": alibaba_order.get("quantity", 1),
-        "cMemo": f"1688:{request.alibaba_order_id} | Shopify:#{shopify_order_number}",
+        "fPrice": 0.01,
+        "cOrigin": "CN",
     }
     
     # 5. Create the shipment via DWZ API
