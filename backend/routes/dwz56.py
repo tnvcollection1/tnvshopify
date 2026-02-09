@@ -1712,7 +1712,13 @@ async def add_consolidated_shipment_suffixes(
                 # Field Mapping (SWAPPED):
                 # - cNum: 1688 Seller Tracking WITH SUFFIX (YT7596493840457-01)
                 # - cRNo: TNV Reference (use old cNum if it was TNV, or old cRNo)
-                new_memo = f"1688发货单号: {new_tracking}"
+                
+                # Get color/size from cBy2
+                color_size = record.get("cBy2", "") or ""
+                if color_size:
+                    new_memo = f"1688发货单号: {new_tracking} | {color_size}"
+                else:
+                    new_memo = f"1688发货单号: {new_tracking}"
                 
                 # Determine TNV reference - check if old cNum looks like TNV or seller tracking
                 if old_cNum.startswith("TNV") or old_cNum.startswith("TNVIN"):
@@ -1733,7 +1739,7 @@ async def add_consolidated_shipment_suffixes(
                     "cNum": new_tracking,           # Internal Tracking: 1688 Seller Tracking WITH SUFFIX
                     "cNo": record.get("cNo", ""),
                     "cRNo": tnv_reference,          # Reference: TNV Reference Number
-                    "cMemo": new_memo,
+                    "cMemo": new_memo,              # Remarks with color/size
                     "cMark": record.get("cMark", ""),
                     "cBy1": record.get("cBy1", ""),
                     "cBy2": record.get("cBy2", ""),
