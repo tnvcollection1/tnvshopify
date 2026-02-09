@@ -1494,15 +1494,16 @@ async def recreate_dwz_with_seller_tracking(request: RecreateDWZWithTrackingRequ
     # - cBy1: Shopify reference for linking
     # - cBy2: Shopify Color/Size for verification
     
-    # Build cMemo with seller tracking (this prints on label!)
-    new_memo = f"1688发货单号: {seller_tracking}"
-    
     # Get Shopify color/size for verification from purchase order
     shopify_color = ""
     shopify_size = ""
+    order_color = ""
+    order_size = ""
     if purchase_order:
         shopify_color = purchase_order.get("shopify_color", "") or purchase_order.get("variant_color", "")
         shopify_size = purchase_order.get("shopify_size", "") or purchase_order.get("variant_size", "")
+        order_color = purchase_order.get("color", "") or shopify_color
+        order_size = purchase_order.get("size", "") or shopify_size
     
     # Build verification string
     shopify_verification = ""
@@ -1511,6 +1512,13 @@ async def recreate_dwz_with_seller_tracking(request: RecreateDWZWithTrackingRequ
     else:
         # Keep existing cBy2 if no new data
         shopify_verification = existing_record.get("cBy2", "")
+    
+    # Build cMemo with seller tracking AND color/size (this prints on label!)
+    color_size_str = f"{order_color}/{order_size}".strip("/") if (order_color or order_size) else shopify_verification
+    if color_size_str:
+        new_memo = f"1688发货单号: {seller_tracking} | {color_size_str}"
+    else:
+        new_memo = f"1688发货单号: {seller_tracking}"
     
     new_record = {
         "iID": 0,  # 0 = new record
@@ -1523,7 +1531,7 @@ async def recreate_dwz_with_seller_tracking(request: RecreateDWZWithTrackingRequ
         "cNum": seller_tracking,                     # Internal Tracking: 1688 Seller Tracking
         "cNo": old_cNo,                              # AWB/Transfer: Keep same
         "cRNo": old_cNum,                            # Reference: TNV Reference Number (was old cNum)
-        "cMemo": new_memo,                           # Remarks: 1688 Seller Tracking (prints on label!)
+        "cMemo": new_memo,                           # Remarks: 1688 Seller Tracking + Color/Size (prints on label!)
         "cMark": f"#{shopify_order_number}" if shopify_order_number else existing_record.get("cMark", ""),  # Tag: Shopify Order
         "cBy1": cBy1,                                # Shopify reference for linking
         "cBy2": shopify_verification,               # Shopify Color/Size for verification
