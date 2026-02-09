@@ -1636,17 +1636,27 @@ async def bulk_recreate_dwz_with_seller_tracking(
         
         results["matched"] += 1
         
-        # Skip if already has seller tracking in memo
+        # Check current cMark status
+        current_mark = record.get("cMark", "") or ""
+        expected_mark = f"#{shopify_order}" if shopify_order else ""
+        needs_mark_update = not current_mark and expected_mark
+        
+        # Skip if already has seller tracking in memo AND has correct cMark (unless force_recreate)
         if seller_tracking in current_memo:
-            results["already_has_memo"] += 1
-            results["details"].append({
-                "iID": iID,
-                "cNum": cNum,
-                "shopify": shopify_order,
-                "status": "skipped - already has tracking in memo",
-                "current_memo": current_memo
-            })
-            continue
+            if not force_recreate and not needs_mark_update:
+                results["already_has_memo"] += 1
+                results["details"].append({
+                    "iID": iID,
+                    "cNum": cNum,
+                    "shopify": shopify_order,
+                    "status": "skipped - already has tracking in memo",
+                    "current_memo": current_memo,
+                    "current_mark": current_mark
+                })
+                continue
+            elif force_recreate or needs_mark_update:
+                # Will recreate to add/fix cMark
+                pass
         
         if dry_run:
             results["details"].append({
