@@ -1175,7 +1175,7 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
         "fWeight": request.weight,
         # Field Mappings:
         "cNum": tracking_number,                    # Internal Tracking: TNV number (uses 1688 color/size)
-        "cRNo": f"1688:{request.alibaba_order_id}", # Reference: 1688 Order ID
+        "cRNo": seller_tracking if seller_tracking else f"1688:{request.alibaba_order_id}",  # Reference: 1688 Seller Tracking Number
         "cMemo": memo_value,                        # Remarks: 1688 Seller Tracking (prints on label!)
         "cMark": f"#{shopify_order_number}" if shopify_order_number else "",  # Tag/Label: Shopify Order
         "cBy1": f"Shopify#{shopify_order_number}" if shopify_order_number else "",  # Shopify reference
