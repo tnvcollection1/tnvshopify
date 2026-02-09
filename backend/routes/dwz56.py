@@ -1955,7 +1955,7 @@ async def create_missing_dwz_records(
                 # SWAPPED field mappings:
                 "cNum": tracking_with_suffix,        # Internal Tracking: 1688 Seller Tracking
                 "cRNo": tnv_reference,               # Reference: TNV Reference Number
-                "cMemo": f"1688发货单号: {tracking_with_suffix}",  # Remarks
+                "cMemo": f"1688发货单号: {tracking_with_suffix} | {color}/{size}".strip(" |/"),  # Remarks with color/size
                 "cMark": f"#{shopify_num}",          # Tag: Shopify Order
                 "cBy1": f"Shopify#{shopify_num}",    # Shopify reference
                 "cBy2": f"{color}/{size}".strip("/"),  # Color/Size
