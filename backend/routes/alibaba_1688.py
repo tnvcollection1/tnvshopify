@@ -2873,6 +2873,133 @@ async def bulk_sync_seller_tracking():
     }
 
 
+@router.post("/purchase-orders/sync-logistics-status")
+async def sync_logistics_status():
+    """
+    Sync logistics/delivery status from 1688 for all orders with seller tracking.
+    Updates status to: in_transit, delivered, etc.
+    """
+    if not ALIBABA_ACCESS_TOKEN:
+        raise HTTPException(status_code=400, detail="1688 API access token not configured")
+    
+    db = get_db()
+    
+    # Find all orders that have seller tracking (to check their status)
+    orders = await db.purchase_orders_1688.find({
+        "seller_tracking_number": {"$exists": True, "$ne": None, "$ne": ""},
+        # Only sync orders not yet delivered
+        "supplier_status": {"$nin": ["delivered", "received"]}
+    }).to_list(100)
+    
+    results = {
+        "total_orders": len(orders),
+        "in_transit": 0,
+        "delivered": 0,
+        "failed": 0,
+        "no_update": 0,
+        "details": []
+    }
+    
+    for order in orders:
+        alibaba_order_id = order.get("alibaba_order_id")
+        shopify_order = order.get("shopify_order_number")
+        current_status = order.get("supplier_status")
+        seller_tracking = order.get("seller_tracking_number")
+        
+        try:
+            # Fetch logistics from 1688
+            logistics_params = {
+                "orderId": alibaba_order_id,
+                "webSite": "1688",
+            }
+            logistics_result = await make_api_request(
+                "com.alibaba.logistics/alibaba.trade.getLogisticsInfos.buyerView",
+                logistics_params,
+                access_token=ALIBABA_ACCESS_TOKEN
+            )
+            
+            logistics_list = logistics_result.get("result") or []
+            
+            if logistics_list:
+                first_logistics = logistics_list[0]
+                logistics_status = first_logistics.get("status", "")
+                logistics_company = first_logistics.get("logisticsCompanyName", "")
+                
+                # Get detailed tracking steps if available
+                logistics_steps = first_logistics.get("logisticsSteps") or []
+                latest_step = logistics_steps[0] if logistics_steps else {}
+                latest_desc = latest_step.get("remark", "") or latest_step.get("acceptAddress", "")
+                latest_time = latest_step.get("acceptTime", "")
+                
+                # Map 1688 logistics status to our status
+                # Common 1688 statuses: WAIT_SELLER_SEND, SEND, TRANSPORT, DELIVERING, SIGN
+                new_status = current_status
+                if logistics_status == "SIGN":
+                    new_status = "delivered"
+                    results["delivered"] += 1
+                elif logistics_status in ["SEND", "TRANSPORT", "DELIVERING"]:
+                    new_status = "in_transit"
+                    results["in_transit"] += 1
+                elif logistics_status == "WAIT_SELLER_SEND":
+                    new_status = "pending_shipment"
+                else:
+                    new_status = logistics_status.lower() if logistics_status else current_status
+                
+                # Update the order
+                update_data = {
+                    "supplier_status": new_status,
+                    "logistics_status": logistics_status,
+                    "logistics_company": logistics_company,
+                    "logistics_updated_at": datetime.now(timezone.utc).isoformat(),
+                }
+                
+                if latest_desc:
+                    update_data["latest_logistics_update"] = latest_desc
+                if latest_time:
+                    update_data["latest_logistics_time"] = latest_time
+                
+                await db.purchase_orders_1688.update_one(
+                    {"alibaba_order_id": alibaba_order_id},
+                    {"$set": update_data}
+                )
+                
+                results["details"].append({
+                    "shopify_order": shopify_order,
+                    "alibaba_order_id": alibaba_order_id,
+                    "seller_tracking": seller_tracking,
+                    "old_status": current_status,
+                    "new_status": new_status,
+                    "logistics_status": logistics_status,
+                    "latest_update": latest_desc[:50] if latest_desc else "",
+                    "status": "updated"
+                })
+            else:
+                results["no_update"] += 1
+                results["details"].append({
+                    "shopify_order": shopify_order,
+                    "alibaba_order_id": alibaba_order_id,
+                    "seller_tracking": seller_tracking,
+                    "status": "no_logistics_data"
+                })
+                
+        except Exception as e:
+            results["failed"] += 1
+            results["details"].append({
+                "shopify_order": shopify_order,
+                "alibaba_order_id": alibaba_order_id,
+                "status": "error",
+                "error": str(e)[:100]
+            })
+        
+        await asyncio.sleep(0.3)  # Rate limiting
+    
+    return {
+        "success": True,
+        "message": f"Updated {results['in_transit'] + results['delivered']} orders: {results['in_transit']} in transit, {results['delivered']} delivered",
+        **results
+    }
+
+
 @router.post("/purchase-orders/update-dwz-with-tracking")
 async def update_dwz_remarks_with_seller_tracking():
     """
