@@ -1905,24 +1905,23 @@ async def create_missing_dwz_records(
                 ]
             })
             
-            if not shopify_order:
-                results["failed"] += 1
-                results["details"].append({
-                    "alibaba_order_id": alibaba_order_id,
-                    "shopify": shopify_num,
-                    "status": "failed - Shopify order not found"
-                })
-                continue
+            shipping_address = {}
+            if shopify_order:
+                shipping_address = shopify_order.get("shipping_address", {})
             
-            shipping_address = shopify_order.get("shipping_address", {})
-            if not shipping_address:
-                results["failed"] += 1
-                results["details"].append({
-                    "alibaba_order_id": alibaba_order_id,
-                    "shopify": shopify_num,
-                    "status": "failed - No shipping address"
-                })
-                continue
+            # Use default India address if no shipping address found
+            if not shipping_address or not shipping_address.get("city"):
+                # Get customer info from order or use defaults
+                customer_name = order.get("customer_name", "") or "Customer"
+                shipping_address = {
+                    "name": customer_name,
+                    "address1": "Address to be confirmed",
+                    "city": "India",
+                    "province": "",
+                    "country_code": "IN",
+                    "zip": "",
+                    "phone": ""
+                }
             
             # Generate TNV reference number
             country = shipping_address.get("country_code") or "IN"
