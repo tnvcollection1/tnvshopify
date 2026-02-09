@@ -1485,10 +1485,10 @@ async def recreate_dwz_with_seller_tracking(request: RecreateDWZWithTrackingRequ
     
     await asyncio.sleep(0.5)  # Small delay
     
-    # 4. Create new record with correct field mappings
-    # Field Mapping:
-    # - cNum (Internal Tracking): TNV Reference Number - KEEP SAME
-    # - cRNo (Reference Number): 1688 Order ID
+    # 4. Create new record with correct field mappings (SWAPPED)
+    # Field Mapping (UPDATED):
+    # - cNum (Internal Tracking): 1688 Seller Tracking (YT7596493840457-01)
+    # - cRNo (Reference Number): TNV Reference (TNVIN0901Y41015) - keep old_cNum as TNV
     # - cMemo (Remarks): 1688 Seller Tracking for label printing
     # - cMark (Tag/Label): Shopify Order Number
     # - cBy1: Shopify reference for linking
@@ -1519,14 +1519,14 @@ async def recreate_dwz_with_seller_tracking(request: RecreateDWZWithTrackingRequ
         "cEmsKind": existing_record.get("cEmsKind", ""),
         "cDes": existing_record.get("cDes", ""),
         "fWeight": existing_record.get("fWeight", 0.5),
-        # Field Mappings:
-        "cNum": old_cNum,                           # Internal Tracking: Keep same TNV number
-        "cNo": old_cNo,                             # AWB/Transfer: Keep same
-        "cRNo": cRNo,                               # Reference: 1688 Order ID
-        "cMemo": new_memo,                          # Remarks: 1688 Seller Tracking (prints on label!)
+        # Field Mappings (SWAPPED):
+        "cNum": seller_tracking,                     # Internal Tracking: 1688 Seller Tracking
+        "cNo": old_cNo,                              # AWB/Transfer: Keep same
+        "cRNo": old_cNum,                            # Reference: TNV Reference Number (was old cNum)
+        "cMemo": new_memo,                           # Remarks: 1688 Seller Tracking (prints on label!)
         "cMark": f"#{shopify_order_number}" if shopify_order_number else existing_record.get("cMark", ""),  # Tag: Shopify Order
-        "cBy1": cBy1,                               # Shopify reference for linking
-        "cBy2": shopify_verification,              # Shopify Color/Size for verification
+        "cBy1": cBy1,                                # Shopify reference for linking
+        "cBy2": shopify_verification,               # Shopify Color/Size for verification
         # Receiver info - keep existing
         "cReceiver": existing_record.get("cReceiver", ""),
         "cRUnit": existing_record.get("cRUnit", ""),
@@ -1552,9 +1552,9 @@ async def recreate_dwz_with_seller_tracking(request: RecreateDWZWithTrackingRequ
     err_list = create_response.get("ErrList", [])
     if err_list and len(err_list) > 0:
         new_record_id = err_list[0].get("iID")
-        new_cNum = err_list[0].get("cNum", old_cNum)
+        new_cNum = err_list[0].get("cNum", seller_tracking)
     else:
-        new_cNum = old_cNum
+        new_cNum = seller_tracking
     
     # 5. Verify the new record has cMemo set
     if new_record_id:
