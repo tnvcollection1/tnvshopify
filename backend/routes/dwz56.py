@@ -1554,6 +1554,196 @@ async def recreate_dwz_with_seller_tracking(request: RecreateDWZWithTrackingRequ
     }
 
 
+@router.post("/add-consolidated-suffixes")
+async def add_consolidated_shipment_suffixes(
+    dry_run: bool = Query(True, description="If true, only show what would be done without making changes")
+):
+    """
+    Add suffixes (-01, -02, etc.) to seller tracking numbers for consolidated shipments.
+    
+    When a seller consolidates multiple orders into one package, the tracking number
+    is the same but we need to differentiate each sub-package:
+    - YT7596493840457-01
+    - YT7596493840457-02
+    
+    This endpoint:
+    1. Groups all DWZ orders by their seller tracking number
+    2. For tracking numbers with multiple orders, adds -01, -02 suffixes
+    3. Recreates the records with updated cMemo containing the suffix
+    """
+    import asyncio
+    from collections import defaultdict
+    
+    db = get_db()
+    
+    # 1. Get all DWZ pre-input records (unprocessed only)
+    payload = build_request_payload("PreInputList", {
+        "iPage": 1,
+        "iPagePer": 500,
+        "cqStateMask": "10",  # Unprocessed only (irID=0)
+    })
+    
+    response = await make_api_request(payload)
+    records = response.get("RecList", [])
+    
+    # 2. Group by seller tracking number
+    by_tracking = defaultdict(list)
+    for r in records:
+        cMemo = r.get("cMemo", "") or ""
+        # Extract tracking number from cMemo (format: "1688发货单号: YT7596493840457")
+        if "1688发货单号:" in cMemo:
+            tracking = cMemo.replace("1688发货单号:", "").strip()
+            # Skip if already has suffix
+            if not tracking or "-" in tracking:
+                continue
+            by_tracking[tracking].append(r)
+    
+    results = {
+        "total_records": len(records),
+        "consolidated_tracking_numbers": 0,
+        "orders_needing_suffix": 0,
+        "recreated": 0,
+        "failed": 0,
+        "dry_run": dry_run,
+        "consolidated_groups": [],
+        "details": []
+    }
+    
+    # 3. Process consolidated shipments (tracking numbers with multiple orders)
+    for tracking, orders in sorted(by_tracking.items()):
+        if len(orders) <= 1:
+            continue  # Not consolidated, skip
+        
+        results["consolidated_tracking_numbers"] += 1
+        results["orders_needing_suffix"] += len(orders)
+        
+        group_info = {
+            "tracking": tracking,
+            "order_count": len(orders),
+            "orders": []
+        }
+        
+        # Sort by iID to maintain consistent ordering
+        orders_sorted = sorted(orders, key=lambda x: x.get("iID", 0))
+        
+        for idx, record in enumerate(orders_sorted, 1):
+            iID = record.get("iID")
+            cNum = record.get("cNum", "")
+            cMark = record.get("cMark", "")
+            suffix = str(idx).zfill(2)
+            new_tracking = f"{tracking}-{suffix}"
+            
+            order_info = {
+                "iID": iID,
+                "cNum": cNum,
+                "cMark": cMark,
+                "suffix": suffix,
+                "new_tracking": new_tracking
+            }
+            group_info["orders"].append(order_info)
+            
+            if dry_run:
+                results["details"].append({
+                    "iID": iID,
+                    "cNum": cNum,
+                    "original_tracking": tracking,
+                    "new_tracking": new_tracking,
+                    "status": "would update"
+                })
+                continue
+            
+            # Actually recreate with suffix
+            try:
+                # Delete old record
+                delete_payload = build_request_payload("PreInputDel", {"iIDs": [iID]})
+                delete_response = await make_api_request(delete_payload)
+                
+                if delete_response.get("ReturnValue", -9) < 0:
+                    results["failed"] += 1
+                    results["details"].append({
+                        "iID": iID,
+                        "status": "failed",
+                        "error": f"Delete failed: {delete_response.get('ReturnValue')}"
+                    })
+                    continue
+                
+                await asyncio.sleep(0.3)
+                
+                # Create new record with suffix in cMemo
+                new_memo = f"1688发货单号: {new_tracking}"
+                
+                new_record = {
+                    "iID": 0,
+                    "nItemType": record.get("nItemType", 1),
+                    "nLanguage": record.get("nLanguage", 2),
+                    "cEmsKind": record.get("cEmsKind", ""),
+                    "cDes": record.get("cDes", ""),
+                    "fWeight": record.get("fWeight", 0.5),
+                    "cNum": record.get("cNum", ""),
+                    "cNo": record.get("cNo", ""),
+                    "cRNo": record.get("cRNo", ""),
+                    "cMemo": new_memo,
+                    "cMark": record.get("cMark", ""),
+                    "cBy1": record.get("cBy1", ""),
+                    "cBy2": record.get("cBy2", ""),
+                    "cReceiver": record.get("cReceiver", ""),
+                    "cRUnit": record.get("cRUnit", ""),
+                    "cRAddr": record.get("cRAddr", ""),
+                    "cRCity": record.get("cRCity", ""),
+                    "cRProvince": record.get("cRProvince", ""),
+                    "cRCountry": record.get("cRCountry", ""),
+                    "cRPostcode": record.get("cRPostcode", ""),
+                    "cRPhone": record.get("cRPhone", ""),
+                    "cGoods": record.get("cGoods", ""),
+                    "iQuantity": record.get("iQuantity", 1),
+                    "fPrice": record.get("fPrice", 0.01),
+                    "cOrigin": record.get("cOrigin", "CN"),
+                }
+                
+                create_payload = build_request_payload("PreInputSet", {"RecList": [new_record]})
+                create_response = await make_api_request(create_payload)
+                
+                if create_response.get("ReturnValue", -9) > 0:
+                    new_iID = None
+                    err_list = create_response.get("ErrList", [])
+                    if err_list:
+                        new_iID = err_list[0].get("iID")
+                    
+                    results["recreated"] += 1
+                    results["details"].append({
+                        "iID": iID,
+                        "new_iID": new_iID,
+                        "cNum": cNum,
+                        "new_tracking": new_tracking,
+                        "status": "updated"
+                    })
+                else:
+                    results["failed"] += 1
+                    results["details"].append({
+                        "iID": iID,
+                        "status": "failed",
+                        "error": f"Create failed: {create_response.get('ReturnValue')}"
+                    })
+                
+                await asyncio.sleep(0.3)
+                
+            except Exception as e:
+                results["failed"] += 1
+                results["details"].append({
+                    "iID": iID,
+                    "status": "error",
+                    "error": str(e)[:100]
+                })
+        
+        results["consolidated_groups"].append(group_info)
+    
+    return {
+        "success": True,
+        "message": f"{'Dry run complete' if dry_run else 'Suffixes added'}",
+        **results
+    }
+
+
 @router.post("/bulk-recreate-with-seller-tracking")
 async def bulk_recreate_dwz_with_seller_tracking(
     dry_run: bool = Query(True, description="If true, only show what would be done without making changes"),
