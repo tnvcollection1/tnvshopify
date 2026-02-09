@@ -1976,12 +1976,18 @@ async def create_missing_dwz_records(
             create_payload = build_request_payload("PreInputSet", {"RecList": [new_record]})
             create_response = await make_api_request(create_payload)
             
-            if create_response.get("ReturnValue", -9) > 0:
-                new_iID = None
-                err_list = create_response.get("ErrList", [])
-                if err_list:
-                    new_iID = err_list[0].get("iID")
+            return_value = create_response.get("ReturnValue", -9)
+            err_list = create_response.get("ErrList", [])
+            
+            if return_value > 0:
+                new_iID = 0
+                new_cNo = ""
+                new_cNum = tracking_with_suffix
+                
+                if err_list and len(err_list) > 0:
+                    new_iID = err_list[0].get("iID", 0)
                     new_cNo = err_list[0].get("cNo", "")
+                    new_cNum = err_list[0].get("cNum", tracking_with_suffix)
                 
                 results["created"] += 1
                 results["details"].append({
@@ -1990,16 +1996,25 @@ async def create_missing_dwz_records(
                     "seller_tracking": tracking_with_suffix,
                     "tnv_reference": tnv_reference,
                     "new_iID": new_iID,
+                    "new_cNum": new_cNum,
                     "dwz_awb": new_cNo,
-                    "status": "created"
+                    "status": "created",
+                    "api_response": {
+                        "ReturnValue": return_value,
+                        "ErrList": err_list[:2] if err_list else []
+                    }
                 })
             else:
                 results["failed"] += 1
+                err_msg = ""
+                if err_list and len(err_list) > 0:
+                    err_msg = err_list[0].get("cMess", "")
                 results["details"].append({
                     "alibaba_order_id": alibaba_order_id,
                     "shopify": shopify_num,
                     "status": "failed",
-                    "error": f"API returned: {create_response.get('ReturnValue')}"
+                    "error": f"API returned: {return_value}, msg: {err_msg}",
+                    "api_response": create_response
                 })
             
             await asyncio.sleep(0.3)  # Rate limiting
