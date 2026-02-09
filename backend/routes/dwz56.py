@@ -1788,6 +1788,230 @@ async def add_consolidated_shipment_suffixes(
     }
 
 
+@router.post("/create-missing-dwz-records")
+async def create_missing_dwz_records(
+    dry_run: bool = Query(True, description="If true, only show what would be done without making changes")
+):
+    """
+    Create DWZ records for all 1688 orders that have seller tracking but no DWZ record.
+    
+    Field Mapping:
+    - cNum (Internal Tracking): 1688 Seller Tracking (YT7596493840457-01)
+    - cRNo (Reference Number): TNV Reference (TNVIN0901Y41015)
+    - cMemo (Remarks): 1688 Seller Tracking for label printing
+    - cMark (Tag/Label): Shopify Order Number
+    """
+    import asyncio
+    from collections import defaultdict
+    
+    db = get_db()
+    
+    # 1. Get all 1688 orders with seller tracking
+    orders_with_tracking = await db.purchase_orders_1688.find({
+        "seller_tracking_number": {"$exists": True, "$ne": None, "$ne": ""}
+    }).to_list(500)
+    
+    # 2. Get all existing DWZ records
+    payload = build_request_payload("PreInputList", {
+        "iPage": 1,
+        "iPagePer": 500,
+        "cqStateMask": "11",
+    })
+    response = await make_api_request(payload)
+    existing_records = response.get("RecList", [])
+    
+    # Create lookup of existing DWZ records by cRNo (TNV reference) and cMark (Shopify order)
+    existing_by_tnv = {}
+    existing_by_shopify = defaultdict(list)
+    for r in existing_records:
+        cRNo = r.get("cRNo", "") or ""
+        cMark = r.get("cMark", "") or ""
+        cBy1 = r.get("cBy1", "") or ""
+        cMemo = r.get("cMemo", "") or ""
+        
+        if "CANCELLED" in cMemo:
+            continue
+            
+        if cRNo.startswith("TNVIN"):
+            existing_by_tnv[cRNo] = r
+        
+        shopify_num = ""
+        if cMark.startswith("#"):
+            shopify_num = cMark.replace("#", "")
+        elif cBy1.startswith("Shopify#"):
+            shopify_num = cBy1.replace("Shopify#", "")
+        
+        if shopify_num:
+            existing_by_shopify[shopify_num].append(r)
+    
+    # 3. Group 1688 orders by seller tracking (for consolidated suffix assignment)
+    by_seller_tracking = defaultdict(list)
+    for o in orders_with_tracking:
+        seller_tracking = o.get("seller_tracking_number", "")
+        if seller_tracking:
+            by_seller_tracking[seller_tracking].append(o)
+    
+    results = {
+        "total_1688_orders": len(orders_with_tracking),
+        "existing_dwz_records": len([r for r in existing_records if "CANCELLED" not in (r.get("cMemo","") or "")]),
+        "created": 0,
+        "skipped_exists": 0,
+        "failed": 0,
+        "dry_run": dry_run,
+        "details": []
+    }
+    
+    # 4. Process each 1688 order
+    for seller_tracking, orders in by_seller_tracking.items():
+        # Sort by alibaba_order_id for consistent ordering
+        orders_sorted = sorted(orders, key=lambda x: x.get("alibaba_order_id", ""))
+        
+        for idx, order in enumerate(orders_sorted, 1):
+            alibaba_order_id = order.get("alibaba_order_id", "")
+            shopify_num = str(order.get("shopify_order_number", ""))
+            color = order.get("color", "") or ""
+            size = order.get("size", "") or ""
+            
+            # Determine suffix for consolidated shipments
+            suffix = f"-{str(idx).zfill(2)}" if len(orders_sorted) > 1 else ""
+            tracking_with_suffix = f"{seller_tracking}{suffix}"
+            
+            # Check if DWZ record already exists for this specific order
+            # Match by: same Shopify order AND same tracking (base)
+            already_exists = False
+            for existing in existing_by_shopify.get(shopify_num, []):
+                existing_cNum = existing.get("cNum", "")
+                # Check if tracking matches (with or without suffix)
+                if seller_tracking in existing_cNum or existing_cNum == tracking_with_suffix:
+                    already_exists = True
+                    break
+            
+            if already_exists:
+                results["skipped_exists"] += 1
+                results["details"].append({
+                    "alibaba_order_id": alibaba_order_id,
+                    "shopify": shopify_num,
+                    "seller_tracking": tracking_with_suffix,
+                    "status": "skipped - already exists"
+                })
+                continue
+            
+            # Get shipping address from Shopify order
+            shopify_order = await db.orders.find_one({
+                "$or": [
+                    {"order_number": shopify_num},
+                    {"order_number": int(shopify_num) if shopify_num.isdigit() else shopify_num},
+                    {"name": f"#{shopify_num}"}
+                ]
+            })
+            
+            if not shopify_order:
+                results["failed"] += 1
+                results["details"].append({
+                    "alibaba_order_id": alibaba_order_id,
+                    "shopify": shopify_num,
+                    "status": "failed - Shopify order not found"
+                })
+                continue
+            
+            shipping_address = shopify_order.get("shipping_address", {})
+            if not shipping_address:
+                results["failed"] += 1
+                results["details"].append({
+                    "alibaba_order_id": alibaba_order_id,
+                    "shopify": shopify_num,
+                    "status": "failed - No shipping address"
+                })
+                continue
+            
+            # Generate TNV reference number
+            country = shipping_address.get("country_code") or "IN"
+            tnv_reference = await generate_tnv_tracking_number(country, color, size, db)
+            
+            if dry_run:
+                results["details"].append({
+                    "alibaba_order_id": alibaba_order_id,
+                    "shopify": shopify_num,
+                    "seller_tracking": tracking_with_suffix,
+                    "tnv_reference": tnv_reference,
+                    "color": color,
+                    "size": size,
+                    "status": "would create"
+                })
+                continue
+            
+            # Build the DWZ record
+            receiver_name = shipping_address.get("name") or f"{shipping_address.get('first_name', '')} {shipping_address.get('last_name', '')}".strip()
+            receiver_addr = shipping_address.get("address1", "")
+            if shipping_address.get("address2"):
+                receiver_addr += ", " + shipping_address.get("address2")
+            
+            new_record = {
+                "iID": 0,
+                "nItemType": 1,
+                "nLanguage": 2,
+                "cEmsKind": "YQ",  # Default courier type
+                "cDes": country,
+                "fWeight": 0.5,
+                # SWAPPED field mappings:
+                "cNum": tracking_with_suffix,        # Internal Tracking: 1688 Seller Tracking
+                "cRNo": tnv_reference,               # Reference: TNV Reference Number
+                "cMemo": f"1688发货单号: {tracking_with_suffix}",  # Remarks
+                "cMark": f"#{shopify_num}",          # Tag: Shopify Order
+                "cBy1": f"Shopify#{shopify_num}",    # Shopify reference
+                "cBy2": f"{color}/{size}".strip("/"),  # Color/Size
+                "cReceiver": receiver_name[:50],
+                "cRAddr": receiver_addr[:100],
+                "cRCity": shipping_address.get("city", "")[:30],
+                "cRProvince": shipping_address.get("province", "")[:30],
+                "cRCountry": country,
+                "cRPostcode": shipping_address.get("zip", "")[:10],
+                "cRPhone": shipping_address.get("phone", "")[:20],
+                "cGoods": f"Product for order #{shopify_num}",
+                "iQuantity": 1,
+                "fPrice": 0.01,
+                "cOrigin": "CN",
+            }
+            
+            # Create the record
+            create_payload = build_request_payload("PreInputSet", {"RecList": [new_record]})
+            create_response = await make_api_request(create_payload)
+            
+            if create_response.get("ReturnValue", -9) > 0:
+                new_iID = None
+                err_list = create_response.get("ErrList", [])
+                if err_list:
+                    new_iID = err_list[0].get("iID")
+                    new_cNo = err_list[0].get("cNo", "")
+                
+                results["created"] += 1
+                results["details"].append({
+                    "alibaba_order_id": alibaba_order_id,
+                    "shopify": shopify_num,
+                    "seller_tracking": tracking_with_suffix,
+                    "tnv_reference": tnv_reference,
+                    "new_iID": new_iID,
+                    "dwz_awb": new_cNo,
+                    "status": "created"
+                })
+            else:
+                results["failed"] += 1
+                results["details"].append({
+                    "alibaba_order_id": alibaba_order_id,
+                    "shopify": shopify_num,
+                    "status": "failed",
+                    "error": f"API returned: {create_response.get('ReturnValue')}"
+                })
+            
+            await asyncio.sleep(0.3)  # Rate limiting
+    
+    return {
+        "success": True,
+        "message": f"{'Dry run complete' if dry_run else 'DWZ records created'}",
+        **results
+    }
+
+
 @router.post("/bulk-recreate-with-seller-tracking")
 async def bulk_recreate_dwz_with_seller_tracking(
     dry_run: bool = Query(True, description="If true, only show what would be done without making changes"),
