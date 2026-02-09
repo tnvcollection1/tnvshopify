@@ -6823,3 +6823,147 @@ async def get_token_status():
         "api_url": ALIBABA_API_URL,
         "note": "Use /auth/postpone-token to extend token validity, or /auth/refresh-token to get a new token"
     }
+
+
+@router.get("/auth/authorize-url")
+async def get_authorize_url(
+    redirect_uri: str = Query("https://multi-shop-hub-5.preview.emergentagent.com/api/1688/auth/callback", description="Callback URL after authorization")
+):
+    """
+    Get the 1688 authorization URL to start OAuth flow.
+    
+    Steps:
+    1. Visit the returned URL in your browser
+    2. Login to 1688 and authorize the app
+    3. You'll be redirected to the callback with a 'code' parameter
+    4. Use that code to get access_token and refresh_token
+    """
+    if not ALIBABA_APP_KEY:
+        raise HTTPException(status_code=400, detail="App key not configured")
+    
+    # Build authorization URL
+    auth_url = f"https://auth.1688.com/oauth/authorize"
+    params = {
+        "client_id": ALIBABA_APP_KEY,
+        "site": "1688",
+        "redirect_uri": redirect_uri,
+        "state": "1688auth",
+    }
+    
+    from urllib.parse import urlencode
+    full_url = f"{auth_url}?{urlencode(params)}"
+    
+    return {
+        "authorization_url": full_url,
+        "instructions": [
+            "1. Click or copy the authorization_url and open in browser",
+            "2. Login to your 1688 account",
+            "3. Authorize the app",
+            "4. You'll be redirected with a 'code' parameter",
+            "5. Use /auth/exchange-code to get access_token and refresh_token"
+        ],
+        "redirect_uri": redirect_uri,
+        "app_key": ALIBABA_APP_KEY
+    }
+
+
+@router.get("/auth/callback")
+async def oauth_callback(
+    code: str = Query(None, description="Authorization code from 1688"),
+    state: str = Query(None),
+    error: str = Query(None)
+):
+    """
+    OAuth callback endpoint - receives the authorization code from 1688.
+    """
+    if error:
+        return {"success": False, "error": error}
+    
+    if not code:
+        return {
+            "success": False,
+            "message": "No authorization code received. Please start the authorization flow again.",
+            "start_url": "/api/1688/auth/authorize-url"
+        }
+    
+    # Automatically exchange code for tokens
+    return {
+        "success": True,
+        "message": "Authorization code received! Use this code to get tokens.",
+        "code": code,
+        "next_step": f"Call POST /api/1688/auth/exchange-code with code={code}",
+        "or_use_curl": f"curl -X POST 'https://multi-shop-hub-5.preview.emergentagent.com/api/1688/auth/exchange-code?code={code}'"
+    }
+
+
+@router.post("/auth/exchange-code")
+async def exchange_code_for_tokens(
+    code: str = Query(..., description="Authorization code from 1688 OAuth"),
+    redirect_uri: str = Query("https://multi-shop-hub-5.preview.emergentagent.com/api/1688/auth/callback", description="Must match the redirect_uri used in authorize")
+):
+    """
+    Exchange authorization code for access_token and refresh_token.
+    
+    This is the key step to get your refresh_token for long-term access.
+    """
+    if not ALIBABA_APP_KEY or not ALIBABA_APP_SECRET:
+        raise HTTPException(status_code=400, detail="App key and secret not configured")
+    
+    try:
+        # Build token request URL
+        token_url = "https://gw.open.1688.com/openapi/http/1/system.oauth2/getToken/" + ALIBABA_APP_KEY
+        
+        params = {
+            "grant_type": "authorization_code",
+            "need_refresh_token": "true",
+            "client_id": ALIBABA_APP_KEY,
+            "client_secret": ALIBABA_APP_SECRET,
+            "redirect_uri": redirect_uri,
+            "code": code,
+        }
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                token_url,
+                data=params,
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                }
+            )
+            result = response.json()
+        
+        if "error_code" in result or "error" in result:
+            return {
+                "success": False,
+                "error": result.get("error_code") or result.get("error"),
+                "error_message": result.get("error_message") or result.get("error_description"),
+                "raw_response": result
+            }
+        
+        # Extract tokens
+        access_token = result.get("access_token")
+        refresh_token = result.get("refresh_token")
+        expires_in = result.get("expires_in")
+        refresh_expires_in = result.get("refresh_token_timeout") or result.get("refresh_expires_in")
+        member_id = result.get("memberId") or result.get("aliId")
+        
+        return {
+            "success": True,
+            "message": "Tokens obtained successfully!",
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "expires_in_seconds": expires_in,
+            "expires_in_hours": round(expires_in / 3600, 1) if expires_in else None,
+            "refresh_token_expires_in": refresh_expires_in,
+            "member_id": member_id,
+            "instructions": [
+                "1. Copy access_token to ALIBABA_1688_ACCESS_TOKEN in backend/.env",
+                "2. Copy refresh_token to ALIBABA_1688_REFRESH_TOKEN in backend/.env", 
+                "3. Restart backend: sudo supervisorctl restart backend",
+                "4. Use /auth/refresh-token periodically to get new access_token before it expires"
+            ],
+            "raw_response": result
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to exchange code: {str(e)}")
