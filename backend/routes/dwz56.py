@@ -1129,16 +1129,16 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
     shopify_color = alibaba_order.get("shopify_color", "") or alibaba_order.get("variant_color", "")
     shopify_size = alibaba_order.get("shopify_size", "") or alibaba_order.get("variant_size", "")
     
-    # Generate TNV tracking using 1688 data
-    tracking_number = await generate_tnv_tracking_number(country, alibaba_color, alibaba_size, db)
+    # Generate TNV reference number using 1688 data (for cRNo field)
+    tnv_reference = await generate_tnv_tracking_number(country, alibaba_color, alibaba_size, db)
     
-    # Get 1688 seller tracking number if available
+    # Get 1688 seller tracking number (for cNum field - Internal Tracking)
     seller_tracking = alibaba_order.get("seller_tracking_number", "")
     
     # 4. Build the DWZ shipment record with correct field mappings
-    # Field Mapping:
-    # - cNum (Internal Tracking): TNV Reference Number (TNVIN0901Y41015)
-    # - cRNo (Reference Number): 1688 Seller Tracking (YT7596493840457)
+    # Field Mapping (UPDATED):
+    # - cNum (Internal Tracking): 1688 Seller Tracking (YT7596493840457-01)
+    # - cRNo (Reference Number): TNV Reference (TNVIN0901Y41015)
     # - cNo (AWB/Transfer): DWZ generates this
     # - cMemo (Remarks): 1688 Seller Tracking for label printing
     # - cMark (Tag/Label): Shopify Order Number
@@ -1166,6 +1166,9 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
         # Fallback to 1688 data if no Shopify data
         shopify_verification = f"{alibaba_color}/{alibaba_size}".strip("/")
     
+    # Use seller tracking for cNum (Internal Tracking), fallback to TNV if not available
+    internal_tracking = seller_tracking if seller_tracking else tnv_reference
+    
     record = {
         "iID": 0,  # 0 = new record
         "nItemType": 1,  # Package
@@ -1173,10 +1176,10 @@ async def place_dwz_order_from_alibaba(request: PlaceDWZFromAlibabaRequest):
         "cEmsKind": request.courier_type,
         "cDes": shipping_address.get("country_code") or country,
         "fWeight": request.weight,
-        # Field Mappings:
-        "cNum": tracking_number,                    # Internal Tracking: TNV number (uses 1688 color/size)
-        "cRNo": seller_tracking if seller_tracking else f"1688:{request.alibaba_order_id}",  # Reference: 1688 Seller Tracking Number
-        "cMemo": memo_value,                        # Remarks: 1688 Seller Tracking (prints on label!)
+        # Field Mappings (SWAPPED):
+        "cNum": internal_tracking,                   # Internal Tracking: 1688 Seller Tracking (YT7596493840457)
+        "cRNo": tnv_reference,                       # Reference: TNV Reference Number (TNVIN0901Y41015)
+        "cMemo": memo_value,                         # Remarks: 1688 Seller Tracking (prints on label!)
         "cMark": f"#{shopify_order_number}" if shopify_order_number else "",  # Tag/Label: Shopify Order
         "cBy1": f"Shopify#{shopify_order_number}" if shopify_order_number else "",  # Shopify reference
         "cBy2": shopify_verification,               # Shopify Color/Size for verification
