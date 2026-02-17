@@ -1,199 +1,96 @@
-# wamerce.com - Multi-Tenant E-Commerce Platform
+# Wamerce - Multi-Tenant E-commerce Platform
 
 ## Original Problem Statement
-Build a multi-tenant e-commerce platform allowing merchants to have their own stores with custom domains. The platform includes:
-- Namshi.com-inspired storefront redesign
-- Mobile app development (React Native/Expo)
-- Shopify-like visual theme editors
-- Comprehensive shipping integrations (DTDC, DWZ)
-- AI-powered product image enhancement
-- 1688 sourcing and fulfillment workflow
+Build a multi-tenant e-commerce platform (wamerce.com) with comprehensive fulfillment workflow involving Shopify, 1688.com, and DWZ shipping platform.
 
-## Core Requirements
+## Core Architecture
+- **Frontend**: React with Tailwind CSS
+- **Backend**: FastAPI (Python)
+- **Database**: MongoDB
+- **External Integrations**: Shopify, 1688.com, DWZ56, BVM Voice API, Razorpay, DTDC
 
-### 1. Storefront & UI/UX
-- Replicate namshi.com header and storefront design
-- Mega Menu with visual builder
-- Flash Sale countdown banners
-- Instagram-style Stories
-- Quick View modals for products
-- "Complete the Look" feature
-- Multi-store support (currencies, languages)
+## What's Been Implemented
 
-### 2. Admin Features
-- Dynamic menu and banner management
-- Theme editor with real-time preview
-- Sales Dashboard and Order Tracking
-- Product approval workflow
-- AI Image Enhancer (background removal)
+### Completed Features (as of Feb 2026)
 
-### 3. E-Commerce Flow
-- Checkout with Razorpay integration
-- Wishlist and Reviews
-- Abandoned cart recovery (WhatsApp)
+#### Shopify Integration
+- [x] Order sync from Shopify stores
+- [x] Product catalog management
+- [x] Theme API for programmatic modifications
+- [x] **Discount percentage badges** on product cards (Feb 17, 2026)
 
-### 4. Fulfillment Workflow
-- 1688 sourcing integration
-- Per-item linking: Shopify orders → 1688 purchase orders
-- DWZ warehouse integration
-- Custom tracking number format: `TNV{COUNTRY}{DDMM}{COLOR}{SIZE}{SERIAL}`
-  - Color codes: R=Red, U=Blue, B=Black, W=White, G=Green, Y=Yellow, etc.
+#### 1688.com Integration
+- [x] Product sourcing from 1688
+- [x] Purchase order management
+- [x] Logistics status sync
+- [ ] **Automated OAuth2 token refresh** (IN PROGRESS - needs refresh_token)
 
-### 5. Merchant Onboarding
-- Multi-step wizard
-- Theme selection during onboarding
+#### DWZ56 Shipping
+- [x] Complete API integration
+- [x] "Delete and recreate" workflow (write-once API limitation)
+- [x] Field mapping: cNum (seller tracking), cRNo (internal ref), cMemo (color/size), cMark (Shopify order#)
+- [x] Consolidated shipment handling with suffixes (-01, -02)
+- [x] Bulk operations for record management
 
----
+#### BVM Voice Calling
+- [x] API integration scaffolding created
+- [ ] **Configuration pending** (needs user credentials)
 
-## What's Implemented ✅
+### Key Files
+- `/app/backend/routes/shopify_themes.py` - Shopify theme management API
+- `/app/backend/routes/alibaba_1688.py` - 1688 API integration
+- `/app/backend/routes/dwz56.py` - DWZ shipping workflow
+- `/app/backend/routes/bvm_calling.py` - BVM voice API integration
 
-### Session: Feb 6, 2026
-- **DWZ API Integration Fixed**: Resolved timestamp issues with DWZ API
-  - The VPS system time is set to 2026, which matches the DWZ API server time
-  - No timestamp offset correction needed
-  - API calls now work correctly (client-info, pre-input-list, etc.)
+## Known Issues
 
-- **Local Tracking Data Management**:
-  - Created `/api/dwz56/clear-local-tracking` endpoint to clear DWZ tracking from local database
-  - Created `/api/dwz56/clear-tracking-counters` endpoint to reset serial number counters
-  - Successfully cleared 4 orders with old/incorrect tracking numbers
-  - Users can now regenerate new tracking numbers with correct format
+### P0 - Critical
+- **1688 API Token Expiry**: Tokens expire frequently causing 401 errors. Need automated refresh token flow.
 
-- **Tracking Number Format Confirmed**:
-  - Format: `TNVIN0602B42001` (TNV + Country + DDMM + Color + Size + Serial)
-  - Black color code is correctly set to `B`
+### P1 - High Priority
+- **tnvcollectionpk Store**: Configured but has 0 orders synced
 
-- **DWZ Platform Limitation Identified**:
-  - The DWZ API's `PreInputDel` endpoint does not work as documented
-  - All attempts to delete pre-input records via API return "Missing required parameters"
-  - **Workaround**: Users must delete old records manually via the DWZ web portal
-  - Local tracking data can be cleared to allow regeneration
+### P2 - Medium Priority
+- **Bulk Operation Timeouts**: Long-running operations need background task refactoring
+- **BVM Voice API**: Awaiting credentials for configuration
 
-### Previous Sessions
-- **Admin Session Stability**: Fixed critical session expiration in AuthContext.jsx
-- **Menu Configuration**: Enabled linking menu items to products/tags in ShopifyStyleEditor.jsx
-- **Facebook Data Deletion**: Created `/api/facebook/data-deletion` endpoint
-- **1688 Sourcing Workflow**: Per-item linking UI, DWZ order placement
-- **Custom TNV Tracking**: Backend generator with color code mapping
-- **Order Linking UI**: Shows "X of Y items linked" summary
+## Prioritized Backlog
 
----
+### P0 - Must Have
+1. Complete 1688 OAuth2 refresh token automation
+2. Store-specific order sync functionality
 
-## Current Issues
+### P1 - Should Have
+1. BVM Voice Calling configuration
+2. Background task implementation for bulk operations
+3. Sales Dashboard
+4. Order Tracking system
 
-### P0 (Critical)
-- [x] DWZ API timestamp issue - RESOLVED (no offset needed)
-- [x] Cannot clear local tracking data - RESOLVED (new endpoints created)
-- [x] **shopify_order_number overwrite bug** - FIXED (Feb 2026) - Customer data no longer overwrites purchase order's shopify_order_number
-- [x] **Shipping address not syncing to purchase orders** - FIXED (Feb 2026) - sync-shipping-address now updates both customers AND purchase_orders_1688
-- [ ] DWZ PreInputDel API not working - BLOCKED (API limitation, manual deletion required)
+### P2 - Nice to Have
+1. Mega Menu visual builder
+2. Razorpay checkout flow
+3. WhatsApp abandoned cart recovery
+4. Merchant onboarding wizard
+5. Shopify-like visual "Pro" editors
+6. AI Image Enhancer
+7. Instagram-style Stories
+8. Product Quick View modal
+9. "Complete the Look" feature
+10. Flash Sale countdown banner
 
-### P1 (Important)
-- [ ] Mobile App untested (React Native/Expo) - HIGH RISK
-- [ ] Shopify & 1688 API tokens expire frequently (needs OAuth2 refresh flow)
-- [ ] Header menu disappears when selected in editor
-- [ ] DTDC Live API Integration - BLOCKED (awaiting user API key)
+## Technical Notes
 
-### P3 (Low Priority)
-- [ ] Delete obsolete V2 Editor files (WebsiteEditorV2.jsx, MobileAppEditorV2.jsx)
+### DWZ API Constraint
+The DWZ API is "write-once" - records cannot be updated. To modify a record:
+1. Delete the existing record
+2. Create a new record with updated data
 
-### P4 (Tech Debt)
-- [ ] Refactor monolithic server.py into modules
+### 1688 Token Management
+- Current tokens are short-lived
+- Need `refresh_token` from user to implement auto-refresh
+- Auth URL endpoint: `/api/1688/auth/get-url`
 
----
-
-## Backlog / Future Tasks
-
-### High Priority
-- Implement OAuth2 refresh token flow for Shopify & 1688 integrations
-- Stabilize and test React Native mobile app
-- Implement User-Generated Stories feature
-
-### Medium Priority
-- Additional section types/templates for theme editor
-- Sooxie.com API integration
-- Mobile app store submission prep (app.json)
-
-### Low Priority
-- Code cleanup and refactoring
-- Delete obsolete V2 Editor components
-
----
-
-## Architecture
-
-```
-/app/
-├── backend/
-│   ├── routes/
-│   │   ├── alibaba_1688.py       # 1688 order management, Shopify linking
-│   │   ├── dwz56.py              # DWZ shipping, tracking number generator
-│   │   │                         # New: clear-local-tracking, clear-tracking-counters
-│   │   ├── facebook_data_deletion.py  # FB app review endpoint
-│   │   ├── shopify_sync.py       # Product/tag list endpoints
-│   │   └── users.py
-│   └── server.py
-├── frontend/
-│   ├── src/
-│   │   ├── App.js                # Route definitions
-│   │   ├── contexts/
-│   │   │   └── AuthContext.jsx   # Session management
-│   │   ├── components/
-│   │   │   ├── Purchase1688Orders.jsx  # 1688 orders dashboard
-│   │   │   ├── ShopifyOrders.jsx      # Per-item linking & DWZ flow
-│   │   │   ├── ShopifyStyleEditor.jsx # Theme editor
-│   │   │   └── Sidebar.jsx            # Navigation menu
-```
-
----
-
-## Key API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/1688/purchase-orders` | GET | Fetch all 1688 purchase orders |
-| `/api/1688/purchase-orders/{id}/link` | PATCH | Link 1688 order to Shopify |
-| `/api/dwz56/generate-tracking` | GET | Generate custom TNV tracking number |
-| `/api/dwz56/client-info` | GET | Get DWZ account info (balance, etc.) |
-| `/api/dwz56/pre-input-list` | GET | List pre-input records on DWZ |
-| `/api/dwz56/clear-local-tracking` | POST | Clear DWZ tracking from local DB |
-| `/api/dwz56/clear-tracking-counters` | POST | Reset tracking serial counters |
-| `/api/shopify/product-list` | GET | Products list for theme editor |
-| `/api/shopify/tags` | GET | Tags list for theme editor |
-| `/api/facebook/data-deletion` | POST | Facebook data deletion webhook |
-
----
-
-## 3rd Party Integrations
-
-| Service | Status | Notes |
-|---------|--------|-------|
-| Razorpay | Requires User Key | Payments |
-| DTDC | BLOCKED | Awaiting permanent API key |
-| Emergent (ClipDrop) | Active | AI Image Background Removal |
-| 1688.com | Active | Custom sourcing API (token expires) |
-| DWZ56 | Active | Warehouse shipping API |
-| @dnd-kit | Active | Drag-and-drop UI |
-| react-slick | Active | Carousels |
-
----
-
-## Database
-
-**Primary Database**: `shopify_customers_db` (MongoDB)
-
-Key Collections:
-- `purchase_orders_1688` - 1688 order data with DWZ tracking
-- `customers` - Shopify order/customer data
-- `fulfillment_pipeline` - Fulfillment workflow tracking
-- `tracking_counters` - Serial number counters for TNV tracking
-
----
-
-## Credentials for Testing
-- **Admin Login**: admin / admin
-- **VPS**: 159.198.36.164 (SSH credentials in chat history)
-
----
-
-*Last Updated: Feb 6, 2026*
+### Shopify Theme Modification
+Theme files can be programmatically edited via:
+- `PUT /api/shopify/themes/{theme_id}/assets`
+- Published theme ID: 147303956646 (install-me-wokiee-3-0-0)
