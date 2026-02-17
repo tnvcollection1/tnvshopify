@@ -510,7 +510,7 @@ const ProductCard = ({ product }) => {
         <h3 className="text-sm font-medium line-clamp-2 mb-2 min-h-[2.5rem]">{product.title}</h3>
         <div className="flex items-center space-x-2 mb-1">
           <span className="font-bold text-sm">{formatPrice(price)}</span>
-          {comparePrice && (
+          {discount > 0 && comparePrice && (
             <>
               <span className="text-xs text-gray-400 line-through">{formatPrice(comparePrice)}</span>
               <span className="text-xs text-red-500 font-medium">-{discount}%</span>
