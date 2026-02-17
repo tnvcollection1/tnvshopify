@@ -654,7 +654,12 @@ const ProductCard = ({ product, baseUrl, onQuickView }) => {
         <h3 className="text-xs font-medium line-clamp-2 mb-1 min-h-[2rem]">{product.title}</h3>
         <div className="flex items-center gap-1.5">
           <span className="font-bold text-sm">{formatPrice(price)}</span>
-          {comparePrice && <span className="text-[10px] text-gray-400 line-through">{formatPrice(comparePrice)}</span>}
+          {discount > 0 && comparePrice && (
+            <>
+              <span className="text-[10px] text-gray-400 line-through">{formatPrice(comparePrice)}</span>
+              <span className="text-[10px] text-red-500 font-bold">-{discount}%</span>
+            </>
+          )}
         </div>
       </div>
     </div>
