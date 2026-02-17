@@ -107,7 +107,10 @@ const TNVProductDetail = () => {
   const colors = [...new Set(variants.map(v => v.option2).filter(Boolean))];
   const price = selectedVariant?.price || product.variants?.[0]?.price || product.price || 0;
   const comparePrice = selectedVariant?.compare_at_price || product.variants?.[0]?.compare_at_price;
-  const discount = comparePrice ? Math.round((1 - price / comparePrice) * 100) : 0;
+  // Only show discount if compare price exists AND is greater than current price
+  const discount = comparePrice && parseFloat(comparePrice) > parseFloat(price) 
+    ? Math.round((1 - parseFloat(price) / parseFloat(comparePrice)) * 100) 
+    : 0;
 
   return (
     <div className="min-h-screen bg-white">
