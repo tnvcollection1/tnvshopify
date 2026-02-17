@@ -91,6 +91,7 @@ from services.dwz56_sync_service import router as dwz56_sync_router
 from services.email_notification_service import router as email_notification_router
 from services.sync_service import router as sync_service_router, set_dependencies as set_sync_dependencies
 from inventory_clearance_engine import InventoryClearanceEngine
+from routes.bvm_calling import router as bvm_calling_router
 
 
 ROOT_DIR = Path(__file__).parent
