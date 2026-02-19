@@ -222,25 +222,38 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants, selected
   return (
     <div 
       className={`bg-white rounded-lg border overflow-hidden transition-all group ${
+        selected ? 'border-orange-400 ring-2 ring-orange-200' :
         linked 
-          ? 'border-orange-200 hover:shadow-lg hover:border-orange-400 cursor-pointer' 
+          ? 'border-orange-200 hover:shadow-lg hover:border-orange-400' 
           : 'border-gray-200 hover:shadow-md'
       }`}
-      onClick={linked ? () => onCompareVariants?.(product) : undefined}
       data-testid={`product-card-grid-${product.shopify_product_id}`}
     >
       <div className="aspect-square bg-gray-100 relative overflow-hidden">
         {product.image_url ? (
-          <img src={product.image_url} alt={product.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+          <img 
+            src={product.image_url} 
+            alt={product.title} 
+            className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+            onClick={linked ? () => onCompareVariants?.(product) : undefined}
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImageIcon className="w-12 h-12 text-gray-300" />
           </div>
         )}
         
+        {/* Selection Checkbox - Top Left */}
+        <div className="absolute top-2 left-2 z-10">
+          <Checkbox checked={selected} onChange={onSelect} />
+        </div>
+        
         {/* Clickable overlay for linked products */}
         {linked && (
-          <div className="absolute inset-0 bg-gradient-to-t from-orange-600/80 via-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
+          <div 
+            className="absolute inset-0 bg-gradient-to-t from-orange-600/80 via-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4 cursor-pointer"
+            onClick={() => onCompareVariants?.(product)}
+          >
             <div className="flex items-center gap-2 text-white font-medium text-sm">
               <Layers className="w-4 h-4" />
               <span>View Variants</span>
