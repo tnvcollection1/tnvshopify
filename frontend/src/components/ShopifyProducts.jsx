@@ -389,7 +389,29 @@ const ShopifyProducts = () => {
   const [bulkLinking, setBulkLinking] = useState(false);
   const [comparisonProduct, setComparisonProduct] = useState(null); // For variant comparison modal
   const [bulkPreviewOpen, setBulkPreviewOpen] = useState(false); // For bulk variant preview modal
+  const [selectedProducts, setSelectedProducts] = useState(new Set()); // Selection state
   const pageSize = 24;
+
+  // Selection handlers
+  const handleSelectProduct = (productId) => {
+    setSelectedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedProducts.size === products.length) {
+      setSelectedProducts(new Set());
+    } else {
+      setSelectedProducts(new Set(products.map(p => p.shopify_product_id)));
+    }
+  };
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -405,6 +427,7 @@ const ShopifyProducts = () => {
       if (data.success) {
         setProducts(data.products || []);
         setTotal(data.total || 0);
+        setSelectedProducts(new Set()); // Clear selection on page change
       }
     } catch (error) {
       console.error('Failed to fetch products:', error);
