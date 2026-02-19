@@ -556,17 +556,22 @@ const ShopifyProducts = () => {
               <h1 className="text-xl font-semibold text-gray-900">Products Catalog</h1>
               <p className="text-sm text-gray-500">
                 {total.toLocaleString()} products • Link to 1688 for auto-fulfillment
+                {selectedProducts.size > 0 && (
+                  <span className="ml-2 text-orange-600 font-medium">
+                    • {selectedProducts.size} selected
+                  </span>
+                )}
               </p>
             </div>
             <div className="flex items-center gap-2">
               <Button 
                 onClick={handleBulkAutoLink} 
-                disabled={bulkLinking || storeFilter === 'all'} 
+                disabled={bulkLinking || (selectedProducts.size === 0 && storeFilter === 'all')} 
                 className="bg-orange-500 hover:bg-orange-600"
-                title={storeFilter === 'all' ? 'Select a store first' : 'Auto-link unlinked products using image search'}
+                title={selectedProducts.size > 0 ? `Auto-link ${selectedProducts.size} selected products` : storeFilter === 'all' ? 'Select products or choose a store' : 'Auto-link unlinked products using image search'}
               >
                 <Zap className={`w-4 h-4 mr-2 ${bulkLinking ? 'animate-pulse' : ''}`} />
-                {bulkLinking ? 'Auto-Linking...' : 'Auto-Link to 1688'}
+                {bulkLinking ? 'Auto-Linking...' : selectedProducts.size > 0 ? `Auto-Link Selected (${selectedProducts.size})` : 'Auto-Link to 1688'}
               </Button>
               <Button onClick={handleSyncAll} disabled={syncing} className="bg-[#008060] hover:bg-[#006e52]">
                 <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
@@ -574,6 +579,33 @@ const ShopifyProducts = () => {
               </Button>
             </div>
           </div>
+          
+          {/* Selection Bar */}
+          {selectedProducts.size > 0 && (
+            <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-orange-800">
+                  {selectedProducts.size} product{selectedProducts.size !== 1 ? 's' : ''} selected
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setSelectedProducts(new Set())}
+                  className="text-orange-600 hover:text-orange-800"
+                >
+                  Clear Selection
+                </Button>
+              </div>
+              <Button 
+                size="sm"
+                onClick={handleSelectAll}
+                variant="outline"
+                className="border-orange-300 text-orange-600"
+              >
+                {selectedProducts.size === products.length ? 'Deselect All' : 'Select All on Page'}
+              </Button>
+            </div>
+          )}
           
           {/* Bulk Link Progress */}
           {bulkLinkJob && bulkLinkJob.status !== 'completed' && (
