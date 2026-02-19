@@ -476,20 +476,29 @@ const ShopifyProducts = () => {
 
   // Bulk Auto-Link to 1688 using image search
   const handleBulkAutoLink = async () => {
-    if (storeFilter === 'all') {
-      toast.error('Please select a specific store to auto-link');
+    // Allow auto-link with selected products OR when a store is selected
+    if (selectedProducts.size === 0 && storeFilter === 'all') {
+      toast.error('Please select products or choose a specific store to auto-link');
       return;
     }
     
     setBulkLinking(true);
     try {
+      const requestBody = {
+        limit: 100  // Process 100 unlinked products at a time
+      };
+      
+      // If specific products are selected, use those
+      if (selectedProducts.size > 0) {
+        requestBody.product_ids = Array.from(selectedProducts);
+      } else {
+        requestBody.store_name = storeFilter;
+      }
+      
       const res = await fetch(`${API}/api/shopify/products/bulk-auto-link`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          store_name: storeFilter,
-          limit: 100  // Process 100 unlinked products at a time
-        })
+        body: JSON.stringify(requestBody)
       });
       const data = await res.json();
       
@@ -510,6 +519,7 @@ const ShopifyProducts = () => {
               toast.success(`Auto-link completed! ${job.linked} products linked, ${job.failed} failed`);
               fetchProducts();
               setBulkLinking(false);
+              setSelectedProducts(new Set()); // Clear selection
             } else if (job.status === 'error') {
               toast.error(`Auto-link failed: ${job.error}`);
               setBulkLinking(false);
