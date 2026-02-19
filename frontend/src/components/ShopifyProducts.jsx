@@ -767,6 +767,8 @@ const ShopifyProducts = () => {
                   onRefresh={fetchProducts}
                   viewMode={viewMode}
                   onCompareVariants={setComparisonProduct}
+                  selected={selectedProducts.has(product.shopify_product_id)}
+                  onSelect={() => handleSelectProduct(product.shopify_product_id)}
                 />
               ))}
             </div>
