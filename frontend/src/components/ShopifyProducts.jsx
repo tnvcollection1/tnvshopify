@@ -41,12 +41,24 @@ import BulkVariantPreviewModal from './BulkVariantPreviewModal';
 const API = process.env.REACT_APP_BACKEND_URL;
 
 // Product Card Component
-const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants }) => {
+const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants, selected, onSelect }) => {
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [linkInput, setLinkInput] = useState('');
   const [linking, setLinking] = useState(false);
   
   const linked = product.linked_1688_product_id;
+  
+  // Import Checkbox dynamically for selection
+  const Checkbox = ({ checked, onChange }) => (
+    <div 
+      onClick={(e) => { e.stopPropagation(); onChange?.(); }}
+      className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
+        checked ? 'bg-orange-500 border-orange-500' : 'bg-white border-gray-300 hover:border-orange-400'
+      }`}
+    >
+      {checked && <Check className="w-3 h-3 text-white" />}
+    </div>
+  );
 
   const handleLink = async () => {
     if (!linkInput.trim()) return;
