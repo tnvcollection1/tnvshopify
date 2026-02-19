@@ -114,13 +114,18 @@ const ProductCard = ({ product, onRefresh, viewMode, onCompareVariants, selected
   if (viewMode === 'list') {
     return (
       <div 
-        className={`flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200 transition-all ${
-          linked ? 'hover:shadow-md hover:border-orange-300 cursor-pointer' : 'hover:shadow-sm'
+        className={`flex items-center gap-4 p-4 bg-white rounded-lg border transition-all ${
+          selected ? 'border-orange-400 bg-orange-50' : linked ? 'border-gray-200 hover:shadow-md hover:border-orange-300' : 'border-gray-200 hover:shadow-sm'
         }`}
-        onClick={linked ? () => onCompareVariants?.(product) : undefined}
         data-testid={`product-card-list-${product.shopify_product_id}`}
       >
-        <div className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
+        {/* Selection Checkbox */}
+        <Checkbox checked={selected} onChange={onSelect} />
+        
+        <div 
+          className={`w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative ${linked ? 'cursor-pointer' : ''}`}
+          onClick={linked ? () => onCompareVariants?.(product) : undefined}
+        >
           {product.image_url ? (
             <img src={product.image_url} alt={product.title} className="w-full h-full object-cover" />
           ) : (
