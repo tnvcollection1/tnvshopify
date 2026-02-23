@@ -7263,6 +7263,7 @@ app.include_router(stories_router)
 app.include_router(facebook_data_deletion_router)
 app.include_router(bvm_calling_router)
 app.include_router(shopify_themes_router)
+app.include_router(zong_vpbx_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 # ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================
