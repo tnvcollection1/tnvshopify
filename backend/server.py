@@ -93,6 +93,7 @@ from services.sync_service import router as sync_service_router, set_dependencie
 from inventory_clearance_engine import InventoryClearanceEngine
 from routes.bvm_calling import router as bvm_calling_router
 from routes.shopify_themes import router as shopify_themes_router
+from routes.zong_vpbx import router as zong_vpbx_router
 
 
 ROOT_DIR = Path(__file__).parent
