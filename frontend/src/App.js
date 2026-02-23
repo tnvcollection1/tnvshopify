@@ -368,6 +368,14 @@ function AppRoutes() {
       <Route path="/create-store" element={<MerchantOnboarding />} />
       <Route path="/merchant-onboarding" element={<MerchantOnboarding />} />
       <Route 
+        path="/vpbx-calls" 
+        element={
+          <ProtectedRoute>
+            <VPBXCallManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/dashboard" 
         element={
           <ProtectedRoute>
