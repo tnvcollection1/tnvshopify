@@ -18,6 +18,16 @@ Build a multi-tenant e-commerce platform (wamerce.com) with comprehensive fulfil
 - [x] Product catalog management
 - [x] Theme API for programmatic modifications
 - [x] **Discount percentage badges** on product cards (Feb 17, 2026)
+- [x] **Product selection checkboxes** for bulk operations (Feb 23, 2026)
+- [x] **Auto-Link to 1688** now works with selected products (Feb 23, 2026)
+
+#### Zong VPBX Voice Calling (tnvcollectionpk)
+- [x] **API Integration Complete** (Feb 23, 2026)
+- [x] Call logs fetching with recordings
+- [x] Urdu/English call templates for Pakistan market
+- [x] Order-based calling endpoints
+- [x] Bulk calling support
+- [ ] Automated outbound calls (pending API capability check)
 
 #### 1688.com Integration
 - [x] Product sourcing from 1688
