@@ -278,42 +278,59 @@ async def call_order_customer(request: OrderCallRequest):
     """
     db = get_db()
     
-    # Find the order (for tnvcollectionpk store)
-    order = await db.orders.find_one({
+    # First try customers collection (where Shopify sync stores data)
+    customer = await db.customers.find_one({
         "$and": [
             {"store_name": TARGET_STORE},
             {"$or": [
                 {"order_number": request.shopify_order_number},
-                {"order_number": int(request.shopify_order_number) if request.shopify_order_number.isdigit() else request.shopify_order_number},
-                {"name": f"#{request.shopify_order_number}"}
+                {"order_number": str(request.shopify_order_number)},
             ]}
         ]
     })
     
-    if not order:
-        # Try without store filter
+    if customer:
+        # Found in customers collection
+        phone = customer.get("phone")
+        order_number = customer.get("order_number")
+        total_amount = customer.get("total_spent") or "N/A"
+        city = "apke sheher"  # Not stored in customers
+        tracking_number = customer.get("tracking_number") or "jald share hoga"
+    else:
+        # Try orders collection as fallback
         order = await db.orders.find_one({
-            "$or": [
-                {"order_number": request.shopify_order_number},
-                {"name": f"#{request.shopify_order_number}"}
+            "$and": [
+                {"store_name": TARGET_STORE},
+                {"$or": [
+                    {"order_number": request.shopify_order_number},
+                    {"order_number": int(request.shopify_order_number) if request.shopify_order_number.isdigit() else request.shopify_order_number},
+                    {"name": f"#{request.shopify_order_number}"}
+                ]}
             ]
         })
-    
-    if not order:
-        raise HTTPException(status_code=404, detail=f"Order #{request.shopify_order_number} not found for {TARGET_STORE}")
-    
-    # Get phone number
-    shipping_address = order.get("shipping_address", {})
-    phone = shipping_address.get("phone") or order.get("phone") or order.get("customer", {}).get("phone")
+        
+        if not order:
+            # Try without store filter
+            order = await db.orders.find_one({
+                "$or": [
+                    {"order_number": request.shopify_order_number},
+                    {"name": f"#{request.shopify_order_number}"}
+                ]
+            })
+        
+        if not order:
+            raise HTTPException(status_code=404, detail=f"Order #{request.shopify_order_number} not found for {TARGET_STORE}")
+        
+        # Get phone number from order
+        shipping_address = order.get("shipping_address", {})
+        phone = shipping_address.get("phone") or order.get("phone") or order.get("customer", {}).get("phone")
+        order_number = order.get("order_number") or order.get("name", "").replace("#", "") or request.shopify_order_number
+        total_amount = order.get("total_price") or order.get("current_total_price") or "N/A"
+        city = shipping_address.get("city") or "apke sheher"
+        tracking_number = order.get("tracking_number") or "jald share hoga"
     
     if not phone:
         raise HTTPException(status_code=400, detail="No phone number found for this order")
-    
-    # Get order details
-    order_number = order.get("order_number") or order.get("name", "").replace("#", "") or request.shopify_order_number
-    total_amount = order.get("total_price") or order.get("current_total_price") or "N/A"
-    city = shipping_address.get("city") or "apke sheher"
-    tracking_number = order.get("tracking_number") or order.get("fulfillments", [{}])[0].get("tracking_number") if order.get("fulfillments") else "jald share hoga"
     
     # Get or build message
     if request.custom_message:
