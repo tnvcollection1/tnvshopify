@@ -480,9 +480,6 @@ async def get_call_templates():
 async def test_vpbx_connection():
     """Test VPBX API connection by fetching recent call logs"""
     today = datetime.now().strftime("%Y-%m-%d")
-    week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d") if 'timedelta' in dir() else today
-    
-    from datetime import timedelta
     week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
     
     request = CallLogsRequest(
