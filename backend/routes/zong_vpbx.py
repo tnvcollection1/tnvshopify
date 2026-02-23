@@ -361,18 +361,31 @@ async def call_order_customer(request: OrderCallRequest):
     
     result = await make_voice_call(call_request)
     
-    # Update order with call history
-    await db.orders.update_one(
-        {"_id": order.get("_id")},
-        {"$push": {
-            "vpbx_call_history": {
-                "call_type": request.call_type,
-                "status": "sent",
-                "phone": phone,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            }
-        }}
-    )
+    # Update call history - try customers first, then orders
+    if customer:
+        await db.customers.update_one(
+            {"store_name": TARGET_STORE, "order_number": str(order_number)},
+            {"$push": {
+                "vpbx_call_history": {
+                    "call_type": request.call_type,
+                    "status": "sent",
+                    "phone": phone,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+            }}
+        )
+    elif order:
+        await db.orders.update_one(
+            {"_id": order.get("_id")},
+            {"$push": {
+                "vpbx_call_history": {
+                    "call_type": request.call_type,
+                    "status": "sent",
+                    "phone": phone,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+            }}
+        )
     
     return {
         "success": result.get("success"),
