@@ -278,6 +278,10 @@ async def call_order_customer(request: OrderCallRequest):
     """
     db = get_db()
     
+    # Initialize variables
+    customer = None
+    order = None
+    
     # First try customers collection (where Shopify sync stores data)
     customer = await db.customers.find_one({
         "$and": [
