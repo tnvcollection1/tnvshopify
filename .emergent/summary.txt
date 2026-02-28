@@ -1,234 +1,191 @@
-<analysis>**original_problem_statement**: The user wants to build a multi-tenant e-commerce platform, . The current focus is on a complete fulfillment workflow involving Shopify, 1688.com, and the DWZ shipping platform.
+<analysis>**original_problem_statement**: The user wants to build a multi-tenant e-commerce platform, . The initial project scope included a complex fulfillment workflow with Shopify, 1688.com, and DWZ shipping.
 
-Recent user requests during this session involved:
-1.  Implementing a complex workflow to get the  onto the DWZ shipping label, which involved debugging a write-once API, remapping fields multiple times, and handling consolidated shipments.
-2.  Creating a Chinese-language PDF report of all placed DWZ orders.
-3.  Syncing the logistics status (e.g., delivered) from 1688 for all orders.
-4.  Investigating how to obtain a permanent 1688 API token to fix recurring  errors.
-5.  Integrating a BVM Voice Calling API to automate calls to customers about their orders.
-6.  Adding a discount percentage badge to product listings on the Shopify store's frontend theme.
-7.  Investigating why the  store was not syncing orders.
-
-**PRODUCT REQUIREMENTS**:
-1.  Replicate the  header and storefront UI.
-2.  Create a backend system to manage dynamic menus and banners.
-3.  Implement a unified settings page.
-4.  Implement a Mega Menu with a visual builder.
-5.  Build a Sales Dashboard, Order Tracking, Wishlist, and Reviews.
-6.  Build a checkout flow with Razorpay integration.
-7.  Support multiple stores with different currencies/languages.
-8.  Implement abandoned cart recovery via WhatsApp.
-9.  Perform a UI/UX overhaul of the mobile app and add dark mode.
-10. Build a multi-step merchant onboarding wizard.
-11. Build Shopify-like visual Pro editors for web and mobile.
-12. Build a comprehensive DTDC shipping integration.
-13. Build an AI Image Enhancer for product photos.
-14. Implement an Instagram-style Stories section.
-15. Add a Product Quick View modal.
-16. Add a Complete the Look feature.
-17. Implement a Flash Sale countdown banner.
-18. Automatically configure language/currency based on country.
-19. Build a full 1688 sourcing and DWZ fulfillment workflow.
-20. Integrate a BVM Voice API for automated order calls.
+During this session, the user's requests included:
+1.  Fixing a discount percentage badge on the Shopify frontend for two stores ( and ).
+2.  Fixing UI issues in the admin panel where product selection and the Auto-Link to 1688 feature were not working.
+3.  Integrating a new Zong VPBX voice calling API.
+4.  Syncing all historical orders for the  store.
+5.  Adding a floating WhatsApp Chat with Consultant button to the  Shopify store.
+6.  Improving machine-translated product titles on the  store to be more natural and SEO-friendly, and translating any Chinese variant options.
+7.  Deploying all changes to their production VPS, which was blocked by the user being unable to log in to their server.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with a React frontend and FastAPI backend. The session's primary focus was an extensive and complex implementation of the DWZ shipping platform integration.
-
--   **DWZ Write-Once Workflow**: The agent discovered the DWZ API is write-once (records can't be updated). A robust delete and recreate workflow was built to update records. This includes endpoints to bulk-recreate records, handle consolidated shipments with suffixes (e.g., , ), and create missing records lost due to timeouts.
--   **Correct Field Mapping**: After multiple iterations based on user feedback, DWZ records are now created with the correct data in the right fields to ensure shipping labels are printed correctly ( for seller tracking,  for internal reference,  for remarks with color/size,  for Shopify order #).
--   **1688 Logistics Sync**: An endpoint was created and used to sync the delivery status (, ) for all orders from the 1688 logistics API. This was temporarily blocked by an expired token, which was manually refreshed.
--   **BVM Voice API Integration**: A new module () and API endpoints () were created to integrate the BVM voice calling service. It is awaiting user credentials for configuration.
--   **Shopify Theme API**: A new module () and API were created to programmatically edit the live Shopify theme. This was used to inject Liquid code to display discount percentages on product listings.
+A full-stack application with a React frontend and FastAPI backend. Key functionalities developed in this session include:
+-   **Shopify Theme Modifications**: The agent successfully fixed a discount badge display and injected a floating WhatsApp chat button by programmatically editing the live Shopify themes.
+-   **Admin Panel UI Fixes**: The product catalog page () was updated to include checkboxes for multi-select and logic to enable bulk actions, fixing the user's reported issue.
+-   **Zong VPBX API Integration**: A new integration () was built to connect to the Zong voice API. It currently fetches call logs, as the provided API does not support making outbound calls. A new UI page () was created for this.
+-   **Massive Order Sync**: A complete historical order sync for the  store was performed, successfully importing over 20,000 customer/order records into the  database collection.
+-   **AI-Powered Product Title Optimization**: An ongoing batch process was created to find products with awkward, machine-translated titles, use an LLM to generate natural and SEO-friendly replacements, and update them via the Shopify API.
 
 **Last working item**:
--   **Last item agent was working**: Adding a discount percentage display to the live Shopify theme ().
--   **Status**: USER VERIFICATION PENDING
+-   **Last item agent was working**: Continuing a large-scale batch process to find and rephrase awkward English product titles on the  Shopify store using an LLM.
+-   **Status**: IN PROGRESS
 -   **Agent Testing Done**: Y
--   **Which testing method agent to use?**: Manual testing by user. The agent has already modified the live Shopify theme files via API. The user needs to visit their Shopify store to confirm the discount percentage badge appears correctly on products.
+-   **Which testing method agent to use?**: Manual testing by user. The user can verify the improved titles on their live store's collection pages (e.g., ).
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Shopify & 1688 API tokens are unreliable and expire (P0)
--   Issue 2:  Shopify store has 0 orders synced (P1)
--   Issue 3: Bulk operations are timing out (P2)
--   Issue 4: BVM Voice Calling API is not configured (P2)
+-   Issue 1: User is locked out of their VPS, blocking all deployments (P0, BLOCKED)
+-   Issue 2: Shopify & 1688 API tokens are unreliable and expire (P1, RECURRING)
+-   Issue 3: Zong VPBX API does not support outbound calls (P2, BLOCKED)
 
 **Issues Detail**:
--   **Issue 1: Shopify & 1688 API tokens are unreliable and expire (P0)**
-    -   **Attempted fixes**: The agent identified that a  is required for long-term access. An authorization flow () was created to help the user get a new . The user provided a new short-lived  to unblock the work, but not the long-lived  needed for a permanent fix.
+-   **Issue 1: User is locked out of their VPS, blocking all deployments (P0)**
+    -   **Attempted fixes**: The agent guided the user through multiple password reset methods on their VPS control panel (direct reset, VNC, rescue mode) and tried connecting via SSH. All attempts failed.
     -   **Next debug checklist**:
-        1.  Guide the user to go through the full re-authorization flow using the URL from  to obtain a .
-        2.  Store the  securely in the  file.
-        3.  Implement a wrapper around the  function in  that catches  errors, uses the  to get a new , and retries the original request automatically.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the single biggest source of failure and manual intervention. An automated fix will make the entire 1688 integration stable.
-    -   **Status**: IN PROGRESS
+        1.  Advise the user to contact their VPS provider () support team directly and request a manual password reset for the  user. This is the only remaining option.
+        2.  Once access is restored, guide the user to deploy the latest code by running  on the server and restarting the relevant services.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is the top priority for the user. Resolving it will allow them to deploy all the features and fixes from this session to their live  site.
+    -   **Status**: BLOCKED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both (post-deployment).
+    -   **Blocked on other issue**: User needs to contact their hosting provider.
+
+-   **Issue 2: Shopify & 1688 API tokens are unreliable and expire (P1)**
+    -   **Attempted fixes**: None in this session. This is a carry-over from the previous fork and remains unaddressed.
+    -   **Next debug checklist**:
+        1.  Guide the user through the auth flow at  to obtain a long-lived .
+        2.  Store the  in .
+        3.  Refactor API call functions in  to automatically catch  errors, use the  to get a new , and retry the request.
+    -   **Why fix this issue and what will be achieved with the fix?**: This will provide a stable and reliable 1688 integration, eliminating a major source of recurring failures.
+    -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Backend
     -   **Blocked on other issue**: Waiting for user to provide the .
 
--   **Issue 2:  Shopify store has 0 orders synced (P1)**
-    -   **Attempted fixes**: The agent identified that the store is configured in the database but the  file points to a different store. No sync has been attempted for .
+-   **Issue 3: Zong VPBX API does not support outbound calls (P2)**
+    -   **Attempted fixes**: The agent analyzed the API documentation and confirmed the integrated endpoint is for fetching call logs, not initiating calls.
     -   **Next debug checklist**:
-        1.  Create or identify the existing Shopify sync job.
-        2.  Run the sync job specifically for the  store using its stored credentials.
-        3.  Debug any errors that occur during the sync.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will bring order data from the user's second store into the platform, enabling fulfillment.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: None.
-
--   **Issue 3: Bulk operations are timing out (P2)**
-    -   **Attempted fixes**: Agent's bulk-recreate tasks for DWZ records timed out, causing data loss (records deleted but not recreated). A separate endpoint was later created to fix the data, but the root cause remains.
-    -   **Next debug checklist**:
-        1.  Identify the long-running endpoints (e.g., , ).
-        2.  Refactor them to use FastAPI's . The endpoint should immediately return a Job started response, and the processing should happen in the background.
-        3.  Create another endpoint to check the status of these background jobs.
-    -   **Why fix this issue and what will be achieved with the fix?**: Prevents HTTP timeouts and ensures that large batch operations complete reliably without data loss.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: None.
-
--   **Issue 4: BVM Voice Calling API is not configured (P2)**
-    -   **Attempted fixes**: Agent created the full API integration.
-    -   **Next debug checklist**:
-        1.  Request , , and  from the user.
-        2.  Add these credentials to the  file.
-        3.  Run the  endpoint to verify the integration is working.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will enable the automated voice calling feature requested by the user.
+        1.  Explain to the user that the current Zong API doesn't support making calls.
+        2.  Advise them to contact Zong support and request the API documentation for their outbound dialer or click-to-call service.
+        3.  Once the new API details are provided, update the integration in .
+    -   **Why fix this issue and what will be achieved with the fix?**: This will enable the automated voice calling feature the user requested.
     -   **Status**: BLOCKED
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: Waiting for user to provide credentials.
+    -   **Blocked on other issue**: Waiting for user to get new API details from Zong.
 
 **In progress Task List**:
--   None.
+-   **Task 1: Complete Product Title & Variant Translation (P0)**
+    -   **Where to resume**: A Python script was being used to process products in batches. The process should be resumed. There are approximately 244 products remaining out of the initial list of over 800. The script logic is in the agent's recent message history.
+    -   **What will be achieved with this?**: All awkwardly translated product titles and Chinese variants on the  store will be improved, enhancing user experience and SEO.
+    -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: Frontend (using screenshot tool on the live store).
+    -   **Blocked on something**: None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P0) Complete the automated OAuth2 refresh token flow for the 1688 API.
-    -   (P1) Sync orders for the  Shopify store.
-    -   (P1) Configure and test the BVM Voice Calling API integration.
-    -   (P2) Refactor bulk operations into background tasks to prevent timeouts.
+    -   (P2) Refactor bulk operations (like the Shopify order sync) into background tasks to prevent HTTP timeouts.
 -   **Future Tasks**:
     -   Build a Sales Dashboard, Order Tracking, Wishlist, and Reviews.
-    -   Implement a full-featured Mega Menu with a visual builder.
+    -   Implement a Mega Menu with a visual builder.
     -   Build a complete checkout flow with Razorpay integration.
     -   Implement abandoned cart recovery via WhatsApp.
-    -   Build a multi-step merchant onboarding wizard.
-    -   Build Shopify-like visual Pro editors.
-    -   (Refer to PRODUCT REQUIREMENTS for the full backlog)
+    -   (Refer to  in the previous summary for the full backlog)
 
 **Completed work in this session**
--   **DWZ API Integration Overhaul**:
-    -   Confirmed the DWZ API is write-once and implemented a stable delete and recreate workflow.
-    -   Correctly mapped all required data (seller tracking, internal reference, color/size, Shopify order #) to the appropriate DWZ fields (, , , ).
-    -   Added logic to handle consolidated shipments by adding suffixes (, ).
-    -   Fixed a critical bug where records were not being created due to an invalid courier type.
-    -   Successfully created/recreated all 28 active DWZ records with the correct data.
--   **1688 Logistics Sync**: Implemented and ran a bulk sync to update the delivery status () for 18 orders from the 1688 API.
--   **BVM Voice API Scaffolding**: Created a complete backend integration for the BVM Voice Calling API, ready for configuration.
--   **Shopify Theme Auto-Modification**:
-    -   Built a new API () to programmatically manage Shopify theme files.
-    -   Successfully used the API to inject Liquid code into the live theme, adding a discount percentage badge to product listings.
--   **Frontend Discount Display**: Fixed logic in React components (, , ) to correctly calculate and display discount percentages.
--   **Reporting**: Generated a Chinese-language PDF report of all DWZ orders.
+-   **Shopify Frontend Fixes**:
+    -   Fixed discount percentage badge on  and .
+    -   Added a floating WhatsApp chat button to all pages of the  store theme.
+-   **Admin Panel UI Overhaul**:
+    -   Enabled product multi-selection by adding checkboxes to product cards in .
+    -   Fixed the Auto-Link to 1688 button to work with selected products.
+-   **Zong VPBX Voice API**:
+    -   Integrated the Zong VPBX API to fetch call logs for .
+    -   Created a new UI page () and sidebar link for managing calls.
+-   ** Order Sync**:
+    -   Successfully executed a full historical order sync, importing over 20,000 customers and their orders.
+-   **AI Product Title Optimization**:
+    -   Identified over 800 products with poorly translated titles.
+    -   Processed and updated hundreds of them with natural, SEO-friendly titles using an LLM.
 
 **Earlier issues found/mentioned but not fixed**
--   The core issue of lacking an automated 1688 token refresh mechanism remains the top priority.
+-   **Issue 1: Bulk operations are timing out**: Mentioned in the previous handoff and observed again during the Shopify order sync in this session. The long-running sync caused several timeouts, but the root cause (running it in a single HTTP request) was not refactored to use background tasks.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**: Shopify/1688 API token invalidity.
--   **Recurrence count**: 2 (Occurred during logistics sync, blocking progress until the user provided a new token).
--   **Status**: IN PROGRESS (A permanent fix has been started but is blocked on user input).
+-   **Recurrence count**: 3+ (This is the third session this has been the top P0/P1 issue).
+-   **Status**: NOT STARTED (The permanent fix remains blocked on user input for a ).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Write-Once API Handling**: The core strategy for the DWZ integration was to delete and recreate records instead of updating them.
--   **Complex Data Mapping for Physical Output**: Carefully mapping data from multiple sources (Shopify, 1688) to specific fields in a third-party API (, , ) to control the content of a printed shipping label.
--   **Remote Theme Modification**: Using the Shopify API to programmatically inject Liquid code into a live theme, demonstrating the ability to automate frontend changes on a third-party platform.
--   **OAuth2 Refresh Token Flow**: The agent correctly identified the need for a refresh token to maintain long-term API access, a standard pattern for modern APIs.
--   **Background Task Requirement**: The experience with timeouts on bulk operations highlights the need to refactor long-running processes into asynchronous background tasks.
+-   **Shopify Theme API Injection**: Programmatically modifying live Shopify themes (, ) to inject UI elements.
+-   **LLM for Data Cleaning**: Using the  library to call an LLM for rephrasing and improving product titles at scale.
+-   **Batch Processing**: Running large-scale updates (product title changes) in batches to manage API calls and avoid overwhelming the system.
+-   **Debugging Data Storage Logic**: Tracing a data flow issue where synced orders were being stored in the  collection instead of the  collection and adapting API logic accordingly.
 
 **key DB schema**
--   **purchase_orders_1688**: The  field was added and populated.
--   **dwz_records**: Data was frequently deleted and recreated to apply updates.
--   **orders**: Used as a source for shipping addresses.
--   **stores**: Used to identify configured Shopify stores and their credentials.
+-   **customers**: This is now the primary collection for  data, containing over 20,000 documents with embedded order information.
+-   **orders**: This collection holds data for other stores but was not used for the main  sync.
 
 **All files of reference**
--   **/app/backend/routes/dwz56.py**: Contains the entire DWZ workflow, including the critical delete-and-recreate logic.
--   **/app/backend/routes/alibaba_1688.py**: Contains 1688 API logic, including the incomplete token refresh mechanism.
--   **/app/backend/routes/bvm_calling.py**: New file for the BVM voice API integration.
--   **/app/backend/routes/shopify_themes.py**: New file for programmatically editing the Shopify theme.
--   **/app/backend/.env**: Contains critical, often expiring, credentials.
--   **/app/frontend/src/components/store/TNVProductDetail.jsx**: Example of frontend product page logic.
+-   : The new integration for the Zong VPBX API.
+-   : The main product catalog file that was updated with selection logic.
+-   : The new UI for the VPBX feature.
+-   : The API used to inject code into the live Shopify themes.
+-   : Updated during the session.
 
 **Areas that need refactoring**:
--   **1688 Token Management**: The API call logic in  must be wrapped to handle token refresh automatically. This is the highest priority refactoring task.
--   **DWZ Endpoint Consolidation**: The  file has many single-purpose endpoints for fixing data. The logic for creating/recreating records is duplicated and should be centralized into a single, robust service function.
--   **Bulk Operations**: All endpoints that loop over many records and make API calls (e.g., ) must be converted to use background tasks to prevent HTTP timeouts.
+-   **Long-running tasks**: The Shopify sync and the AI product update script should be moved to background tasks using FastAPI's  to prevent HTTP timeouts and provide immediate feedback to the user.
+-   **1688 Token Management**: The API logic in  urgently needs to be wrapped with an automated token refresh mechanism to ensure stability.
 
 **key api endpoints**
--   : Recreates DWZ records with the latest field mappings.
--   : Creates DWZ records for 1688 orders that are missing them.
--   : Updates the delivery status for all orders with seller tracking.
--   : Generates the URL for the user to re-authorize the app and get a .
--   : Triggers a voice call for a specific order via the BVM API.
--   : Updates a specific file in the live Shopify theme.
+-   : Finds a customer/order and fetches their call history from Zong.
+-   : Updates a file in a live Shopify theme.
+-   : Triggers a full order sync for the specified store.
 
 **Critical Info for New Agent**
--   **1688 TOKEN WILL EXPIRE**: This is the most critical and recurring problem. Your first task will be to complete the automated refresh token flow. You are currently blocked waiting for the user to provide a . Guide them through the auth URL generated by . Do not proceed with other 1688-related tasks until this is solved.
--   **DWZ API is WRITE-ONCE**: Do NOT attempt to update existing DWZ records. The only way to modify a record is to DELETE it and CREATE a new one with the correct information. The functions for this are in .
--   **BULK TASKS WILL TIMEOUT**: Be wary of running loops that make many API calls within a single HTTP request. They are prone to timing out. These need to be refactored into background tasks.
--   **BVM and Shopify Theme APIs are ready but need attention**: The BVM integration needs user credentials to be functional. The Shopify theme modification has been done, but is pending user verification.
+-   **USER IS BLOCKED ON DEPLOYMENT**: The user cannot deploy changes as they are locked out of their VPS. Your first priority is to guide them to contact their hosting provider's support to reset the  password. Do not waste time trying to debug the VPS login yourself.
+-   **PRODUCT TITLE UPDATE IS INCOMPLETE**: The last task was a batch update of product titles. Resume this task, as ~244 products are still pending.
+-   **ZONG VPBX IS LOGS-ONLY**: The Zong API integration *only fetches call logs*; it does not make outbound calls. You must manage the user's expectations and explain that a different click-to-call API is required from Zong to enable that feature.
+-   **1688 TOKEN WILL FAIL**: The critical issue of the expiring 1688 token has not been addressed. Any feature relying on the 1688 API is unstable and will likely fail. This should be fixed as soon as the user provides a .
 
 **documents and test reports created in this job**
 -   
 -   
--   The user provided  and a 1688 Python SDK zip file, which were analyzed.
+-   The user provided , which was analyzed and its contents were used to build the integration.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asked to find a tracking number (). **Status: Completed**. Agent confirmed it wasn't in the DB.
-2.  **User**: Asked about another tracking number (). **Status: Completed**. Agent provided full status, confirming delivery.
-3.  **User**: Asked how to get a permanent 1688 token. **Status: Completed**. Agent investigated and explained the  mechanism is the correct approach.
-4.  **User**: Replied with an error Missing necessary parameters. **Status: Completed**. Agent provided a full auth URL for the user to get a new .
-5.  **User**: Requested integration of a BVM Voice API. **Status: Completed**. Agent created the integration and asked for credentials.
-6.  **User**: Asked if the  store is synced. **Status: Completed**. Agent investigated and confirmed it has 0 orders and is not the active store in .
-7.  **User**: Asked how to show a discount percentage on the product page. **Status: Completed**. Agent diagnosed the issue was in the Shopify theme.
-8.  **User**: Requested an API to modify the Shopify theme. **Status: Completed**. Agent built the API.
-9.  **User**: Clarified they wanted the agent to check the live Shopify store, not the app's frontend. **Status: Completed**. Agent used the screenshot tool on the live Shopify store.
-10. **User**: Confirmed they wanted the theme modification API built. **Status: Completed**. Agent built the API and used it to inject the discount badge.
+1.  **User**: Requested translation/rephrasing of product titles. **Status: In Progress**.
+2.  **User**: Clarified they wanted both title rephrasing and variant translation. **Status: In Progress**.
+3.  **User**: continue. **Status: Acknowledged**.
+4.  **User**: Asked to continue updating the remaining product titles. **Status: In Progress**.
+5.  **User**: Uploaded  for a new voice API. **Status: Completed**.
+6.  **User**: Confirmed they wanted the Zong VPBX API integrated. **Status: Completed**.
+7.  **User**: Asked to sync  orders. **Status: Completed**.
+8.  **User**: Requested test calls to two numbers. **Status: Completed**.
+9.  **User**: Agreed to both check Zong docs for an outbound API and build a UI for the current logs API. **Status: Completed**.
+10. **User**: Requested a WhatsApp button on . **Status: Completed**.
 
 **Project Health Check:**
--   **Broken**: The 1688 integration is fundamentally unstable due to the lack of an automated token refresh mechanism. It will fail every few hours.
--   **Mocked**: N/A.
--   **Blocked**: The BVM voice calling feature is blocked pending user credentials.
+-   **Broken**: VPS access is broken, blocking all deployments. The 1688 integration is fundamentally unstable due to the lack of an automated token refresh mechanism.
+-   **Blocked**: The outbound voice calling feature is blocked pending a new click-to-call API from Zong.
 
 **3rd Party Integrations**
--   **1688.com**: Custom API integration. **(CRITICAL: Unstable. Requires implementation of an automated OAuth2 refresh token flow).**
--   **DWZ56**: Custom API integration. **(STABLE but with a known write-once limitation that has a workaround).**
--   **Shopify**: API integration is functional. The agent created a new API to modify the live theme.
--   **BVM Voice API**: New integration created. **(BLOCKED: Requires user credentials).**
+-   **Zong VPBX**: **NEW**. Integrated for fetching call logs. Does not support outbound calling.
+-   **Emergent LLM Key**: Used for the AI product title optimization task.
+-   **Shopify**: Heavily used for theme modification, product updates, and order syncing.
+-   **1688.com**: **CRITICAL: Unstable**. Requires implementation of an automated OAuth2 refresh token flow.
+-   **DWZ56**: Exists, not used in this session.
+-   **BVM Voice API**: Exists but was superseded by the Zong VPBX integration.
 -   **Razorpay**: Exists, not used in this session.
 -   **DTDC**: Exists, not used in this session.
--   **Emergent Integrations (ClipDrop)**: Exists, not used in this session.
 
 **Testing status**
 -   **Testing agent used after significant changes**: NO
 -   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: None.
--   **Known regressions**: Bulk operations can lead to data loss due to timeouts.
+-   **Test files created**: None
+-   **Known regressions**: Long-running HTTP requests (like order sync) are prone to timeouts.
 
 **Credentials to test flow:**
--   **1688 Credentials**: The  in  is extremely short-lived. The new agent will need to obtain a  from the user to implement a permanent fix.
--   **BVM Credentials**: The agent must ask the user for , , and  and add them to .
+-   **Zong VPBX**: Credentials are in . The test endpoints in  are functional.
+-   **1688 Credentials**: The  is short-lived. A  is needed from the user for a permanent fix.
+-   **VPS Credentials**: The user is locked out. The agent does not have valid credentials.
 
 **What agent forgot to execute**
--   The agent did not complete the implementation of the automated 1688 OAuth2 refresh token flow. The auth URL was created, but the full mechanism to catch 401s, refresh, and retry is not in place.
--   The agent did not refactor the long-running bulk operations into background tasks, which led to timeouts and required manual data fixing.</analysis>
+-   The agent did not implement the automated 1688 OAuth2 refresh token flow, which was a P0/P1 recurring issue from the previous handoff.
+-   The agent did not refactor the long-running Shopify order sync into a background task, despite observing it time out multiple times. This was also a known issue from the previous handoff.</analysis>

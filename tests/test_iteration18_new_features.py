@@ -18,7 +18,7 @@ import os
 from datetime import datetime, timedelta
 
 # Get BASE_URL from environment
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multi-tenant-shop-6.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ai-product-hub-14.preview.emergentagent.com')
 
 # Test store
 TEST_STORE = "tnvcollectionpk"

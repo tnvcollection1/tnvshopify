@@ -6827,7 +6827,7 @@ async def get_token_status():
 
 @router.get("/auth/authorize-url")
 async def get_authorize_url(
-    redirect_uri: str = Query("https://multi-tenant-shop-6.preview.emergentagent.com/api/1688/auth/callback", description="Callback URL after authorization")
+    redirect_uri: str = Query("https://ai-product-hub-14.preview.emergentagent.com/api/1688/auth/callback", description="Callback URL after authorization")
 ):
     """
     Get the 1688 authorization URL to start OAuth flow.
@@ -6892,14 +6892,14 @@ async def oauth_callback(
         "message": "Authorization code received! Use this code to get tokens.",
         "code": code,
         "next_step": f"Call POST /api/1688/auth/exchange-code with code={code}",
-        "or_use_curl": f"curl -X POST 'https://multi-tenant-shop-6.preview.emergentagent.com/api/1688/auth/exchange-code?code={code}'"
+        "or_use_curl": f"curl -X POST 'https://ai-product-hub-14.preview.emergentagent.com/api/1688/auth/exchange-code?code={code}'"
     }
 
 
 @router.post("/auth/exchange-code")
 async def exchange_code_for_tokens(
     code: str = Query(..., description="Authorization code from 1688 OAuth"),
-    redirect_uri: str = Query("https://multi-tenant-shop-6.preview.emergentagent.com/api/1688/auth/callback", description="Must match the redirect_uri used in authorize")
+    redirect_uri: str = Query("https://ai-product-hub-14.preview.emergentagent.com/api/1688/auth/callback", description="Must match the redirect_uri used in authorize")
 ):
     """
     Exchange authorization code for access_token and refresh_token.
