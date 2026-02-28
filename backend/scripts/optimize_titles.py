@@ -111,7 +111,7 @@ Example response format:
         system_message=system_msg
     ).with_model("openai", "gpt-4o-mini").with_params(temperature=0.3)
 
-    response = await chat.send_message(UserMessage(content=user_msg))
+    response = await chat.send_message(UserMessage(text=user_msg))
 
     # Parse JSON from response
     # Try to extract JSON array from the response
