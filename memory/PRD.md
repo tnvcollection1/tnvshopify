@@ -21,6 +21,13 @@ Build a multi-tenant e-commerce platform (wamerce.com) with comprehensive fulfil
 - [x] **Product selection checkboxes** for bulk operations (Feb 23, 2026)
 - [x] **Auto-Link to 1688** now works with selected products (Feb 23, 2026)
 
+#### AI Product Title & Variant Optimization (tnvcollectionpk) - COMPLETED Feb 28, 2026
+- [x] Identified and rewrote 266 machine-translated product titles using GPT-4o-mini
+- [x] Translated all Chinese variant option values (colors, styles) to English
+- [x] Fixed 6 products with Chinese option names (颜色分类 -> Color, 尺码 -> Size)
+- [x] Cleaned up messy concatenated variant names (e.g. "2095BlackHeight-Increasing" -> "2095 Black Height-Increasing")
+- [x] Final scan: 0 Chinese text remaining across all 2,095 products
+
 #### Zong VPBX Voice Calling (tnvcollectionpk)
 - [x] **API Integration Complete** (Feb 23, 2026)
 - [x] Call logs fetching with recordings
@@ -58,7 +65,7 @@ Build a multi-tenant e-commerce platform (wamerce.com) with comprehensive fulfil
 - **1688 API Token Expiry**: Tokens expire frequently causing 401 errors. Need automated refresh token flow.
 
 ### P1 - High Priority
-- **tnvcollectionpk Store**: Configured but has 0 orders synced
+- **tnvcollectionpk Store**: 20,000+ orders synced
 
 ### P2 - Medium Priority
 - **Bulk Operation Timeouts**: Long-running operations need background task refactoring
