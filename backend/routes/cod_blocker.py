@@ -134,6 +134,17 @@ async def run_sync_task():
 
                 if "no-cod" in current_tags:
                     already_tagged += 1
+                    # Still store in MongoDB for tracking
+                    await db.cod_blocked_customers.update_one(
+                        {"customer_id": cid},
+                        {"$set": {
+                            "customer_id": cid,
+                            "email": cust.get("email"),
+                            "tagged_at": datetime.now(timezone.utc).isoformat(),
+                            "reason": "rto_order"
+                        }},
+                        upsert=True
+                    )
                 else:
                     ok = await tag_customer(client, cid, current_tags)
                     if ok:

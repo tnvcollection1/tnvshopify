@@ -36,6 +36,14 @@ Build a multi-tenant e-commerce platform (wamerce.com) with comprehensive fulfil
 - [x] Admin APIs: `/api/cod-blocker/status`, `/api/cod-blocker/check/{email}`, `/api/cod-blocker/blocked-customers`
 - [ ] **Note**: Standard Shopify plan cannot hide payment methods at checkout. The solution uses cart-page warnings + auto-cancellation of COD orders from blocked customers
 
+#### VPS Deployment - COMPLETED Mar 3, 2026
+- [x] SSH access restored to VPS (159.198.36.164)
+- [x] Deployed new backend routes: cod_blocker.py, zong_vpbx.py, bvm_calling.py, shopify_themes.py, facebook_data_deletion.py
+- [x] Updated server.py with new route imports and includes
+- [x] Built and deployed admin panel frontend (React build)
+- [x] PM2 backend restarted and running
+- [x] COD blocker sync executed on production — 38 customers tagged
+
 #### Zong VPBX Voice Calling (tnvcollectionpk)
 - [x] **API Integration Complete** (Feb 23, 2026)
 - [x] Call logs fetching with recordings
