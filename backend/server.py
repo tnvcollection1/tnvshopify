@@ -94,6 +94,7 @@ from inventory_clearance_engine import InventoryClearanceEngine
 from routes.bvm_calling import router as bvm_calling_router
 from routes.shopify_themes import router as shopify_themes_router
 from routes.zong_vpbx import router as zong_vpbx_router
+from routes.cod_blocker import router as cod_blocker_router
 
 
 ROOT_DIR = Path(__file__).parent
@@ -7264,6 +7265,7 @@ app.include_router(facebook_data_deletion_router)
 app.include_router(bvm_calling_router)
 app.include_router(shopify_themes_router)
 app.include_router(zong_vpbx_router)
+app.include_router(cod_blocker_router)
 # Note: whatsapp_crm_router is now included via api_router (line 5667)
 
 # ==================== Meta WhatsApp Embedded Signup Webhook (Root Level) ====================

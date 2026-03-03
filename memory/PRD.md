@@ -28,6 +28,14 @@ Build a multi-tenant e-commerce platform (wamerce.com) with comprehensive fulfil
 - [x] Cleaned up messy concatenated variant names (e.g. "2095BlackHeight-Increasing" -> "2095 Black Height-Increasing")
 - [x] Final scan: 0 Chinese text remaining across all 2,095 products
 
+#### COD Blocker for RTO Customers (tnvcollectionpk) - COMPLETED Mar 3, 2026
+- [x] Backend API (`/api/cod-blocker/sync`) scans all cancelled+fulfilled orders, identifies RTO customers
+- [x] Tags RTO customers with "no-cod" in Shopify (27 customers tagged)
+- [x] Theme snippet injected showing "COD not available" warning on cart page for tagged customers
+- [x] Webhook endpoint (`/api/cod-blocker/check-new-order`) auto-cancels COD orders from blocked customers
+- [x] Admin APIs: `/api/cod-blocker/status`, `/api/cod-blocker/check/{email}`, `/api/cod-blocker/blocked-customers`
+- [ ] **Note**: Standard Shopify plan cannot hide payment methods at checkout. The solution uses cart-page warnings + auto-cancellation of COD orders from blocked customers
+
 #### Zong VPBX Voice Calling (tnvcollectionpk)
 - [x] **API Integration Complete** (Feb 23, 2026)
 - [x] Call logs fetching with recordings
