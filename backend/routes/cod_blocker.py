@@ -33,9 +33,9 @@ def get_db():
 
 
 async def fetch_rto_customer_ids():
-    """Fetch all customer IDs from RTO orders (cancelled orders that were fulfilled/shipped)."""
+    """Fetch customer IDs from RETURNED orders only (closed + refunded/restocked)."""
     customer_ids = set()
-    url = f"https://{SHOP}/admin/api/2024-01/orders.json?status=cancelled&limit=250&fields=id,fulfillment_status,customer"
+    url = f"https://{SHOP}/admin/api/2024-01/orders.json?status=closed&limit=250&fields=id,fulfillment_status,financial_status,customer"
 
     async with httpx.AsyncClient(timeout=30) as client:
         page = 0
@@ -48,8 +48,12 @@ async def fetch_rto_customer_ids():
             orders = r.json().get("orders", [])
             page += 1
             for order in orders:
-                # Only count orders that were fulfilled (shipped) before being cancelled = RTO
-                if order.get("fulfillment_status") == "fulfilled":
+                financial = order.get("financial_status") or ""
+                fulfillment = order.get("fulfillment_status") or ""
+                # Only count orders that were actually returned:
+                # - refunded (money given back) OR restocked (inventory returned)
+                is_returned = financial == "refunded" or fulfillment == "restocked"
+                if is_returned:
                     cust = order.get("customer")
                     if cust and cust.get("id"):
                         customer_ids.add(cust["id"])
@@ -64,7 +68,7 @@ async def fetch_rto_customer_ids():
                 url = None
 
             if page % 10 == 0:
-                logger.info(f"Scanned {page} pages of cancelled orders, found {len(customer_ids)} unique RTO customers")
+                logger.info(f"Scanned {page} pages of closed orders, found {len(customer_ids)} unique returned customers")
 
             import asyncio
             await asyncio.sleep(0.5)
