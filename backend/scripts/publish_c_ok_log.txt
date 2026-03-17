@@ -1,0 +1,6 @@
+Publishing 67 products...
+Progress: 20/67 (20 ok, 0 fail)
+Progress: 40/67 (40 ok, 0 fail)
+Progress: 60/67 (60 ok, 0 fail)
+
+DONE: Published 67/67, Failed: 0
