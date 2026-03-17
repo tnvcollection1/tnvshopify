@@ -1,0 +1,8 @@
+Fetching fresh product list from Shopify...
+Total active products on Shopify: 363
+Products to unpublish: 103
+Products to keep active: 260
+Progress: 50/103 (50 ok, 0 fail)
+Progress: 100/103 (100 ok, 0 fail)
+
+DONE: Unpublished 103/103, Failed: 0
