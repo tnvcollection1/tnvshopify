@@ -60,7 +60,7 @@ The system automatically extracts sizes from product variant names:
 ## How to Upload CSV Files
 
 ### Step 1: Open the Dashboard
-Go to: https://ai-product-hub-14.preview.emergentagent.com
+Go to: https://stock-audit-5.preview.emergentagent.com
 
 ### Step 2: Upload First Store
 1. Click the **"Upload CSV"** button (green button, top right)

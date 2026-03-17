@@ -1,0 +1,3647 @@
+{
+  "summary": {
+    "total_sheet_rows": 1653,
+    "unique_skus": 1251,
+    "found_on_shopify": 594,
+    "not_found_on_shopify": 657,
+    "status_breakdown": {
+      "draft": 125,
+      "active": 469
+    },
+    "match_type_breakdown": {
+      "exact": 461,
+      "case": 133
+    }
+  },
+  "not_found_skus": [
+    "tnv30",
+    "SG3197",
+    "SK0726US-RED-40",
+    "GX30-blue-42",
+    "SK0923US-black-43",
+    "sh297-blue-41",
+    "3414254",
+    "LS-001-Burgundy-41",
+    "ZS8",
+    "3414375-blue-42",
+    "3414333",
+    "YY-2349-black-41",
+    "GX30",
+    "SG6881",
+    "3414575-blue-41",
+    "LS-012-Brown-42",
+    "SG6380",
+    "JNL-001-BROWN-40",
+    "JNL-0021-Brown-41",
+    "SK0957US-brown-43",
+    "SK0730US",
+    "tnv25",
+    "3414575",
+    "A41-black-41",
+    "SK0955US-wine red-41",
+    "3414338",
+    "3414625",
+    "3414254-black-43",
+    "3414678-Red-41",
+    "sh397-orange-40",
+    "3414632",
+    "1189740",
+    "3414360",
+    "SK0923US-red-42",
+    "sh400-brown-43",
+    "A57",
+    "tnv79-black-41",
+    "SG3014",
+    "Q48-red-43",
+    "LS-001-Burgundy-44",
+    "TNV30",
+    "3417441",
+    "JN-4330-gray-41",
+    "sh273-grey orange-38",
+    "TT-909-black-39",
+    "JNL-001-BROWN-41",
+    "ZX455",
+    "SK0981US-red-40",
+    "GXD021-Blue-40",
+    "6158198-Khaki-42",
+    "3414560-red-44",
+    "D06",
+    "LS-001-Brown-43",
+    "sh273-grey orange-43",
+    "3414375",
+    "LS-001-Brown-44",
+    "Q48-Green-42",
+    "JJ-00346",
+    "LV SHOES",
+    "3414254-black-39",
+    "SK0935US-Silver-40",
+    "JNL-001-BROWN-42",
+    "JNL-0021-Brown-42",
+    "ok",
+    "SS-8001-Gray-42",
+    "JNL-0021-Brown-44",
+    "SG5246",
+    "GXD021-Black-42",
+    "ss-001-black-39",
+    "3414254-Brown-41",
+    "A41",
+    "b60-black-39",
+    "4495444-black-37",
+    "C17-brown-41",
+    "Q48-red-41",
+    "SK0724US-white-43",
+    "sh441-red-43",
+    "A06-blue-42",
+    "3414404-red-43",
+    "GX01200-Beige No Hollow",
+    "sh341-black-42",
+    "C35-black-40",
+    "SK0923US-gold-43",
+    "C35-black-44",
+    "C35-black-39",
+    "LS-001-Brown-41",
+    "C35-black-42",
+    "C88-black-43",
+    "GX0650-Red-44",
+    "b60-black-40",
+    "JN-667-blue-42",
+    "d07-wine Red-41",
+    "tnv285",
+    "d07-wine Red-43",
+    "A66",
+    "B60",
+    "GG-60-gray-41",
+    "LS-001",
+    "B32-black 44",
+    "CS-004",
+    "CS-014",
+    "CS-300",
+    "JNL-001-BROWN-43",
+    "YTY-001-black white-41",
+    "GX01200",
+    "butterfly belt",
+    "N",
+    "MARGE  SHIRT",
+    "men backpack",
+    "black",
+    "SKU: sh170-black",
+    "GUCCI TRACK SUITE",
+    "ESSENTIALS hoodies",
+    "LV TRACK SUITE",
+    "AX TRACKSUITE",
+    "ARMANI EXCHANGE hoodies",
+    "AX TRACK SUITE",
+    "ESSENTIALS HOODIES",
+    "BURBERY LONDON ENGLAND",
+    "plumber",
+    "1765230",
+    "4513127-blue-28",
+    "JN-306-white black-XL",
+    "JN-9010-Army-M",
+    "1765266-Army green-XXL",
+    "sunny sir due ot dmaage",
+    "sh428-Brown-41",
+    "tnv79-black-39",
+    "tnvi304-BLack-40",
+    "JN-990-black-38",
+    "tnvi304-GRAY-40",
+    "JN-822-BLUE-2XL",
+    "JH-009-Black40",
+    "d07-wine Red-39",
+    "UYT-909-black-41",
+    "sh341-gray-43",
+    "YY-2349-white-42",
+    "3414714-red-40",
+    "Q48-Green-39",
+    "WA11",
+    "GX120",
+    "DS004",
+    "SK0727US",
+    "gucci loafer",
+    "GUCCi loafer",
+    "GG SLIPPER",
+    "FINDI BAG",
+    "GUCCI SLIPPER",
+    "gucci slipper",
+    "3747599",
+    "3747597",
+    "ds004-\u00e7\u0099\u00bd\u00e8\u0089\u00b2-46",
+    "JJ-014",
+    "3414404",
+    "GX0650-Black-39",
+    "JUL-002",
+    "4495444-black-45",
+    "JUL-001",
+    "3747598",
+    "DES-901",
+    "WF-001-black-36",
+    "APR-2220-blueish-43",
+    "SK0986US-brown-42",
+    "SK0924US-white-43",
+    "DES-900",
+    "LV HAT",
+    "SKU: APR-4008",
+    "boss 44 euro",
+    "SKU: APR-3323",
+    "CD HOODEIS",
+    "XXL",
+    "SKU: APR-2033-XXL",
+    "LOAFER",
+    "SKU: APR-4015",
+    "US 5 / green",
+    "SKU: SS-2023-GREEN-US5",
+    "GUcci BLACK",
+    "SKU: ZTY-008",
+    "H BLACK",
+    "SKU: ZTY-009",
+    "36",
+    "new belts",
+    "BLACK / 36",
+    "SKU: JUL-003",
+    "GC 40 black",
+    "SKU: JUL-006",
+    "new shoes-2023",
+    "42 / black",
+    "SKU: JUL-008",
+    "black gold / black -23.5 size",
+    "SKU: HYT-002-black -23.5 size",
+    "black sneaker / 42",
+    "SKU: JUL-009",
+    "black / 42",
+    "SKU: JUL-0010",
+    "brown / 42",
+    "SKU: JUL-0011",
+    "white / 42.5",
+    "SKU: RTR-005",
+    "LV wallet",
+    "Black",
+    "SKU: HYT99",
+    "Belt 30-32",
+    "SKU: Belt 30-32",
+    "new towel 2023",
+    "SLIPPER -41",
+    "SKU: TT-001",
+    "black / 43",
+    "SKU: DER-002",
+    "new sunglasses 2023",
+    "BLACK",
+    "SKU: SSGT-001",
+    "SILVER",
+    "SKU: SSGT-002",
+    "black gray / 43",
+    "SKU: FRET-011",
+    "ew bags 2023",
+    "beige",
+    "SKU: HYT-0023",
+    "white",
+    "SKU: HYT-0024",
+    "GC beige M",
+    "SKU: GTH-003",
+    "LV WALLET",
+    "SKU: GTH-001",
+    "CD slipper",
+    "SKU: GTH-007",
+    "BLUE M",
+    "SKU: GTH-006",
+    "LV LOAFER",
+    "SKU: GTH-005",
+    "GC black M",
+    "SKU: GTH-002",
+    "WHITE BROWN LV",
+    "SKU: GV-002",
+    "LV black-43",
+    "SKU: GV-003",
+    "LV black-UK-8",
+    "SKU: GV-004",
+    "GG-beige-41",
+    "SKU: GV-006",
+    "COACH BAG",
+    "SKU: GV-008",
+    "new product",
+    "LV BAG",
+    "SKU: GV-009",
+    "CD BAG BLACK",
+    "\"BLACK BAG LV",
+    "SKU: NWG-003\"",
+    "new product 2023",
+    "FF GOLD BAG",
+    "SKU: NWG-001",
+    "SG3015",
+    "GX01200-Beige No Hollow-6.5",
+    "GX01200-Beige No Hollow-8.5",
+    "GX01200-Blue No Hollow-9.5",
+    "GX01200-Blue No Hollow-12",
+    "TT-003",
+    "TT-005",
+    "TT-002",
+    "TT-006",
+    "NILESH",
+    "MANISH",
+    "richa",
+    "partek",
+    "anand",
+    "parbah",
+    "27216",
+    "SKU: RT-0091",
+    "GG 44",
+    "SKU: RT-0093",
+    "new bag 2023",
+    "SILVER D",
+    "SKU: RRT-001",
+    "BEIGE GG",
+    "SKU: RRT-002",
+    "new semi formal",
+    "EU44 / N-black",
+    "SKU: II-001",
+    "EU44 / LV-BLACK",
+    "SKU: II-002",
+    "EU44 / LV loafers",
+    "SKU: II-003",
+    "42 gray",
+    "SKU: OCT-008",
+    "42 beige",
+    "SKU: OCT-009",
+    "LV SLIDES BROWN 10",
+    "SKU: OCT-011",
+    "LV SLIDES WHITE 10",
+    "SKU: OCT-012",
+    "GG SLIPPER -39",
+    "GG SLIPPER -42",
+    "GG-slipper 42 size",
+    "AMIRI BLACK WHITE SNEAKER",
+    "39 / black",
+    "SKU: L-2946",
+    "GG FLAT -37",
+    "black 44 size",
+    "Bag-002",
+    "3747602",
+    "Bag-001",
+    "Bag-003",
+    "GX01200-Beige Hollow Style-12",
+    "GX01200-Beige Hollow Style-10",
+    "GX01200-Blue Hollow Style-8.5",
+    "APR-0012-Black-45",
+    "ZX444",
+    "GX30-red-12.5-US",
+    "GGT-1101",
+    "OCT-013",
+    "OCT-014",
+    "GX01200-Blue Hollow Style-7",
+    "4495861-BLACK-41",
+    "GX01200-Beige No Hollow-10",
+    "GX01200-Blue Hollow Style-12",
+    "CD BELT 32 Waist",
+    "SKU: OCT-001",
+    "GG brown SHADES",
+    "SKU: OCT-002",
+    "new shoes 2023",
+    "BAG",
+    "SKU: OCT-010",
+    "GG BAG",
+    "SKU: OCT-018",
+    "BOTTEGA BAG gold",
+    "SKU: OCT-020",
+    "DIOR WALLET",
+    "GREEN HEEL",
+    "HERMES SLIPPER",
+    "PINK SLIPPER",
+    "GUCCI WHITE",
+    "Fendi Shoe",
+    "tiger shoes",
+    "Burberry Heels",
+    "Gucchi Slipper",
+    "Crocs",
+    "Gucchi Cap",
+    "Sewater",
+    "OFF WHITE SHADES",
+    "SKU: APR-4035",
+    "Lather Jacket",
+    "Huddy",
+    "marc jacobs",
+    "SKU: OCT-017",
+    "Gucci shoes",
+    "BLACK-43",
+    "SKU: NOV-0054",
+    "NEW SHOES 2023",
+    "gv-bagpack",
+    "SKU: UUT-001",
+    "LV LOAFER BLACK",
+    "SKU: UUT-004",
+    "H-GRAY SNEKAER",
+    "SKU: UUT-005",
+    "LV FLAT-BROWN-43",
+    "SKU: TRYO-0013",
+    "LV-LOAF BLACK -43",
+    "SKU: TRYO-0014",
+    "45 / gray",
+    "SKU: GTT-991",
+    "45 / blue",
+    "SKU: GTT-992",
+    "New product 2023",
+    "Green Size 37",
+    "SKU: QW-002",
+    "Gray Size 37",
+    "GG-white-EU40",
+    "SKU: TTR-001",
+    "DIOR-black -EU40",
+    "SKU: TTR-002",
+    "JORDAN RED-EU40",
+    "SKU: TTR-003",
+    "ADIDAS_ WHITE-EU40",
+    "SKU: TTR-004",
+    "GIVEN-black -EU 40",
+    "SKU: TTR-010",
+    "CH-BOOT BLACK -39",
+    "SKU: HTY-20235",
+    "GG CUT SHOES-37",
+    "SKU: HTY-20233",
+    "h-BLACK SLIPPER-45W",
+    "SKU: UUT-002",
+    "H- bROWN SLIPPER",
+    "SKU: UUT-003",
+    "H BLACK SNEAKER",
+    "SKU: UUT-007",
+    "AMIR-white-M",
+    "SKU: TRYO-0011",
+    "AMIR-BLACK-M",
+    "SKU: TRYO-0012",
+    "DIOR -white-EU40",
+    "SKU: TTR-008",
+    "white GOLD/ 43",
+    "SKU: RTR-003",
+    "BOTAGA BAG-BROWN-GRAY",
+    "SKU: HTY-20232",
+    "GG HEELS -37",
+    "SKU: HTY-20234",
+    "DIOR BAG PACK",
+    "H-001",
+    "SG3016",
+    "APR-0013-Brown-44",
+    "3747600",
+    "APR-4030",
+    "APR-4031",
+    "GK876US",
+    "GK826US",
+    "APR-0015",
+    "APR-0016",
+    "APR-0017",
+    "APR-0019-MULTI-39",
+    "sh273-grey orange-45",
+    "L-7047",
+    "L-7046",
+    "L-7033",
+    "L-7010",
+    "HYT-001111",
+    "4495444-black-41",
+    "3747597-black -39",
+    "SK0944US-Black-44",
+    "APR-4050-brown-40",
+    "TRYO-0017",
+    "SK0726US-Black-38",
+    "GTI-001",
+    "NOV-001",
+    "DE-001",
+    "DE-003",
+    "new product 2024",
+    "TORRY SLIPPER BROWN-40",
+    "SKU: UN-01",
+    "LORA GREEN SHOE -39",
+    "SKU: UN-02",
+    "chloe-pink-40",
+    "SKU: UN-09",
+    "chloe-beige-40",
+    "SKU: UN-10",
+    "YSL BAG BROWN",
+    "SKU: UN-05",
+    "DIOR- SILVER-40",
+    "SKU: UN-07",
+    "DIor -gray-40",
+    "SKU: UN-08",
+    "DIOR-brown-40",
+    "SKU: UN-06",
+    "DG-black-42",
+    "SKU: UN-12",
+    "black 42",
+    "SKU: UN-14",
+    "white -UK 7",
+    "SKU: UN-15",
+    "Hermes slipper 39 size",
+    "SKU: SJ001",
+    "Lora shoes",
+    "MEHROON-38",
+    "SKU: GGU-2",
+    "TODS BAG",
+    "LV BELT",
+    "GG BELT BLACK",
+    "GUCCI BLACK SHOE",
+    "GUCCI WHITE SNEAKER",
+    "GX01200-Beige No Hollow-8",
+    "GX01200-Blue Hollow Style-9.5",
+    "GX01200-Blue No Hollow-7",
+    "SK0726US-RED-42",
+    "GX01200-Beige Hollow Style-9.5",
+    "D-00H04",
+    "GT-O01-MEHROON-42",
+    "TTY-001",
+    "4495444-black-43",
+    "JACKET XL 42",
+    "SKU: UN-04 DIOR",
+    "GUCCI LOAFER -black-43",
+    "SKU: UN-011",
+    "Lv slipper new",
+    "Black-43",
+    "SKU: GTT-001",
+    "Slipper -42 size",
+    "SKU: SJ002",
+    "SG3012-white-41",
+    "GX1-Beige-11.5",
+    "GX1-Beige-12",
+    "SG4085",
+    "sh404",
+    "VTV-001",
+    "GX01200-Beige No Hollow-9.5",
+    "GX01200-Blue Hollow Style-8",
+    "GX01200-Blue No Hollow-8",
+    "GX01200-Blue No Hollow-8.5",
+    "TB BELT",
+    "130 cm belt",
+    "YSL BAG BLACK",
+    "dior 40",
+    "SKU: JTD-04",
+    "LV FLAT BLACK BROWN-40",
+    "SKU: JTD-07",
+    "CL-BLACK -SNEAKER-",
+    "SKU: JJK-001",
+    "PARADA LOAFER-UK 10",
+    "SKU: JJK-002",
+    "Lorri piano UK -10 BEIGE",
+    "SKU: JJK-003",
+    "LV BLACK UK 10",
+    "SKU: JJK-006",
+    "parada white BLACK SHOE-UK 10",
+    "SKU: JJK-007",
+    "LV BLACK SNEAKER UK 10",
+    "PRADA BLACK SUADE SHOE-UK10",
+    "LV SLIPPER WOMEN 38",
+    "GX01200-Beige Hollow Style-6.5",
+    "sh404-45",
+    "tnv30-42",
+    "3414593-black-41",
+    "3414328-red-42",
+    "gucci flat 40",
+    "SKU: JTD-05",
+    "LORA SHOE-TAN 36",
+    "SKU: JTD-010",
+    "gucci heel green 36",
+    "SKU: JTD-09",
+    "LORA SHOE-GREEN-36",
+    "SKU: JTD-011",
+    "WG1174US-WHITE-43",
+    "WG1174US-WHITE-41",
+    "GG-BLUE SEMI FORMAL-UK10",
+    "SKU: VV-10",
+    "BALLY Silver BELT-45-46 INC",
+    "SKU: JTD-001",
+    "GG gold BELT-45-46 INC",
+    "SKU: JTD-002",
+    "SKU: JTD-003",
+    "new prduct",
+    "jacquemus baog white mini",
+    "SKU: JTD-08",
+    "LV BLACK t-shirt COLAR BLACJ",
+    "PARADA T-SHIRT BLUE",
+    "Tie",
+    "SKU: BT-01",
+    "Loafer CD black",
+    "SKU: BT-05",
+    "BLACK GUCCI SNEAKER-UK 10",
+    "SKU: VV-11",
+    "PRADA WHITE BLACK SNEAKER-10",
+    "SKU: VV-013",
+    "PARADA SNEAKER white-UK-10",
+    "SKU: VV-16",
+    "GG black sandel-euro 40",
+    "SKU: RC-01",
+    "GG-brown heel-euro 40",
+    "SKU: RC-02",
+    "CD men shoe- UK 9.5",
+    "SKU: RC-03",
+    "GUCCI-brown shoe-UK 9.5",
+    "SKU: RC-04",
+    "LV HAND BAG",
+    "SKU: RC-05",
+    "BB HAND BAG",
+    "SKU: RC-06",
+    "PRADA GLASSES",
+    "MIU GLASSES",
+    "PRADA BLACK SHADES",
+    "blue -38",
+    "SKU: GGU-1",
+    "sneaker gray",
+    "SKU: BT-02",
+    "semi formal gray",
+    "SKU: BT-03",
+    "LV SNEAKER BLACK-UK-10",
+    "SKU: VV-015",
+    "BURBURRY BAG MEDIUME",
+    "CAP",
+    "PRADA SHOE WOMEN",
+    "CELINE TOP BLACK",
+    "Miu TOP WHITE",
+    "SAINT LAURENT BLACK SLIPPER",
+    "PARADA SHADES BLACK",
+    "CD SHOE",
+    "black bag",
+    "TH-001*1",
+    "4495861-BLACK-44*1",
+    "4495861-BLACK-41*1",
+    "3414575-Brown-42*1",
+    "4495444-black-44*1",
+    "VT-01*1",
+    "3414593-Gold-43*1",
+    "LV loafer black",
+    "\"new product 2023",
+    "42 -black",
+    "SKU: RE-003\"",
+    "43 -black",
+    "\"Black / 42",
+    "SKU: OCT-2023\"",
+    "44.5 / BLACK",
+    "SKU: FTR-0001",
+    "\"new slipper 2023",
+    "LV BRONW BLACK-43",
+    "SKU: TT-002\"",
+    "D&G semi formal",
+    "belanceaga sneaker 42",
+    "39 / MULTISKU: BBF-001",
+    "42 / MULTI",
+    "SKU: BBF-002",
+    "VELENTINO sneaker BLACK 43",
+    "TIGER SHOE",
+    "HERMERS MEN SLIPPER BLUE",
+    "GUCCI BLACK JACKET",
+    "LV BLACK belt",
+    "LV golden belt",
+    "BB shirt white",
+    "AX beige formal shiet",
+    "AX black formal",
+    "balmain black",
+    "BB white Formal shirt",
+    "LV LOAFERS BROWN",
+    "GANTS T shirt",
+    "AX ARMANI BLACK SHIRT",
+    "GUCCI BLACK",
+    "karl white t-shirt",
+    "black hoodie",
+    "LEATHER RED WINE SHOES",
+    "SG2179",
+    "4495444",
+    "HUBLOT WATCH black",
+    "cartier watch silver",
+    "maybach black glasses",
+    "FEROGAMA BELT BLACK",
+    "DIOR BELT black",
+    "LORO PIANO",
+    "TAG HEVER WATCH",
+    "GUCCI SNEAKER",
+    "JIMMY CHOO WHITE BAG",
+    "VES SHIRT",
+    "bell and boss watch",
+    "OMEGA WATCH",
+    "LV  LOAFER",
+    "DIOR BLACK SNEAKER",
+    "LV SLIPPER",
+    "Channal shoes",
+    "DOLCE & GABBANA",
+    "GG SLIPPER BROWN",
+    "Balmain white green sneaker",
+    "AX SHIRT",
+    "balmain shirt black",
+    "yellow / 42",
+    "SKU",
+    "Blazer Linen Marco TNV - No.14",
+    "Blue / L",
+    "LV FORMAL BROWN SHOES",
+    "GUCCI SEMI SLIPPER",
+    "Alexender black sneaker",
+    "D&G sneaker",
+    "BALENCIAGA green 44 slipper",
+    "Valentino -FLAT",
+    "TIGER SHOE -BLACK 45",
+    "DIOR SHOES",
+    "ADDIDAS",
+    "EZZY ADDISAS"
+  ],
+  "found_skus": [
+    {
+      "sku": "tnv86-red-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "ss-001-black-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "3414678-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "tnvi314-Gray-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414192-white-41",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "4091836",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3414404-red-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SS-658-blue-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414232",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SG2555",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0938US-black-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "sh291",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0934US-red-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "LS-002",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0949US-black-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "5507848",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0950US-white-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414575-Gray-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0951US-blue-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414251",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "TNV09876-black-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3414338-BLACK-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "RR-679-black-40",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "SK0952US-black-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SG6376",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414373",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "GX-08black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414333-Black-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "4091859-Red-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "WG24US-black -40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WFG-20222-yellow-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SG939",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SG2230",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "LS-001-Burgundy-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "HSL-001-black-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "B32-black 45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SG7110",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "6158198-Khaki-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv73-black-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0954US-Black-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv129",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0958US-WJZ-508 black-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "OCC01-gray-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "LS-001-Burgundy-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JNL-0021-Brown-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0723US-7926-black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SG6238-Gray-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "4091859-black-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "HSL-001-black-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "3414404-red-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0953US-brown-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "c95-RED-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "3414238-orange-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "gx20121-light brown-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "C88-gray-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "C95-brown-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SG6885",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0936US-black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0957US-Black-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0956US-Black-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "4495861-black-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "2846736-black-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "GX30-blue-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C97",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3414254-black-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "tnvi080",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0725US-brown flower-45",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "C93",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C95-red-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "C90",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C95-brown-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "C95-brown-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "C95-red-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "1189740-black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0925US-beige-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "gx5004-black-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "5508186-gray-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "KA-2105 black-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX029120-red-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414411-orange-8-5",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sh400-brown-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX30-gray-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX3-Whitered-7",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "sh440",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SG6882",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JJ-001-Black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0991US-brown-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "JJ-5001-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA08",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "OCC02-black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "d07-black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "FF-0046-white-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "A29",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "d07-black-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C19",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0989US-white ice blue-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414213",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0990US-026 blue-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "A41-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WG1174US",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "tnvi402",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sk0717us-brown-40",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "NEW FORMAL-001-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SG3034-red-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0988US-6259 Brown-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "661-black-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "445421",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0987US-Black Scorpion-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0986US-Black-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C88-Black-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "NG212US-silver-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "661-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-667-Blue-44",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "SK0985US-dark blue-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A57-black-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK4656US-red-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0984US-Black-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "B01-Black-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3417441-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "d07-wine Red-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A57-white-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JJ-6001-Silver-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "B61",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "OC3-white-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "YY-2349-white-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "A66-blue-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C98",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "C17-gray-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "A57-black-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "cs-0010-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CC03-orange-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "6158198-Black-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "3414328",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0923US-gold-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv38",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0925US-BlackD065-39",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "a66-black-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SG1087",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sh399-White-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "Q48-Green-40",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "SK0983US-Black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0926US-Black-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sg507-gold-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0926US-Golden-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "TY-4570",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0982US-gray-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "KKJ-001",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "C17-gray-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "3417585-BLACK-44",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "3414402-Black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0980US-Black-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "ZX671",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "sg7628-black-41",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3414625-black-38",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "LS-001-Black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "D06-gray-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "HH-0190-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0721US-black-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0924US-black-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sh273-grey orange-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0979US-brown-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GXD021-Black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "d07-black-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C88-gray-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0923US-red-43",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "HSL-002-Blue-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "4091863",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "GX30-gray-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0934US-blue-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "6158099",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA28-blue-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "HSL-001-black-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0727US-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "RR-678-red-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414361-red-7-5",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0933US-black-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "C89",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0932US-7008pure black-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0931US-brown-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0930US-brown-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0929US-black-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SG1927-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "LS-001-Black-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0932US-7008word black white-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX11-G38Black-8",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JNL-001-BROWN-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "LS-012-Brown-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv73-black-41",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-020-Black-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0928US-silver-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0937US-black-44",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0930US-black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0927US-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0948US-ink red-bee-40-standard code",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "JJ-00347",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0978US-2829 black-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "LS-001-Brown-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3414315",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0935US-Silver-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-001-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA21",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA28-blue-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "4495785-Black-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A41-white-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "A06-Black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0947US-white black purple-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX14-Black white-46",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0946US-H263-2-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "WA28-red-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA09-red-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "A06-Black-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX65-9008Black-46",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A06-blue-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sh348-orange-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "D06-black-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Q48-Green-45",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "C17-brown-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "C17-gray-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "WA11-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX0650-Black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA28-blue-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA09-white-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "1189740-black-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX5004",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "A06-blue-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SG1927-black-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "WA28-red-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA11-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA11-gray-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA28-BLACK-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA11-gray-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A06-blue-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX20120-Black-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA28-BLACK-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A41-white-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "PP-990-black-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "WA28-BLACK-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA28-blue-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A06-Black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "q40-red-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "q40-red-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SG3009-black-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "GX201-green-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv285-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA09-red-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "A06-blue-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "wa21",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "h1212-h1212 black [single]-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "4091865",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "WA28-red-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C35-black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WA28-red-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sh341-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C17-brown-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "C17-gray-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "C17-brown-43",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0943US-Black-41",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "Q48-red-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "A66-blue-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-667-TAN-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0942US-khaki-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "JN-7777-BLACK-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "DW-04-Black-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "DW-05-Black-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "d07-wine Red-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A36",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "LS-005-BLACK-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "a29",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "C17-brown-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0995US-brown-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C17-brown-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "4495861-black-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0926US-Black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0941US-Black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SG3365",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "D06-gray-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "A57-white-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "b60-black-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "GG-60-gray-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "C95-brown-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "DW-05-Black-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "D06-black-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "C17-gray-43",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0940US-YP-A310 black-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0939US-blue-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "C88-black-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-001-PInk-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-003-Purple-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-003-Purple-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-003-Purple-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-003-Purple-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-003-Purple-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-003-blue-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-003-blue-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-003-blue-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-003-black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-021-white-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-021-white-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-021-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-021-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-015-white-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-015-white-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-015-white-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-013-black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-013-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-013-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-013-black-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-013-black-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-021-pink-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-021-pink-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-004-black-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-004-black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-016-Cream-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-013-cream-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-013-cream-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-009-silver-36",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-009-silver-37",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-009-silver-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-021-pink-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-021-pink-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-white-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-white-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-white-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-black-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-200-Golden-36",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-Golden-37",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-Golden-38",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-Silver-37",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-Silver-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-Silver-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-300-green-36",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-300-green-38",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-011-cream-37",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-cream-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-020-cream-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-020-cream-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-black-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-200-Golden-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-Golden-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-009-silver-38",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-black-38",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-020-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-020-black-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-020-black-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-020-black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-013-cream-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-013-cream-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-cream-36",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-300-red-37",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-300-red-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-013-cream-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-cream-38",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-300-green-37",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-300-Pink-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-300-Pink-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-020-cream-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-020-cream-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-200-black-36",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-black-37",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-009-black-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-009-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-009-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-011-white-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-011-white-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-black-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-black-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-200-golden-37",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-009-black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-020-cream-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-009-black-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-300-red-36",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-300-red-38",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-021-black-36",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-021-black-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-021-black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-015-black-36",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-015-black-37",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-015-black-38",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CS-015-white-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-012-pink-37",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-012-pink-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-015-white-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JH-001-BLACK-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0992US-yellow-41",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "SK0994US-camel-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JH-002-BLACK-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "YTY-002-black-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0993US-white-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JH-003-Golden",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "1765614-black-M",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Blz-001",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Blz-002",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Blz-003",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Blz-004",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Blz-005",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Blz-007",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "Blz-006",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "Blz-008",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Blz-009",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Bag-0010",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "Bag-0011",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Bag-0012",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX-8794-gray-44",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3414155-black-30cm-max-length-50cm",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-822-BLUE-M",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-605-GRAY-3XL",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CNW01-black-XL",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "JN-701-white-L",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CNW01-black-M",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "CNW01-white-M",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "JN-605-BLUE-XL",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-505-white-L",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CNW01-black-L",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "3348414-M-Yellow",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-55-Black-M",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "JN-0012-Green-L",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "NWL-2316",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-605-black-M",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-501-black-L",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "jn-602-black-2XL",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3348414-M-Red",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-0654-black-M",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "1880421",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3365076-blue-L",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3365076-blue-M",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-9010-GRAY",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-401-white-L",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-306-white-M",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-306-black red-M",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-306-white black-M",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "jn-301-green-xl",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-301-blue-XL",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-202-RED-XL",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-202-RED-M",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-403-black-L",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-409-BLUE-XL",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-501-white-L",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-501-multi-L",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "3348414-XL-Red",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-501-PINK-L",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "FSD-01-Black-L",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3365076-white-XL",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3348414-XXL-Red",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "1764756-black-M",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "1765230-off white -XXL",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-776-BLACK-L",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-990-PINK-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-990-green-44",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "JH-004-White40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3414420-red-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "c26",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JH-005-Red42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-701-white-M",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A41-gray-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "3414624-blue-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JH-007-White40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv79-black-37",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-990-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JH-010-Red And Black42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "JH-011-Red40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "GX-11-38-BLACK-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-657-mehroon-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sh376-black-38",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-498-Black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "tnvi304-BLUE-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414420-orange-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JH-012Brown39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3414401-FULL black-38",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3414727-Black-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv62-RED-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv87",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "sh428-gray-43",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0926US-Black-38",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "JN-9081-black-41",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "TRT-0023-WHITE-40",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "hz2056-red-37",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-9011-BLUE-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-657-RED-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414560-red-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "3414360-RED-40",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "JN-0923-Black-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Sh335-gray-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414181-blue-39",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "UYT-909-white-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-8760-white-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv73-blue-44",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "TT-909-black-38",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Sh335-gray-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "CS-012-pink-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "JN-4330-RED-38",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Blue Style-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0942US-Green-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "jj-013-black-41",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "GTR-99",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GTR-100",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "HY-0023",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv30-black-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "APR-0010-Brown-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414404-Gold-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0950US-black-44",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "sh297-brown-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "ZX441-yellow-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "4495861-BLACK-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3747599-black-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX30-Red-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3747600-black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WG1174US-white-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "DE-002-black-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "DE-004-black white-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Blue Style-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Blue Hollow Style-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "gx5004-brown-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SK0727US-red-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "4495486-as-picture-43-C-192",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX30-Red-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414593-red wine-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "1765331",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SG3015-white-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SG3017-white-46",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0934US-red-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SK0926US-Golden-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "APR-222-white-42",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SG503",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "ZX446-black yellow-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "43373-Beige-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "B32-black 43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WG1174US-SILVER-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3747599-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414632-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "APR-304-black-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "APR-3033-Purple-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX30-brown-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "APR-3002-GRAY-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "APR-0010-Brown-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "APR-0018-Black gold-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX30-brown-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414404-Gold-39",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "3414593-black-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "GX30-gray-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "NG183US",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "L-2831-Brown-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "3414593-Gold-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "4495444-black-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "tnv30-red-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "L-7011",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "QW-001",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SG6628-red brown-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Beige style-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Beige style-43",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "SG949",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WG1174US-SILVER-47",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Beige  Hollow Style-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sg7303-brown-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "SG3009",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "SG3013-white-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sh404-green red-36",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "sh404-blue red-39",
+      "status": "draft",
+      "match": "exact"
+    },
+    {
+      "sku": "sh404-green red-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "WG1174US-SILVER-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "4495861-BLACK-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Blue Style-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Blue Hollow Style-43",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Beige style-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Beige  Hollow Style-47",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Blue Style-41",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Beige  Hollow Style-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Blue Hollow Style-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Blue Hollow Style-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "4495861-black-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "sh404-green red-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sh404-blue red-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "sh404-Green red-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "WG1174US-SILVER-45",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WG1174US-WHITE-46",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "WG1174US-SILVER-44",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "WG1174US-WHITE-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "WG1174US-WHITE-37",
+      "status": "draft",
+      "match": "case"
+    },
+    {
+      "sku": "4495861-BLACK-46",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GK953US-black-39",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "GX01200-Beige style-38",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "GX01200-Beige style-39",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "GX1-Beige-8*1",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "Ds005-multi-40*1",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "6158198-Black-40",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "JJ0-103-multi-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "HS-007-Brown-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "A66-Blue-42",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "8387-grey plus-195/4xl",
+      "status": "active",
+      "match": "case"
+    },
+    {
+      "sku": "HYT-001111-Brown-40",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "716188483915-yellow-42",
+      "status": "active",
+      "match": "exact"
+    },
+    {
+      "sku": "14:193#Image Color;5:4182",
+      "status": "active",
+      "match": "exact"
+    }
+  ]
+}
