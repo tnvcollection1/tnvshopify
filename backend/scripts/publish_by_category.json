@@ -1,0 +1,93 @@
+[
+  {
+    "sku": "SK0949US-black-43",
+    "category": "Semi formal",
+    "product_id": 7735479828646,
+    "title": "TNV Stride 38",
+    "current_status": "draft"
+  },
+  {
+    "sku": "SK0725US-brown flower-45",
+    "category": "Semi formal",
+    "product_id": 7680711557286,
+    "title": "ARVO Edge 644",
+    "current_status": "draft"
+  },
+  {
+    "sku": "3414213",
+    "category": "semi fromal",
+    "product_id": 15174701711526,
+    "title": "KIVO Pulse 10 (Red)",
+    "current_status": "draft"
+  },
+  {
+    "sku": "C98",
+    "category": "loafers",
+    "product_id": 8355111764134,
+    "title": "ZENO Max 20",
+    "current_status": "draft"
+  },
+  {
+    "sku": "SK0982US-gray-42",
+    "category": "sneaker",
+    "product_id": 7737973407910,
+    "title": "KIVO Prime 38",
+    "current_status": "draft"
+  },
+  {
+    "sku": "ZX671",
+    "category": "formal",
+    "product_id": 6928171466918,
+    "title": "ORIX Edge 3613",
+    "current_status": "draft"
+  },
+  {
+    "sku": "sg7628-black-41",
+    "category": "semi fromal",
+    "product_id": 6595584786598,
+    "title": "MIRA Stride 15",
+    "current_status": "draft"
+  },
+  {
+    "sku": "Q48-Green-45",
+    "category": "sneaker",
+    "product_id": 15174698991782,
+    "title": "NOVA Classic 117 (Green)",
+    "current_status": "draft"
+  },
+  {
+    "sku": "PP-990-black-43",
+    "category": "loafers",
+    "product_id": 7740940517542,
+    "title": "TNV Aero 88",
+    "current_status": "draft"
+  },
+  {
+    "sku": "SG3009-black-42",
+    "category": "semi formal",
+    "product_id": 15174699974822,
+    "title": "XON Prime 66 (Black)",
+    "current_status": "draft"
+  },
+  {
+    "sku": "SK0943US-Black-41",
+    "category": "loafers",
+    "product_id": 7736721408166,
+    "title": "TNV Max 11",
+    "current_status": "draft"
+  },
+  {
+    "sku": "SK0992US-yellow-41",
+    "category": "semi formal",
+    "product_id": 7740992094374,
+    "title": "ARVO Elite 70",
+    "current_status": "draft"
+  },
+  {
+    "sku": "tnv87",
+    "category": "formal",
+    "product_id": 2179082649654,
+    "title": "ZENO Velocity 23",
+    "current_status": "draft"
+  }
+]
