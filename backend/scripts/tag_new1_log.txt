@@ -1,0 +1,15 @@
+Total products in Designer Shoes collection: 618
+Progress: 50/618 (50 tagged, 0 already, 0 fail)
+Progress: 100/618 (100 tagged, 0 already, 0 fail)
+Progress: 150/618 (150 tagged, 0 already, 0 fail)
+Progress: 200/618 (200 tagged, 0 already, 0 fail)
+Progress: 250/618 (250 tagged, 0 already, 0 fail)
+Progress: 300/618 (300 tagged, 0 already, 0 fail)
+Progress: 350/618 (350 tagged, 0 already, 0 fail)
+Progress: 400/618 (400 tagged, 0 already, 0 fail)
+Progress: 450/618 (450 tagged, 0 already, 0 fail)
+Progress: 500/618 (500 tagged, 0 already, 0 fail)
+Progress: 550/618 (550 tagged, 0 already, 0 fail)
+Progress: 600/618 (600 tagged, 0 already, 0 fail)
+
+DONE: Tagged 618/618, Already tagged: 0, Failed: 0
