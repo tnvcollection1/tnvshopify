@@ -1,0 +1,6 @@
+Starting unpublish of 151 products...
+Progress: 50/151 (50 ok, 0 fail)
+Progress: 100/151 (100 ok, 0 fail)
+Progress: 150/151 (150 ok, 0 fail)
+
+DONE: Unpublished 151/151, Failed: 0
