@@ -627,6 +627,19 @@ async def root():
     return {"message": "Customer Manager API"}
 
 
+@api_router.get("/download/sku-report")
+async def download_sku_report():
+    """Download the SKU reconciliation report PDF"""
+    file_path = ROOT_DIR / "static" / "sku_reconciliation_report.pdf"
+    if file_path.exists():
+        return FileResponse(
+            path=str(file_path),
+            filename="sku_reconciliation_report.pdf",
+            media_type="application/pdf"
+        )
+    raise HTTPException(status_code=404, detail="SKU report not found")
+
+
 @api_router.get("/download/deployment-package")
 async def download_deployment_package():
     """Download the Wamerce deployment package for VPS setup"""

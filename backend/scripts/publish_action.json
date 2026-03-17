@@ -1,0 +1,5060 @@
+{
+  "to_publish": [
+    {
+      "sheet_sku": "SK0949US-black-43",
+      "shopify_sku": "SK0949US-black-43",
+      "product_id": 7735479828646,
+      "title": "TNV Stride 38",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C97",
+      "shopify_sku": "C97",
+      "product_id": 8355111764134,
+      "title": "ZENO Max 20",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0725US-brown flower-45",
+      "shopify_sku": "SK0725US-brown flower-45",
+      "product_id": 7680711557286,
+      "title": "ARVO Edge 644",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414213",
+      "shopify_sku": "3414213",
+      "product_id": 15174701711526,
+      "title": "KIVO Pulse 10 (Red)",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C98",
+      "shopify_sku": "C98",
+      "product_id": 8355111764134,
+      "title": "ZENO Max 20",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0982US-gray-42",
+      "shopify_sku": "SK0982US-gray-42",
+      "product_id": 7737973407910,
+      "title": "KIVO Prime 38",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "ZX671",
+      "shopify_sku": "ZX671",
+      "product_id": 6928171466918,
+      "title": "ORIX Edge 3613",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "sg7628-black-41",
+      "shopify_sku": "sg7628-black-41",
+      "product_id": 6595584786598,
+      "title": "MIRA Stride 15",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414315",
+      "shopify_sku": "3414315",
+      "product_id": 2175895830582,
+      "title": "KIVO Aero 34",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "Q48-Green-45",
+      "shopify_sku": "Q48-GREEN-45",
+      "product_id": 15174698991782,
+      "title": "NOVA Classic 117 (Green)",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG3009-black-42",
+      "shopify_sku": "SG3009-black-42",
+      "product_id": 15174699974822,
+      "title": "XON Prime 66 (Black)",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-cream-37",
+      "shopify_sku": "CS-011-cream-37",
+      "product_id": 2083333341238,
+      "title": "MIRA Max 33",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-cream-39",
+      "shopify_sku": "CS-011-cream-39",
+      "product_id": 2083333341238,
+      "title": "MIRA Max 33",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-cream-36",
+      "shopify_sku": "CS-011-cream-36",
+      "product_id": 2083333341238,
+      "title": "MIRA Max 33",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-cream-38",
+      "shopify_sku": "CS-011-cream-38",
+      "product_id": 2083333341238,
+      "title": "MIRA Max 33",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JH-001-BLACK-42",
+      "shopify_sku": "JH-001-BLACK-42",
+      "product_id": 8623710666918,
+      "title": "Style Kurume Open Smile Canvas Shoes Men's Retro Skateboard Casual Vulcanized White Shoes",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0992US-yellow-41",
+      "shopify_sku": "sk0992us-yellow-41",
+      "product_id": 7740992094374,
+      "title": "ARVO Elite 70",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "tnv87",
+      "shopify_sku": "tnv87",
+      "product_id": 2179082649654,
+      "title": "ZENO Velocity 23",
+      "current_status": "draft",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "tnv73-blue-44",
+      "shopify_sku": "tnv73-blue-44",
+      "product_id": 2175922110518,
+      "title": "NOVA Prime 28",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WG1174US",
+      "shopify_sku": "WG1174US",
+      "product_id": 6925245677734,
+      "title": "Fashionable White Tiger Buckle Spring Loafers",
+      "current_status": "draft",
+      "col_o": "OK"
+    }
+  ],
+  "to_unpublish": [
+    {
+      "sheet_sku": "GX14-Black white-46",
+      "shopify_sku": "GX14-Black white-46",
+      "product_id": 8623685107878,
+      "title": "Lightweight Safety Shoes Men Women Work Shoes Steel Toe Walking Shoes Breathable Fashion Line Wear-Resistant Sneakers Slip On Trainers Running Shoes",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "1189740-black-42",
+      "shopify_sku": "1189740-black-42",
+      "product_id": 6926953185446,
+      "title": "NOVA Velocity 10",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "4495861-black-39",
+      "shopify_sku": "4495861-BLACK-39",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SK0942US-Green-41",
+      "shopify_sku": "sk0942us-green-41",
+      "product_id": 15174700957862,
+      "title": "NOVA Prime 1323 (Green)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "DE-004-black white-43",
+      "shopify_sku": "DE-004-black white-43",
+      "product_id": 15174700630182,
+      "title": "XON Max 83 (Black white)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Hollow Style-42",
+      "shopify_sku": "GX01200-Blue Hollow Style-42",
+      "product_id": 15174702334118,
+      "title": "VERA Edge 23 (Blue Hollow Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "gx5004-brown-42",
+      "shopify_sku": "GX5004-brown-42",
+      "product_id": 15174701645990,
+      "title": "ZENO Classic 14 (Brown)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG3015-white-44",
+      "shopify_sku": "SG3015-white-44",
+      "product_id": 15174699876518,
+      "title": "XON Prime 66 (white)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG3017-white-46",
+      "shopify_sku": "SG3017-white-46",
+      "product_id": 15174699876518,
+      "title": "XON Prime 66 (white)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SK0934US-red-44",
+      "shopify_sku": "SK0934US-red-44",
+      "product_id": 15174701220006,
+      "title": "XON Aero 89 (Red)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SK0926US-Golden-44",
+      "shopify_sku": "SK0926US-Golden-44",
+      "product_id": 15174701252774,
+      "title": "TNV Prime 85 (golden)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG503",
+      "shopify_sku": "SG503",
+      "product_id": 15174702235814,
+      "title": "ZENO Pulse 185 (Black)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "ZX446-black yellow-45",
+      "shopify_sku": "ZX446-black yellow-45",
+      "product_id": 2300286795830,
+      "title": "VERA Fusion 584",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "43373-Beige-44",
+      "shopify_sku": "43373-Beige-44",
+      "product_id": 8624690921638,
+      "title": "British style men's leather shoes, Korean style trendy slip-on casual tassel loafers with hidden wedge heels",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "B32-black 43",
+      "shopify_sku": "B32-black 43",
+      "product_id": 7390775836838,
+      "title": "LUXA Velocity 17",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-SILVER-43",
+      "shopify_sku": "WG1174US-SILVER-43",
+      "product_id": 15174698762406,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (Silver)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "3747599-black-40",
+      "shopify_sku": "3747599-black-40",
+      "product_id": 7261074751654,
+      "title": "ZENO Fusion 40",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "3414632-black-40",
+      "shopify_sku": "3414632-black-40",
+      "product_id": 6925077905574,
+      "title": "NOVA Max 81",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "APR-304-black-40",
+      "shopify_sku": "APR-304-black-40",
+      "product_id": 7728359800998,
+      "title": "ORIX Velocity 24",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "APR-3033-Purple-43",
+      "shopify_sku": "APR-3033-Purple-43",
+      "product_id": 8357384356006,
+      "title": "TNV Elite 50",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX30-brown-43",
+      "shopify_sku": "GX30-brown-43",
+      "product_id": 15174699810982,
+      "title": "NOVA Fusion 22 (brown)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "APR-3002-GRAY-44",
+      "shopify_sku": "APR-3002-GRAY-44",
+      "product_id": 8357405327526,
+      "title": "NOVA Stride 58",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "APR-0010-Brown-42",
+      "shopify_sku": "APR-0010-Brown-42",
+      "product_id": 7723987435686,
+      "title": "VERA Velocity 705",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "APR-0018-Black gold-43",
+      "shopify_sku": "APR-0018-Black gold-43",
+      "product_id": 8624487727270,
+      "title": "Genuine Leather Men's Formal Shoes, Pointed Toe",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX30-brown-42",
+      "shopify_sku": "GX30-brown-42",
+      "product_id": 15174699810982,
+      "title": "NOVA Fusion 22 (brown)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "3747599-black-42",
+      "shopify_sku": "3747599-black-42",
+      "product_id": 7261074751654,
+      "title": "ZENO Fusion 40",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX30-gray-43",
+      "shopify_sku": "GX30-gray-43",
+      "product_id": 15174699778214,
+      "title": "NOVA Fusion 22 (gray)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "4495861-BLACK-42",
+      "shopify_sku": "4495861-BLACK-42",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "NG183US",
+      "shopify_sku": "NG183US",
+      "product_id": 6927002370214,
+      "title": "VERA Prime 19",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "L-2831-Brown-40",
+      "shopify_sku": "L-2831-Brown-40",
+      "product_id": 8624663396518,
+      "title": "Men's mid-top Martin boots, 2025 new spring style, high-top men's shoes, British style retro work shoes",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "3414593-Gold-40",
+      "shopify_sku": "3414593-gold-40",
+      "product_id": 15174703775910,
+      "title": "TNV Max 86 (Gold)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "tnv30-red-44",
+      "shopify_sku": "tnv30-red-44",
+      "product_id": 15174703415462,
+      "title": "ZENO Pulse 22 (Red)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG6628-red brown-44",
+      "shopify_sku": "SG6628-red brown-44",
+      "product_id": 6595595731110,
+      "title": "TNV Fusion 626",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige style-44",
+      "shopify_sku": "GX01200-Beige style-44",
+      "product_id": 15174702432422,
+      "title": "VERA Edge 23 (Beige Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige style-43",
+      "shopify_sku": "gx01200-beige style-43",
+      "product_id": 15174702432422,
+      "title": "VERA Edge 23 (Beige Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG949",
+      "shopify_sku": "SG949",
+      "product_id": 15174702268582,
+      "title": "VERA Aero 52 (White Brown)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-SILVER-47",
+      "shopify_sku": "WG1174US-SILVER-47",
+      "product_id": 15174698762406,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (Silver)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige  Hollow Style-41",
+      "shopify_sku": "GX01200-Beige  Hollow Style-41",
+      "product_id": 15174702399654,
+      "title": "VERA Edge 23 (Beige hollow Style )",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "sg7303-brown-39",
+      "shopify_sku": "sg7303-brown-39",
+      "product_id": 6595588227238,
+      "title": "VERA Velocity 34",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG3013-white-42",
+      "shopify_sku": "SG3013-white-42",
+      "product_id": 15174699876518,
+      "title": "XON Prime 66 (white)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "sh404-green red-42",
+      "shopify_sku": "sh404-Green Red-42",
+      "product_id": 15174703448230,
+      "title": "TNV Pulse 59 (green)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-SILVER-40",
+      "shopify_sku": "WG1174US-SILVER-40",
+      "product_id": 15174698762406,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (Silver)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Style-40",
+      "shopify_sku": "GX01200-Blue Style-40",
+      "product_id": 15174702366886,
+      "title": "VERA Edge 23 (BLUE STYLE)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Hollow Style-43",
+      "shopify_sku": "GX01200-Blue Hollow Style-43",
+      "product_id": 15174702334118,
+      "title": "VERA Edge 23 (Blue Hollow Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige style-41",
+      "shopify_sku": "GX01200-Beige style-41",
+      "product_id": 15174702432422,
+      "title": "VERA Edge 23 (Beige Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige  Hollow Style-47",
+      "shopify_sku": "GX01200-Beige  Hollow Style-47",
+      "product_id": 15174702399654,
+      "title": "VERA Edge 23 (Beige hollow Style )",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Style-41",
+      "shopify_sku": "GX01200-Blue Style-41",
+      "product_id": 15174702366886,
+      "title": "VERA Edge 23 (BLUE STYLE)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige  Hollow Style-42",
+      "shopify_sku": "GX01200-Beige  Hollow Style-42",
+      "product_id": 15174702399654,
+      "title": "VERA Edge 23 (Beige hollow Style )",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Hollow Style-44",
+      "shopify_sku": "GX01200-Blue Hollow Style-44",
+      "product_id": 15174702334118,
+      "title": "VERA Edge 23 (Blue Hollow Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Hollow Style-40",
+      "shopify_sku": "gx01200-blue hollow style-40",
+      "product_id": 15174702334118,
+      "title": "VERA Edge 23 (Blue Hollow Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "4495861-black-42",
+      "shopify_sku": "4495861-BLACK-42",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "sh404-green red-40",
+      "shopify_sku": "sh404-green red-40",
+      "product_id": 15174703448230,
+      "title": "TNV Pulse 59 (green)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "sh404-blue red-40",
+      "shopify_sku": "sh404-blue red-40",
+      "product_id": 15174703480998,
+      "title": "TNV Pulse 59 (Blue)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "sh404-Green red-39",
+      "shopify_sku": "sh404-Green Red-39",
+      "product_id": 15174703448230,
+      "title": "TNV Pulse 59 (green)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-SILVER-45",
+      "shopify_sku": "WG1174US-SILVER-45",
+      "product_id": 15174698762406,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (Silver)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-WHITE-46",
+      "shopify_sku": "WG1174US-white-46",
+      "product_id": 15174698729638,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (White)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-SILVER-44",
+      "shopify_sku": "WG1174US-SILVER-44",
+      "product_id": 15174698762406,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (Silver)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-WHITE-40",
+      "shopify_sku": "WG1174US-white-40",
+      "product_id": 15174698729638,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (White)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "4495861-BLACK-46",
+      "shopify_sku": "4495861-BLACK-46",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GK953US-black-39",
+      "shopify_sku": "GK953US-black-39",
+      "product_id": 8384423002278,
+      "title": "LUXA Stride 61",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "4495861-BLACK-45",
+      "shopify_sku": "4495861-BLACK-45",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige style-38",
+      "shopify_sku": "gx01200-beige style-38",
+      "product_id": 15174702432422,
+      "title": "VERA Edge 23 (Beige Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige style-39",
+      "shopify_sku": "gx01200-beige style-39",
+      "product_id": 15174702432422,
+      "title": "VERA Edge 23 (Beige Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX1-Beige-8*1",
+      "shopify_sku": "GX1-Beige-8*1",
+      "product_id": 8357404508326,
+      "title": "VERA Aero 23",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "Ds005-multi-40*1",
+      "shopify_sku": "Ds005-multi-40*1",
+      "product_id": 8357404147878,
+      "title": "TNV Elite 37",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "6158198-Black-40",
+      "shopify_sku": "6158198-black-40",
+      "product_id": 15174701809830,
+      "title": "ARVO Velocity 77 (Black)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "JJ0-103-multi-42",
+      "shopify_sku": "JJ0-103-multi-42",
+      "product_id": 8339120160934,
+      "title": "ORIX Prime 68",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "HS-007-Brown-42",
+      "shopify_sku": "HS-007-Brown-42",
+      "product_id": 8300966543526,
+      "title": "TNV Max 59",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "A66-Blue-42",
+      "shopify_sku": "a66-blue-42",
+      "product_id": 15174703087782,
+      "title": "LUXA Pulse 597 (Blue)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "HYT-001111-Brown-40",
+      "shopify_sku": "HYT-001111-Brown-40",
+      "product_id": 8357394186406,
+      "title": "2025 Men's Genuine Leather Casual Loafers",
+      "current_status": "active",
+      "col_o": ""
+    }
+  ],
+  "publish_list_full": [
+    {
+      "sheet_sku": "ss-001-black-41",
+      "shopify_sku": "SS-001-black-41",
+      "product_id": 8193873871014,
+      "title": "LUXA Stride 98",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414678-black-40",
+      "shopify_sku": "3414678-black-40",
+      "product_id": 2172753739830,
+      "title": "ORIX Classic 91",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "tnvi314-Gray-41",
+      "shopify_sku": "tnvi314-Gray-41",
+      "product_id": 7680674037926,
+      "title": "XON Elite 83",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SS-658-blue-40",
+      "shopify_sku": "SS-658-blue-40",
+      "product_id": 7739002028198,
+      "title": "ARVO Fusion 70",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG2555",
+      "shopify_sku": "SG2555",
+      "product_id": 6595573088422,
+      "title": "LUXA Elite 18",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0934US-red-40",
+      "shopify_sku": "SK0934US-red-40",
+      "product_id": 15174701220006,
+      "title": "XON Aero 89 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "LS-002",
+      "shopify_sku": "LS-002",
+      "product_id": 7741078339750,
+      "title": "ARVO Edge 645",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0949US-black-43",
+      "shopify_sku": "SK0949US-black-43",
+      "product_id": 7735479828646,
+      "title": "TNV Stride 38",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "5507848",
+      "shopify_sku": "5507848",
+      "product_id": 2175916146742,
+      "title": "ZENO Max 34",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0950US-white-42",
+      "shopify_sku": "SK0950US-white-42",
+      "product_id": 15174700990630,
+      "title": "TNV Classic 30 (White)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0951US-blue-44",
+      "shopify_sku": "SK0951US-blue-44",
+      "product_id": 8548278042790,
+      "title": "MIRA Prime 15",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG6376",
+      "shopify_sku": "SG6376",
+      "product_id": 6595599302822,
+      "title": "VERA Prime 42",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GX-08black-40",
+      "shopify_sku": "GX-08black-40",
+      "product_id": 2240764444726,
+      "title": "XON Stride 756",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414333-Black-42",
+      "shopify_sku": "3414333-Black-42",
+      "product_id": 2172704817206,
+      "title": "VERA Max 69",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WG24US-black -40",
+      "shopify_sku": "WG24US-black -40",
+      "product_id": 8355655155878,
+      "title": "LUXA Stride 79",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WFG-20222-yellow-42",
+      "shopify_sku": "WFG-20222-yellow-42",
+      "product_id": 7391529402534,
+      "title": "KIVO Pulse 33",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG939",
+      "shopify_sku": "SG939",
+      "product_id": 15174702301350,
+      "title": "VERA Aero 52 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "LS-001-Burgundy-43",
+      "shopify_sku": "LS-001-Burgundy-43",
+      "product_id": 15174700826790,
+      "title": "VERA Aero 596 (Burgundy)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "HSL-001-black-41",
+      "shopify_sku": "hsl-001-black-41",
+      "product_id": 7921972019366,
+      "title": "LUXA Pulse 50",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "B32-black 45",
+      "shopify_sku": "B32-black 45",
+      "product_id": 7390775836838,
+      "title": "LUXA Velocity 17",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG7110",
+      "shopify_sku": "SG7110",
+      "product_id": 6595591110822,
+      "title": "LUXA Edge 53",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "tnv129",
+      "shopify_sku": "tnv129",
+      "product_id": 15174703513766,
+      "title": "NOVA Prime 34 (blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0958US-WJZ-508 black-44",
+      "shopify_sku": "SK0958US-WJZ-508 black-44",
+      "product_id": 7736718459046,
+      "title": "VERA Classic 90",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "LS-001-Burgundy-42",
+      "shopify_sku": "LS-001-Burgundy-42",
+      "product_id": 15174700826790,
+      "title": "VERA Aero 596 (Burgundy)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0723US-7926-black-43",
+      "shopify_sku": "SK0723US-7926-black-43",
+      "product_id": 8356374839462,
+      "title": "TNV Pulse 86",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG6238-Gray-42",
+      "shopify_sku": "SG6238-Gray-42",
+      "product_id": 6595601006758,
+      "title": "XON Velocity 566",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414404-red-42",
+      "shopify_sku": "3414404-RED-42",
+      "product_id": 15174701940902,
+      "title": "ORIX Edge 78 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0953US-brown-40",
+      "shopify_sku": "SK0953US-brown-40",
+      "product_id": 7736719966374,
+      "title": "LUXA Aero 877",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "c95-RED-41",
+      "shopify_sku": "c95-red-41",
+      "product_id": 15174699253926,
+      "title": "VERA Prime 70 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "gx20121-light brown-40",
+      "shopify_sku": "GX20121-light brown-40",
+      "product_id": 7680659685542,
+      "title": "MIRA Fusion 82",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C88-gray-39",
+      "shopify_sku": "C88-Gray-39",
+      "product_id": 15174700466342,
+      "title": "ZENO Fusion 50 (Gray)",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "C95-brown-40",
+      "shopify_sku": "c95-brown-40",
+      "product_id": 15174699221158,
+      "title": "VERA Prime 70 (Brown)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0936US-black-43",
+      "shopify_sku": "SK0936US-black-43",
+      "product_id": 7734524739750,
+      "title": "KIVO Aero 70",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0957US-Black-42",
+      "shopify_sku": "SK0957US-Black-42",
+      "product_id": 7736718622886,
+      "title": "ARVO Classic 92",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0956US-Black-41",
+      "shopify_sku": "SK0956US-Black-41",
+      "product_id": 7736718917798,
+      "title": "XON Prime 94",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "4495861-black-40",
+      "shopify_sku": "4495861-BLACK-40",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "2846736-black-40",
+      "shopify_sku": "2846736-Black-40",
+      "product_id": 8339166068902,
+      "title": "XON Stride 758",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GX30-blue-38",
+      "shopify_sku": "GX30-blue-38",
+      "product_id": 15174699745446,
+      "title": "NOVA Fusion 22 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C97",
+      "shopify_sku": "C97",
+      "product_id": 8355111764134,
+      "title": "ZENO Max 20",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414254-black-44",
+      "shopify_sku": "3414254-black-44",
+      "product_id": 8548301439142,
+      "title": "LUXA Edge 27",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0725US-brown flower-45",
+      "shopify_sku": "SK0725US-brown flower-45",
+      "product_id": 7680711557286,
+      "title": "ARVO Edge 644",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C93",
+      "shopify_sku": "C93",
+      "product_id": 15174702039206,
+      "title": "ZENO Classic 50 (Yellow)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C95-red-41",
+      "shopify_sku": "c95-red-41",
+      "product_id": 15174699253926,
+      "title": "VERA Prime 70 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C90",
+      "shopify_sku": "C90",
+      "product_id": 6927980363942,
+      "title": "VERA Prime 925",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C95-brown-42",
+      "shopify_sku": "c95-brown-42",
+      "product_id": 15174699221158,
+      "title": "VERA Prime 70 (Brown)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C95-brown-44",
+      "shopify_sku": "c95-brown-44",
+      "product_id": 15174699221158,
+      "title": "VERA Prime 70 (Brown)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C95-red-42",
+      "shopify_sku": "c95-red-42",
+      "product_id": 15174699253926,
+      "title": "VERA Prime 70 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "1189740-black-38",
+      "shopify_sku": "1189740-black-38",
+      "product_id": 6926953185446,
+      "title": "NOVA Velocity 10",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "gx5004-black-40",
+      "shopify_sku": "GX5004-black-40",
+      "product_id": 15174701613222,
+      "title": "ZENO Classic 14 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "5508186-gray-40",
+      "shopify_sku": "5508186-gray-40",
+      "product_id": 10732861068,
+      "title": "ZENO Aero 54",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "KA-2105 black-44",
+      "shopify_sku": "KA-2105 black-44",
+      "product_id": 7735527309478,
+      "title": "TNV Edge 687",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GX029120-red-43",
+      "shopify_sku": "GX029120-red-43",
+      "product_id": 6926917238950,
+      "title": "TNV Edge 162",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414411-orange-8-5",
+      "shopify_sku": "3414411-orange-8-5",
+      "product_id": 9692078028,
+      "title": "VERA Velocity 24",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "sh400-brown-39",
+      "shopify_sku": "sh400-brown-39",
+      "product_id": 11032973964,
+      "title": "ARVO Classic 58",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GX30-gray-45",
+      "shopify_sku": "GX30-gray-45",
+      "product_id": 15174699778214,
+      "title": "NOVA Fusion 22 (gray)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG6882",
+      "shopify_sku": "SG6882",
+      "product_id": 6595593601190,
+      "title": "ORIX Max 22",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JJ-001-Black-43",
+      "shopify_sku": "JJ-001-Black-43",
+      "product_id": 7738992263334,
+      "title": "ARVO Stride 444",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JJ-5001-black-39",
+      "shopify_sku": "JJ-5001-black-39",
+      "product_id": 8633244156070,
+      "title": "Formal shoe 2025 tnv",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA08",
+      "shopify_sku": "WA08",
+      "product_id": 15174702694566,
+      "title": "NOVA Elite 85 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "OCC02-black-43",
+      "shopify_sku": "OCC02-black-43",
+      "product_id": 7817874473126,
+      "title": "VERA Stride 206",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "d07-black-43",
+      "shopify_sku": "d07-black-43",
+      "product_id": 15174703251622,
+      "title": "TNV Aero 50 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "d07-black-41",
+      "shopify_sku": "d07-black-41",
+      "product_id": 15174703251622,
+      "title": "TNV Aero 50 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C19",
+      "shopify_sku": "c19",
+      "product_id": 8356377985190,
+      "title": "MIRA Max 81",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0989US-white ice blue-39",
+      "shopify_sku": "SK0989US-white ice blue-39",
+      "product_id": 7737974456486,
+      "title": "MIRA Fusion 27",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414213",
+      "shopify_sku": "3414213",
+      "product_id": 15174701711526,
+      "title": "KIVO Pulse 10 (Red)",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A41-black-40",
+      "shopify_sku": "A41-black-40",
+      "product_id": 15174703972518,
+      "title": "LUXA Fusion 44 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "tnvi402",
+      "shopify_sku": "tnvi402",
+      "product_id": 7249358454950,
+      "title": "MIRA Stride 48",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "NEW FORMAL-001-43",
+      "shopify_sku": "NEW FORMAL-001-43",
+      "product_id": 7740580495526,
+      "title": "NOVA Velocity 14",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG3034-red-45",
+      "shopify_sku": "SG3034-red-45",
+      "product_id": 15174699909286,
+      "title": "XON Prime 66 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "661-black-44",
+      "shopify_sku": "661-black-44",
+      "product_id": 8237340033190,
+      "title": "NOVA Prime 15",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "445421",
+      "shopify_sku": "445421",
+      "product_id": 2172650061878,
+      "title": "XON Classic 22",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0987US-Black Scorpion-41",
+      "shopify_sku": "SK0987US-Black Scorpion-41",
+      "product_id": 7737974227110,
+      "title": "ARVO Aero 55",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0986US-Black-44",
+      "shopify_sku": "SK0986US-Black-44",
+      "product_id": 7737974096038,
+      "title": "Korean Style Men's Leather Casual Business Shoes",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C88-Black-40",
+      "shopify_sku": "C88-black-40",
+      "product_id": 15174700531878,
+      "title": "ZENO Fusion 50 (black)",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "NG212US-silver-42",
+      "shopify_sku": "ng212us-silver-42",
+      "product_id": 6927292399782,
+      "title": "ORIX Max 57",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "661-black-39",
+      "shopify_sku": "661-black-39",
+      "product_id": 8237340033190,
+      "title": "NOVA Prime 15",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0985US-dark blue-39",
+      "shopify_sku": "SK0985US-dark blue-39",
+      "product_id": 7737973932198,
+      "title": "VERA Max 75",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A57-black-41",
+      "shopify_sku": "A57-Black-41",
+      "product_id": 15174703153318,
+      "title": "LUXA Max 11 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK4656US-red-43",
+      "shopify_sku": "SK4656US-red-43",
+      "product_id": 7817877586086,
+      "title": "Men's Leather Dress Shoes: Waterproof, Non-Slip, Formal",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3417441-black-40",
+      "shopify_sku": "3417441-black-40",
+      "product_id": 7680643924134,
+      "title": "XON Aero 47",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "d07-wine Red-42",
+      "shopify_sku": "d07-wine Red-42",
+      "product_id": 15174703284390,
+      "title": "TNV Aero 50 (wine red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A57-white-40",
+      "shopify_sku": "A57-white-40",
+      "product_id": 15174703120550,
+      "title": "LUXA Max 11 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A66-blue-41",
+      "shopify_sku": "A66-blue-41",
+      "product_id": 15174703087782,
+      "title": "LUXA Pulse 597 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C98",
+      "shopify_sku": "C98",
+      "product_id": 8355111764134,
+      "title": "ZENO Max 20",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C17-gray-44",
+      "shopify_sku": "c17-gray-44",
+      "product_id": 2184428224566,
+      "title": "ZENO Velocity 16",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A57-black-40",
+      "shopify_sku": "A57-Black-40",
+      "product_id": 15174703153318,
+      "title": "LUXA Max 11 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "cs-0010-black-40",
+      "shopify_sku": "cs-0010-black-40",
+      "product_id": 8568345886886,
+      "title": "ARVO Max 67",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "6158198-Black-39",
+      "shopify_sku": "6158198-black-39",
+      "product_id": 15174701809830,
+      "title": "ARVO Velocity 77 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414328",
+      "shopify_sku": "3414328",
+      "product_id": 15174703743142,
+      "title": "ARVO Aero 15 (Brown)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0923US-gold-40",
+      "shopify_sku": "SK0923US-gold-40",
+      "product_id": 15174701383846,
+      "title": "ZENO Prime 34 (Gold)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "a66-black-40",
+      "shopify_sku": "A66-black-40",
+      "product_id": 15174703055014,
+      "title": "LUXA Pulse 597 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG1087",
+      "shopify_sku": "SG1087",
+      "product_id": 6595592159398,
+      "title": "VERA Classic 64",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "sh399-White-39",
+      "shopify_sku": "sh399-white-39",
+      "product_id": 8568355422374,
+      "title": "VERA Max 529",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0983US-Black-43",
+      "shopify_sku": "SK0983US-Black-43",
+      "product_id": 7737973538982,
+      "title": "NOVA Pulse 64",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0926US-Black-41",
+      "shopify_sku": "SK0926US-Black-41",
+      "product_id": 15174701285542,
+      "title": "TNV Prime 85 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "sg507-gold-40",
+      "shopify_sku": "SG507-GOLD-40",
+      "product_id": 15174702203046,
+      "title": "ZENO Pulse 185 (Gold)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0926US-Golden-38",
+      "shopify_sku": "SK0926US-Golden-38",
+      "product_id": 15174701252774,
+      "title": "TNV Prime 85 (golden)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "TY-4570",
+      "shopify_sku": "TY-4570",
+      "product_id": 7740594880678,
+      "title": "KIVO Pulse 94",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0982US-gray-42",
+      "shopify_sku": "SK0982US-gray-42",
+      "product_id": 7737973407910,
+      "title": "KIVO Prime 38",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C17-gray-39",
+      "shopify_sku": "c17-gray-39",
+      "product_id": 2184428224566,
+      "title": "ZENO Velocity 16",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0980US-Black-41",
+      "shopify_sku": "sk0980us-black-41",
+      "product_id": 7737967018150,
+      "title": "MIRA Fusion 81",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "ZX671",
+      "shopify_sku": "ZX671",
+      "product_id": 6928171466918,
+      "title": "ORIX Edge 3613",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "sg7628-black-41",
+      "shopify_sku": "sg7628-black-41",
+      "product_id": 6595584786598,
+      "title": "MIRA Stride 15",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "sh291",
+      "shopify_sku": "sh291",
+      "product_id": 2182214877238,
+      "title": "ZENO Max 11",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "LS-001-Black-43",
+      "shopify_sku": "LS-001-Black-43",
+      "product_id": 15174700761254,
+      "title": "VERA Aero 596 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0924US-black-45",
+      "shopify_sku": "SK0924US-black-45",
+      "product_id": 7733218508966,
+      "title": "ORIX Elite 90",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "sh273-grey orange-39",
+      "shopify_sku": "sh273-grey orange-39",
+      "product_id": 2175837405238,
+      "title": "ORIX Max 72",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0979US-brown-44",
+      "shopify_sku": "SK0979US-brown-44",
+      "product_id": 7737973080230,
+      "title": "ZENO Classic 817",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GXD021-Black-38",
+      "shopify_sku": "GXD021-Black-38",
+      "product_id": 2245398233142,
+      "title": "TNV Max 54",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "d07-black-42",
+      "shopify_sku": "d07-black-42",
+      "product_id": 15174703251622,
+      "title": "TNV Aero 50 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C88-gray-40",
+      "shopify_sku": "C88-Gray-40",
+      "product_id": 15174700466342,
+      "title": "ZENO Fusion 50 (Gray)",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "SK0923US-red-43",
+      "shopify_sku": "sk0923us-red-43",
+      "product_id": 15174701416614,
+      "title": "ZENO Prime 34 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GX30-gray-40",
+      "shopify_sku": "GX30-gray-40",
+      "product_id": 15174699778214,
+      "title": "NOVA Fusion 22 (gray)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0934US-blue-43",
+      "shopify_sku": "SK0934US-blue-43",
+      "product_id": 15174701187238,
+      "title": "XON Aero 89 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "6158099",
+      "shopify_sku": "6158099",
+      "product_id": 6926923759782,
+      "title": "VERA Elite 66",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-blue-41",
+      "shopify_sku": "WA28-blue-41",
+      "product_id": 15174702923942,
+      "title": "TNV Classic 43 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "HSL-001-black-42",
+      "shopify_sku": "hsl-001-black-42",
+      "product_id": 7921972019366,
+      "title": "LUXA Pulse 50",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0727US-black-39",
+      "shopify_sku": "SK0727US-black-39",
+      "product_id": 15174701580454,
+      "title": "KIVO Fusion 70 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "RR-678-red-43",
+      "shopify_sku": "RR-678-red-43",
+      "product_id": 8355902947494,
+      "title": "ARVO Pulse 43",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0932US-7008pure black-41",
+      "shopify_sku": "SK0932US-7008pure black-41",
+      "product_id": 15174701121702,
+      "title": "LUXA Velocity 58 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0931US-brown-45",
+      "shopify_sku": "SK0931US-brown-45",
+      "product_id": 7734532833446,
+      "title": "NOVA Stride 89",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0930US-brown-45",
+      "shopify_sku": "SK0930US-brown-45",
+      "product_id": 15174701056166,
+      "title": "XON Prime 63 (Brown)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG1927-black-39",
+      "shopify_sku": "SG1927-black-39",
+      "product_id": 6595582722214,
+      "title": "TNV Elite 30",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "LS-001-Black-41",
+      "shopify_sku": "LS-001-Black-41",
+      "product_id": 15174700761254,
+      "title": "VERA Aero 596 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0932US-7008word black white-45",
+      "shopify_sku": "SK0932US-7008word black white-45",
+      "product_id": 15174701154470,
+      "title": "LUXA Velocity 58 (Black white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GX11-G38Black-8",
+      "shopify_sku": "GX11-G38Black-8",
+      "product_id": 6926935195814,
+      "title": "MIRA Stride 794",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "HSL-001-black-40",
+      "shopify_sku": "hsl-001-black-40",
+      "product_id": 7921972019366,
+      "title": "LUXA Pulse 50",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JNL-001-BROWN-44",
+      "shopify_sku": "JNL-001-BROWN-44",
+      "product_id": 7921952817318,
+      "title": "ZENO Prime 43",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "LS-012-Brown-41",
+      "shopify_sku": "LS-012-Brown-41",
+      "product_id": 1949620338742,
+      "title": "KIVO Fusion 57",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0930US-black-38",
+      "shopify_sku": "SK0930US-black-38",
+      "product_id": 15174701088934,
+      "title": "XON Prime 63 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0927US-black-40",
+      "shopify_sku": "SK0927US-black-40",
+      "product_id": 7734549938342,
+      "title": "XON Elite 38",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JJ-00347",
+      "shopify_sku": "JJ-00347",
+      "product_id": 7738992525478,
+      "title": "TNV Stride 24",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0978US-2829 black-44",
+      "shopify_sku": "sk0978us-2829 black-44",
+      "product_id": 7737967181990,
+      "title": "ORIX Max 89",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414315",
+      "shopify_sku": "3414315",
+      "product_id": 2175895830582,
+      "title": "KIVO Aero 34",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-001-black-40",
+      "shopify_sku": "CS-001-black-40",
+      "product_id": 15174704169126,
+      "title": "NOVA Fusion 62 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A40",
+      "shopify_sku": "A40",
+      "product_id": 15174702563494,
+      "title": "XON Max 64 (Gray)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-blue-40",
+      "shopify_sku": "WA28-blue-40",
+      "product_id": 15174702923942,
+      "title": "TNV Classic 43 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A41-white-40",
+      "shopify_sku": "a41-white-40",
+      "product_id": 15174704005286,
+      "title": "LUXA Fusion 44 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA21",
+      "shopify_sku": "WA21",
+      "product_id": 15174702760102,
+      "title": "LUXA Aero 30 (red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A06-Black-40",
+      "shopify_sku": "A06-Black-40",
+      "product_id": 15174702596262,
+      "title": "ORIX Fusion 69 (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0947US-white black purple-43",
+      "shopify_sku": "SK0947US-white black purple-43",
+      "product_id": 7736720490662,
+      "title": "NOVA Classic 477",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0946US-H263-2-44",
+      "shopify_sku": "sk0946us-h263-2-44",
+      "product_id": 7736720720038,
+      "title": "NOVA Elite 77",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-red-44",
+      "shopify_sku": "WA28-red-44",
+      "product_id": 15174702858406,
+      "title": "TNV Classic 43 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA09-red-44",
+      "shopify_sku": "WA09-Red-44",
+      "product_id": 15174702497958,
+      "title": "ORIX Velocity 12 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A06-Black-44",
+      "shopify_sku": "A06-Black-44",
+      "product_id": 15174702596262,
+      "title": "ORIX Fusion 69 (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A06-blue-43",
+      "shopify_sku": "A06-blue-43",
+      "product_id": 15174702629030,
+      "title": "ORIX Fusion 69 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "sh348-orange-42",
+      "shopify_sku": "sh348-orange-42",
+      "product_id": 6926963966118,
+      "title": "VERA Stride 554",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "D06-black-42",
+      "shopify_sku": "D06-black-42",
+      "product_id": 15174703317158,
+      "title": "NOVA Elite 87 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "Q48-Green-45",
+      "shopify_sku": "Q48-GREEN-45",
+      "product_id": 15174698991782,
+      "title": "NOVA Classic 117 (Green)",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C17-brown-44",
+      "shopify_sku": "c17-Brown-44",
+      "product_id": 2184428224566,
+      "title": "ZENO Velocity 16",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA11-black-39",
+      "shopify_sku": "WA11-black-39",
+      "product_id": 15174702825638,
+      "title": "MIRA Max 154 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GX0650-Black-43",
+      "shopify_sku": "GX0650-Black-43",
+      "product_id": 2245389615158,
+      "title": "XON Prime 47",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-blue-43",
+      "shopify_sku": "WA28-blue-43",
+      "product_id": 15174702923942,
+      "title": "TNV Classic 43 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA09-white-41",
+      "shopify_sku": "WA09-White-41",
+      "product_id": 15174702465190,
+      "title": "ORIX Velocity 12 (White)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A06-blue-44",
+      "shopify_sku": "a06-blue-44",
+      "product_id": 15174702629030,
+      "title": "ORIX Fusion 69 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG1927-black-42",
+      "shopify_sku": "sg1927-black-42",
+      "product_id": 6595582722214,
+      "title": "TNV Elite 30",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-red-43",
+      "shopify_sku": "WA28-red-43",
+      "product_id": 15174702858406,
+      "title": "TNV Classic 43 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA11-black-40",
+      "shopify_sku": "WA11-black-40",
+      "product_id": 15174702825638,
+      "title": "MIRA Max 154 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA11-gray-45",
+      "shopify_sku": "WA11-gray-45",
+      "product_id": 15174702792870,
+      "title": "MIRA Max 154 (Gray)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-BLACK-44",
+      "shopify_sku": "WA28-BLACK-44",
+      "product_id": 15174702891174,
+      "title": "TNV Classic 43 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA11-gray-44",
+      "shopify_sku": "WA11-gray-44",
+      "product_id": 15174702792870,
+      "title": "MIRA Max 154 (Gray)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A06-blue-41",
+      "shopify_sku": "A06-blue-41",
+      "product_id": 15174702629030,
+      "title": "ORIX Fusion 69 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GX20120-Black-41",
+      "shopify_sku": "GX20120-Black-41",
+      "product_id": 8193868791974,
+      "title": "VERA Velocity 16",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-BLACK-42",
+      "shopify_sku": "WA28-BLACK-42",
+      "product_id": 15174702891174,
+      "title": "TNV Classic 43 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A41-white-44",
+      "shopify_sku": "A41-white-44",
+      "product_id": 15174704005286,
+      "title": "LUXA Fusion 44 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-BLACK-40",
+      "shopify_sku": "WA28-BLACK-40",
+      "product_id": 15174702891174,
+      "title": "TNV Classic 43 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-blue-44",
+      "shopify_sku": "WA28-blue-44",
+      "product_id": 15174702923942,
+      "title": "TNV Classic 43 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A06-Black-39",
+      "shopify_sku": "A06-Black-39",
+      "product_id": 15174702596262,
+      "title": "ORIX Fusion 69 (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "q40-red-41",
+      "shopify_sku": "q40-red-41",
+      "product_id": 2139217133622,
+      "title": "XON Fusion 12",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C89",
+      "shopify_sku": "C89",
+      "product_id": 15174703186086,
+      "title": "ZENO Max 86 (Gray)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "q40-red-40",
+      "shopify_sku": "Q40-Red-40",
+      "product_id": 2139217133622,
+      "title": "XON Fusion 12",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG3009-black-42",
+      "shopify_sku": "SG3009-black-42",
+      "product_id": 15174699974822,
+      "title": "XON Prime 66 (Black)",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "tnv285-black-40",
+      "shopify_sku": "tnv285-black-40",
+      "product_id": 2177614184502,
+      "title": "KIVO Classic 38",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA09-red-40",
+      "shopify_sku": "WA09-Red-40",
+      "product_id": 15174702497958,
+      "title": "ORIX Velocity 12 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A06-blue-40",
+      "shopify_sku": "A06-blue-40",
+      "product_id": 15174702629030,
+      "title": "ORIX Fusion 69 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "wa21",
+      "shopify_sku": "WA21",
+      "product_id": 15174702760102,
+      "title": "LUXA Aero 30 (red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "h1212-h1212 black [single]-39",
+      "shopify_sku": "H1212-H1212 black [single]-39",
+      "product_id": 2184375992374,
+      "title": "KIVO Aero 53",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-red-41",
+      "shopify_sku": "WA28-red-41",
+      "product_id": 15174702858406,
+      "title": "TNV Classic 43 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C35-black-43",
+      "shopify_sku": "C35-black-43",
+      "product_id": 2184424914998,
+      "title": "NOVA Fusion 47",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "WA28-red-42",
+      "shopify_sku": "WA28-red-42",
+      "product_id": 15174702858406,
+      "title": "TNV Classic 43 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "sh341-black-40",
+      "shopify_sku": "sh341-black-40",
+      "product_id": 2179075473462,
+      "title": "ORIX Edge 822",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C17-brown-40",
+      "shopify_sku": "c17-Brown-40",
+      "product_id": 2184428224566,
+      "title": "ZENO Velocity 16",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C17-gray-41",
+      "shopify_sku": "c17-gray-41",
+      "product_id": 2184428224566,
+      "title": "ZENO Velocity 16",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C17-brown-43",
+      "shopify_sku": "c17-Brown-43",
+      "product_id": 2184428224566,
+      "title": "ZENO Velocity 16",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "Q48-red-44",
+      "shopify_sku": "Q48-RED-44",
+      "product_id": 15174698959014,
+      "title": "NOVA Classic 117 (RED)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A66-blue-40",
+      "shopify_sku": "A66-blue-40",
+      "product_id": 15174703087782,
+      "title": "LUXA Pulse 597 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0942US-khaki-44",
+      "shopify_sku": "sk0942us-khaki-44",
+      "product_id": 15174700925094,
+      "title": "NOVA Prime 1323 (Khaki)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-7777-BLACK-44",
+      "shopify_sku": "JN-7777-BLACK-44",
+      "product_id": 7919835742374,
+      "title": "ORIX Prime 98",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "DW-04-Black-41",
+      "shopify_sku": "DW-04-black-41",
+      "product_id": 15174700859558,
+      "title": "XON Fusion 56 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "DW-05-Black-41",
+      "shopify_sku": "dw-05-black-41",
+      "product_id": 15174700892326,
+      "title": "XON Fusion 56 (Black 2)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "d07-wine Red-40",
+      "shopify_sku": "d07-wine Red-40",
+      "product_id": 15174703284390,
+      "title": "TNV Aero 50 (wine red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "LS-005-BLACK-43",
+      "shopify_sku": "LS-005-BLACK-43",
+      "product_id": 8357405720742,
+      "title": "LUXA Edge 98",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "C17-brown-39",
+      "shopify_sku": "c17-Brown-39",
+      "product_id": 2184428224566,
+      "title": "ZENO Velocity 16",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0995US-brown-41",
+      "shopify_sku": "SK0995US-brown-41",
+      "product_id": 7740983705766,
+      "title": "NOVA Classic 448",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C17-brown-42",
+      "shopify_sku": "c17-Brown-42",
+      "product_id": 2184428224566,
+      "title": "ZENO Velocity 16",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0926US-Black-39",
+      "shopify_sku": "SK0926US-Black-39",
+      "product_id": 15174701285542,
+      "title": "TNV Prime 85 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0941US-Black-43",
+      "shopify_sku": "SK0941US-Black-43",
+      "product_id": 7736722063526,
+      "title": "ZENO Pulse 61",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SG3365",
+      "shopify_sku": "SG3365",
+      "product_id": 6595559030950,
+      "title": "NOVA Prime 84",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A57-white-42",
+      "shopify_sku": "A57-white-42",
+      "product_id": 15174703120550,
+      "title": "LUXA Max 11 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "b60-black-42",
+      "shopify_sku": "B60-black-42",
+      "product_id": 8236197937318,
+      "title": "ARVO Velocity 89",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C95-brown-41",
+      "shopify_sku": "c95-brown-41",
+      "product_id": 15174699221158,
+      "title": "VERA Prime 70 (Brown)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "DW-05-Black-40",
+      "shopify_sku": "dw-05-black-40",
+      "product_id": 15174700892326,
+      "title": "XON Fusion 56 (Black 2)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "C17-gray-43",
+      "shopify_sku": "c17-gray-43",
+      "product_id": 2184428224566,
+      "title": "ZENO Velocity 16",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0940US-YP-A310 black-41",
+      "shopify_sku": "SK0940US-YP-A310 black-41",
+      "product_id": 7736722260134,
+      "title": "ORIX Edge 32",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0939US-blue-45",
+      "shopify_sku": "SK0939US-blue-45",
+      "product_id": 7736722423974,
+      "title": "ZENO Classic 67",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-001-PInk-38",
+      "shopify_sku": "CS-001-PInk-38",
+      "product_id": 15174704201894,
+      "title": "NOVA Fusion 62 (Pink)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-003-Purple-38",
+      "shopify_sku": "CS-003-Purple-38",
+      "product_id": 15174704267430,
+      "title": "NOVA Elite 66 (Purple)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-003-Purple-36",
+      "shopify_sku": "CS-003-Purple-36",
+      "product_id": 15174704267430,
+      "title": "NOVA Elite 66 (Purple)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-003-Purple-37",
+      "shopify_sku": "CS-003-Purple-37",
+      "product_id": 15174704267430,
+      "title": "NOVA Elite 66 (Purple)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-003-Purple-39",
+      "shopify_sku": "CS-003-Purple-39",
+      "product_id": 15174704267430,
+      "title": "NOVA Elite 66 (Purple)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-003-Purple-40",
+      "shopify_sku": "CS-003-Purple-40",
+      "product_id": 15174704267430,
+      "title": "NOVA Elite 66 (Purple)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-003-blue-37",
+      "shopify_sku": "CS-003-blue-37",
+      "product_id": 15174704234662,
+      "title": "NOVA Elite 66 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-003-blue-38",
+      "shopify_sku": "CS-003-blue-38",
+      "product_id": 15174704234662,
+      "title": "NOVA Elite 66 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-003-blue-39",
+      "shopify_sku": "CS-003-blue-39",
+      "product_id": 15174704234662,
+      "title": "NOVA Elite 66 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-003-black-38",
+      "shopify_sku": "CS-003-black-38",
+      "product_id": 15174704693414,
+      "title": "NOVA Elite 66 (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-white-38",
+      "shopify_sku": "CS-021-white-38",
+      "product_id": 15174699384998,
+      "title": "ORIX Stride 30 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-white-39",
+      "shopify_sku": "CS-021-white-39",
+      "product_id": 15174699384998,
+      "title": "ORIX Stride 30 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-black-39",
+      "shopify_sku": "CS-021-black-39",
+      "product_id": 15174699352230,
+      "title": "ORIX Stride 30 (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-black-40",
+      "shopify_sku": "CS-021-black-40",
+      "product_id": 15174699352230,
+      "title": "ORIX Stride 30 (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-015-white-36",
+      "shopify_sku": "CS-015-white-36",
+      "product_id": 15174699450534,
+      "title": "XON Fusion 909 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-015-white-38",
+      "shopify_sku": "CS-015-white-38",
+      "product_id": 15174699450534,
+      "title": "XON Fusion 909 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-015-white-39",
+      "shopify_sku": "CS-015-white-39",
+      "product_id": 15174699450534,
+      "title": "XON Fusion 909 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-013-black-38",
+      "shopify_sku": "CS-013-black-38",
+      "product_id": 15174703906982,
+      "title": "MIRA Max 87 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-013-black-39",
+      "shopify_sku": "CS-013-black-39",
+      "product_id": 15174703906982,
+      "title": "MIRA Max 87 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-013-black-40",
+      "shopify_sku": "CS-013-black-40",
+      "product_id": 15174703906982,
+      "title": "MIRA Max 87 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-013-black-36",
+      "shopify_sku": "CS-013-black-36",
+      "product_id": 15174703906982,
+      "title": "MIRA Max 87 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-013-black-37",
+      "shopify_sku": "CS-013-black-37",
+      "product_id": 15174703906982,
+      "title": "MIRA Max 87 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-pink-36",
+      "shopify_sku": "CS-021-pink-36",
+      "product_id": 15174699417766,
+      "title": "ORIX Stride 30 (pink)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-pink-38",
+      "shopify_sku": "CS-021-pink-38",
+      "product_id": 15174699417766,
+      "title": "ORIX Stride 30 (pink)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-004-black-37",
+      "shopify_sku": "CS-004-black-37",
+      "product_id": 6926917599398,
+      "title": "XON Edge 69",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-004-black-38",
+      "shopify_sku": "CS-004-black-38",
+      "product_id": 6926917599398,
+      "title": "XON Edge 69",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-016-Cream-40",
+      "shopify_sku": "CS-016-Cream-40",
+      "product_id": 2083399008310,
+      "title": "ZENO Prime 93",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-013-cream-36",
+      "shopify_sku": "CS-013-cream-36",
+      "product_id": 15174703939750,
+      "title": "MIRA Max 87 (Cream)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-013-cream-37",
+      "shopify_sku": "CS-013-cream-37",
+      "product_id": 15174703939750,
+      "title": "MIRA Max 87 (Cream)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-009-silver-36",
+      "shopify_sku": "CS-009-Silver-36",
+      "product_id": 15174701514918,
+      "title": "LUXA Pulse 93 (Silver)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-009-silver-37",
+      "shopify_sku": "CS-009-Silver-37",
+      "product_id": 15174701514918,
+      "title": "LUXA Pulse 93 (Silver)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-009-silver-39",
+      "shopify_sku": "CS-009-Silver-39",
+      "product_id": 15174701514918,
+      "title": "LUXA Pulse 93 (Silver)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-pink-37",
+      "shopify_sku": "CS-021-pink-37",
+      "product_id": 15174699417766,
+      "title": "ORIX Stride 30 (pink)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-pink-40",
+      "shopify_sku": "CS-021-pink-40",
+      "product_id": 15174699417766,
+      "title": "ORIX Stride 30 (pink)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-white-36",
+      "shopify_sku": "CS-011-white-36",
+      "product_id": 15174704103590,
+      "title": "MIRA Max 33 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-white-37",
+      "shopify_sku": "CS-011-white-37",
+      "product_id": 15174704103590,
+      "title": "MIRA Max 33 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-white-38",
+      "shopify_sku": "CS-011-white-38",
+      "product_id": 15174704103590,
+      "title": "MIRA Max 33 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-black-37",
+      "shopify_sku": "CS-011-black-37",
+      "product_id": 15174704070822,
+      "title": "MIRA Max 33 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-black-38",
+      "shopify_sku": "CS-011-black-38",
+      "product_id": 15174704070822,
+      "title": "MIRA Max 33 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-black-39",
+      "shopify_sku": "CS-011-black-39",
+      "product_id": 15174704070822,
+      "title": "MIRA Max 33 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-Golden-36",
+      "shopify_sku": "cs-200-golden-36",
+      "product_id": 15174699614374,
+      "title": "VERA Pulse 91 (Golden)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-Golden-37",
+      "shopify_sku": "cs-200-golden-37",
+      "product_id": 15174699614374,
+      "title": "VERA Pulse 91 (Golden)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-Golden-38",
+      "shopify_sku": "cs-200-golden-38",
+      "product_id": 15174699614374,
+      "title": "VERA Pulse 91 (Golden)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-Silver-37",
+      "shopify_sku": "cs-200-silver-37",
+      "product_id": 15174699647142,
+      "title": "VERA Pulse 91 (Silver)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-Silver-39",
+      "shopify_sku": "cs-200-silver-39",
+      "product_id": 15174699647142,
+      "title": "VERA Pulse 91 (Silver)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-Silver-40",
+      "shopify_sku": "cs-200-silver-40",
+      "product_id": 15174699647142,
+      "title": "VERA Pulse 91 (Silver)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-300-green-36",
+      "shopify_sku": "CS-300-Green-36",
+      "product_id": 15174702104742,
+      "title": "NOVA Fusion 48 (Green)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-300-green-38",
+      "shopify_sku": "CS-300-Green-38",
+      "product_id": 15174702104742,
+      "title": "NOVA Fusion 48 (Green)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-cream-37",
+      "shopify_sku": "CS-011-cream-37",
+      "product_id": 2083333341238,
+      "title": "MIRA Max 33",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-cream-39",
+      "shopify_sku": "CS-011-cream-39",
+      "product_id": 2083333341238,
+      "title": "MIRA Max 33",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-020-cream-36",
+      "shopify_sku": "CS-020-cream-36",
+      "product_id": 15174698893478,
+      "title": "Korean style women's sandals. Rubber soles, slip-on style, pearl pattern, soft soles, beautiful and chic design, lightweight, comfortable to wear, cute. (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-020-cream-37",
+      "shopify_sku": "CS-020-cream-37",
+      "product_id": 15174698893478,
+      "title": "Korean style women's sandals. Rubber soles, slip-on style, pearl pattern, soft soles, beautiful and chic design, lightweight, comfortable to wear, cute. (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-black-36",
+      "shopify_sku": "CS-011-black-36",
+      "product_id": 15174704070822,
+      "title": "MIRA Max 33 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-Golden-39",
+      "shopify_sku": "cs-200-golden-39",
+      "product_id": 15174699614374,
+      "title": "VERA Pulse 91 (Golden)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-Golden-40",
+      "shopify_sku": "cs-200-golden-40",
+      "product_id": 15174699614374,
+      "title": "VERA Pulse 91 (Golden)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-009-silver-38",
+      "shopify_sku": "CS-009-Silver-38",
+      "product_id": 15174701514918,
+      "title": "LUXA Pulse 93 (Silver)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-black-38",
+      "shopify_sku": "cs-200-Black-38",
+      "product_id": 15174699548838,
+      "title": "VERA Pulse 91 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-020-black-40",
+      "shopify_sku": "CS-020-black-40",
+      "product_id": 15174698926246,
+      "title": "Korean style women's sandals. Rubber soles, slip-on style, pearl pattern, soft soles, beautiful and chic design, lightweight, comfortable to wear, cute. (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-020-black-36",
+      "shopify_sku": "CS-020-black-36",
+      "product_id": 15174698926246,
+      "title": "Korean style women's sandals. Rubber soles, slip-on style, pearl pattern, soft soles, beautiful and chic design, lightweight, comfortable to wear, cute. (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-020-black-37",
+      "shopify_sku": "CS-020-black-37",
+      "product_id": 15174698926246,
+      "title": "Korean style women's sandals. Rubber soles, slip-on style, pearl pattern, soft soles, beautiful and chic design, lightweight, comfortable to wear, cute. (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-020-black-38",
+      "shopify_sku": "CS-020-black-38",
+      "product_id": 15174698926246,
+      "title": "Korean style women's sandals. Rubber soles, slip-on style, pearl pattern, soft soles, beautiful and chic design, lightweight, comfortable to wear, cute. (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-013-cream-39",
+      "shopify_sku": "CS-013-cream-39",
+      "product_id": 15174703939750,
+      "title": "MIRA Max 87 (Cream)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-013-cream-40",
+      "shopify_sku": "CS-013-cream-40",
+      "product_id": 15174703939750,
+      "title": "MIRA Max 87 (Cream)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-cream-36",
+      "shopify_sku": "CS-011-cream-36",
+      "product_id": 2083333341238,
+      "title": "MIRA Max 33",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-300-red-37",
+      "shopify_sku": "CS-300-Red-37",
+      "product_id": 15174702170278,
+      "title": "NOVA Fusion 48 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-300-red-40",
+      "shopify_sku": "CS-300-Red-40",
+      "product_id": 15174702170278,
+      "title": "NOVA Fusion 48 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-013-cream-38",
+      "shopify_sku": "CS-013-cream-38",
+      "product_id": 15174703939750,
+      "title": "MIRA Max 87 (Cream)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-cream-38",
+      "shopify_sku": "CS-011-cream-38",
+      "product_id": 2083333341238,
+      "title": "MIRA Max 33",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-300-green-37",
+      "shopify_sku": "CS-300-Green-37",
+      "product_id": 15174702104742,
+      "title": "NOVA Fusion 48 (Green)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-300-Pink-36",
+      "shopify_sku": "CS-300-Pink-36",
+      "product_id": 15174702071974,
+      "title": "NOVA Fusion 48 ( PINK)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-300-Pink-37",
+      "shopify_sku": "CS-300-Pink-37",
+      "product_id": 15174702071974,
+      "title": "NOVA Fusion 48 ( PINK)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-020-cream-38",
+      "shopify_sku": "CS-020-cream-38",
+      "product_id": 15174698893478,
+      "title": "Korean style women's sandals. Rubber soles, slip-on style, pearl pattern, soft soles, beautiful and chic design, lightweight, comfortable to wear, cute. (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-020-cream-39",
+      "shopify_sku": "CS-020-cream-39",
+      "product_id": 15174698893478,
+      "title": "Korean style women's sandals. Rubber soles, slip-on style, pearl pattern, soft soles, beautiful and chic design, lightweight, comfortable to wear, cute. (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-black-36",
+      "shopify_sku": "cs-200-Black-36",
+      "product_id": 15174699548838,
+      "title": "VERA Pulse 91 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-black-37",
+      "shopify_sku": "cs-200-Black-37",
+      "product_id": 15174699548838,
+      "title": "VERA Pulse 91 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-009-black-37",
+      "shopify_sku": "CS-009-black-37",
+      "product_id": 15174701482150,
+      "title": "LUXA Pulse 93 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-009-black-39",
+      "shopify_sku": "CS-009-black-39",
+      "product_id": 15174701482150,
+      "title": "LUXA Pulse 93 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-009-black-40",
+      "shopify_sku": "CS-009-black-40",
+      "product_id": 15174701482150,
+      "title": "LUXA Pulse 93 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-white-39",
+      "shopify_sku": "cs-011-white-39",
+      "product_id": 15174704103590,
+      "title": "MIRA Max 33 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-011-white-40",
+      "shopify_sku": "cs-011-white-40",
+      "product_id": 15174704103590,
+      "title": "MIRA Max 33 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-black-39",
+      "shopify_sku": "cs-200-Black-39",
+      "product_id": 15174699548838,
+      "title": "VERA Pulse 91 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-black-40",
+      "shopify_sku": "cs-200-Black-40",
+      "product_id": 15174699548838,
+      "title": "VERA Pulse 91 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-200-golden-37",
+      "shopify_sku": "cs-200-golden-37",
+      "product_id": 15174699614374,
+      "title": "VERA Pulse 91 (Golden)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-009-black-38",
+      "shopify_sku": "CS-009-black-38",
+      "product_id": 15174701482150,
+      "title": "LUXA Pulse 93 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-020-cream-40",
+      "shopify_sku": "CS-020-cream-40",
+      "product_id": 15174698893478,
+      "title": "Korean style women's sandals. Rubber soles, slip-on style, pearl pattern, soft soles, beautiful and chic design, lightweight, comfortable to wear, cute. (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-009-black-36",
+      "shopify_sku": "CS-009-black-36",
+      "product_id": 15174701482150,
+      "title": "LUXA Pulse 93 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-300-red-36",
+      "shopify_sku": "CS-300-Red-36",
+      "product_id": 15174702170278,
+      "title": "NOVA Fusion 48 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-300-red-38",
+      "shopify_sku": "CS-300-Red-38",
+      "product_id": 15174702170278,
+      "title": "NOVA Fusion 48 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-black-36",
+      "shopify_sku": "CS-021-black-36",
+      "product_id": 15174699352230,
+      "title": "ORIX Stride 30 (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-black-37",
+      "shopify_sku": "CS-021-black-37",
+      "product_id": 15174699352230,
+      "title": "ORIX Stride 30 (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-021-black-38",
+      "shopify_sku": "CS-021-black-38",
+      "product_id": 15174699352230,
+      "title": "ORIX Stride 30 (black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-015-black-36",
+      "shopify_sku": "CS-015-Black-36",
+      "product_id": 15174699483302,
+      "title": "XON Fusion 909 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-015-black-37",
+      "shopify_sku": "CS-015-Black-37",
+      "product_id": 15174699483302,
+      "title": "XON Fusion 909 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-015-black-38",
+      "shopify_sku": "CS-015-Black-38",
+      "product_id": 15174699483302,
+      "title": "XON Fusion 909 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-015-white-37",
+      "shopify_sku": "CS-015-white-37",
+      "product_id": 15174699450534,
+      "title": "XON Fusion 909 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-012-pink-37",
+      "shopify_sku": "CS-012-pink-37",
+      "product_id": 2083346087990,
+      "title": "ORIX Edge 21",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-012-pink-38",
+      "shopify_sku": "CS-012-pink-38",
+      "product_id": 2083346087990,
+      "title": "ORIX Edge 21",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-015-white-40",
+      "shopify_sku": "CS-015-white-40",
+      "product_id": 15174699450534,
+      "title": "XON Fusion 909 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JH-001-BLACK-42",
+      "shopify_sku": "JH-001-BLACK-42",
+      "product_id": 8623710666918,
+      "title": "Style Kurume Open Smile Canvas Shoes Men's Retro Skateboard Casual Vulcanized White Shoes",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0992US-yellow-41",
+      "shopify_sku": "sk0992us-yellow-41",
+      "product_id": 7740992094374,
+      "title": "ARVO Elite 70",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0994US-camel-44",
+      "shopify_sku": "SK0994US-camel-44",
+      "product_id": 7740987670694,
+      "title": "XON Elite 51",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JH-002-BLACK-41",
+      "shopify_sku": "JH-002-BLACK-41",
+      "product_id": 8623712927910,
+      "title": "Trendy men's flip-flops, high-end style, suitable for summer, woven, non-slip, perfect for outdoor beach wear.",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "YTY-002-black-45",
+      "shopify_sku": "YTY-002-black-45",
+      "product_id": 7740969320614,
+      "title": "ORIX Edge 40",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0993US-white-41",
+      "shopify_sku": "SK0993US-white-41",
+      "product_id": 7740998910118,
+      "title": "LUXA Edge 47",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JH-003-Golden",
+      "shopify_sku": "JH-003-Golden",
+      "product_id": 7916132368550,
+      "title": "Pilot frame Mirrored Sunglasses",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "1765614-black-M",
+      "shopify_sku": "1765614-black-M",
+      "product_id": 2174070292534,
+      "title": "LUXA Aero 48",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "Blz-001",
+      "shopify_sku": "Blz-001",
+      "product_id": 15174700105894,
+      "title": "XON Pulse 117 (khaki)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "Blz-002",
+      "shopify_sku": "Blz-002",
+      "product_id": 15174700040358,
+      "title": "ARVO Velocity 706 (red and blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "Blz-003",
+      "shopify_sku": "Blz-003",
+      "product_id": 15174700007590,
+      "title": "TNV Classic 83 (Gray)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "Blz-004",
+      "shopify_sku": "Blz-004",
+      "product_id": 7939592126630,
+      "title": "ORIX Elite 69",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "Blz-005",
+      "shopify_sku": "Blz-005",
+      "product_id": 7939594911910,
+      "title": "VERA Edge 877",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414155-black-30cm-max-length-50cm",
+      "shopify_sku": "3414155-black-30cm-max-length-50cm",
+      "product_id": 11319315788,
+      "title": "TNV Stride 49",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-822-BLUE-M",
+      "shopify_sku": "JN-822-BLUE-M",
+      "product_id": 8623713550502,
+      "title": "New Style Cardigan Sweatshirt for Winter, Plus Size, Mid-Length, Single-Breasted, Thickened, Fleece-Lined, Suitable for Men",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-605-GRAY-3XL",
+      "shopify_sku": "JN-605-GRAY-3XL",
+      "product_id": 15174698795174,
+      "title": "Men's Autumn/Winter Plain Color Hooded Fleece-Lined Thick Cardigan Jacket, New Style for Youth (gray)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CNW01-black-XL",
+      "shopify_sku": "cnw01-black-xl",
+      "product_id": 15174699155622,
+      "title": "VERA Prime 61 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-701-white-L",
+      "shopify_sku": "JN-701-white-L",
+      "product_id": 7915786207398,
+      "title": "ZENO Stride 54",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CNW01-black-M",
+      "shopify_sku": "cnw01-black-M",
+      "product_id": 15174699155622,
+      "title": "VERA Prime 61 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CNW01-white-M",
+      "shopify_sku": "cnw01-white-M",
+      "product_id": 15174699188390,
+      "title": "VERA Prime 61 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-605-BLUE-XL",
+      "shopify_sku": "JN-605-BLUE-XL",
+      "product_id": 15174698860710,
+      "title": "Men's Autumn/Winter Plain Color Hooded Fleece-Lined Thick Cardigan Jacket, New Style for Youth (blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-505-white-L",
+      "shopify_sku": "JN-505-white-L",
+      "product_id": 7915779948710,
+      "title": "MIRA Aero 92",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CNW01-black-L",
+      "shopify_sku": "cnw01-black-L",
+      "product_id": 15174699155622,
+      "title": "VERA Prime 61 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3348414-M-Yellow",
+      "shopify_sku": "3348414-M-Yellow",
+      "product_id": 2171006877750,
+      "title": "MIRA Prime 66",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-55-Black-M",
+      "shopify_sku": "jn-55-black-m",
+      "product_id": 8355913564326,
+      "title": "TNV Edge 277",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-0012-Green-L",
+      "shopify_sku": "JN-0012-Green-l",
+      "product_id": 8356336763046,
+      "title": "ARVO Stride 46",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "NWL-2316",
+      "shopify_sku": "NWL-2316",
+      "product_id": 8355924672678,
+      "title": "ZENO Pulse 186",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "JN-605-black-M",
+      "shopify_sku": "JN-605-black-M",
+      "product_id": 15174698827942,
+      "title": "Men's Autumn/Winter Plain Color Hooded Fleece-Lined Thick Cardigan Jacket, New Style for Youth (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-501-black-L",
+      "shopify_sku": "JN-501-black-L",
+      "product_id": 15174700236966,
+      "title": "MIRA Fusion 75 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "jn-602-black-2XL",
+      "shopify_sku": "jn-602-black-2XL",
+      "product_id": 8355914612902,
+      "title": "VERA Max 45",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3348414-M-Red",
+      "shopify_sku": "3348414-M-Red",
+      "product_id": 2171006877750,
+      "title": "MIRA Prime 66",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-0654-black-M",
+      "shopify_sku": "JN-0654-black-M",
+      "product_id": 7919840166054,
+      "title": "VERA Aero 44",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "1880421",
+      "shopify_sku": "1880421",
+      "product_id": 2175917326390,
+      "title": "TNV Classic 57",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3365076-blue-L",
+      "shopify_sku": "3365076-blue-L",
+      "product_id": 15174703644838,
+      "title": "ZENO Pulse 50 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3365076-blue-M",
+      "shopify_sku": "3365076-blue-M",
+      "product_id": 15174703644838,
+      "title": "ZENO Pulse 50 (Blue)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-9010-GRAY",
+      "shopify_sku": "JN-9010-GRAY",
+      "product_id": 8356370710694,
+      "title": "MIRA Stride 57",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-401-white-L",
+      "shopify_sku": "JN-401-white-L",
+      "product_id": 7915757502630,
+      "title": "KIVO Pulse 82",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-306-white-M",
+      "shopify_sku": "JN-306-white-M",
+      "product_id": 15174699090086,
+      "title": "VERA Edge 48 (black Yellow)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-306-black red-M",
+      "shopify_sku": "JN-306-black red-M",
+      "product_id": 15174699024550,
+      "title": "VERA Edge 48 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-306-white black-M",
+      "shopify_sku": "JN-306-white black-M",
+      "product_id": 15174699122854,
+      "title": "VERA Edge 48 (white and black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "jn-301-green-xl",
+      "shopify_sku": "jn-301-green-xl",
+      "product_id": 15174700400806,
+      "title": "KIVO Aero 60 (Green)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-301-blue-XL",
+      "shopify_sku": "JN-301-blue-XL",
+      "product_id": 15174700433574,
+      "title": "KIVO Aero 60 (Purple)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-202-RED-XL",
+      "shopify_sku": "JN-202-RED-XL",
+      "product_id": 8355910451366,
+      "title": "ARVO Aero 52",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-202-RED-M",
+      "shopify_sku": "JN-202-RED-M",
+      "product_id": 8355910451366,
+      "title": "ARVO Aero 52",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-409-BLUE-XL",
+      "shopify_sku": "JN-409-BLUE-XL",
+      "product_id": 7915759796390,
+      "title": "XON Aero 156",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-501-white-L",
+      "shopify_sku": "JN-501-white-L",
+      "product_id": 15174700368038,
+      "title": "MIRA Fusion 75 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-501-multi-L",
+      "shopify_sku": "JN-501-MULTI-L",
+      "product_id": 15174700335270,
+      "title": "MIRA Fusion 75 (multi)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3348414-XL-Red",
+      "shopify_sku": "3348414-XL-Red",
+      "product_id": 2171006877750,
+      "title": "MIRA Prime 66",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-501-PINK-L",
+      "shopify_sku": "JN-501-PINK-L",
+      "product_id": 15174700269734,
+      "title": "MIRA Fusion 75 (Pink)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "FSD-01-Black-L",
+      "shopify_sku": "FSD-01-Black-L",
+      "product_id": 8355900719270,
+      "title": "ZENO Pulse 96",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3365076-white-XL",
+      "shopify_sku": "3365076-white-XL",
+      "product_id": 15174703677606,
+      "title": "ZENO Pulse 50 (white)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3348414-XXL-Red",
+      "shopify_sku": "3348414-XXL-Red",
+      "product_id": 2171006877750,
+      "title": "MIRA Prime 66",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "1765230-off white -XXL",
+      "shopify_sku": "1765230-off white -XXL",
+      "product_id": 15174703612070,
+      "title": "XON Stride 445 (OFF-White)",
+      "current_status": "active",
+      "col_o": "Ok"
+    },
+    {
+      "sheet_sku": "JN-776-BLACK-L",
+      "shopify_sku": "JN-776-BLACK-L",
+      "product_id": 7917542965414,
+      "title": "VERA Classic 15",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-990-PINK-41",
+      "shopify_sku": "JN-990-PINK-41",
+      "product_id": 15174700171430,
+      "title": "ARVO Classic 57 (Pink)",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "3414420-red-41",
+      "shopify_sku": "3414420-red-41",
+      "product_id": 15174704365734,
+      "title": "ZENO Fusion 59 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JH-005-Red42",
+      "shopify_sku": "JH-005-Red42",
+      "product_id": 7916138168486,
+      "title": "ZENO Aero 50",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-701-white-M",
+      "shopify_sku": "JN-701-white-M",
+      "product_id": 7915786207398,
+      "title": "ZENO Stride 54",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "A41-gray-41",
+      "shopify_sku": "a41-gray-41",
+      "product_id": 15174704038054,
+      "title": "LUXA Fusion 44 (Gray)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414624-blue-39",
+      "shopify_sku": "3414624-blue-39",
+      "product_id": 8356362518694,
+      "title": "KIVO Max 25",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-990-black-39",
+      "shopify_sku": "JN-990-black-39",
+      "product_id": 7919700115622,
+      "title": "MIRA Stride 40",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GX-11-38-BLACK-45",
+      "shopify_sku": "GX-11-38-BLACK-45",
+      "product_id": 7919705817254,
+      "title": "LUXA Prime 85",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-657-mehroon-40",
+      "shopify_sku": "JN-657-mehroon-40",
+      "product_id": 7919710896294,
+      "title": "KIVO Edge 80",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-498-Black-43",
+      "shopify_sku": "JN-498-Black-43",
+      "product_id": 7919683043494,
+      "title": "ARVO Pulse 49",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "tnvi304-BLUE-44",
+      "shopify_sku": "tnvi304-BLUE-44",
+      "product_id": 2171105837110,
+      "title": "LUXA Aero 32",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414420-orange-39",
+      "shopify_sku": "3414420-orange-39",
+      "product_id": 15174704300198,
+      "title": "ZENO Fusion 59 (Orange)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "tnv87",
+      "shopify_sku": "tnv87",
+      "product_id": 2179082649654,
+      "title": "ZENO Velocity 23",
+      "current_status": "draft",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "SK0926US-Black-38",
+      "shopify_sku": "SK0926US-BLACK-38",
+      "product_id": 15174701285542,
+      "title": "TNV Prime 85 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-9011-BLUE-40",
+      "shopify_sku": "JN-9011-BLUE-40",
+      "product_id": 7919198503078,
+      "title": "ZENO Pulse 15",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-657-RED-44",
+      "shopify_sku": "JN-657-RED-44",
+      "product_id": 7917522550950,
+      "title": "ZENO Stride 10",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-0923-Black-41",
+      "shopify_sku": "JN-0923-Black-41",
+      "product_id": 7917420216486,
+      "title": "VERA Edge 61",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "Sh335-gray-41",
+      "shopify_sku": "Sh335-gray-41",
+      "product_id": 7917394460838,
+      "title": "LUXA Max 85",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "JN-8760-white-40",
+      "shopify_sku": "JN-8760-white-40",
+      "product_id": 7919862448294,
+      "title": "MIRA Velocity 52",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "tnv73-blue-44",
+      "shopify_sku": "tnv73-blue-44",
+      "product_id": 2175922110518,
+      "title": "NOVA Prime 28",
+      "current_status": "draft",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "TT-909-black-38",
+      "shopify_sku": "TT-909-black-38",
+      "product_id": 7740939305126,
+      "title": "LUXA Aero 33",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "Sh335-gray-44",
+      "shopify_sku": "Sh335-gray-44",
+      "product_id": 7917394460838,
+      "title": "LUXA Max 85",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "CS-012-pink-39",
+      "shopify_sku": "CS-012-pink-39",
+      "product_id": 2083346087990,
+      "title": "ORIX Edge 21",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GX01200-Blue Style-43",
+      "shopify_sku": "GX01200-Blue Style-43",
+      "product_id": 15174702366886,
+      "title": "VERA Edge 23 (BLUE STYLE)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "jj-013-black-41",
+      "shopify_sku": "JJ-013-Black-41",
+      "product_id": 7917177274534,
+      "title": "XON Pulse 99",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "GTR-99",
+      "shopify_sku": "GTR-99",
+      "product_id": 15174700662950,
+      "title": "ZENO Fusion 33 (Black)",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "GTR-100",
+      "shopify_sku": "GTR-100",
+      "product_id": 15174700695718,
+      "title": "ZENO Fusion 33 (white Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "HY-0023",
+      "shopify_sku": "HY-0023",
+      "product_id": 7741520412838,
+      "title": "LUXA Fusion 56",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "tnv30-black-42",
+      "shopify_sku": "tnv30-black-42",
+      "product_id": 15174703382694,
+      "title": "ZENO Pulse 22 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "APR-0010-Brown-44",
+      "shopify_sku": "APR-0010-Brown-44",
+      "product_id": 7723987435686,
+      "title": "VERA Velocity 705",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414404-Gold-44",
+      "shopify_sku": "3414404-gold-44",
+      "product_id": 15174701973670,
+      "title": "ORIX Edge 78 (Gold)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "SK0950US-black-44",
+      "shopify_sku": "sk0950us-black-44",
+      "product_id": 15174701023398,
+      "title": "TNV Classic 30 (Black)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3414404-red-41",
+      "shopify_sku": "3414404-RED-41",
+      "product_id": 15174701940902,
+      "title": "ORIX Edge 78 (Red)",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "sh297-brown-43",
+      "shopify_sku": "sh297-brown-43",
+      "product_id": 11032782540,
+      "title": "VERA Elite 13",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "ZX441-yellow-40",
+      "shopify_sku": "ZX441-yellow-40",
+      "product_id": 2300286795830,
+      "title": "VERA Fusion 584",
+      "current_status": "active",
+      "col_o": "ok"
+    },
+    {
+      "sheet_sku": "3747600-black-43",
+      "shopify_sku": "3747600-black-43",
+      "product_id": 7261074751654,
+      "title": "ZENO Fusion 40",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "WG1174US-white-45",
+      "shopify_sku": "WG1174US-white-45",
+      "product_id": 15174698729638,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (White)",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "WG1174US",
+      "shopify_sku": "WG1174US",
+      "product_id": 6925245677734,
+      "title": "Fashionable White Tiger Buckle Spring Loafers",
+      "current_status": "draft",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "GX01200-Blue Style-39",
+      "shopify_sku": "GX01200-Blue Style-39",
+      "product_id": 15174702366886,
+      "title": "VERA Edge 23 (BLUE STYLE)",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "SK0727US-red-43",
+      "shopify_sku": "SK0727US-red-43",
+      "product_id": 15174701547686,
+      "title": "KIVO Fusion 70 (Red)",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "GX30-Red-42",
+      "shopify_sku": "GX30-Red-42",
+      "product_id": 15174699843750,
+      "title": "NOVA Fusion 22 (Red)",
+      "current_status": "active",
+      "col_o": "OK"
+    },
+    {
+      "sheet_sku": "3414593-red wine-44",
+      "shopify_sku": "3414593-red wine-44",
+      "product_id": 15174703841446,
+      "title": "TNV Max 86 (Red wine)",
+      "current_status": "active",
+      "col_o": "OK"
+    }
+  ],
+  "unpublish_list_full": [
+    {
+      "sheet_sku": "GX14-Black white-46",
+      "shopify_sku": "GX14-Black white-46",
+      "product_id": 8623685107878,
+      "title": "Lightweight Safety Shoes Men Women Work Shoes Steel Toe Walking Shoes Breathable Fashion Line Wear-Resistant Sneakers Slip On Trainers Running Shoes",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "1189740-black-42",
+      "shopify_sku": "1189740-black-42",
+      "product_id": 6926953185446,
+      "title": "NOVA Velocity 10",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "4495861-black-39",
+      "shopify_sku": "4495861-BLACK-39",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SK0942US-Green-41",
+      "shopify_sku": "sk0942us-green-41",
+      "product_id": 15174700957862,
+      "title": "NOVA Prime 1323 (Green)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "DE-004-black white-43",
+      "shopify_sku": "DE-004-black white-43",
+      "product_id": 15174700630182,
+      "title": "XON Max 83 (Black white)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Hollow Style-42",
+      "shopify_sku": "GX01200-Blue Hollow Style-42",
+      "product_id": 15174702334118,
+      "title": "VERA Edge 23 (Blue Hollow Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "gx5004-brown-42",
+      "shopify_sku": "GX5004-brown-42",
+      "product_id": 15174701645990,
+      "title": "ZENO Classic 14 (Brown)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG3015-white-44",
+      "shopify_sku": "SG3015-white-44",
+      "product_id": 15174699876518,
+      "title": "XON Prime 66 (white)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG3017-white-46",
+      "shopify_sku": "SG3017-white-46",
+      "product_id": 15174699876518,
+      "title": "XON Prime 66 (white)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SK0934US-red-44",
+      "shopify_sku": "SK0934US-red-44",
+      "product_id": 15174701220006,
+      "title": "XON Aero 89 (Red)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SK0926US-Golden-44",
+      "shopify_sku": "SK0926US-Golden-44",
+      "product_id": 15174701252774,
+      "title": "TNV Prime 85 (golden)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG503",
+      "shopify_sku": "SG503",
+      "product_id": 15174702235814,
+      "title": "ZENO Pulse 185 (Black)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "ZX446-black yellow-45",
+      "shopify_sku": "ZX446-black yellow-45",
+      "product_id": 2300286795830,
+      "title": "VERA Fusion 584",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "43373-Beige-44",
+      "shopify_sku": "43373-Beige-44",
+      "product_id": 8624690921638,
+      "title": "British style men's leather shoes, Korean style trendy slip-on casual tassel loafers with hidden wedge heels",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "B32-black 43",
+      "shopify_sku": "B32-black 43",
+      "product_id": 7390775836838,
+      "title": "LUXA Velocity 17",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-SILVER-43",
+      "shopify_sku": "WG1174US-SILVER-43",
+      "product_id": 15174698762406,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (Silver)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "3747599-black-40",
+      "shopify_sku": "3747599-black-40",
+      "product_id": 7261074751654,
+      "title": "ZENO Fusion 40",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "3414373",
+      "shopify_sku": "3414373",
+      "product_id": 15174701777062,
+      "title": "ORIX Edge 824 (Yellow Black)",
+      "current_status": "draft",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "3414632-black-40",
+      "shopify_sku": "3414632-black-40",
+      "product_id": 6925077905574,
+      "title": "NOVA Max 81",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "APR-304-black-40",
+      "shopify_sku": "APR-304-black-40",
+      "product_id": 7728359800998,
+      "title": "ORIX Velocity 24",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "APR-3033-Purple-43",
+      "shopify_sku": "APR-3033-Purple-43",
+      "product_id": 8357384356006,
+      "title": "TNV Elite 50",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX30-brown-43",
+      "shopify_sku": "GX30-brown-43",
+      "product_id": 15174699810982,
+      "title": "NOVA Fusion 22 (brown)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "APR-3002-GRAY-44",
+      "shopify_sku": "APR-3002-GRAY-44",
+      "product_id": 8357405327526,
+      "title": "NOVA Stride 58",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "APR-0010-Brown-42",
+      "shopify_sku": "APR-0010-Brown-42",
+      "product_id": 7723987435686,
+      "title": "VERA Velocity 705",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "APR-0018-Black gold-43",
+      "shopify_sku": "APR-0018-Black gold-43",
+      "product_id": 8624487727270,
+      "title": "Genuine Leather Men's Formal Shoes, Pointed Toe",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX30-brown-42",
+      "shopify_sku": "GX30-brown-42",
+      "product_id": 15174699810982,
+      "title": "NOVA Fusion 22 (brown)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "3747599-black-42",
+      "shopify_sku": "3747599-black-42",
+      "product_id": 7261074751654,
+      "title": "ZENO Fusion 40",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX30-gray-43",
+      "shopify_sku": "GX30-gray-43",
+      "product_id": 15174699778214,
+      "title": "NOVA Fusion 22 (gray)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "4495861-BLACK-42",
+      "shopify_sku": "4495861-BLACK-42",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "3414575-Gray-40",
+      "shopify_sku": "3414575-Gray-40",
+      "product_id": 8339163218086,
+      "title": "ORIX Max 64",
+      "current_status": "draft",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "NG183US",
+      "shopify_sku": "NG183US",
+      "product_id": 6927002370214,
+      "title": "VERA Prime 19",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "L-2831-Brown-40",
+      "shopify_sku": "L-2831-Brown-40",
+      "product_id": 8624663396518,
+      "title": "Men's mid-top Martin boots, 2025 new spring style, high-top men's shoes, British style retro work shoes",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "3414593-Gold-40",
+      "shopify_sku": "3414593-gold-40",
+      "product_id": 15174703775910,
+      "title": "TNV Max 86 (Gold)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "tnv30-red-44",
+      "shopify_sku": "tnv30-red-44",
+      "product_id": 15174703415462,
+      "title": "ZENO Pulse 22 (Red)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "L-7011",
+      "shopify_sku": "L-7011",
+      "product_id": 8357403525286,
+      "title": "Men's White & Green Casual Loafers - Trendy Sneakers",
+      "current_status": "draft",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "QW-001",
+      "shopify_sku": "QW-001",
+      "product_id": 7878343000230,
+      "title": "New product 2023",
+      "current_status": "draft",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG6628-red brown-44",
+      "shopify_sku": "SG6628-red brown-44",
+      "product_id": 6595595731110,
+      "title": "TNV Fusion 626",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige style-44",
+      "shopify_sku": "GX01200-Beige style-44",
+      "product_id": 15174702432422,
+      "title": "VERA Edge 23 (Beige Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige style-43",
+      "shopify_sku": "gx01200-beige style-43",
+      "product_id": 15174702432422,
+      "title": "VERA Edge 23 (Beige Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG949",
+      "shopify_sku": "SG949",
+      "product_id": 15174702268582,
+      "title": "VERA Aero 52 (White Brown)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-SILVER-47",
+      "shopify_sku": "WG1174US-SILVER-47",
+      "product_id": 15174698762406,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (Silver)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige  Hollow Style-41",
+      "shopify_sku": "GX01200-Beige  Hollow Style-41",
+      "product_id": 15174702399654,
+      "title": "VERA Edge 23 (Beige hollow Style )",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "sg7303-brown-39",
+      "shopify_sku": "sg7303-brown-39",
+      "product_id": 6595588227238,
+      "title": "VERA Velocity 34",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "SG3013-white-42",
+      "shopify_sku": "SG3013-white-42",
+      "product_id": 15174699876518,
+      "title": "XON Prime 66 (white)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "sh404-green red-42",
+      "shopify_sku": "sh404-Green Red-42",
+      "product_id": 15174703448230,
+      "title": "TNV Pulse 59 (green)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-SILVER-40",
+      "shopify_sku": "WG1174US-SILVER-40",
+      "product_id": 15174698762406,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (Silver)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Style-40",
+      "shopify_sku": "GX01200-Blue Style-40",
+      "product_id": 15174702366886,
+      "title": "VERA Edge 23 (BLUE STYLE)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Hollow Style-43",
+      "shopify_sku": "GX01200-Blue Hollow Style-43",
+      "product_id": 15174702334118,
+      "title": "VERA Edge 23 (Blue Hollow Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige style-41",
+      "shopify_sku": "GX01200-Beige style-41",
+      "product_id": 15174702432422,
+      "title": "VERA Edge 23 (Beige Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige  Hollow Style-47",
+      "shopify_sku": "GX01200-Beige  Hollow Style-47",
+      "product_id": 15174702399654,
+      "title": "VERA Edge 23 (Beige hollow Style )",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Style-41",
+      "shopify_sku": "GX01200-Blue Style-41",
+      "product_id": 15174702366886,
+      "title": "VERA Edge 23 (BLUE STYLE)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige  Hollow Style-42",
+      "shopify_sku": "GX01200-Beige  Hollow Style-42",
+      "product_id": 15174702399654,
+      "title": "VERA Edge 23 (Beige hollow Style )",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Hollow Style-44",
+      "shopify_sku": "GX01200-Blue Hollow Style-44",
+      "product_id": 15174702334118,
+      "title": "VERA Edge 23 (Blue Hollow Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Blue Hollow Style-40",
+      "shopify_sku": "gx01200-blue hollow style-40",
+      "product_id": 15174702334118,
+      "title": "VERA Edge 23 (Blue Hollow Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "4495861-black-42",
+      "shopify_sku": "4495861-BLACK-42",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "sh404-green red-40",
+      "shopify_sku": "sh404-green red-40",
+      "product_id": 15174703448230,
+      "title": "TNV Pulse 59 (green)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "sh404-blue red-40",
+      "shopify_sku": "sh404-blue red-40",
+      "product_id": 15174703480998,
+      "title": "TNV Pulse 59 (Blue)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "sh404-Green red-39",
+      "shopify_sku": "sh404-Green Red-39",
+      "product_id": 15174703448230,
+      "title": "TNV Pulse 59 (green)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-SILVER-45",
+      "shopify_sku": "WG1174US-SILVER-45",
+      "product_id": 15174698762406,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (Silver)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-WHITE-46",
+      "shopify_sku": "WG1174US-white-46",
+      "product_id": 15174698729638,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (White)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-SILVER-44",
+      "shopify_sku": "WG1174US-SILVER-44",
+      "product_id": 15174698762406,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (Silver)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "WG1174US-WHITE-40",
+      "shopify_sku": "WG1174US-white-40",
+      "product_id": 15174698729638,
+      "title": "Men's Loafers, Patent Leather, Soft Sole, Crocodile Pattern, Sizes 47 & 48, Casual Leather Shoes, Korean Style, Silver, Summer, Men's Slip-on Shoes (White)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "4495861-BLACK-46",
+      "shopify_sku": "4495861-BLACK-46",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GK953US-black-39",
+      "shopify_sku": "GK953US-black-39",
+      "product_id": 8384423002278,
+      "title": "LUXA Stride 61",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "4495861-BLACK-45",
+      "shopify_sku": "4495861-BLACK-45",
+      "product_id": 2175910543414,
+      "title": "ZENO Edge 67",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige style-38",
+      "shopify_sku": "gx01200-beige style-38",
+      "product_id": 15174702432422,
+      "title": "VERA Edge 23 (Beige Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX01200-Beige style-39",
+      "shopify_sku": "gx01200-beige style-39",
+      "product_id": 15174702432422,
+      "title": "VERA Edge 23 (Beige Style)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "GX1-Beige-8*1",
+      "shopify_sku": "GX1-Beige-8*1",
+      "product_id": 8357404508326,
+      "title": "VERA Aero 23",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "Ds005-multi-40*1",
+      "shopify_sku": "Ds005-multi-40*1",
+      "product_id": 8357404147878,
+      "title": "TNV Elite 37",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "6158198-Black-40",
+      "shopify_sku": "6158198-black-40",
+      "product_id": 15174701809830,
+      "title": "ARVO Velocity 77 (Black)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "JJ0-103-multi-42",
+      "shopify_sku": "JJ0-103-multi-42",
+      "product_id": 8339120160934,
+      "title": "ORIX Prime 68",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "HS-007-Brown-42",
+      "shopify_sku": "HS-007-Brown-42",
+      "product_id": 8300966543526,
+      "title": "TNV Max 59",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "A66-Blue-42",
+      "shopify_sku": "a66-blue-42",
+      "product_id": 15174703087782,
+      "title": "LUXA Pulse 597 (Blue)",
+      "current_status": "active",
+      "col_o": ""
+    },
+    {
+      "sheet_sku": "HYT-001111-Brown-40",
+      "shopify_sku": "HYT-001111-Brown-40",
+      "product_id": 8357394186406,
+      "title": "2025 Men's Genuine Leather Casual Loafers",
+      "current_status": "active",
+      "col_o": ""
+    }
+  ],
+  "not_on_shopify": [
+    {
+      "sku": "SK0726US-RED-40",
+      "col_o": "ok"
+    },
+    {
+      "sku": "LS-012-Brown-42",
+      "col_o": "ok"
+    },
+    {
+      "sku": "SK0730US",
+      "col_o": "ok"
+    },
+    {
+      "sku": "tnv25",
+      "col_o": "ok"
+    },
+    {
+      "sku": "LS-001-Brown-43",
+      "col_o": "ok"
+    },
+    {
+      "sku": "LV SHOES",
+      "col_o": "replica"
+    },
+    {
+      "sku": "ok",
+      "col_o": "replica"
+    },
+    {
+      "sku": "SS-8001-Gray-42",
+      "col_o": "ok"
+    },
+    {
+      "sku": "C17-brown-41",
+      "col_o": "ok"
+    },
+    {
+      "sku": "A06-blue-42",
+      "col_o": "ok"
+    },
+    {
+      "sku": "butterfly belt",
+      "col_o": "replica"
+    },
+    {
+      "sku": "N",
+      "col_o": "no"
+    },
+    {
+      "sku": "ESSENTIALS hoodies",
+      "col_o": "replica"
+    },
+    {
+      "sku": "LV TRACK SUITE",
+      "col_o": "replica"
+    },
+    {
+      "sku": "GUCCI TRACK SUITE",
+      "col_o": "replica"
+    },
+    {
+      "sku": "AX TRACKSUITE",
+      "col_o": "replica"
+    },
+    {
+      "sku": "ARMANI EXCHANGE hoodies",
+      "col_o": "replica"
+    },
+    {
+      "sku": "AX TRACK SUITE",
+      "col_o": "replica"
+    },
+    {
+      "sku": "ESSENTIALS HOODIES",
+      "col_o": "replica"
+    },
+    {
+      "sku": "BURBERY LONDON ENGLAND",
+      "col_o": "replica"
+    },
+    {
+      "sku": "1765230",
+      "col_o": "ok"
+    },
+    {
+      "sku": "4513127-blue-28",
+      "col_o": "ok"
+    },
+    {
+      "sku": "JN-9010-Army-M",
+      "col_o": "ok"
+    },
+    {
+      "sku": "C35-black-40",
+      "col_o": "ok"
+    },
+    {
+      "sku": "JH-009-Black40",
+      "col_o": "ok"
+    },
+    {
+      "sku": "sh341-gray-43",
+      "col_o": "ok"
+    },
+    {
+      "sku": "3414714-red-40",
+      "col_o": "ok"
+    },
+    {
+      "sku": "gucci loafer",
+      "col_o": "replica"
+    },
+    {
+      "sku": "GUCCi loafer",
+      "col_o": "replica"
+    },
+    {
+      "sku": "GG SLIPPER",
+      "col_o": "replica"
+    },
+    {
+      "sku": "GUCCI SLIPPER",
+      "col_o": "ok"
+    },
+    {
+      "sku": "gucci slipper",
+      "col_o": ""
+    },
+    {
+      "sku": "3414404",
+      "col_o": ""
+    },
+    {
+      "sku": "WF-001-black-36",
+      "col_o": "REPLICA"
+    },
+    {
+      "sku": "boss 44 euro\nSKU: APR-3323",
+      "col_o": "replica"
+    },
+    {
+      "sku": "LOAFER\nSKU: APR-4015",
+      "col_o": "replica"
+    },
+    {
+      "sku": "36",
+      "col_o": "no"
+    },
+    {
+      "sku": "richa",
+      "col_o": ""
+    },
+    {
+      "sku": "GG SLIPPER -39",
+      "col_o": "replica"
+    },
+    {
+      "sku": "GG FLAT -37",
+      "col_o": "replica"
+    },
+    {
+      "sku": "GX30-red-12.5-US",
+      "col_o": ""
+    },
+    {
+      "sku": "GG BAG\nSKU: OCT-018",
+      "col_o": "REPLICA"
+    },
+    {
+      "sku": "Fendi Shoe",
+      "col_o": "local replica"
+    },
+    {
+      "sku": "tiger shoes",
+      "col_o": "local replica"
+    },
+    {
+      "sku": "Gucchi Slipper",
+      "col_o": "replica"
+    },
+    {
+      "sku": "Crocs",
+      "col_o": "local replica"
+    },
+    {
+      "sku": "Gucchi Cap",
+      "col_o": "local replica"
+    },
+    {
+      "sku": "Sewater",
+      "col_o": "replica"
+    },
+    {
+      "sku": "OFF WHITE SHADES\nSKU: APR-4035",
+      "col_o": "replica"
+    },
+    {
+      "sku": "Lather Jacket",
+      "col_o": "replica"
+    },
+    {
+      "sku": "Huddy",
+      "col_o": "replica"
+    },
+    {
+      "sku": "LV FLAT-BROWN-43\nSKU: TRYO-0013",
+      "col_o": "replica"
+    },
+    {
+      "sku": "AMIR-white-M\nSKU: TRYO-0011",
+      "col_o": "replica"
+    },
+    {
+      "sku": "AMIR-BLACK-M\nSKU: TRYO-0012",
+      "col_o": "replica"
+    },
+    {
+      "sku": "GG HEELS -37\nSKU: HTY-20234",
+      "col_o": "replica"
+    },
+    {
+      "sku": "H-001",
+      "col_o": ""
+    },
+    {
+      "sku": "APR-0013-Brown-44",
+      "col_o": ""
+    },
+    {
+      "sku": "APR-4030",
+      "col_o": ""
+    },
+    {
+      "sku": "APR-4031",
+      "col_o": ""
+    },
+    {
+      "sku": "GK826US",
+      "col_o": ""
+    },
+    {
+      "sku": "L-7047",
+      "col_o": ""
+    },
+    {
+      "sku": "L-7046",
+      "col_o": ""
+    },
+    {
+      "sku": "L-7010",
+      "col_o": ""
+    },
+    {
+      "sku": "3747597-black -39",
+      "col_o": ""
+    },
+    {
+      "sku": "LV BELT",
+      "col_o": ""
+    },
+    {
+      "sku": "GG BELT BLACK",
+      "col_o": ""
+    },
+    {
+      "sku": "GX01200-Beige Hollow Style-9.5",
+      "col_o": ""
+    },
+    {
+      "sku": "JACKET XL 42\nSKU: UN-04 DIOR",
+      "col_o": ""
+    },
+    {
+      "sku": "SG3012-white-41",
+      "col_o": ""
+    },
+    {
+      "sku": "3414593-black-41",
+      "col_o": ""
+    },
+    {
+      "sku": "LV BLACK SNEAKER UK 10",
+      "col_o": ""
+    },
+    {
+      "sku": "GG gold BELT-45-46 INC\nSKU: JTD-002",
+      "col_o": ""
+    },
+    {
+      "sku": "new prduct\njacquemus baog white mini\nSKU: JTD-08",
+      "col_o": ""
+    },
+    {
+      "sku": "new product 2024\nBLACK GUCCI SNEAKER-UK 10\nSKU: VV-11",
+      "col_o": ""
+    },
+    {
+      "sku": "PRADA WHITE BLACK SNEAKER-10\nSKU: VV-013",
+      "col_o": ""
+    },
+    {
+      "sku": "PARADA SNEAKER white-UK-10\nSKU: VV-16",
+      "col_o": ""
+    },
+    {
+      "sku": "blue -38\nSKU: GGU-1",
+      "col_o": ""
+    },
+    {
+      "sku": "sneaker gray\nSKU: BT-02",
+      "col_o": ""
+    },
+    {
+      "sku": "semi formal gray\nSKU: BT-03",
+      "col_o": ""
+    },
+    {
+      "sku": "\"new product 2023\n42 -black\nSKU: RE-003\"",
+      "col_o": ""
+    },
+    {
+      "sku": "\"Black / 42\nSKU: OCT-2023\"",
+      "col_o": ""
+    },
+    {
+      "sku": "new product 2023\n44.5 / BLACK\nSKU: FTR-0001",
+      "col_o": ""
+    },
+    {
+      "sku": "\"new slipper 2023\nLV BRONW BLACK-43\nSKU: TT-002\"",
+      "col_o": ""
+    },
+    {
+      "sku": "39 / MULTISKU: BBF-001",
+      "col_o": ""
+    },
+    {
+      "sku": "42 / MULTI\nSKU: BBF-002",
+      "col_o": ""
+    },
+    {
+      "sku": "TIGER SHOE",
+      "col_o": ""
+    },
+    {
+      "sku": "HERMERS MEN SLIPPER BLUE",
+      "col_o": ""
+    },
+    {
+      "sku": "GUCCI BLACK JACKET",
+      "col_o": ""
+    },
+    {
+      "sku": "LV golden belt",
+      "col_o": ""
+    },
+    {
+      "sku": "BB shirt white",
+      "col_o": ""
+    },
+    {
+      "sku": "AX beige formal shiet",
+      "col_o": ""
+    },
+    {
+      "sku": "AX black formal",
+      "col_o": ""
+    },
+    {
+      "sku": "BB white Formal shirt",
+      "col_o": ""
+    },
+    {
+      "sku": "LV LOAFERS BROWN",
+      "col_o": ""
+    },
+    {
+      "sku": "GANTS T shirt",
+      "col_o": ""
+    },
+    {
+      "sku": "AX ARMANI BLACK SHIRT",
+      "col_o": ""
+    },
+    {
+      "sku": "GUCCI BLACK",
+      "col_o": ""
+    },
+    {
+      "sku": "karl white t-shirt",
+      "col_o": ""
+    },
+    {
+      "sku": "black hoodie",
+      "col_o": ""
+    },
+    {
+      "sku": "LEATHER RED WINE SHOES",
+      "col_o": ""
+    },
+    {
+      "sku": "CS-300",
+      "col_o": ""
+    },
+    {
+      "sku": "4495444",
+      "col_o": ""
+    },
+    {
+      "sku": "HUBLOT WATCH black",
+      "col_o": ""
+    },
+    {
+      "sku": "cartier watch silver",
+      "col_o": ""
+    },
+    {
+      "sku": "maybach black glasses",
+      "col_o": ""
+    },
+    {
+      "sku": "FEROGAMA BELT BLACK",
+      "col_o": ""
+    },
+    {
+      "sku": "DIOR BELT black",
+      "col_o": ""
+    },
+    {
+      "sku": "LORO PIANO",
+      "col_o": ""
+    },
+    {
+      "sku": "TAG HEVER WATCH",
+      "col_o": ""
+    },
+    {
+      "sku": "LV LOAFER BLACK",
+      "col_o": ""
+    },
+    {
+      "sku": "GUCCI SNEAKER",
+      "col_o": ""
+    },
+    {
+      "sku": "JIMMY CHOO WHITE BAG",
+      "col_o": ""
+    },
+    {
+      "sku": "VES SHIRT",
+      "col_o": ""
+    },
+    {
+      "sku": "bell and boss watch",
+      "col_o": ""
+    },
+    {
+      "sku": "OMEGA WATCH",
+      "col_o": ""
+    },
+    {
+      "sku": "LV  LOAFER",
+      "col_o": ""
+    },
+    {
+      "sku": "DIOR BLACK SNEAKER",
+      "col_o": ""
+    },
+    {
+      "sku": "LV SLIPPER",
+      "col_o": ""
+    },
+    {
+      "sku": "Channal shoes",
+      "col_o": ""
+    },
+    {
+      "sku": "DOLCE & GABBANA",
+      "col_o": ""
+    },
+    {
+      "sku": "GG SLIPPER BROWN",
+      "col_o": ""
+    },
+    {
+      "sku": "Balmain white green sneaker",
+      "col_o": ""
+    },
+    {
+      "sku": "AX SHIRT",
+      "col_o": ""
+    },
+    {
+      "sku": "balmain shirt black",
+      "col_o": ""
+    },
+    {
+      "sku": "yellow / 42\nSKU\n716188483915-yellow-42",
+      "col_o": ""
+    },
+    {
+      "sku": "LV FORMAL BROWN SHOES",
+      "col_o": ""
+    },
+    {
+      "sku": "GUCCI SEMI SLIPPER",
+      "col_o": ""
+    },
+    {
+      "sku": "Alexender black sneaker",
+      "col_o": ""
+    },
+    {
+      "sku": "D&G sneaker",
+      "col_o": ""
+    },
+    {
+      "sku": "BALENCIAGA green 44 slipper",
+      "col_o": ""
+    },
+    {
+      "sku": "Valentino -FLAT",
+      "col_o": ""
+    },
+    {
+      "sku": "TIGER SHOE -BLACK 45",
+      "col_o": ""
+    },
+    {
+      "sku": "HERMES SLIPPER",
+      "col_o": ""
+    },
+    {
+      "sku": "DIOR SHOES",
+      "col_o": ""
+    },
+    {
+      "sku": "ADDIDAS",
+      "col_o": ""
+    },
+    {
+      "sku": "EZZY ADDISAS",
+      "col_o": ""
+    }
+  ]
+}
