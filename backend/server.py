@@ -7428,8 +7428,10 @@ async def download_extension_alt():
 
 @app.get("/api/download/wedding-video")
 async def download_wedding_video():
-    """Download the wedding invitation video"""
-    video_path = Path("/app/backend/video_output/wedding_reel.mp4")
+    """Download the wedding invitation video (v2 - reverse engineered)"""
+    video_path = Path("/app/backend/video_output/wedding_reel_v2.mp4")
+    if not video_path.exists():
+        video_path = Path("/app/backend/video_output/wedding_reel.mp4")
     if not video_path.exists():
         raise HTTPException(status_code=404, detail="Wedding video not found")
     return FileResponse(
