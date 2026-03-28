@@ -7424,3 +7424,29 @@ async def download_extension_alt():
         media_type="application/zip",
         filename="wamerce-1688-extension.zip"
     )
+
+
+@app.get("/api/download/wedding-video")
+async def download_wedding_video():
+    """Download the wedding invitation video"""
+    video_path = Path("/app/backend/video_output/wedding_reel.mp4")
+    if not video_path.exists():
+        raise HTTPException(status_code=404, detail="Wedding video not found")
+    return FileResponse(
+        video_path,
+        media_type="video/mp4",
+        filename="wedding_reel_ayush_reea.mp4"
+    )
+
+@app.get("/api/download/wedding-scene/{scene_num}")
+async def download_wedding_scene(scene_num: int):
+    """Download individual rendered scene images"""
+    scene_path = Path(f"/app/backend/video_assets/scene{scene_num}_rendered.png")
+    if not scene_path.exists():
+        raise HTTPException(status_code=404, detail=f"Scene {scene_num} not found")
+    return FileResponse(
+        scene_path,
+        media_type="image/png",
+        filename=f"wedding_scene_{scene_num}.png"
+    )
+
