@@ -130,6 +130,7 @@ import WebsiteEditorV2 from "@/components/WebsiteEditorV2";
 import ShopifyStyleEditor from "@/components/ShopifyStyleEditor";
 import MerchantOnboarding from "@/components/MerchantOnboarding";
 import VPBXCallManager from "@/components/VPBXCallManager";
+import LogisticsDashboard from "@/components/LogisticsDashboard";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -372,6 +373,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <VPBXCallManager />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/logistics" 
+        element={
+          <ProtectedRoute>
+            <LogisticsDashboard />
           </ProtectedRoute>
         } 
       />

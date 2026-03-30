@@ -148,6 +148,12 @@ const Sidebar = () => {
       ]
     },
     { 
+      icon: Truck, 
+      label: 'Shri Maruti', 
+      path: '/logistics',
+      badge: 'New'
+    },
+    { 
       icon: Package, 
       label: '1688 Sourcing', 
       section: '1688-sourcing',

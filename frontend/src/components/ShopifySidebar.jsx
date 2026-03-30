@@ -157,6 +157,7 @@ const ShopifySidebar = () => {
       label: 'Shipping',
       icon: Truck,
       children: [
+        { label: 'Shri Maruti', path: '/logistics', icon: Truck, badge: 'New' },
         { label: 'DTDC Shipping', path: '/dtdc-shipping', icon: Truck },
         { label: 'DWZ56 Tracking', path: '/dwz56-tracking', icon: MapPin },
         { label: 'DWZ56 Purchase', path: '/dwz56-purchase', icon: Activity },
