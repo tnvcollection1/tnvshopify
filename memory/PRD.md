@@ -17,33 +17,39 @@ Multi-tenant e-commerce platform (wamerce.com) for tnvcollection.com. Key integr
 3. Bulk Shopify Catalog Management (publish/unpublish/tag/price/collections)
 4. Designer Shoes Pricing Update (8000-12500 INR range)
 5. "Express Delivery" & "RTS" Collection Mapping
-6. **Shri Maruti Logistics (Innofulfill) Full Backend Integration** (March 30, 2026):
+6. **Shri Maruti Logistics Full Integration** (March 30, 2026):
    - Auth service with auto-token refresh
    - Rate calculator (SURFACE & AIR, with compare)
    - Ecomm order booking (push-order)
-   - Order cancellation
-   - Order tracking (status + history)
-   - Shopify order auto-push to logistics
-   - Bookings database with listing/pagination
-7. **Shri Maruti Logistics Frontend Dashboard** (March 30, 2026):
-   - Rate Calculator tab: compare Surface vs Air rates with full details
-   - Book tab: manual booking form + Shopify auto-push
-   - Shipments tab: list all bookings with status, AWB, amounts
-   - Track tab: real-time tracking with history timeline
-   - Sidebar navigation: "Shri Maruti" link with badge
-   - API connection status indicator
-8. Wedding Invitation Video Generator (programmatic MP4 creation)
+   - Order cancellation, tracking (status + history)
+   - Shopify order auto-push
+7. **Logistics Dashboard UI** (March 30, 2026):
+   - Rate Calculator tab (Surface vs Air comparison)
+   - Book tab (manual + Shopify auto-push)
+   - Shipments tab (listing with status/AWB/amounts)
+   - Track tab (real-time status + timeline history)
+8. **Bulk Shipping Feature** (March 30, 2026):
+   - Lists all 423+ paid/unfulfilled orders from DB
+   - Select multiple orders via checkboxes / select-all
+   - One-click "Ship (N)" pushes all selected to Shri Maruti
+   - Search by order #, customer name, phone
+   - Surface/Air delivery mode selection
+   - Shows push results (success/failed/skipped per order)
+   - Already-booked orders marked as "Shipped" and disabled
+9. Wedding Invitation Video Generator
 
-### Logistics API Endpoints (All Tested & Working)
-- `GET /api/logistics/auth-status` - Test Innofulfill auth
-- `POST /api/logistics/calculate-rate` - Calculate single shipping rate
-- `POST /api/logistics/calculate-rate/compare` - Compare SURFACE vs AIR
-- `POST /api/logistics/book-order` - Book order with Shri Maruti
-- `POST /api/logistics/cancel-order` - Cancel booked orders
-- `GET /api/logistics/track/{tracking_id}` - Current tracking status
-- `GET /api/logistics/track/{tracking_id}/history` - Full tracking history
-- `POST /api/logistics/push-shopify-order` - Auto-push Shopify orders
-- `GET /api/logistics/bookings` - List all bookings (paginated)
+### API Endpoints (All Tested)
+- `GET /api/logistics/auth-status`
+- `POST /api/logistics/calculate-rate`
+- `POST /api/logistics/calculate-rate/compare`
+- `POST /api/logistics/book-order`
+- `POST /api/logistics/cancel-order`
+- `GET /api/logistics/track/{id}`
+- `GET /api/logistics/track/{id}/history`
+- `POST /api/logistics/push-shopify-order`
+- `GET /api/logistics/bookings`
+- `GET /api/logistics/shippable-orders` (NEW)
+- `POST /api/logistics/bulk-push` (NEW)
 
 ## Pending / In-Progress
 - P1: Shopify Product Categorization Fix (Size 45 filter)
@@ -51,28 +57,19 @@ Multi-tenant e-commerce platform (wamerce.com) for tnvcollection.com. Key integr
 - P2: 1688 API token auto-refresh
 
 ## Future/Backlog
-- Sales Dashboard, Order Tracking UI, Wishlist, Reviews
+- Sales Dashboard, Wishlist, Reviews
 - Razorpay checkout flow
 - Abandoned cart recovery (WhatsApp)
 - Zong VPBX outbound calls
 - Namshi-style Shopify theme
 
-## Third-Party Integrations
-| Service | Status | Notes |
-|---------|--------|-------|
-| Shopify Admin API | Active | User API Key |
-| Google Sheets | Active | Service Account |
-| Innofulfill/Delcaper | **Active** | Auto-auth, vendor: tnvc |
-| 1688.com | Broken | Token expires |
-| Zong VPBX | Blocked | Awaiting API docs |
-
 ## Key Files
 - `/app/backend/services/innofulfill_service.py` - Innofulfill API client
-- `/app/backend/routes/logistics.py` - Logistics API routes
-- `/app/frontend/src/components/LogisticsDashboard.jsx` - Dashboard UI
-- `/app/backend/tests/test_logistics.py` - Backend tests (9/9 pass)
+- `/app/backend/routes/logistics.py` - All logistics routes
+- `/app/frontend/src/components/LogisticsDashboard.jsx` - Full dashboard UI
+- `/app/backend/tests/test_logistics.py` - Backend tests (15/15 pass)
 
 ## Testing Status
-- Test report: `/app/test_reports/iteration_43.json`
-- Backend: 9/9 tests passed (100%)
-- Frontend: All features verified (100%)
+- Test reports: iteration_43.json (initial), iteration_44.json (bulk ship)
+- Backend: 15/15 tests passed (100%)
+- Frontend: All features verified (100%), all regressions pass
