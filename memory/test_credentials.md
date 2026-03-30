@@ -1,5 +1,10 @@
 # Test Credentials
 
+## Wamerce Admin Login
+- Username: admin
+- Password: admin
+- URL: https://catalog-sync-11.preview.emergentagent.com/
+
 ## Innofulfill / Delcaper (Shri Maruti Logistics)
 - Email: tnvcollection1@gmail.com
 - Password: Sunny123!
@@ -7,6 +12,7 @@
 - Business Type: ECOM
 - Base URL: https://apis.delcaper.com
 - Auth: POST /auth/login with vendorType: SELLER
+- Test AWB: TNVC0000000004
 
 ## VPS
 - IP: 203.161.38.75
