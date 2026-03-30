@@ -379,3 +379,222 @@ async def api_auth_status():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─── Shippable Orders (from DB) ──────────────────────────────────
+
+@router.get("/shippable-orders")
+async def api_shippable_orders(page: int = 1, limit: int = 30, search: str = ""):
+    """Get unfulfilled paid orders ready for shipping."""
+    query = {
+        "fulfillment_status": "unfulfilled",
+        "payment_status": {"$in": ["paid", "Paid", "authorized"]},
+    }
+    if search:
+        query["$or"] = [
+            {"order_number": {"$regex": search, "$options": "i"}},
+            {"first_name": {"$regex": search, "$options": "i"}},
+            {"last_name": {"$regex": search, "$options": "i"}},
+            {"phone": {"$regex": search, "$options": "i"}},
+        ]
+        # Try numeric search for order_number
+        try:
+            num = int(search)
+            query["$or"].append({"order_number": num})
+        except ValueError:
+            pass
+
+    total = db.customers.count_documents(query)
+    orders = list(
+        db.customers.find(query, {"_id": 0})
+        .sort("order_number", -1)
+        .skip((page - 1) * limit)
+        .limit(limit)
+    )
+
+    # Check which orders already have logistics bookings
+    order_numbers = [str(o.get("order_number", "")) for o in orders]
+    existing = set()
+    if order_numbers:
+        booked = db.logistics_bookings.find(
+            {"order_id": {"$in": order_numbers}},
+            {"_id": 0, "order_id": 1},
+        )
+        existing = {b["order_id"] for b in booked}
+
+    result = []
+    for o in orders:
+        ship = o.get("shipping_address", {}) or {}
+        items = o.get("line_items", []) or []
+        order_num = str(o.get("order_number", ""))
+        result.append({
+            "order_number": o.get("order_number"),
+            "customer_name": f"{o.get('first_name', '')} {o.get('last_name', '')}".strip(),
+            "phone": o.get("phone", ""),
+            "email": o.get("email", ""),
+            "store_name": o.get("store_name", ""),
+            "payment_status": o.get("payment_status", ""),
+            "total_spent": o.get("total_spent"),
+            "city": ship.get("city", ""),
+            "state": ship.get("province", ship.get("state", "")),
+            "zip": ship.get("zip", ""),
+            "address1": ship.get("address1", ""),
+            "items_count": len(items),
+            "items_summary": ", ".join(
+                [f"{it.get('name', 'Product')} x{it.get('quantity', 1)}" for it in items[:3]]
+            ),
+            "already_booked": order_num in existing,
+        })
+
+    return {"status": "success", "total": total, "page": page, "orders": result}
+
+
+# ─── Bulk Push Orders ────────────────────────────────────────────
+
+class BulkPushRequest(BaseModel):
+    order_numbers: list[int]
+    delivery_type: str = "SURFACE"
+    pickup_name: str = "TNVC Collection"
+    pickup_phone: str = "9582639469"
+    pickup_address: str = "TNVC Warehouse"
+    pickup_city: str = "Delhi"
+    pickup_state: str = "Delhi"
+    pickup_zip: str = "110001"
+
+
+@router.post("/bulk-push")
+async def api_bulk_push(req: BulkPushRequest):
+    """Push multiple orders to Shri Maruti in bulk."""
+    results = []
+    success_count = 0
+    fail_count = 0
+
+    for order_num in req.order_numbers:
+        try:
+            # Fetch order from DB
+            order = db.customers.find_one(
+                {"order_number": order_num},
+                {"_id": 0},
+            )
+            if not order:
+                results.append({"order_number": order_num, "status": "error", "message": "Order not found"})
+                fail_count += 1
+                continue
+
+            # Check if already booked
+            existing = db.logistics_bookings.find_one(
+                {"order_id": str(order_num)}, {"_id": 0, "awb_number": 1}
+            )
+            if existing:
+                results.append({
+                    "order_number": order_num, "status": "skipped",
+                    "message": f"Already booked (AWB: {existing.get('awb_number', 'N/A')})",
+                })
+                continue
+
+            # Build shipping address
+            ship = order.get("shipping_address", {}) or {}
+            ship_addr = {
+                "name": f"{order.get('first_name', '')} {order.get('last_name', '')}".strip() or "Customer",
+                "phone": (order.get("phone") or "").replace(" ", "").replace("+91", ""),
+                "address1": ship.get("address1", "N/A"),
+                "city": ship.get("city", ""),
+                "state": ship.get("province", ship.get("state", "")),
+                "country": "India",
+                "zip": ship.get("zip", "000000"),
+            }
+
+            # Build line items
+            items = order.get("line_items", []) or []
+            total_weight = 0
+            line_items = []
+            total_price = 0
+            for item in items:
+                qty = item.get("quantity", 1)
+                price = float(item.get("price", 0))
+                weight = item.get("grams", 500)
+                total_weight += weight * qty
+                total_price += price * qty
+                line_items.append({
+                    "name": item.get("name", "Product"),
+                    "weight": weight,
+                    "quantity": qty,
+                    "unitPrice": price,
+                    "price": price * qty,
+                    "sku": item.get("sku", ""),
+                })
+
+            if not line_items:
+                line_items = [{"name": "Product", "weight": 500, "quantity": 1, "unitPrice": total_price, "price": total_price, "sku": ""}]
+                total_weight = 500
+
+            payment_status = order.get("payment_status", "")
+            is_paid = payment_status and payment_status.lower() in ["paid", "authorized"]
+
+            payload = {
+                "orderId": str(order_num),
+                "shippingAddress": ship_addr,
+                "pickupAddress": {
+                    "name": req.pickup_name,
+                    "phone": req.pickup_phone,
+                    "address1": req.pickup_address,
+                    "city": req.pickup_city,
+                    "state": req.pickup_state,
+                    "country": "India",
+                    "zip": req.pickup_zip,
+                },
+                "amount": total_price or float(order.get("total_spent", 0) or 0),
+                "weight": total_weight or 500,
+                "length": 30, "width": 20, "height": 10,
+                "currency": "INR",
+                "gstPercentage": 0,
+                "paymentType": "ONLINE" if is_paid else "COD",
+                "paymentStatus": "PAID" if is_paid else "UNPAID",
+                "deliveryPromise": req.delivery_type,
+                "lineItems": line_items,
+                "remarks": f"Order #{order_num}",
+                "returnableOrder": True,
+            }
+
+            result = await push_order(payload)
+            if result.get("status") == 200:
+                # Save booking
+                db.logistics_bookings.insert_one({
+                    "order_id": str(order_num),
+                    "awb_number": result["data"].get("awbNumber"),
+                    "shipper_order_id": result["data"].get("shipperOrderId"),
+                    "delivery_type": req.delivery_type,
+                    "status": "booked",
+                    "shipping_address": ship_addr,
+                    "amount": payload["amount"],
+                    "weight": total_weight,
+                    "customer_name": ship_addr["name"],
+                    "destination_pincode": ship_addr["zip"],
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                })
+                results.append({
+                    "order_number": order_num,
+                    "status": "success",
+                    "awb_number": result["data"].get("awbNumber"),
+                    "shipper_order_id": result["data"].get("shipperOrderId"),
+                })
+                success_count += 1
+            else:
+                results.append({
+                    "order_number": order_num,
+                    "status": "error",
+                    "message": str(result.get("message", "Push failed")),
+                })
+                fail_count += 1
+
+        except Exception as e:
+            results.append({"order_number": order_num, "status": "error", "message": str(e)})
+            fail_count += 1
+
+    return {
+        "status": "success",
+        "total": len(req.order_numbers),
+        "success": success_count,
+        "failed": fail_count,
+        "results": results,
+    }

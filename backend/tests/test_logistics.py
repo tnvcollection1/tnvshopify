@@ -178,6 +178,126 @@ class TestLogisticsBookOrder:
         print("✓ Booking validation working - rejects incomplete payload")
 
 
+class TestShippableOrders:
+    """Test shippable orders endpoint for bulk shipping feature"""
+    
+    def test_get_shippable_orders(self):
+        """Test fetching shippable orders (paid + unfulfilled)"""
+        response = requests.get(f"{BASE_URL}/api/logistics/shippable-orders?page=1&limit=25")
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["status"] == "success"
+        assert "orders" in data
+        assert "total" in data
+        assert isinstance(data["orders"], list)
+        
+        # Should have 423+ orders as per requirement
+        assert data["total"] >= 400, f"Expected 400+ shippable orders, got {data['total']}"
+        print(f"✓ Found {data['total']} shippable orders")
+        
+        # Verify order structure
+        if data["orders"]:
+            order = data["orders"][0]
+            assert "order_number" in order
+            assert "customer_name" in order
+            assert "phone" in order
+            assert "items_summary" in order
+            assert "already_booked" in order
+            print(f"  First order: #{order['order_number']} - {order['customer_name']}")
+    
+    def test_shippable_orders_search_filter(self):
+        """Test search filter on shippable orders"""
+        # Search by order number
+        response = requests.get(f"{BASE_URL}/api/logistics/shippable-orders?search=9891")
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["status"] == "success"
+        assert data["total"] >= 1, "Search for '9891' should return at least 1 order"
+        
+        # Verify search results contain the search term
+        found_match = False
+        for order in data["orders"]:
+            if "9891" in str(order.get("order_number", "")) or "9891" in str(order.get("phone", "")):
+                found_match = True
+                break
+        assert found_match, "Search results should contain orders matching '9891'"
+        print(f"✓ Search filter working - found {data['total']} orders matching '9891'")
+    
+    def test_shippable_orders_pagination(self):
+        """Test pagination on shippable orders"""
+        # Get page 1
+        response1 = requests.get(f"{BASE_URL}/api/logistics/shippable-orders?page=1&limit=10")
+        assert response1.status_code == 200
+        data1 = response1.json()
+        
+        # Get page 2
+        response2 = requests.get(f"{BASE_URL}/api/logistics/shippable-orders?page=2&limit=10")
+        assert response2.status_code == 200
+        data2 = response2.json()
+        
+        # Verify different orders on different pages
+        if data1["orders"] and data2["orders"]:
+            page1_orders = {o["order_number"] for o in data1["orders"]}
+            page2_orders = {o["order_number"] for o in data2["orders"]}
+            assert page1_orders != page2_orders, "Page 1 and Page 2 should have different orders"
+        
+        print(f"✓ Pagination working - Page 1: {len(data1['orders'])} orders, Page 2: {len(data2['orders'])} orders")
+
+
+class TestBulkPush:
+    """Test bulk push endpoint for bulk shipping feature"""
+    
+    def test_bulk_push_invalid_order(self):
+        """Test bulk push with invalid order number returns proper error"""
+        payload = {
+            "order_numbers": [999999999],
+            "delivery_type": "SURFACE"
+        }
+        response = requests.post(f"{BASE_URL}/api/logistics/bulk-push", json=payload)
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["status"] == "success"
+        assert data["total"] == 1
+        assert data["failed"] == 1
+        assert data["success"] == 0
+        
+        # Verify error message
+        assert len(data["results"]) == 1
+        result = data["results"][0]
+        assert result["status"] == "error"
+        assert "not found" in result["message"].lower()
+        print("✓ Bulk push handles invalid orders correctly")
+    
+    def test_bulk_push_empty_list(self):
+        """Test bulk push with empty order list"""
+        payload = {
+            "order_numbers": [],
+            "delivery_type": "SURFACE"
+        }
+        response = requests.post(f"{BASE_URL}/api/logistics/bulk-push", json=payload)
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["total"] == 0
+        assert data["success"] == 0
+        assert data["failed"] == 0
+        print("✓ Bulk push handles empty list correctly")
+    
+    def test_bulk_push_validation(self):
+        """Test bulk push validates delivery type"""
+        payload = {
+            "order_numbers": [9891],
+            "delivery_type": "SURFACE"  # Valid delivery type
+        }
+        response = requests.post(f"{BASE_URL}/api/logistics/bulk-push", json=payload)
+        # Should not fail validation
+        assert response.status_code == 200
+        print("✓ Bulk push accepts valid delivery type")
+
+
 # Run tests
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])
