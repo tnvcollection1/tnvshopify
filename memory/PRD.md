@@ -1,7 +1,7 @@
 # Wamerce.com - Product Requirements Document
 
 ## Original Problem Statement
-Multi-tenant e-commerce platform (wamerce.com) for tnvcollection.com. Key integrations include Shopify Admin API, Google Sheets sync, logistics, and catalog management.
+Multi-tenant e-commerce platform (wamerce.com) for tnvcollection.com. Key integrations include Shopify Admin API, Google Sheets sync, Shri Maruti Logistics, and catalog management.
 
 ## Architecture
 - **Frontend**: React (deployed via Nginx on VPS 203.161.38.75)
@@ -11,34 +11,20 @@ Multi-tenant e-commerce platform (wamerce.com) for tnvcollection.com. Key integr
 
 ## What's Been Implemented
 
-### Completed Features
-1. SKU Reconciliation (Google Sheet <> Shopify)
-2. VPS Migration (203.161.38.75) with Nginx + SSL
-3. Bulk Shopify Catalog Management (publish/unpublish/tag/price/collections)
-4. Designer Shoes Pricing Update (8000-12500 INR range)
-5. "Express Delivery" & "RTS" Collection Mapping
-6. **Shri Maruti Logistics Full Integration** (March 30, 2026):
-   - Auth service with auto-token refresh
-   - Rate calculator (SURFACE & AIR, with compare)
-   - Ecomm order booking (push-order)
-   - Order cancellation, tracking (status + history)
-   - Shopify order auto-push
-7. **Logistics Dashboard UI** (March 30, 2026):
-   - Rate Calculator tab (Surface vs Air comparison)
-   - Book tab (manual + Shopify auto-push)
-   - Shipments tab (listing with status/AWB/amounts)
-   - Track tab (real-time status + timeline history)
-8. **Bulk Shipping Feature** (March 30, 2026):
-   - Lists all 423+ paid/unfulfilled orders from DB
-   - Select multiple orders via checkboxes / select-all
-   - One-click "Ship (N)" pushes all selected to Shri Maruti
-   - Search by order #, customer name, phone
-   - Surface/Air delivery mode selection
-   - Shows push results (success/failed/skipped per order)
-   - Already-booked orders marked as "Shipped" and disabled
-9. Wedding Invitation Video Generator
+### Shri Maruti Logistics (InnoFulfill) - Complete Integration
+1. **Auth Service** — Auto-login with JWT token refresh
+2. **Rate Calculator** — SURFACE/AIR comparison, zone/weight details
+3. **Order Booking** — Manual booking + Shopify auto-push
+4. **Order Tracking** — Real-time status + full history timeline
+5. **Bulk Shipping** — Select multiple orders from DB, one-click push
+6. **Auto-Push (Shopify → InnoFulfill)** — Webhook-based automation:
+   - Shopify `orders/paid` webhook registered (ID: 2164300185766)
+   - Background task auto-pushes paid orders to InnoFulfill
+   - Enable/disable toggle with settings (delivery mode, pickup address)
+   - Push failure logging for debugging
+7. **Dashboard UI** — 6 tabs: Rates, Bulk Ship, Book, Shipments, Track, Auto-Push
 
-### API Endpoints (All Tested)
+### API Endpoints (21 tests, all passing)
 - `GET /api/logistics/auth-status`
 - `POST /api/logistics/calculate-rate`
 - `POST /api/logistics/calculate-rate/compare`
@@ -48,28 +34,37 @@ Multi-tenant e-commerce platform (wamerce.com) for tnvcollection.com. Key integr
 - `GET /api/logistics/track/{id}/history`
 - `POST /api/logistics/push-shopify-order`
 - `GET /api/logistics/bookings`
-- `GET /api/logistics/shippable-orders` (NEW)
-- `POST /api/logistics/bulk-push` (NEW)
+- `GET /api/logistics/shippable-orders`
+- `POST /api/logistics/bulk-push`
+- `GET /api/logistics/auto-push/settings`
+- `POST /api/logistics/auto-push/settings`
+- `POST /api/logistics/register-webhook`
+- `GET /api/logistics/webhooks`
+- `GET /api/logistics/push-failures`
 
-## Pending / In-Progress
+### Other Completed Features
+- SKU Reconciliation, VPS Migration, Bulk Catalog Management
+- Designer Shoes Pricing, Collection Mapping
+- Wedding Invitation Video Generator
+
+## Pending
 - P1: Shopify Product Categorization Fix (Size 45 filter)
 - P1: Pricing Formula Update (awaiting user details)
-- P2: 1688 API token auto-refresh
 
 ## Future/Backlog
-- Sales Dashboard, Wishlist, Reviews
-- Razorpay checkout flow
+- 1688 API token auto-refresh
+- Sales Dashboard, Razorpay checkout
 - Abandoned cart recovery (WhatsApp)
-- Zong VPBX outbound calls
 - Namshi-style Shopify theme
 
 ## Key Files
-- `/app/backend/services/innofulfill_service.py` - Innofulfill API client
-- `/app/backend/routes/logistics.py` - All logistics routes
-- `/app/frontend/src/components/LogisticsDashboard.jsx` - Full dashboard UI
-- `/app/backend/tests/test_logistics.py` - Backend tests (15/15 pass)
+- `/app/backend/services/innofulfill_service.py`
+- `/app/backend/routes/logistics.py`
+- `/app/backend/routes/shopify_webhooks.py` (auto_push_to_innofulfill)
+- `/app/frontend/src/components/LogisticsDashboard.jsx`
+- `/app/backend/tests/test_logistics.py` (21 tests)
 
-## Testing Status
-- Test reports: iteration_43.json (initial), iteration_44.json (bulk ship)
-- Backend: 15/15 tests passed (100%)
-- Frontend: All features verified (100%), all regressions pass
+## Testing
+- iteration_43: Initial logistics (9/9 pass)
+- iteration_44: + Bulk ship (15/15 pass)
+- iteration_45: + Auto-push settings (21/21 pass, all regressions pass)
