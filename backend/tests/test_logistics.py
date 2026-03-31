@@ -298,6 +298,159 @@ class TestBulkPush:
         print("✓ Bulk push accepts valid delivery type")
 
 
+class TestAutoPushSettings:
+    """Test auto-push settings endpoints for webhook-based auto-shipping"""
+    
+    def test_get_auto_push_settings(self):
+        """Test fetching auto-push settings"""
+        response = requests.get(f"{BASE_URL}/api/logistics/auto-push/settings")
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["status"] == "success"
+        assert "settings" in data
+        
+        settings = data["settings"]
+        assert "enabled" in settings
+        assert "delivery_type" in settings
+        assert "pickup" in settings
+        
+        # Verify pickup address structure
+        pickup = settings["pickup"]
+        assert "name" in pickup
+        assert "phone" in pickup
+        assert "address" in pickup
+        assert "city" in pickup
+        assert "state" in pickup
+        assert "zip" in pickup
+        
+        print(f"✓ Auto-push settings: enabled={settings['enabled']}, delivery_type={settings['delivery_type']}")
+    
+    def test_save_auto_push_settings(self):
+        """Test saving auto-push settings"""
+        payload = {
+            "enabled": True,
+            "delivery_type": "SURFACE",
+            "pickup_name": "TNVC Collection",
+            "pickup_phone": "9582639469",
+            "pickup_address": "TNVC Warehouse",
+            "pickup_city": "Delhi",
+            "pickup_state": "Delhi",
+            "pickup_zip": "110001"
+        }
+        response = requests.post(f"{BASE_URL}/api/logistics/auto-push/settings", json=payload)
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["status"] == "success"
+        assert "settings" in data
+        
+        # Verify settings were saved
+        saved = data["settings"]
+        assert saved["enabled"] == True
+        assert saved["delivery_type"] == "SURFACE"
+        assert saved["pickup"]["name"] == "TNVC Collection"
+        
+        print("✓ Auto-push settings saved successfully")
+    
+    def test_toggle_auto_push_off(self):
+        """Test disabling auto-push"""
+        payload = {
+            "enabled": False,
+            "delivery_type": "SURFACE",
+            "pickup_name": "TNVC Collection",
+            "pickup_phone": "9582639469",
+            "pickup_address": "TNVC Warehouse",
+            "pickup_city": "Delhi",
+            "pickup_state": "Delhi",
+            "pickup_zip": "110001"
+        }
+        response = requests.post(f"{BASE_URL}/api/logistics/auto-push/settings", json=payload)
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["status"] == "success"
+        assert data["settings"]["enabled"] == False
+        
+        print("✓ Auto-push disabled successfully")
+    
+    def test_toggle_auto_push_on(self):
+        """Test enabling auto-push"""
+        payload = {
+            "enabled": True,
+            "delivery_type": "SURFACE",
+            "pickup_name": "TNVC Collection",
+            "pickup_phone": "9582639469",
+            "pickup_address": "TNVC Warehouse",
+            "pickup_city": "Delhi",
+            "pickup_state": "Delhi",
+            "pickup_zip": "110001"
+        }
+        response = requests.post(f"{BASE_URL}/api/logistics/auto-push/settings", json=payload)
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["status"] == "success"
+        assert data["settings"]["enabled"] == True
+        
+        print("✓ Auto-push enabled successfully")
+
+
+class TestWebhookManagement:
+    """Test webhook registration and listing endpoints"""
+    
+    def test_list_webhooks(self):
+        """Test listing registered Shopify webhooks"""
+        response = requests.get(f"{BASE_URL}/api/logistics/webhooks")
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["status"] == "success"
+        assert "webhooks" in data
+        assert isinstance(data["webhooks"], list)
+        
+        # Check if orders/paid webhook is registered
+        paid_webhook = None
+        for wh in data["webhooks"]:
+            if wh.get("topic") == "orders/paid":
+                paid_webhook = wh
+                break
+        
+        if paid_webhook:
+            print(f"✓ orders/paid webhook registered: {paid_webhook['address']}")
+        else:
+            print("✓ Webhooks endpoint working (no orders/paid webhook found)")
+        
+        print(f"  Total webhooks: {len(data['webhooks'])}")
+    
+    # NOTE: Not testing register-webhook endpoint to avoid creating duplicates
+    # as per agent_to_agent_context_note
+
+
+class TestPushFailures:
+    """Test push failures logging endpoint"""
+    
+    def test_list_push_failures(self):
+        """Test fetching push failures list"""
+        response = requests.get(f"{BASE_URL}/api/logistics/push-failures?limit=5")
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["status"] == "success"
+        assert "failures" in data
+        assert isinstance(data["failures"], list)
+        
+        if data["failures"]:
+            failure = data["failures"][0]
+            assert "order_id" in failure
+            assert "error" in failure
+            assert "created_at" in failure
+            print(f"✓ Found {len(data['failures'])} push failures")
+            print(f"  Latest failure: Order #{failure['order_id']} - {failure['error'][:50]}...")
+        else:
+            print("✓ No push failures recorded (good!)")
+
+
 # Run tests
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])

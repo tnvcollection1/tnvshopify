@@ -475,7 +475,7 @@ async def handle_order_paid(
     x_shopify_hmac_sha256: str = Header(None),
     x_shopify_shop_domain: str = Header(None)
 ):
-    """Handle Shopify order paid webhook"""
+    """Handle Shopify order paid webhook — also auto-pushes to InnoFulfill if enabled"""
     body = await request.body()
     
     store = await db.stores.find_one(
@@ -505,6 +505,12 @@ async def handle_order_paid(
             store["id"],
             order,
             "order_paid"
+        )
+        
+        # Auto-push to InnoFulfill in background
+        background_tasks.add_task(
+            auto_push_to_innofulfill,
+            order_data
         )
         
         return {"status": "ok", "order_id": order.id}
@@ -1029,3 +1035,142 @@ async def remove_all_webhooks(store_id: str):
         "details": removed
     }
 
+
+
+# ==================== InnoFulfill Auto-Push ====================
+
+from pymongo import MongoClient as SyncMongoClient
+
+_sync_db = None
+def _get_sync_db():
+    global _sync_db
+    if _sync_db is None:
+        _sync_db = SyncMongoClient(MONGO_URL)[DB_NAME]
+    return _sync_db
+
+
+async def auto_push_to_innofulfill(order_data: dict):
+    """
+    Background task: auto-push a paid Shopify order to InnoFulfill.
+    Checks settings to see if auto-push is enabled.
+    """
+    try:
+        from services.innofulfill_service import push_order
+        
+        sync_db = _get_sync_db()
+        
+        # Check if auto-push is enabled
+        settings = sync_db.logistics_settings.find_one({"key": "auto_push"}, {"_id": 0})
+        if not settings or not settings.get("enabled", False):
+            logger.info("InnoFulfill auto-push is disabled, skipping")
+            return
+        
+        order_number = order_data.get("order_number", order_data.get("id"))
+        order_id_str = str(order_number)
+        
+        # Check if already booked
+        existing = sync_db.logistics_bookings.find_one({"order_id": order_id_str}, {"_id": 0})
+        if existing:
+            logger.info(f"Order #{order_number} already booked, skipping auto-push")
+            return
+        
+        # Build shipping address
+        shipping = order_data.get("shipping_address", {}) or {}
+        ship_addr = {
+            "name": f"{shipping.get('first_name', '')} {shipping.get('last_name', '')}".strip() or "Customer",
+            "phone": (order_data.get("phone") or shipping.get("phone") or "").replace(" ", "").replace("+91", ""),
+            "address1": shipping.get("address1", "N/A"),
+            "city": shipping.get("city", ""),
+            "state": shipping.get("province", shipping.get("state", "")),
+            "country": "India",
+            "zip": shipping.get("zip", "000000"),
+        }
+        
+        # Build line items
+        items = order_data.get("line_items", []) or []
+        total_weight = 0
+        line_items = []
+        total_price = 0
+        for item in items:
+            qty = item.get("quantity", 1)
+            price = float(item.get("price", 0))
+            weight = item.get("grams", 500)
+            total_weight += weight * qty
+            total_price += price * qty
+            line_items.append({
+                "name": item.get("title", item.get("name", "Product")),
+                "weight": weight,
+                "quantity": qty,
+                "unitPrice": price,
+                "price": price * qty,
+                "sku": item.get("sku", ""),
+            })
+        
+        if not line_items:
+            total_price = float(order_data.get("total_price", 0))
+            line_items = [{"name": "Product", "weight": 500, "quantity": 1, "unitPrice": total_price, "price": total_price, "sku": ""}]
+            total_weight = 500
+        
+        # Get pickup defaults from settings
+        pickup = settings.get("pickup", {})
+        delivery_type = settings.get("delivery_type", "SURFACE")
+        
+        financial = order_data.get("financial_status", "")
+        is_paid = financial.lower() in ["paid", "authorized"] if financial else False
+        
+        payload = {
+            "orderId": order_id_str,
+            "shippingAddress": ship_addr,
+            "pickupAddress": {
+                "name": pickup.get("name", "TNVC Collection"),
+                "phone": pickup.get("phone", "9582639469"),
+                "address1": pickup.get("address", "TNVC Warehouse"),
+                "city": pickup.get("city", "Delhi"),
+                "state": pickup.get("state", "Delhi"),
+                "country": "India",
+                "zip": pickup.get("zip", "110001"),
+            },
+            "amount": total_price or float(order_data.get("total_price", 0)),
+            "weight": total_weight or 500,
+            "length": 30, "width": 20, "height": 10,
+            "currency": "INR",
+            "gstPercentage": 0,
+            "paymentType": "ONLINE" if is_paid else "COD",
+            "paymentStatus": "PAID" if is_paid else "UNPAID",
+            "deliveryPromise": delivery_type,
+            "lineItems": line_items,
+            "remarks": f"Auto-push Order #{order_number}",
+            "returnableOrder": True,
+        }
+        
+        result = await push_order(payload)
+        
+        if result.get("status") == 200:
+            sync_db.logistics_bookings.insert_one({
+                "order_id": order_id_str,
+                "shopify_order_id": str(order_data.get("id", "")),
+                "awb_number": result["data"].get("awbNumber"),
+                "shipper_order_id": result["data"].get("shipperOrderId"),
+                "delivery_type": delivery_type,
+                "status": "booked",
+                "source": "auto_push",
+                "shipping_address": ship_addr,
+                "amount": payload["amount"],
+                "weight": total_weight,
+                "customer_name": ship_addr["name"],
+                "destination_pincode": ship_addr["zip"],
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+            logger.info(f"Auto-pushed order #{order_number} -> AWB: {result['data'].get('awbNumber')}")
+        else:
+            # Log the failure
+            sync_db.logistics_push_failures.insert_one({
+                "order_id": order_id_str,
+                "error": str(result.get("message", "Unknown error")),
+                "payload": payload,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+            logger.error(f"Auto-push failed for order #{order_number}: {result.get('message')}")
+            
+    except Exception as e:
+        logger.error(f"InnoFulfill auto-push error: {str(e)}")

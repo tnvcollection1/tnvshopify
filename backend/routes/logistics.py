@@ -598,3 +598,174 @@ async def api_bulk_push(req: BulkPushRequest):
         "failed": fail_count,
         "results": results,
     }
+
+
+
+# ─── Auto-Push Settings ──────────────────────────────────────────
+
+class AutoPushSettings(BaseModel):
+    enabled: bool = False
+    delivery_type: str = "SURFACE"
+    pickup_name: str = "TNVC Collection"
+    pickup_phone: str = "9582639469"
+    pickup_address: str = "TNVC Warehouse"
+    pickup_city: str = "Delhi"
+    pickup_state: str = "Delhi"
+    pickup_zip: str = "110001"
+
+
+@router.get("/auto-push/settings")
+async def get_auto_push_settings():
+    """Get current auto-push configuration."""
+    settings = db.logistics_settings.find_one({"key": "auto_push"}, {"_id": 0})
+    if not settings:
+        return {
+            "status": "success",
+            "settings": {
+                "enabled": False,
+                "delivery_type": "SURFACE",
+                "pickup": {
+                    "name": "TNVC Collection",
+                    "phone": "9582639469",
+                    "address": "TNVC Warehouse",
+                    "city": "Delhi",
+                    "state": "Delhi",
+                    "zip": "110001",
+                },
+            },
+        }
+    return {"status": "success", "settings": settings}
+
+
+@router.post("/auto-push/settings")
+async def update_auto_push_settings(req: AutoPushSettings):
+    """Enable/disable auto-push and update defaults."""
+    doc = {
+        "key": "auto_push",
+        "enabled": req.enabled,
+        "delivery_type": req.delivery_type,
+        "pickup": {
+            "name": req.pickup_name,
+            "phone": req.pickup_phone,
+            "address": req.pickup_address,
+            "city": req.pickup_city,
+            "state": req.pickup_state,
+            "zip": req.pickup_zip,
+        },
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    db.logistics_settings.update_one(
+        {"key": "auto_push"},
+        {"$set": doc},
+        upsert=True,
+    )
+    return {"status": "success", "settings": doc}
+
+
+# ─── Shopify Webhook Registration ─────────────────────────────────
+
+@router.post("/register-webhook")
+async def register_shopify_webhook():
+    """Register the orders/paid webhook with Shopify for auto-push."""
+    import httpx
+
+    shop_url = os.environ.get("SHOPIFY_SHOP_URL")
+    token = os.environ.get("SHOPIFY_ACCESS_TOKEN")
+    base_url = os.environ.get("REACT_APP_BACKEND_URL", "")
+
+    if not shop_url or not token:
+        raise HTTPException(status_code=500, detail="Shopify credentials not configured")
+
+    webhook_url = f"{base_url}/api/shopify/webhook/orders/paid"
+
+    # Check if already registered
+    async with httpx.AsyncClient(timeout=30) as client:
+        # List existing webhooks
+        resp = await client.get(
+            f"https://{shop_url}/admin/api/2024-01/webhooks.json",
+            headers={"X-Shopify-Access-Token": token},
+        )
+        existing = resp.json().get("webhooks", [])
+        for wh in existing:
+            if wh.get("topic") == "orders/paid" and wh.get("address") == webhook_url:
+                return {
+                    "status": "success",
+                    "message": "Webhook already registered",
+                    "webhook_id": wh["id"],
+                    "url": webhook_url,
+                }
+
+        # Register new webhook
+        resp = await client.post(
+            f"https://{shop_url}/admin/api/2024-01/webhooks.json",
+            headers={
+                "X-Shopify-Access-Token": token,
+                "Content-Type": "application/json",
+            },
+            json={
+                "webhook": {
+                    "topic": "orders/paid",
+                    "address": webhook_url,
+                    "format": "json",
+                }
+            },
+        )
+
+        if resp.status_code in [200, 201]:
+            wh_data = resp.json().get("webhook", {})
+            return {
+                "status": "success",
+                "message": "Webhook registered successfully",
+                "webhook_id": wh_data.get("id"),
+                "url": webhook_url,
+            }
+        else:
+            return {
+                "status": "error",
+                "message": f"Shopify returned {resp.status_code}",
+                "detail": resp.text,
+            }
+
+
+@router.get("/webhooks")
+async def list_shopify_webhooks():
+    """List all registered Shopify webhooks."""
+    import httpx
+
+    shop_url = os.environ.get("SHOPIFY_SHOP_URL")
+    token = os.environ.get("SHOPIFY_ACCESS_TOKEN")
+
+    if not shop_url or not token:
+        raise HTTPException(status_code=500, detail="Shopify credentials not configured")
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.get(
+            f"https://{shop_url}/admin/api/2024-01/webhooks.json",
+            headers={"X-Shopify-Access-Token": token},
+        )
+        webhooks = resp.json().get("webhooks", [])
+        return {
+            "status": "success",
+            "webhooks": [
+                {
+                    "id": w["id"],
+                    "topic": w["topic"],
+                    "address": w["address"],
+                    "created_at": w.get("created_at"),
+                }
+                for w in webhooks
+            ],
+        }
+
+
+# ─── Push Failures Log ───────────────────────────────────────────
+
+@router.get("/push-failures")
+async def list_push_failures(limit: int = 20):
+    """List recent auto-push failures for debugging."""
+    failures = list(
+        db.logistics_push_failures.find({}, {"_id": 0})
+        .sort("created_at", -1)
+        .limit(limit)
+    )
+    return {"status": "success", "failures": failures}

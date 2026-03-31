@@ -3,7 +3,8 @@ import {
   Truck, Package, MapPin, Calculator, Search, RefreshCw,
   Plus, Clock, CheckCircle, AlertCircle, ArrowRight,
   Weight, Box, BarChart2, Send, Eye, XCircle,
-  ChevronRight, IndianRupee, Plane, Ship, History
+  ChevronRight, IndianRupee, Plane, Ship, History,
+  Settings, Zap, Webhook, Power
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -13,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Separator } from './ui/separator';
+import { Switch } from './ui/switch';
 import { toast } from 'sonner';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -765,6 +767,284 @@ function ShopifyPush({ onBookingCreated }) {
   );
 }
 
+// ─── Auto-Push Settings Tab ──────────────────────────────────────
+function AutoPushSettings() {
+  const [settings, setSettings] = useState({
+    enabled: false,
+    delivery_type: 'SURFACE',
+    pickup_name: 'TNVC Collection',
+    pickup_phone: '9582639469',
+    pickup_address: 'TNVC Warehouse',
+    pickup_city: 'Delhi',
+    pickup_state: 'Delhi',
+    pickup_zip: '110001',
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [webhooks, setWebhooks] = useState([]);
+  const [registering, setRegistering] = useState(false);
+  const [failures, setFailures] = useState([]);
+
+  useEffect(() => {
+    // Fetch current settings
+    fetch(`${API_URL}/api/logistics/auto-push/settings`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.status === 'success' && d.settings) {
+          const s = d.settings;
+          setSettings({
+            enabled: s.enabled || false,
+            delivery_type: s.delivery_type || 'SURFACE',
+            pickup_name: s.pickup?.name || 'TNVC Collection',
+            pickup_phone: s.pickup?.phone || '9582639469',
+            pickup_address: s.pickup?.address || 'TNVC Warehouse',
+            pickup_city: s.pickup?.city || 'Delhi',
+            pickup_state: s.pickup?.state || 'Delhi',
+            pickup_zip: s.pickup?.zip || '110001',
+          });
+        }
+      })
+      .finally(() => setLoading(false));
+
+    // Fetch webhooks
+    fetch(`${API_URL}/api/logistics/webhooks`)
+      .then(r => r.json())
+      .then(d => { if (d.status === 'success') setWebhooks(d.webhooks || []); })
+      .catch(() => {});
+
+    // Fetch recent failures
+    fetch(`${API_URL}/api/logistics/push-failures?limit=5`)
+      .then(r => r.json())
+      .then(d => { if (d.status === 'success') setFailures(d.failures || []); })
+      .catch(() => {});
+  }, []);
+
+  const set = (k, v) => setSettings(p => ({ ...p, [k]: v }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_URL}/api/logistics/auto-push/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        toast.success(settings.enabled ? 'Auto-push enabled and saved' : 'Auto-push disabled');
+      } else {
+        toast.error('Failed to save settings');
+      }
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRegisterWebhook = async () => {
+    setRegistering(true);
+    try {
+      const res = await fetch(`${API_URL}/api/logistics/register-webhook`, { method: 'POST' });
+      const data = await res.json();
+      if (data.status === 'success') {
+        toast.success(data.message);
+        // Refresh webhooks list
+        const wRes = await fetch(`${API_URL}/api/logistics/webhooks`);
+        const wData = await wRes.json();
+        if (wData.status === 'success') setWebhooks(wData.webhooks || []);
+      } else {
+        toast.error(data.message || 'Registration failed');
+      }
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const paidWebhook = webhooks.find(w => w.topic === 'orders/paid');
+
+  if (loading) return <div className="flex items-center justify-center py-12 text-slate-400"><RefreshCw className="w-5 h-5 animate-spin mr-2" /> Loading settings...</div>;
+
+  return (
+    <div className="space-y-6" data-testid="auto-push-settings">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Main Toggle + Settings */}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Zap className="w-5 h-5 text-amber-500" />
+              Auto-Push Configuration
+            </CardTitle>
+            <CardDescription>Automatically push paid Shopify orders to Shri Maruti</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {/* Enable Toggle */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border">
+              <div>
+                <div className="font-medium text-sm text-slate-800">Auto-Push Enabled</div>
+                <div className="text-xs text-slate-500 mt-0.5">
+                  {settings.enabled ? 'New paid orders will be auto-shipped' : 'Orders need manual push'}
+                </div>
+              </div>
+              <Switch
+                data-testid="auto-push-toggle"
+                checked={settings.enabled}
+                onCheckedChange={v => set('enabled', v)}
+              />
+            </div>
+
+            {/* Delivery Mode */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-slate-500">Default Delivery Mode</Label>
+              <Select value={settings.delivery_type} onValueChange={v => set('delivery_type', v)}>
+                <SelectTrigger data-testid="auto-push-delivery-select"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="SURFACE">Surface</SelectItem>
+                  <SelectItem value="AIR">Air</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Separator />
+
+            {/* Pickup Address */}
+            <div>
+              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pickup Address (Origin)</Label>
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-400">Name</Label>
+                  <Input value={settings.pickup_name} onChange={e => set('pickup_name', e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-400">Phone</Label>
+                  <Input value={settings.pickup_phone} onChange={e => set('pickup_phone', e.target.value)} />
+                </div>
+              </div>
+              <div className="space-y-1 mt-2">
+                <Label className="text-xs text-slate-400">Address</Label>
+                <Input value={settings.pickup_address} onChange={e => set('pickup_address', e.target.value)} />
+              </div>
+              <div className="grid grid-cols-3 gap-3 mt-2">
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-400">City</Label>
+                  <Input value={settings.pickup_city} onChange={e => set('pickup_city', e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-400">State</Label>
+                  <Input value={settings.pickup_state} onChange={e => set('pickup_state', e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-400">Pincode</Label>
+                  <Input value={settings.pickup_zip} onChange={e => set('pickup_zip', e.target.value)} className="font-mono" />
+                </div>
+              </div>
+            </div>
+
+            <Button
+              data-testid="save-auto-push-btn"
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full bg-slate-900 hover:bg-slate-800"
+            >
+              {saving ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+              Save Settings
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Webhook Status + Failures */}
+        <div className="space-y-4">
+          {/* Webhook Status */}
+          <Card data-testid="webhook-status-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Webhook className="w-4 h-4 text-violet-500" />
+                Shopify Webhook
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {paidWebhook ? (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <div className="font-medium text-sm text-emerald-800">orders/paid webhook active</div>
+                    <div className="text-xs text-emerald-600 truncate mt-0.5">{paidWebhook.address}</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+                  <div>
+                    <div className="font-medium text-sm text-amber-800">Webhook not registered</div>
+                    <div className="text-xs text-amber-600 mt-0.5">Register to enable auto-push from Shopify</div>
+                  </div>
+                </div>
+              )}
+              <Button
+                data-testid="register-webhook-btn"
+                onClick={handleRegisterWebhook}
+                disabled={registering}
+                variant={paidWebhook ? 'outline' : 'default'}
+                className={paidWebhook ? '' : 'bg-violet-600 hover:bg-violet-700'}
+                size="sm"
+              >
+                {registering ? <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Webhook className="w-3.5 h-3.5 mr-1.5" />}
+                {paidWebhook ? 'Re-register' : 'Register Webhook'}
+              </Button>
+
+              {webhooks.length > 0 && (
+                <div className="mt-2">
+                  <div className="text-xs font-medium text-slate-500 mb-1.5">All registered webhooks:</div>
+                  <div className="space-y-1">
+                    {webhooks.map((w, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-600 p-1.5 rounded bg-slate-50">
+                        <Badge variant="outline" className="text-[10px] shrink-0">{w.topic}</Badge>
+                        <span className="truncate opacity-70">{w.address}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Recent Failures */}
+          <Card data-testid="push-failures-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400" />
+                Recent Push Failures
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {failures.length === 0 ? (
+                <div className="text-center text-sm text-slate-400 py-4">
+                  <CheckCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                  No failures recorded
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {failures.map((f, i) => (
+                    <div key={i} className="text-xs p-2 rounded bg-red-50 border border-red-100">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-semibold text-red-800">#{f.order_id}</span>
+                        <span className="text-red-400">{f.created_at ? new Date(f.created_at).toLocaleString('en-IN') : ''}</span>
+                      </div>
+                      <div className="text-red-600 mt-0.5">{f.error}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Bulk Ship Tab ───────────────────────────────────────────────
 function BulkShip({ onBookingCreated }) {
   const [orders, setOrders] = useState([]);
@@ -1061,7 +1341,7 @@ export default function LogisticsDashboard() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5 mb-6 h-11" data-testid="logistics-tabs">
+        <TabsList className="grid w-full grid-cols-6 mb-6 h-11" data-testid="logistics-tabs">
           <TabsTrigger value="calculator" className="text-sm" data-testid="tab-calculator">
             <Calculator className="w-4 h-4 mr-1.5" /> Rates
           </TabsTrigger>
@@ -1076,6 +1356,9 @@ export default function LogisticsDashboard() {
           </TabsTrigger>
           <TabsTrigger value="tracking" className="text-sm" data-testid="tab-tracking">
             <Search className="w-4 h-4 mr-1.5" /> Track
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="text-sm" data-testid="tab-settings">
+            <Settings className="w-4 h-4 mr-1.5" /> Auto-Push
           </TabsTrigger>
         </TabsList>
 
@@ -1096,6 +1379,7 @@ export default function LogisticsDashboard() {
         </TabsContent>
         <TabsContent value="bookings"><BookingsList refreshKey={bookingRefreshKey} /></TabsContent>
         <TabsContent value="tracking"><OrderTracking /></TabsContent>
+        <TabsContent value="settings"><AutoPushSettings /></TabsContent>
       </Tabs>
     </div>
   );
