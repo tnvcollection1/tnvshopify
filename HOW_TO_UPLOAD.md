@@ -14,7 +14,7 @@ For each of your 3 stores:
 7. Save as: `store1_orders.csv`, `store2_orders.csv`, `store3_orders.csv`
 
 ### Step 2: Upload to System
-1. Open: https://catalog-sync-11.preview.emergentagent.com
+1. Open: https://carrier-connect-18.preview.emergentagent.com
 2. Click **"Upload Customer Data (CSV)"** button (green, top right)
 3. Select your CSV file
 4. When prompted, enter store name (e.g., "Store 1")
