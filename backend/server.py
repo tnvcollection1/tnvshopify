@@ -61,6 +61,7 @@ from routes.mega_menu import router as mega_menu_router, set_database as set_meg
 from routes.ecommerce import router as ecommerce_router, set_database as set_ecommerce_db
 from routes.analytics import router as analytics_router, set_database as set_analytics_db
 from routes.checkout import router as checkout_router, set_database as set_checkout_db
+from routes.abandoned_cart import router as abandoned_cart_router, set_database as set_abandoned_cart_db, start_background_loop as start_abandoned_cart_loop, stop_background_loop as stop_abandoned_cart_loop
 from routes.warehouse import router as warehouse_router, set_database as set_warehouse_db
 from security.store_access import set_database as set_security_db, verify_store_access, require_admin, require_merchant_or_admin
 from routes.secure_admin import router as secure_admin_router, set_database as set_secure_admin_db
@@ -138,6 +139,7 @@ set_mega_menu_db(db)
 set_ecommerce_db(db)
 set_analytics_db(db)
 set_checkout_db(db)
+set_abandoned_cart_db(db)
 set_security_db(db)
 set_secure_admin_db(db)
 set_warehouse_db(db)
@@ -7256,6 +7258,7 @@ app.include_router(mega_menu_router)
 app.include_router(ecommerce_router)
 app.include_router(analytics_router)
 app.include_router(checkout_router)
+app.include_router(abandoned_cart_router)
 app.include_router(secure_admin_router)
 app.include_router(warehouse_router)
 app.include_router(sync_service_router)
@@ -7371,7 +7374,21 @@ async def startup_auto_sync():
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    try:
+        stop_abandoned_cart_loop()
+    except Exception:
+        pass
     client.close()
+
+
+@app.on_event("startup")
+async def startup_abandoned_cart_loop():
+    """Start the abandoned-cart WhatsApp recovery background loop."""
+    try:
+        start_abandoned_cart_loop()
+        logger.info("✅ Abandoned-cart recovery loop started")
+    except Exception as e:
+        logger.error(f"❌ Failed to start abandoned-cart loop: {e}")
 
 # Browser Extension Download
 import zipfile

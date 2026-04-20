@@ -50,6 +50,23 @@ All pages connected to live Shopify catalog (646 products, 50 collections):
 - Collection Page → Click product → Product Detail Page
 - Product Detail Page → Back button → Previous page
 
+### Cleanup — React SPA `/store` routes removed (Feb 2026)
+- `/store`, `/store/product/:id`, `/store/collections`, `/store/collection/:id` routes removed from App.js
+- Deleted `TNVCStorefront.jsx`, `ProductDetailPage.jsx`, `CollectionPage.jsx`, `CartContext.jsx`, `CartDrawer.jsx` (now canonically handled by Hydrogen)
+- Main frontend smoke test: returns 200
+
+### Abandoned Cart → WhatsApp Recovery (Feb 2026)
+- New module `/app/backend/routes/abandoned_cart.py`
+- **Webhooks** (register these in Shopify Admin → Settings → Notifications → Webhooks, or call `/shopify/register-webhooks/{store_id}`):
+  - `checkouts/create` → `POST /api/abandoned-cart/webhook/checkouts-create` — enqueues pending recovery (delay configurable via `ABANDONED_CART_DELAY_MIN`, default 60 min)
+  - `checkouts/update` → same URL (idempotent upsert)
+  - `orders/create` → `POST /api/abandoned-cart/webhook/order-created` — flips pending row to `recovered` (no WhatsApp send)
+- **Background loop**: `asyncio` task kicked off on server startup polls every 60s and sends a templated WhatsApp message via Meta Cloud API (or wa.me fallback) for any `pending` row whose `send_at` has elapsed
+- **Admin endpoints**: `GET /api/abandoned-cart/list?status=...`, `POST /api/abandoned-cart/process-now`, `POST /api/abandoned-cart/test-send?phone=...`
+- **HMAC verification** of Shopify webhooks via `SHOPIFY_WEBHOOK_SECRET` env (optional — skipped in dev)
+- **Tests**: `/app/backend/tests/test_abandoned_cart.py` — 5/5 passing; full backend 13/13
+- ⚠️ Currently the Meta WhatsApp app on user's side returns `"Application has been deleted"` — code falls back to `wa.me` links; flow will work natively once Meta app is re-enabled
+
 ### Hydrogen Migration — Scaffolded (Feb 2026)
 - Initialized Hydrogen (Remix/React Router 7) skeleton at **`/app/tnvhydrogen/`** pointing at live Shopify catalog via Storefront API
 - Customized homepage (`app/routes/_index.tsx`) with TNV branding: announcement bar, sage-green hero, Trending Now grid, value props
