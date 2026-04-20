@@ -50,6 +50,18 @@ All pages connected to live Shopify catalog (646 products, 50 collections):
 - Collection Page → Click product → Product Detail Page
 - Product Detail Page → Back button → Previous page
 
+### Checkout — Shopify Hosted (Feb 2026)
+- **Architecture switched from custom Razorpay UI → Shopify Storefront API hosted checkout** to enable native abandoned-cart recovery + Shopify Payments (Razorpay configured inside Shopify).
+- **New endpoint**: `POST /api/checkout/shopify-cart` → creates a Shopify Cart via Storefront API `cartCreate` GraphQL mutation and returns `checkout_url` (customer is redirected to Shopify's native checkout page).
+- **Frontend triggers**:
+  - CartDrawer "Checkout" button → creates multi-line cart → redirects to `tnvcollection.com/cart/c/...`
+  - PDP "Buy It Now" button → single-variant cart → redirects to Shopify checkout
+- **Abandoned checkout tracking**: Native via Shopify (fires automatically when customer enters email and leaves).
+- **Credentials**: `SHOPIFY_STOREFRONT_ACCESS_TOKEN` in backend/.env (Private Storefront token, uses `Shopify-Storefront-Private-Token` header).
+- **Legacy Razorpay endpoints** (`/create-order`, `/verify-payment`) still exist but are dormant (no frontend calls them anymore).
+- **Removed**: `/store/checkout` route + `CheckoutPage.jsx` import from App.js.
+- **Tests**: `/app/backend/tests/test_checkout_e2e.py` — 8/8 passing (including 5 new TestShopifyCart cases).
+
 ### Cart & Checkout (Feb 2026 — E2E Validated)
 - **Cart**: React Context `CartContext.jsx` + `CartDrawer.jsx` (persistent cart across storefront)
 - **Checkout Page** (`/store/checkout`): `CheckoutPage.jsx` — shipping form + prepaid (Razorpay) and COD options
