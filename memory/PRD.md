@@ -53,7 +53,10 @@ All pages connected to live Shopify catalog (646 products, 50 collections):
 ### Hydrogen Migration — Scaffolded (Feb 2026)
 - Initialized Hydrogen (Remix/React Router 7) skeleton at **`/app/tnvhydrogen/`** pointing at live Shopify catalog via Storefront API
 - Customized homepage (`app/routes/_index.tsx`) with TNV branding: announcement bar, sage-green hero, Trending Now grid, value props
-- TNV theme tokens appended to `app/styles/app.css`
+- **PDP** (`app/routes/products.$handle.tsx`): TNV layout, price block, trust badges, description styling + **"Buy It Now"** button that creates a cart server-side and redirects to Shopify hosted checkout in one click
+- **Collection page** (`app/routes/collections.$handle.tsx`): breadcrumb nav, TNV-styled 4/5 aspect product cards, TNV typography
+- TNV CSS theme system appended to `app/styles/app.css` (tokens, hero, buttons, grid, card, PDP, trust row)
+- **Shopify Analytics + Web Pixels** wired: `<Analytics.Provider>` at root, `Analytics.ProductView` on PDP, `Analytics.CollectionView` on collection page — all events pipe natively to Shopify Admin → Analytics → Live View (no extra setup)
 - `package.json` cleaned of Shopify monorepo `workspace:*`/`catalog:` refs → real versions so VPS `npm install` works cleanly
 - Env template at `.env.example`; `.env` has `SESSION_SECRET`, `PRIVATE_STOREFRONT_API_TOKEN`, `PUBLIC_STORE_DOMAIN`, `PUBLIC_CHECKOUT_DOMAIN` filled in
 - **User action required**: paste `PUBLIC_STOREFRONT_API_TOKEN` and `PUBLIC_STOREFRONT_ID` into `/app/tnvhydrogen/.env` (or set on VPS)

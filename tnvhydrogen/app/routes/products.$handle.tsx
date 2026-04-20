@@ -1,4 +1,4 @@
-import {redirect, useLoaderData} from 'react-router';
+import {redirect, useLoaderData, Form} from 'react-router';
 import type {Route} from './+types/products.$handle';
 import {
   getSelectedProductOptions,
@@ -15,11 +15,8 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
-    {
-      rel: 'canonical',
-      href: `/products/${data?.product.handle}`,
-    },
+    {title: `TNV Collection | ${data?.product.title ?? ''}`},
+    {rel: 'canonical', href: `/products/${data?.product.handle}`},
   ];
 };
 
@@ -76,6 +73,33 @@ function loadDeferredData({context, params}: Route.LoaderArgs) {
   return {};
 }
 
+/**
+ * "Buy It Now" action — creates a fresh Shopify cart with just the posted
+ * variant and redirects the customer straight to Shopify's hosted checkout.
+ */
+export async function action({request, context}: Route.ActionArgs) {
+  const form = await request.formData();
+  const variantId = String(form.get('variantId') || '');
+  const quantity = Number(form.get('quantity') || 1);
+
+  if (!variantId) {
+    throw new Response('Missing variantId', {status: 400});
+  }
+
+  const {cart} = context;
+  const result = await cart.create({
+    lines: [{merchandiseId: variantId, quantity}],
+  });
+
+  const cartResult = result.cart;
+  if (result.errors?.length || !cartResult?.checkoutUrl) {
+    throw new Response('Unable to create checkout', {status: 502});
+  }
+
+  const headers = cart.setCartId(cartResult.id);
+  return redirect(cartResult.checkoutUrl, {headers});
+}
+
 export default function Product() {
   const {product} = useLoaderData<typeof loader>();
 
@@ -102,23 +126,44 @@ export default function Product() {
       <ProductImage image={selectedVariant?.image} />
       <div className="product-main">
         <h1>{title}</h1>
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
+        <div className="product-price">
+          <ProductPrice
+            price={selectedVariant?.price}
+            compareAtPrice={selectedVariant?.compareAtPrice}
+          />
+        </div>
         <ProductForm
           productOptions={productOptions}
           selectedVariant={selectedVariant}
         />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
+        {selectedVariant?.id ? (
+          <Form method="post" replace>
+            <input type="hidden" name="variantId" value={selectedVariant.id} />
+            <input type="hidden" name="quantity" value="1" />
+            <button
+              type="submit"
+              className="tnv-buy-now-btn"
+              disabled={!selectedVariant.availableForSale}
+              data-testid="buy-it-now-btn"
+            >
+              Buy It Now
+            </button>
+          </Form>
+        ) : null}
+
+        <div className="tnv-trust-row">
+          <div>Free Shipping<br />on orders Rs.2,000+</div>
+          <div>30-Day Returns<br />Easy, hassle-free</div>
+          <div>Secure Checkout<br />Shopify payments</div>
+        </div>
+
+        <p style={{fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--tnv-muted)', margin: '0 0 10px'}}>
+          Description
         </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
+        <div
+          style={{fontSize: 14, lineHeight: 1.7, color: '#444'}}
+          dangerouslySetInnerHTML={{__html: descriptionHtml}}
+        />
       </div>
       <Analytics.ProductView
         data={{
