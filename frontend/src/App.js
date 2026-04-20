@@ -131,6 +131,7 @@ import ShopifyStyleEditor from "@/components/ShopifyStyleEditor";
 import MerchantOnboarding from "@/components/MerchantOnboarding";
 import VPBXCallManager from "@/components/VPBXCallManager";
 import LogisticsDashboard from "@/components/LogisticsDashboard";
+import TNVCStorefront from "@/components/storefront/TNVCStorefront";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -1206,6 +1207,9 @@ function AppRoutes() {
         path="/store/:storeSlug/track" 
         element={<LuxuryStorefrontWrapper page="tracking" />} 
       />
+
+      {/* TNV Allbirds-style Storefront */}
+      <Route path="/store" element={<TNVCStorefront />} />
 
       {/* TNV Store Routes - Namshi-inspired Design */}
       <Route path="/tnv" element={<TNVStoreWrapper><TNVHomePage /></TNVStoreWrapper>} />
