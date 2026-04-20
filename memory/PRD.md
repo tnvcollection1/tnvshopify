@@ -67,6 +67,15 @@ All pages connected to live Shopify catalog (646 products, 50 collections):
 - **Tests**: `/app/backend/tests/test_abandoned_cart.py` — 5/5 passing; full backend 13/13
 - ⚠️ Currently the Meta WhatsApp app on user's side returns `"Application has been deleted"` — code falls back to `wa.me` links; flow will work natively once Meta app is re-enabled
 
+### Backend Slim-Down — 100% Shopify-Native Checkout (Feb 2026)
+Pivoted architecture: checkout, orders, AND abandoned-cart recovery all live on Shopify. Backend has zero responsibility for any commerce-critical path.
+- **Removed**: `/app/backend/routes/checkout.py`, `/app/backend/routes/abandoned_cart.py`, their imports/router registrations in `server.py`, and their tests
+- **Dropped MongoDB collections**: `checkouts`, `abandoned_checkouts`
+- **Unregistered** 3 Shopify webhooks (`checkouts/create`, `checkouts/update`, `orders/create`) that were pointing at backend — Shopify no longer pings us
+- **Canonical flow now**: Hydrogen storefront `cart.create()` (Storefront API) → `cart.checkoutUrl` → Shopify hosted checkout → Shopify creates order → Shopify-native abandoned-cart emails fire if customer drops off
+- For WhatsApp abandoned-cart, the user will install a Shopify App that handles it natively (e.g. existing "SP: Order on WhatsApp", AiSensy, Interakt, etc.) — no code needed on our side
+- Backend retains only non-commerce concerns: logistics, 1688 scraping, admin operations, WhatsApp order notifications
+
 ### Hydrogen Migration — Scaffolded (Feb 2026)
 - Initialized Hydrogen (Remix/React Router 7) skeleton at **`/app/tnvhydrogen/`** pointing at live Shopify catalog via Storefront API
 - Customized homepage (`app/routes/_index.tsx`) with TNV branding: announcement bar, sage-green hero, Trending Now grid, value props
