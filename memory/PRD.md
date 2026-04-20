@@ -6,64 +6,62 @@ Multi-tenant e-commerce platform (tnvcollection.com) with Shopify integration, l
 ## Architecture
 - **Frontend**: React (CRA) with Tailwind CSS, Shadcn UI
 - **Backend**: FastAPI + MongoDB
-- **Integrations**: Shopify Admin API, Innofulfill Logistics, 1688.com, Google Sheets, WhatsApp
+- **Integrations**: Shopify Admin API, Innofulfill Logistics, 1688.com, Google Sheets
 
 ## What's Been Implemented
 
-### Session - Feb 2026 (Previous)
-- Shri Maruti (Innofulfill) full API integration: Auth, Rates, Booking, Tracking
-- Logistics Dashboard (`/logistics`) with 6 tabs
-- Shopify Bulk Order Shipping UI
-- Shopify `orders/paid` Webhook auto-push
-- Manual booking of Orders 29615, 29616, 29617
+### Storefront (Current Session)
+- **TNVC Storefront V2** at `/store` — Complete rebuild matching the layout structure of a premium shoe brand site:
+  1. Announcement bar (discount messaging)
+  2. Sticky navigation with italic script logo, MEN/WOMEN/SALE dropdown menus, About/ReRun links, search/account/help/cart icons
+  3. Promo banner (muted green with serif italic headline)
+  4. Split hero section (product shot with white frame + lifestyle photo)
+  5. Collection name CTA bar ("The New Canvas Cruiser Collection" with Shop Men/Shop Women links)
+  6. Category row (4 cards: New Arrivals, Mens, Womens, Best Sellers)
+  7. Large product carousel (scrollable, big images)
+  8. Color grid section ("Bold By Design" with 5 interactive color swatches)
+  9. Standard product carousel (smaller cards with badge, name, color, price)
+  10. 3x Promo tiles (Summer Travel, New Arrivals, Fresh Colors)
+  11. Value props (3 columns: Comfort, Sustainability, Materials)
+  12. Dark footer (italic logo, social icons, HELP/SHOP/COMPANY link columns)
+- Fonts: Playfair Display (serif headings) + DM Sans (body)
+- Design: White background, clean typography, underline CTAs, minimal aesthetic
+
+### Logistics (Previous Sessions)
+- Shri Maruti (Innofulfill) full API: Auth, Rates, Booking, Tracking
+- Logistics Dashboard at `/logistics` with 6 tabs
+- Shopify Bulk Order Shipping UI + `orders/paid` webhook auto-push
+- Booked Orders: 29615, 29616, 29617, 29618 (AWB: TNVC0000000072)
+
+### Other
 - Wedding video generator (moviepy)
 
-### Session - Current
-- **Order 29618 booked** via Shri Maruti (AWB: TNVC0000000072, Manish -> Bangalore 560028)
-- **TNVC Storefront** built at `/store` - Allbirds-inspired design with:
-  - Announcement bar (rotating messages)
-  - Sticky navigation header with logo, menu, search/user/cart icons
-  - Full-width hero banner with CTAs
-  - 4-card category row (New Arrivals, Men, Women, Best Sellers)
-  - Horizontal product carousel with badges
-  - Lifestyle banner section
-  - Product grid (Trending Now)
-  - 3x Promo tiles
-  - Value props (Comfort, Sustainability, Materials)
-  - Newsletter signup
-  - Multi-column footer
-
 ## Known Issues
-- **Order 29614**: Shri Maruti rejects Akola (444104) for booking despite rate calculator showing rates. Carrier limitation.
-- **1688 API Token**: Requires user to complete auth flow for refresh token
-- **Innofulfill Cancel API**: Not accessible with seller-level credentials
+- Order 29614: Shri Maruti rejects Akola (444104) despite rate calculator showing rates
+- 1688 API Token: Requires user to complete auth flow for refresh token
+- Innofulfill Cancel API: Not accessible with seller-level credentials
 
 ## Prioritized Backlog
 
 ### P0
-- Connect storefront to actual Shopify product data (live catalog)
+- Connect storefront to live Shopify product catalog (dynamic products)
 - Pricing formula update (pending user input)
 
 ### P1
+- Shopify Hydrogen deployment (migrate React components to Hydrogen/Remix)
 - Shopify Product Categorization Fix (Size 45 filter)
-- Hydrogen deployment (migrate storefront to Shopify Hydrogen)
 - Refactor LogisticsDashboard.jsx (~1400 lines)
 
 ### P2
 - User-facing Sales Dashboard, Order Tracking, Wishlist, Reviews
-- Complete checkout flow with Razorpay
+- Checkout flow with Razorpay
 - Abandoned cart recovery via WhatsApp
-- 1688 API token reliability fix
 
 ## Key Files
-- `/app/frontend/src/components/storefront/TNVCStorefront.jsx` - Allbirds-style storefront
+- `/app/frontend/src/components/storefront/TNVCStorefront.jsx` - Main storefront page
 - `/app/backend/services/innofulfill_service.py` - Logistics API
 - `/app/backend/routes/logistics.py` - Logistics routes
 - `/app/frontend/src/components/LogisticsDashboard.jsx` - Logistics UI
-- `/app/backend/routes/shopify_webhooks.py` - Webhook handlers
-
-## DB Collections
-- `stores`, `customers`, `logistics_bookings`
 
 ## Credentials
 - Admin: admin/admin
