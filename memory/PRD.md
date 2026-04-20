@@ -50,6 +50,17 @@ All pages connected to live Shopify catalog (646 products, 50 collections):
 - Collection Page → Click product → Product Detail Page
 - Product Detail Page → Back button → Previous page
 
+### Cart & Checkout (Feb 2026 — E2E Validated)
+- **Cart**: React Context `CartContext.jsx` + `CartDrawer.jsx` (persistent cart across storefront)
+- **Checkout Page** (`/store/checkout`): `CheckoutPage.jsx` — shipping form + prepaid (Razorpay) and COD options
+- **Backend Routes** (`/app/backend/routes/checkout.py`):
+  - `POST /api/checkout/create-order` — creates Razorpay order (prepaid) OR Shopify order directly (COD)
+  - `POST /api/checkout/verify-payment` — verifies HMAC signature, creates Shopify order, idempotent
+  - `GET /api/checkout/order/{checkout_id}` — fetch status
+- **Hardening**: Idempotency guard on verify-payment, Shopify errors surfaced as 502 (no silent failures), async Motor calls awaited correctly
+- **E2E Tests**: `/app/backend/tests/test_checkout_e2e.py` — 8/8 pytest cases passing (storefront list/detail/collections, prepaid create+DB persistence, valid+invalid signature verification, COD flow)
+- **Keys**: `RAZORPAY_KEY_ID=rzp_live_SfjhFxbltisq2k` (backend + frontend aligned)
+
 ### Logistics (Previous Sessions)
 - Shri Maruti (Innofulfill) full API: Auth, Rates, Booking, Tracking
 - Logistics Dashboard at `/logistics` with 6 tabs
@@ -65,14 +76,14 @@ All pages connected to live Shopify catalog (646 products, 50 collections):
 - Pricing formula update (pending user input)
 
 ### P1
-- Shopify Hydrogen deployment
-- Cart + Checkout flow with Razorpay
+- Shopify Hydrogen deployment (user requested migration; currently in React SPA)
 - Shopify Product Categorization Fix (Size 45 filter)
 
 ### P2
 - User-facing Sales Dashboard, Order Tracking, Wishlist, Reviews
 - Abandoned cart recovery via WhatsApp
-- Refactor LogisticsDashboard.jsx
+- Refactor LogisticsDashboard.jsx (~1400 lines)
+- Namshi-style Shopify theme edits
 
 ## Key Files
 - `/app/frontend/src/components/storefront/TNVCStorefront.jsx` — Homepage

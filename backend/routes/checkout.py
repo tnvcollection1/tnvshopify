@@ -91,6 +91,8 @@ async def create_checkout_order(req: CheckoutRequest):
 
     if req.payment_method == "cod":
         shopify_order = await _create_shopify_order(checkout_doc, payment_status="pending")
+        if shopify_order.get("error") or not shopify_order.get("id"):
+            raise HTTPException(502, f"Shopify order creation failed: {shopify_order.get('error', 'unknown error')}")
         checkout_doc["status"] = "confirmed"
         checkout_doc["shopify_order_id"] = shopify_order.get("id")
         checkout_doc["shopify_order_number"] = shopify_order.get("order_number")
@@ -155,7 +157,19 @@ async def verify_payment(req: PaymentVerifyRequest):
     if not checkout:
         raise HTTPException(404, "Checkout not found")
 
+    # Idempotency: if this checkout is already paid, return the existing Shopify order
+    if checkout.get("status") == "paid" and checkout.get("shopify_order_id"):
+        return {
+            "success": True,
+            "shopify_order_number": checkout.get("shopify_order_number"),
+            "shopify_order_id": checkout.get("shopify_order_id"),
+            "checkout_id": req.checkout_id,
+            "idempotent": True,
+        }
+
     shopify_order = await _create_shopify_order(checkout, payment_status="paid")
+    if shopify_order.get("error") or not shopify_order.get("id"):
+        raise HTTPException(502, f"Shopify order creation failed: {shopify_order.get('error', 'unknown error')}")
 
     if db is not None:
         await db.checkouts.update_one(
