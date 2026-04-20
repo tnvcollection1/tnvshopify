@@ -54,7 +54,7 @@
   
   "should_main_agent_self_test": false,
   
-  "context_for_next_testing_agent": "Auto-Push feature fully tested. Key findings: 1) Auto-Push tab loads with settings form showing toggle (currently ON), delivery mode (Surface), and pickup address fields. 2) Toggle switch works - clicking toggles between ON/OFF states. 3) Save Settings button works - shows toast 'Auto-push enabled and saved'. 4) Webhook status card shows 'orders/paid webhook active' with URL https://carrier-connect-18.preview.emergentagent.com/api/shopify/webhook/orders/paid. 5) Re-register button present. 6) Push failures section shows 'No failures recorded'. 7) All 6 tabs render correctly: Rates, Bulk Ship, Book, Shipments, Track, Auto-Push. 8) Regression tests pass: Rate Calculator (Surface ₹90, Air ₹130), Bulk Ship (423 orders), Shipments (TNVC-TEST-002).",
+  "context_for_next_testing_agent": "Auto-Push feature fully tested. Key findings: 1) Auto-Push tab loads with settings form showing toggle (currently ON), delivery mode (Surface), and pickup address fields. 2) Toggle switch works - clicking toggles between ON/OFF states. 3) Save Settings button works - shows toast 'Auto-push enabled and saved'. 4) Webhook status card shows 'orders/paid webhook active' with URL https://shopify-ecommerce-1.preview.emergentagent.com/api/shopify/webhook/orders/paid. 5) Re-register button present. 6) Push failures section shows 'No failures recorded'. 7) All 6 tabs render correctly: Rates, Bulk Ship, Book, Shipments, Track, Auto-Push. 8) Regression tests pass: Rate Calculator (Surface ₹90, Air ₹130), Bulk Ship (423 orders), Shipments (TNVC-TEST-002).",
   
   "features_tested": {
     "auto_push_tab_loads": {

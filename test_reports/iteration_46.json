@@ -1,0 +1,44 @@
+{
+  "summary": "E2E validation of Razorpay → Shopify checkout flow. Found and FIXED a critical async/await bug in /app/backend/routes/checkout.py (sync Mongo calls on Motor async client) that made checkout persistence silently fail and returned 500 on GET /api/checkout/order/{id} and POST /api/checkout/verify-payment. After fix, all 8 pytest cases pass (storefront list/detail/collections, create-order prepaid, DB persistence verification, verify-payment invalid signature returns 400, verify-payment VALID signature returns 200 + creates Shopify order, COD create-order creates Shopify order). Frontend smoke test passes: /store, /store/product/{id}, Add-to-Cart drawer, /store/checkout all render with zero console errors.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/checkout/create-order (cod) & /verify-payment", "issue": "_create_shopify_order swallows Shopify errors and returns {id:null, order_number:null, error:...} with HTTP 200. On a real Shopify failure, customer-facing response still says success:true. Should raise 502/500 or surface error flag."},
+      {"endpoint": "/api/checkout/verify-payment", "issue": "No idempotency guard — the same signature can be replayed repeatedly; each call creates another Shopify order because there is no check that checkout.status is already 'paid'."},
+      {"endpoint": "/api/storefront/products", "issue": "Shopify non-200 responses silently return {products:[]} with 200. Should propagate a real error so frontend can show a retry state."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_checkout_e2e.py",
+    "/app/test_reports/pytest/pytest_iteration46.xml"
+  ],
+  "action_items": [
+    "(Already fixed by testing agent) Async/await fix in routes/checkout.py — main agent should review & keep.",
+    "Add idempotency guard in /verify-payment: skip Shopify order creation when checkout.status == 'paid'.",
+    "Surface Shopify API failures from _create_shopify_order instead of masking as success:true with null fields.",
+    "Consider returning 502/500 from storefront when Shopify is unreachable so frontend can render error state."
+  ],
+  "critical_code_review_comments": [
+    "routes/checkout.py was using sync MongoDB calls on an AsyncIOMotor client — insert_one/find_one/update_one returned unawaited coroutines (data was NEVER persisted in pre-fix version, and reads 500'd). Fixed with await.",
+    "_create_shopify_order hides non-2xx Shopify responses (returns {id:null,...} + logs) while the caller returns success:true to the user — this is a customer-trust risk and must be surfaced as an error.",
+    "verify-payment lacks replay protection; a signature can be re-posted to create multiple Shopify orders.",
+    "No Pydantic validation on zip/phone/country formats for CustomerInfo; Shopify may accept invalid data silently.",
+    "RAZORPAY_KEY_ID is exposed in backend response (acceptable since it's public), but frontend/.env has a DIFFERENT REACT_APP_RAZORPAY_KEY_ID (rzp_live_RrQ39Ywx6x13W7) than backend RAZORPAY_KEY_ID (rzp_live_SfjhFxbltisq2k). Mismatched keys will break Razorpay checkout modal on frontend — main agent must reconcile these."
+  ],
+  "updated_files": [
+    "/app/backend/routes/checkout.py",
+    "/app/backend/tests/test_checkout_e2e.py"
+  ],
+  "success_rate": {"backend": "100% (8/8)", "frontend": "100% smoke (home, PDP, cart drawer, checkout page)"},
+  "test_credentials": "Used Razorpay live keys and Shopify access token from backend/.env. Test customer email: test@tnvcollection.com.",
+  "seed_data_creation": "No seed data. Test created 3 Shopify orders during E2E (from failed run + successful verify-payment + successful COD). ALL have been CANCELLED + DELETED via Shopify Admin API: order#29648 (id 12686934933670), order#29651 (id 12686936473766), order#29652 (id 12686936506534). User's live Shopify store is clean.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Razorpay+Shopify checkout E2E is green after async fix. Pytest file at /app/backend/tests/test_checkout_e2e.py has session-scoped cleanup that cancels+deletes any Shopify order created during test run. Keys to watch: (1) frontend/.env REACT_APP_RAZORPAY_KEY_ID differs from backend RAZORPAY_KEY_ID — frontend will use backend-returned key anyway but this is confusing; (2) no idempotency on verify-payment; (3) Shopify errors swallowed silently.",
+  "rca_of_the_issue": "RCA: routes/checkout.py imported db from server.py (AsyncIOMotorClient) but called db.checkouts.insert_one/find_one/update_one synchronously without await. insert_one's coroutine was created and discarded → data was NEVER persisted. find_one returned a coroutine → FastAPI's jsonable_encoder raised ValueError('await wasn't used with future') → 500. Reproduction: POST /api/checkout/create-order (prepaid) then GET /api/checkout/order/{checkout_id} → 500. Mitigation: added await to all 4 Motor calls in checkout.py (2 insert_one, 1 find_one in verify-payment, 1 update_one, 1 find_one in get-status). Verified with 8/8 pytest pass."
+}

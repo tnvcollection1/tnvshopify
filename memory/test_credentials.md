@@ -3,7 +3,7 @@
 ## Wamerce Admin Login
 - Username: admin
 - Password: admin
-- URL: https://carrier-connect-18.preview.emergentagent.com/
+- URL: https://shopify-ecommerce-1.preview.emergentagent.com/
 
 ## Innofulfill / Delcaper (Shri Maruti Logistics)
 - Email: tnvcollection1@gmail.com

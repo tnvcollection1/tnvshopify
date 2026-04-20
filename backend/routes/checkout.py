@@ -94,8 +94,8 @@ async def create_checkout_order(req: CheckoutRequest):
         checkout_doc["status"] = "confirmed"
         checkout_doc["shopify_order_id"] = shopify_order.get("id")
         checkout_doc["shopify_order_number"] = shopify_order.get("order_number")
-        if db:
-            db.checkouts.insert_one(checkout_doc)
+        if db is not None:
+            await db.checkouts.insert_one(checkout_doc)
         return {
             "success": True,
             "checkout_id": checkout_doc["checkout_id"],
@@ -118,8 +118,8 @@ async def create_checkout_order(req: CheckoutRequest):
     })
 
     checkout_doc["razorpay_order_id"] = rz_order["id"]
-    if db:
-        db.checkouts.insert_one(checkout_doc)
+    if db is not None:
+        await db.checkouts.insert_one(checkout_doc)
 
     return {
         "success": True,
@@ -146,8 +146,8 @@ async def verify_payment(req: PaymentVerifyRequest):
         raise HTTPException(400, "Payment verification failed")
 
     checkout = None
-    if db:
-        checkout = db.checkouts.find_one(
+    if db is not None:
+        checkout = await db.checkouts.find_one(
             {"checkout_id": req.checkout_id},
             {"_id": 0}
         )
@@ -157,8 +157,8 @@ async def verify_payment(req: PaymentVerifyRequest):
 
     shopify_order = await _create_shopify_order(checkout, payment_status="paid")
 
-    if db:
-        db.checkouts.update_one(
+    if db is not None:
+        await db.checkouts.update_one(
             {"checkout_id": req.checkout_id},
             {"$set": {
                 "status": "paid",
@@ -230,9 +230,9 @@ async def _create_shopify_order(checkout: dict, payment_status: str = "pending")
 @router.get("/order/{checkout_id}")
 async def get_checkout_status(checkout_id: str):
     """Get checkout/order status."""
-    if not db:
+    if db is None:
         raise HTTPException(500, "Database not available")
-    checkout = db.checkouts.find_one({"checkout_id": checkout_id}, {"_id": 0})
+    checkout = await db.checkouts.find_one({"checkout_id": checkout_id}, {"_id": 0})
     if not checkout:
         raise HTTPException(404, "Checkout not found")
     return checkout

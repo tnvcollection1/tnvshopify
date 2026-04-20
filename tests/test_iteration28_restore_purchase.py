@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://carrier-connect-18.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://shopify-ecommerce-1.preview.emergentagent.com')
 
 class TestRestorePurchaseEndpoint:
     """Tests for POST /api/fulfillment/pipeline/orders/{order_id}/restore-purchase"""

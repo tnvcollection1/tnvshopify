@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Heart, Truck, RotateCcw, Shield, Minus, Plus, Search, ShoppingBag, User, Menu, X, HelpCircle } from "lucide-react";
+import { useCart } from "./CartContext";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 /* ─── Shared Nav (compact) ─── */
 function NavBar() {
   const navigate = useNavigate();
+  const { totalItems, setCartOpen } = useCart();
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-[#e5e5e5]">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 flex items-center justify-between h-[60px]">
@@ -20,9 +22,9 @@ function NavBar() {
         </a>
         <div className="flex items-center gap-1">
           <button className="p-2 hover:opacity-60"><Search size={20} strokeWidth={1.5} /></button>
-          <button className="p-2 hover:opacity-60 relative" data-testid="pdp-cart">
+          <button onClick={() => setCartOpen(true)} className="p-2 hover:opacity-60 relative" data-testid="pdp-cart">
             <ShoppingBag size={20} strokeWidth={1.5} />
-            <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-[#212529] text-white text-[9px] rounded-full flex items-center justify-center font-medium">0</span>
+            <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-[#212529] text-white text-[9px] rounded-full flex items-center justify-center font-medium">{totalItems}</span>
           </button>
         </div>
       </div>
@@ -86,6 +88,7 @@ function ImageGallery({ images }) {
 /* ─── Product Detail Page ─── */
 export default function ProductDetailPage() {
   const { productId } = useParams();
+  const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState(null);
@@ -256,6 +259,11 @@ export default function ProductDetailPage() {
               <button
                 data-testid="add-to-cart-btn"
                 disabled={!selectedVariant?.available}
+                onClick={() => {
+                  if (selectedVariant && product) {
+                    addItem(product, selectedVariant, quantity);
+                  }
+                }}
                 className="flex-1 bg-[#212529] text-white py-3.5 text-[13px] font-semibold tracking-wider uppercase rounded-sm hover:bg-[#333] transition-colors disabled:bg-[#ccc] disabled:cursor-not-allowed"
               >
                 {selectedVariant?.available ? "Add To Cart" : "Out of Stock"}

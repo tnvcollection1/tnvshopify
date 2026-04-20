@@ -134,6 +134,9 @@ import LogisticsDashboard from "@/components/LogisticsDashboard";
 import TNVCStorefront from "@/components/storefront/TNVCStorefront";
 import ProductDetailPage from "@/components/storefront/ProductDetailPage";
 import CollectionPage, { CollectionsPage } from "@/components/storefront/CollectionPage";
+import TNVCheckoutPage from "@/components/storefront/CheckoutPage";
+import { CartProvider as TNVCartProvider } from "@/components/storefront/CartContext";
+import CartDrawer from "@/components/storefront/CartDrawer";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -1210,11 +1213,12 @@ function AppRoutes() {
         element={<LuxuryStorefrontWrapper page="tracking" />} 
       />
 
-      {/* TNV Allbirds-style Storefront */}
-      <Route path="/store" element={<TNVCStorefront />} />
-      <Route path="/store/product/:productId" element={<ProductDetailPage />} />
-      <Route path="/store/collections" element={<CollectionsPage />} />
-      <Route path="/store/collection/:collectionId" element={<CollectionPage />} />
+      {/* TNV Allbirds-style Storefront (with Cart) */}
+      <Route path="/store" element={<TNVCartProvider><CartDrawer /><TNVCStorefront /></TNVCartProvider>} />
+      <Route path="/store/product/:productId" element={<TNVCartProvider><CartDrawer /><ProductDetailPage /></TNVCartProvider>} />
+      <Route path="/store/collections" element={<TNVCartProvider><CartDrawer /><CollectionsPage /></TNVCartProvider>} />
+      <Route path="/store/collection/:collectionId" element={<TNVCartProvider><CartDrawer /><CollectionPage /></TNVCartProvider>} />
+      <Route path="/store/checkout" element={<TNVCartProvider><TNVCheckoutPage /></TNVCartProvider>} />
 
       {/* TNV Store Routes - Namshi-inspired Design */}
       <Route path="/tnv" element={<TNVStoreWrapper><TNVHomePage /></TNVStoreWrapper>} />

@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, ShoppingBag, ChevronDown, Grid3X3, LayoutGrid, ChevronLeft, Menu, X, HelpCircle, User } from "lucide-react";
+import { useCart } from "./CartContext";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 /* ─── Full Nav (same as storefront) ─── */
 function NavBar({ menuOpen, setMenuOpen }) {
+  const { totalItems, setCartOpen } = useCart();
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-[#e5e5e5]">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 flex items-center justify-between h-[60px]">
@@ -26,9 +28,9 @@ function NavBar({ menuOpen, setMenuOpen }) {
           <a href="#" className="hidden lg:inline-block px-3 py-2 text-[13px] text-[#212529] hover:text-[#767676]">About</a>
           <button className="p-2 hover:opacity-60"><Search size={20} strokeWidth={1.5} /></button>
           <button className="hidden sm:block p-2 hover:opacity-60"><User size={20} strokeWidth={1.5} /></button>
-          <button className="p-2 hover:opacity-60 relative" data-testid="coll-cart">
+          <button onClick={() => setCartOpen(true)} className="p-2 hover:opacity-60 relative" data-testid="coll-cart">
             <ShoppingBag size={20} strokeWidth={1.5} />
-            <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-[#212529] text-white text-[9px] rounded-full flex items-center justify-center font-medium">0</span>
+            <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-[#212529] text-white text-[9px] rounded-full flex items-center justify-center font-medium">{totalItems}</span>
           </button>
         </div>
       </div>

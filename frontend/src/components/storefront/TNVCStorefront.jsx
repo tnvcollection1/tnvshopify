@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Search, ShoppingBag, User, Menu, X, HelpCircle, Loader2 } from "lucide-react";
+import { useCart } from "./CartContext";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -57,6 +58,7 @@ function AnnouncementBar() {
    ═══════════════════════════════════════════════ */
 function Navigation({ menuOpen, setMenuOpen }) {
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const { totalItems, setCartOpen } = useCart();
 
   const menItems = [
     { label: "Everyday Sneakers", items: ["Canvas Cruiser", "Tree Runner", "Wool Runner", "Dasher NZ"] },
@@ -125,9 +127,9 @@ function Navigation({ menuOpen, setMenuOpen }) {
             <button data-testid="nav-search" className="p-2 hover:opacity-60"><Search size={20} strokeWidth={1.5} /></button>
             <button data-testid="nav-account" className="hidden sm:block p-2 hover:opacity-60"><User size={20} strokeWidth={1.5} /></button>
             <button data-testid="nav-help" className="hidden sm:block p-2 hover:opacity-60"><HelpCircle size={18} strokeWidth={1.5} /></button>
-            <button data-testid="nav-cart" className="p-2 hover:opacity-60 relative">
+            <button data-testid="nav-cart" onClick={() => setCartOpen(true)} className="p-2 hover:opacity-60 relative">
               <ShoppingBag size={20} strokeWidth={1.5} />
-              <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-[#212529] text-white text-[9px] rounded-full flex items-center justify-center font-medium">0</span>
+              <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-[#212529] text-white text-[9px] rounded-full flex items-center justify-center font-medium">{totalItems}</span>
             </button>
           </div>
         </div>
