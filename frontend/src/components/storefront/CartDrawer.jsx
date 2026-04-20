@@ -1,8 +1,34 @@
 import { useCart } from "./CartContext";
-import { X, Minus, Plus, ShoppingBag } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Loader2 } from "lucide-react";
+import { useState } from "react";
+import axios from "axios";
+
+const API = process.env.REACT_APP_BACKEND_URL;
 
 export default function CartDrawer() {
   const { items, totalItems, totalPrice, cartOpen, setCartOpen, updateQuantity, removeItem } = useCart();
+  const [checkingOut, setCheckingOut] = useState(false);
+  const [error, setError] = useState("");
+
+  const goToShopifyCheckout = async () => {
+    if (items.length === 0) return;
+    setCheckingOut(true);
+    setError("");
+    try {
+      const { data } = await axios.post(`${API}/api/checkout/shopify-cart`, {
+        lines: items.map(i => ({ variant_id: i.variant_id, quantity: i.quantity })),
+      });
+      if (data?.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        setError("Unable to start checkout. Please try again.");
+      }
+    } catch (e) {
+      setError(e?.response?.data?.detail || "Checkout failed. Please try again.");
+    } finally {
+      setCheckingOut(false);
+    }
+  };
 
   if (!cartOpen) return null;
 
@@ -78,10 +104,24 @@ export default function CartDrawer() {
               <span className="text-[15px] font-semibold text-[#212529]">Rs.{totalPrice.toLocaleString()}</span>
             </div>
             <p className="text-[11px] text-[#999]">Shipping and taxes calculated at checkout</p>
-            <a href="/store/checkout" data-testid="checkout-btn"
-              className="block w-full bg-[#212529] text-white py-3.5 text-[13px] font-semibold tracking-wider uppercase text-center rounded-sm hover:bg-[#333] transition-colors">
-              Checkout
-            </a>
+            {error && (
+              <p data-testid="checkout-error" className="text-[11px] text-red-600">{error}</p>
+            )}
+            <button
+              onClick={goToShopifyCheckout}
+              disabled={checkingOut}
+              data-testid="checkout-btn"
+              className="w-full bg-[#212529] text-white py-3.5 text-[13px] font-semibold tracking-wider uppercase text-center rounded-sm hover:bg-[#333] transition-colors disabled:opacity-60 disabled:cursor-wait flex items-center justify-center gap-2"
+            >
+              {checkingOut ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Redirecting…
+                </>
+              ) : (
+                "Checkout"
+              )}
+            </button>
             <button onClick={() => setCartOpen(false)}
               className="block w-full text-[13px] text-[#212529] underline underline-offset-2 text-center py-1 hover:text-[#767676]">
               Continue Shopping

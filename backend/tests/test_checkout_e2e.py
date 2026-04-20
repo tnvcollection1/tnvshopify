@@ -240,3 +240,65 @@ def _cleanup_orders():
     for oid in list(_CREATED_SHOPIFY_ORDERS):
         res, err = _cancel_and_delete_shopify(oid)
         print(f"[CLEANUP] order={oid} result={res} err={err}")
+
+
+# ---------- Shopify Storefront Cart (new hosted checkout) ----------
+class TestShopifyCart:
+    """Tests for POST /api/checkout/shopify-cart - new Storefront API hosted checkout."""
+
+    def test_shopify_cart_success_single_variant(self, api, sample_variant):
+        body = {"lines": [{"variant_id": sample_variant["variant_id"], "quantity": 1}]}
+        r = api.post(f"{BASE_URL}/api/checkout/shopify-cart", json=body, timeout=30)
+        assert r.status_code == 200, f"{r.status_code} {r.text[:300]}"
+        data = r.json()
+        assert data["success"] is True
+        assert "cart_id" in data and data["cart_id"].startswith("gid://shopify/Cart/")
+        assert "checkout_url" in data
+        assert "tnvcollection.com/cart/c/" in data["checkout_url"], f"unexpected host: {data['checkout_url']}"
+        assert data["total_quantity"] == 1
+
+    def test_shopify_cart_invalid_variant(self, api):
+        body = {"lines": [{"variant_id": 9999999999, "quantity": 1}]}
+        r = api.post(f"{BASE_URL}/api/checkout/shopify-cart", json=body, timeout=30)
+        # Expect 400 (userErrors) or 502 (GraphQL error) - both clearly reject invalid variant
+        assert r.status_code in (400, 502), f"expected 400/502 got {r.status_code} {r.text[:300]}"
+        body_text = r.text.lower()
+        assert "cart" in body_text or "merchandise" in body_text or "invalid" in body_text or "error" in body_text
+
+    def test_shopify_cart_empty_lines(self, api):
+        r = api.post(f"{BASE_URL}/api/checkout/shopify-cart", json={"lines": []}, timeout=20)
+        assert r.status_code == 400
+        assert "no items" in r.text.lower()
+
+    def test_shopify_cart_multiple_lines(self, api, sample_variant):
+        # Try to get a second variant; fallback to same variant with qty 2
+        r = api.get(f"{BASE_URL}/api/storefront/products/{sample_variant['product_id']}", timeout=30)
+        variants = r.json().get("variants", [])
+        available = [v for v in variants if v.get("available")]
+        if len(available) >= 2:
+            lines = [
+                {"variant_id": available[0]["id"], "quantity": 1},
+                {"variant_id": available[1]["id"], "quantity": 2},
+            ]
+            expected_qty = 3
+        else:
+            lines = [{"variant_id": sample_variant["variant_id"], "quantity": 3}]
+            expected_qty = 3
+        body = {"lines": lines}
+        resp = api.post(f"{BASE_URL}/api/checkout/shopify-cart", json=body, timeout=30)
+        assert resp.status_code == 200, f"{resp.status_code} {resp.text[:300]}"
+        data = resp.json()
+        assert data["success"] is True
+        assert "tnvcollection.com/cart/c/" in data["checkout_url"]
+        assert data["total_quantity"] == expected_qty
+
+    def test_shopify_cart_with_buyer_email(self, api, sample_variant):
+        body = {
+            "lines": [{"variant_id": sample_variant["variant_id"], "quantity": 1}],
+            "email": "test_buyer@tnvcollection.com",
+        }
+        r = api.post(f"{BASE_URL}/api/checkout/shopify-cart", json=body, timeout=30)
+        assert r.status_code == 200, f"{r.status_code} {r.text[:300]}"
+        data = r.json()
+        assert data["success"] is True
+        assert "tnvcollection.com/cart/c/" in data["checkout_url"]

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Heart, Truck, RotateCcw, Shield, Minus, Plus, Search, ShoppingBag, User, Menu, X, HelpCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Truck, RotateCcw, Shield, Minus, Plus, Search, ShoppingBag, User, Menu, X, HelpCircle, Loader2 } from "lucide-react";
 import { useCart } from "./CartContext";
+import axios from "axios";
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -94,6 +95,28 @@ export default function ProductDetailPage() {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [buyingNow, setBuyingNow] = useState(false);
+  const [buyNowError, setBuyNowError] = useState("");
+
+  const handleBuyItNow = async () => {
+    if (!selectedVariant?.available) return;
+    setBuyingNow(true);
+    setBuyNowError("");
+    try {
+      const { data } = await axios.post(`${API}/api/checkout/shopify-cart`, {
+        lines: [{ variant_id: selectedVariant.id, quantity }],
+      });
+      if (data?.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        setBuyNowError("Unable to start checkout. Please try again.");
+      }
+    } catch (e) {
+      setBuyNowError(e?.response?.data?.detail || "Checkout failed. Please try again.");
+    } finally {
+      setBuyingNow(false);
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -255,7 +278,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Add to Cart */}
-            <div className="flex gap-3 mb-6">
+            <div className="flex gap-3 mb-3">
               <button
                 data-testid="add-to-cart-btn"
                 disabled={!selectedVariant?.available}
@@ -272,6 +295,26 @@ export default function ProductDetailPage() {
                 <Heart size={18} strokeWidth={1.5} />
               </button>
             </div>
+
+            {/* Buy It Now - direct Shopify checkout */}
+            <button
+              data-testid="buy-it-now-btn"
+              disabled={!selectedVariant?.available || buyingNow}
+              onClick={handleBuyItNow}
+              className="w-full border-2 border-[#212529] text-[#212529] py-3 text-[13px] font-semibold tracking-wider uppercase rounded-sm hover:bg-[#212529] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-2 flex items-center justify-center gap-2"
+            >
+              {buyingNow ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Redirecting…
+                </>
+              ) : (
+                "Buy It Now"
+              )}
+            </button>
+            {buyNowError && (
+              <p data-testid="buy-now-error" className="text-[11px] text-red-600 mb-3">{buyNowError}</p>
+            )}
 
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-4 py-5 border-t border-[#e5e5e5] mb-6">
