@@ -10,39 +10,54 @@ Multi-tenant e-commerce platform (tnvcollection.com) with Shopify integration, l
 
 ## What's Been Implemented
 
-### Storefront (Current Session)
-- **TNVC Storefront** at `/store` — Complete layout matching a premium shoe brand site with 12 sections:
-  1. Announcement bar (discount messaging)
-  2. Sticky navigation with italic script logo, MEN/WOMEN/SALE dropdown menus, About/ReRun links, icons
-  3. Promo banner (muted green with serif italic headline)
-  4. Split hero section (product shot with white frame + lifestyle photo)
-  5. Collection name CTA bar with Shop Men/Shop Women links
-  6. Category row (4 cards: New Arrivals, Mens, Womens, Best Sellers)
-  7. Large product carousel (scrollable, big images, active product info)
-  8. Color grid section ("Bold By Design" with interactive color swatches)
-  9. Standard product carousel ("Trending Now" - smaller cards with badge, name, color, price)
-  10. 3x Promo tiles (Summer Travel, New Arrivals, Fresh Colors)
-  11. Value props (3 columns: Comfort, Sustainability, Materials)
-  12. Dark footer (italic logo, social icons, HELP/SHOP/COMPANY link columns)
-- **Connected to live Shopify catalog** via `/api/storefront/products` API
-- All product images, names, prices, colors, and variant data pulled from live Shopify store
-- Fonts: Playfair Display (serif headings) + DM Sans (body)
+### Storefront Pages (Current Session)
+All pages connected to live Shopify catalog (646 products, 50 collections):
 
-### Backend API - Storefront
-- `GET /api/storefront/products?limit=20` — Fetches products with images, prices, colors, sizes, inventory
-- `GET /api/storefront/products/{id}` — Single product detail
-- `GET /api/storefront/collections` — Fetch collections
+1. **Homepage** (`/store`) — 12 sections matching premium shoe brand layout:
+   - Announcement bar, sticky nav with mega dropdowns, promo banner
+   - Split hero (product + lifestyle), category row, large product carousel
+   - Color grid ("Bold By Design"), standard product carousel ("Trending Now")
+   - 3x promo tiles, value props, dark footer
+
+2. **Product Detail Page** (`/store/product/:productId`) — Full PDP with:
+   - Image gallery with thumbnails + prev/next navigation
+   - Color selector buttons, size grid with availability indicators
+   - Quantity selector, Add to Cart + Wishlist buttons
+   - Trust badges (Free Shipping, 30-Day Returns, Secure Payment)
+   - Product description (HTML from Shopify)
+
+3. **Collections Listing** (`/store/collections`) — Grid of 50 collections with:
+   - Collection images (Shopify images or stock fallbacks)
+   - Collection names as overlay text
+
+4. **Collection Page** (`/store/collection/:collectionId`) — Products in collection:
+   - Collection header with title + product count
+   - "All Collections" breadcrumb navigation
+   - Product grid with images, names, colors, prices, color badges
+   - Sort dropdown, Load More pagination
+   - Products link to product detail page
+
+### Backend API — Storefront
+- `GET /api/storefront/products?limit=20&collection_id=X&page_info=X`
+- `GET /api/storefront/products/:id` — Full detail with variants, options, body_html
+- `GET /api/storefront/collections` — All 50 collections
+- `GET /api/storefront/collections/:id` — Single collection detail
+
+### Navigation Flow
+- Homepage → Click product → Product Detail Page
+- Homepage → Click "Collections" in nav → Collections Listing
+- Collections Listing → Click collection → Collection Page (products grid)
+- Collection Page → Click product → Product Detail Page
+- Product Detail Page → Back button → Previous page
 
 ### Logistics (Previous Sessions)
 - Shri Maruti (Innofulfill) full API: Auth, Rates, Booking, Tracking
 - Logistics Dashboard at `/logistics` with 6 tabs
-- Shopify Bulk Order Shipping + `orders/paid` webhook auto-push
-- Booked Orders: 29615, 29616, 29617, 29618 (AWB: TNVC0000000072)
+- Booked Orders: 29615, 29616, 29617, 29618
 
 ## Known Issues
-- Order 29614: Shri Maruti rejects Akola (444104) for bookings
-- 1688 API Token: Requires user to complete auth flow for refresh token
-- Innofulfill Cancel API: Not accessible with seller-level credentials
+- Order 29614: Shri Maruti rejects Akola 444104 for bookings
+- 1688 API Token: Requires user refresh token
 
 ## Prioritized Backlog
 
@@ -50,23 +65,22 @@ Multi-tenant e-commerce platform (tnvcollection.com) with Shopify integration, l
 - Pricing formula update (pending user input)
 
 ### P1
-- Shopify Hydrogen deployment (migrate React components)
+- Shopify Hydrogen deployment
+- Cart + Checkout flow with Razorpay
 - Shopify Product Categorization Fix (Size 45 filter)
-- Product detail page for storefront
-- Add to cart / checkout flow
 
 ### P2
 - User-facing Sales Dashboard, Order Tracking, Wishlist, Reviews
-- Checkout flow with Razorpay
 - Abandoned cart recovery via WhatsApp
-- Refactor LogisticsDashboard.jsx (~1400 lines)
+- Refactor LogisticsDashboard.jsx
 
 ## Key Files
-- `/app/frontend/src/components/storefront/TNVCStorefront.jsx` - Main storefront page
-- `/app/backend/routes/storefront.py` - Storefront API (Shopify product fetching)
-- `/app/backend/services/innofulfill_service.py` - Logistics API
-- `/app/backend/routes/logistics.py` - Logistics routes
-- `/app/frontend/src/components/LogisticsDashboard.jsx` - Logistics UI
+- `/app/frontend/src/components/storefront/TNVCStorefront.jsx` — Homepage
+- `/app/frontend/src/components/storefront/ProductDetailPage.jsx` — PDP
+- `/app/frontend/src/components/storefront/CollectionPage.jsx` — Collection + Collections listing
+- `/app/backend/routes/storefront.py` — Storefront API
+- `/app/backend/services/innofulfill_service.py` — Logistics API
+- `/app/backend/routes/logistics.py` — Logistics routes
 
 ## Credentials
 - Admin: admin/admin

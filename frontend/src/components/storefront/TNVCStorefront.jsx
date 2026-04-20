@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Search, ShoppingBag, User, Menu, X, HelpCircle, Loader2 } from "lucide-react";
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -119,8 +120,8 @@ function Navigation({ menuOpen, setMenuOpen }) {
           </nav>
 
           <div className="flex items-center gap-1">
+            <a href="/store/collections" className="hidden lg:inline-block px-3 py-2 text-[13px] text-[#212529] tracking-wide hover:text-[#767676]">Collections</a>
             <a href="#" className="hidden lg:inline-block px-3 py-2 text-[13px] text-[#212529] tracking-wide hover:text-[#767676]">About</a>
-            <a href="#" className="hidden lg:inline-block px-3 py-2 text-[13px] text-[#212529] tracking-wide hover:text-[#767676]">ReRun</a>
             <button data-testid="nav-search" className="p-2 hover:opacity-60"><Search size={20} strokeWidth={1.5} /></button>
             <button data-testid="nav-account" className="hidden sm:block p-2 hover:opacity-60"><User size={20} strokeWidth={1.5} /></button>
             <button data-testid="nav-help" className="hidden sm:block p-2 hover:opacity-60"><HelpCircle size={18} strokeWidth={1.5} /></button>
@@ -272,7 +273,7 @@ function LargeProductCarousel({ products }) {
         className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {products.slice(0, 10).map((p, i) => (
-          <a key={p.id} href="#" className="flex-shrink-0 w-[70vw] sm:w-[45vw] lg:w-[30vw] max-w-[420px] snap-start group">
+          <a key={p.id} href={`/store/product/${p.id}`} className="flex-shrink-0 w-[70vw] sm:w-[45vw] lg:w-[30vw] max-w-[420px] snap-start group">
             <div className="relative aspect-square bg-[#F5F5F0] rounded-sm overflow-hidden">
               <img src={p.image} alt={p.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
             </div>
@@ -379,7 +380,7 @@ function StandardProductCarousel({ products, title }) {
       </div>
       <div ref={scrollRef} className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {products.map((p) => (
-          <a key={p.id} href="#" data-testid={`std-product-${p.id}`} className="flex-shrink-0 w-[200px] sm:w-[240px] snap-start group">
+          <a key={p.id} href={`/store/product/${p.id}`} data-testid={`std-product-${p.id}`} className="flex-shrink-0 w-[200px] sm:w-[240px] snap-start group">
             <div className="relative aspect-square bg-[#F5F5F0] rounded-sm overflow-hidden mb-2">
               <img src={p.image} alt={p.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
               {p.colors?.length > 2 && (

@@ -132,6 +132,8 @@ import MerchantOnboarding from "@/components/MerchantOnboarding";
 import VPBXCallManager from "@/components/VPBXCallManager";
 import LogisticsDashboard from "@/components/LogisticsDashboard";
 import TNVCStorefront from "@/components/storefront/TNVCStorefront";
+import ProductDetailPage from "@/components/storefront/ProductDetailPage";
+import CollectionPage, { CollectionsPage } from "@/components/storefront/CollectionPage";
 import { Toaster } from "@/components/ui/sonner";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -1210,6 +1212,9 @@ function AppRoutes() {
 
       {/* TNV Allbirds-style Storefront */}
       <Route path="/store" element={<TNVCStorefront />} />
+      <Route path="/store/product/:productId" element={<ProductDetailPage />} />
+      <Route path="/store/collections" element={<CollectionsPage />} />
+      <Route path="/store/collection/:collectionId" element={<CollectionPage />} />
 
       {/* TNV Store Routes - Namshi-inspired Design */}
       <Route path="/tnv" element={<TNVStoreWrapper><TNVHomePage /></TNVStoreWrapper>} />
