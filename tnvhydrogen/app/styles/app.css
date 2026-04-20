@@ -643,3 +643,83 @@ button.reset:hover:not(:has(> *)) {
   gap: 0.75rem;
   flex-wrap: wrap;
 }
+
+/* ---------- TNV Collection overrides ---------- */
+:root {
+  --tnv-ink: #212529;
+  --tnv-muted: #767676;
+  --tnv-hairline: #e5e5e5;
+  --tnv-sage: #b9c7bb;
+  --tnv-sage-deep: #93a595;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--tnv-ink);
+  background: #ffffff;
+  margin: 0;
+}
+
+.tnv-home h1 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.tnv-hero {
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, var(--tnv-sage) 0%, var(--tnv-sage-deep) 100%);
+  color: #fff;
+  text-align: center;
+  padding: 80px 24px;
+  text-decoration: none;
+}
+
+.tnv-hero-image {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.tnv-hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.45;
+}
+
+.tnv-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+}
+.tnv-hero h1 {
+  font-size: clamp(36px, 6vw, 72px);
+  line-height: 1.08;
+  margin: 0 0 12px;
+  color: #fff;
+}
+.tnv-hero p {
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  color: #fff;
+  margin: 0 0 24px;
+}
+
+.tnv-btn-primary {
+  display: inline-block;
+  background: var(--tnv-ink);
+  color: #fff;
+  text-decoration: none;
+  padding: 14px 32px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition: background 0.15s;
+}
+.tnv-btn-primary:hover { background: #333; }

@@ -50,6 +50,16 @@ All pages connected to live Shopify catalog (646 products, 50 collections):
 - Collection Page → Click product → Product Detail Page
 - Product Detail Page → Back button → Previous page
 
+### Hydrogen Migration — Scaffolded (Feb 2026)
+- Initialized Hydrogen (Remix/React Router 7) skeleton at **`/app/tnvhydrogen/`** pointing at live Shopify catalog via Storefront API
+- Customized homepage (`app/routes/_index.tsx`) with TNV branding: announcement bar, sage-green hero, Trending Now grid, value props
+- TNV theme tokens appended to `app/styles/app.css`
+- `package.json` cleaned of Shopify monorepo `workspace:*`/`catalog:` refs → real versions so VPS `npm install` works cleanly
+- Env template at `.env.example`; `.env` has `SESSION_SECRET`, `PRIVATE_STOREFRONT_API_TOKEN`, `PUBLIC_STORE_DOMAIN`, `PUBLIC_CHECKOUT_DOMAIN` filled in
+- **User action required**: paste `PUBLIC_STOREFRONT_API_TOKEN` and `PUBLIC_STOREFRONT_ID` into `/app/tnvhydrogen/.env` (or set on VPS)
+- Deployment: VPS runs `cd /app/tnvhydrogen && npm ci && npm run build && npm run preview` (needs Node 22+)
+- Full onboarding instructions: `/app/tnvhydrogen/TNV_README.md`
+
 ### Checkout — Shopify Hosted (Feb 2026)
 - **Architecture switched from custom Razorpay UI → Shopify Storefront API hosted checkout** to enable native abandoned-cart recovery + Shopify Payments (Razorpay configured inside Shopify).
 - **New endpoint**: `POST /api/checkout/shopify-cart` → creates a Shopify Cart via Storefront API `cartCreate` GraphQL mutation and returns `checkout_url` (customer is redirected to Shopify's native checkout page).
